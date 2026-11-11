@@ -35,7 +35,7 @@ import java.util.Map;
 final class Fx {
 
     static final ElCompiler EL = new ElCompiler();
-    static final Formats F = Formats.load(null, List.of("../examples/packs/finance/config/formats.yaml"));
+    static final Formats F = Formats.load(null, List.of("../../examples/packs/finance/config/formats.yaml"));
     static final DataNode DOC;
 
     static {

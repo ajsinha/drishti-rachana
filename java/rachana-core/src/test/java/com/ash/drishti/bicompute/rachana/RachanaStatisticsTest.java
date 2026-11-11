@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 class RachanaStatisticsTest {
 
     static final ElCompiler EL = new ElCompiler();
-    static final Formats F = Formats.load(null, List.of("../examples/packs/finance/config/formats.yaml"));
+    static final Formats F = Formats.load(null, List.of("../../examples/packs/finance/config/formats.yaml"));
     static final DataNode DOC;
 
     static {

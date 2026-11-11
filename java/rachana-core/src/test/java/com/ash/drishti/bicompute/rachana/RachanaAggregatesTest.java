@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 class RachanaAggregatesTest {
 
     static final ElCompiler EL = new ElCompiler();
-    static final Formats F = Formats.load(null, List.of("../examples/packs/finance/config/formats.yaml"));
+    static final Formats F = Formats.load(null, List.of("../../examples/packs/finance/config/formats.yaml"));
     static final DataNode DOC;
 
     static {

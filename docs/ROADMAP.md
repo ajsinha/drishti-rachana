@@ -6,9 +6,11 @@ first customer of what ships here.
 | Phase | Lands with Drishti | What |
 |---|---|---|
 | **R0: the spec, written down** | i7b | EBNF for Rachana-EL (operators, precedence, types); the Sutra JSON Schema published as the standard, versioned; the conformance suite harvested from Drishti's existing Sutra tests; the Rachana Data Protocol v1 written down; the line between **Sutra Core** (portable) and the **Drishti profile** (Drishti's own kinds, matching, panels). |
-| **R1: the split** | i8 | This repository takes the compiler with its git history (as Drishti Elements did); the reference compiler in Java plus its JavaScript build (after a short proof); Views (the painter); Data Protocol v1; the CLI and static mode; the **Python SDK with Flask and FastAPI adapters**. Drishti vendors pinned releases. |
+| **R1: the split** | i8 (its first step) | This repository takes the compiler with its git history (as Drishti Elements did); the reference compiler in Java plus its JavaScript build (after a short proof); Views (the painter); Data Protocol v1; the CLI and static mode; the **Python SDK with Flask and FastAPI adapters**. Drishti vendors pinned releases. |
 | **R2: the product** | i8.x, i9 | WebAssembly build of the compiler for Python-side compile and lint (no JVM); the standalone server; editor support; playground and gallery; **GenAI writes Sutras** (i9). |
 | **R3: distribution** | after i9 | npm, CDN and PyPI publishing; licensing tiers; native ports only where needed, proven by the conformance suite. |
+
+GenUI (R2, with Drishti i9) is built on Rachana, not on Drishti, so it serves Drishti, other applications and AI assistants alike; that is why the split comes first in i8.
 
 ## Rules
 

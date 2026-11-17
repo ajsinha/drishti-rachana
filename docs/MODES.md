@@ -21,6 +21,9 @@ flowchart TB
   subgraph Dr[5 Drishti]
     DP[Drishti product] --> PR[pinned Rachana + Drishti profile]
   end
+  subgraph Desk[6 Desktop]
+    DA[Electron / Swing / .NET app] --> WVW[embedded web view + in-process bridge]
+  end
 ```
 
 | Mode | Backend needed | Live updates | Best for |
@@ -30,6 +33,7 @@ flowchart TB
 | Python app | Flask / FastAPI | yes | Python teams |
 | Small server | the standalone server | yes | teams without an app |
 | Drishti | the product | yes | enterprises |
+| Desktop | none: the application itself, through the bridge | yes | desktop applications (Electron, Java Swing, .NET) |
 
 ## 1. Static
 
@@ -56,8 +60,8 @@ A web app you already have draws a compiled Sutra with one element and reads dat
 
 ```html
 <!-- planned API, subject to change -->
-<elements-view sutra="/sutras/sales.sutra.yaml"
-               data="/api/tables"></elements-view>
+<rachana-view sutra="/sutras/sales.sutra.yaml"
+              data="/api/tables"></rachana-view>
 ```
 
 ## 3. Python app
@@ -116,3 +120,52 @@ that want dashboards without writing an application. Planned for phase R2; its c
 
 Drishti, the full product, is the first customer. It vendors a pinned release of Rachana and adds its own profile
 (its own panel kinds and matching rules). Rachana itself contains nothing Drishti-specific.
+
+## 6. Desktop applications
+
+Planned (Electron first, then Java Swing, then .NET; see [ROADMAP](ROADMAP.md)). A Rachana screen inside a desktop
+application is the same web painter running in the application's **embedded browser**; the application feeds it
+through an **in-process bridge**, so there is no HTTP server and no open port. The host pushes tables and live
+patches to the view and receives what the reader does (a row selected, a link opened, a control changed, a form
+submitted). Design: [COMPILER_AND_RUNTIMES](design/COMPILER_AND_RUNTIMES.md) section 9 and
+[DATA_PROTOCOL](design/DATA_PROTOCOL.md) section 9.
+
+| Host | Embedded browser | Host SDK (planned) |
+|---|---|---|
+| Electron | Chromium (built in) | `drishti-rachana-electron` (npm) |
+| Java Swing | JCEF (Chromium embedded, as IntelliJ uses); JavaFX WebView in a `JFXPanel` as a fallback | `rachana-swing` (Maven) |
+| .NET WinForms / WPF / MAUI | Microsoft WebView2; CefSharp as an alternative | `Rachana.WebView2` (NuGet) |
+
+**Java Swing** (planned API, subject to change):
+
+```java
+RachanaPanel view = RachanaPanel.create();                 // a JPanel hosting JCEF
+frame.add(view);
+view.open(Path.of("sutras/sales.sutra.yaml"));
+view.setTable("sales", schema, rows);                      // push a whole table
+view.patch("sales", Patch.update(Map.of("region", "North", "month", "2026-02", "revenue", 140)));
+view.onAction(a -> { if (a.name().equals("select")) showDetail(a.payload()); });
+```
+
+**.NET** (planned API, subject to change):
+
+```csharp
+var view = new RachanaView();                              // a WinForms or WPF control over WebView2
+await view.OpenAsync("sutras/sales.sutra.yaml");
+await view.SetTableAsync("sales", schema, rows);
+view.Action += (s, a) => { if (a.Name == "select") ShowDetail(a.Payload); };
+```
+
+**Electron** (planned API, subject to change):
+
+```js
+const { RachanaHost } = require('drishti-rachana-electron');   // main process
+const host = new RachanaHost(win);                              // win: a BrowserWindow
+host.open('sutras/sales.sutra.yaml');
+host.setTable('sales', schema, rows);
+host.on('action', (a) => { /* select, open, control, submit */ });
+```
+
+Native painters (drawing with Swing, WPF or MAUI widgets instead of a web view) are **out of scope**: each would be
+a second implementation of the grid, the pivot, the charts and the maps. The ViewModel specification is open for
+anyone who needs one.

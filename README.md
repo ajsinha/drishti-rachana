@@ -19,7 +19,7 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | **Sutra spec** | The language: a screen as a short YAML document (`rachana: 1`). Structure defined by a published JSON Schema; the expression language **Rachana-EL** defined by an EBNF grammar. |
 | **Conformance suite** | Shared test cases (a Sutra plus data, and the exact expected result). Any implementation, in any language, is Rachana if it passes them. |
 | **Compiler** | Turns a Sutra into a ViewModel. One reference implementation (Java), built for the JVM, for JavaScript (browsers, Node) and for WebAssembly (Python and others). |
-| **Views** | The painter: draws any ViewModel with Drishti Elements (`<elements-view>`). |
+| **Views** | `<rachana-view>`: compiles and binds a Sutra, then paints the ViewModel with Drishti Elements' painter (`<elements-view>`). |
 | **Rachana Data Protocol** | Tables as JSON rows or Apache Arrow; live changes as keyed patches over SSE or WebSocket. |
 | **SDKs** | Java, JavaScript and **Python** (Flask and FastAPI adapters: serve Sutras and data endpoints, stream live changes, lint Sutras in CI). |
 | **Tooling** | `rachana new / dev / build / lint / preview`, editor support from the compiler, a playground and gallery built with Rachana itself. |
@@ -29,10 +29,11 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | Mode | For | How |
 |---|---|---|
 | Static | analysts | Sutras plus CSV, JSON or Arrow files, `rachana build`: a dashboard site with no backend |
-| Embedded | app developers | `<elements-view>` plus a compiled Sutra inside any web app, on your own data API |
+| Embedded | app developers | `<rachana-view>` plus a Sutra inside any web app, on your own data API |
 | Python app | Flask / FastAPI teams | `pip install drishti-rachana`; mount Sutras, expose tables, stream changes |
 | Small server | teams | a standalone server: Sutras plus REST or database sources, live updates, sign-in |
 | Drishti | enterprises | the full Drishti product, built on Rachana |
+| Desktop | desktop application teams | the same screens in an embedded web view (Electron, Java Swing through JCEF, .NET through WebView2), fed through an in-process bridge: no HTTP server |
 
 ## Documentation
 
@@ -40,8 +41,20 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 |---|---|
 | [Overview](docs/OVERVIEW.md) | What it is, who it is for, the parts, a worked example |
 | [Architecture](docs/ARCHITECTURE.md) | Components, compile-to-paint pipeline, data protocol, languages, repository boundaries |
-| [Modes](docs/MODES.md) | The five ways to use it, with planned-API snippets |
+| [Modes](docs/MODES.md) | The six ways to use it, with planned-API snippets |
 | [AI](docs/AI.md) | Safe generative UI: chatbot flow and the Rachana MCP server |
 | [Roadmap](docs/ROADMAP.md) | Phases R0 to R3 and the rules |
+
+### Design
+
+| Document | Contents |
+|---|---|
+| [Specification](docs/design/SPEC.md) | The normative language: document structure and JSON Schema, Rachana-EL grammar (EBNF), types, functions, versioning, the error model |
+| [Core and profiles](docs/design/CORE_AND_PROFILES.md) | What is Sutra Core and what is a host's profile, file by file over the existing code; the profile mechanism; tables as data sources |
+| [Data Protocol](docs/design/DATA_PROTOCOL.md) | Rachana Data Protocol v1: schema and types, JSON and Arrow, paging and push-down, live keyed patches, errors, limits, the in-process bridge |
+| [Compiler and runtimes](docs/design/COMPILER_AND_RUNTIMES.md) | Repository layout, the Java reference, the JavaScript and WebAssembly builds, the conformance suite, performance budgets, the CLI, desktop hosts, the standalone server |
+| [Split plan](docs/design/SPLIT_PLAN.md) | The step-by-step separation from Drishti, guards, tests that move, risks |
+| [Generative UI](docs/design/AI_GENUI.md) | Prompt kit, validate-and-fix loop, MCP tool schemas, safety, evaluation |
+| [Decisions](docs/design/DECISIONS.md) | Numbered questions for the owner, each with a recommendation |
 
 Everything described in these documents is planned unless stated otherwise.

@@ -37,7 +37,7 @@ All parts are **planned** as separate deliverables of this repository; the langu
 | Sutra spec | The language. Structure: JSON Schema. Expressions (**Rachana-EL**): EBNF grammar. |
 | Conformance suite | Sutra + data in, exact expected ViewModel out. Passing it is what "being Rachana" means. |
 | Compiler | Sutra + data schema to ViewModel. One Java reference; built for JavaScript and WebAssembly. |
-| Views | The painter: draws a ViewModel with Drishti Elements (`<elements-view>`). |
+| Views | `<rachana-view>` compiles and binds a Sutra, then paints the ViewModel with Drishti Elements' painter (`<elements-view>`). |
 | Rachana Data Protocol | How tables and live changes travel: JSON rows or Arrow; keyed patches over SSE or WebSocket. |
 | SDKs | Java, JavaScript, Python (Flask and FastAPI adapters). |
 | Tooling | CLI (`rachana new / dev / build / lint / preview`), editor support, playground, gallery. |
@@ -53,8 +53,9 @@ flowchart LR
 
 ## A worked example
 
-The example is illustrative. The keys that belong to **Sutra Core** (the portable part of the language) are fixed in
-phase R0; Drishti's own extras are not part of it. Treat the exact key names below as subject to change.
+The keys below are the ones settled in the design ([SPEC](design/SPEC.md) section 2.4,
+[CORE_AND_PROFILES](design/CORE_AND_PROFILES.md) section 4). The `data:` block is **planned**; the panels and the
+expressions are the language as it exists today.
 
 ### The data
 
@@ -76,36 +77,41 @@ West,2026-02,95
 rachana: 1
 sutra: sales-overview
 title: Sales overview
-sources:
-  sales: { table: sales }
+data:
+  sales: { table: sales, key: [region, month] }     # a name the host resolves: here, data/sales.csv
 panels:
   - id: total
     kind: metric
     label: Revenue
-    value: "sum(sales.revenue)"
+    value: "sum($.sales, 'revenue')"
     fmt: amount0
   - id: by-region
     kind: hbar
     title: Revenue by region
-    rows: "sales"
-    label: region
-    value: "sum(revenue)"
+    rows: "group($.sales, 'region', 'revenue')"       # one row per region: label, value, count
+    label: label
+    value: value
+    fmt: amount0
   - id: detail
     kind: table
     title: Detail
-    rows: "sales"
+    rows: $.sales
     columns:
       - { label: Region,  bind: "@.region" }
       - { label: Month,   bind: "@.month" }
       - { label: Revenue, bind: "@.revenue", fmt: amount0 }
 ```
 
+How to read it: each entry of `data:` becomes a field of `$`, the screen's record, so `$.sales` is the list of rows.
+`table: sales` is a **name**: in static mode it is the file `data/sales.csv`; in an application it is an endpoint of
+the Rachana Data Protocol; in Drishti it is a governed table read as the viewer. The Sutra does not change.
+
 ### What you get
 
 A page with three parts, top to bottom:
 
 1. **A headline tile** reading *Revenue 580*, the sum of the column.
-2. **A horizontal bar chart**, one bar per region: North 255, South 170, West 155, sorted by the painter's default order.
+2. **A horizontal bar chart**, one bar per region: North 255, South 170, West 155, in key order (`group` returns its rows by key).
 3. **A grid** of the six rows with the three columns, sortable and filterable, with the revenue column right-aligned
    and formatted as a whole number.
 
@@ -114,8 +120,9 @@ The compiler's output is the ViewModel: the same three parts as JSON, with every
 If the table later changes (a new row arrives as a keyed patch, see [ARCHITECTURE](ARCHITECTURE.md#the-data-protocol)),
 the affected panels are recomputed and redrawn.
 
-If you mistype a column (`reveune`), the compiler does not guess: it reports the problem with the line and column in the
-Sutra. That behaviour, strict parsing with exact locations, exists today in Drishti and is part of the language.
+If you mistype a key (`pannels`), the compiler does not guess: it reports the problem with the line and column in the
+Sutra. That behaviour, strict parsing with exact locations, exists today in Drishti and is part of the language. With
+a table's schema known, a mistyped column (`reveune`) is reported the same way, with the valid names (planned).
 
 ## What Rachana is not
 
@@ -125,4 +132,4 @@ Sutra. That behaviour, strict parsing with exact locations, exists today in Dris
 
 ## Next
 
-[ARCHITECTURE](ARCHITECTURE.md) · [MODES](MODES.md) · [AI](AI.md) · [ROADMAP](ROADMAP.md)
+[ARCHITECTURE](ARCHITECTURE.md) · [MODES](MODES.md) · [AI](AI.md) · [ROADMAP](ROADMAP.md) · [Design documents](design/DECISIONS.md)

@@ -53,7 +53,7 @@ flowchart TB
 | Sutra spec | Defines valid Sutras: JSON Schema for structure, EBNF for Rachana-EL | planned (R0); exists today inside Drishti (schema served at `GET /api/v1/rachana/schema`) |
 | Conformance suite | Cases of (Sutra, data, expected ViewModel). Any implementation must pass all | planned (R0), harvested from Drishti's Sutra tests |
 | Compiler | Parse, validate, bind, produce ViewModel | exists today inside Drishti (Java); separate repository planned (R1) |
-| Views | Draw a ViewModel with Drishti Elements | planned (R1) |
+| Views | `<rachana-view>`: compile, bind, and paint a ViewModel with Drishti Elements' painter | planned (R1) |
 | Data Protocol | Move tables and live changes | planned (R0 written, R1 built) |
 | SDKs | Embed the compiler and protocol in a host language | planned (R1 Python, JS, Java) |
 | Tooling | Author, check, preview, publish | planned (R1 CLI, R2 editor, playground) |
@@ -112,12 +112,27 @@ There is **one compiler source**, written in Java.
 
 | Target | Used by | Why |
 |---|---|---|
-| JVM | Java SDK, Drishti server, the standalone server | native home of the reference |
+| JVM | Java SDK, Drishti server, the standalone server, Swing hosts | native home of the reference |
 | JavaScript | browsers, Node | compile in the page; no round trip |
 | WebAssembly | Python and other hosts | compile and lint without installing a JVM |
 
 The JavaScript build is attempted after a short proof (see ROADMAP R1); the WebAssembly build comes in R2. A native
 port in another language is allowed only where needed, and is accepted only when it passes the conformance suite.
+
+## Desktop hosts
+
+Planned. Inside a desktop application the painter runs in the application's embedded browser (Electron's Chromium;
+JCEF or JavaFX WebView in Java Swing; WebView2 or CefSharp in .NET), and the Data Protocol travels over an
+**in-process bridge** instead of HTTP: the web view's own messaging (`postMessage`, WebView2 `PostWebMessage`, the
+JCEF message router). The host pushes tables and patches and receives user actions. One page-side module detects the
+channel, so a screen written for the web runs unchanged. Native (non-web) painters are out of scope.
+
+```mermaid
+flowchart LR
+  H[Host code: Node / Java / C#] <-- "bridge: tables, patches, actions" --> W["embedded web view: rachana-view + painter"]
+```
+
+Details: [COMPILER_AND_RUNTIMES](design/COMPILER_AND_RUNTIMES.md) section 9, [DATA_PROTOCOL](design/DATA_PROTOCOL.md) section 9.
 
 ## Repository boundaries
 
@@ -143,6 +158,15 @@ flowchart LR
 - This repository contains **nothing Drishti-specific**. Drishti's extra panel kinds, document matching and domain panels live in Drishti's **profile**, an extension of Sutra Core that Drishti owns.
 - The specification is open; the runtime (compiler, Views, SDKs) is proprietary.
 - Every release carries UI speed budgets, as with Drishti Elements.
+- The painter (`<elements-view>`, the `drishti-views` library) is Drishti Elements code, vendored here at a pin;
+  this repository adds `<rachana-view>`, which compiles and binds a Sutra and hands the ViewModel to the painter.
+
+## Design documents
+
+The detailed designs are in [design/](design/): [SPEC](design/SPEC.md), [CORE_AND_PROFILES](design/CORE_AND_PROFILES.md),
+[DATA_PROTOCOL](design/DATA_PROTOCOL.md), [COMPILER_AND_RUNTIMES](design/COMPILER_AND_RUNTIMES.md),
+[SPLIT_PLAN](design/SPLIT_PLAN.md), [AI_GENUI](design/AI_GENUI.md), [DECISIONS](design/DECISIONS.md). Where a detail
+here differs from them, the design documents are newer.
 
 ## How Drishti consumes it
 

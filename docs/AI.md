@@ -2,6 +2,8 @@
 # Rachana for AI: safe generative UI
 
 Status: **planning.** All of this is planned (generation of Sutras by AI is phase R2; see [ROADMAP](ROADMAP.md)).
+The detailed design (prompt kit, validate-and-fix contract, tool schemas, safety, evaluation) is
+[design/AI_GENUI](design/AI_GENUI.md); where the two differ, the design is newer.
 
 ## The idea
 

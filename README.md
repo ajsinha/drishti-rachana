@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/drishti_rachana-logo.svg">
+    <img src="brand/drishti_rachana-logo-light.svg" alt="Drishti Rachana" width="300">
+  </picture>
+</p>
+
 # Drishti Rachana
 
 **Describe a screen. Supply the data. Get a fast, professional UI.**
@@ -10,7 +17,7 @@ Status: **planning.** The language and compiler exist today inside the Drishti p
 this repository. Drishti is the first customer: it will consume pinned releases of Rachana, exactly as it consumes
 Drishti Elements today.
 
-Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)).
+Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)). The specification and conformance suite (`spec/`, `conformance/`) are intended to be under the permissive [LICENSE-SPEC.md](LICENSE-SPEC.md) (draft).
 
 ## What it is made of
 

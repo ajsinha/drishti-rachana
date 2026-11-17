@@ -17,3 +17,6 @@ An R assembled from layout blocks with gaps, as a grid layout would place them; 
 
 ## Recommendation
 B for clarity and small-size strength; pair it with the Elements lens in docs to keep the family tie. If the family look matters most, choose A.
+
+## Chosen
+Concept **B (Sutra thread)** was chosen by the owner on 2026-11-17. The files are in `brand/` as `drishti_rachana-logo.svg`, `drishti_rachana-logo-light.svg`, `drishti_rachana-mark.svg` and `drishti_rachana-favicon.svg`. This folder is kept for history.

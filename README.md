@@ -34,4 +34,14 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | Small server | teams | a standalone server: Sutras plus REST or database sources, live updates, sign-in |
 | Drishti | enterprises | the full Drishti product, built on Rachana |
 
-See [docs/ROADMAP.md](docs/ROADMAP.md).
+## Documentation
+
+| Document | Contents |
+|---|---|
+| [Overview](docs/OVERVIEW.md) | What it is, who it is for, the parts, a worked example |
+| [Architecture](docs/ARCHITECTURE.md) | Components, compile-to-paint pipeline, data protocol, languages, repository boundaries |
+| [Modes](docs/MODES.md) | The five ways to use it, with planned-API snippets |
+| [AI](docs/AI.md) | Safe generative UI: chatbot flow and the Rachana MCP server |
+| [Roadmap](docs/ROADMAP.md) | Phases R0 to R3 and the rules |
+
+Everything described in these documents is planned unless stated otherwise.

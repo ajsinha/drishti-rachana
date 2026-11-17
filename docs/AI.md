@@ -76,6 +76,53 @@ sequenceDiagram
   A-->>U: dashboard
 ```
 
+## The owner's chatbot: a Rachana tool pack for sajhamcpserver
+
+The planned chatbot is built on **sajhamcpserver** (SAJHA), the owner's own MCP server (Python, FastAPI). SAJHA keeps
+one governed catalog of tools behind one \`/mcp\` endpoint, with credentials, roles, policy and audit applied to every
+call. Rachana would be added to that catalog as a **Rachana tool pack**: a set of tools built on the Python SDK. All
+of it is **planned**; the tool names below are subject to change.
+
+| Tool (planned) | What it does |
+|---|---|
+| \`validate_sutra\` | Lint a Sutra against the schema and grammar; return problems with line and column, in a form the model can act on |
+| \`render_dashboard\` | Take a Sutra and tables; return a rendered dashboard as a link or card the chat can show |
+| \`sutra_examples\` | Few-shot example Sutras, selected by kind of dashboard (KPI strip, ranking, trend, breakdown, detail grid) |
+| \`data_to_table\` | Turn another MCP tool's result into a Rachana Data Protocol table (typed columns, JSON rows or Arrow) |
+
+Because the pack lives in SAJHA's catalog, the dashboard tools are governed like any other tool: the same sign-in, roles,
+policy and audit apply, and the data tools the model calls first are the ones the user is already allowed to use.
+
+\`\`\`mermaid
+sequenceDiagram
+  actor U as User
+  participant Chat as Chat app
+  participant LLM as LLM
+  participant S as sajhamcpserver (tool catalog)
+  participant R as Rachana tool pack
+  U->>Chat: "Show revenue by region for last quarter"
+  Chat->>LLM: question + tool list
+  LLM->>S: call data tools (market data, SQL, ...)
+  S-->>LLM: results
+  LLM->>R: data_to_table(result)
+  R-->>LLM: table id + column schema
+  LLM->>R: sutra_examples(kind)
+  R-->>LLM: example Sutras
+  LLM->>LLM: write Sutra
+  loop until valid (retries capped)
+    LLM->>R: validate_sutra(Sutra, table schemas)
+    R-->>LLM: problems with line and column, or ok
+    LLM->>LLM: fix the Sutra
+  end
+  LLM->>R: render_dashboard(Sutra, tables)
+  R-->>LLM: dashboard link or card
+  LLM-->>Chat: answer + dashboard reference
+  Chat-->>U: chat shows the dashboard
+\`\`\`
+
+Rachana also ships the **generic Rachana MCP server** described above (Flow 2), for assistants that do not use SAJHA. The
+tool pack and the generic server share the same compiler and the same tool contracts; only the host differs.
+
 ## Limits to state plainly
 
 - A dashboard is only as good as the data the tools return; Rachana checks the structure of the Sutra, not the truth of the data.

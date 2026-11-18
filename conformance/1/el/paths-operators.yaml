@@ -1,0 +1,671 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/paths-operators
+since: "1.0"
+profile: core
+verified: false
+description: "Paths, filters, operators, precedence, ordering and number printing over a small trade record."
+given: {"record": {"tradeId": "IRS-1", "notional": 50000000, "direction": "PAY_FIXED", "rate": 0.0385, "legs": [{"leg": 1, "payer": true, "label": "Pay fixed", "rows": [{"a": 1}, {"a": 2.5}]}, {"leg": 2, "payer": false, "label": "Receive SOFR"}], "cp": {"id": "CP-1", "name": "Northbridge"}}}
+cases:
+
+  - id: "tradeid"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "$.tradeId"
+    expect: {"value": "IRS-1", "type": "text", "reads": ["$.tradeId"]}
+
+  - id: "legs-1-label"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "$.legs[1].label"
+    expect: {"value": "Receive SOFR", "reads": ["$.legs[1].label"]}
+
+  - id: "direction-pay-fixed-pay-fixed-receive-fixed"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "$.direction == 'PAY_FIXED' ? 'Pay fixed' : 'Receive fixed'"
+    expect: {"value": "Pay fixed", "reads": ["$.direction"]}
+
+  - id: "size-legs-2-legs-1-payer"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "size($.legs) == 2 && !$.legs[1].payer"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "leg-legs-0-leg-legs-0-label"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    note: "+ joins text forms when either side is text (SPEC 4.5)."
+    expr: "'Leg ' + $.legs[0].leg + ' · ' + $.legs[0].label"
+    expect: {"value": "Leg 1 · Pay fixed"}
+
+  - id: "legs-payer-0-leg"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    note: "A filter yields a list; [0] takes its first element."
+    expr: "$.legs[?@.payer][0].leg"
+    expect: {"value": 1}
+
+  - id: "fmt-rate-pct4-fixed"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    tags: ["format-table"]
+    note: "Needs the shared format table's pct4 (SPEC 2.6)."
+    expr: "fmt($.rate, 'pct4') + ' fixed'"
+    expect: {"value": "3.8500% fixed"}
+
+  - id: "coalesce-nope-cp-name"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "coalesce($.nope, $.cp.name)"
+    expect: {"value": "Northbridge"}
+
+  - id: "max-3-1-7"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "max(3, -1, 7)"
+    expect: {"value": 7}
+
+  - id: "1-2-3-10-4"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "(1 + 2) * 3 - 10 / 4"
+    expect: {"value": 6.5, "type": "number", "text": "6.5"}
+
+  - id: "missing-deeper-3"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    note: "Total paths: a missing field, anywhere in a path, is empty (SPEC 4.1 rule 2)."
+    expr: "$.missing.deeper[3]"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "1-0"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "1 / 0"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "link-cp-id-counterparty-cp-name"
+    kind: "expr"
+    source: "ElTest#pathsOperatorsAndFunctions"
+    expr: "link($.cp.id, 'counterparty', $.cp.name)"
+    expect: {"value": {"$link": {"id": "CP-1", "kind": "counterparty", "label": "Northbridge"}}, "type": "link", "text": "Northbridge"}
+
+  - id: "legs-0-rate-2-size-legs-x"
+    kind: "expr"
+    source: "ElTest#reportsDocumentPathsForLiveUpdates"
+    note: "The Java test asserts the sorted set {$.legs, $.legs[0].rate}; SPEC 4.2 and FORMAT 5.2 give first-read order without repeats, and paths below @ are not listed. The first-read order is $.legs[0].rate then $.legs. H1 confirms."
+    expr: "$.legs[0].rate * 2 + size($.legs) + @.x"
+    expect: {"reads": ["$.legs[0].rate", "$.legs"]}
+
+  - id: "label-index"
+    kind: "expr"
+    source: "ElTest#rowContextAndBareIdentifiers"
+    note: "A bare name inside a row reads a field of @ (SPEC 4.3)."
+    given: {"row": {"leg": 2, "payer": false, "label": "Receive SOFR"}, "index": 1}
+    expr: "label + ' #' + #index"
+    expect: {"value": "Receive SOFR #1"}
+
+  - id: "leg"
+    kind: "expr"
+    source: "ElTest#rowContextAndBareIdentifiers"
+    given: {"row": {"leg": 2, "payer": false, "label": "Receive SOFR"}, "index": 1}
+    expr: "@.leg"
+    expect: {"value": 2}
+
+  - id: "tradeid-2"
+    kind: "expr"
+    source: "ElTest#rowContextAndBareIdentifiers"
+    note: "A bare name outside a row reads a field of $."
+    expr: "tradeId"
+    expect: {"value": "IRS-1"}
+
+  - id: "trade-parties-us-entity-name"
+    kind: "expr"
+    source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
+    given: {"record": {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}}, "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}}, {"schedule": {"periods": [{"fixing": {"rate": 0.025, "source": {"index": "ESTR"}}}]}}]}}}
+    expr: "$.trade.parties.us.entity.name"
+    expect: {"value": "Drishti Bank plc"}
+
+  - id: "trade-legs-0-schedule-periods-1-fixing-source-index"
+    kind: "expr"
+    source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
+    given: {"record": {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}}, "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}}, {"schedule": {"periods": [{"fixing": {"rate": 0.025, "source": {"index": "ESTR"}}}]}}]}}}
+    expr: "$.trade.legs[0].schedule.periods[1].fixing.source.index"
+    expect: {"value": "SOFR", "reads": ["$.trade.legs[0].schedule.periods[1].fixing.source.index"]}
+
+  - id: "trade-legs-1-schedule-periods-0-fixing-rate"
+    kind: "expr"
+    source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
+    note: "A negative index counts from the end (SPEC 4.4)."
+    given: {"record": {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}}, "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}}, {"schedule": {"periods": [{"fixing": {"rate": 0.025, "source": {"index": "ESTR"}}}]}}]}}}
+    expr: "$.trade.legs[-1].schedule.periods[0].fixing.rate"
+    expect: {"value": 0.025}
+
+  - id: "size-trade-legs-0-schedule-periods"
+    kind: "expr"
+    source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
+    given: {"record": {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}}, "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}}, {"schedule": {"periods": [{"fixing": {"rate": 0.025, "source": {"index": "ESTR"}}}]}}]}}}
+    expr: "size($.trade.legs[0].schedule.periods)"
+    expect: {"value": 2}
+
+  - id: "fixing-source-index-fmt-fixing-rate-pct4"
+    kind: "expr"
+    source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
+    tags: ["format-table"]
+    note: "A row inside a nested array reads further nesting relative to itself. Needs the format table's pct4."
+    given: {"record": {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}}, "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}}, {"schedule": {"periods": [{"fixing": {"rate": 0.025, "source": {"index": "ESTR"}}}]}}]}}, "row": {"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, "index": 0}
+    expr: "@.fixing.source.index + ' ' + fmt(@.fixing.rate, 'pct4')"
+    expect: {"value": "SOFR 3.7100%"}
+
+  - id: "trade-parties-them-entity-name"
+    kind: "expr"
+    source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
+    note: "A missing branch anywhere in the path is empty, not an error."
+    given: {"record": {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}}, "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}}, {"schedule": {"periods": [{"fixing": {"rate": 0.025, "source": {"index": "ESTR"}}}]}}]}}}
+    expr: "$.trade.parties.them.entity.name"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "trade-legs-5-schedule-periods-0-fixing-rate"
+    kind: "expr"
+    source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
+    given: {"record": {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}}, "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}}, {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}}, {"schedule": {"periods": [{"fixing": {"rate": 0.025, "source": {"index": "ESTR"}}}]}}]}}}
+    expr: "$.trade.legs[5].schedule.periods[0].fixing.rate"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "2026-01-31-2026-02-01"
+    kind: "expr"
+    source: "ElTest#textsThatAreNotNumbersOrderAsTextSoIsoDatesCompare"
+    note: "ISO dates order as text (SPEC 4.7)."
+    expr: "'2026-01-31' < '2026-02-01'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "2027-06-30-2027-01-01"
+    kind: "expr"
+    source: "ElTest#textsThatAreNotNumbersOrderAsTextSoIsoDatesCompare"
+    expr: "'2027-06-30' >= '2027-01-01'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "2027-06-30-2027-01-01-2"
+    kind: "expr"
+    source: "ElTest#textsThatAreNotNumbersOrderAsTextSoIsoDatesCompare"
+    expr: "'2027-06-30' < '2027-01-01'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "10-9"
+    kind: "expr"
+    source: "ElTest#textsThatAreNotNumbersOrderAsTextSoIsoDatesCompare"
+    note: "Texts that read as numbers stay numbers."
+    expr: "'10' < '9'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "5-abc"
+    kind: "expr"
+    source: "ElTest#textsThatAreNotNumbersOrderAsTextSoIsoDatesCompare"
+    note: "A number against text never orders."
+    expr: "5 < 'abc'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "nothing-2027-01-01"
+    kind: "expr"
+    source: "ElTest#textsThatAreNotNumbersOrderAsTextSoIsoDatesCompare"
+    note: "Nor does empty."
+    expr: "$.nothing < '2027-01-01'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "7-3-5-7-5"
+    kind: "expr"
+    source: "ElTest#integerArithmeticMatchesJava"
+    note: "Sample of the Java test's 300 seeded cases: the result is Java's int arithmetic, % truncated (SPEC 4.5)."
+    expr: "7 + 3 * 5 - (7 % 5)"
+    expect: {"value": 20, "type": "number"}
+
+  - id: "9500-4821-17-9500-17"
+    kind: "expr"
+    source: "ElTest#integerArithmeticMatchesJava"
+    expr: "-9500 + 4821 * 17 - (-9500 % 17)"
+    expect: {"value": 72471, "type": "number"}
+
+  - id: "10000-10000-99-10000-99"
+    kind: "expr"
+    source: "ElTest#integerArithmeticMatchesJava"
+    expr: "10000 + -10000 * 99 - (10000 % 99)"
+    expect: {"value": -980001, "type": "number"}
+
+  - id: "0-0-1-0-1"
+    kind: "expr"
+    source: "ElTest#integerArithmeticMatchesJava"
+    expr: "0 + 0 * 1 - (0 % 1)"
+    expect: {"value": 0, "type": "number"}
+
+  - id: "2147483647-2147483648"
+    kind: "expr"
+    source: "ElTest#comparisonsAgreeWithJava"
+    note: "Sample of the Java test's 200 seeded cases."
+    expr: "2147483647 < -2147483648"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "2147483647-2147483648-2"
+    kind: "expr"
+    source: "ElTest#comparisonsAgreeWithJava"
+    expr: "2147483647 == -2147483648"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "5-5"
+    kind: "expr"
+    source: "ElTest#comparisonsAgreeWithJava"
+    expr: "5 < 5"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "5-5-2"
+    kind: "expr"
+    source: "ElTest#comparisonsAgreeWithJava"
+    expr: "5 == 5"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "1-0-2"
+    kind: "expr"
+    source: "ElTest#comparisonsAgreeWithJava"
+    expr: "-1 < 0"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "1-0-3"
+    kind: "expr"
+    source: "ElTest#comparisonsAgreeWithJava"
+    expr: "-1 == 0"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "2-3-4"
+    kind: "expr"
+    source: "SPEC 4.5"
+    tags: ["precedence"]
+    note: "* binds tighter than +."
+    expr: "2 + 3 * 4"
+    expect: {"value": 14}
+
+  - id: "2-3-4-2"
+    kind: "expr"
+    source: "SPEC 4.5"
+    expr: "(2 + 3) * 4"
+    expect: {"value": 20}
+
+  - id: "2-3"
+    kind: "expr"
+    source: "SPEC 4.5"
+    expr: "-2 * 3"
+    expect: {"value": -6}
+
+  - id: "10-4-3"
+    kind: "expr"
+    source: "SPEC 4.5"
+    note: "Left to right."
+    expr: "10 - 4 - 3"
+    expect: {"value": 3}
+
+  - id: "2-3-4-3"
+    kind: "expr"
+    source: "SPEC 4.5"
+    note: "* and % share a level, left to right."
+    expr: "2 * 3 % 4"
+    expect: {"value": 2}
+
+  - id: "3"
+    kind: "expr"
+    source: "SPEC 4.5"
+    expr: "-'3'"
+    expect: {"value": -3}
+
+  - id: "null"
+    kind: "expr"
+    source: "SPEC 4.5"
+    expr: "!null"
+    expect: {"value": true}
+
+  - id: "0"
+    kind: "expr"
+    source: "SPEC 4.5"
+    note: "'0' is a true text (SPEC 4.2)."
+    expr: "!'0'"
+    expect: {"value": false}
+
+  - id: "1-1"
+    kind: "expr"
+    source: "SPEC 4.5"
+    expr: "1 + 1"
+    expect: {"value": 2}
+
+  - id: "whole-number-prints-without-decimals"
+    kind: "expr"
+    source: "SPEC 4.2"
+    expr: "1 + 1"
+    expect: {"value": 2, "type": "number", "text": "2"}
+
+  - id: "1-5-1-5"
+    kind: "expr"
+    source: "SPEC 4.2"
+    expr: "1.5 + 1.5"
+    expect: {"value": 3, "type": "number", "text": "3"}
+
+  - id: "1e20-1"
+    kind: "expr"
+    source: "FORMAT 9 N3"
+    tags: ["determinism"]
+    note: "N3: 1.0E20 in text form."
+    expr: "1e20 * 1"
+    expect: {"value": 1.0e+20, "type": "number", "text": "1.0E20"}
+
+  - id: "1e15-1"
+    kind: "expr"
+    source: "FORMAT 9 N1, N3"
+    tags: ["determinism"]
+    note: "N1 stops below 10^15; this is the first power of ten printed in exponent form."
+    expr: "1e15 * 1"
+    expect: {"value": 1000000000000000.0, "type": "number", "text": "1.0E15"}
+
+  - id: "999999999999999-0"
+    kind: "expr"
+    source: "FORMAT 9 N1"
+    tags: ["determinism"]
+    expr: "999999999999999 + 0"
+    expect: {"value": 999999999999999, "type": "number", "text": "999999999999999"}
+
+  - id: "15000000-1"
+    kind: "expr"
+    source: "FORMAT 9 N1"
+    tags: ["determinism"]
+    note: "N1 applies first: a whole double prints as an integer."
+    expr: "15000000 * 1"
+    expect: {"value": 15000000, "type": "number", "text": "15000000"}
+
+  - id: "0-0001-1"
+    kind: "expr"
+    source: "FORMAT 9 N3"
+    tags: ["determinism"]
+    expr: "0.0001 * 1"
+    expect: {"value": 0.0001, "type": "number", "text": "1.0E-4"}
+
+  - id: "12345678-5-1"
+    kind: "expr"
+    source: "FORMAT 9 N3"
+    tags: ["determinism"]
+    expr: "12345678.5 * 1"
+    expect: {"value": 12345678.5, "type": "number", "text": "1.23456785E7"}
+
+  - id: "0-001-1"
+    kind: "expr"
+    source: "FORMAT 9 N2"
+    tags: ["determinism"]
+    expr: "0.001 * 1"
+    expect: {"value": 0.001, "type": "number", "text": "0.001"}
+
+  - id: "0-0-1"
+    kind: "expr"
+    source: "FORMAT 9 N6"
+    tags: ["determinism"]
+    note: "Negative zero prints 0 (to be confirmed by P2)."
+    expr: "-0.0 * 1"
+    expect: {"value": 0, "type": "number", "text": "0"}
+
+  - id: "true-true"
+    kind: "expr"
+    source: "SPEC 4.6"
+    expr: "true == 'true'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "1-1-0"
+    kind: "expr"
+    source: "SPEC 4.6"
+    expr: "1 == '1.0'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "1-true"
+    kind: "expr"
+    source: "SPEC 4.6"
+    expr: "1 == true"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "1-a"
+    kind: "expr"
+    source: "SPEC 4.6"
+    expr: "1 == 'a'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "usd-usd"
+    kind: "expr"
+    source: "SPEC 4.6"
+    expr: "'USD' == 'usd'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "null-null"
+    kind: "expr"
+    source: "SPEC 4.6"
+    expr: "null == null"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "null-x"
+    kind: "expr"
+    source: "SPEC 4.6"
+    note: "Empty is not equal to a text, so != is true (the null rule)."
+    expr: "null != 'X'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "0-5-10"
+    kind: "expr"
+    source: "SPEC 4.7"
+    note: "Parses as (0 < 5) < 10: a boolean (true is 1) against 10; write 0 < x && x < 10."
+    expr: "0 < 5 < 10"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "rate-n-a"
+    kind: "expr"
+    source: "SPEC 4.8"
+    note: "|| gives a boolean, never an operand; use nonblank for a default."
+    expr: "$.rate || 'n/a'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "x-0"
+    kind: "expr"
+    source: "SPEC 4.8"
+    expr: "'x' && 0"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "size-1-yes-no"
+    kind: "expr"
+    source: "SPEC 4.2 truthiness"
+    expr: "size([1]) ? 'yes' : 'no'"
+    expect: {"value": "yes"}
+
+  - id: "0-true-false"
+    kind: "expr"
+    source: "SPEC 4.2 truthiness"
+    note: "'0' and 'false' are true texts."
+    expr: "'0' ? 'true' : 'false'"
+    expect: {"value": "true"}
+
+  - id: "true-false"
+    kind: "expr"
+    source: "SPEC 4.2 truthiness"
+    expr: "'' ? 'true' : 'false'"
+    expect: {"value": "false"}
+
+  - id: "size-true-false"
+    kind: "expr"
+    source: "SPEC 4.2 truthiness"
+    expr: "size([]) ? 'true' : 'false'"
+    expect: {"value": "false"}
+
+  - id: "legs-leg"
+    kind: "expr"
+    source: "SPEC 4.4"
+    expr: "$.legs[*].leg"
+    expect: {"value": [1, 2], "type": "list"}
+
+  - id: "legs-leg-2-label"
+    kind: "expr"
+    source: "SPEC 4.4"
+    expr: "$.legs[?@.leg == 2][*].label"
+    expect: {"value": ["Receive SOFR"], "type": "list"}
+
+  - id: "legs-leg-2-label-2"
+    kind: "expr"
+    source: "SPEC 4.4"
+    note: "A filter result is a list, so .name after it is empty."
+    expr: "$.legs[?@.leg == 2].label"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "tradeid-3"
+    kind: "expr"
+    source: "SPEC 4.4"
+    expr: "$['tradeId']"
+    expect: {"value": "IRS-1"}
+
+  - id: "abc-x"
+    kind: "expr"
+    source: "SPEC 4.4"
+    expr: "'abc'.x"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "legs"
+    kind: "expr"
+    source: "SPEC 4.2 text form"
+    note: "A list's text form is [n], an object's {n}."
+    expr: "'' + $.legs"
+    expect: {"value": "[2]", "type": "text"}
+
+  - id: "cp"
+    kind: "expr"
+    source: "SPEC 4.2 text form"
+    expr: "'' + $.cp"
+    expect: {"value": "{2}", "type": "text"}
+
+  - id: "true"
+    kind: "expr"
+    source: "SPEC 4.2 text form"
+    expr: "'' + true"
+    expect: {"value": "true", "type": "text"}
+
+  - id: "1-a-cp-id"
+    kind: "expr"
+    source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
+    expr: "[1, 'a', $.cp.id]"
+    expect: {"value": [1, "a", "CP-1"], "type": "list"}
+
+  - id: "case"
+    kind: "expr"
+    source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
+    expr: "[]"
+    expect: {"value": [], "type": "list"}
+
+  - id: "1-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
+    note: "A trailing comma, as DEL allowed."
+    expr: "[1, 2,]"
+    expect: {"value": [1, 2], "type": "list"}
+
+  - id: "size-legs-cp"
+    kind: "expr"
+    source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
+    expr: "size([$.legs, $.cp])"
+    expect: {"value": 2}
+
+  - id: "bad-1-2"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
+    note: "Message contains: \"']'\"."
+    expr: "[1, 2"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '[1, 2': "}]}
+
+  - id: "not-a-number-2026-09-09"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    note: "Text that is not a number reads as NaN (SPEC 4.5)."
+    expr: "'2026-09-09' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "not-a-number-cp-0042"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'CP-0042' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "not-a-number-endur"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'ENDUR' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "not-a-number-1-2"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'1-2' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "not-a-number-mx-50000042"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'MX-50000042' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "not-a-number-2026-09-09t10-00-00z"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'2026-09-09T10:00:00Z' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "blank-text-times-one-0"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    note: "Blank text is not a number."
+    expr: "'' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "blank-text-times-one-2"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    note: "Blank text is not a number."
+    expr: "'  ' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "42-1"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    note: "The Java test calls Values.number(text); the case reads the same text through *."
+    expr: "'42' * 1"
+    expect: {"value": 42, "type": "number"}
+
+  - id: "1-5e-3-1"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "' -1.5e-3 ' * 1"
+    expect: {"value": -0.0015, "type": "number"}
+
+  - id: "7-1"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'+7' * 1"
+    expect: {"value": 7, "type": "number"}
+
+  - id: "5-1"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'.5' * 1"
+    expect: {"value": 0.5, "type": "number"}
+
+  - id: "1e-6-1"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'1E+6' * 1"
+    expect: {"value": 1000000, "type": "number"}
+
+  - id: "infinity-1"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'Infinity' * 1"
+    expect: {"value": {"$num": "Infinity"}, "type": "number"}
+
+  - id: "1-5x-1"
+    kind: "expr"
+    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
+    expr: "'1.5x' * 1"
+    expect: {"value": {"$num": "NaN"}, "type": "number"}

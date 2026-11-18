@@ -1,0 +1,1028 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/dates
+since: "1.0"
+profile: core
+verified: false
+description: "Date functions: parts, differences, day-count fractions, month ends, intervals, business days and calendars. Dates are ISO text."
+given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+cases:
+
+  - id: "days-between-trade-date-maturity-date"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    expr: "days_between($.TRADE_DATE, $.MATURITY_DATE)"
+    expect: {"value": 2408}
+
+  - id: "days-trade-date-maturity-date"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    note: "Old spelling of days_between."
+    expr: "days($.TRADE_DATE, $.MATURITY_DATE)"
+    expect: {"value": 2408}
+
+  - id: "days-between-maturity-date-trade-date"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    expr: "days_between($.MATURITY_DATE, $.TRADE_DATE)"
+    expect: {"value": -2408}
+
+  - id: "days-between-2026-10-16t09-30-00z-2026-10-17"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    note: "A timestamp counts by its date."
+    expr: "days_between('2026-10-16T09:30:00Z', '2026-10-17')"
+    expect: {"value": 1}
+
+  - id: "days-between-2024-02-28-2024-03-01"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    note: "A leap year."
+    expr: "days_between('2024-02-28', '2024-03-01')"
+    expect: {"value": 2}
+
+  - id: "days-between-2023-02-28-2023-03-01"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    expr: "days_between('2023-02-28', '2023-03-01')"
+    expect: {"value": 1}
+
+  - id: "days-between-today-maturity-date"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    expr: "days_between(today(), $.MATURITY_DATE)"
+    expect: {"value": 2079}
+
+  - id: "days-between-nope-2026-01-01"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    expr: "days_between($.NOPE, '2026-01-01')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "days-between-mtm-2026-01-01"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    expr: "days_between($.MTM, '2026-01-01')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "days-between-x-2026-01-01"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    note: "Message contains: 'days_between'; \"'x' is not a date (yyyy-mm-dd)\"."
+    expr: "days_between('x', '2026-01-01')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "days-x-2026-01-01"
+    kind: "expr"
+    source: "DateFunctionsTest#daysBetweenAndTheOldDays"
+    note: "The old spelling stays quiet, as it was: empty instead of an error."
+    expr: "days('x', '2026-01-01')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "eomonth-2024-01-15"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth('2024-01-15')"
+    expect: {"value": "2024-01-31"}
+
+  - id: "eomonth-2024-01-31-1"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth('2024-01-31', 1)"
+    expect: {"value": "2024-02-29"}
+
+  - id: "eomonth-2023-01-31-1"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth('2023-01-31', 1)"
+    expect: {"value": "2023-02-28"}
+
+  - id: "eomonth-2024-03-31-1"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth('2024-03-31', -1)"
+    expect: {"value": "2024-02-29"}
+
+  - id: "eomonth-2026-12-15-1"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth('2026-12-15', 1)"
+    expect: {"value": "2027-01-31"}
+
+  - id: "eomonth-trade-date"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth($.TRADE_DATE)"
+    expect: {"value": "2025-11-30"}
+
+  - id: "edate-2024-01-31-1"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "edate('2024-01-31', 1)"
+    expect: {"value": "2024-02-29"}
+
+  - id: "edate-2023-01-31-1"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "edate('2023-01-31', 1)"
+    expect: {"value": "2023-02-28"}
+
+  - id: "edate-2024-02-29-12"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "edate('2024-02-29', 12)"
+    expect: {"value": "2025-02-28"}
+
+  - id: "edate-2024-02-29-48"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "edate('2024-02-29', 48)"
+    expect: {"value": "2028-02-29"}
+
+  - id: "edate-2026-10-16-10"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "edate('2026-10-16', -10)"
+    expect: {"value": "2025-12-16"}
+
+  - id: "edate-2026-10-16-1-9"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    note: "Months are cut to a whole number."
+    expr: "edate('2026-10-16', 1.9)"
+    expect: {"value": "2026-11-16"}
+
+  - id: "eomonth-nope"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "edate-2026-10-16-nope"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "edate('2026-10-16', $.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "eomonth-mtm"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "eomonth($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "edate-trade-date-mtm"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    expr: "edate($.TRADE_DATE, $.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "eomonth-2026-02-30"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    note: "Message contains: 'eomonth'; \"'2026-02-30' is not a date\"."
+    expr: "eomonth('2026-02-30')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "edate-trade-date-x"
+    kind: "expr"
+    source: "DateFunctionsTest#eomonthAndEdateKeepMonthEnds"
+    note: "Message contains: 'edate'; \"'x' is not a number\"."
+    expr: "edate($.TRADE_DATE, 'x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "yearfrac-2012-01-01-2012-07-30-30-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    note: "The Java test rounds the result to 8 places HALF_UP and compares by value; the case rounds in the expression instead (the reference's ROUND is HALF_UP in decimal). Either order is allowed: ACT/ACT is ISDA's."
+    expr: "round(yearfrac('2012-01-01', '2012-07-30', '30/360'), 8)"
+    expect: {"value": 0.58055556}
+
+  - id: "yearfrac-2012-01-01-2012-07-30-act-act"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2012-01-01', '2012-07-30', 'ACT/ACT'), 8)"
+    expect: {"value": 0.57650273}
+
+  - id: "yearfrac-2012-01-01-2012-07-30-act-365f"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2012-01-01', '2012-07-30', 'ACT/365F'), 8)"
+    expect: {"value": 0.57808219}
+
+  - id: "yearfrac-2012-01-01-2012-07-30-act-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2012-01-01', '2012-07-30', 'ACT/360'), 8)"
+    expect: {"value": 0.58611111}
+
+  - id: "yearfrac-2012-01-01-2012-07-30-30e-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2012-01-01', '2012-07-30', '30E/360'), 8)"
+    expect: {"value": 0.58055556}
+
+  - id: "yearfrac-2003-11-01-2004-05-01-act-act"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2003-11-01', '2004-05-01', 'ACT/ACT'), 8)"
+    expect: {"value": 0.49772438}
+
+  - id: "yearfrac-2003-11-01-2004-05-01-act-365f"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2003-11-01', '2004-05-01', 'ACT/365F'), 8)"
+    expect: {"value": 0.49863014}
+
+  - id: "yearfrac-2003-11-01-2004-05-01-act-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2003-11-01', '2004-05-01', 'ACT/360'), 8)"
+    expect: {"value": 0.50555556}
+
+  - id: "yearfrac-2003-11-01-2004-05-01-30-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2003-11-01', '2004-05-01', '30/360'), 8)"
+    expect: {"value": 0.5}
+
+  - id: "yearfrac-2003-11-01-2004-05-01-30e-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2003-11-01', '2004-05-01', '30E/360'), 8)"
+    expect: {"value": 0.5}
+
+  - id: "yearfrac-2007-02-28-2008-02-29-30-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2007-02-28', '2008-02-29', '30/360'), 8)"
+    expect: {"value": 1}
+
+  - id: "yearfrac-2007-02-28-2008-02-29-30e-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2007-02-28', '2008-02-29', '30E/360'), 8)"
+    expect: {"value": 1.00277778}
+
+  - id: "yearfrac-2011-01-15-2011-03-31-30-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2011-01-15', '2011-03-31', '30/360'), 8)"
+    expect: {"value": 0.21111111}
+
+  - id: "yearfrac-2011-01-15-2011-03-31-30e-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2011-01-15', '2011-03-31', '30E/360'), 8)"
+    expect: {"value": 0.20833333}
+
+  - id: "yearfrac-2006-01-31-2006-02-28-30-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2006-01-31', '2006-02-28', '30/360'), 8)"
+    expect: {"value": 0.07777778}
+
+  - id: "yearfrac-2011-01-30-2011-12-31-30-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2011-01-30', '2011-12-31', '30/360'), 8)"
+    expect: {"value": 0.91666667}
+
+  - id: "yearfrac-2023-12-31-2024-01-01-act-act"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2023-12-31', '2024-01-01', 'ACT/ACT'), 8)"
+    expect: {"value": 0.00273973}
+
+  - id: "yearfrac-2024-12-31-2025-01-01-act-act"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2024-12-31', '2025-01-01', 'ACT/ACT'), 8)"
+    expect: {"value": 0.00273224}
+
+  - id: "yearfrac-2012-07-30-2012-01-01-act-365f"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2012-07-30', '2012-01-01', 'ACT/365F'), 8)"
+    expect: {"value": 0.57808219}
+
+  - id: "yearfrac-2026-10-16-2026-10-16-act-act"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracMatchesExcelAndIsda"
+    expr: "round(yearfrac('2026-10-16', '2026-10-16', 'ACT/ACT'), 8)"
+    expect: {"value": 0}
+
+  - id: "yearfrac-2026-01-01-2026-07-01-act-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    expr: "yearfrac('2026-01-01', '2026-07-01', 'ACT/360')"
+    expect: {"value": 0.5027777777777778, "type": "decimal"}
+
+  - id: "yearfrac-start-date-maturity-date-act-365f"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    note: "The Java test only asserts the result is a decimal (BigDecimal), not its value; H1 fills the value."
+    expr: "yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/365F')"
+    expect: {"type": "decimal"}
+
+  - id: "yearfrac-nope-maturity-date-act-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    expr: "yearfrac($.NOPE, $.MATURITY_DATE, 'ACT/360')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "yearfrac-mtm-maturity-date-act-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    expr: "yearfrac($.MTM, $.MATURITY_DATE, 'ACT/360')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-yearfrac-start-date-maturity-date-act-999"
+    kind: "expr-error"
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    note: "Message contains: \"yearfrac: unknown day-count basis 'ACT/999'\"; 'ACT/360, ACT/365F, 30/360, 30E/360, ACT/ACT'."
+    expr: "yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/999')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/999')': "}]}
+
+  - id: "yearfrac-start-date-maturity-date-basis"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    note: "Message contains: 'yearfrac'; \"unknown day-count basis 'ACT/999'\"."
+    expr: "yearfrac($.START_DATE, $.MATURITY_DATE, $.BASIS)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "yearfrac-soon-maturity-date-act-360"
+    kind: "expr"
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    note: "Message contains: 'yearfrac'; \"'soon' is not a date\"."
+    expr: "yearfrac('soon', $.MATURITY_DATE, 'ACT/360')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "intck-month-2026-01-31-2026-02-01"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('month', '2026-01-31', '2026-02-01')"
+    expect: {"value": 1}
+
+  - id: "intck-month-2026-02-01-2026-01-31"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('month', '2026-02-01', '2026-01-31')"
+    expect: {"value": -1}
+
+  - id: "intck-month-trade-date-today"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('month', $.TRADE_DATE, today())"
+    expect: {"value": 11}
+
+  - id: "intck-year-2025-12-31-2026-01-01"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('year', '2025-12-31', '2026-01-01')"
+    expect: {"value": 1}
+
+  - id: "intck-quarter-2026-03-31-2026-04-01"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('quarter', '2026-03-31', '2026-04-01')"
+    expect: {"value": 1}
+
+  - id: "intck-quarter-2026-01-01-2026-03-31"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('quarter', '2026-01-01', '2026-03-31')"
+    expect: {"value": 0}
+
+  - id: "intck-week-2026-11-07-2026-11-08"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Weeks start on Sunday (Saturday to Sunday crosses a boundary)."
+    expr: "intck('week', '2026-11-07', '2026-11-08')"
+    expect: {"value": 1}
+
+  - id: "intck-week-2026-11-08-2026-11-14"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Weeks start on Sunday (Saturday to Sunday crosses a boundary)."
+    expr: "intck('week', '2026-11-08', '2026-11-14')"
+    expect: {"value": 0}
+
+  - id: "intck-day-2024-01-01-2024-03-01"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('day', '2024-01-01', '2024-03-01')"
+    expect: {"value": 60}
+
+  - id: "intck-business-day-2026-11-25-2026-11-27-usny"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Thanksgiving falls between."
+    expr: "intck('business_day', '2026-11-25', '2026-11-27', 'USNY')"
+    expect: {"value": 1}
+
+  - id: "intck-business-day-2026-11-25-2026-11-27"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "USNY by default."
+    expr: "intck('business_day', '2026-11-25', '2026-11-27')"
+    expect: {"value": 1}
+
+  - id: "intck-business-day-2026-11-27-2026-11-25-usny"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Thanksgiving falls between."
+    expr: "intck('business_day', '2026-11-27', '2026-11-25', 'USNY')"
+    expect: {"value": -1}
+
+  - id: "intck-business-day-2026-11-25-2026-11-27-weekends"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('business_day', '2026-11-25', '2026-11-27', 'WEEKENDS')"
+    expect: {"value": 2}
+
+  - id: "intck-business-day-2026-12-24-2026-12-29-usny"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('business_day', '2026-12-24', '2026-12-29', 'USNY')"
+    expect: {"value": 2}
+
+  - id: "intck-business-day-2026-12-24-2026-12-29-usny-gblo"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Boxing Day (observed on the 28th) is a holiday in GBLO."
+    expr: "intck('business_day', '2026-12-24', '2026-12-29', 'USNY+GBLO')"
+    expect: {"value": 1}
+
+  - id: "intck-month-nope-today"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('month', $.NOPE, today())"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "intck-day-mtm-today"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    expr: "intck('day', $.MTM, today())"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-intck-fortnight-trade-date-today"
+    kind: "expr-error"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Message contains: \"intck: unknown interval 'fortnight'\"."
+    expr: "intck('fortnight', $.TRADE_DATE, today())"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('fortnight', $.TRADE_DATE, today())': "}]}
+
+  - id: "bad-intck-month-trade-date-today-usny"
+    kind: "expr-error"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Message contains: \"a calendar counts only 'business_day'\"."
+    expr: "intck('month', $.TRADE_DATE, today(), 'USNY')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('month', $.TRADE_DATE, today(), 'USNY')': "}]}
+
+  - id: "bad-intck-business-day-trade-date-today-xxny"
+    kind: "expr-error"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Message contains: 'unknown calendar XXNY'."
+    expr: "intck('business_day', $.TRADE_DATE, today(), 'XXNY')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('business_day', $.TRADE_DATE, today(), 'XXNY')': "}]}
+
+  - id: "intck-month-x-today"
+    kind: "expr"
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Message contains: 'intck'; \"'x' is not a date\"."
+    expr: "intck('month', 'x', today())"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "is-business-day-2026-11-26"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "Thanksgiving, USNY by default."
+    expr: "is_business_day('2026-11-26')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-business-day-2026-11-27"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    expr: "is_business_day('2026-11-27')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-business-day-2026-11-28"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "A Saturday."
+    expr: "is_business_day('2026-11-28')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-business-day-2026-07-03-usny"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "July 4th on a Saturday, kept the Friday."
+    expr: "is_business_day('2026-07-03', 'USNY')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-business-day-2026-12-28-gblo"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "Boxing Day on a Saturday, kept the Monday."
+    expr: "is_business_day('2026-12-28', 'GBLO')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-business-day-2026-12-28-usny"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    expr: "is_business_day('2026-12-28', 'USNY')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-business-day-2026-12-28-usny-gblo"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "Calendar names are case-insensitive and combine with +."
+    expr: "is_business_day('2026-12-28', 'usny+gblo')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-business-day-2024-02-29"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "A leap day, a Thursday."
+    expr: "is_business_day('2024-02-29')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-business-day-2026-10-16t10-00-00z"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    expr: "is_business_day('2026-10-16T10:00:00Z')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-business-day-maturity-date-usny"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    expr: "is_business_day($.MATURITY_DATE, 'USNY')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-business-day-nope"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    expr: "is_business_day($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "is-business-day-mtm"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    expr: "is_business_day($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-is-business-day-2026-11-26-nope"
+    kind: "expr-error"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "Message contains: 'unknown calendar NOPE'."
+    expr: "is_business_day('2026-11-26', 'NOPE')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'is_business_day('2026-11-26', 'NOPE')': "}]}
+
+  - id: "is-business-day-2026-11-26-trade-id"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "Message contains: 'is_business_day'; 'unknown calendar MX-20000001'."
+    expr: "is_business_day('2026-11-26', $.TRADE_ID)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "is-business-day-thursday"
+    kind: "expr"
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "Message contains: 'is_business_day'; \"'Thursday' is not a date\"."
+    expr: "is_business_day('Thursday')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "date-2026-10-16"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "date(2026, 10, 16)"
+    expect: {"value": "2026-10-16"}
+
+  - id: "date-2008-14-2"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Months past 12 carry over, as Excel's."
+    expr: "date(2008, 14, 2)"
+    expect: {"value": "2009-02-02"}
+
+  - id: "date-2008-1-35"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "date(2008, 1, 35)"
+    expect: {"value": "2008-02-04"}
+
+  - id: "date-2008-3-2"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "date(2008, -3, 2)"
+    expect: {"value": "2007-09-02"}
+
+  - id: "date-2026-10-16t09-30-00z"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "date('2026-10-16T09:30:00Z')"
+    expect: {"value": "2026-10-16"}
+
+  - id: "year-trade-date"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "year($.TRADE_DATE)"
+    expect: {"value": 2025}
+
+  - id: "quarter-trade-date"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "quarter($.TRADE_DATE)"
+    expect: {"value": 4}
+
+  - id: "month-trade-date"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "month($.TRADE_DATE)"
+    expect: {"value": 11}
+
+  - id: "day-trade-date"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "day($.TRADE_DATE)"
+    expect: {"value": 21}
+
+  - id: "week-2027-01-01"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "ISO weeks (ISOWEEKNUM)."
+    expr: "week('2027-01-01')"
+    expect: {"value": 53}
+
+  - id: "week-2012-03-09"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "week('2012-03-09')"
+    expect: {"value": 10}
+
+  - id: "hour-2026-10-16t09-30-15z"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "hour('2026-10-16T09:30:15Z')"
+    expect: {"value": 9}
+
+  - id: "minute-2026-10-16t09-30-15z"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "minute('2026-10-16T09:30:15Z')"
+    expect: {"value": 30}
+
+  - id: "second-2026-10-16t09-30-15z"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "second('2026-10-16T09:30:15Z')"
+    expect: {"value": 15}
+
+  - id: "hour-18-45"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "hour('18:45')"
+    expect: {"value": 18}
+
+  - id: "hour-2026-10-16"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "hour('2026-10-16')"
+    expect: {"value": 0}
+
+  - id: "weekday-2008-02-14"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "WEEKDAY: Thursday."
+    expr: "weekday('2008-02-14')"
+    expect: {"value": 5}
+
+  - id: "weekday-2008-02-14-2"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "weekday('2008-02-14', 2)"
+    expect: {"value": 4}
+
+  - id: "weekday-2008-02-14-3"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "weekday('2008-02-14', 3)"
+    expect: {"value": 3}
+
+  - id: "weekday-2008-02-14-14"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "A week from Thursday."
+    expr: "weekday('2008-02-14', 14)"
+    expect: {"value": 1}
+
+  - id: "days360-2011-01-30-2011-12-31"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "days360('2011-01-30', '2011-12-31')"
+    expect: {"value": 330}
+
+  - id: "days360-2011-01-30-2011-12-31-true"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "days360('2011-01-30', '2011-12-31', true)"
+    expect: {"value": 330}
+
+  - id: "days360-2011-01-01-2011-01-31"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "days360('2011-01-01', '2011-01-31')"
+    expect: {"value": 30}
+
+  - id: "days360-2011-01-01-2011-01-31-true"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "days360('2011-01-01', '2011-01-31', true)"
+    expect: {"value": 29}
+
+  - id: "datedif-2001-01-01-2003-01-01-y"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "datedif('2001-01-01', '2003-01-01', 'Y')"
+    expect: {"value": 2}
+
+  - id: "datedif-2001-06-01-2002-08-15-d"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "datedif('2001-06-01', '2002-08-15', 'D')"
+    expect: {"value": 440}
+
+  - id: "datedif-2001-06-01-2002-08-15-yd"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "datedif('2001-06-01', '2002-08-15', 'YD')"
+    expect: {"value": 75}
+
+  - id: "datedif-2001-06-01-2002-08-15-ym"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "datedif('2001-06-01', '2002-08-15', 'YM')"
+    expect: {"value": 2}
+
+  - id: "datedif-2001-06-01-2002-08-15-md"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "datedif('2001-06-01', '2002-08-15', 'MD')"
+    expect: {"value": 14}
+
+  - id: "datedif-2001-06-01-2002-08-15-m"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "datedif('2001-06-01', '2002-08-15', 'M')"
+    expect: {"value": 14}
+
+  - id: "shift-date-2026-10-16-1"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Friday + 1 business day."
+    expr: "shift_date('2026-10-16', 1)"
+    expect: {"value": "2026-10-19"}
+
+  - id: "shift-date-2026-11-25-1-business-day-usny"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Over Thanksgiving."
+    expr: "shift_date('2026-11-25', 1, 'business_day', 'USNY')"
+    expect: {"value": "2026-11-27"}
+
+  - id: "shift-date-2026-10-19-1"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "shift_date('2026-10-19', -1)"
+    expect: {"value": "2026-10-16"}
+
+  - id: "shift-date-2026-01-31-1-month"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "shift_date('2026-01-31', 1, 'month')"
+    expect: {"value": "2026-02-28"}
+
+  - id: "shift-date-2026-10-16-2-quarter"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "shift_date('2026-10-16', 2, 'quarter')"
+    expect: {"value": "2027-04-16"}
+
+  - id: "date-2026-10"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Message contains: 'date'; 'date(2026, 10, 16)'."
+    expr: "date(2026, 10)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "date-16-10-2026"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Message contains: 'date'; 'is not a date'."
+    expr: "date('16/10/2026')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "hour-noon"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Message contains: 'hour'; 'a timestamp or a time'."
+    expr: "hour('noon')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "weekday-2008-02-14-4"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Message contains: 'weekday'; 'type 4'."
+    expr: "weekday('2008-02-14', 4)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "datedif-2002-01-01-2001-01-01-y"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Message contains: 'datedif'; 'before the start'."
+    expr: "datedif('2002-01-01', '2001-01-01', 'Y')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "shift-date-2026-10-16-1-month-usny"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    note: "Message contains: 'shift_date'; \"a calendar moves only 'business_day'\"."
+    expr: "shift_date('2026-10-16', 1, 'month', 'USNY')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "year-nope"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "year($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "month-mtm"
+    kind: "expr"
+    source: "MoreScalarsTest#dateParts"
+    expr: "month($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "year-trade-date-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "year($.TRADE_DATE)"
+    expect: {"value": 2025}
+
+  - id: "quarter-trade-date-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "quarter($.TRADE_DATE)"
+    expect: {"value": 4}
+
+  - id: "month-trade-date-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "month($.TRADE_DATE)"
+    expect: {"value": 11}
+
+  - id: "week-2026-01-01"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "week('2026-01-01')"
+    expect: {"value": 1}
+
+  - id: "week-2027-01-01-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "week('2027-01-01')"
+    expect: {"value": 53}
+
+  - id: "day-trade-date-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "day($.TRADE_DATE)"
+    expect: {"value": 21}
+
+  - id: "date-2026-10-09"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "date('2026-10-09')"
+    expect: {"value": "2026-10-09"}
+
+  - id: "timestamp-2026-10-09-09-30"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "timestamp('2026-10-09 09:30')"
+    expect: {"value": "2026-10-09T09:30"}
+
+  - id: "round-2-5"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    note: "A half away from zero."
+    expr: "round(-2.5)"
+    expect: {"value": -3}
+
+  - id: "business-days-between-2026-10-19-2026-10-16"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "business_days_between('2026-10-19', '2026-10-16')"
+    expect: {"value": -1}
+
+  - id: "year-soon"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    note: "Message contains: 'year'; 'is not a date'."
+    expr: "year('soon')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "bad-shift-date-2026-10-16-1-fortnight"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#theDateParts"
+    note: "Message contains: 'unit is one of'."
+    expr: "shift_date('2026-10-16', 1, 'fortnight')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'shift_date('2026-10-16', 1, 'fortnight')': "}]}
+
+  - id: "bad-shift-date-2026-10-16-1-unit-fortnight"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#theDateParts"
+    note: "Message contains: 'unit is one of'."
+    expr: "shift_date('2026-10-16', 1, unit = 'fortnight')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'shift_date('2026-10-16', 1, unit = 'fortnight')': "}]}
+
+  - id: "year-mtm"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theDateParts"
+    expr: "year($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "shift-date-2026-10-16-1-unit-day"
+    kind: "expr"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    expr: "shift_date('2026-10-16', 1, unit = 'day')"
+    expect: {"value": "2026-10-17"}
+
+  - id: "shift-date-2026-10-16-1-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Business days skip the weekend."
+    expr: "shift_date('2026-10-16', 1)"
+    expect: {"value": "2026-10-19"}
+
+  - id: "shift-date-2026-10-16-1-calendar-weekends"
+    kind: "expr"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    expr: "shift_date('2026-10-16', 1, calendar = 'WEEKENDS')"
+    expect: {"value": "2026-10-19"}
+
+  - id: "business-days-between-2026-10-16-2026-10-19-calendar-wee"
+    kind: "expr"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    expr: "business_days_between('2026-10-16', '2026-10-19', calendar = 'WEEKENDS')"
+    expect: {"value": 1}
+
+  - id: "asof"
+    kind: "expr"
+    source: "FoldedSyntaxTest#todayIsReadAsAsOf"
+    note: "The as-of date the host sets (SPEC 4.10 rule 8)."
+    expr: "asof()"
+    expect: {"value": "2026-10-16", "type": "text"}
+
+  - id: "today"
+    kind: "expr"
+    source: "FoldedSyntaxTest#todayIsReadAsAsOf"
+    note: "Old spelling of asof() (SPEC 5.10)."
+    expr: "today()"
+    expect: {"value": "2026-10-16", "type": "text"}
+
+  - id: "asof-without-a-date-is-empty"
+    kind: "expr"
+    source: "FoldedSyntaxTest#todayIsReadAsAsOf"
+    note: "No as-of date set by the host: empty. A case never reads a clock."
+    given: {"record": {}}
+    expr: "asof()"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "days-today-events-2-event-date"
+    kind: "expr"
+    source: "ElTest#groupSumsByAKeyAndDaysCountFromTheViewsBusinessDate"
+    given: {"record": {"EVENTS": [{"EVENT_DATE": "2026-10-20", "AMOUNT": "-1500.5", "LEG": {"ID": 1}}, {"EVENT_DATE": "2026-10-20", "AMOUNT": 2000, "LEG": {"ID": 2}}, {"EVENT_DATE": "2026-11-03", "AMOUNT": "", "LEG": {"ID": 1}}, {"EVENT_DATE": "", "AMOUNT": 7}, {"EVENT_DATE": "2027-01-15", "AMOUNT": "x"}]}, "today": "2026-10-16"}
+    expr: "days(today(), $.EVENTS[2].EVENT_DATE)"
+    expect: {"value": 18}
+
+  - id: "size-events-days-today-event-date-0-days-today-event-dat"
+    kind: "expr"
+    source: "ElTest#groupSumsByAKeyAndDaysCountFromTheViewsBusinessDate"
+    note: "Events within the next 7 days of the business date."
+    given: {"record": {"EVENTS": [{"EVENT_DATE": "2026-10-20", "AMOUNT": "-1500.5", "LEG": {"ID": 1}}, {"EVENT_DATE": "2026-10-20", "AMOUNT": 2000, "LEG": {"ID": 2}}, {"EVENT_DATE": "2026-11-03", "AMOUNT": "", "LEG": {"ID": 1}}, {"EVENT_DATE": "", "AMOUNT": 7}, {"EVENT_DATE": "2027-01-15", "AMOUNT": "x"}]}, "today": "2026-10-16"}
+    expr: "size($.EVENTS[?days(today(), @.EVENT_DATE) >= 0 && days(today(), @.EVENT_DATE) <= 7])"
+    expect: {"value": 2}
+
+  - id: "days-2026-10-16t09-00-00z-soon"
+    kind: "expr"
+    source: "ElTest#groupSumsByAKeyAndDaysCountFromTheViewsBusinessDate"
+    given: {"record": {"EVENTS": [{"EVENT_DATE": "2026-10-20", "AMOUNT": "-1500.5", "LEG": {"ID": 1}}, {"EVENT_DATE": "2026-10-20", "AMOUNT": 2000, "LEG": {"ID": 2}}, {"EVENT_DATE": "2026-11-03", "AMOUNT": "", "LEG": {"ID": 1}}, {"EVENT_DATE": "", "AMOUNT": 7}, {"EVENT_DATE": "2027-01-15", "AMOUNT": "x"}]}, "today": "2026-10-16"}
+    expr: "days('2026-10-16T09:00:00Z', 'soon')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "today-outside-a-view-is-empty"
+    kind: "expr"
+    source: "ElTest#groupSumsByAKeyAndDaysCountFromTheViewsBusinessDate"
+    note: "Outside a view (no as-of date): empty."
+    given: {"record": {"EVENTS": [{"EVENT_DATE": "2026-10-20", "AMOUNT": "-1500.5", "LEG": {"ID": 1}}, {"EVENT_DATE": "2026-10-20", "AMOUNT": 2000, "LEG": {"ID": 2}}, {"EVENT_DATE": "2026-11-03", "AMOUNT": "", "LEG": {"ID": 1}}, {"EVENT_DATE": "", "AMOUNT": 7}, {"EVENT_DATE": "2027-01-15", "AMOUNT": "x"}]}}
+    expr: "today()"
+    expect: {"value": null, "type": "empty"}

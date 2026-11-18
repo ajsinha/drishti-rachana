@@ -1,0 +1,1097 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/math
+since: "1.0"
+profile: core
+verified: false
+description: "Math functions: rounding in decimal, multiples, remainders, powers, logarithms, trigonometry, radix, counting."
+given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+cases:
+
+  - id: "round-up-2-671-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_up(2.671, 2)"
+    expect: {"value": 2.68, "type": "decimal"}
+
+  - id: "round-up-2-671-2-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_up(-2.671, 2)"
+    expect: {"value": -2.68, "type": "decimal"}
+
+  - id: "round-up-3-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_up(3.2)"
+    expect: {"value": 4}
+
+  - id: "round-up-31415-92654-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_up(31415.92654, -2)"
+    expect: {"value": 31500}
+
+  - id: "round-up-quantity-100"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_up($.QUANTITY / 100)"
+    expect: {"value": 2420000, "reads": ["$.QUANTITY"]}
+
+  - id: "round-down-2-679-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_down(2.679, 2)"
+    expect: {"value": 2.67, "type": "decimal"}
+
+  - id: "round-down-2-679-2-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_down(-2.679, 2)"
+    expect: {"value": -2.67, "type": "decimal"}
+
+  - id: "round-down-1234-5-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_down(1234.5, -2)"
+    expect: {"value": 1200}
+
+  - id: "round-up-0-1-0-2-1"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    note: "A double argument is first read to 15 significant digits (SPEC 4.10 rule 7); binary noise is not rounded up."
+    expr: "round_up(0.1 + 0.2, 1)"
+    expect: {"value": 0.3, "type": "decimal"}
+
+  - id: "round-down-2-675-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    expr: "round_down(2.675, 2)"
+    expect: {"value": 2.67, "type": "decimal"}
+
+  - id: "round-up-textnum"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    note: "Number-like text reads as a number."
+    expr: "round_up($.TEXTNUM)"
+    expect: {"value": 13}
+
+  - id: "fmt-round-down-1234-567-0-amount0"
+    kind: "expr"
+    source: "MathFunctionsTest#roundUpAndDownWorkInDecimal"
+    tags: ["format-table"]
+    note: "Needs the shared format table's amount0 (SPEC 2.6)."
+    expr: "fmt(round_down(1234.567, 0), 'amount0')"
+    expect: {"value": "1,234"}
+
+  - id: "round-up-nope-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    expr: "round_up($.NOPE, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "round-up-2-5-nope"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    expr: "round_up(2.5, $.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "round-up-quantity-nope"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    note: "A missing field times a number is empty, which a function passes on as empty."
+    expr: "round_up($.QUANTITY * $.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "round-up-mtm-2"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    expr: "round_up($.MTM, 2)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "round-down-1-mtm"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    expr: "round_down(1, $.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "round-up-abc"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    note: "Message contains: 'round_up'; \"'abc' is not a number\"."
+    expr: "round_up('abc')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "round-down-legs-1"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    note: "Message contains: 'round_down'; 'a list is not a number'."
+    expr: "round_down($.LEGS, 1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "round-up-true"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    note: "Message contains: 'true is not a number'."
+    expr: "round_up(true)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "round-up-1-200"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    note: "Message contains: 'places 200'."
+    expr: "round_up(1, 200)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "round-up-2-5-1-9"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    note: "Places are cut to a whole number."
+    expr: "round_up(2.5, 1.9)"
+    expect: {"value": 2.5, "type": "decimal"}
+
+  - id: "round-down-0"
+    kind: "expr"
+    source: "MathFunctionsTest#roundingEdgesNullsMasksAndTypes"
+    expr: "round_down(0)"
+    expect: {"value": 0}
+
+  - id: "mround-10-3"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "mround(10, 3)"
+    expect: {"value": 9}
+
+  - id: "mround-10-3-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "mround(-10, -3)"
+    expect: {"value": -9}
+
+  - id: "mround-1-3-0-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "mround(1.3, 0.2)"
+    expect: {"value": 1.4}
+
+  - id: "mround-7-5-5"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    note: "A half goes away from zero."
+    expr: "mround(7.5, 5)"
+    expect: {"value": 10}
+
+  - id: "mround-price-0-25"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "mround($.PRICE, 0.25)"
+    expect: {"value": 0}
+
+  - id: "mround-5-0"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "mround(5, 0)"
+    expect: {"value": 0}
+
+  - id: "mround-5-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    note: "Message contains: 'mround'; 'different signs'."
+    expr: "mround(5, -2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "mround-nope-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "mround($.NOPE, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "mround-mtm-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "mround($.MTM, 2)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "ceiling-2-5"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "ceiling(2.5)"
+    expect: {"value": 3}
+
+  - id: "ceiling-2-5-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "ceiling(2.5, 2)"
+    expect: {"value": 4}
+
+  - id: "ceiling-2-5-2-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    note: "Towards +infinity, as CEILING.MATH."
+    expr: "ceiling(-2.5, 2)"
+    expect: {"value": -2}
+
+  - id: "ceiling-0-234-0-01"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "ceiling(0.234, 0.01)"
+    expect: {"value": 0.24}
+
+  - id: "ceiling-size-legs-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "ceiling(size($.LEGS), 2)"
+    expect: {"value": 2}
+
+  - id: "ceiling-5-0"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "ceiling(5, 0)"
+    expect: {"value": 0}
+
+  - id: "floor-2-5"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "floor(2.5)"
+    expect: {"value": 2}
+
+  - id: "floor-2-5-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "floor(-2.5)"
+    expect: {"value": -3}
+
+  - id: "floor-2-5-2-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "floor(-2.5, 2)"
+    expect: {"value": -4}
+
+  - id: "floor-1-58-0-1"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "floor(1.58, 0.1)"
+    expect: {"value": 1.5}
+
+  - id: "floor-7-2"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    note: "The multiple's sign does not matter."
+    expr: "floor(7, -2)"
+    expect: {"value": 6}
+
+  - id: "floor-x"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    note: "Message contains: 'floor'; \"'x' is not a number\"."
+    expr: "floor('x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "ceiling-nope"
+    kind: "expr"
+    source: "MathFunctionsTest#mroundCeilingAndFloorGoToMultiples"
+    expr: "ceiling($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "mod-3-2"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    expr: "mod(3, 2)"
+    expect: {"value": 1}
+
+  - id: "mod-3-2-2"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    expr: "mod(-3, 2)"
+    expect: {"value": 1}
+
+  - id: "mod-3-2-3"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    expr: "mod(3, -2)"
+    expect: {"value": -1}
+
+  - id: "mod-3-2-4"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    expr: "mod(-3, -2)"
+    expect: {"value": -1}
+
+  - id: "mod-5-5-2"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    expr: "mod(5.5, 2)"
+    expect: {"value": 1.5}
+
+  - id: "mod-1-0"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    note: "A division by zero is empty, as 1 % 0."
+    expr: "mod(1, 0)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "mod-nope-2"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    expr: "mod($.NOPE, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "mod-mtm-7"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    expr: "mod($.MTM, 7)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "mod-1-x"
+    kind: "expr"
+    source: "MathFunctionsTest#modTakesTheSignOfTheDivisor"
+    note: "Message contains: 'mod'; \"'x' is not a number\"."
+    expr: "mod(1, 'x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "power-2-10"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "power(2, 10)"
+    expect: {"value": 1024}
+
+  - id: "power-1-1-2"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "Decimal: not 1.2100000000000002 (SPEC 4.10 rule 7)."
+    expr: "power(1.1, 2)"
+    expect: {"value": 1.21}
+
+  - id: "power-2-2"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "power(2, -2)"
+    expect: {"value": 0.25}
+
+  - id: "power-4-0-5"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "power(4, 0.5)"
+    expect: {"value": 2}
+
+  - id: "power-10-0"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "power(10, 0)"
+    expect: {"value": 1}
+
+  - id: "power-0-1"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "A division by zero."
+    expr: "power(0, -1)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "power-8-1-3"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "Message contains: 'power'; 'not a real number'."
+    expr: "power(-8, 1 / 3)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "power-10-400"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "Message contains: 'power'; 'too large'."
+    expr: "power(10, 400)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "sqrt-16"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "sqrt(16)"
+    expect: {"value": 4}
+
+  - id: "sqrt-0-0144"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "sqrt(0.0144)"
+    expect: {"value": 0.12, "type": "decimal"}
+
+  - id: "sqrt-2"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "The test compares the decimal 1.414213562373095 by value."
+    expr: "sqrt(2)"
+    expect: {"value": 1.414213562373095, "type": "number", "tolerance": {"abs": 1.0e-15}}
+
+  - id: "sqrt-4"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "Message contains: 'sqrt'; '-4 is negative'."
+    expr: "sqrt(-4)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "exp-0"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "exp(0)"
+    expect: {"value": 1}
+
+  - id: "exp-1"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "exp(1)"
+    expect: {"value": 2.718281828459045, "type": "number", "tolerance": {"abs": 1.0e-15}}
+
+  - id: "ln-1"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "ln(1)"
+    expect: {"value": 0}
+
+  - id: "log10-1000"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "log10(1000)"
+    expect: {"value": 3}
+
+  - id: "ln-0"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "Message contains: 'ln'; '0 is not above zero'."
+    expr: "ln(0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "log10-1"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "Message contains: 'log10'; '-1 is not above zero'."
+    expr: "log10(-1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "sqrt-nope"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "sqrt($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "power-nope-2"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "power($.NOPE, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "exp-mtm"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "exp($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "power-2-mtm"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    expr: "power(2, $.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "exp-e"
+    kind: "expr"
+    source: "MathFunctionsTest#powersRootsAndLogarithms"
+    note: "Message contains: 'exp'; \"'e' is not a number\"."
+    expr: "exp('e')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "sign-5"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "sign(-5)"
+    expect: {"value": -1}
+
+  - id: "sign-0"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "sign(0)"
+    expect: {"value": 0}
+
+  - id: "sign-0-001"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "sign(0.001)"
+    expect: {"value": 1}
+
+  - id: "sign-quantity"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "sign($.QUANTITY)"
+    expect: {"value": 1}
+
+  - id: "sign-nope"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "sign($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "sign-mtm"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "sign($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "sign-up"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    note: "Message contains: 'sign'; \"'up' is not a number\"."
+    expr: "sign('up')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "clamp-5-0-1"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "clamp(5, 0, 1)"
+    expect: {"value": 1}
+
+  - id: "clamp-0-5-0-1"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "clamp(-0.5, 0, 1)"
+    expect: {"value": 0}
+
+  - id: "clamp-0-25-0-1"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "clamp(0.25, 0, 1)"
+    expect: {"value": 0.25}
+
+  - id: "clamp-nope-0-1"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "clamp($.NOPE, 0, 1)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "clamp-mtm-0-1"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    expr: "clamp($.MTM, 0, 1)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "clamp-1-2-0"
+    kind: "expr"
+    source: "MathFunctionsTest#signAndClamp"
+    note: "Message contains: 'clamp'; 'the low bound 2 is above the high bound 0'."
+    expr: "clamp(1, 2, 0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "least-3-1-5-7"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    expr: "least(3, 1.5, '7')"
+    expect: {"value": 1.5}
+
+  - id: "greatest-3-1-5-7"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    expr: "greatest(3, 1.5, '7')"
+    expect: {"value": 7}
+
+  - id: "least-maturity-date-trade-date"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    expr: "least($.MATURITY_DATE, $.TRADE_DATE)"
+    expect: {"value": "2025-11-21", "type": "text"}
+
+  - id: "greatest-maturity-date-today"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    expr: "greatest($.MATURITY_DATE, today())"
+    expect: {"value": "2032-06-25", "type": "text"}
+
+  - id: "least-nope-2"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    note: "Empty arguments are skipped."
+    expr: "least($.NOPE, 2)"
+    expect: {"value": 2}
+
+  - id: "least-nope-strategy"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    expr: "least($.NOPE, $.STRATEGY)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "greatest-5"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    expr: "greatest(5)"
+    expect: {"value": 5}
+
+  - id: "least-mtm-1"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    expr: "least($.MTM, 1)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "greatest-3-x"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    note: "Message contains: 'greatest'; \"'x' is not a number\"."
+    expr: "greatest(3, 'x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "least-true-false"
+    kind: "expr"
+    source: "MathFunctionsTest#leastAndGreatestCompareNumbersOrDates"
+    note: "Message contains: 'least'; 'true is not a number, a date or text'."
+    expr: "least(true, false)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "max-3-7-x"
+    kind: "expr"
+    source: "MathFunctionsTest#minAndMaxKeepTheirResults"
+    note: "The old spelling skips what is not a number."
+    expr: "max(3, '7', 'x')"
+    expect: {"value": 7}
+
+  - id: "min-price-0-05"
+    kind: "expr"
+    source: "MathFunctionsTest#minAndMaxKeepTheirResults"
+    expr: "min($.PRICE, 0.05)"
+    expect: {"value": 0.040829}
+
+  - id: "min-a-b"
+    kind: "expr"
+    source: "MathFunctionsTest#minAndMaxKeepTheirResults"
+    expr: "min('a', 'b')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "bad-round-up"
+    kind: "expr-error"
+    source: "MathFunctionsTest#writtenArgumentsAreCountedWhenCompiling"
+    note: "Message contains: 'round_up takes 1-2 argument(s), got 0'."
+    expr: "round_up()"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round_up()': "}]}
+
+  - id: "bad-clamp-1-2"
+    kind: "expr-error"
+    source: "MathFunctionsTest#writtenArgumentsAreCountedWhenCompiling"
+    note: "Message contains: 'clamp takes 3 argument(s), got 2'."
+    expr: "clamp(1, 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'clamp(1, 2)': "}]}
+
+  - id: "round-2-15-1"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    note: "ROUND: half away from zero."
+    expr: "round(2.15, 1)"
+    expect: {"value": 2.2}
+
+  - id: "round-2-149-1"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round(2.149, 1)"
+    expect: {"value": 2.1}
+
+  - id: "round-1-475-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round(-1.475, 2)"
+    expect: {"value": -1.48}
+
+  - id: "round-21-5-1"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round(21.5, -1)"
+    expect: {"value": 20}
+
+  - id: "round-626-3-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round(626.3, -3)"
+    expect: {"value": 1000}
+
+  - id: "round-2-675-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    note: "Decimal, never 2.67 from binary."
+    expr: "round(2.675, 2)"
+    expect: {"value": 2.68}
+
+  - id: "round-2-5"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round(2.5)"
+    expect: {"value": 3}
+
+  - id: "round-sig-123456-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round_sig(123456, 2)"
+    expect: {"value": 120000}
+
+  - id: "round-sig-0-0012345-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round_sig(0.0012345, 3)"
+    expect: {"value": 0.00123}
+
+  - id: "round-sig-0-0012355-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round_sig(-0.0012355, 3)"
+    expect: {"value": -0.00124}
+
+  - id: "round-sig-0-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round_sig(0, 3)"
+    expect: {"value": 0}
+
+  - id: "fact-5"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "fact(5)"
+    expect: {"value": 120}
+
+  - id: "fact-1-9"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "fact(1.9)"
+    expect: {"value": 1}
+
+  - id: "fact-0"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "fact(0)"
+    expect: {"value": 1}
+
+  - id: "fact-25"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    note: "Exact past a long."
+    expr: "fact(25)"
+    expect: {"value": {"$dec": "15511210043330985984000000"}}
+
+  - id: "combin-8-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "combin(8, 2)"
+    expect: {"value": 28}
+
+  - id: "permut-100-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "permut(100, 3)"
+    expect: {"value": 970200}
+
+  - id: "permut-3-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "permut(3, 2)"
+    expect: {"value": 6}
+
+  - id: "gcd-5-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "gcd(5, 2)"
+    expect: {"value": 1}
+
+  - id: "gcd-24-36"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "gcd(24, 36)"
+    expect: {"value": 12}
+
+  - id: "gcd-7-1"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "gcd(7, 1)"
+    expect: {"value": 1}
+
+  - id: "gcd-5-0"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "gcd(5, 0)"
+    expect: {"value": 5}
+
+  - id: "lcm-5-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "lcm(5, 2)"
+    expect: {"value": 10}
+
+  - id: "lcm-24-36"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "lcm(24, 36)"
+    expect: {"value": 72}
+
+  - id: "even-1-5"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "even(1.5)"
+    expect: {"value": 2}
+
+  - id: "even-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "even(3)"
+    expect: {"value": 4}
+
+  - id: "even-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "even(2)"
+    expect: {"value": 2}
+
+  - id: "even-1"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "even(-1)"
+    expect: {"value": -2}
+
+  - id: "odd-1-5"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "odd(1.5)"
+    expect: {"value": 3}
+
+  - id: "odd-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "odd(3)"
+    expect: {"value": 3}
+
+  - id: "odd-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "odd(2)"
+    expect: {"value": 3}
+
+  - id: "odd-1"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "odd(-1)"
+    expect: {"value": -1}
+
+  - id: "odd-2-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "odd(-2)"
+    expect: {"value": -3}
+
+  - id: "odd-0"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "odd(0)"
+    expect: {"value": 1}
+
+  - id: "fact-1"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    note: "Message contains: 'fact'; 'not from 0'."
+    expr: "fact(-1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "combin-2-3"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    note: "Message contains: 'combin'; 'more than n'."
+    expr: "combin(2, 3)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "gcd-1-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    note: "Message contains: 'gcd'; 'negative'."
+    expr: "gcd(-1, 2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "round-nope-2"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round($.NOPE, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "round-mtm"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    expr: "round($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "round-x"
+    kind: "expr"
+    source: "MoreScalarsTest#roundingAndWholeNumbersInDecimal"
+    note: "Message contains: 'round'; \"'x' is not a number\"."
+    expr: "round('x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "log-10"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "log(10)"
+    expect: {"value": 1}
+
+  - id: "log-8-2"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "log(8, 2)"
+    expect: {"value": 3}
+
+  - id: "log-86-2-7182818"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "log(86, 2.7182818)"
+    expect: {"value": 4.4543473, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "log-0"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    note: "Message contains: 'log'; 'not above zero'."
+    expr: "log(0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "log-8-1"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    note: "Message contains: 'log'; 'base'."
+    expr: "log(8, 1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "pi"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "pi()"
+    expect: {"value": 3.141592653589793, "type": "number"}
+
+  - id: "sin-pi-6"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "sin(pi() / 6)"
+    expect: {"value": 0.5, "type": "number", "tolerance": {"abs": 1.0e-15}}
+
+  - id: "cos-radians-60"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "cos(radians(60))"
+    expect: {"value": 0.5, "type": "number", "tolerance": {"abs": 1.0e-15}}
+
+  - id: "degrees-pi"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "degrees(pi())"
+    expect: {"value": 180}
+
+  - id: "atan2-1-1"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    note: "ATAN2(x, y), Excel's argument order."
+    expr: "atan2(1, 1)"
+    expect: {"value": 0.785398163, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "atan2-1-1-2"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "atan2(-1, -1)"
+    expect: {"value": -2.35619449, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "tanh-0-5"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "tanh(0.5)"
+    expect: {"value": 0.462117157, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "asin-2"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    note: "Message contains: 'asin'; 'not from −1 to 1'."
+    expr: "asin(2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "atan2-0-0"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    note: "Message contains: 'atan2'; 'no angle'."
+    expr: "atan2(0, 0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "base-7-2"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "base(7, 2)"
+    expect: {"value": "111"}
+
+  - id: "base-100-16"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "base(100, 16)"
+    expect: {"value": "64"}
+
+  - id: "base-15-2-10"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "base(15, 2, 10)"
+    expect: {"value": "0000001111"}
+
+  - id: "decimal-ff-16"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "decimal('FF', 16)"
+    expect: {"value": 255}
+
+  - id: "decimal-111-2"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "decimal(111, 2)"
+    expect: {"value": 7}
+
+  - id: "decimal-zap-36"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    expr: "decimal('zap', 36)"
+    expect: {"value": 45745}
+
+  - id: "decimal-12-2"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    note: "Message contains: 'decimal'; 'radix 2'."
+    expr: "decimal('12', 2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "base-5-40"
+    kind: "expr"
+    source: "MoreScalarsTest#logarithmsTrigonometryAndRadix"
+    note: "Message contains: 'base'; 'radix 40'."
+    expr: "base(5, 40)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "bad-quantity-2"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    note: "Message contains: \"'**' is not Rachana: write power(x, y)\"."
+    expr: "$.QUANTITY ** 2"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '$.QUANTITY ** 2': ", "expr": {"start": 11}}]}
+
+  - id: "bad-quantity-7"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    note: "Message contains: \"'//' is not Rachana: write floor(x / y)\"."
+    expr: "$.QUANTITY // 7"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '$.QUANTITY // 7': "}]}
+
+  - id: "power-1-1-2-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    expr: "power(1.1, 2)"
+    expect: {"value": 1.21, "type": "decimal"}
+
+  - id: "floor-7-2-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    expr: "floor(-7 / 2)"
+    expect: {"value": -4}
+
+  - id: "power-strategy-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    expr: "power($.STRATEGY, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "floor-mtm"
+    kind: "expr"
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    expr: "floor($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}

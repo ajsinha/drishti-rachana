@@ -1,0 +1,542 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/distributions
+since: "1.0"
+profile: core
+verified: false
+description: "Statistical distributions, matched to Excel's documented examples; results are real numbers with a tolerance."
+given: {"record": {"NPV": [-10000, 3000, 4200, 6800], "XF": [-10000, 2750, 4250, 3250, 2750], "XD": ["2008-01-01", "2008-03-01", "2008-10-30", "2009-02-15", "2009-04-01"], "IRR1": [-70000, 12000, 15000, 18000, 21000], "IRR2": [-70000, 12000, 15000, 18000, 21000, 26000], "IRR3": [-70000, 12000, 15000], "MIRR": [-120000, 39000, 30000, 21000, 37000, 46000], "FVS": [0.09, 0.11, 0.1], "POS": [1, 2, 3], "GAP": [-100, null, 50], "TXT": [-100, "abc"], "BACK": ["2008-01-01", "2007-12-31"], "BOND": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 104], "TIMES": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0, 20.5, 21.0, 21.5, 22.0, 22.5, 23.0, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.0, 27.5, 28.0, 28.5, 29.0, 29.5], "BDATES": ["2027-10-16", "2028-10-16"], "B2": [5, 105], "T12": [1, 2], "A": [4, 8, 6, -1, -2, -3, -1, 3, 4, 5], "OUT": [57, 59, 60, 100, 59, 58, 57, 58, 300, 61, 62, 60, 62, 58, 57], "SQ": [1, 4, 9, 16, 25], "P": [3, 2, 1], "PX": [5, 7, 9], "B": [2, 4, -1, 10, 6, 3, 0, -16], "ONE23": [1, 2, 3], "XS": [1, 2, 3], "VS": [10, 20, 30], "GAPS": [null, 2, null, 4, null], "QX": [0, 1.5, 2.5, 4], "PFX": [0, 1, 2, 3, 4], "PFY": [1, 0, 3, 10, 21], "SAME": [2, 2, 2], "S1": ["USD", "EUR", 1, 2], "S2": ["EUR", 2, "GBP", 2.0], "EMPTY": [], "TRADES": [{"DESK": "B", "N": 3}, {"DESK": "A", "N": 2}, {"DESK": "B", "N": 1}, {"DESK": "A", "N": 5}, {"N": 0}], "MTM": {"$masked": true}, "HIDDEN": [-100, {"$masked": true}, 60]}, "today": "2026-10-16"}
+cases:
+
+  - id: "norm-dist-42-40-1-5-true"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "norm_dist(42, 40, 1.5, true)"
+    expect: {"value": 0.9087888, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "norm-dist-42-40-1-5-false"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "norm_dist(42, 40, 1.5, false)"
+    expect: {"value": 0.10934005, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "norm-inv-0-908789-40-1-5"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "norm_inv(0.908789, 40, 1.5)"
+    expect: {"value": 42.000002, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "norm-s-dist-1-333333-true"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "norm_s_dist(1.333333, true)"
+    expect: {"value": 0.908788726, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "norm-s-dist-1-333333-false"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "norm_s_dist(1.333333, false)"
+    expect: {"value": 0.164010148, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "norm-s-dist-1-333333"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    note: "Cumulative by default."
+    expr: "norm_s_dist(1.333333)"
+    expect: {"value": 0.908788726, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "norm-s-inv-0-908789"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "norm_s_inv(0.908789)"
+    expect: {"value": 1.3333347, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "lognorm-dist-4-3-5-1-2-true"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "lognorm_dist(4, 3.5, 1.2, true)"
+    expect: {"value": 0.0390836, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "lognorm-dist-4-3-5-1-2-false"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "lognorm_dist(4, 3.5, 1.2, false)"
+    expect: {"value": 0.0176176, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "lognorm-inv-0-039084-3-5-1-2"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "lognorm_inv(0.039084, 3.5, 1.2)"
+    expect: {"value": 4.0000252, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "standardize-42-40-1-5"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "standardize(42, 40, 1.5)"
+    expect: {"value": 1.333333333, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "confidence-norm-0-05-2-5-50"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "confidence_norm(0.05, 2.5, 50)"
+    expect: {"value": 0.692951912, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "confidence-t-0-05-1-50"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "confidence_t(0.05, 1, 50)"
+    expect: {"value": 0.284196855, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "fisher-0-75"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "fisher(0.75)"
+    expect: {"value": 0.972955075, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "fisher-inv-0-972955"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "fisher_inv(0.972955)"
+    expect: {"value": 0.75, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "erf-1"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "erf(1)"
+    expect: {"value": 0.842700793, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "erfc-1"
+    kind: "expr"
+    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
+    expr: "erfc(1)"
+    expect: {"value": 0.157299207, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "norm-s-inv-0-975"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_inv(0.975)"
+    expect: {"value": 1.959963984540054, "type": "number", "tolerance": {"abs": 1.0e-14}}
+
+  - id: "norm-s-inv-0-5"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_inv(0.5)"
+    expect: {"value": 0, "type": "number", "tolerance": {"abs": 1.0e-15}}
+
+  - id: "norm-s-inv-0-01"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_inv(0.01)"
+    expect: {"value": -2.326347874040841, "type": "number", "tolerance": {"abs": 1.0e-13}}
+
+  - id: "norm-s-inv-1e-10"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_inv(1e-10)"
+    expect: {"value": -6.361340902404056, "type": "number", "tolerance": {"abs": 1.0e-11}}
+
+  - id: "norm-s-dist-6-361340902404056"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_dist(-6.361340902404056)"
+    expect: {"value": 1.0e-10, "type": "number", "tolerance": {"abs": 1.0e-20}}
+
+  - id: "norm-s-dist-norm-s-inv-0-123"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_dist(norm_s_inv(0.123))"
+    expect: {"value": 0.123, "type": "number", "tolerance": {"abs": 1.0e-15}}
+
+  - id: "norm-s-dist-10"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_dist(-10)"
+    expect: {"value": 7.619853024160527e-24, "type": "number", "tolerance": {"abs": 1.0e-36}}
+
+  - id: "norm-s-dist-9"
+    kind: "expr"
+    source: "DistributionsTest#theNormalIsRightToMachinePrecisionAndInTheTails"
+    expr: "norm_s_dist(9)"
+    expect: {"value": 1, "type": "number", "tolerance": {"abs": 1.0e-15}}
+
+  - id: "t-dist-60-1-true"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "t_dist(60, 1, true)"
+    expect: {"value": 0.99469533, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "t-dist-8-3-false"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "t_dist(8, 3, false)"
+    expect: {"value": 0.00073691, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "2-1-t-dist-1-959999998-60"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "2 * (1 - t_dist(1.959999998, 60))"
+    expect: {"value": 0.05464493, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "1-t-dist-1-959999998-60"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "1 - t_dist(1.959999998, 60)"
+    expect: {"value": 0.027322465, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "t-inv-0-75-2"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "t_inv(0.75, 2)"
+    expect: {"value": 0.8164966, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "t-inv-1-0-546449-2-60"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "t_inv(1 - 0.546449 / 2, 60)"
+    expect: {"value": 0.606533, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "t-inv-0-25-2"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "t_inv(0.25, 2)"
+    expect: {"value": -0.8164966, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "chisq-dist-0-5-1-true"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "chisq_dist(0.5, 1, true)"
+    expect: {"value": 0.52049988, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "chisq-dist-2-3-false"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "chisq_dist(2, 3, false)"
+    expect: {"value": 0.20755375, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "chisq-inv-0-93-1"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "chisq_inv(0.93, 1)"
+    expect: {"value": 3.283020287, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "chisq-inv-0-6-2"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "chisq_inv(0.6, 2)"
+    expect: {"value": 1.832581464, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "f-dist-15-2069-6-4-true"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "f_dist(15.2069, 6, 4, true)"
+    expect: {"value": 0.99, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "f-dist-15-2069-6-4-false"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "f_dist(15.2069, 6, 4, false)"
+    expect: {"value": 0.0012238, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "f-inv-0-01-6-4"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "f_inv(0.01, 6, 4)"
+    expect: {"value": 0.109309914, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "f-inv-f-dist-3-7-5-9-5-9"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "f_inv(f_dist(3.7, 5, 9), 5, 9)"
+    expect: {"value": 3.7, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "t-dist-0-5-1-9-t-dist-0-5-1"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    note: "Degrees of freedom are cut to whole numbers."
+    expr: "t_dist(0.5, 1.9) == t_dist(0.5, 1)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "chisq-inv-0-4"
+    kind: "expr"
+    source: "DistributionsTest#studentChiSquareAndFMatchExcel"
+    expr: "chisq_inv(0, 4)"
+    expect: {"value": 0}
+
+  - id: "binom-dist-6-10-0-5-false"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "binom_dist(6, 10, 0.5, false)"
+    expect: {"value": 0.205078125, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "binom-dist-6-10-0-5-true"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "binom_dist(6, 10, 0.5, true)"
+    expect: {"value": 0.828125, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "poisson-dist-2-5-true"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "poisson_dist(2, 5, true)"
+    expect: {"value": 0.124652, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "poisson-dist-2-5-false"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "poisson_dist(2, 5, false)"
+    expect: {"value": 0.084224, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "hypgeom-dist-1-4-8-20-true"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "hypgeom_dist(1, 4, 8, 20, true)"
+    expect: {"value": 0.4654, "type": "number", "tolerance": {"abs": 0.0001}}
+
+  - id: "hypgeom-dist-1-4-8-20-false"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "hypgeom_dist(1, 4, 8, 20, false)"
+    expect: {"value": 0.3633, "type": "number", "tolerance": {"abs": 0.0001}}
+
+  - id: "negbinom-dist-10-5-0-25-true"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "negbinom_dist(10, 5, 0.25, true)"
+    expect: {"value": 0.3135141, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "negbinom-dist-10-5-0-25-false"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "negbinom_dist(10, 5, 0.25, false)"
+    expect: {"value": 0.0550487, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "binom-inv-6-0-5-0-75"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    expr: "binom_inv(6, 0.5, 0.75)"
+    expect: {"value": 4}
+
+  - id: "binom-dist-11-10-0-5"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    note: "Message contains: 'binom_dist'; 'more than the trials'."
+    expr: "binom_dist(11, 10, 0.5)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "binom-dist-1-10-1-5"
+    kind: "expr"
+    source: "DistributionsTest#discreteDistributionsMatchExcel"
+    note: "Message contains: 'binom_dist'; 'not from 0 to 1'."
+    expr: "binom_dist(1, 10, 1.5)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "expon-dist-0-2-10-true"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "expon_dist(0.2, 10, true)"
+    expect: {"value": 0.86466472, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "expon-dist-0-2-10-false"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "expon_dist(0.2, 10, false)"
+    expect: {"value": 1.35335283, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "gamma-dist-10-00001131-9-2-false"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "gamma_dist(10.00001131, 9, 2, false)"
+    expect: {"value": 0.032639, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "gamma-dist-10-00001131-9-2-true"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "gamma_dist(10.00001131, 9, 2, true)"
+    expect: {"value": 0.068094, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "gamma-inv-0-068094-9-2"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "gamma_inv(0.068094, 9, 2)"
+    expect: {"value": 10.0000112, "type": "number", "tolerance": {"abs": 1.0e-05}}
+
+  - id: "gamma-ln-4"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "gamma_ln(4)"
+    expect: {"value": 1.791759469, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "gamma-2-5"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "gamma(2.5)"
+    expect: {"value": 1.329340388, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "gamma-0-75"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "gamma(-0.75)"
+    expect: {"value": -4.834146, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "beta-dist-2-8-10-true-1-3"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "beta_dist(2, 8, 10, true, 1, 3)"
+    expect: {"value": 0.6854706, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "beta-dist-2-8-10-false-1-3"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "beta_dist(2, 8, 10, false, 1, 3)"
+    expect: {"value": 1.4837646, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "beta-inv-0-685470581-8-10-1-3"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "beta_inv(0.685470581, 8, 10, 1, 3)"
+    expect: {"value": 2, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "weibull-dist-105-20-100-true"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "weibull_dist(105, 20, 100, true)"
+    expect: {"value": 0.929581, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "weibull-dist-105-20-100-false"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "weibull_dist(105, 20, 100, false)"
+    expect: {"value": 0.035589, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "gamma-5"
+    kind: "expr"
+    source: "DistributionsTest#continuousShapesMatchExcel"
+    expr: "gamma(5)"
+    expect: {"value": 24}
+
+  - id: "norm-s-dist-nope"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    expr: "norm_s_dist($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "norm-dist-1-nope-1"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    expr: "norm_dist(1, $.NOPE, 1)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "t-inv-0-9-nope"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    expr: "t_inv(0.9, $.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "norm-s-inv-mtm"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    expr: "norm_s_inv($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "chisq-dist-1-2-mtm"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    expr: "chisq_dist(1, 2, $.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "norm-s-dist-abc"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'norm_s_dist'; \"'abc' is not a number\"."
+    expr: "norm_s_dist('abc')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "norm-dist-1-0-0"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'norm_dist'; 'standard deviation'; 'not above zero'."
+    expr: "norm_dist(1, 0, 0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "norm-s-inv-1"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'norm_s_inv'; 'not between 0 and 1'."
+    expr: "norm_s_inv(1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "norm-s-inv-0"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'not between 0 and 1'."
+    expr: "norm_s_inv(0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "t-dist-1-0-5"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 't_dist'; 'degrees of freedom'."
+    expr: "t_dist(1, 0.5)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "chisq-dist-1-2"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'chisq_dist'; 'negative'."
+    expr: "chisq_dist(-1, 2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "chisq-dist-0-1-false"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'chisq_dist'; 'infinite'."
+    expr: "chisq_dist(0, 1, false)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "gamma-2"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'gamma'; 'negative whole number'."
+    expr: "gamma(-2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "gamma-ln-0"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'gamma_ln'; 'not above zero'."
+    expr: "gamma_ln(0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "fisher-1"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'fisher'; 'between −1 and 1'."
+    expr: "fisher(1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "confidence-t-0-05-1-1"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'confidence_t'; 'under 2'."
+    expr: "confidence_t(0.05, 1, 1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "beta-dist-5-8-10-true-1-3"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Message contains: 'beta_dist'; 'not within A to B'."
+    expr: "beta_dist(5, 8, 10, true, 1, 3)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "iferror-norm-s-inv-2-1"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    expr: "iferror(norm_s_inv(2), -1)"
+    expect: {"value": -1}
+
+  - id: "norm-s-dist-1-5"
+    kind: "expr"
+    source: "DistributionsTest#emptyMaskedWrongTypeAndOutOfDomain"
+    note: "Number-like text is a number."
+    expr: "norm_s_dist('1.5')"
+    expect: {"value": 0.933192799, "type": "number", "tolerance": {"abs": 1.0e-09}}

@@ -1,0 +1,636 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/logic
+since: "1.0"
+profile: core
+verified: false
+description: "Logic and choice: if, ifs, switch, iferror, let, choose, coalesce, information tests, the null rule, and the function-name rules."
+given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+cases:
+
+  - id: "if-direction-short-1-1"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    expr: "if($.DIRECTION == 'SHORT', -1, 1)"
+    expect: {"value": -1}
+
+  - id: "if-direction-long-1-1"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    expr: "if($.DIRECTION == 'LONG', -1, 1)"
+    expect: {"value": 1}
+
+  - id: "if-false-1"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    expr: "if(false, 1)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "if-true-ok-round-up-x"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    note: "The other branch would be an error; it is not evaluated."
+    expr: "if(true, 'ok', round_up('x'))"
+    expect: {"value": "ok"}
+
+  - id: "if-nope-1-2"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    expr: "if($.NOPE, 1, 2)"
+    expect: {"value": 2}
+
+  - id: "if-mtm-0-1-2"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    expr: "if($.MTM > 0, 1, 2)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-if-true"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    note: "Message contains: 'if takes 2-3 argument(s), got 1'."
+    expr: "if(true)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'if(true)': "}]}
+
+  - id: "ifs-quantity-1e6-large-quantity-1e5-medium-small"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    expr: "ifs($.QUANTITY > 1e6, 'large', $.QUANTITY > 1e5, 'medium', 'small')"
+    expect: {"value": "large"}
+
+  - id: "ifs-false-1-true-2-3"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    expr: "ifs(false, 1, true, 2, 3)"
+    expect: {"value": 2}
+
+  - id: "ifs-false-1-false-2"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    expr: "ifs(false, 1, false, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "ifs-false-1-else"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    expr: "ifs(false, 1, 'else')"
+    expect: {"value": "else"}
+
+  - id: "ifs-true-1-mtm-0-2"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    note: "A masked condition never reached does not mask the result."
+    expr: "ifs(true, 1, $.MTM > 0, 2)"
+    expect: {"value": 1}
+
+  - id: "ifs-false-1-mtm-0-2-3"
+    kind: "expr"
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    expr: "ifs(false, 1, $.MTM > 0, 2, 3)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-ifs-true"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    note: "Message contains: 'ifs takes 2-64 argument(s), got 1'."
+    expr: "ifs(true)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'ifs(true)': "}]}
+
+  - id: "switch-legs-0-leg-type-fixed-f-float-v"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    expr: "switch($.LEGS[0].LEG_TYPE, 'FIXED', 'F', 'FLOAT', 'V', '?')"
+    expect: {"value": "F"}
+
+  - id: "switch-legs-1-leg-type-fixed-f-float-v"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    expr: "switch($.LEGS[1].LEG_TYPE, 'FIXED', 'F', 'FLOAT', 'V', '?')"
+    expect: {"value": "V"}
+
+  - id: "switch-x-fixed-f"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    expr: "switch('X', 'FIXED', 'F', '?')"
+    expect: {"value": "?"}
+
+  - id: "switch-x-a-1"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    expr: "switch('X', 'A', 1)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "switch-1-1-0-one"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    note: "Equality as == (SPEC 4.6)."
+    expr: "switch(1, '1.0', 'one')"
+    expect: {"value": "one"}
+
+  - id: "switch-nope-null-none-some"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    expr: "switch($.NOPE, null, 'none', 'some')"
+    expect: {"value": "none"}
+
+  - id: "switch-a-a-1-b-round-up-x"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    note: "Answers not chosen are not evaluated."
+    expr: "switch('A', 'A', 1, 'B', round_up('x'))"
+    expect: {"value": 1}
+
+  - id: "switch-mtm-1-a"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    expr: "switch($.MTM, 1, 'a')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "switch-b-mtm-a-b-b"
+    kind: "expr"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    expr: "switch('B', $.MTM, 'a', 'B', 'b')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-switch-a-a"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    note: "Message contains: 'switch takes 3-64 argument(s), got 2'."
+    expr: "switch('A', 'A')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'switch('A', 'A')': "}]}
+
+  - id: "iferror-1-0-0"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    expr: "iferror(1 / 0, 0)"
+    expect: {"value": 0}
+
+  - id: "iferror-round-up-abc-1"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    expr: "iferror(round_up('abc'), -1)"
+    expect: {"value": -1}
+
+  - id: "iferror-sqrt-1-negative"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    expr: "iferror(sqrt(-1), 'negative')"
+    expect: {"value": "negative"}
+
+  - id: "iferror-quantity-nope-0"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    note: "Not a number."
+    expr: "iferror($.QUANTITY * $.NOPE, 0)"
+    expect: {"value": 0}
+
+  - id: "iferror-nope-n-a"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    expr: "iferror($.NOPE, 'n/a')"
+    expect: {"value": "n/a"}
+
+  - id: "iferror-5-round-up-x"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    note: "The fallback only when needed."
+    expr: "iferror(5, round_up('x'))"
+    expect: {"value": 5}
+
+  - id: "iferror-regex-extract-a-trade-id-bad-pattern"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    note: "A refused pattern computed at run time is an error iferror catches."
+    expr: "iferror(regex_extract('a', $.TRADE_ID + '('), 'bad pattern')"
+    expect: {"value": "bad pattern"}
+
+  - id: "iferror-mtm-0"
+    kind: "expr"
+    source: "LogicFunctionsTest#iferrorGivesAFallback"
+    note: "A masked first argument is returned as it is (SPEC 4.9 rule 4)."
+    expr: "iferror($.MTM, 0)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "let-n-legs-0-notional-q-2-n-q"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    expr: "let(n = $.LEGS[0].NOTIONAL, q = 2, n * q)"
+    expect: {"value": 484000000, "reads": ["$.LEGS[0].NOTIONAL"]}
+
+  - id: "let-a-2-b-a-3-b-a"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    expr: "let(a = 2, b = a * 3, b + a)"
+    expect: {"value": 8}
+
+  - id: "let-quantity-1-quantity-1"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "A name hides a field."
+    expr: "let(QUANTITY = 1, QUANTITY + 1)"
+    expect: {"value": 2}
+
+  - id: "let-a-1-let-a-5-a-a"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    expr: "let(a = 1, let(a = 5, a) + a)"
+    expect: {"value": 6}
+
+  - id: "quantity"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "A bare name reads a field of $ outside a row (SPEC 4.3), and a let name only inside its let."
+    expr: "QUANTITY"
+    expect: {"value": 242000000}
+
+  - id: "map-legs-let-n-notional-n-1e6"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    expr: "map($.LEGS, let(n = @.NOTIONAL, n / 1e6))"
+    expect: {"value": [242, 242], "type": "list"}
+
+  - id: "let-leg-first-legs-leg-currency"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    expr: "let(leg = first($.LEGS), leg.CURRENCY)"
+    expect: {"value": "AUD"}
+
+  - id: "let-m-mtm-m-2"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    expr: "let(m = $.MTM, m * 2)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "let-m-mtm-3"
+    kind: "expr"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    expr: "let(m = $.MTM, 3)"
+    expect: {"value": 3}
+
+  - id: "bad-let-5"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: 'let needs a name = value before its result'."
+    expr: "let(5)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(5)': "}]}
+
+  - id: "bad-let-a-1"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"expected ',' and then the result\"."
+    expr: "let(a = 1)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1)': "}]}
+
+  - id: "bad-let-true-1-2"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"let: 'true' cannot be a name\"."
+    expr: "let(true = 1, 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(true = 1, 2)': "}]}
+
+  - id: "bad-let-a-1-a-2-a"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"let: 'a' is named twice\"."
+    expr: "let(a = 1, a = 2, a)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1, a = 2, a)': "}]}
+
+  - id: "bad-let-a-1-a-2"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: 'only the last argument is the result'."
+    expr: "let(a = 1, a, 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1, a, 2)': "}]}
+
+  - id: "bad-a-1"
+    kind: "expr-error"
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"unexpected '='\"."
+    expr: "a = 1"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'a = 1': "}]}
+
+  - id: "one-of-desk-desks-oneof-desk-desks"
+    kind: "expr"
+    source: "LogicFunctionsTest#theOneNamesAndTheOldReadAlike"
+    note: "The old spelling reads alike (SPEC 5.10)."
+    expr: "one_of($.DESK, $.DESKS) == oneOf($.DESK, $.DESKS)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "coalesce-strategy-none"
+    kind: "expr"
+    source: "LogicFunctionsTest#theOneNamesAndTheOldReadAlike"
+    expr: "coalesce($.STRATEGY, 'NONE')"
+    expect: {"value": "NONE"}
+
+  - id: "nonblank-blank-tt-book"
+    kind: "expr"
+    source: "LogicFunctionsTest#theOneNamesAndTheOldReadAlike"
+    expr: "nonblank($.BLANK, $.TT_BOOK)"
+    expect: {"value": "BOOK-RATES-3"}
+
+  - id: "coalesce-mtm-1"
+    kind: "expr"
+    source: "LogicFunctionsTest#theOneNamesAndTheOldReadAlike"
+    expr: "coalesce($.MTM, 1)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "nonblank-nope-cp-name"
+    kind: "expr"
+    source: "ElTest#flattenJoinsTheListsOfEveryElementAndNonblankSkipsEmptyText"
+    note: "nonblank skips empty and blank text and empty values."
+    given: {"record": {"cp": {"id": "CP-1", "name": "Northbridge"}}}
+    expr: "nonblank('', '  ', $.nope, $.cp.name)"
+    expect: {"value": "Northbridge"}
+
+  - id: "coalesce-cp-name"
+    kind: "expr"
+    source: "ElTest#flattenJoinsTheListsOfEveryElementAndNonblankSkipsEmptyText"
+    note: "coalesce keeps an empty text, as before."
+    given: {"record": {"cp": {"id": "CP-1", "name": "Northbridge"}}}
+    expr: "coalesce('', $.cp.name)"
+    expect: {"value": ""}
+
+  - id: "nonblank-null"
+    kind: "expr"
+    source: "ElTest#flattenJoinsTheListsOfEveryElementAndNonblankSkipsEmptyText"
+    expr: "nonblank('', null)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "is-number-quantity"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_number($.QUANTITY)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-number-textnum"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    note: "ISNUMBER: number-like text is text."
+    expr: "is_number($.TEXTNUM)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-number-nope"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_number($.NOPE)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-text-desk"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_text($.DESK)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-text-trade-date"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_text($.TRADE_DATE)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-date-trade-date"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_date($.TRADE_DATE)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-date-desk"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_date($.DESK)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-boolean-true"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_boolean(true)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-blank-strategy"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    note: "ISBLANK: null, missing, blank text."
+    expr: "is_blank($.STRATEGY)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-blank-blank"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_blank($.BLANK)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-blank-nope"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_blank($.NOPE)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-blank-desk"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_blank($.DESK)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-blank-1-0"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    note: "A division by zero is empty in Rachana."
+    expr: "is_blank(1 / 0)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-error-round-up-abc"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_error(round_up('abc'))"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-error-1-1"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_error(1 + 1)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-error-date-x"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_error(date('x'))"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-blank-mtm"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    note: "Whether a hidden field is filled is hidden."
+    expr: "is_blank($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "is-error-mtm"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "is_error($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "type-of-quantity"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "type_of($.QUANTITY)"
+    expect: {"value": "number", "type": "text"}
+
+  - id: "type-of-legs"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "type_of($.LEGS)"
+    expect: {"value": "list", "type": "text"}
+
+  - id: "type-of-legs-0"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "type_of($.LEGS[0])"
+    expect: {"value": "object", "type": "text"}
+
+  - id: "type-of-nope"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "type_of($.NOPE)"
+    expect: {"value": "empty", "type": "text"}
+
+  - id: "choose-2-a-b-c"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "choose(2, 'a', 'b', 'c')"
+    expect: {"value": "b"}
+
+  - id: "choose-1-a-round-up-abc"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    note: "Only the chosen value is evaluated."
+    expr: "choose(1, 'a', round_up('abc'))"
+    expect: {"value": "a"}
+
+  - id: "choose-4-a-b"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    note: "Message contains: 'choose'; 'not from 1 to 2'."
+    expr: "choose(4, 'a', 'b')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "choose-nope-a"
+    kind: "expr"
+    source: "MoreScalarsTest#informationAndChoice"
+    expr: "choose($.NOPE, 'a')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "strategy-x"
+    kind: "expr"
+    source: "MoreScalarsTest#theNullRuleHolds"
+    note: "Rachana's null rule (SPEC 4.6): a missing value is not equal to a text, so null != 'X' is true."
+    expr: "$.STRATEGY != 'X'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "strategy-x-2"
+    kind: "expr"
+    source: "MoreScalarsTest#theNullRuleHolds"
+    expr: "$.STRATEGY == 'X'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "year-nope-2026"
+    kind: "expr"
+    source: "MoreScalarsTest#theNullRuleHolds"
+    expr: "year($.NOPE) != 2026"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "null-not-equal-text-is-true-again"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "$.STRATEGY != 'X'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "strategy-null"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "$.STRATEGY == null"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "strategy-1"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    note: "Arithmetic on nothing is nothing."
+    expr: "$.STRATEGY + 1"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "1-strategy"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "1 - $.STRATEGY"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "strategy-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "$.STRATEGY * 2"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "strategy"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "-$.STRATEGY"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "x-strategy"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    note: "+ still joins a text with nothing."
+    expr: "'x' + $.STRATEGY"
+    expect: {"value": "x", "type": "text"}
+
+  - id: "strategy-1-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "$.STRATEGY < 1"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "round-2-675-n-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    expr: "round(2.675, n = 2)"
+    expect: {"value": 2.68, "type": "decimal"}
+
+  - id: "bad-round-2-5-digits-1"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'round has no argument named digits'."
+    expr: "round(2.5, digits = 1)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, digits = 1)': "}]}
+
+  - id: "bad-round-2-5-n-1-n-2"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'n is named twice'."
+    expr: "round(2.5, n = 1, n = 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, n = 1, n = 2)': "}]}
+
+  - id: "bad-round-n-1-2-5"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'a value without a name follows a named one'."
+    expr: "round(n = 1, 2.5)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(n = 1, 2.5)': "}]}
+
+  - id: "bad-round-2-5-1-n-2"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'n is given twice'."
+    expr: "round(2.5, 1, n = 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, 1, n = 2)': "}]}
+
+  - id: "bad-concat-a-sep"
+    kind: "expr-error"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'concat takes no named arguments'."
+    expr: "concat('a', sep = '-')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'concat('a', sep = '-')': "}]}
+
+  - id: "sum-legs-notional-where-desk-x"
+    kind: "expr"
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "A keyword-only parameter is refused over a list at evaluation (SPEC 4.10 rule 3). The reference runs it without the pivot engine; with the engine the refusal is the same. Message contains: 'where ='; 'belongs to a measure'."
+    expr: "sum($.LEGS[*].NOTIONAL, where = $.DESK == 'X')"
+    expect: {"error": {"code": "RCH-2102"}}

@@ -1,0 +1,203 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/membership-parents
+since: "1.0"
+profile: core
+verified: false
+description: "Membership (in, not in), the parent paths ^ and ^^, and the equality rules of in."
+given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+cases:
+
+  - id: "desk-in-desk-comm-desk-rates"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.DESK in ['DESK-COMM', 'DESK-RATES']"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "desk-not-in-desk-comm"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.DESK not in ['DESK-COMM']"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "desk-in-desks"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.DESK in $.DESKS"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "desk-in"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    note: "Strict: an empty list holds nothing (decision Q3)."
+    expr: "$.DESK in []"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "desk-not-in"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.DESK not in []"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "desk-in-nothing"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    note: "Nothing at all holds nothing."
+    expr: "$.DESK in $.NOTHING"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "one-of-desk"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    note: "one_of stays a control's: an empty choice holds everything."
+    expr: "one_of($.DESK, [])"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "strategy-in-null-x"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    note: "Null equals only null (decision Q1)."
+    expr: "$.STRATEGY in [null, 'X']"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "strategy-in-x"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.STRATEGY in ['X']"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "strategy-not-in-x"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.STRATEGY not in ['X']"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "quantity-in-242000000"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.QUANTITY in [242000000]"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "desk-in-desk-comm"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    note: "A value that is not a list is a list of one."
+    expr: "$.DESK in 'DESK-COMM'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "desk-in-desk-comm-quantity-0"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "($.DESK in ['DESK-COMM']) && $.QUANTITY > 0"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "mtm-in-1-2"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.MTM in [1, 2]"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "desk-in-masked-list"
+    kind: "expr"
+    source: "FoldedSyntaxTest#inIsStrictAndEmptyHoldsNothing"
+    expr: "$.DESK in $.MASKED_LIST"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "mtm-1"
+    kind: "expr"
+    source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
+    note: "A list literal keeps a masked item masked in its place (SPEC 4.9 rule 5)."
+    expr: "[$.MTM, 1]"
+    expect: {"value": [{"$masked": true}, 1], "type": "list"}
+
+  - id: "legs-desk-desk-comm-leg-id"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    note: "Inside the filter, ^ is the record the list is in (SPEC 4.3)."
+    expr: "$.LEGS[?^.DESK == 'DESK-COMM'][*].LEG_ID"
+    expect: {"value": [1, 2], "type": "list"}
+
+  - id: "legs-leg-id-leg-id-leg-type"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    note: "^.LEG_ID is the trade's '7', so no leg matches."
+    expr: "$.LEGS[?@.LEG_ID == ^.LEG_ID][*].LEG_TYPE"
+    expect: {"value": [], "type": "list"}
+
+  - id: "map-legs-trade-id"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    expr: "map($.LEGS, ^.TRADE_ID)"
+    expect: {"value": ["MX-20000001", "MX-20000001"], "type": "list"}
+
+  - id: "parent-reads-the-nearest-element"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    note: "parents are nearest first: ^ is the first, ^^ the second (FORMAT 5.1)."
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16", "row": {"AMOUNT": 5}, "parents": [{"LEG_ID": 9}, {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}]}
+    expr: "^.LEG_ID"
+    expect: {"value": 9}
+
+  - id: "double-parent-reads-the-record"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16", "row": {"AMOUNT": 5}, "parents": [{"LEG_ID": 9}, {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}]}
+    expr: "^^.TRADE_ID"
+    expect: {"value": "MX-20000001"}
+
+  - id: "amount"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16", "row": {"AMOUNT": 5}, "parents": [{"LEG_ID": 9}, {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}]}
+    expr: "@.AMOUNT"
+    expect: {"value": 5}
+
+  - id: "x"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    note: "No such parent: nothing."
+    expr: "^^^.X"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "trade-id"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theParentPathReadsTheElementAbove"
+    note: "The document itself has no parent."
+    expr: "^.TRADE_ID"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "x-2"
+    kind: "expr"
+    source: "SPEC 4.3"
+    note: "Outside a row, @ is empty (SPEC 4.3)."
+    expr: "@.x"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "index"
+    kind: "expr"
+    source: "SPEC 4.3"
+    note: "#index is -1 outside a row."
+    given: {"record": {}}
+    expr: "#index"
+    expect: {"value": -1}
+
+  - id: "ctl-region"
+    kind: "expr"
+    source: "SPEC 4.3"
+    given: {"record": {}, "ctl": {"region": "North"}}
+    expr: "ctl.region"
+    expect: {"value": "North"}
+
+  - id: "control-not-set-is-empty"
+    kind: "expr"
+    source: "SPEC 4.3"
+    given: {"record": {}}
+    expr: "ctl.region"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "trades-select-id"
+    kind: "expr"
+    source: "SPEC 4.3"
+    given: {"record": {}, "events": {"trades": {"select": {"id": 7}}}}
+    expr: "@trades.select.id"
+    expect: {"value": 7}

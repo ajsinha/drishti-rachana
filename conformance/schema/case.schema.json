@@ -1,0 +1,521 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). The machine form of conformance/FORMAT.md; where they disagree, that is a defect in one of them.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/conformance/schema/case.schema.json",
+  "title": "Rachana conformance case file",
+  "description": "One YAML case file of conformance/<major>/, read with the YAML 1.2 core schema into the JSON data model. FORMAT.md section 2.",
+  "type": "object",
+  "required": ["suite", "since", "profile", "cases"],
+  "properties": {
+    "suite": {
+      "description": "The file's path below conformance/<major>/ without .yaml (FORMAT 1).",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(/[a-z0-9][a-z0-9-]*){1,2}$"
+    },
+    "since": { "$ref": "#/$defs/minor" },
+    "profile": { "$ref": "#/$defs/profile" },
+    "verified": { "type": "boolean", "default": false },
+    "description": { "type": "string" },
+    "given": { "$ref": "#/$defs/given" },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/case" }
+    }
+  },
+  "additionalProperties": false,
+
+  "$defs": {
+    "minor": {
+      "description": "A language minor: \"1.0\", \"1.4\". Quoted in YAML.",
+      "type": "string",
+      "pattern": "^[1-9][0-9]*\\.(0|[1-9][0-9]*)$"
+    },
+    "profileName": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,31}$" },
+    "profile": {
+      "description": "core, or a list of profiles the cases need (FORMAT 3).",
+      "oneOf": [
+        { "$ref": "#/$defs/profileName" },
+        { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/profileName" } }
+      ]
+    },
+    "jsonPointer": {
+      "description": "RFC 6901 JSON Pointer.",
+      "type": "string",
+      "pattern": "^(/([^~/]|~[01])*)*$"
+    },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "code": {
+      "description": "A problem code: RCH- and four digits for Core; a profile's own prefix for a profile's codes.",
+      "type": "string",
+      "pattern": "^[A-Z]{2,8}-[0-9]{4}$"
+    },
+    "expressionText": { "type": "string", "maxLength": 20000 },
+
+    "value": {
+      "description": "A Rachana value in the JSON data model (FORMAT 4). An object of exactly one key $num, $dec, $masked or $link is a tag; any other object is a Rachana object.",
+      "anyOf": [
+        { "type": ["null", "boolean", "number", "string"] },
+        { "type": "array", "items": { "$ref": "#/$defs/value" } },
+        { "$ref": "#/$defs/tag" },
+        {
+          "type": "object",
+          "not": {
+            "anyOf": [
+              { "required": ["$num"], "maxProperties": 1 },
+              { "required": ["$dec"], "maxProperties": 1 },
+              { "required": ["$masked"], "maxProperties": 1 },
+              { "required": ["$link"], "maxProperties": 1 }
+            ]
+          },
+          "additionalProperties": { "$ref": "#/$defs/value" }
+        }
+      ]
+    },
+    "tag": {
+      "oneOf": [
+        {
+          "type": "object", "required": ["$num"], "additionalProperties": false,
+          "properties": { "$num": { "enum": ["NaN", "Infinity", "-Infinity"] } }
+        },
+        {
+          "type": "object", "required": ["$dec"], "additionalProperties": false,
+          "properties": { "$dec": { "type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]*[1-9])?$" } }
+        },
+        {
+          "type": "object", "required": ["$masked"], "additionalProperties": false,
+          "properties": { "$masked": { "const": true } }
+        },
+        {
+          "type": "object", "required": ["$link"], "additionalProperties": false,
+          "properties": {
+            "$link": {
+              "type": "object", "required": ["id"], "additionalProperties": false,
+              "properties": { "id": { "type": "string" }, "kind": { "type": "string" }, "label": { "type": "string" } }
+            }
+          }
+        }
+      ]
+    },
+    "valueType": {
+      "enum": ["empty", "boolean", "number", "decimal", "text", "list", "object", "link", "masked"]
+    },
+    "checkedType": {
+      "description": "SPEC 4.14's types.",
+      "enum": ["integer", "decimal", "number", "string", "boolean", "date", "timestamp", "none", "list", "table", "any"]
+    },
+    "typeMap": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [ { "$ref": "#/$defs/checkedType" }, { "$ref": "#/$defs/typeMap" } ]
+      }
+    },
+    "document": {
+      "description": "A JSON document (ViewModel, plan, response body): any JSON. NaN and infinities are null in documents.",
+      "type": ["object", "array", "string", "number", "boolean", "null"]
+    },
+    "atMap": {
+      "description": "JSON Pointer into the actual document -> the exact value expected there (FORMAT 7).",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/jsonPointer" },
+      "additionalProperties": { "$ref": "#/$defs/document" }
+    },
+
+    "table": {
+      "description": "A data: table: a list of row objects, or a Data Protocol schema with rows.",
+      "oneOf": [
+        { "type": "array", "items": { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } } },
+        {
+          "type": "object", "required": ["rows"], "additionalProperties": false,
+          "properties": {
+            "schema": { "$ref": "#/$defs/tableSchema" },
+            "rows": { "type": "array", "items": { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } } }
+          }
+        }
+      ]
+    },
+    "tableSchema": {
+      "description": "A Data Protocol table schema (DATA_PROTOCOL 2). Its normative schema is spec/1/protocol/ (F8); only the parts a case needs are constrained here.",
+      "type": "object",
+      "required": ["columns"],
+      "properties": {
+        "name": { "type": "string" },
+        "key": { "type": "array", "items": { "type": "string" } },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["name", "type"],
+            "properties": { "name": { "type": "string" }, "type": { "type": "string" } }
+          }
+        },
+        "can": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "given": {
+      "description": "The context of a case (FORMAT 5.1). A case's given overrides the file's key by key.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "record": { "$ref": "#/$defs/value" },
+        "row": { "$ref": "#/$defs/value" },
+        "parents": { "type": "array", "items": { "$ref": "#/$defs/value" } },
+        "index": { "type": "integer", "minimum": -1 },
+        "ctl": { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } },
+        "events": {
+          "type": "object",
+          "additionalProperties": { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } }
+        },
+        "src": { "$ref": "#/$defs/value" },
+        "today": { "$ref": "#/$defs/date" },
+        "tables": { "type": "object", "additionalProperties": { "$ref": "#/$defs/table" } },
+        "schemas": { "type": "object", "additionalProperties": { "$ref": "#/$defs/tableSchema" } },
+        "profiles": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/profileName" } },
+        "limits": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "depth": { "type": "integer", "minimum": 1 },
+            "length": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+
+    "position": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "offset": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "range": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "properties": { "start": { "$ref": "#/$defs/position" }, "end": { "$ref": "#/$defs/position" } }
+    },
+    "problem": {
+      "description": "An expected problem: only the fields named are compared; code always (FORMAT 6).",
+      "type": "object",
+      "required": ["code"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "$ref": "#/$defs/code" },
+        "severity": { "enum": ["error", "warning", "info"] },
+        "message": { "type": "string" },
+        "messageStart": { "type": "string", "minLength": 1 },
+        "file": { "type": "string" },
+        "path": { "$ref": "#/$defs/jsonPointer" },
+        "range": { "$ref": "#/$defs/range" },
+        "expr": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "source": { "type": "string" },
+            "start": { "type": "integer", "minimum": 0 },
+            "end": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "expected": { "type": "array", "maxItems": 40, "items": { "type": "string" } },
+        "more": { "type": "integer", "minimum": 1 },
+        "fix": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["range", "text"], "additionalProperties": false,
+            "properties": { "range": { "$ref": "#/$defs/range" }, "text": { "type": "string" } }
+          }
+        }
+      },
+      "not": { "required": ["message", "messageStart"] }
+    },
+    "problems": { "type": "array", "items": { "$ref": "#/$defs/problem" } },
+    "evalError": {
+      "type": "object", "required": ["code"], "additionalProperties": false,
+      "properties": {
+        "code": { "$ref": "#/$defs/code" },
+        "message": { "type": "string" },
+        "messageStart": { "type": "string", "minLength": 1 }
+      },
+      "not": { "required": ["message", "messageStart"] }
+    },
+
+    "case": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,79}$" },
+        "kind": {
+          "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol"]
+        },
+        "since": { "$ref": "#/$defs/minor" },
+        "profile": { "$ref": "#/$defs/profile" },
+        "verified": { "type": "boolean" },
+        "source": { "type": "string" },
+        "note": { "type": "string" },
+        "tags": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" } }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "expr" } } }, "then": { "$ref": "#/$defs/exprCase" } },
+        { "if": { "properties": { "kind": { "const": "expr-error" } } }, "then": { "$ref": "#/$defs/exprErrorCase" } },
+        { "if": { "properties": { "kind": { "const": "check" } } }, "then": { "$ref": "#/$defs/checkCase" } },
+        { "if": { "properties": { "kind": { "const": "grammar" } } }, "then": { "$ref": "#/$defs/grammarCase" } },
+        { "if": { "properties": { "kind": { "const": "format" } } }, "then": { "$ref": "#/$defs/formatCase" } },
+        { "if": { "properties": { "kind": { "const": "sutra" } } }, "then": { "$ref": "#/$defs/sutraCase" } },
+        { "if": { "properties": { "kind": { "const": "problem" } } }, "then": { "$ref": "#/$defs/problemCase" } },
+        { "if": { "properties": { "kind": { "const": "patch" } } }, "then": { "$ref": "#/$defs/patchCase" } },
+        { "if": { "properties": { "kind": { "const": "plan" } } }, "then": { "$ref": "#/$defs/planCase" } },
+        { "if": { "properties": { "kind": { "const": "edit" } } }, "then": { "$ref": "#/$defs/editCase" } },
+        { "if": { "properties": { "kind": { "const": "protocol" } } }, "then": { "$ref": "#/$defs/protocolCase" } }
+      ],
+      "unevaluatedProperties": false
+    },
+
+    "sutraInputs": {
+      "properties": {
+        "sutra": { "type": "string", "minLength": 1 },
+        "file": { "type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.v[0-9]+)?\\.sutra\\.yaml$" },
+        "files": { "type": "object", "additionalProperties": { "type": "string" } }
+      },
+      "required": ["sutra"]
+    },
+
+    "exprCase": {
+      "description": "FORMAT 5.2.",
+      "required": ["expect"],
+      "oneOf": [ { "required": ["expr"] }, { "required": ["template"] } ],
+      "properties": {
+        "expr": { "$ref": "#/$defs/expressionText" },
+        "template": { "$ref": "#/$defs/expressionText" },
+        "given": { "$ref": "#/$defs/given" },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "value": { "$ref": "#/$defs/value" },
+            "type": { "$ref": "#/$defs/valueType" },
+            "text": { "type": "string" },
+            "reads": { "type": "array", "items": { "type": "string" } },
+            "error": { "$ref": "#/$defs/evalError" },
+            "tolerance": {
+              "type": "object", "additionalProperties": false, "minProperties": 1, "maxProperties": 1,
+              "properties": { "abs": { "type": "number", "exclusiveMinimum": 0 }, "rel": { "type": "number", "exclusiveMinimum": 0 } }
+            }
+          },
+          "allOf": [
+            { "if": { "required": ["error"] }, "then": { "not": { "anyOf": [ { "required": ["value"] }, { "required": ["type"] }, { "required": ["text"] }, { "required": ["tolerance"] } ] } } },
+            { "if": { "required": ["tolerance"] }, "then": { "required": ["value"], "properties": { "value": { "type": "number" } } } }
+          ]
+        }
+      }
+    },
+    "exprErrorCase": {
+      "description": "FORMAT 5.3.",
+      "required": ["expect"],
+      "oneOf": [ { "required": ["expr"] }, { "required": ["template"] } ],
+      "properties": {
+        "expr": { "$ref": "#/$defs/expressionText" },
+        "template": { "$ref": "#/$defs/expressionText" },
+        "given": { "$ref": "#/$defs/given" },
+        "expect": {
+          "type": "object", "additionalProperties": false, "required": ["problems"],
+          "properties": { "problems": { "allOf": [ { "$ref": "#/$defs/problems" }, { "minItems": 1 } ] } }
+        }
+      }
+    },
+    "checkCase": {
+      "description": "FORMAT 5.4.",
+      "required": ["expr", "scope", "expect"],
+      "properties": {
+        "expr": { "$ref": "#/$defs/expressionText" },
+        "scope": { "enum": ["data", "screen"] },
+        "types": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "record": { "$ref": "#/$defs/typeMap" }, "row": { "$ref": "#/$defs/typeMap" } }
+        },
+        "given": { "$ref": "#/$defs/given" },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "type": { "anyOf": [ { "$ref": "#/$defs/checkedType" }, { "type": "null" } ] },
+            "problems": { "$ref": "#/$defs/problems" }
+          }
+        }
+      }
+    },
+    "grammarCase": {
+      "description": "FORMAT 5.5.",
+      "required": ["text", "expect"],
+      "properties": {
+        "text": { "$ref": "#/$defs/expressionText" },
+        "rule": { "enum": ["expression", "template"], "default": "expression" },
+        "expect": {
+          "type": "object", "additionalProperties": false, "required": ["accepted"],
+          "properties": { "accepted": { "type": "boolean" } }
+        }
+      }
+    },
+    "formatCase": {
+      "description": "FORMAT 5.6.",
+      "required": ["value", "format", "expect"],
+      "properties": {
+        "value": { "$ref": "#/$defs/value" },
+        "format": { "type": "string", "minLength": 1 },
+        "tone": { "type": "string", "minLength": 1 },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "text": { "type": "string" },
+            "tone": { "enum": ["pos", "neg", "ok", "warn", "bad", "link", "accent", null] }
+          }
+        }
+      }
+    },
+    "sutraCase": {
+      "description": "FORMAT 5.7.",
+      "required": ["expect"],
+      "allOf": [ { "$ref": "#/$defs/sutraInputs" } ],
+      "properties": {
+        "given": { "$ref": "#/$defs/given" },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1, "maxProperties": 1,
+          "properties": {
+            "viewModel": { "type": "object" },
+            "at": { "$ref": "#/$defs/atMap" }
+          }
+        }
+      }
+    },
+    "problemCase": {
+      "description": "FORMAT 5.8.",
+      "required": ["expect"],
+      "allOf": [ { "$ref": "#/$defs/sutraInputs" } ],
+      "properties": {
+        "given": { "$ref": "#/$defs/given" },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "ok": { "type": "boolean" },
+            "problems": { "$ref": "#/$defs/problems" }
+          }
+        }
+      }
+    },
+    "patchCase": {
+      "description": "FORMAT 5.9.",
+      "allOf": [ { "$ref": "#/$defs/sutraInputs" } ],
+      "required": ["steps", "given", "expect"],
+      "properties": {
+        "given": { "allOf": [ { "$ref": "#/$defs/given" }, { "required": ["tables"] } ] },
+        "steps": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["table", "patch"], "additionalProperties": false,
+            "properties": {
+              "table": { "type": "string" },
+              "patch": {
+                "type": "object", "additionalProperties": false, "minProperties": 1,
+                "properties": {
+                  "remove": { "type": "array", "items": { "anyOf": [ { "type": "array" }, { "type": ["string", "number"] } ] } },
+                  "update": { "type": "array", "items": { "type": "object" } },
+                  "add": { "type": "array", "items": { "type": "object" } },
+                  "reset": { "anyOf": [ { "type": "null" }, { "type": "array", "items": { "type": "object" } } ] }
+                }
+              }
+            }
+          }
+        },
+        "expect": {
+          "type": "object", "additionalProperties": false, "required": ["steps"],
+          "properties": {
+            "steps": {
+              "type": "array", "minItems": 1,
+              "items": {
+                "type": "object", "additionalProperties": false, "minProperties": 1,
+                "properties": {
+                  "frames": { "type": "array" },
+                  "at": { "$ref": "#/$defs/atMap" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "planCase": {
+      "description": "FORMAT 5.10.",
+      "required": ["expect"],
+      "allOf": [ { "$ref": "#/$defs/sutraInputs" } ],
+      "properties": {
+        "given": { "$ref": "#/$defs/given" },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1, "maxProperties": 1,
+          "properties": {
+            "plan": { "type": "object" },
+            "at": { "$ref": "#/$defs/atMap" }
+          }
+        }
+      }
+    },
+    "editCase": {
+      "description": "FORMAT 5.11.",
+      "allOf": [ { "$ref": "#/$defs/sutraInputs" } ],
+      "required": ["operation", "expect"],
+      "properties": {
+        "operation": {
+          "type": "object", "required": ["op"],
+          "properties": { "op": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" } }
+        },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1, "maxProperties": 1,
+          "properties": {
+            "text": { "type": "string" },
+            "problems": { "allOf": [ { "$ref": "#/$defs/problems" }, { "minItems": 1 } ] }
+          }
+        }
+      }
+    },
+    "protocolCase": {
+      "description": "FORMAT 5.12.",
+      "required": ["steps"],
+      "properties": {
+        "fixture": {
+          "type": "object", "required": ["name", "schema", "rows"], "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,128}$" },
+            "schema": { "$ref": "#/$defs/tableSchema" },
+            "rows": { "type": "array", "items": { "type": "object" } }
+          }
+        },
+        "steps": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["request", "expect"], "additionalProperties": false,
+            "properties": {
+              "request": {
+                "type": "object", "required": ["method", "path"], "additionalProperties": false,
+                "properties": {
+                  "method": { "enum": ["GET", "POST"] },
+                  "path": { "type": "string", "pattern": "^/" },
+                  "query": { "type": "object", "additionalProperties": { "type": ["string", "number", "boolean"] } },
+                  "body": { "$ref": "#/$defs/document" },
+                  "headers": { "type": "object", "additionalProperties": { "type": "string" } }
+                }
+              },
+              "expect": {
+                "type": "object", "additionalProperties": false, "minProperties": 1,
+                "properties": {
+                  "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+                  "body": { "$ref": "#/$defs/document" }
+                }
+              },
+              "capture": {
+                "type": "object",
+                "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]*$" },
+                "additionalProperties": { "$ref": "#/$defs/jsonPointer" }
+              }
+            }
+          }
+        }
+      },
+      "not": { "required": ["expect"] }
+    }
+  }
+}

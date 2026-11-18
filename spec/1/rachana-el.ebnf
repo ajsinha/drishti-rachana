@@ -1,0 +1,286 @@
+(* Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force).    *)
+(*                                                                                                                *)
+(* Rachana-EL, the expression language of `rachana: 1`. Normative grammar, draft 1.                              *)
+(*                                                                                                                *)
+(* Notation: ISO/IEC 14977 EBNF.  `=` defines, `,` concatenates, `|` separates alternatives, `[ ]` is optional,  *)
+(* `{ }` repeats zero or more times, `( )` groups, `-` is "except", `? ... ?` is a special sequence described in   *)
+(* words, `(* *)` is a comment, `;` ends a rule. Terminals are in quotes and are case-sensitive.                 *)
+(*                                                                                                                *)
+(* Derived from the reference lexer and parser (Drishti `compute/drishti-rachana`, package `el`: Lexer, Parser,   *)
+(* Template) as of 2026-11-17. Where the parser accepts something the Drishti reference guide does not document,  *)
+(* the rule says so with "UNDOCUMENTED". Where text and the conformance suite (conformance/1/) disagree, the suite *)
+(* wins and the difference is a defect in one of them (SPEC.md section 9).                                        *)
+(*                                                                                                                *)
+(* The grammar has two layers:                                                                                    *)
+(*   Part A, lexical: how the characters of one expression become tokens. The lexer is greedy and context-free;   *)
+(*           white space may stand between any two tokens and is otherwise ignored.                               *)
+(*   Part B, syntactic: how tokens form an expression. Operator precedence is encoded by the rule nesting.        *)
+(*   Part C, templates: text with ${ expression } parts.                                                          *)
+
+
+(* ================================================================================================================ *)
+(* Part A. Lexical grammar                                                                                          *)
+(* ================================================================================================================ *)
+
+(* The whole input of one expression: tokens separated by optional white space. An empty input is an error        *)
+(* ("the expression ends early"). At most 10,000 characters (SPEC.md 4.12).                                         *)
+expression-source = { white-space }, { token, { white-space } } ;
+
+(* Characters skipped between tokens. Exactly the characters for which Java's Character.isWhitespace is true.      *)
+(* NOTE: the no-break spaces U+00A0, U+2007 and U+202F are NOT white space; they are "unexpected character"       *)
+(* errors (a common copy-paste trap). UNDOCUMENTED.                                                                 *)
+white-space = ? U+0009 to U+000D, U+001C to U+001F, U+0020, and every character of Unicode categories Zs, Zl, Zp
+                except U+00A0, U+2007, U+202F ? ;
+
+(* One token. The lexer tries the alternatives in this order at each position: number, string, identifier,         *)
+(* refused pair, two-character operator, filter opener, event reference, $src, #index, single character.           *)
+token = number | string | identifier | refused-pair | operator | filter-open | event-ref | src-ref | index-ref
+      | punctuator ;
+
+(* ---- numbers ---------------------------------------------------------------------------------------------------- *)
+
+(* An ASCII decimal digit. *)
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+(* A number literal: integer part, optional fraction, optional exponent; or a leading point. "1." and ".5" are      *)
+(* numbers; "1e6" and "2.5E-3" are numbers. There is no sign: "-1" is unary minus applied to 1. No hexadecimal,    *)
+(* no digit separators, no "Infinity" or "NaN" literals.                                                           *)
+number = digits, [ ".", [ digits ] ], [ exponent ]
+       | ".", digits, [ exponent ] ;
+
+(* One or more ASCII digits. *)
+digits = digit, { digit } ;
+
+(* A power of ten. The sign is part of the number only directly after "e" or "E". *)
+exponent = ( "e" | "E" ), [ "+" | "-" ], digits ;
+
+(* LEXER BEHAVIOUR (normative): a number token is the longest run of digits, ".", "e", "E", and "+"/"-" directly     *)
+(* after "e"/"E", starting at a digit or at a "." followed by a digit. If that run is not a `number` the expression *)
+(* does not compile ("bad number"): "1.2.3", "3e", "12em" (run "12e"), "1e5e5". A "." followed by a digit always    *)
+(* starts a number, so "$.items.0" and "a.5" do NOT select a field: they are errors; write "$.items[0]".             *)
+(* UNDOCUMENTED. A run may start at any Unicode decimal digit (category Nd), but only ASCII digits form a number;     *)
+(* a non-ASCII digit there is a "bad number" error.                                                                *)
+number-run = ( any-digit | ".", digit ), { any-digit | "." | "e" | "E" | ( "e" | "E" ), ( "+" | "-" ) } ;
+
+(* Any Unicode decimal digit (category Nd), as Java's Character.isDigit. *)
+any-digit = ? any character of Unicode category Nd ? ;
+
+(* ---- text ------------------------------------------------------------------------------------------------------- *)
+
+(* A text literal in single or double quotes. The two forms mean the same. Line breaks are allowed inside.           *)
+(* An opening quote without its closing quote is "unterminated string".                                            *)
+string = "'", { single-quoted-char }, "'"
+       | '"', { double-quoted-char }, '"' ;
+
+(* Inside single quotes: an escape, or any character but the single quote and the backslash. *)
+single-quoted-char = escape | ( any-char - ( "'" | "\" ) ) ;
+
+(* Inside double quotes: an escape, or any character but the double quote and the backslash. *)
+double-quoted-char = escape | ( any-char - ( '"' | "\" ) ) ;
+
+(* A backslash makes the next character literal: '\'' is a quote, '\\' a backslash, '\d' the letter d, '\n' the     *)
+(* letter n. There are no control escapes (\n, \t, \u....). A backslash as the last character of the input leaves  *)
+(* the string unterminated.                                                                                        *)
+escape = "\", any-char ;
+
+(* Any Unicode character (a UTF-16 code unit in the reference; see SPEC.md 4.13). *)
+any-char = ? any character ? ;
+
+(* ---- names ------------------------------------------------------------------------------------------------------ *)
+
+(* A Unicode letter: Java's Character.isLetter (categories Lu, Ll, Lt, Lm, Lo). *)
+letter = ? any character of Unicode categories Lu, Ll, Lt, Lm, Lo ? ;
+
+(* An identifier: a field name, a function name, a let name, or a word below. Letters, digits and "_" only, so      *)
+(* "$.day-count" is "$.day" minus "count"; write "$['day-count']". Case counts ("TRADE_ID" is not "trade_id").      *)
+identifier = ( letter | "_" ), { letter | any-digit | "_" } ;
+
+(* Words with a fixed meaning where they stand (they are identifier tokens; there is no separate keyword token):    *)
+(*   true, false, null   literals, everywhere an operand may stand;                                                 *)
+(*   in, not             operators, in operator position only (`not` only directly before `in`);                   *)
+(*   ctl                 the control root, only as `ctl . identifier` not followed by "(";                           *)
+(*   let                 the let form, when followed by "(".                                                        *)
+(* UNDOCUMENTED: `in`, `not` and `ctl` are ordinary field names in operand position (`in in [1]` compiles: the field *)
+(* `in` tested against the list). Only `let` names refuse them (true, false, null, ctl, in, not).                   *)
+reserved-word = "true" | "false" | "null" | "ctl" | "in" | "not" ;
+
+(* ---- context references ----------------------------------------------------------------------------------------- *)
+
+(* "@" directly followed by a letter: the events of a panel of the screen (@trades.select.id), or @parent in a child *)
+(* panel, or @acc inside reduce's third argument. Letters, digits, "_" and "-" between letters or digits.            *)
+(* UNDOCUMENTED: a hyphen continues the name when a letter or digit follows it, so "@x-1" is the panel "x-1", not    *)
+(* "@x minus 1"; write "@x - 1". "@" followed by anything else is the row reference "@".                           *)
+event-ref = "@", letter, { letter | any-digit | "_" | "-", ( letter | any-digit ) } ;
+
+(* The record or records the panel's own `source:` names. Not a token when a letter, digit or "_" follows:           *)
+(* "$srcX" is "$" then the identifier "srcX" (an error).                                                            *)
+src-ref = "$src" ;
+
+(* The 0-based position of the current row. Matched as a prefix: "#indexes" is "#index" then "es" (an error).       *)
+index-ref = "#index" ;
+
+(* ---- operators and punctuation ---------------------------------------------------------------------------------- *)
+
+(* Refused with their Rachana spelling: "'**' is not Rachana: write power(x, y)", "'//' is not Rachana: write         *)
+(* floor(x / y)". Never valid.                                                                                     *)
+refused-pair = "**" | "//" ;
+
+(* Two-character operators, matched before single characters. *)
+operator = "&&" | "||" | "==" | "!=" | "<=" | ">=" ;
+
+(* The filter opener: "[" and "?" with nothing between. "[ ?" is "[" then "?" (an error). *)
+filter-open = "[?" ;
+
+(* Single characters. "=" is valid only in a named argument and a let binding. "&", "|", ";", "#" (other than        *)
+(* #index), "`", "{", "}" and every other character are "unexpected character" errors.                              *)
+punctuator = "$" | "@" | "^" | "(" | ")" | "[" | "]" | "." | "," | "?" | ":"
+           | "+" | "-" | "*" | "/" | "%" | "<" | ">" | "!" | "=" ;
+
+
+(* ================================================================================================================ *)
+(* Part B. Syntactic grammar (over the tokens of Part A)                                                            *)
+(* ================================================================================================================ *)
+
+(* Precedence, lowest first: ?: | || | && | == != | < <= > >= in not-in | + - | * / % | unary ! - | postfix.          *)
+(* Every binary operator groups left to right; ?: groups right to left. Nesting is bounded (SPEC.md 4.12).           *)
+
+(* A complete expression: the whole input must be consumed ("unexpected '<token>'" otherwise). *)
+expression = conditional ;
+
+(* The conditional. The condition is a logical-or, so a conditional inside a condition needs parentheses.            *)
+(* Branches are full conditionals: a ? b : c ? d : e is a ? b : (c ? d : e).                                       *)
+conditional = logical-or, [ "?", conditional, ":", conditional ] ;
+
+(* Short-circuit or; yields a boolean (or the mask), never an operand. *)
+logical-or = logical-and, { "||", logical-and } ;
+
+(* Short-circuit and; yields a boolean (or the mask). *)
+logical-and = equality, { "&&", equality } ;
+
+(* Equality, null-aware (SPEC.md 4.6). *)
+equality = relational, { ( "==" | "!=" ), relational } ;
+
+(* Ordering and membership, one level, grouping left. UNDOCUMENTED: a chain such as 0 < x < 10 compiles as          *)
+(* (0 < x) < 10 in unchecked mode; checked mode refuses it (RCH-9127).                                              *)
+relational = additive, { relational-operator, additive } ;
+
+(* "not in" is two identifier tokens with any white space between them. *)
+relational-operator = "<" | "<=" | ">" | ">=" | "in" | "not", "in" ;
+
+(* Addition, subtraction, text joining. *)
+additive = multiplicative, { ( "+" | "-" ), multiplicative } ;
+
+(* Multiplication, division, remainder. *)
+multiplicative = unary, { ( "*" | "/" | "%" ), unary } ;
+
+(* Prefix not and negation, repeatable (!!x, --x). There is no unary plus: "+1" is an error. UNDOCUMENTED.           *)
+unary = ( "!" | "-" ), unary
+      | postfix ;
+
+(* An operand followed by any number of selectors, applied left to right. Selectors apply to any primary:           *)
+(* f(x).name, (a)[0], [1, 2][0] and 'abc'.x all compile (the last is empty: text has no fields).                   *)
+postfix = primary, { selector } ;
+
+(* The four selectors. A "." selector directly after an each-selector (or after another field of one) takes that    *)
+(* field of every element ("projection"). *)
+selector = field-selector | each-selector | filter-selector | index-selector ;
+
+(* A field by name. Any identifier may follow the dot, reserved words included ($.true, $.in, $.ctl). *)
+field-selector = ".", identifier ;
+
+(* Every element of a list: three tokens "[", "*", "]", so "[ * ]" is the same. Tried before index-selector. *)
+each-selector = "[", "*", "]" ;
+
+(* The elements for which the predicate, evaluated with "@" bound to each element, is truthy. *)
+filter-selector = filter-open, expression, "]" ;
+
+(* An element by number (negative counts from the end) or a field by text: $.legs[0], $.legs[-1], $['day-count']. *)
+index-selector = "[", expression, "]" ;
+
+(* An operand. A call is recognised by an identifier followed by "("; a let form by "let" followed by "(". *)
+primary = literal
+        | context-ref
+        | control-ref
+        | list-literal
+        | group
+        | let-form
+        | call
+        | name ;
+
+(* Literal values. There are no object literals. *)
+literal = number | string | "true" | "false" | "null" ;
+
+(* The roots an expression reads (SPEC.md 4.3). *)
+context-ref = "$"                          (* the screen's record: data entries are its fields                  *)
+            | "@"                          (* the current row or element; empty outside one                     *)
+            | parent-ref                   (* the element the current one is in                                 *)
+            | index-ref                    (* #index: 0-based position of the current row, -1 outside a row      *)
+            | src-ref                      (* $src: what the panel's own source: names                           *)
+            | event-ref ;                  (* @panel events; @parent; @acc inside reduce (see accumulator-ref)   *)
+
+(* "^" is the parent of the current element, "^^" its parent, and so on. The carets must be ADJACENT: "^ ^" is an    *)
+(* error. "^" is not an exponent operator; there is none (use power(x, y)). UNDOCUMENTED in the reference grammar.  *)
+parent-ref = "^", { "^" } ;
+
+(* "@acc" denotes the accumulator only inside the third argument of reduce(list, init, expr), including inside forms *)
+(* nested in it; everywhere else it is the events of a panel named "acc". UNDOCUMENTED as a lexical rule.            *)
+accumulator-ref = event-ref ;              (* with name "acc", in the scope described above *)
+
+(* The value of a control. Recognised only when "ctl" is followed by "." and an identifier that is not followed by  *)
+(* "("; otherwise "ctl" is an ordinary name. *)
+control-ref = "ctl", ".", identifier ;
+
+(* A list written in the expression; a trailing comma is allowed; "[]" is the empty list; at most 1,000 items.       *)
+(* UNDOCUMENTED in the reference grammar, and contradicted by the reference guide's error table ("there are no list  *)
+(* literals"); the parser accepts them.                                                                             *)
+list-literal = "[", [ expression, { ",", expression }, [ "," ] ], "]" ;
+
+(* Parentheses. *)
+group = "(", expression, ")" ;
+
+(* let(name = value, ..., result): one or more bindings, then the result. Each value may read the names bound before *)
+(* it; the result reads all. A name hides a field of the same name inside the let only. A reserved word cannot be a *)
+(* name; a name may not be bound twice in one let; at most 63 names. Unlike a call, no trailing comma is allowed.    *)
+let-form = "let", "(", binding, ",", { binding, "," }, expression, ")" ;
+
+(* One binding of a let form. *)
+binding = identifier, "=", expression ;
+
+(* A function call. The name must be in the function table of the loaded profiles, with an argument count in range, *)
+(* at compile time (SPEC.md 5). A trailing comma is allowed: f(a, b,). UNDOCUMENTED: trailing comma.                *)
+call = identifier, "(", [ arguments ], ")" ;
+
+(* Positional arguments first, then named ones. A positional argument after a named one is an error. *)
+arguments = argument, { ",", argument }, [ "," ] ;
+
+(* One argument. A named argument is recognised by an identifier directly followed by a single "=" token.             *)
+argument = named-argument | expression ;
+
+(* An argument by parameter name: round(x, n = 2). The name must be a parameter of the function's signature and may *)
+(* be given only once. UNDOCUMENTED in the reference grammar.                                                       *)
+named-argument = identifier, "=", expression ;
+
+(* A bare name: a let name in scope; otherwise a field of "@" inside a row, else of "$". *)
+name = identifier ;
+
+
+(* ================================================================================================================ *)
+(* Part C. Templates                                                                                                *)
+(* ================================================================================================================ *)
+
+(* Text with embedded expressions: "Leg ${#index + 1} of ${size($.legs)}". Text without "${" is used as it is.       *)
+template = { template-text | template-part } ;
+
+(* Literal text: any characters up to the next "${". A lone "$", "{" or "}" is literal. There is no escape for a     *)
+(* literal "${". UNDOCUMENTED. *)
+template-text = ? any non-empty sequence of characters that does not contain "${" ? ;
+
+(* An embedded expression. The part ends at the "}" that balances the braces opened after "${"; an unclosed part is *)
+(* "unclosed '${'". UNDOCUMENTED: brace counting ignores quotes, so "${ '}' }" ends inside the string and does not  *)
+(* compile; an empty part "${}" is "the expression ends early".                                                     *)
+template-part = "${", balanced-text, "}" ;
+
+(* Text whose braces balance. Its content must be an `expression-source` (Part A). *)
+balanced-text = { ( any-char - ( "{" | "}" ) ) | "{", balanced-text, "}" } ;
+
+(* End of grammar: 59 rules (24 lexical, 31 syntactic, 4 template). *)

@@ -1,0 +1,9 @@
+{
+  "name": "drishti-rachana-workspace",
+  "private": true,
+  "description": "npm workspace of Drishti Rachana's JavaScript packages (planned; see docs/design/COMPILER_AND_RUNTIMES.md section 2)",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "author": "Ashutosh Sinha",
+  "workspaces": ["packages/*"],
+  "engines": { "node": ">=20" }
+}

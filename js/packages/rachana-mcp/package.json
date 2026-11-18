@@ -1,0 +1,10 @@
+{
+  "name": "drishti-rachana-mcp",
+  "version": "0.9.0-snapshot",
+  "private": true,
+  "description": "The generic Rachana MCP server (validate_sutra, render_dashboard, sutra_examples, data_to_table)",
+  "license": "SEE LICENSE IN ../../../LICENSE",
+  "author": "Ashutosh Sinha",
+  "type": "module",
+  "main": "src/index.js"
+}

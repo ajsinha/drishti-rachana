@@ -15,7 +15,7 @@ and the difference is a defect to fix in one of them.
 ## 0. The ViewModel schema
 
 The ViewModel is specified here (decision D6) as `spec/1/viewmodel.schema.json` (JSON Schema draft 2020-12). It is
-**not in this repository yet: schema to be imported in R0** from the reference's generated schema (`ViewModelSchema`,
+**in this repository as a draft transcribed by reading (see [VIEWMODEL.md](VIEWMODEL.md)); to be replaced in R0 step H4 by the schema generated** from the reference's generated schema (`ViewModelSchema`,
 served by Drishti at `GET /api/v1/viewmodel/schema`, 55 definitions, every record closed). Until then the shapes the
 rules produce are listed in this document (sections 2 to 4); field names and types here are those of contract `1.0`.
 The ViewModel versions independently of the language (`contract: "1.0"`; a renderer refuses a major it does not know,

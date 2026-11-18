@@ -17,7 +17,7 @@ does not describe any one runtime.
 | [TRANSLATION.md](TRANSLATION.md) | the translation rules: Sutra + data → ViewModel, construct by construct | draft 1 |
 | `functions.yaml` | every Core function in full (signature, types, null and error behaviour, examples) | planned, R0 step 0d |
 | `rachana.lang.json`, `sutra.schema.json` | the language definition and the Core JSON Schema, generated from the reference compiler's tables | planned, R0 step 0c |
-| `viewmodel.schema.json` | the ViewModel's JSON Schema (decision D6) | to be imported in R0 |
+| [viewmodel.schema.json](viewmodel.schema.json), [VIEWMODEL.md](VIEWMODEL.md) | the ViewModel's JSON Schema (decision D6, N3): 55 definitions, transcribed by reading from the reference's records; and a short description with the differences from the Views design | draft; schema replaced by the generated one in R0 step H4 |
 
 Read SPEC.md first; it links the other two where they apply.
 

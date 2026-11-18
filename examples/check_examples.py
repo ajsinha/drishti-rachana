@@ -4,7 +4,8 @@
 
  1. every CSV parses and has equal-width rows;
  2. every Sutra is valid YAML (no duplicate keys), uses only Sutra Core top-level keys, panel kinds, panel options,
-    data-entry keys and function names (spec/1/SPEC.md 2.2 to 2.4, spec/1/functions.yaml);
+    data-entry keys, function names, format names and tones (spec/1/SPEC.md 2.2 to 2.6, spec/1/functions.yaml,
+    spec/1/formats.yaml);
  3. gen_orders.py runs for 2 seconds and every line of its output validates against spec/1/data-protocol/patch.json.
 """
 import csv, json, re, subprocess, sys
@@ -59,7 +60,19 @@ def calls(text):
     text = re.sub(r"'[^']*'|\"[^\"]*\"", "''", text)           # drop literals
     return set(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(", text))
 
-def check_sutra(path, fns, errs):
+TONES = {"sign", "status", "pos", "neg", "link", "accent", "ok", "warn", "bad"}   # SPEC 2.6
+
+def formats():
+    doc = yaml.safe_load((SPEC / "formats.yaml").read_text())
+    return set(doc["formats"]) | {"list"}                 # list is built in (formats.yaml, last comment)
+
+def check_looks(where, entry, fmts, bad):
+    for k in ("fmt", "deltaFmt"):
+        if k in entry and entry[k] not in fmts: bad(f"{where}: format {entry[k]} is not in formats.yaml")
+    for k in ("tone", "deltaTone"):
+        if k in entry and entry[k] not in TONES: bad(f"{where}: tone {entry[k]} is not a Core tone")
+
+def check_sutra(path, fns, errs, fmts=frozenset()):
     def bad(msg): errs.append(f"{path.name}: {msg}")
     try:
         doc = yaml.load(path.read_text(), Strict)
@@ -85,8 +98,10 @@ def check_sutra(path, fns, errs):
         req, acc = KINDS[kind]
         for k in req - set(p): bad(f"panel {pid}: missing {k}")
         for k in set(p) - COMMON - req - acc: bad(f"panel {pid}: option {k} not accepted by {kind}")
+        check_looks(f"panel {pid}", p, fmts, bad)
         for col in p.get("columns") or []:
             for k in set(col) - COLUMN: bad(f"panel {pid}: column key {k}")
+            check_looks(f"panel {pid} column {col.get('label')}", col, fmts, bad)
             texts.append(str(col.get("bind", "")))
         for k in ("rows", "value", "delta", "caption", "title", "text", "limit"):
             if k in p: texts.append(str(p[k]))
@@ -104,7 +119,7 @@ def main():
         print(f"csv   {f.relative_to(ROOT)}: {len(rows) - 1} rows")
     fns = functions()
     for f in sorted(ROOT.rglob("*.sutra.yaml")):
-        check_sutra(f, fns, errs)
+        check_sutra(f, fns, errs, formats())
         print(f"sutra {f.relative_to(ROOT)}")
     schema = json.loads((SPEC / "data-protocol" / "patch.json").read_text())
     out = subprocess.run([sys.executable, "-I", str(ROOT / "live-orders" / "gen_orders.py"), "--duration", "2", "--rate", "10",

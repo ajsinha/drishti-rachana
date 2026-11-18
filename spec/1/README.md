@@ -15,7 +15,7 @@ does not describe any one runtime.
 | [SPEC.md](SPEC.md) | the normative text: document model, Sutra Core keys and the `data:` entries, Rachana-EL values and evaluation, the Core function catalogue, the error model, versioning, what conformance pins | draft 1 |
 | [rachana-el.ebnf](rachana-el.ebnf) | the complete grammar of Rachana-EL in ISO 14977 EBNF: tokens, operators and precedence, templates (59 rules) | draft 1 |
 | [TRANSLATION.md](TRANSLATION.md) | the translation rules: Sutra + data → ViewModel, construct by construct | draft 1 |
-| `functions.yaml` | every Core function in full (signature, types, null and error behaviour, examples) | planned, R0 step 0d |
+| [functions.yaml](functions.yaml), [functions.schema.json](functions.schema.json) | every Core function in full (207: signature, types, null and error behaviour, examples), the deprecated spellings, the Drishti-profile functions (36) and the engine list functions pending classification (49); and the JSON Schema of the file's own shape | draft, drafted by reading; completed with the coverage gate in R0 step H5 |
 | `rachana.lang.json`, `sutra.schema.json` | the language definition and the Core JSON Schema, generated from the reference compiler's tables | planned, R0 step 0c |
 | [viewmodel.schema.json](viewmodel.schema.json), [VIEWMODEL.md](VIEWMODEL.md) | the ViewModel's JSON Schema (decision D6, N3): 55 definitions, transcribed by reading from the reference's records; and a short description with the differences from the Views design | draft; schema replaced by the generated one in R0 step H4 |
 

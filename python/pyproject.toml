@@ -1,0 +1,33 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "drishti-rachana"
+version = "0.0.1.dev0"
+description = "Drishti Rachana for Python: Data Protocol types, conformance runner, Flask and FastAPI adapters (skeleton)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "../LICENSE" }
+authors = [{ name = "Ashutosh Sinha", email = "ajsinha@gmail.com" }]
+dependencies = []          # the core types use the standard library only
+
+[project.optional-dependencies]
+conformance = ["pyyaml>=6", "jsonschema>=4"]   # the runner reads YAML case files
+flask = ["flask>=3"]
+fastapi = ["fastapi>=0.110"]
+arrow = ["pyarrow>=15"]
+polars = ["polars>=1"]
+test = ["pytest>=8", "pyyaml>=6", "jsonschema>=4"]
+
+[project.scripts]
+rachana = "drishti_rachana.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/drishti_rachana"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

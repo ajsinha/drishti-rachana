@@ -156,7 +156,7 @@ A row condition is compiled by the runtime; controls are replaced by their value
 | Node | Form |
 |---|---|
 | column | `{ "col": "region" }`; a dotted path reaches into an `object` column (`"legs.rate"`) |
-| literal | `{ "lit": value, "type"?: "date" \| "timestamp" \| "decimal" }`; `type` says how a string literal is read; a decimal literal is a string of digits |
+| literal | `{ "lit": value, "type"?: "date" \| "timestamp" \| "decimal" }`; `type` says how a string literal is read and is allowed only on a string: `date` is `yyyy-mm-dd`, `timestamp` carries `Z` or an offset (3.1), `decimal` is digits with an optional `-` and fraction, no exponent |
 | list | `{ "list": [ node, … ] }` |
 | operation | `{ "op": name, "args": [ node, … ] }` |
 
@@ -171,8 +171,14 @@ Operations and arity (the schema enforces it; `in` and `not-in` take a column or
 | 1 or more | `coalesce` |
 
 This is the **fixed push-down subset of v1**; a new operation is an addition of a minor of the protocol (section 14), never text.
+Each operation is the Rachana-EL operator or Core function of the same name, at the arity above; three names differ from
+EL's spelling: `neg` is unary `-`, `not-in` is `not in`, and `is-null(x)` is `x == null`. An operation with more than two
+arguments is the left fold of its binary form, as Rachana-EL reads a chain: `{ "op": "+", "args": [a, b, c] }` is
+`(a + b) + c` (this matters for `+`, which joins text when a side is not a number).
 Semantics are those of Rachana-EL ([SPEC](../SPEC.md) section 4 and the entries of `functions.yaml`), with a missing or null
-value as `empty`: null in, null out for operators and scalar functions; `empty == empty` is true and `empty != 'X'` is true
+value as `empty`: null in, null out for operators and scalar functions, with SPEC's exceptions (`'x' + empty` → `'x'`
+(4.5); `contains`, `starts_with`, `ends_with`, `has`, `any_of`, `all_of` answer `false` or `true`, never empty, and
+`coalesce` skips empty (5.1)); `empty == empty` is true and `empty != 'X'` is true
 (4.6); an ordering comparison against `empty` is false (4.7); `&&`, `||` and `!` follow SPEC 4.8 over truthy values; a row
 whose condition is not truthy is excluded; equality is numeric when either side is a number, else exact text; `contains`,
 `starts_with` and `ends_with` are as `functions.yaml` defines them (case rules included); `has(list, x)`, `any_of` and
@@ -181,7 +187,7 @@ A host that cannot honour these semantics for an operation MUST answer `rdp.quer
 `operation` naming it; it MUST NOT approximate. The runtime then reports it at the panel, or, when the table is small enough, reads
 rows and filters locally. An operation outside the subset over a table that is server-only is `RCH-2074` at author time.
 
-Filtering or grouping on a masked column is `rdp.forbidden` (section 11).
+Filtering, sorting or grouping on a masked column is `rdp.forbidden` (section 11).
 
 ## 8. Live changes
 

@@ -113,3 +113,62 @@ cases:
             columns: [region, revenue, n]
             values: [ [North, "255.00", 2], [South, "150.00", 2] ]
             totals: { revenue: "405.00", n: 4 }
+
+  - id: filter-not-equal-keeps-empty
+    kind: protocol
+    source: PROTOCOL 7; SPEC 4.6
+    note: "empty != 'X' is true in Rachana-EL, so rows whose note is null are kept (a SQL host needs IS DISTINCT FROM)."
+    fixture: *sales
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-sales/query
+          body:
+            columns: [region, month]
+            filter: { op: "!=", args: [ { col: note }, { lit: late } ] }
+            sort: [ { col: region }, { col: month } ]
+        expect:
+          status: 200
+          body: { values: [ [North, "2026-01-01"], [South, "2025-12-01"], [South, "2026-01-01"] ] }
+
+  - id: filter-not-of-ordering-against-empty-is-true
+    kind: protocol
+    source: PROTOCOL 7; SPEC 4.7, 4.8
+    note: "An ordering against empty is false, so its negation is true and the null rows are kept (SQL's NOT (NULL < x) would drop them)."
+    fixture: *sales
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-sales/query
+          body:
+            columns: [region, month]
+            filter: { op: "!", args: [ { op: "<", args: [ { col: note }, { lit: zzz } ] } ] }
+            sort: [ { col: region }, { col: month } ]
+        expect:
+          status: 200
+          body: { values: [ [North, "2026-01-01"], [South, "2025-12-01"] ] }
+
+  - id: filter-on-masked-column-is-forbidden
+    kind: protocol
+    source: PROTOCOL 7, 11
+    fixture:
+      name: rdp-staff
+      schema:
+        name: rdp-staff
+        key: [id]
+        columns:
+          - { name: id, type: string }
+          - { name: salary, type: decimal, scale: 2, masked: true }
+        can: [filter]
+      rows:
+        - { id: A, salary: { $masked: true } }
+        - { id: B, salary: { $masked: true } }
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-staff/query
+          body:
+            filter: { op: ">", args: [ { col: salary }, { lit: "100000", type: decimal } ] }
+        expect:
+          status: 403
+          body: { error: { code: rdp.forbidden } }

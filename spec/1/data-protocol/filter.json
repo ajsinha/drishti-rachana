@@ -14,7 +14,16 @@
         "lit": { "type": ["string", "number", "boolean", "null"] },
         "type": { "enum": ["date", "timestamp", "decimal"], "description": "How a string literal is read; a decimal literal is a string of digits." }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "required": ["type"] }, "then": { "properties": { "lit": { "type": "string" } } } },
+        { "if": { "required": ["type"], "properties": { "type": { "const": "date" } } },
+          "then": { "properties": { "lit": { "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" } } } },
+        { "if": { "required": ["type"], "properties": { "type": { "const": "timestamp" } } },
+          "then": { "properties": { "lit": { "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]+)?)?(Z|[+-][0-9]{2}:[0-9]{2})$" } } } },
+        { "if": { "required": ["type"], "properties": { "type": { "const": "decimal" } } },
+          "then": { "properties": { "lit": { "pattern": "^-?[0-9]+(\\.[0-9]+)?$" } } } }
+      ]
     },
     "list": { "type": "object", "required": ["list"], "properties": { "list": { "type": "array", "items": { "$ref": "#/$defs/node" } } }, "additionalProperties": false },
     "opName": {

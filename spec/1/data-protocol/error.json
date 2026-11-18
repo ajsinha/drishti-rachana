@@ -28,7 +28,7 @@
       "type": "object", "required": ["t", "code", "detail"],
       "properties": {
         "t": { "const": "err" }, "id": { "type": ["string", "integer"] },
-        "code": { "$ref": "#/$defs/code" }, "detail": { "type": "string" }, "retry": { "type": "boolean" }
+        "code": { "type": "string", "pattern": "^rdp\\.[a-z]+(\\.[a-z-]+)?$", "description": "A code of $defs/code, or a host's own rdp. code, which a reader treats as rdp.internal (section 10.1)." }, "detail": { "type": "string" }, "retry": { "type": "boolean" }
       }
     }
   }

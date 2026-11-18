@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: edit/examples/edit
+since: "1.0"
+profile: core
+verified: false
+description: Editing operations keep comments and layout (FORMAT 5.11). Operation names are placeholders until H2 harvests the reference's.
+cases:
+  - id: set-a-title-keeps-comments
+    kind: edit
+    source: COMPILER_AND_RUNTIMES 3.2 (comments kept for the writer)
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      # The headline figure.
+      panels:
+        - id: total          # keep me
+          kind: metric
+          value: "1 + 2"
+    operation: { op: set, path: /panels/0/title, value: "Total" }
+    expect:
+      text: |
+        rachana: 1
+        sutra: demo
+        version: 1
+        # The headline figure.
+        panels:
+          - id: total          # keep me
+            kind: metric
+            value: "1 + 2"
+            title: Total
+
+  - id: remove-a-required-key-is-refused
+    kind: edit
+    source: SPEC 2.2
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+    operation: { op: remove, path: /sutra }
+    expect:
+      problems:
+        - { code: RCH-2010, path: "" }

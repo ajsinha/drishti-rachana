@@ -1,0 +1,42 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: patch/examples/patch
+since: "1.1"
+profile: core
+verified: false
+description: Keyed table patches -> ViewModel patch frames, no transport (FORMAT 5.9).
+cases:
+  - id: update-remove-and-a-no-op
+    kind: patch
+    source: DATA_PROTOCOL 6.1; TRANSLATION 10
+    note: >-
+      Needs data: (D10), planned; since "1.1" stands for the minor in which data: ships and is corrected then.
+      Frame shapes are spec/1/viewmodel.schema.json's (F3); only the third step pins frames (none).
+    given:
+      today: "2026-01-15"
+      tables:
+        sales:
+          schema:
+            name: sales
+            key: [region]
+            columns: [ { name: region, type: string }, { name: revenue, type: number } ]
+          rows:
+            - { region: North, revenue: 100 }
+            - { region: South, revenue: 50 }
+    sutra: |
+      rachana: 1
+      sutra: live-total
+      version: 1
+      data:
+        sales: { table: sales, key: [region] }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')", fmt: amount0 }
+        - { id: note, kind: markdown, text: "Fixed text" }
+    steps:
+      - { table: sales, patch: { update: [ { region: North, revenue: 120 } ] } }
+      - { table: sales, patch: { remove: [ [South] ] } }
+      - { table: sales, patch: { add: [ { region: East, revenue: 0 } ] } }
+    expect:
+      steps:
+        - at: { /panels/0/data/value/text: "170" }
+        - at: { /panels/0/data/value/text: "120" }
+        - { frames: [], at: { /panels/0/data/value/text: "120" } }

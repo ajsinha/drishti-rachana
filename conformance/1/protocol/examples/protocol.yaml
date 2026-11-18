@@ -1,0 +1,58 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/examples/protocol
+since: "1.0"
+profile: core
+verified: false
+description: Data Protocol host answers (DATA_PROTOCOL 2 to 5, 7); bodies compared as subsets. Normative cases are F8's.
+cases:
+  - id: schema-document
+    kind: protocol
+    source: DATA_PROTOCOL 2, 3
+    fixture: &ref-sales
+      name: rdp-ref-sales
+      schema:
+        name: rdp-ref-sales
+        key: [region, month]
+        columns:
+          - { name: region, type: string }
+          - { name: month, type: date }
+          - { name: revenue, type: decimal, scale: 2 }
+        can: [page, sort]
+      rows:
+        - { region: North, month: "2026-01-01", revenue: "120.00" }
+        - { region: North, month: "2026-02-01", revenue: "135.00" }
+        - { region: South, month: "2026-01-01", revenue: "80.00" }
+    steps:
+      - request: { method: GET, path: /tables/rdp-ref-sales }
+        expect:
+          status: 200
+          body: { name: rdp-ref-sales, key: [region, month] }
+
+  - id: cursor-paging-is-stable
+    kind: protocol
+    source: DATA_PROTOCOL 4.1, 5.2
+    fixture: *ref-sales
+    steps:
+      - request: { method: GET, path: /tables/rdp-ref-sales/rows, query: { limit: 2, sort: "region,month" } }
+        expect:
+          status: 200
+          body:
+            table: rdp-ref-sales
+            columns: [region, month, revenue]
+            values: [ [North, "2026-01-01", "120.00"], [North, "2026-02-01", "135.00"] ]
+        capture: { next: /next }
+      - request: { method: GET, path: /tables/rdp-ref-sales/rows, query: { limit: 2, sort: "region,month", cursor: "${next}" } }
+        expect:
+          status: 200
+          body:
+            values: [ [South, "2026-01-01", "80.00"] ]
+
+  - id: unknown-column-is-422
+    kind: protocol
+    source: DATA_PROTOCOL 7
+    fixture: *ref-sales
+    steps:
+      - request: { method: GET, path: /tables/rdp-ref-sales/rows, query: { columns: reveune } }
+        expect:
+          status: 422
+          body: { error: { code: rdp.column.unknown, table: rdp-ref-sales, column: reveune } }

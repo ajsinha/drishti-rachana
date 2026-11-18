@@ -1,0 +1,7 @@
+# Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved.
+# The specification and the conformance suite are compared as bytes: LF line ends on every platform (plan R11).
+conformance/** text eol=lf
+spec/** text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf

@@ -1,0 +1,78 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/examples/problem
+since: "1.0"
+profile: core
+verified: false
+description: A Sutra's complete, ordered problem list (SPEC 6), matched by code, path and range.
+cases:
+  - id: valid-sutra-has-no-problems
+    kind: problem
+    source: SPEC 6.1
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      panels:
+        - { id: note, kind: markdown, text: "Hello" }
+    expect: { ok: true, problems: [] }
+
+  - id: unknown-top-level-key
+    kind: problem
+    source: SPEC 2.1 rule 4
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      colour: blue
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2011, severity: error, path: /colour, range: { start: { line: 4, column: 1, offset: 34 } } }
+
+  - id: problems-in-position-order
+    kind: problem
+    source: SPEC 2.3, 6.1
+    note: Both problems are reported (a compile returns all of them), first by position.
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      panels:
+        - { id: a, kind: pie }
+        - { id: a, kind: markdown, text: "x" }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2021, path: /panels/0/kind, range: { start: { line: 5 } } }
+        - { code: RCH-2024, path: /panels/1/id, range: { start: { line: 6 } } }
+
+  - id: expression-problem-inside-a-panel
+    kind: problem
+    source: SPEC 6.1, 6.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      panels:
+        - { id: total, kind: metric, value: "2 ** 3" }
+    expect:
+      ok: false
+      problems:
+        - code: RCH-2101
+          path: /panels/0/value
+          range: { start: { line: 5 } }
+          messageStart: "expression '2 ** 3': '**' is not Rachana"
+          expr: { source: "2 ** 3", start: 2 }
+
+  - id: profile-key-without-the-profile
+    kind: problem
+    source: SPEC 2.2 (match belongs to the drishti profile, D12)
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { mnemonic: TRD }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2060, path: /match }

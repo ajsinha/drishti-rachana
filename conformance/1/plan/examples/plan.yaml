@@ -1,0 +1,39 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: plan/examples/plan
+since: "1.1"
+profile: core
+verified: false
+description: What a runtime asks of each table (FORMAT 5.10). The plan document is B1's; these cases use at.
+cases:
+  - id: control-filter-pushed-down-as-a-tree
+    kind: plan
+    source: DATA_PROTOCOL 5, 5.1
+    note: >-
+      Needs data: (D10); since "1.1" stands for the minor in which data: ships. Pointers follow DATA_PROTOCOL 5's
+      query document until B1 defines the plan document.
+    given:
+      today: "2026-01-15"
+      ctl: { region: North }
+      schemas:
+        sales:
+          name: sales
+          key: [region, month]
+          columns:
+            - { name: region, type: string }
+            - { name: month, type: date }
+            - { name: revenue, type: decimal }
+          can: [page, sort, filter, group]
+    sutra: |
+      rachana: 1
+      sutra: plan-demo
+      version: 1
+      controls:
+        - { id: region, kind: select, options: [North, South] }
+      data:
+        sales: { table: sales, key: [region, month] }
+      panels:
+        - { id: by-month, kind: table, rows: "$.sales", where: "@.region == ctl.region", columns: [ { label: Month, bind: month }, { label: Revenue, bind: revenue } ] }
+    expect:
+      at:
+        /tables/0/name: sales
+        /tables/0/query/filter: { op: "==", args: [ { col: region }, { lit: North } ] }

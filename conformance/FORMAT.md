@@ -5,6 +5,7 @@
 format is an addition only (a new kind, a new optional field), never a change of meaning. The machine-readable form is
 [schema/case.schema.json](schema/case.schema.json) (JSON Schema draft 2020-12); where this text and the schema
 disagree, that is a defect in one of them. How a runtime runs the cases is [RUNNER.md](RUNNER.md).
+`PROTOCOL n` below is a section of the Data Protocol, [../spec/1/data-protocol/PROTOCOL.md](../spec/1/data-protocol/PROTOCOL.md).
 
 ## Contents
 
@@ -112,7 +113,7 @@ object of **exactly one** key from this table.
 | empty | `null` | missing and `null` are the same value (SPEC 4.2) |
 | NaN, +∞, −∞ | `{ $num: NaN }`, `{ $num: Infinity }`, `{ $num: -Infinity }` | the strings exactly; in a ViewModel these are `null` (TRANSLATION 8) and never tagged |
 | an exact decimal a double cannot hold | `{ $dec: "0.1000000000000000000001" }` | plain digits, optional `-`, no exponent; any decimal a double holds is written as a number |
-| a masked value | `{ $masked: true }` | the same tag as the Data Protocol's (DATA_PROTOCOL 2); in inputs it stands for the host's `Masker` having masked the value |
+| a masked value | `{ $masked: true }` | the same tag as the Data Protocol's (PROTOCOL 3.2); in inputs it stands for the host's `Masker` having masked the value |
 | a link | `{ $link: { id: CP-1, kind: counterparty, label: Acme } }` | `kind` and `label` optional; the result of `link(id, kind?, label?)` |
 
 Every other object is a Rachana object. A record field whose name starts with `$` cannot be written in a case in
@@ -157,7 +158,7 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 | `events` | what panels emitted: `{ trades: { select: { id: 7 } } }` → `@trades.select.id` | `expr`, `sutra` |
 | `src` | `$src` | `expr` |
 | `today` | the as-of date the host sets (`asof()`), ISO text; **required whenever the result could depend on it** (a case never reads a clock) | all but `grammar`, `edit`, `protocol` |
-| `tables` | `data:` tables by name: a list of row objects, or `{ schema, rows }` with a Data Protocol schema (DATA_PROTOCOL 2) | `sutra`, `patch`, `plan` |
+| `tables` | `data:` tables by name: a list of row objects, or `{ schema, rows }` with a Data Protocol schema (PROTOCOL 2) | `sutra`, `patch`, `plan` |
 | `schemas` | Data Protocol schemas by table name, for planning without rows | `plan` |
 | `profiles` | profiles loaded, beyond `core` (the runner loads at least what `profile` names) | all |
 | `limits` | host-lowered bounds of SPEC 4.12: `{ depth, length }` | `expr`, `expr-error`, `check`, `problem` |
@@ -225,7 +226,7 @@ a `fix`, the runner also applies every fix, compiles again and fails the case if
 ### 5.9 `patch`
 
 The view is built as for `sutra`; then each entry of `steps` is applied in order. A step is `{ table, patch }` where
-`patch` is a Data Protocol patch (`{ remove, update, add, reset }`, DATA_PROTOCOL 6.1) to the named table of
+`patch` is a Data Protocol patch (`{ remove, update, add, reset }`, PROTOCOL 8.1) to the named table of
 `given.tables`, which MUST have a `key`. The actual is the first ViewModel and, per step, the ViewModel patch frames
 that step produced and the ViewModel after applying them. `expect.steps[i]` names `frames` (the exact frames, shape of
 `spec/1/viewmodel.schema.json`) and/or `at` (parts of the ViewModel after that step). A step that changes nothing a
@@ -233,7 +234,7 @@ panel reads produces `frames: []`. No transport, timing or conflation is involve
 
 ### 5.10 `plan`
 
-What a runtime would ask of each table (SPEC 2.4, DATA_PROTOCOL 5): the tables read, the columns, the filter as a
+What a runtime would ask of each table (SPEC 2.4, PROTOCOL 6 and 7): the tables read, the columns, the filter as a
 syntax tree with controls replaced by their values, sorting, grouping, and what stays local. `given.schemas` replaces
 rows. The plan document is defined with `rachana explain --format json` (plan B1); until then, cases check it with
 `at`.
@@ -248,12 +249,12 @@ editing operations, written down when they are harvested (plan H2); the examples
 ### 5.12 `protocol`
 
 Run against a Data Protocol host, not a compiler. `fixture` is the reference table the host must serve for the case
-(`{ name, schema, rows }`, DATA_PROTOCOL 2 and 4); a host under test loads it through its test adapter. `steps` is a
+(`{ name, schema, rows }`, PROTOCOL 2 and 5); a host under test loads it through its test adapter. `steps` is a
 list of `{ request, expect, capture }`:
 
 - `request`: `{ method, path, query, body, headers }`; `path` is relative to the host's base; `${name}` in a string is
   replaced by a value captured earlier.
-- `expect`: `{ status, body }`; `body` is compared as a **subset** (section 7): a host may add fields (DATA_PROTOCOL 11).
+- `expect`: `{ status, body }`; `body` is compared as a **subset** (section 7): a host may add fields (PROTOCOL 14).
 - `capture`: `{ name: "/json/pointer" }` into the step's response body (a cursor for the next page).
 
 A `protocol` case has no top-level `expect`: each step carries its own.
@@ -343,7 +344,7 @@ double such as `1.5e7 = 15000000` prints `15000000`, not `1.5E7`.
 N1's bound is exactly `10¹⁵` (SPEC 4.2 "below 10¹⁵"). Cases pinning them carry `tags: [determinism]` and stay
 `verified: false` until P2 has run them on the reference.
 
-These rules give the text form of SPEC 4.2 and the numbers of canonical JSON; a format (`amount0`, `pct4`, …) has
+These rules give the text form of SPEC 4.2 and the numbers of canonical JSON; a format (`amount0`, `pct2`, …, [formats.yaml](../spec/1/formats.yaml)) has
 its own rules and is not this.
 
 ## 10. Rules for case authors

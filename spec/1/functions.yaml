@@ -2244,7 +2244,7 @@ core:
   nulls: {empty: "count of nothing is 0", masked: "masked"}
   errors:
   - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
-  description: "Number of values not empty (of the field, when given); `count()` over no list is 0. Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  description: "Number of values not empty (of the field, when given), of any kind: rows, texts and numbers alike (the reference engine's kernel: 'the elements (or the field's values) that are not empty'); `count()` over no list is 0; a masked element masks the result."
   examples:
   - {expr: "count([1, null, 3])", result: 2}
   since: "1.0"
@@ -2354,7 +2354,7 @@ core:
   nulls: {empty: "empty list gives empty", masked: "masked"}
   errors:
   - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
-  description: "Number of different values (exact). Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  description: "Number of different values (exact), of any kind: texts count (the reference engine's example is `distinct($.LEGS[*].CURRENCY)`); `1` and `1.0` are one value; empty is not a value; a masked element masks the result."
   examples:
   - {expr: "distinct([1, 1.0, 2, 'a'])", result: 3}
   since: "1.0"

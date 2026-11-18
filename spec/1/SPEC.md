@@ -13,9 +13,11 @@ Companion files in this folder:
 | this text | meaning: document model, evaluation, functions, errors, versions | draft 1 |
 | [rachana-el.ebnf](rachana-el.ebnf) | expression syntax (59 rules, ISO 14977) | draft 1 |
 | [TRANSLATION.md](TRANSLATION.md) | Sutra + data → ViewModel | draft 1 |
-| `functions.yaml` | every Core function: signature, types, nulls, errors, examples | R0 step 0d |
+| [functions.yaml](functions.yaml) | every Core function: signature, types, nulls, errors, examples | draft, completed in R0 step H5 |
+| [formats.yaml](formats.yaml) | the Core format names and how each prints (2.6) | draft |
 | `rachana.lang.json`, `sutra.schema.json` | every key, kind, option; document structure | generated, R0 step 0c |
-| `viewmodel.schema.json` | the ViewModel | imported in R0 (decision D6) |
+| [viewmodel.schema.json](viewmodel.schema.json) | the ViewModel | draft by reading; generated in R0 step H4 (decision D6) |
+| [data-protocol/PROTOCOL.md](data-protocol/PROTOCOL.md) and its JSON Schemas | the Data Protocol v1: tables, rows, query and filter tree, live patches, errors, bridge | draft 1 |
 
 ## 0. Conventions
 
@@ -156,7 +158,9 @@ function, REST paging or a topic: a host exposes those as named tables.
 
 - **Controls** [today]: `{id, kind, label?, options?, from?, default?, remember?, required?, placement?, panel?,
   parent?, min?, max?, step?, range?}`; kinds `dropdown`, `multi-select`, `cascading`, `toggle`, `segmented`, `date`,
-  `date-range`, `number-range`, `top-n`, `search`; codes `RCH-2034`..`2039`. A control's value is read as `ctl.<id>`
+  `date-range`, `number-range`, `top-n`, `search`; codes `RCH-2034`..`2039`. `default` is a value of the control or
+  the word `first` (the first option; `multi-select` also `all`); a `top-n` default is a whole number above 0.
+  A control's value is read as `ctl.<id>`
   (text; a list of text for `multi-select`; a whole number for `top-n`; `from..to` text for a range). A control
   option form that names an entity kind (`options: { kind: … }`) is a profile form.
 - **Events** [today]: a panel `emits: [{name, on}]` (`row-click`, `bar-click`, …); another reads them as
@@ -170,7 +174,8 @@ function, REST paging or a topic: a host exposes those as named tables.
 ### 2.6 Formats and tones
 
 `fmt:` and `fmt(value, 'name')` name a **format**; `tone:` names a **tone**. Both are names, never styles. Core's
-format names are the table shared with Drishti Elements (`formats.yaml`); a profile MAY add names, never redefine one.
+format names are those of [formats.yaml](formats.yaml) (the table shared with Drishti Elements); a profile MAY add
+names, never redefine one.
 An unknown format name formats as plain text (`Values.text`) [today, CS]. Core tones: `sign` (→ `pos`/`neg` by the
 number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text containing *fail*, *reject*, *dispute*,
 *breach*; `warn` for *pending*, *unmatched*, *warn*; else `ok`; none for empty text), and the fixed tones `pos`, `neg`,
@@ -672,7 +677,7 @@ not compile produces problems.
 | Language | `major.minor` | major in the file (`rachana: 1`); minor in each definition entry's `since` |
 | Grammar, schema, definition, catalogue | the language's | `spec/1/…`, `x-rachana-language` inside |
 | ViewModel | its own `major.minor` (`1.0` today) | the ViewModel's `contract` field |
-| Data Protocol | its own major | `v` in the handshake, `/v1/` in addresses |
+| Data Protocol | its own major | `v` in the base document and the bridge `hello`; `/v1/` in addresses by convention |
 | Conformance suite | the language's | `conformance/1/`, each case has `since` |
 
 The first published minor is **1.0**: the language as the reference implements it when the conformance suite is cut,

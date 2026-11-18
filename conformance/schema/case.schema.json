@@ -136,7 +136,7 @@
       ]
     },
     "tableSchema": {
-      "description": "A Data Protocol table schema (DATA_PROTOCOL 2). Its normative schema is spec/1/data-protocol/schema.json (F8); only the parts a case needs are constrained here.",
+      "description": "A Data Protocol table schema (PROTOCOL 2). Its normative schema is spec/1/data-protocol/schema.json (F8); only the parts a case needs are constrained here.",
       "type": "object",
       "required": ["columns"],
       "properties": {

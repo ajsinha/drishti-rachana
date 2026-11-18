@@ -1,0 +1,143 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/masking
+since: "1.0"
+profile: core
+verified: false
+description: "Masked values (SPEC 4.9): they propagate through paths, operators and functions, and a condition on a mask is never true."
+given: {"record": {"id": "T-1", "notional": 100, "rows": [{"pv": 1}, {"pv": 2}], "mtm": {"$masked": true}, "counterparty": {"$masked": true}, "legs": [{"pv": 5}, {"pv": {"$masked": true}}]}}
+cases:
+
+  - id: "counterparty-name"
+    kind: "expr"
+    source: "MaskTest#whatLiesUnderAMaskIsMasked"
+    expr: "$.counterparty.name"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "counterparty-name-2"
+    kind: "expr"
+    source: "MaskTest#whatLiesUnderAMaskIsMasked"
+    expr: "$.counterparty['name']"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "notional-x"
+    kind: "expr"
+    source: "MaskTest#whatLiesUnderAMaskIsMasked"
+    note: "Under a plain value: missing, as before. (The Java test asserts the same on the document node.)"
+    expr: "$.notional.x"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "mtm-2"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    expr: "$.mtm * 2"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "mtm"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    expr: "-$.mtm"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "abs-mtm"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    expr: "abs($.mtm)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "fmt-mtm-signed0"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    tags: ["format-table"]
+    expr: "fmt($.mtm, 'signed0')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "link-counterparty-id-counterparty-counterparty-name"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    expr: "link($.counterparty.id, 'counterparty', $.counterparty.name)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "mtm-0-gain-loss"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    expr: "$.mtm > 0 ? 'gain' : 'loss'"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "coalesce-missing-notional-mtm"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    note: "coalesce passes a mask on only if it is the first value it would return (SPEC 4.9 rule 4)."
+    expr: "coalesce($.missing, $.notional, $.mtm)"
+    expect: {"value": 100}
+
+  - id: "mtm-fmt-mtm-signed0"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    tags: ["format-table"]
+    note: "The Java test renders the template MTM ${fmt($.mtm, 'signed0')}; the + form is the same words. See the template case in el/templates."
+    expr: "'MTM ' + fmt($.mtm, 'signed0')"
+    expect: {"value": "MTM •••", "type": "text"}
+
+  - id: "never-true-mtm-0"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "$.mtm > 0"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "never-true-mtm-0-2"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "$.mtm <= 0"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "never-true-mtm-0-3"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "!($.mtm > 0)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "never-true-mtm"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "$.mtm == '•••'"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "never-true-counterparty-name-x"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "$.counterparty.name != 'x'"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "never-true-contains-counterparty-name-mer"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "contains($.counterparty.name, 'Mer')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "never-true-mtm-0-notional-0"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "$.mtm > 0 && $.notional > 0"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "never-true-mtm-0-notional-0-2"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "The Java test asserts the result is not truthy; a masked result is never truthy (SPEC 4.9 rule 2), so the case pins the mask itself."
+    expr: "$.mtm > 0 || $.notional < 0"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "mtm-0-notional-0"
+    kind: "expr"
+    source: "MaskTest#aConditionOnAMaskIsNeverTrue"
+    note: "True for a reason that is not the mask (SPEC 4.9 rule 4)."
+    expr: "$.mtm > 0 || $.notional > 0"
+    expect: {"value": true, "type": "boolean"}

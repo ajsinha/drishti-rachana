@@ -1,0 +1,85 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/templates
+since: "1.0"
+profile: core
+verified: false
+description: "Templates (SPEC 4.11): text with ${expression} parts, inserted as their text form."
+given: {"record": {"tradeId": "IRS-1", "legs": [{"leg": 1, "label": "Pay fixed"}, {"leg": 2, "label": "Receive SOFR", "type": "FLOAT"}], "sales": [1, 2, 3], "mtm": {"$masked": true}, "cp": {"id": "CP-1", "name": "Northbridge"}}}
+cases:
+
+  - id: "leg-2-legs-1-label"
+    kind: "expr"
+    source: "ElTest#templates"
+    template: "Leg 2 · ${$.legs[1].label}"
+    expect: {"value": "Leg 2 · Receive SOFR", "type": "text"}
+
+  - id: "plain"
+    kind: "expr"
+    source: "ElTest#templates"
+    note: "Text without ${ is used as written."
+    template: "plain"
+    expect: {"value": "plain"}
+
+  - id: "leg-index-1-type"
+    kind: "expr"
+    source: "SPEC 4.11"
+    given: {"record": {"tradeId": "IRS-1", "legs": [{"leg": 1, "label": "Pay fixed"}, {"leg": 2, "label": "Receive SOFR", "type": "FLOAT"}], "sales": [1, 2, 3], "mtm": {"$masked": true}, "cp": {"id": "CP-1", "name": "Northbridge"}}, "row": {"leg": 2, "label": "Receive SOFR", "type": "FLOAT"}, "index": 1}
+    template: "Leg ${#index + 1} · ${@.type}"
+    expect: {"value": "Leg 2 · FLOAT"}
+
+  - id: "size-sales-rows"
+    kind: "expr"
+    source: "SPEC 4.11"
+    template: "${size($.sales)} rows"
+    expect: {"value": "3 rows"}
+
+  - id: "cost-5"
+    kind: "expr"
+    source: "SPEC 4.11"
+    note: "No ${: literal."
+    template: "Cost: $5"
+    expect: {"value": "Cost: $5"}
+
+  - id: "size-legs-legs"
+    kind: "expr"
+    source: "SPEC 4.11"
+    note: "Braces inside a part are matched."
+    template: "${size($.legs)} legs"
+    expect: {"value": "2 legs"}
+
+  - id: "cp-id-is-link-cp-id-counterparty-cp-name"
+    kind: "expr"
+    source: "SPEC 4.11"
+    note: "A link inserts as its label."
+    template: "${$.cp.id} is ${link($.cp.id, 'counterparty', $.cp.name)}"
+    expect: {"value": "CP-1 is Northbridge"}
+
+  - id: "legs-and-cp"
+    kind: "expr"
+    source: "SPEC 4.11"
+    note: "A list inserts as [n], an object as {n}."
+    template: "${$.legs} and ${$.cp}"
+    expect: {"value": "[2] and {2}"}
+
+  - id: "x-missing-y"
+    kind: "expr"
+    source: "SPEC 4.11"
+    note: "An empty part inserts as empty text."
+    template: "x${$.missing}y"
+    expect: {"value": "xy"}
+
+  - id: "bad-total-sum-a"
+    kind: "expr-error"
+    source: "SPEC 4.11"
+    note: "An unclosed ${ is RCH-2101 at the template offset of ${."
+    template: "Total ${sum($.a)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "template 'Total ${sum($.a)': ", "expr": {"start": 6}}]}
+
+  - id: "mtm-fmt-mtm-signed0"
+    kind: "expr"
+    source: "MaskTest#valuesDerivedFromAMaskAreMasked"
+    tags: ["format-table"]
+    note: "A masked part inserts as the mask text."
+    template: "MTM ${fmt($.mtm, 'signed0')}"
+    expect: {"value": "MTM •••", "type": "text"}

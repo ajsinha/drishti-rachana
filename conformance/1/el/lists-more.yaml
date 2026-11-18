@@ -1,0 +1,369 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/lists-more
+since: "1.0"
+profile: core
+verified: false
+description: "More list functions over numeric lists: fillmissing, interpolation, polynomials, trapezoids, sets, membership filters and multi-key sort."
+given: {"record": {"NPV": [-10000, 3000, 4200, 6800], "XF": [-10000, 2750, 4250, 3250, 2750], "XD": ["2008-01-01", "2008-03-01", "2008-10-30", "2009-02-15", "2009-04-01"], "IRR1": [-70000, 12000, 15000, 18000, 21000], "IRR2": [-70000, 12000, 15000, 18000, 21000, 26000], "IRR3": [-70000, 12000, 15000], "MIRR": [-120000, 39000, 30000, 21000, 37000, 46000], "FVS": [0.09, 0.11, 0.1], "POS": [1, 2, 3], "GAP": [-100, null, 50], "TXT": [-100, "abc"], "BACK": ["2008-01-01", "2007-12-31"], "BOND": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 104], "TIMES": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0, 20.5, 21.0, 21.5, 22.0, 22.5, 23.0, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.0, 27.5, 28.0, 28.5, 29.0, 29.5], "BDATES": ["2027-10-16", "2028-10-16"], "B2": [5, 105], "T12": [1, 2], "A": [4, 8, 6, -1, -2, -3, -1, 3, 4, 5], "OUT": [57, 59, 60, 100, 59, 58, 57, 58, 300, 61, 62, 60, 62, 58, 57], "SQ": [1, 4, 9, 16, 25], "P": [3, 2, 1], "PX": [5, 7, 9], "B": [2, 4, -1, 10, 6, 3, 0, -16], "ONE23": [1, 2, 3], "XS": [1, 2, 3], "VS": [10, 20, 30], "GAPS": [null, 2, null, 4, null], "QX": [0, 1.5, 2.5, 4], "PFX": [0, 1, 2, 3, 4], "PFY": [1, 0, 3, 10, 21], "SAME": [2, 2, 2], "S1": ["USD", "EUR", 1, 2], "S2": ["EUR", 2, "GBP", 2.0], "EMPTY": [], "TRADES": [{"DESK": "B", "N": 3}, {"DESK": "A", "N": 2}, {"DESK": "B", "N": 1}, {"DESK": "A", "N": 5}, {"N": 0}], "MTM": {"$masked": true}, "HIDDEN": [-100, {"$masked": true}, 60]}, "today": "2026-10-16"}
+cases:
+
+  - id: "fillmissing-gaps-linear"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    note: "The ends are extended in a line."
+    expr: "fillmissing($.GAPS, 'linear')"
+    expect: {"value": [1, 2, 3, 4, 5], "type": "list"}
+
+  - id: "fillmissing-gaps-previous"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    expr: "fillmissing($.GAPS, 'previous')"
+    expect: {"value": [null, 2, 2, 4, 4], "type": "list"}
+
+  - id: "fillmissing-gaps-next"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    expr: "fillmissing($.GAPS, 'next')"
+    expect: {"value": [2, 2, 4, 4, null], "type": "list"}
+
+  - id: "fillmissing-gaps-nearest"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    expr: "fillmissing($.GAPS, 'nearest')"
+    expect: {"value": [2, 2, 4, 4, 4], "type": "list"}
+
+  - id: "fillmissing-gaps-constant-0"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    expr: "fillmissing($.GAPS, 'constant', 0)"
+    expect: {"value": [0, 2, 0, 4, 0], "type": "list"}
+
+  - id: "bad-fillmissing-gaps-spline"
+    kind: "expr-error"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    note: "Message contains: \"unknown method 'spline'\"."
+    expr: "fillmissing($.GAPS, 'spline')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'fillmissing($.GAPS, 'spline')': "}]}
+
+  - id: "fillmissing-gaps-concat-spl-ine"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    note: "Message contains: 'fillmissing'; \"unknown method 'spline'\"."
+    expr: "fillmissing($.GAPS, concat('spl', 'ine'))"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "fillmissing-gaps-constant"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    note: "Message contains: 'fillmissing'; 'needs the value'."
+    expr: "fillmissing($.GAPS, 'constant')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "fillmissing-nope-linear"
+    kind: "expr"
+    source: "ListMoreTest#fillmissingByEachMethod"
+    expr: "fillmissing($.NOPE, 'linear')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "interp1-xs-vs-2-5"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    expr: "interp1($.XS, $.VS, 2.5)"
+    expect: {"value": 25}
+
+  - id: "interp1-xs-vs-qx"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    note: "Outside the points: empty."
+    expr: "interp1($.XS, $.VS, $.QX)"
+    expect: {"value": [null, 15, 25, null], "type": "list"}
+
+  - id: "interp1-xs-vs-qx-previous"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    expr: "interp1($.XS, $.VS, $.QX, 'previous')"
+    expect: {"value": [null, 10, 20, null], "type": "list"}
+
+  - id: "interp1-xs-vs-qx-next"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    expr: "interp1($.XS, $.VS, $.QX, 'next')"
+    expect: {"value": [null, 20, 30, null], "type": "list"}
+
+  - id: "interp1-xs-vs-qx-nearest"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    note: "A tie goes to the next point."
+    expr: "interp1($.XS, $.VS, $.QX, 'nearest')"
+    expect: {"value": [null, 20, 30, null], "type": "list"}
+
+  - id: "interp1-same-xs-2"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    note: "Message contains: 'interp1'; 'two points share x = 2'."
+    expr: "interp1($.SAME, $.XS, 2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "interp1-xs-sq-2"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    note: "Message contains: 'interp1'; 'differ in length'."
+    expr: "interp1($.XS, $.SQ, 2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "polyval-p-px"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    note: "MATLAB: polyval([3 2 1], [5 7 9])."
+    expr: "polyval($.P, $.PX)"
+    expect: {"value": [86, 162, 262], "type": "list"}
+
+  - id: "polyval-p-2"
+    kind: "expr"
+    source: "ListMoreTest#interp1AndPolyval"
+    expr: "polyval($.P, 2)"
+    expect: {"value": 17}
+
+  - id: "trapz-sq"
+    kind: "expr"
+    source: "ListMoreTest#trapezoids"
+    note: "MATLAB: trapz([1 4 9 16 25])."
+    expr: "trapz($.SQ)"
+    expect: {"value": 42}
+
+  - id: "cumtrapz-sq"
+    kind: "expr"
+    source: "ListMoreTest#trapezoids"
+    note: "MATLAB: cumtrapz."
+    expr: "cumtrapz($.SQ)"
+    expect: {"value": [0, 2.5, 9, 21.5, 42], "type": "list"}
+
+  - id: "trapz-pfx-pfx"
+    kind: "expr"
+    source: "ListMoreTest#trapezoids"
+    note: "The integral of x from 0 to 4."
+    expr: "trapz($.PFX, $.PFX)"
+    expect: {"value": 8}
+
+  - id: "trapz-gaps"
+    kind: "expr"
+    source: "ListMoreTest#trapezoids"
+    note: "An area over a gap is not guessed."
+    expr: "trapz($.GAPS)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "trapz-hidden"
+    kind: "expr"
+    source: "ListMoreTest#trapezoids"
+    expr: "trapz($.HIDDEN)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "union-s1-s2"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    note: "2 and 2.0 are one value; numbers sort before text."
+    expr: "union($.S1, $.S2)"
+    expect: {"value": [1, 2, "EUR", "GBP", "USD"], "type": "list"}
+
+  - id: "intersect-s1-s2"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    expr: "intersect($.S1, $.S2)"
+    expect: {"value": [2, "EUR"], "type": "list"}
+
+  - id: "difference-s1-s2"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    expr: "difference($.S1, $.S2)"
+    expect: {"value": [1, "USD"], "type": "list"}
+
+  - id: "is-member-eur-s1"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    expr: "is_member('EUR', $.S1)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-member-2-0-s1"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    expr: "is_member(2.0, $.S1)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "is-member-jpy-s1"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    expr: "is_member('JPY', $.S1)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-member-jpy-empty"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    note: "An empty list holds nothing."
+    expr: "is_member('JPY', $.EMPTY)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "is-member-s2-s1"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    note: "A list as the first argument tests each element."
+    expr: "is_member($.S2, $.S1)"
+    expect: {"value": [true, true, false, true], "type": "list"}
+
+  - id: "union-nope-s1"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    expr: "union($.NOPE, $.S1)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "union-hidden-s1"
+    kind: "expr"
+    source: "ListMoreTest#setFunctionsCompareAsEqualityDoesAndSort"
+    expr: "union($.HIDDEN, $.S1)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "map-sort-trades-desk-false-n-true-concat-desk-n"
+    kind: "expr"
+    source: "ListMoreTest#sortBySeveralKeys"
+    note: "Key, descending flag, key, descending flag; an empty key last."
+    expr: "map(sort($.TRADES, @.DESK, false, @.N, true), concat(@.DESK, @.N))"
+    expect: {"value": ["A5", "A2", "B3", "B1", "0"], "type": "list"}
+
+  - id: "map-sort-trades-n-n"
+    kind: "expr"
+    source: "ListMoreTest#sortBySeveralKeys"
+    note: "One key, as before."
+    expr: "map(sort($.TRADES, @.N), @.N)"
+    expect: {"value": [0, 1, 2, 3, 5], "type": "list"}
+
+  - id: "first-sort-a"
+    kind: "expr"
+    source: "ListMoreTest#sortBySeveralKeys"
+    expr: "first(sort($.A))"
+    expect: {"value": -3}
+
+  - id: "has-fx-rates-fx"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    given: {"record": {}}
+    expr: "has(['fx', 'rates'], 'fx')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "has-fx-rates-credit"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    given: {"record": {}}
+    expr: "has(['fx', 'rates'], 'credit')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "any-of-fx-rates-credit-rates"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    given: {"record": {}}
+    expr: "any_of(['fx', 'rates'], ['credit', 'rates'])"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "any-of-fx-rates-credit-equity"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    given: {"record": {}}
+    expr: "any_of(['fx', 'rates'], ['credit', 'equity'])"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "all-of-fx-rates-hedge-fx-hedge"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    given: {"record": {}}
+    expr: "all_of(['fx', 'rates', 'hedge'], ['fx', 'hedge'])"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "all-of-fx-rates-fx-hedge"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    given: {"record": {}}
+    expr: "all_of(['fx', 'rates'], ['fx', 'hedge'])"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "has-2025-2026-2026"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    note: "Numbers compare numerically (4.6)."
+    given: {"record": {}}
+    expr: "has([2025, 2026], 2026)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "has-2025-2026-2026-2"
+    kind: "expr"
+    source: "ListFiltersTest#containsAnyOfAndAllOfOverAnArray"
+    note: "Numbers compare numerically (4.6)."
+    given: {"record": {}}
+    expr: "has([2025, 2026], '2026')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "has-fx-rates-rates"
+    kind: "expr"
+    source: "ListFiltersTest#aListsJsonTextReadsAsItsListAndASingleValueAsAListOfOne"
+    note: "A list's JSON text reads as its list."
+    given: {"record": {}}
+    expr: "has('[\"fx\",\"rates\"]', 'rates')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "all-of-fx-rates-rates-fx"
+    kind: "expr"
+    source: "ListFiltersTest#aListsJsonTextReadsAsItsListAndASingleValueAsAListOfOne"
+    given: {"record": {}}
+    expr: "all_of('[\"fx\",\"rates\"]', ['rates', 'fx'])"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "has-fx-fx"
+    kind: "expr"
+    source: "ListFiltersTest#aListsJsonTextReadsAsItsListAndASingleValueAsAListOfOne"
+    note: "A single value is a list of one."
+    given: {"record": {}}
+    expr: "has('fx', 'fx')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "has-fx-rates-fx-2"
+    kind: "expr"
+    source: "ListFiltersTest#aListsJsonTextReadsAsItsListAndASingleValueAsAListOfOne"
+    note: "Text is not split: a list is a list."
+    given: {"record": {}}
+    expr: "has('fx, rates', 'fx')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "any-of-fx"
+    kind: "expr"
+    source: "ListFiltersTest#nothingChosenHoldsEverythingAndAMissingListHoldsNothing"
+    note: "Controls: nothing chosen holds all (SPEC 4.8)."
+    given: {"record": {}}
+    expr: "any_of(['fx'], [])"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "all-of-fx"
+    kind: "expr"
+    source: "ListFiltersTest#nothingChosenHoldsEverythingAndAMissingListHoldsNothing"
+    note: "Controls: nothing chosen holds all (SPEC 4.8)."
+    given: {"record": {}}
+    expr: "all_of(['fx'], [])"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "has-nope-fx"
+    kind: "expr"
+    source: "ListFiltersTest#nothingChosenHoldsEverythingAndAMissingListHoldsNothing"
+    given: {"record": {}}
+    expr: "has($.NOPE, 'fx')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "any-of-nope-fx"
+    kind: "expr"
+    source: "ListFiltersTest#nothingChosenHoldsEverythingAndAMissingListHoldsNothing"
+    given: {"record": {}}
+    expr: "any_of($.NOPE, ['fx'])"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "all-of-fx-2"
+    kind: "expr"
+    source: "ListFiltersTest#nothingChosenHoldsEverythingAndAMissingListHoldsNothing"
+    given: {"record": {}}
+    expr: "all_of([], ['fx'])"
+    expect: {"value": false, "type": "boolean"}

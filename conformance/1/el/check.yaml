@@ -1,0 +1,189 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/check
+since: "1.0"
+profile: core
+verified: false
+description: "Checked mode (SPEC 4.14) over known types. The Java CheckedModeTest runs over a Drishti pivot model with ROW, AGGREGATE and RULE scopes; only what Core can say with record types is converted."
+given: {"limits": {"depth": 200}}
+cases:
+
+  - id: "check-notional-1000000"
+    kind: "check"
+    source: "CheckedModeTest#typesWhatIsRight"
+    note: "Java scope ROW; mapped to scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.NOTIONAL / 1000000"
+    expect: {"type": "decimal"}
+
+  - id: "check-tradedate-tradedate"
+    kind: "check"
+    source: "CheckedModeTest#typesWhatIsRight"
+    note: "Java scope ROW; mapped to scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.tradeDate - $.tradeDate"
+    expect: {"type": "integer"}
+
+  - id: "check-power-n-2"
+    kind: "check"
+    source: "CheckedModeTest#typesWhatIsRight"
+    note: "Java scope ROW; mapped to scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "power($.n, 2)"
+    expect: {"type": "decimal"}
+
+  - id: "check-status-null-n-0"
+    kind: "check"
+    source: "CheckedModeTest#typesWhatIsRight"
+    note: "Java scope ROW; mapped to scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.status != null && $.n > 0"
+    expect: {"type": "boolean"}
+
+  - id: "check-n-0-mtm-0"
+    kind: "check"
+    source: "CheckedModeTest#typesWhatIsRight"
+    note: "Java scope ROW; mapped to scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.n > 0 ? $.mtm : 0"
+    expect: {"type": "decimal"}
+
+  - id: "check-switch-status-a-1-b-2-0"
+    kind: "check"
+    source: "CheckedModeTest#typesWhatIsRight"
+    note: "Java scope ROW; mapped to scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "switch($.status, 'A', 1, 'B', 2, 0)"
+    expect: {"type": "integer"}
+
+  - id: "check-mtm-n"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'takes conditions'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.mtm && $.n"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-status-1"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'text cannot be used'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.status + 1"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-tradedate-9-oct"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'cannot compare a date'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.tradeDate > '9 Oct'"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-mtx"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'did you mean mtm'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.mtx"
+    expect: {"type": null, "problems": [{"code": "RCH-9152"}]}
+
+  - id: "check-startswith-status-l"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'write starts_with'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "startsWith($.status, 'L')"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-0-n-10"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'write 0 < $.n && $.n <= 10'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "0 < $.n <= 10"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-ctl-desk-status"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'a Sutra's control'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "ctl.desk == $.status"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-concat-status-x"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'not yet in a table or a model'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "concat($.status, 'x')"
+    expect: {"type": null, "problems": [{"code": "RCH-9129"}]}
+
+  - id: "check-let-x-n-x-2"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'not yet in a table or a model'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "let(x = $.n, x * 2)"
+    expect: {"type": null, "problems": [{"code": "RCH-9129"}]}
+
+  - id: "check-status-in-n"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'takes a list'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.status in $.n"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-status-in-1-2"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'the list has a integer'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.status in [1, 2]"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-round-mtm-n"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'is a whole number written in the expression'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "round($.mtm, $.n)"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-n-1-2"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'must be true or false'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "$.n ? 1 : 2"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-date-09-10-2026-tradedate"
+    kind: "check"
+    source: "CheckedModeTest#refusesWithDelsCodes"
+    note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'not an ISO date'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
+    expr: "date('09/10/2026') < $.tradeDate"
+    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}

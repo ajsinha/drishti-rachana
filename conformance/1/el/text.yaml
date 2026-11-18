@@ -1,0 +1,838 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/text
+since: "1.0"
+profile: core
+verified: false
+description: "Text functions: joining, slicing, searching, regular expressions, case, number-from-text and text-from-number."
+given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+cases:
+
+  - id: "concat-desk-tt-book"
+    kind: "expr"
+    source: "TextFunctionsTest#concatJoinsAndSkipsEmptyParts"
+    expr: "concat($.DESK, ' / ', $.TT_BOOK)"
+    expect: {"value": "DESK-COMM / BOOK-RATES-3"}
+
+  - id: "concat-a-nope-1-2-5"
+    kind: "expr"
+    source: "TextFunctionsTest#concatJoinsAndSkipsEmptyParts"
+    expr: "concat('a', $.NOPE, 1, 2.5)"
+    expect: {"value": "a12.5"}
+
+  - id: "concat-strategy"
+    kind: "expr"
+    source: "TextFunctionsTest#concatJoinsAndSkipsEmptyParts"
+    expr: "concat($.STRATEGY)"
+    expect: {"value": ""}
+
+  - id: "concat-mtm-x"
+    kind: "expr"
+    source: "TextFunctionsTest#concatJoinsAndSkipsEmptyParts"
+    expr: "concat($.MTM, 'x')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "concat-legs"
+    kind: "expr"
+    source: "TextFunctionsTest#concatJoinsAndSkipsEmptyParts"
+    note: "Message contains: 'concat'; 'a list is not text'."
+    expr: "concat($.LEGS)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "left-trade-id-3"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "left($.TRADE_ID, 3)"
+    expect: {"value": "MX-"}
+
+  - id: "right-trade-id-8"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "right($.TRADE_ID, 8)"
+    expect: {"value": "20000001"}
+
+  - id: "left-ab-10"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "left('ab', 10)"
+    expect: {"value": "ab"}
+
+  - id: "left-abc-0"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "left('abc', 0)"
+    expect: {"value": ""}
+
+  - id: "left-20261016-4"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    note: "A number reads as the text it prints (SPEC 4.10 rule 6)."
+    expr: "left(20261016, 4)"
+    expect: {"value": "2026"}
+
+  - id: "mid-abcdef-2-3"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "mid('ABCDEF', 2, 3)"
+    expect: {"value": "BCD"}
+
+  - id: "mid-abc-2-10"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "mid('ABC', 2, 10)"
+    expect: {"value": "BC"}
+
+  - id: "mid-abc-5-2"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "mid('ABC', 5, 2)"
+    expect: {"value": ""}
+
+  - id: "left-nope-2"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "left($.NOPE, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "right-abc-nope"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "right('abc', $.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "mid-nope-1-2"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "mid($.NOPE, 1, 2)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "left-mtm-2"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    expr: "left($.MTM, 2)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "left-abc-1"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    note: "Message contains: 'left'; 'the count -1 is negative'."
+    expr: "left('abc', -1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "left-abc-x"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    note: "Message contains: 'left'; \"'x' is not a number\"."
+    expr: "left('abc', 'x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "right-legs-1"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    note: "Message contains: 'right'; 'a list is not text'."
+    expr: "right($.LEGS, 1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "mid-abc-0-1"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    note: "Message contains: 'mid'; 'before the first character'."
+    expr: "mid('ABC', 0, 1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "mid-abc-1-1"
+    kind: "expr"
+    source: "TextFunctionsTest#leftRightAndMid"
+    note: "Message contains: 'mid'; 'negative'."
+    expr: "mid('ABC', 1, -1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "replace-instrument"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "replace($.INSTRUMENT, ' ', '-')"
+    expect: {"value": "USD-2026-10-swap"}
+
+  - id: "replace-aaa-a"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "replace('aaa', 'a', '')"
+    expect: {"value": ""}
+
+  - id: "replace-abc-x"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "replace('abc', '', 'x')"
+    expect: {"value": "abc"}
+
+  - id: "replace-abc-a-x"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    note: "Case counts."
+    expr: "replace('Abc', 'a', 'x')"
+    expect: {"value": "Abc"}
+
+  - id: "replace-nope-a-b"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "replace($.NOPE, 'a', 'b')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "replace-mtm-a-b"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "replace($.MTM, 'a', 'b')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "split-tags"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "split($.TAGS, ',')"
+    expect: {"value": ["ir", "swap", "", "aud"], "type": "list"}
+
+  - id: "split-a-b"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    note: "The separator as written, not a pattern."
+    expr: "split('a.b', '.')"
+    expect: {"value": ["a", "b"], "type": "list"}
+
+  - id: "split"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "split('', ',')"
+    expect: {"value": [""], "type": "list"}
+
+  - id: "first-split-x-y"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "first(split('x|y', '|'))"
+    expect: {"value": "x"}
+
+  - id: "split-nope"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "split($.NOPE, ',')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "split-a-b-2"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    note: "Message contains: 'split'; 'the separator is empty'."
+    expr: "split('a,b', '')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "trim-a-b"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "trim('  a b  ')"
+    expect: {"value": "a b"}
+
+  - id: "trim-nope"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "trim($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "trim-mtm"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    expr: "trim($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "trim-legs"
+    kind: "expr"
+    source: "TextFunctionsTest#replaceSplitAndTrim"
+    note: "Message contains: 'trim'; 'a list is not text'."
+    expr: "trim($.LEGS)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "pad-leg-id-3-0"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    expr: "pad($.LEG_ID, 3, '0')"
+    expect: {"value": "007"}
+
+  - id: "pad-ab-5"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    expr: "pad('ab', 5)"
+    expect: {"value": "   ab"}
+
+  - id: "pad-ab-4-right"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    expr: "pad('ab', 4, '*', 'right')"
+    expect: {"value": "ab**"}
+
+  - id: "pad-abcdef-3"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    expr: "pad('abcdef', 3)"
+    expect: {"value": "abcdef"}
+
+  - id: "pad-7-3-0"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    expr: "pad(7, 3, '0')"
+    expect: {"value": "007"}
+
+  - id: "pad-nope-3"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    expr: "pad($.NOPE, 3)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "pad-mtm-3"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    expr: "pad($.MTM, 3)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-pad-a-3-00"
+    kind: "expr-error"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    note: "Message contains: \"pad: the fill '00' is not one character\"."
+    expr: "pad('a', 3, '00')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'pad('a', 3, '00')': "}]}
+
+  - id: "bad-pad-a-3-middle"
+    kind: "expr-error"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    note: "Message contains: \"the side 'middle' is neither 'left' nor 'right'\"."
+    expr: "pad('a', 3, ' ', 'middle')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'pad('a', 3, ' ', 'middle')': "}]}
+
+  - id: "pad-a-quantity"
+    kind: "expr"
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    note: "Message contains: 'pad'; 'the width 242000000 is outside 0..10000'."
+    expr: "pad('a', $.QUANTITY)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "regex-extract-instrument-20-0-9-2-0-9-2"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    expr: "regex_extract($.INSTRUMENT, '20[0-9]{2}-[0-9]{2}')"
+    expect: {"value": "2026-10"}
+
+  - id: "regex-extract-eur-gb-a-z-3-a-z-2-2"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    expr: "regex_extract('EUR-GB', '([A-Z]{3})-([A-Z]{2})', 2)"
+    expect: {"value": "GB"}
+
+  - id: "regex-extract-in-usd-usd"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    note: "Case counts."
+    expr: "regex_extract('in Usd', 'usd')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "regex-extract-in-usd-i-usd"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    expr: "regex_extract('in Usd', '(?i)usd')"
+    expect: {"value": "Usd"}
+
+  - id: "regex-extract-abc-0-9"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    expr: "regex_extract('abc', '[0-9]+')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "regex-extract-nope-a"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    expr: "regex_extract($.NOPE, 'a')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "regex-extract-mtm-a"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    expr: "regex_extract($.MTM, 'a')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-regex-extract-a-a-3"
+    kind: "expr-error"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    note: "Message contains: \"the pattern '(a)' has 1 group(s); group 3 was asked for\"."
+    expr: "regex_extract('a', '(a)', 3)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'regex_extract('a', '(a)', 3)': "}]}
+
+  - id: "bad-regex-extract-ab-a-b"
+    kind: "expr-error"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    note: "A refused regular expression is a literal check (SPEC 4.10 rule 2). Message contains: 'is refused'."
+    expr: "regex_extract('ab', '(?<=a)b')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'regex_extract('ab', '(?<=a)b')': "}]}
+
+  - id: "regex-extract-ab-trade-id"
+    kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    tags: ["code-unmapped"]
+    note: "The Java test asserts ErrorCode.REGEX_REFUSED (a DrishtiException), not EL_EVAL; SPEC 6.2 lists no separate code, so RCH-2102 is the draft mapping and H1 must confirm it."
+    expr: "regex_extract('ab', $.TRADE_ID + '(')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "starts-with-product-type-com"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    note: "Case-insensitive."
+    expr: "starts_with($.PRODUCT_TYPE, 'com')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "startswith-product-type-com"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    note: "Old spelling still reads (SPEC 5.10)."
+    expr: "startsWith($.PRODUCT_TYPE, 'com')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "ends-with-trade-id-001"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "ends_with($.TRADE_ID, '001')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "ends-with-trade-id-mx"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "ends_with($.TRADE_ID, 'MX')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "ends-with-nope-x"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    note: "A test on an empty value is false."
+    expr: "ends_with($.NOPE, 'x')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "starts-with-nope-x"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "starts_with($.NOPE, 'x')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "matches-trade-id-mx"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "matches($.TRADE_ID, '^mx-')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "matches-case-trade-id-mx"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "matches_case($.TRADE_ID, '^mx-')"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "matchescase-trade-id-mx"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "matchesCase($.TRADE_ID, '^MX-')"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "one-of-desk-desks"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "one_of($.DESK, $.DESKS)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "oneof-desk-legs-currency"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "oneOf($.DESK, $.LEGS[*].CURRENCY)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "ends-with-mtm-x"
+    kind: "expr"
+    source: "TextFunctionsTest#theTextTestsHaveOneNameAndTheOldSpellingsStillRead"
+    expr: "ends_with($.MTM, 'x')"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "len-phoenix-az"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "len('Phoenix, AZ')"
+    expect: {"value": 11}
+
+  - id: "proper-this-is-a-title"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "proper('this is a TITLE')"
+    expect: {"value": "This Is A Title"}
+
+  - id: "proper-2-way-street"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "proper('2-way street')"
+    expect: {"value": "2-Way Street"}
+
+  - id: "proper-76budget"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "proper('76BudGet')"
+    expect: {"value": "76Budget"}
+
+  - id: "rept-3"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "rept('*-', 3)"
+    expect: {"value": "*-*-*-"}
+
+  - id: "exact-word-word"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "exact('word', 'word')"
+    expect: {"value": true}
+
+  - id: "exact-word-word-2"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "exact('Word', 'word')"
+    expect: {"value": false}
+
+  - id: "exact-nope-x"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "exact($.NOPE, 'X')"
+    expect: {"value": false}
+
+  - id: "exact-nope-strategy"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "exact($.NOPE, $.STRATEGY)"
+    expect: {"value": true}
+
+  - id: "char-65"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "char(65)"
+    expect: {"value": "A"}
+
+  - id: "char-8364"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "char(8364)"
+    expect: {"value": "€"}
+
+  - id: "code-a"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "code('A')"
+    expect: {"value": 65}
+
+  - id: "code-uro"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "code('€uro')"
+    expect: {"value": 8364}
+
+  - id: "find-m-miriam-mcgovern"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "find('M', 'Miriam McGovern')"
+    expect: {"value": 1}
+
+  - id: "find-m-miriam-mcgovern-2"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "find('m', 'Miriam McGovern')"
+    expect: {"value": 6}
+
+  - id: "find-m-miriam-mcgovern-3"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "find('M', 'Miriam McGovern', 3)"
+    expect: {"value": 8}
+
+  - id: "find-z-miriam"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    note: "Not there: 0, SAS's INDEX rule."
+    expr: "find('z', 'Miriam')"
+    expect: {"value": 0}
+
+  - id: "search-e-statements-6"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "search('e', 'Statements', 6)"
+    expect: {"value": 7}
+
+  - id: "search-margin-profit-margin"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "search('MARGIN', 'Profit Margin')"
+    expect: {"value": 8}
+
+  - id: "text-before-red-riding-hood-s-red-hood-hood"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "text_before('Red riding hood\\'s, red hood', 'hood')"
+    expect: {"value": "Red riding "}
+
+  - id: "text-after-red-riding-hood-s-red-hood-hood"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "text_after('Red riding hood\\'s, red hood', 'hood')"
+    expect: {"value": "'s, red hood"}
+
+  - id: "text-after-a-b-c-1"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "text_after('a-b-c', '-', -1)"
+    expect: {"value": "c"}
+
+  - id: "text-before-a-b-c-2"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "text_before('a-b-c', '-', 2)"
+    expect: {"value": "a-b"}
+
+  - id: "regex-replace-instrument-0-9"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "regex_replace($.INSTRUMENT, '[0-9]', '#')"
+    expect: {"value": "USD ####-## swap"}
+
+  - id: "regex-replace-2026-10-16-0-9-0-9-0-9-3-2-1"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "regex_replace('2026-10-16', '([0-9]+)-([0-9]+)-([0-9]+)', '$3/$2/$1')"
+    expect: {"value": "16/10/2026"}
+
+  - id: "regex-replace-a-b-c"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "regex_replace('a b  c', ' +', ' ')"
+    expect: {"value": "a b c"}
+
+  - id: "regex-replace-abc-x"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "regex_replace('abc', 'x*', '-')"
+    expect: {"value": "-a-b-c-"}
+
+  - id: "reverse-swap"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "reverse('swap')"
+    expect: {"value": "paws"}
+
+  - id: "clean-concat-a-char-9-b-char-10"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "clean(concat('a', char(9), 'b', char(10)))"
+    expect: {"value": "ab"}
+
+  - id: "len-nope"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "len($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "text-before-abc"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "text_before('abc', '-')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "char-0"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    note: "Message contains: 'char'; 'not a Unicode character'."
+    expr: "char(0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "code"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    note: "Message contains: 'code'; 'empty'."
+    expr: "code('')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "find-a-abc-9"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    note: "Message contains: 'find'; 'start 9'."
+    expr: "find('a', 'abc', 9)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "len-mtm"
+    kind: "expr"
+    source: "MoreScalarsTest#textFunctions"
+    expr: "len($.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "value-1-000"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "value('$1,000')"
+    expect: {"value": 1000}
+
+  - id: "value-12-5"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "value(' 12.5 ')"
+    expect: {"value": 12.5}
+
+  - id: "value-1-250-50"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "value('(1,250.50)')"
+    expect: {"value": -1250.5}
+
+  - id: "value-3-5"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "value('3.5%')"
+    expect: {"value": 0.035}
+
+  - id: "value-2-500-27"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "value('2.500,27', ',', '.')"
+    expect: {"value": 2500.27}
+
+  - id: "value-7"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "value(7)"
+    expect: {"value": 7}
+
+  - id: "text-1234-567-0-00"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text(1234.567, '#,##0.00')"
+    expect: {"value": "1,234.57"}
+
+  - id: "text-0-285-0-0"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text(0.285, '0.0%')"
+    expect: {"value": "28.5%"}
+
+  - id: "text-2-675-0-00"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text(2.675, '0.00')"
+    expect: {"value": "2.68"}
+
+  - id: "text-1234-0-0"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text(-1234, '#,##0;(#,##0)')"
+    expect: {"value": "(1,234)"}
+
+  - id: "text-0-0-0"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text(0, '#,##0;(#,##0);\"-\"')"
+    expect: {"value": "-"}
+
+  - id: "text-12200000-0-00e-00"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text(12200000, '0.00E+00')"
+    expect: {"value": "1.22E+07"}
+
+  - id: "text-1234-usd-0"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text(1234, '\"USD \"#,##0')"
+    expect: {"value": "USD 1,234"}
+
+  - id: "text-2026-10-16-dd-mmm-yyyy"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text('2026-10-16', 'dd-mmm-yyyy')"
+    expect: {"value": "16-Oct-2026"}
+
+  - id: "text-2026-10-16-dddd-mmmm-d-yyyy"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text('2026-10-16', 'dddd, mmmm d, yyyy')"
+    expect: {"value": "Friday, October 16, 2026"}
+
+  - id: "text-2026-10-16t09-05-07z-yyyy-mm-dd-hh-mm-ss"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text('2026-10-16T09:05:07Z', 'yyyy-mm-dd hh:mm:ss')"
+    expect: {"value": "2026-10-16 09:05:07"}
+
+  - id: "text-2026-10-16-mm-dd-yy"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text('2026-10-16', 'mm/dd/yy')"
+    expect: {"value": "10/16/26"}
+
+  - id: "text-desk"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text($.DESK, '@')"
+    expect: {"value": "DESK-COMM"}
+
+  - id: "value-2026-10-16"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    note: "Message contains: 'value'; 'is not a number'."
+    expr: "value('2026-10-16')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "value-12abc"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    note: "Message contains: 'value'; 'is not a number'."
+    expr: "value('12abc')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "text-abc-0-00"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    note: "Message contains: 'text'; 'a number or a date'."
+    expr: "text('abc', '0.00')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "text-nope-0-00"
+    kind: "expr"
+    source: "MoreScalarsTest#valueAndTextReadAndWriteNumbers"
+    expr: "text($.NOPE, '0.00')"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "upper-strategy"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    note: "Null in, null out."
+    expr: "upper($.STRATEGY)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "lower-nothing"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "lower($.NOTHING)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "len-strategy"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "len($.STRATEGY)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "len-ab"
+    kind: "expr"
+    source: "FoldedSyntaxTest#theNullRule"
+    expr: "len('ab€')"
+    expect: {"value": 3}
+
+  - id: "left-strategy-2-x"
+    kind: "expr"
+    source: "MoreScalarsTest#theNullRuleHolds"
+    note: "A function of a missing value is missing, and missing != 'X' is true (SPEC 4.6)."
+    expr: "left($.STRATEGY, 2) != 'X'"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "text-before-desk-desk"
+    kind: "expr"
+    source: "MoreScalarsTest#theNullRuleHolds"
+    expr: "text_before($.DESK, '#') != 'DESK'"
+    expect: {"value": true, "type": "boolean"}

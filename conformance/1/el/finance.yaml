@@ -1,0 +1,461 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/finance
+since: "1.0"
+profile: core
+verified: false
+description: "Finance on given flows: present values, rates of return, annuities, dollar notation, accrual, duration. Real-number results carry a tolerance (SPEC 4.10 rule 7)."
+given: {"record": {"NPV": [-10000, 3000, 4200, 6800], "XF": [-10000, 2750, 4250, 3250, 2750], "XD": ["2008-01-01", "2008-03-01", "2008-10-30", "2009-02-15", "2009-04-01"], "IRR1": [-70000, 12000, 15000, 18000, 21000], "IRR2": [-70000, 12000, 15000, 18000, 21000, 26000], "IRR3": [-70000, 12000, 15000], "MIRR": [-120000, 39000, 30000, 21000, 37000, 46000], "FVS": [0.09, 0.11, 0.1], "POS": [1, 2, 3], "GAP": [-100, null, 50], "TXT": [-100, "abc"], "BACK": ["2008-01-01", "2007-12-31"], "BOND": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 104], "TIMES": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0, 20.5, 21.0, 21.5, 22.0, 22.5, 23.0, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.0, 27.5, 28.0, 28.5, 29.0, 29.5], "BDATES": ["2027-10-16", "2028-10-16"], "B2": [5, 105], "T12": [1, 2], "A": [4, 8, 6, -1, -2, -3, -1, 3, 4, 5], "OUT": [57, 59, 60, 100, 59, 58, 57, 58, 300, 61, 62, 60, 62, 58, 57], "SQ": [1, 4, 9, 16, 25], "P": [3, 2, 1], "PX": [5, 7, 9], "B": [2, 4, -1, 10, 6, 3, 0, -16], "ONE23": [1, 2, 3], "XS": [1, 2, 3], "VS": [10, 20, 30], "GAPS": [null, 2, null, 4, null], "QX": [0, 1.5, 2.5, 4], "PFX": [0, 1, 2, 3, 4], "PFY": [1, 0, 3, 10, 21], "SAME": [2, 2, 2], "S1": ["USD", "EUR", 1, 2], "S2": ["EUR", 2, "GBP", 2.0], "EMPTY": [], "TRADES": [{"DESK": "B", "N": 3}, {"DESK": "A", "N": 2}, {"DESK": "B", "N": 1}, {"DESK": "A", "N": 5}, {"N": 0}], "MTM": {"$masked": true}, "HIDDEN": [-100, {"$masked": true}, 60]}, "today": "2026-10-16"}
+cases:
+
+  - id: "npv-0-1-npv"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "NPV(10%, -10000, 3000, 4200, 6800)."
+    expr: "npv(0.1, $.NPV)"
+    expect: {"value": 1188.443412, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "xnpv-0-09-xf-xd"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "XNPV."
+    expr: "xnpv(0.09, $.XF, $.XD)"
+    expect: {"value": 2086.647602, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "xirr-xf-xd"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "XIRR (Excel stops at 1e-8)."
+    expr: "xirr($.XF, $.XD)"
+    expect: {"value": 0.373362535, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "irr-irr1"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "IRR: -2.1 %."
+    expr: "irr($.IRR1)"
+    expect: {"value": -0.021244848, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "irr-irr2"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "8.7 %."
+    expr: "irr($.IRR2)"
+    expect: {"value": 0.086630948, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "irr-irr3-0-1"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "-44.4 % from a guess of -10 %."
+    expr: "irr($.IRR3, -0.1)"
+    expect: {"value": -0.443506941, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "mirr-mirr-0-1-0-12"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "MIRR: 12.61 %."
+    expr: "mirr($.MIRR, 0.1, 0.12)"
+    expect: {"value": 0.126094, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "npv-irr-irr2-irr2"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "The root makes the value 0."
+    expr: "npv(irr($.IRR2), $.IRR2)"
+    expect: {"value": 0, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "fvschedule-1-fvs"
+    kind: "expr"
+    source: "FinanceFunctionsTest#presentValuesAndRatesOfReturnMatchExcel"
+    note: "FVSCHEDULE."
+    expr: "fvschedule(1, $.FVS)"
+    expect: {"value": 1.33089, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "pv-0-08-12-12-20-500-0-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "PV."
+    expr: "pv(0.08 / 12, 12 * 20, 500, 0, 0)"
+    expect: {"value": -59777.14585, "type": "number", "tolerance": {"abs": 1.0e-05}}
+
+  - id: "fv-0-06-12-10-200-500-1"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "FV."
+    expr: "fv(0.06 / 12, 10, -200, -500, 1)"
+    expect: {"value": 2581.403374, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "pmt-0-08-12-10-10000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "PMT."
+    expr: "pmt(0.08 / 12, 10, 10000)"
+    expect: {"value": -1037.032089, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "ipmt-0-1-12-1-3-12-8000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "IPMT."
+    expr: "ipmt(0.1 / 12, 1, 3 * 12, 8000)"
+    expect: {"value": -66.66666667, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "ipmt-0-1-3-3-8000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    expr: "ipmt(0.1, 3, 3, 8000)"
+    expect: {"value": -292.4471299, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "ppmt-0-1-12-1-2-12-2000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "PPMT."
+    expr: "ppmt(0.1 / 12, 1, 2 * 12, 2000)"
+    expect: {"value": -75.62318601, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "ppmt-0-08-10-10-200000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    expr: "ppmt(0.08, 10, 10, 200000)"
+    expect: {"value": -27598.05346, "type": "number", "tolerance": {"abs": 1.0e-05}}
+
+  - id: "nper-0-12-12-100-1000-10000-1"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "NPER."
+    expr: "nper(0.12 / 12, -100, -1000, 10000, 1)"
+    expect: {"value": 59.6738657, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "nper-0-12-12-100-1000-10000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    expr: "nper(0.12 / 12, -100, -1000, 10000)"
+    expect: {"value": 60.0821229, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "nper-0-12-12-100-1000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    expr: "nper(0.12 / 12, -100, -1000)"
+    expect: {"value": -9.57859404, "type": "number", "tolerance": {"abs": 1.0e-08}}
+
+  - id: "rate-4-12-200-8000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "RATE."
+    expr: "rate(4 * 12, -200, 8000)"
+    expect: {"value": 0.007701472, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "cumipmt-0-09-12-30-12-125000-13-24-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "CUMIPMT."
+    expr: "cumipmt(0.09 / 12, 30 * 12, 125000, 13, 24, 0)"
+    expect: {"value": -11135.23213, "type": "number", "tolerance": {"abs": 1.0e-05}}
+
+  - id: "cumipmt-0-09-12-30-12-125000-1-1-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    expr: "cumipmt(0.09 / 12, 30 * 12, 125000, 1, 1, 0)"
+    expect: {"value": -937.5, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "cumprinc-0-09-12-30-12-125000-13-24-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "CUMPRINC."
+    expr: "cumprinc(0.09 / 12, 30 * 12, 125000, 13, 24, 0)"
+    expect: {"value": -934.1071234, "type": "number", "tolerance": {"abs": 1.0e-06}}
+
+  - id: "cumprinc-0-09-12-30-12-125000-1-1-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    expr: "cumprinc(0.09 / 12, 30 * 12, 125000, 1, 1, 0)"
+    expect: {"value": -68.27827118, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "pmt-0-10-1000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "A rate of 0."
+    expr: "pmt(0, 10, 1000)"
+    expect: {"value": -100, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "pv-0-10-100"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    expr: "pv(0, 10, -100)"
+    expect: {"value": 1000, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "ipmt-0-01-1-12-1000-0-1"
+    kind: "expr"
+    source: "FinanceFunctionsTest#annuitiesMatchExcel"
+    note: "Paid at the start: no interest in the first period."
+    expr: "ipmt(0.01, 1, 12, 1000, 0, 1)"
+    expect: {"value": 0, "type": "number"}
+
+  - id: "effect-0-0525-4"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "EFFECT."
+    expr: "effect(0.0525, 4)"
+    expect: {"value": 0.053542667, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "nominal-0-053543-4"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "NOMINAL."
+    expr: "nominal(0.053543, 4)"
+    expect: {"value": 0.052500319, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "rri-96-10000-11000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "RRI."
+    expr: "rri(96, 10000, 11000)"
+    expect: {"value": 0.0009933, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "pduration-0-025-2000-2200"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "PDURATION."
+    expr: "pduration(0.025, 2000, 2200)"
+    expect: {"value": 3.859866163, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "macaulay-duration-bond-times-0-09-2"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "A 8 % semi-annual bond, 2018-07-01 to 2048-01-01, yield 9 %."
+    expr: "macaulay_duration($.BOND, $.TIMES, 0.09, 2)"
+    expect: {"value": 10.9191453, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "modified-duration-bond-times-0-09-2"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    expr: "modified_duration($.BOND, $.TIMES, 0.09, 2)"
+    expect: {"value": 10.448942870813399, "type": "number", "tolerance": {"abs": 1.0e-07}}
+
+  - id: "accrued-0-1-2008-04-01-2008-06-15-act-365f-1000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "ACCRINTM."
+    expr: "accrued(0.1, '2008-04-01', '2008-06-15', 'ACT/365F', 1000)"
+    expect: {"value": 20.54794520547945, "type": "decimal"}
+
+  - id: "accrued-0-04-2026-06-15-2026-12-15"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "Default basis 30/360, par 1."
+    expr: "accrued(0.04, '2026-06-15', '2026-12-15')"
+    expect: {"value": 0.02, "type": "decimal"}
+
+  - id: "dollarde-1-02-16"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "DOLLARDE."
+    expr: "dollarde(1.02, 16)"
+    expect: {"value": 1.125, "type": "decimal"}
+
+  - id: "dollarde-1-1-32"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    expr: "dollarde(1.1, 32)"
+    expect: {"value": 1.3125, "type": "decimal"}
+
+  - id: "dollarfr-1-125-16"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "DOLLARFR."
+    expr: "dollarfr(1.125, 16)"
+    expect: {"value": 1.02, "type": "decimal"}
+
+  - id: "dollarfr-1-125-32"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    expr: "dollarfr(1.125, 32)"
+    expect: {"value": 1.04, "type": "decimal"}
+
+  - id: "convexity-bond-times-0-09-2"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "The Java test compares with a central second difference of the price in the yield; the value here is that difference computed in Python (double) and is a draft until H1."
+    expr: "convexity($.BOND, $.TIMES, 0.09, 2)"
+    expect: {"value": 187.5853644810504, "type": "number", "tolerance": {"abs": 0.0001}}
+
+  - id: "npv-0-045-bond"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "The bond's price per 100 at 9 % compounded twice a year, computed in Python by the test's own formula."
+    expr: "npv(0.045, $.BOND)"
+    expect: {"value": 89.7166334850376, "type": "number", "tolerance": {"abs": 1.0e-09}}
+
+  - id: "macaulay-duration-b2-bdates-0-05-1-2026-10-16"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "Dates are counted from the settlement in days / 365: 2027-10-16 is 1 year, 2028-10-16 is 731 / 365."
+    expr: "macaulay_duration($.B2, $.BDATES, 0.05, 1, '2026-10-16')"
+    expect: {"value": 1.954984136079967, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "macaulay-duration-b2-t12-0-05-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#ratesDollarsAccrualAndDuration"
+    note: "Continuous compounding (frequency 0)."
+    expr: "macaulay_duration($.B2, $.T12, 0.05, 0)"
+    expect: {"value": 1.9523260545035523, "type": "number", "tolerance": {"abs": 1.0e-12}}
+
+  - id: "irr-pos"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'irr'; 'never change sign'."
+    expr: "irr($.POS)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "xirr-b2-bdates"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'xirr'; 'never change sign'."
+    expr: "xirr($.B2, $.BDATES)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "npv-1-npv"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'npv'; 'not above −1'."
+    expr: "npv(-1, $.NPV)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "xnpv-0-1-xf-back"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'xnpv'; 'differ in number'."
+    expr: "xnpv(0.1, $.XF, $.BACK)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "xnpv-0-1-irr3-xs"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'xnpv'; 'a date'."
+    expr: "xnpv(0.1, $.IRR3, $.XS)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "ipmt-0-1-4-3-8000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'ipmt'; 'not from 1 to the number of periods'."
+    expr: "ipmt(0.1, 4, 3, 8000)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "pmt-0-1-0-1000"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'pmt'; 'periods is 0'."
+    expr: "pmt(0.1, 0, 1000)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "pv-0-1-10-100-0-2"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'pv'; 'type 2'."
+    expr: "pv(0.1, 10, 100, 0, 2)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "cumipmt-0-01-12-1000-5-3-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'cumipmt'; 'start first'."
+    expr: "cumipmt(0.01, 12, 1000, 5, 3, 0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "macaulay-duration-b2-bdates-0-05"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'macaulay_duration'; 'settlement date'."
+    expr: "macaulay_duration($.B2, $.BDATES, 0.05)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "dollarde-1-02-0"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'dollarde'; 'under 1'."
+    expr: "dollarde(1.02, 0)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "accrued-0-04-2026-12-15-2026-06-15"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'accrued'; 'before the start'."
+    expr: "accrued(0.04, '2026-12-15', '2026-06-15')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "accrued-0-04-2026-06-15-2026-12-15-act-999"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'accrued'; 'unknown day-count basis'."
+    expr: "accrued(0.04, '2026-06-15', '2026-12-15', 'ACT/999')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "npv-0-1-txt"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    note: "Message contains: 'npv'; \"'abc' is not a number\"."
+    expr: "npv(0.1, $.TXT)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "iferror-irr-pos-no-rate"
+    kind: "expr"
+    source: "FinanceFunctionsTest#refusalsInWordsNeverAFigureThatIsNotARoot"
+    expr: "iferror(irr($.POS), 'no rate')"
+    expect: {"value": "no rate"}
+
+  - id: "npv-0-1-gap"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    note: "A missing flow is never skipped."
+    expr: "npv(0.1, $.GAP)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "irr-gap"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    expr: "irr($.GAP)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "npv-0-1-empty"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    expr: "npv(0.1, $.EMPTY)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "npv-nope-npv"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    expr: "npv($.NOPE, $.NPV)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "pmt-0-1-10-nope"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    expr: "pmt(0.1, 10, $.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "npv-0-1-hidden"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    note: "A masked flow masks the figure."
+    expr: "npv(0.1, $.HIDDEN)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "irr-hidden"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    expr: "irr($.HIDDEN)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "pv-mtm-10-100"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    expr: "pv($.MTM, 10, 100)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "npv-0-1-abc"
+    kind: "expr"
+    source: "FinanceFunctionsTest#emptyAndMaskedFlows"
+    note: "Message contains: 'npv'; 'is not a list'."
+    expr: "npv(0.1, 'abc')"
+    expect: {"error": {"code": "RCH-2102"}}

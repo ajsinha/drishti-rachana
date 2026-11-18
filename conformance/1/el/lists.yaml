@@ -1,0 +1,472 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+suite: el/lists
+since: "1.0"
+profile: core
+verified: false
+description: "List functions over lists of the screen record: sort, unique, take, drop, sequence, map, reduce, flatten, aggregates the pivot engine owns."
+given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+cases:
+
+  - id: "sort-nums"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    note: "Number-like text sorts as a number."
+    expr: "sort($.NUMS)"
+    expect: {"value": [1.5, "2", 3, 10], "type": "list"}
+
+  - id: "sort-nums-true"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    expr: "sort($.NUMS, @, true)"
+    expect: {"value": [10, 3, "2", 1.5], "type": "list"}
+
+  - id: "sort-events-event-date-event-type"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    expr: "sort($.EVENTS, @.EVENT_DATE)[*].EVENT_TYPE"
+    expect: {"value": ["BOOKED", "CASH_SETTLEMENT", "AMENDED"], "type": "list"}
+
+  - id: "take-sort-events-event-date-true-1-0-event-type"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    expr: "take(sort($.EVENTS, @.EVENT_DATE, true), 1)[0].EVENT_TYPE"
+    expect: {"value": "AMENDED"}
+
+  - id: "sort-undated-d-id"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    note: "An empty key sorts last."
+    expr: "sort($.UNDATED, @.D)[*].ID"
+    expect: {"value": ["c", "a", "b"], "type": "list"}
+
+  - id: "sort-undated-d-true-id"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    note: "An empty key stays last when descending."
+    expr: "sort($.UNDATED, @.D, true)[*].ID"
+    expect: {"value": ["a", "c", "b"], "type": "list"}
+
+  - id: "sort-mixed"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    note: "Equal keys keep their order."
+    expr: "sort($.MIXED)"
+    expect: {"value": [1, "1", 1.0, "a", "a"], "type": "list"}
+
+  - id: "sort-nope"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    expr: "sort($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "sort-masked-list"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    expr: "sort($.MASKED_LIST)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "sort-pvs-pv"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    note: "An order by a hidden value would tell it."
+    expr: "sort($.PVS, @.PV)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "sort-nums-mtm"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    expr: "sort($.NUMS, @, $.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "sort-trade-id"
+    kind: "expr"
+    source: "ListFunctionsTest#sortOrdersByAKeyWithEmptyKeysLast"
+    note: "Message contains: 'sort'; \"'MX-20000001' is not a list\"."
+    expr: "sort($.TRADE_ID)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "unique-mixed"
+    kind: "expr"
+    source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
+    note: "1, '1' and 1.0 are one value by 4.6; the first is kept."
+    expr: "unique($.MIXED)"
+    expect: {"value": [1, "1", "a"], "type": "list"}
+
+  - id: "unique-legs-currency"
+    kind: "expr"
+    source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
+    expr: "unique($.LEGS[*].CURRENCY)"
+    expect: {"value": ["AUD"], "type": "list"}
+
+  - id: "size-unique-legs"
+    kind: "expr"
+    source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
+    expr: "size(unique($.LEGS))"
+    expect: {"value": 2}
+
+  - id: "unique-nope"
+    kind: "expr"
+    source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
+    expr: "unique($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "unique-pvs-pv"
+    kind: "expr"
+    source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
+    expr: "unique($.PVS[*].PV)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "unique-masked-list"
+    kind: "expr"
+    source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
+    expr: "unique($.MASKED_LIST)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "unique-5"
+    kind: "expr"
+    source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
+    note: "Message contains: 'unique'; '5 is not a list'."
+    expr: "unique(5)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "take-nums-2"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "take($.NUMS, 2)"
+    expect: {"value": [3, 1.5], "type": "list"}
+
+  - id: "take-nums-1"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "take($.NUMS, -1)"
+    expect: {"value": [10], "type": "list"}
+
+  - id: "size-take-nums-99"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "size(take($.NUMS, 99))"
+    expect: {"value": 4}
+
+  - id: "take-nums-0"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "take($.NUMS, 0)"
+    expect: {"value": [], "type": "list"}
+
+  - id: "drop-nums-1"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "drop($.NUMS, 1)"
+    expect: {"value": [1.5, "2", 10], "type": "list"}
+
+  - id: "drop-nums-1-2"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "drop($.NUMS, -1)"
+    expect: {"value": [3, 1.5, "2"], "type": "list"}
+
+  - id: "drop-nums-99"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "drop($.NUMS, 99)"
+    expect: {"value": [], "type": "list"}
+
+  - id: "take-nope-1"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "take($.NOPE, 1)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "drop-nums-nope"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "drop($.NUMS, $.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "take-masked-list-1"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    expr: "take($.MASKED_LIST, 1)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "take-nums-x"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    note: "Message contains: 'take'; \"'x' is not a number\"."
+    expr: "take($.NUMS, 'x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "drop-abc-1"
+    kind: "expr"
+    source: "ListFunctionsTest#takeAndDropFromEitherEnd"
+    note: "Message contains: 'drop'; \"'abc' is not a list\"."
+    expr: "drop('abc', 1)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "sequence-3"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    expr: "sequence(3)"
+    expect: {"value": [1, 2, 3], "type": "list"}
+
+  - id: "sequence-3-0-1-0-1"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    note: "Decimal counting: 0.1, 0.2, 0.3, not 0.30000000000000004 (SPEC 4.10 rule 7)."
+    expr: "sequence(3, 0.1, 0.1)"
+    expect: {"value": [0.1, 0.2, 0.3], "type": "list"}
+
+  - id: "sequence-4-10-5"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    expr: "sequence(4, 10, -5)"
+    expect: {"value": [10, 5, 0, -5], "type": "list"}
+
+  - id: "sequence-0"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    expr: "sequence(0)"
+    expect: {"value": [], "type": "list"}
+
+  - id: "size-sequence-12"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    expr: "size(sequence(12))"
+    expect: {"value": 12}
+
+  - id: "sequence-nope"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    expr: "sequence($.NOPE)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "sequence-3-mtm"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    expr: "sequence(3, $.MTM)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-sequence-20000"
+    kind: "expr-error"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    note: "SPEC 4.12: a compile error for a literal. Message contains: 'sequence: the length 20000 is outside 0..10000'."
+    expr: "sequence(20000)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'sequence(20000)': "}]}
+
+  - id: "sequence-quantity"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    note: "Message contains: 'sequence'; 'outside 0..10000'."
+    expr: "sequence($.QUANTITY)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "sequence-x"
+    kind: "expr"
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    note: "Message contains: 'sequence'; \"'x' is not a number\"."
+    expr: "sequence('x')"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "map-legs-leg-id-10"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    expr: "map($.LEGS, @.LEG_ID * 10)"
+    expect: {"value": [10, 20], "type": "list"}
+
+  - id: "map-legs-notional-quantity"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    note: "$ is still the document inside map (SPEC 4.10 rule 4)."
+    expr: "map($.LEGS, @.NOTIONAL / $.QUANTITY)"
+    expect: {"value": [1, 1], "type": "list"}
+
+  - id: "map-legs-concat-leg-type-index"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    expr: "map($.LEGS, concat(@.LEG_TYPE, '-', #index))"
+    expect: {"value": ["FIXED-0", "FLOAT-1"], "type": "list"}
+
+  - id: "map-sequence-3"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    expr: "map(sequence(3), @ * @)"
+    expect: {"value": [1, 4, 9], "type": "list"}
+
+  - id: "map-nope"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    expr: "map($.NOPE, @)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "map-masked-list"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    expr: "map($.MASKED_LIST, @)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "map-pvs-pv"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    note: "map masks only the element concerned (SPEC 4.9 rule 4)."
+    expr: "map($.PVS, @.PV)"
+    expect: {"value": [5, {"$masked": true}], "type": "list"}
+
+  - id: "map-x"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    note: "Message contains: 'map'; \"'x' is not a list\"."
+    expr: "map('x', @)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "map-legs-notional-quantity-2"
+    kind: "expr"
+    source: "ListFunctionsTest#mapTransformsEachElement"
+    note: "The reads are the case's point: paths of the document read, none below @. The product exceeds 10^15, so its text is exponent form; H1 fills the value."
+    expr: "map($.LEGS, @.NOTIONAL * $.QUANTITY)"
+    expect: {"type": "list", "reads": ["$.LEGS", "$.QUANTITY"]}
+
+  - id: "reduce-events-concat-acc-left-event-type-1"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    expr: "reduce($.EVENTS, '', concat(@acc, left(@.EVENT_TYPE, 1)))"
+    expect: {"value": "BAC"}
+
+  - id: "reduce-nums-0-greatest-acc"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    expr: "reduce($.NUMS, 0, greatest(@acc, @))"
+    expect: {"value": 10}
+
+  - id: "reduce-events-if-acc-event-type-acc"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    expr: "reduce($.EVENTS, '', if(@acc == '', @.EVENT_TYPE, @acc))"
+    expect: {"value": "BOOKED"}
+
+  - id: "reduce-sequence-0-none-acc"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    expr: "reduce(sequence(0), 'none', @acc)"
+    expect: {"value": "none"}
+
+  - id: "reduce-nope-0-acc"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    expr: "reduce($.NOPE, 0, @acc)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "reduce-masked-list-0-acc"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    expr: "reduce($.MASKED_LIST, 0, @acc)"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "reduce-pvs-0-greatest-acc-pv"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    expr: "reduce($.PVS, 0, greatest(@acc, @.PV))"
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
+
+  - id: "bad-reduce-nums-0-acc"
+    kind: "expr-error"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "SPEC 4.10 rule 5. Message contains: 'reduce does not add up a list: use sum(...)'."
+    expr: "reduce($.NUMS, 0, @acc + @)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.NUMS, 0, @acc + @)': "}]}
+
+  - id: "bad-reduce-legs-0-notional-acc"
+    kind: "expr-error"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "Message contains: 'use sum(...)'."
+    expr: "reduce($.LEGS, 0, @.NOTIONAL - @acc)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.LEGS, 0, @.NOTIONAL - @acc)': "}]}
+
+  - id: "bad-reduce-events-acc-event-type"
+    kind: "expr-error"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "Message contains: 'concat(...) to join text'."
+    expr: "reduce($.EVENTS, '', @acc + ', ' + @.EVENT_TYPE)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.EVENTS, '', @acc + ', ' + @.EVENT_TYPE)': "}]}
+
+  - id: "bad-reduce-legs-0-leg-type-fixed-acc-notional-acc"
+    kind: "expr-error"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "Also refused inside a conditional's branches. Message contains: 'use sum(...)'."
+    expr: "reduce($.LEGS, 0, @.LEG_TYPE == 'FIXED' ? @acc + @.NOTIONAL : @acc)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "reduce-x-0-acc"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "Message contains: 'reduce'; \"'x' is not a list\"."
+    expr: "reduce('x', 0, @acc)"
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "acc"
+    kind: "expr"
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "Outside reduce, @acc is the events of a panel named acc: empty here (SPEC 4.3)."
+    expr: "@acc"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "size-legs"
+    kind: "expr"
+    source: "ListFunctionsTest#theOldListFormsKeepTheirResults"
+    expr: "size($.LEGS)"
+    expect: {"value": 2, "reads": ["$.LEGS"]}
+
+  - id: "first-legs-leg-type"
+    kind: "expr"
+    source: "ListFunctionsTest#theOldListFormsKeepTheirResults"
+    expr: "first($.LEGS).LEG_TYPE"
+    expect: {"value": "FIXED"}
+
+  - id: "last-events-event-type"
+    kind: "expr"
+    source: "ListFunctionsTest#theOldListFormsKeepTheirResults"
+    expr: "last($.EVENTS).EVENT_TYPE"
+    expect: {"value": "CASH_SETTLEMENT"}
+
+  - id: "size-flatten-legs"
+    kind: "expr"
+    source: "ListFunctionsTest#theOldListFormsKeepTheirResults"
+    note: "Elements that are not lists are kept."
+    expr: "size(flatten($.LEGS))"
+    expect: {"value": 2}
+
+  - id: "size-flatten-legs-rows"
+    kind: "expr"
+    source: "ElTest#flattenJoinsTheListsOfEveryElementAndNonblankSkipsEmptyText"
+    note: "Leg 2 has no rows: nothing is added for it."
+    given: {"record": {"tradeId": "IRS-1", "legs": [{"leg": 1, "rows": [{"a": 1}, {"a": 2.5}]}, {"leg": 2}]}}
+    expr: "size(flatten($.legs[*].rows))"
+    expect: {"value": 2}
+
+  - id: "flatten-tradeid"
+    kind: "expr"
+    source: "ElTest#flattenJoinsTheListsOfEveryElementAndNonblankSkipsEmptyText"
+    given: {"record": {"tradeId": "IRS-1", "legs": [{"leg": 1, "rows": [{"a": 1}, {"a": 2.5}]}, {"leg": 2}]}}
+    expr: "flatten($.tradeId)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "flatten-keeps-non-list-elements"
+    kind: "expr"
+    source: "ElTest#flattenJoinsTheListsOfEveryElementAndNonblankSkipsEmptyText"
+    given: {"record": {"tradeId": "IRS-1", "legs": [{"leg": 1, "rows": [{"a": 1}, {"a": 2.5}]}, {"leg": 2}]}}
+    expr: "size(flatten($.legs))"
+    expect: {"value": 2}
+
+  - id: "min-3-1-2"
+    kind: "expr"
+    source: "ListFunctionsTest#aggregatesCompileAndAreRefusedWithTheReasonWithoutTheEngine"
+    note: "Several arguments: least, Rachana's own."
+    expr: "min(3, 1, 2)"
+    expect: {"value": 1}
+
+  - id: "group-nope-x"
+    kind: "expr"
+    source: "ListFunctionsTest#aggregatesCompileAndAreRefusedWithTheReasonWithoutTheEngine"
+    note: "Not a list: empty."
+    expr: "group($.NOPE, 'x')"
+    expect: {"value": null, "type": "empty"}

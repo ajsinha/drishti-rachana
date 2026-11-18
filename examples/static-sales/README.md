@@ -29,7 +29,7 @@ A folder `site/` that opens from `file://` with no server: one page per Sutra (`
 `product.html`), the painter, the three tables as static files, and the compiled ViewModel of each page. The
 `table:` names `sales` and `targets` resolve to `data/sales.csv` and `data/targets.csv`; `/data/regions.csv` is read
 as written. Expected on `overview.html`: Revenue, Units sold, Target attainment and June revenue tiles; a bar per
-region (Central, North, West, South, East in key order: group returns its rows by key); a line of six months; a table
+region (five bars, in key order: group returns its rows by key); a line of six months; a table
 of the eight best region and product pairs. Choosing a region or product on the other two pages recomputes locally.
 
 Check the inputs today (no compiler needed): `python3 -I examples/check_examples.py` from the repository root.

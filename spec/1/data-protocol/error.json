@@ -1,0 +1,35 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). Normative with PROTOCOL.md; where they disagree, that is a defect in one of them.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/data-protocol/error.json",
+  "title": "Rachana Data Protocol v1: error body and error frame",
+  "description": "The body of every HTTP error and the err frame of a stream (PROTOCOL.md section 10). Messages never include row values.",
+  "type": "object",
+  "required": ["error"],
+  "properties": { "error": { "$ref": "#/$defs/error" } },
+  "$defs": {
+    "code": {
+      "enum": ["rdp.auth.required", "rdp.forbidden", "rdp.table.unknown", "rdp.column.unknown", "rdp.query.invalid", "rdp.query.unsupported",
+               "rdp.cursor.invalid", "rdp.limit.rows", "rdp.limit.time", "rdp.limit.rate", "rdp.table.no-key", "rdp.unavailable", "rdp.internal"]
+    },
+    "error": {
+      "type": "object", "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^rdp\\.[a-z]+(\\.[a-z-]+)?$", "description": "One of the codes above; a host may send others of its own in the rdp. family, which a reader treats as rdp.internal." },
+        "message": { "type": "string" },
+        "table": { "type": "string" }, "column": { "type": "string" }, "operation": { "type": "string", "description": "rdp.query.unsupported: the operation named." },
+        "expected": { "type": "array", "items": { "type": "string" }, "description": "Nearest first." },
+        "retry": { "type": "boolean" }, "retryAfterMs": { "type": "integer", "minimum": 0 },
+        "rch": { "type": "string", "pattern": "^RCH-[0-9]{4}$", "description": "Optional: the RCH code the runtime reports for this failure (section 10.2)." }
+      }
+    },
+    "errFrame": {
+      "description": "The events protocol's err frame carrying a Data Protocol code.",
+      "type": "object", "required": ["t", "code", "detail"],
+      "properties": {
+        "t": { "const": "err" }, "id": { "type": ["string", "integer"] },
+        "code": { "$ref": "#/$defs/code" }, "detail": { "type": "string" }, "retry": { "type": "boolean" }
+      }
+    }
+  }
+}

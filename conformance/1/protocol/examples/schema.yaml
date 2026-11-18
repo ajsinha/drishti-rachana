@@ -1,0 +1,64 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/examples/schema
+since: "1.0"
+profile: core
+verified: false
+description: The table schema, the base document and the catalogue (PROTOCOL 2, 3, 4). The test adapter serves only the fixture, so the catalogue has one table.
+cases:
+  - id: schema-all-types
+    kind: protocol
+    source: PROTOCOL 2, 3.1
+    fixture: &typed
+      name: rdp-typed
+      schema:
+        name: rdp-typed
+        title: One column of each kind
+        key: [id]
+        columns:
+          - { name: id, type: integer, nullable: false }
+          - { name: label, type: string, label: Label }
+          - { name: amount, type: decimal, scale: 2, unit: USD, fmt: amount0 }
+          - { name: day, type: date, grain: month }
+          - { name: at, type: timestamp }
+          - { name: tags, type: list, items: string }
+        can: [page, sort, count]
+      rows:
+        - { id: 1, label: one, amount: "1250.50", day: "2026-01-01", at: "2026-11-17T09:30:00.000Z", tags: [a, b] }
+        - { id: 2, label: two, amount: "0.05", day: "2026-02-01", at: "2026-11-17T09:31:00.000Z", tags: [] }
+    steps:
+      - request: { method: GET, path: /tables/rdp-typed }
+        expect:
+          status: 200
+          body:
+            name: rdp-typed
+            key: [id]
+            columns:
+              - { name: id, type: integer, nullable: false }
+              - { name: label, type: string, label: Label }
+              - { name: amount, type: decimal, scale: 2, unit: USD, fmt: amount0 }
+              - { name: day, type: date, grain: month }
+              - { name: at, type: timestamp }
+              - { name: tags, type: list, items: string }
+            can: [page, sort, count]
+
+  - id: schema-base-document
+    kind: protocol
+    source: PROTOCOL 4
+    fixture: *typed
+    steps:
+      - request: { method: GET, path: / }
+        expect:
+          status: 200
+          body: { protocol: rdp, v: 1 }
+
+  - id: schema-catalogue
+    kind: protocol
+    source: PROTOCOL 4, 9
+    fixture: *typed
+    steps:
+      - request: { method: GET, path: /tables }
+        expect:
+          status: 200
+          body:
+            tables:
+              - { name: rdp-typed, key: [id], can: [page, sort, count] }

@@ -1,0 +1,65 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/examples/page
+since: "1.0"
+profile: core
+verified: false
+description: A page of rows in the JSON forms (PROTOCOL 5.1, 3.2, 6.2).
+cases:
+  - id: page-columnar-default
+    kind: protocol
+    source: PROTOCOL 5.1
+    fixture: &sales
+      name: rdp-sales
+      schema:
+        name: rdp-sales
+        key: [region, month]
+        columns:
+          - { name: region, type: string }
+          - { name: month, type: date }
+          - { name: revenue, type: decimal, scale: 2 }
+          - { name: owner, type: string, nullable: true }
+        can: [page, sort, filter, count]
+      rows:
+        - { region: North, month: "2026-01-01", revenue: "120.00", owner: { $masked: true } }
+        - { region: North, month: "2026-02-01", revenue: "135.00", owner: { $masked: true } }
+        - { region: South, month: "2026-01-01", revenue: "80.00", owner: { $masked: true } }
+    steps:
+      - request: { method: GET, path: /tables/rdp-sales/rows, query: { sort: "region,month", columns: "region,month,revenue" } }
+        expect:
+          status: 200
+          body:
+            table: rdp-sales
+            columns: [region, month, revenue]
+            values:
+              - [North, "2026-01-01", "120.00"]
+              - [North, "2026-02-01", "135.00"]
+              - [South, "2026-01-01", "80.00"]
+            total: 3
+
+  - id: page-objects-shape
+    kind: protocol
+    source: PROTOCOL 5.1
+    fixture: *sales
+    steps:
+      - request: { method: GET, path: /tables/rdp-sales/rows, query: { shape: objects, limit: 1, sort: "region,month", columns: "region,revenue" } }
+        expect:
+          status: 200
+          body:
+            table: rdp-sales
+            rows:
+              - { region: North, revenue: "120.00" }
+            total: 3
+
+  - id: page-masked-cell-and-schema
+    kind: protocol
+    source: PROTOCOL 3.2, 5.1
+    fixture: *sales
+    steps:
+      - request: { method: GET, path: /tables/rdp-sales/rows, query: { limit: 1, sort: "region,month", columns: "region,owner", schema: true } }
+        expect:
+          status: 200
+          body:
+            columns: [region, owner]
+            values:
+              - [North, { $masked: true }]
+            schema: { name: rdp-sales, key: [region, month] }

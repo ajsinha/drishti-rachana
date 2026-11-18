@@ -1,0 +1,69 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/examples/error
+since: "1.0"
+profile: core
+verified: false
+description: The error body and its status (PROTOCOL 10).
+cases:
+  - id: error-unknown-table
+    kind: protocol
+    source: PROTOCOL 10.1
+    fixture: &plain
+      name: rdp-plain
+      schema:
+        name: rdp-plain
+        columns:
+          - { name: a, type: string }
+          - { name: b, type: integer }
+        can: [page]
+      rows:
+        - { a: "x", b: 1 }
+        - { a: "y", b: 2 }
+    steps:
+      - request: { method: GET, path: /tables/rdp-nope }
+        expect:
+          status: 404
+          body: { error: { code: rdp.table.unknown, table: rdp-nope } }
+
+  - id: error-unknown-column-expected-names
+    kind: protocol
+    source: PROTOCOL 6, 10.1
+    fixture: *plain
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-plain/query
+          body: { filter: { op: "==", args: [ { col: c }, { lit: 1 } ] } }
+        expect:
+          status: 422
+          body: { error: { code: rdp.column.unknown, table: rdp-plain, column: c, expected: [a, b] } }
+
+  - id: error-cursor-invalid
+    kind: protocol
+    source: PROTOCOL 6.2
+    fixture: *plain
+    steps:
+      - request: { method: GET, path: /tables/rdp-plain/rows, query: { limit: 1, cursor: not-a-cursor } }
+        expect:
+          status: 410
+          body: { error: { code: rdp.cursor.invalid } }
+
+  - id: error-sort-not-declared-is-unsupported
+    kind: protocol
+    source: PROTOCOL 4, 10.1
+    fixture: *plain
+    steps:
+      - request: { method: GET, path: /tables/rdp-plain/rows, query: { sort: a } }
+        expect:
+          status: 422
+          body: { error: { code: rdp.query.unsupported, operation: sort } }
+
+  - id: error-changes-need-a-key
+    kind: protocol
+    source: PROTOCOL 8.1, 10.1
+    fixture: *plain
+    steps:
+      - request: { method: GET, path: /changes, query: { table: rdp-plain, after: "t1:0" } }
+        expect:
+          status: 422
+          body: { error: { code: rdp.table.no-key, table: rdp-plain } }

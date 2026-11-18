@@ -1,0 +1,56 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: el/examples/check
+since: "1.0"
+profile: core
+verified: false
+description: Checked mode (SPEC 4.14) over known types; it only refuses more, never changes meaning.
+given:
+  limits: { depth: 200 }
+cases:
+  - id: integer-times-integer-is-integer
+    kind: check
+    source: SPEC 4.14
+    scope: data
+    types: { record: { qty: integer } }
+    expr: "$.qty * 2"
+    expect: { type: integer }
+
+  - id: divide-is-decimal
+    kind: check
+    source: SPEC 4.14
+    scope: data
+    types: { record: { qty: integer } }
+    expr: "$.qty / 4"
+    expect: { type: decimal }
+
+  - id: date-minus-date-is-integer-days
+    kind: check
+    source: SPEC 4.14
+    scope: data
+    types: { record: { start: date, end: date } }
+    expr: "$.end - $.start"
+    expect: { type: integer }
+
+  - id: text-plus-number-is-an-implicit-cast
+    kind: check
+    source: SPEC 4.14
+    scope: data
+    types: { record: { ccy: string } }
+    expr: "$.ccy + 1"
+    expect: { type: null, problems: [ { code: RCH-9127 } ] }
+
+  - id: control-in-data-scope-refused
+    kind: check
+    source: SPEC 4.14
+    scope: data
+    types: { record: { region: string } }
+    expr: "$.region == ctl.region"
+    expect: { type: null, problems: [ { code: RCH-9127 } ] }
+
+  - id: unknown-name-did-you-mean
+    kind: check
+    source: SPEC 4.14
+    scope: data
+    types: { record: { qty: integer } }
+    expr: "$.qtty * 2"
+    expect: { type: null, problems: [ { code: RCH-9152, expected: [qty] } ] }

@@ -1,0 +1,57 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: format/examples/format
+since: "1.0"
+profile: core
+verified: false
+description: Formats and tones on their own (R-FMT and R-TONE of TRANSLATION 1.1, SPEC 2.6).
+cases:
+  - id: signed-whole-amount-positive-tone
+    kind: format
+    source: TRANSLATION 1.1 R-CELL example
+    value: 1209000
+    format: signed0
+    tone: sign
+    expect: { text: "+1,209,000", tone: pos }
+
+  - id: percent-four-places
+    kind: format
+    source: TRANSLATION 3.1 example
+    value: 0.0425
+    format: pct4
+    expect: { text: "4.2500%" }
+
+  - id: masked-prints-dots-and-no-sign-tone
+    kind: format
+    source: SPEC 4.9; TRANSLATION 1.1 R-TONE, 9
+    value: { $masked: true }
+    format: amount0
+    tone: sign
+    expect: { text: "•••", tone: null }
+
+  - id: empty-formats-as-empty-text
+    kind: format
+    source: TRANSLATION 1.1 R-FMT
+    value: null
+    format: amount0
+    expect: { text: "" }
+
+  - id: unknown-format-is-the-text-form
+    kind: format
+    source: SPEC 2.6
+    value: 0.5
+    format: no-such-format
+    expect: { text: "0.5" }
+
+  - id: status-tone-pending-is-warn
+    kind: format
+    source: SPEC 2.6
+    value: "Pending review"
+    tone: status
+    expect: { text: "Pending review", tone: warn }
+
+  - id: unknown-tone-word-gives-no-tone
+    kind: format
+    source: SPEC 2.6
+    value: -5
+    tone: sparkly
+    expect: { text: "-5", tone: null }

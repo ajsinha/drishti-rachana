@@ -179,7 +179,9 @@ Other languages (.NET, Go, Rust) can load the same `.wasm`; none is planned beyo
 
 ### 6.1 Format
 
-One YAML file per group under `conformance/1/<area>/`; each case is self-contained.
+One YAML file per group under `conformance/1/<area>/`; each case is self-contained. The normative format is
+[conformance/FORMAT.md](../../conformance/FORMAT.md) with its JSON Schema; the runner contract is
+[conformance/RUNNER.md](../../conformance/RUNNER.md). This section is the outline they were written from.
 
 ```yaml
 # conformance/1/el/arithmetic.yaml

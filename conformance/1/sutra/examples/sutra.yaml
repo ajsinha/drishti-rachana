@@ -1,0 +1,71 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/examples/sutra
+since: "1.0"
+profile: core
+verified: false
+description: Sutra + data -> ViewModel (TRANSLATION). Parts checked with at until the ViewModel schema (F3) fixes key order.
+given:
+  today: "2026-01-15"
+  record:
+    sales: &sales
+      - { region: North, revenue: 700 }
+      - { region: South, revenue: 400 }
+      - { region: West, revenue: 150 }
+cases:
+  - id: metric-over-a-list
+    kind: sutra
+    source: TRANSLATION 2.1, 3.0, 3.8
+    file: regional-sales.sutra.yaml
+    sutra: |
+      rachana: 1
+      sutra: regional-sales
+      version: 1
+      title: { id: "'Regional sales'" }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')", fmt: amount0 }
+    expect:
+      at:
+        /contract: "1.0"
+        /title/id: Regional sales
+        /strip: []
+        /panels/0/id: total
+        /panels/0/kind: metric
+        /panels/0/area: main
+        /panels/0/empty: false
+        /panels/0/data/value/label: Revenue
+        /panels/0/data/value/text: "1,250"
+        /keys: []
+
+  - id: falsy-when-leaves-the-panel-out
+    kind: sutra
+    source: TRANSLATION 1 step T4, 3.11
+    sutra: |
+      rachana: 1
+      sutra: when-demo
+      version: 1
+      panels:
+        - { id: count, kind: markdown, text: "${size($.sales)} rows" }
+        - { id: hidden, kind: markdown, text: "never shown", when: "size($.sales) > 10" }
+        - { id: after, kind: markdown, text: "last" }
+    expect:
+      at:
+        /panels/0/data/text: 3 rows
+        /panels/1/id: after
+        /panels/1/data/text: last
+
+  - id: control-value-reaches-a-template
+    kind: sutra
+    source: TRANSLATION 5
+    given:
+      ctl: { region: South }
+    sutra: |
+      rachana: 1
+      sutra: control-demo
+      version: 1
+      controls:
+        - { id: region, kind: select, options: [North, South, West], default: North }
+      panels:
+        - { id: picked, kind: markdown, text: "Region: ${ctl.region}" }
+    expect:
+      at:
+        /panels/0/data/text: "Region: South"

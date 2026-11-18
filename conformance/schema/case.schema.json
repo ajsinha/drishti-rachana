@@ -354,7 +354,7 @@
     },
     "formatCase": {
       "description": "FORMAT 5.6.",
-      "required": ["value", "format", "expect"],
+      "required": ["value", "expect"],
       "properties": {
         "value": { "$ref": "#/$defs/value" },
         "format": { "type": "string", "minLength": 1 },

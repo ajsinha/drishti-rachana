@@ -1,0 +1,50 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: grammar/examples/grammar
+since: "1.0"
+profile: core
+verified: false
+description: The grammar of spec/1/rachana-el.ebnf accepts or refuses a text; the recogniser and the parser agree.
+cases:
+  - id: call-with-path-and-text
+    kind: grammar
+    source: SPEC 2.1
+    text: "sum($.sales, 'revenue')"
+    expect: { accepted: true }
+
+  - id: filter-then-projection
+    kind: grammar
+    source: SPEC 4.4
+    text: "$.legs[?@.type == 'FLOAT'][*].id"
+    expect: { accepted: true }
+
+  - id: named-argument-after-positional
+    kind: grammar
+    source: SPEC 4.10 rule 3
+    text: "round($.a, n = 2)"
+    expect: { accepted: true }
+
+  - id: single-ampersand-refused
+    kind: grammar
+    source: SPEC 6.3
+    text: "$.a & $.b"
+    expect: { accepted: false }
+
+  - id: assignment-refused
+    kind: grammar
+    source: SPEC 6.3
+    text: "$.ccy = 'AUD'"
+    expect: { accepted: false }
+
+  - id: template-with-parts
+    kind: grammar
+    source: SPEC 4.11
+    rule: template
+    text: "Leg ${#index + 1} · ${@.type}"
+    expect: { accepted: true }
+
+  - id: template-with-unclosed-part
+    kind: grammar
+    source: SPEC 4.11
+    rule: template
+    text: "Total ${sum($.a)"
+    expect: { accepted: false }

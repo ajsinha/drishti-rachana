@@ -1,0 +1,98 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+# Hand-checked against SPEC 4.2 and 4.5 (plan F1: ten hand-checked cases); verified by the reference runner in H1.
+suite: el/examples/arithmetic
+since: "1.0"
+profile: core
+verified: false
+description: Arithmetic and text joining with +, the null rule, division by zero, remainders, dates, number text.
+given: { today: "2026-01-15" }
+cases:
+  - id: add-two-numbers
+    kind: expr
+    source: SPEC 4.5
+    expr: "1 + 2"
+    expect: { value: 3, type: number, text: "3", reads: [] }
+
+  - id: whole-result-prints-without-decimals
+    kind: expr
+    source: SPEC 4.2
+    expr: "0.5 * 4"
+    expect: { value: 2, type: number, text: "2" }
+
+  - id: non-whole-result-shortest-round-trip
+    kind: expr
+    source: SPEC 4.2
+    tags: [determinism]
+    expr: "0.1 + 0.2"
+    expect: { value: 0.30000000000000004, type: number, text: "0.30000000000000004" }
+
+  - id: missing-field-times-number-is-empty
+    kind: expr
+    source: SPEC 4.1 rule 3, 4.5
+    given: { record: { a: 2 } }
+    expr: "$.missing * 2"
+    expect: { value: null, type: empty, text: "" }
+
+  - id: field-times-number-reads-its-path
+    kind: expr
+    source: SPEC 4.5; R-PATH of TRANSLATION 1.1
+    given: { record: { a: 2 } }
+    expr: "$.a * 2"
+    expect: { value: 4, type: number, reads: ["$.a"] }
+
+  - id: text-join-with-number
+    kind: expr
+    source: SPEC 4.5
+    expr: "'Leg ' + 1"
+    expect: { value: "Leg 1", type: text }
+
+  - id: numeric-text-plus-number-joins
+    kind: expr
+    source: SPEC 4.5
+    expr: "'1' + 1"
+    expect: { value: "11", type: text }
+
+  - id: text-plus-empty-keeps-text
+    kind: expr
+    source: SPEC 4.5
+    given: { record: {} }
+    expr: "'x' + $.missing"
+    expect: { value: "x", type: text }
+
+  - id: boolean-plus-number-joins-text
+    kind: expr
+    source: SPEC 4.5; SPEC 9 item 5
+    note: A language quirk pinned as rachana 1 by plan N5 (with a lint warning where it surprises).
+    expr: "true + 1"
+    expect: { value: "true1", type: text }
+
+  - id: numeric-text-times-number
+    kind: expr
+    source: SPEC 4.5
+    expr: "'5' * 2"
+    expect: { value: 10, type: number }
+
+  - id: other-text-times-number-is-nan
+    kind: expr
+    source: SPEC 4.5
+    tags: [determinism]
+    expr: "'x' * 2"
+    expect: { value: { $num: NaN }, type: number, text: "NaN" }
+
+  - id: divide-by-zero-is-empty
+    kind: expr
+    source: SPEC 4.5
+    expr: "1 / 0"
+    expect: { value: null, type: empty }
+
+  - id: remainder-takes-sign-of-left
+    kind: expr
+    source: SPEC 4.5
+    expr: "-3 % 2"
+    expect: { value: -1, type: number, text: "-1" }
+
+  - id: date-minus-date-is-whole-days
+    kind: expr
+    source: SPEC 4.5
+    expr: "'2026-11-17' - '2026-11-01'"
+    expect: { value: 16, type: number }

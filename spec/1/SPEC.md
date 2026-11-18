@@ -702,9 +702,11 @@ Core's conformance suite MUST pass with every profile loaded.
 
 ## 8. Conformance
 
-An implementation conforms to `rachana: 1.x` when it passes every case of `conformance/1/` with `since` ≤ x. Case
-kinds: `expr` (expression + context → value or error code), `problem` (Sutra text → problem list), `sutra` (Sutra +
-data → ViewModel, see TRANSLATION.md), `grammar` (text → accepted or refused). The suite will pin, in particular:
+An implementation conforms to `rachana: 1.x` when it passes every case of `conformance/1/` with `since` ≤ x, as
+[conformance/RUNNER.md](../../conformance/RUNNER.md) section 7 states. The case kinds are those of
+[conformance/FORMAT.md](../../conformance/FORMAT.md) section 5: `expr`, `expr-error`, `check`, `grammar`, `format`,
+`sutra` (Sutra + data → ViewModel, see TRANSLATION.md), `problem`, `patch`, `plan`, `edit` and, for Data Protocol
+hosts, `protocol`. The suite will pin, in particular:
 
 1. the text form of non-whole numbers, NaN and the infinities (4.2);
 2. text ordering and lengths for characters outside the Basic Multilingual Plane (4.13);

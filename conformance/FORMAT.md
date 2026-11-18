@@ -203,8 +203,8 @@ the parser to the same answer: a text accepted by one and refused by the other i
 
 ### 5.6 `format`
 
-`value` (section 4) formatted by the format `format` (a name of the shared format table, SPEC 2.6) and given the tone
-word `tone` (optional). `expect.text` and `expect.tone` (`pos`, `neg`, `ok`, `warn`, `bad`, `link`, `accent`, or null).
+`value` (section 4) formatted by the format `format` (a name of the shared format table, SPEC 2.6; optional: without
+one, the value's text form) and given the tone word `tone` (optional). `expect.text` and `expect.tone` (`pos`, `neg`, `ok`, `warn`, `bad`, `link`, `accent`, or null).
 These are R-FMT and R-TONE of TRANSLATION 1.1 on their own.
 
 ### 5.7 `sutra`

@@ -1,6 +1,9 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. All rights reserved. -->
 # Front-load review: the filter tree (F8) and the expression cases (F2)
 
+**Owner decision, 2026-11-17: every recommendation below is accepted** (A3: Rachana-EL is exact on decimal operands; division by zero gives empty). To be applied to spec/1 and the cases when work resumes.
+
+
 **2026-11-17.** The review R0_R1_I8_PLAN.md asks for: "Opus reviews the filter tree" (F8) and the expression cases (F2),
 plus a cross-check of `spec/1/`, `conformance/FORMAT.md` and `examples/`. Read-only; nothing was built or run except
 `python3 -I` validation scripts. What was clearly wrong is fixed in the commits listed at the end; this page lists what

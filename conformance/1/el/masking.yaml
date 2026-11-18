@@ -75,9 +75,9 @@ cases:
     kind: "expr"
     source: "MaskTest#valuesDerivedFromAMaskAreMasked"
     tags: ["format-table"]
-    note: "The Java test renders the template MTM ${fmt($.mtm, 'signed0')}; the + form is the same words. See the template case in el/templates."
+    note: "Unlike the template (el/templates#mtm-fmt-mtm-signed0, which inserts the mask's text), + over a masked side gives the mask (SPEC 4.9 rule 1; Expr.Binary masks before joining). The Java test renders only the template form."
     expr: "'MTM ' + fmt($.mtm, 'signed0')"
-    expect: {"value": "MTM •••", "type": "text"}
+    expect: {"value": {"$masked": true}, "type": "masked", "text": "•••"}
 
   - id: "never-true-mtm-0"
     kind: "expr"

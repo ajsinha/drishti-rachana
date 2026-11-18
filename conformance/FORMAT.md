@@ -89,7 +89,7 @@ cases:
 | `since` | no | a later minor than the file's, when this case pins something added in it |
 | `profile` | no | overrides the file's `profile` |
 | `verified` | no | `true` once the reference runner (JVM) has produced exactly `expect` and a person has reviewed it; `false` for a case written by hand or by reading, not yet confirmed. Only the reference's record mode (RUNNER section 6) helps turn `false` into `true`; a person flips it |
-| `source` | no | where the case came from: a test method of the reference (`ElTest.nullArithmetic`), a SPEC section (`SPEC 4.5`), a function example (`functions.yaml#round`), a defect number |
+| `source` | no | where the case came from: a test method of the reference (`ElTest#nullArithmetic`), a SPEC section (`SPEC 4.5`), a function example (`functions.yaml#round`), a defect number |
 | `note` | no | one or two sentences for people; never read by a runner |
 | `tags` | no | free words for filtering (`determinism`, `mask`, `bmp`, `slow`) |
 

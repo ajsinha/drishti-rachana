@@ -89,7 +89,7 @@ cases:
   - id: "unique-mixed"
     kind: "expr"
     source: "ListFunctionsTest#uniqueKeepsTheFirstOfEach"
-    note: "1, '1' and 1.0 are one value by 4.6; the first is kept."
+    note: "1 and 1.0 are one value and the first is kept; the text '1' differs (SPEC 5.6: unique does not use 4.6's equality, under which 1 == '1')."
     expr: "unique($.MIXED)"
     expect: {"value": [1, "1", "a"], "type": "list"}
 

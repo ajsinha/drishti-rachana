@@ -416,9 +416,9 @@ cases:
   - id: "sqrt-2"
     kind: "expr"
     source: "MathFunctionsTest#powersRootsAndLogarithms"
-    note: "The test compares the decimal 1.414213562373095 by value."
+    note: "sqrt computes in decimal (SPEC 4.10 rule 7): the test reads a BigDecimal equal by value to 1.414213562373095, so no tolerance."
     expr: "sqrt(2)"
-    expect: {"value": 1.414213562373095, "type": "number", "tolerance": {"abs": 1.0e-15}}
+    expect: {"value": 1.414213562373095, "type": "decimal"}
 
   - id: "sqrt-4"
     kind: "expr"

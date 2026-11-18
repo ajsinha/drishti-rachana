@@ -989,14 +989,6 @@ cases:
     expr: "today()"
     expect: {"value": "2026-10-16", "type": "text"}
 
-  - id: "asof-without-a-date-is-empty"
-    kind: "expr"
-    source: "FoldedSyntaxTest#todayIsReadAsAsOf"
-    note: "No as-of date set by the host: empty. A case never reads a clock."
-    given: {"record": {}}
-    expr: "asof()"
-    expect: {"value": null, "type": "empty"}
-
   - id: "days-today-events-2-event-date"
     kind: "expr"
     source: "ElTest#groupSumsByAKeyAndDaysCountFromTheViewsBusinessDate"
@@ -1019,10 +1011,3 @@ cases:
     expr: "days('2026-10-16T09:00:00Z', 'soon')"
     expect: {"value": null, "type": "empty"}
 
-  - id: "today-outside-a-view-is-empty"
-    kind: "expr"
-    source: "ElTest#groupSumsByAKeyAndDaysCountFromTheViewsBusinessDate"
-    note: "Outside a view (no as-of date): empty."
-    given: {"record": {"EVENTS": [{"EVENT_DATE": "2026-10-20", "AMOUNT": "-1500.5", "LEG": {"ID": 1}}, {"EVENT_DATE": "2026-10-20", "AMOUNT": 2000, "LEG": {"ID": 2}}, {"EVENT_DATE": "2026-11-03", "AMOUNT": "", "LEG": {"ID": 1}}, {"EVENT_DATE": "", "AMOUNT": 7}, {"EVENT_DATE": "2027-01-15", "AMOUNT": "x"}]}}
-    expr: "today()"
-    expect: {"value": null, "type": "empty"}

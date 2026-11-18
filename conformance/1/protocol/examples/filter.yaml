@@ -1,0 +1,115 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/examples/filter
+since: "1.0"
+profile: core
+verified: false
+description: The query document and the filter syntax tree (PROTOCOL 6, 7).
+cases:
+  - id: filter-and-sort
+    kind: protocol
+    source: PROTOCOL 6.1, 7
+    fixture: &sales
+      name: rdp-sales
+      schema:
+        name: rdp-sales
+        key: [region, month]
+        columns:
+          - { name: region, type: string }
+          - { name: month, type: date }
+          - { name: revenue, type: decimal, scale: 2 }
+          - { name: note, type: string }
+        can: [page, sort, filter, group, count]
+      rows:
+        - { region: North, month: "2026-01-01", revenue: "120.00", note: null }
+        - { region: North, month: "2026-02-01", revenue: "135.00", note: "late" }
+        - { region: South, month: "2026-01-01", revenue: "80.00", note: "Late order" }
+        - { region: South, month: "2025-12-01", revenue: "70.00", note: null }
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-sales/query
+          body:
+            columns: [region, month, revenue]
+            filter:
+              op: "&&"
+              args:
+                - { op: "==", args: [ { col: region }, { lit: South } ] }
+                - { op: ">=", args: [ { col: month }, { lit: "2026-01-01", type: date } ] }
+            sort: [ { col: revenue, dir: desc, nulls: last } ]
+        expect:
+          status: 200
+          body:
+            columns: [region, month, revenue]
+            values: [ [South, "2026-01-01", "80.00"] ]
+
+  - id: filter-in-list-and-null
+    kind: protocol
+    source: PROTOCOL 7
+    fixture: *sales
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-sales/query
+          body:
+            columns: [region, month]
+            filter:
+              op: "&&"
+              args:
+                - { op: in, args: [ { col: region }, { list: [ { lit: North }, { lit: East } ] } ] }
+                - { op: is-null, args: [ { col: note } ] }
+            sort: [ { col: month } ]
+        expect:
+          status: 200
+          body: { values: [ [North, "2026-01-01"] ] }
+
+  - id: filter-case-insensitive-contains
+    kind: protocol
+    source: PROTOCOL 7
+    fixture: *sales
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-sales/query
+          body:
+            columns: [region, note]
+            filter: { op: contains, args: [ { col: note }, { lit: late } ] }
+            sort: [ { col: region }, { col: month } ]
+        expect:
+          status: 200
+          body:
+            values: [ [North, late], [South, "Late order"] ]
+
+  - id: filter-unknown-operation-is-invalid
+    kind: protocol
+    source: PROTOCOL 7, 10.1
+    fixture: *sales
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-sales/query
+          body:
+            filter: { op: matches, args: [ { col: note }, { lit: "^l" } ] }
+        expect:
+          status: 422
+          body: { error: { code: rdp.query.invalid } }
+
+  - id: group-with-totals
+    kind: protocol
+    source: PROTOCOL 6.3
+    fixture: *sales
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-sales/query
+          body:
+            group:
+              by: [region]
+              values: [ { name: revenue, agg: sum, col: revenue }, { name: n, agg: count } ]
+              totals: true
+            sort: [ { col: region } ]
+        expect:
+          status: 200
+          body:
+            columns: [region, revenue, n]
+            values: [ [North, "255.00", 2], [South, "150.00", 2] ]
+            totals: { revenue: "405.00", n: 4 }

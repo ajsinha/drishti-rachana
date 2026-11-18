@@ -1,0 +1,59 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). Normative with PROTOCOL.md; where they disagree, that is a defect in one of them.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/data-protocol/patch.json",
+  "title": "Rachana Data Protocol v1: keyed row patch and its stream frames",
+  "description": "The root is the patch, the data of an rdp.<table> message (PROTOCOL.md section 8.1). $defs holds the frames of the events wire protocol v1 the Data Protocol fixes conventions for (section 8.2); the events design is the authority for the frames, this file only for the conventions. A key is always a list of key values in key order.",
+  "type": "object",
+  "required": ["table"],
+  "properties": {
+    "table": { "type": "string" },
+    "reset": { "type": ["array", "null"], "items": { "$ref": "#/$defs/row" }, "description": "Present and an array: replaces every row. Null or absent: no reset." },
+    "remove": { "type": "array", "items": { "$ref": "#/$defs/key" } },
+    "update": { "type": "array", "items": { "$ref": "#/$defs/row" } },
+    "add": { "type": "array", "items": { "$ref": "#/$defs/row" } }
+  },
+  "$defs": {
+    "row": { "type": "object" },
+    "key": { "type": "array", "minItems": 1, "items": { "type": ["string", "number", "boolean"] } },
+    "stream": { "type": "object", "required": ["epoch", "seq"], "properties": { "epoch": { "type": "string" }, "seq": { "type": "integer", "minimum": 0 } } },
+    "topic": { "type": "string", "pattern": "^rdp(\\.[A-Za-z0-9_~:-]+)+$" },
+    "subFrame": {
+      "description": "Client to server. after maps the stream (the topic) to the position the reader holds.",
+      "type": "object", "required": ["t", "id", "topic"],
+      "properties": {
+        "t": { "const": "sub" }, "id": { "type": ["string", "integer"] }, "topic": { "$ref": "#/$defs/topic" },
+        "after": { "type": "object", "additionalProperties": { "$ref": "#/$defs/stream" } },
+        "conflate": { "type": "object", "properties": { "everyMs": { "type": "integer", "minimum": 1 } } },
+        "meta": { "type": "object", "properties": { "filter": { "$ref": "filter.json#/$defs/node" } } }
+      }
+    },
+    "subdFrame": {
+      "type": "object", "required": ["t", "id", "streams", "recovered"],
+      "properties": {
+        "t": { "const": "subd" }, "id": { "type": ["string", "integer"] },
+        "streams": { "type": "object", "additionalProperties": { "$ref": "#/$defs/stream" } },
+        "recovered": { "type": "boolean" }
+      }
+    },
+    "msgFrame": {
+      "type": "object", "required": ["t", "id", "topic", "stream", "seq", "kind", "data"],
+      "properties": {
+        "t": { "const": "msg" }, "id": { "type": "string" }, "topic": { "$ref": "#/$defs/topic" },
+        "stream": { "type": "string" }, "seq": { "type": "integer", "minimum": 1 },
+        "kind": { "const": "rows" }, "time": { "type": "integer" }, "source": { "type": "string" },
+        "epoch": { "type": "string", "description": "Present on messages of the minimal SSE form, where there is no subd to say it." },
+        "data": { "$ref": "#" },
+        "replayed": { "type": "boolean" }
+      },
+      "not": { "required": ["key"] }
+    },
+    "gapFrame": {
+      "type": "object", "required": ["t", "stream", "from", "to", "recoverable"],
+      "properties": {
+        "t": { "const": "gap" }, "stream": { "type": "string" },
+        "from": { "type": "integer" }, "to": { "type": "integer" }, "recoverable": { "type": "boolean" }
+      }
+    }
+  }
+}

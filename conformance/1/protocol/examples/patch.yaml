@@ -1,0 +1,95 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/examples/patch
+since: "1.0"
+profile: core
+verified: false
+description: Keyed patches on topic rdp.<table> in the minimal SSE form (PROTOCOL 8, 15). The adapter table starts at epoch t1, seq 0.
+cases:
+  - id: patch-order-remove-update-add
+    kind: protocol
+    source: PROTOCOL 8.1, 8.2
+    fixture: &board
+      name: rdp-board
+      schema:
+        name: rdp-board
+        key: [id]
+        columns:
+          - { name: id, type: string }
+          - { name: qty, type: integer }
+          - { name: px, type: decimal, scale: 2 }
+        can: [page, sort, changes, replay]
+      rows:
+        - { id: a, qty: 1, px: "10.00" }
+        - { id: b, qty: 2, px: "20.00" }
+    steps:
+      - request:
+          method: POST
+          path: /_test/patch
+          body:
+            table: rdp-board
+            remove: [ [a] ]
+            update: [ { id: b, px: "21.00" }, { id: z, qty: 9 } ]
+            add: [ { id: c, qty: 3, px: "30.00" } ]
+        expect: { status: 204 }
+      - request: { method: GET, path: /changes, query: { table: rdp-board, after: "t1:0" } }
+        expect:
+          status: 200
+          body:
+            - t: msg
+              topic: rdp.rdp-board
+              stream: rdp.rdp-board
+              epoch: t1
+              seq: 1
+              kind: rows
+              data:
+                table: rdp-board
+                remove: [ [a] ]
+                update: [ { id: b, px: "21.00" }, { id: z, qty: 9 } ]
+                add: [ { id: c, qty: 3, px: "30.00" } ]
+      - request: { method: GET, path: /tables/rdp-board/rows, query: { sort: id } }
+        expect:
+          status: 200
+          body:
+            version: { epoch: t1, seq: 1 }
+            values: [ [b, 2, "21.00"], [c, 3, "30.00"], [z, 9, null] ]
+
+  - id: patch-resume-after-position
+    kind: protocol
+    source: PROTOCOL 8.3
+    fixture: *board
+    steps:
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-board, update: [ { id: a, qty: 5 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-board, update: [ { id: a, qty: 6 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /changes, query: { table: rdp-board, after: "t1:1" } }
+        expect:
+          status: 200
+          body:
+            - { t: msg, seq: 2, epoch: t1, kind: rows, data: { table: rdp-board, update: [ { id: a, qty: 6 } ] } }
+
+  - id: patch-add-existing-key-merges
+    kind: protocol
+    source: PROTOCOL 8.1
+    fixture: *board
+    steps:
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-board, add: [ { id: a, qty: 7 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/rdp-board/rows, query: { sort: id } }
+        expect:
+          status: 200
+          body:
+            version: { epoch: t1, seq: 1 }
+            values: [ [a, 7, "10.00"], [b, 2, "20.00"] ]
+
+  - id: patch-reset-replaces-all
+    kind: protocol
+    source: PROTOCOL 8.1
+    fixture: *board
+    steps:
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-board, reset: [ { id: q, qty: 1, px: "1.00" } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/rdp-board/rows }
+        expect:
+          status: 200
+          body: { values: [ [q, 1, "1.00"] ] }

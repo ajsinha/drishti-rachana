@@ -17,6 +17,7 @@ does not describe any one runtime.
 | [TRANSLATION.md](TRANSLATION.md) | the translation rules: Sutra + data → ViewModel, construct by construct | draft 1 |
 | [functions.yaml](functions.yaml), [functions.schema.json](functions.schema.json) | every Core function in full (207: signature, types, null and error behaviour, examples), the deprecated spellings, the Drishti-profile functions (36) and the engine list functions pending classification (49); and the JSON Schema of the file's own shape | draft, drafted by reading; completed with the coverage gate in R0 step H5 |
 | `rachana.lang.json`, `sutra.schema.json` | the language definition and the Core JSON Schema, generated from the reference compiler's tables | planned, R0 step 0c |
+| [data-protocol/PROTOCOL.md](data-protocol/PROTOCOL.md) and its six JSON Schemas (`schema`, `page`, `filter`, `patch`, `error`, `bridge`) | the Data Protocol v1: tables and types, JSON and Arrow rows, paging, the filter syntax tree, live keyed patches on the events wire protocol, errors, the bridge, limits | draft 1; the live part is re-checked when the events protocol ships |
 | [viewmodel.schema.json](viewmodel.schema.json), [VIEWMODEL.md](VIEWMODEL.md) | the ViewModel's JSON Schema (decision D6, N3): 55 definitions, transcribed by reading from the reference's records; and a short description with the differences from the Views design | draft; schema replaced by the generated one in R0 step H4 |
 
 Read SPEC.md first; it links the other two where they apply.

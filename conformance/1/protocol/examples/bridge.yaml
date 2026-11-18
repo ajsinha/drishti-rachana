@@ -1,0 +1,61 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/examples/bridge
+since: "1.0"
+profile: core
+verified: false
+description: Bridge messages through the adapter's /_test/bridge path (PROTOCOL 12, 15). The body of each answer is the host to view message.
+cases:
+  - id: bridge-hello-welcome
+    kind: protocol
+    source: PROTOCOL 12
+    fixture: &pair
+      name: rdp-pair
+      schema:
+        name: rdp-pair
+        key: [k]
+        columns:
+          - { name: k, type: string }
+          - { name: v, type: integer }
+        can: [page]
+      rows:
+        - { k: a, v: 1 }
+        - { k: b, v: 2 }
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: hello, client: rachana-view/1, v: 1 } }
+        expect:
+          status: 200
+          body: { rdp: 1, t: welcome, v: 1 }
+
+  - id: bridge-rows-request-answered-once
+    kind: protocol
+    source: PROTOCOL 12, 5.1
+    fixture: *pair
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: rows, id: r1, table: rdp-pair, body: { sort: k } } }
+        expect:
+          status: 200
+          body:
+            rdp: 1
+            t: res
+            re: r1
+            body: { table: rdp-pair, columns: [k, v], values: [ [a, 1], [b, 2] ] }
+
+  - id: bridge-unknown-table-is-an-error-res
+    kind: protocol
+    source: PROTOCOL 12, 10.1
+    fixture: *pair
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: schema, id: s1, table: rdp-nope } }
+        expect:
+          status: 200
+          body: { rdp: 1, t: res, re: s1, error: { code: rdp.table.unknown } }
+
+  - id: bridge-ping-pong
+    kind: protocol
+    source: PROTOCOL 12
+    fixture: *pair
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: ping, ts: 1794000000000 } }
+        expect:
+          status: 200
+          body: { rdp: 1, t: pong, ts: 1794000000000 }

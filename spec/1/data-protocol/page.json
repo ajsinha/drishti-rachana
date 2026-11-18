@@ -1,0 +1,50 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). Normative with PROTOCOL.md; where they disagree, that is a defect in one of them.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/data-protocol/page.json",
+  "title": "Rachana Data Protocol v1: a page of rows (JSON)",
+  "description": "The JSON answer of GET {base}/tables/{name}/rows and POST .../query (PROTOCOL.md section 5). Exactly one row form: columnar-by-row (columns + values) or objects (rows). $defs also holds the NDJSON header line and the Arrow schema metadata keys.",
+  "type": "object",
+  "required": ["table"],
+  "properties": {
+    "table": { "type": "string" },
+    "version": { "$ref": "schema.json#/$defs/version" },
+    "columns": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "values": { "type": "array", "items": { "type": "array", "items": { "$ref": "#/$defs/cell" } } },
+    "rows": { "type": "array", "items": { "type": "object", "additionalProperties": { "$ref": "#/$defs/cell" } } },
+    "total": { "type": "integer", "minimum": 0 },
+    "next": { "type": "string", "minLength": 1, "description": "Opaque cursor; absent on the last page." },
+    "totals": { "type": "object", "additionalProperties": { "$ref": "#/$defs/cell" } },
+    "schema": { "$ref": "schema.json" }
+  },
+  "oneOf": [
+    { "required": ["columns", "values"], "not": { "required": ["rows"] } },
+    { "required": ["rows"], "not": { "anyOf": [ { "required": ["columns"] }, { "required": ["values"] } ] } }
+  ],
+  "$defs": {
+    "cell": {
+      "description": "One value in the JSON form of its column's type (section 3.2): null, string, number, boolean, array, object, or the masked tag.",
+      "type": ["string", "number", "boolean", "array", "object", "null"]
+    },
+    "ndjsonHeader": {
+      "description": "First line of an application/x-ndjson answer; every later line is one array of cells in columns order.",
+      "type": "object", "required": ["table", "columns"],
+      "properties": {
+        "table": { "type": "string" }, "version": { "$ref": "schema.json#/$defs/version" },
+        "columns": { "type": "array", "items": { "type": "string" } },
+        "total": { "type": "integer", "minimum": 0 }, "next": { "type": "string" }
+      }
+    },
+    "arrowSchemaMetadata": {
+      "description": "Key-value metadata of the Arrow schema message (PROTOCOL.md section 5.2); every value is a string.",
+      "type": "object",
+      "properties": {
+        "rachana.table": { "type": "string" },
+        "rachana.key": { "type": "string", "description": "JSON text of a list of column names." },
+        "rachana.epoch": { "type": "string" }, "rachana.seq": { "type": "string", "pattern": "^[0-9]+$" },
+        "rachana.total": { "type": "string", "pattern": "^[0-9]+$" }, "rachana.next": { "type": "string" }
+      },
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

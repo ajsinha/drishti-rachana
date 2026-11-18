@@ -1,0 +1,89 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). Normative with PROTOCOL.md; where they disagree, that is a defect in one of them.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/data-protocol/filter.json",
+  "title": "Rachana Data Protocol v1: filter syntax tree and query document",
+  "description": "The root is a filter node (PROTOCOL.md section 7): a tree of JSON nodes, never expression text. $defs/query is the query document of POST {base}/tables/{name}/query (section 6). Depth (32) and in-list size (10,000) are limits of section 13, checked by the host.",
+  "$ref": "#/$defs/node",
+  "$defs": {
+    "node": { "oneOf": [ { "$ref": "#/$defs/col" }, { "$ref": "#/$defs/lit" }, { "$ref": "#/$defs/list" }, { "$ref": "#/$defs/op" } ] },
+    "col": { "type": "object", "required": ["col"], "properties": { "col": { "type": "string", "minLength": 1, "description": "Column name; a dotted path reaches into an object column." } }, "additionalProperties": false },
+    "lit": {
+      "type": "object", "required": ["lit"],
+      "properties": {
+        "lit": { "type": ["string", "number", "boolean", "null"] },
+        "type": { "enum": ["date", "timestamp", "decimal"], "description": "How a string literal is read; a decimal literal is a string of digits." }
+      },
+      "additionalProperties": false
+    },
+    "list": { "type": "object", "required": ["list"], "properties": { "list": { "type": "array", "items": { "$ref": "#/$defs/node" } } }, "additionalProperties": false },
+    "opName": {
+      "enum": ["==", "!=", "<", "<=", ">", ">=", "&&", "||", "!", "in", "not-in", "+", "-", "*", "/", "%", "neg", "is-null",
+               "coalesce", "lower", "upper", "contains", "starts_with", "ends_with", "len", "abs", "round", "floor", "ceiling",
+               "year", "quarter", "month", "day", "has", "any_of", "all_of"]
+    },
+    "args": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+    "op": {
+      "type": "object", "required": ["op", "args"],
+      "properties": { "op": { "$ref": "#/$defs/opName" }, "args": { "$ref": "#/$defs/args" } },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "op": { "enum": ["==", "!=", "<", "<=", ">", ">=", "-", "/", "%", "contains", "starts_with", "ends_with", "has", "any_of", "all_of"] } } },
+          "then": { "properties": { "args": { "minItems": 2, "maxItems": 2 } } } },
+        { "if": { "properties": { "op": { "enum": ["&&", "||", "+", "*"] } } },
+          "then": { "properties": { "args": { "minItems": 2 } } } },
+        { "if": { "properties": { "op": { "enum": ["!", "neg", "is-null", "lower", "upper", "len", "abs", "floor", "ceiling", "year", "quarter", "month", "day"] } } },
+          "then": { "properties": { "args": { "minItems": 1, "maxItems": 1 } } } },
+        { "if": { "properties": { "op": { "const": "round" } } },
+          "then": { "properties": { "args": { "minItems": 1, "maxItems": 2 } } } },
+        { "if": { "properties": { "op": { "const": "coalesce" } } },
+          "then": { "properties": { "args": { "minItems": 1 } } } },
+        { "if": { "properties": { "op": { "enum": ["in", "not-in"] } } },
+          "then": { "properties": { "args": { "minItems": 2, "maxItems": 2, "prefixItems": [ true, { "$ref": "#/$defs/list" } ] } } } }
+      ]
+    },
+    "sortKey": {
+      "type": "object", "required": ["col"],
+      "properties": {
+        "col": { "type": "string" },
+        "dir": { "enum": ["asc", "desc"], "default": "asc" },
+        "nulls": { "enum": ["first", "last"], "default": "last" }
+      },
+      "additionalProperties": false
+    },
+    "agg": { "enum": ["sum", "count", "min", "max", "avg", "distinct", "median", "percentile"] },
+    "groupValue": {
+      "type": "object", "required": ["name", "agg"],
+      "properties": {
+        "name": { "type": "string" }, "agg": { "$ref": "#/$defs/agg" },
+        "col": { "type": "string", "description": "Absent only for count of rows." },
+        "p": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1, "description": "percentile only." }
+      },
+      "allOf": [ { "if": { "properties": { "agg": { "const": "percentile" } } }, "then": { "required": ["p"] } } ],
+      "additionalProperties": false
+    },
+    "group": {
+      "type": "object", "required": ["by", "values"],
+      "properties": {
+        "by": { "type": "array", "items": { "type": "string" } },
+        "values": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/groupValue" } },
+        "totals": { "type": "boolean", "default": false }
+      },
+      "additionalProperties": false
+    },
+    "query": {
+      "type": "object",
+      "properties": {
+        "columns": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "filter": { "$ref": "#/$defs/node" },
+        "sort": { "type": "array", "items": { "$ref": "#/$defs/sortKey" } },
+        "limit": { "type": "integer", "minimum": 1 },
+        "cursor": { "type": ["string", "null"] },
+        "offset": { "type": "integer", "minimum": 0, "description": "Only when can has offset; not with cursor." },
+        "group": { "$ref": "#/$defs/group" },
+        "asOf": { "type": ["object", "null"], "description": "A version {epoch, seq} to read at; only when can has snapshot." },
+        "params": { "type": "object", "description": "Host-defined named parameters." }
+      }
+    }
+  }
+}

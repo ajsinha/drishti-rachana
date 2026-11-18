@@ -1,0 +1,95 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). Normative with PROTOCOL.md; where they disagree, that is a defect in one of them.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/data-protocol/schema.json",
+  "title": "Rachana Data Protocol v1: table schema",
+  "description": "The schema document of one table (GET {base}/tables/{name}). PROTOCOL.md section 2. $defs also holds the base document and the table catalogue (section 4). Unknown fields are ignored by readers (section 14).",
+  "type": "object",
+  "required": ["name", "columns"],
+  "properties": {
+    "name": { "$ref": "#/$defs/tableName" },
+    "title": { "type": "string" },
+    "key": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" }, "description": "Column names, in key order." },
+    "columns": { "type": "array", "minItems": 1, "maxItems": 2000, "items": { "$ref": "#/$defs/column" } },
+    "rows": { "type": "integer", "minimum": 0, "description": "Row count when cheap." },
+    "can": { "$ref": "#/$defs/can" },
+    "version": { "$ref": "#/$defs/version" },
+    "limits": { "$ref": "#/$defs/limits" },
+    "append": { "$ref": "#/$defs/append" }
+  },
+  "$defs": {
+    "tableName": { "type": "string", "pattern": "^[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*$", "maxLength": 128 },
+    "columnType": { "enum": ["string", "integer", "decimal", "number", "boolean", "date", "timestamp", "time", "list", "object"] },
+    "column": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "type": { "$ref": "#/$defs/columnType" },
+        "nullable": { "type": "boolean", "default": true },
+        "label": { "type": "string" },
+        "fmt": { "type": "string", "description": "A Rachana format name." },
+        "unit": { "type": "string" },
+        "scale": { "type": "integer", "minimum": 0, "maximum": 38, "description": "Digits after the point; decimal only." },
+        "grain": { "enum": ["day", "month", "quarter", "year"], "description": "date only." },
+        "items": { "$ref": "#/$defs/columnType", "description": "Element type; list only." },
+        "hint": { "type": "string" },
+        "masked": { "type": "boolean", "description": "The whole column is masked for this reader." }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "list" } }, "required": ["type"] }, "then": { "required": ["items"] } }
+      ]
+    },
+    "can": {
+      "type": "array", "uniqueItems": true,
+      "items": { "enum": ["page", "offset", "sort", "filter", "group", "count", "snapshot", "arrow", "arrow.lz4", "changes", "changes.filter", "replay"] }
+    },
+    "version": {
+      "type": "object", "required": ["epoch", "seq"],
+      "properties": { "epoch": { "type": "string", "minLength": 1, "maxLength": 64 }, "seq": { "type": "integer", "minimum": 0 } }
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "pageRows": { "type": "integer", "minimum": 1 },
+        "arrowBatchRows": { "type": "integer", "minimum": 1 },
+        "wholeTableRows": { "type": "integer", "minimum": 1 },
+        "wholeTableBytes": { "type": "integer", "minimum": 1 },
+        "queryBytes": { "type": "integer", "minimum": 1 },
+        "filterDepth": { "type": "integer", "minimum": 1 },
+        "inList": { "type": "integer", "minimum": 1 },
+        "columns": { "type": "integer", "minimum": 1 },
+        "cellBytes": { "type": "integer", "minimum": 1 },
+        "queryMs": { "type": "integer", "minimum": 1 },
+        "patchRows": { "type": "integer", "minimum": 1 },
+        "patchBytes": { "type": "integer", "minimum": 1 },
+        "subscriptions": { "type": "integer", "minimum": 1 },
+        "messageBytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "append": { "type": "object", "required": ["window"], "properties": { "window": { "type": "integer", "minimum": 1 } } },
+    "maskedValue": { "type": "object", "required": ["$masked"], "properties": { "$masked": { "const": true } }, "additionalProperties": false },
+    "tableSummary": {
+      "type": "object", "required": ["name"],
+      "properties": {
+        "name": { "$ref": "#/$defs/tableName" }, "title": { "type": "string" },
+        "key": { "type": "array", "items": { "type": "string" } },
+        "rows": { "type": "integer", "minimum": 0 }, "can": { "$ref": "#/$defs/can" }
+      }
+    },
+    "catalogue": {
+      "description": "GET {base}/tables.",
+      "type": "object", "required": ["tables"],
+      "properties": { "tables": { "type": "array", "items": { "$ref": "#/$defs/tableSummary" } } }
+    },
+    "base": {
+      "description": "GET {base}.",
+      "type": "object", "required": ["protocol", "v", "tables"],
+      "properties": {
+        "protocol": { "const": "rdp" }, "v": { "const": 1 },
+        "tables": { "type": "string" }, "changes": { "type": "string" },
+        "limits": { "$ref": "#/$defs/limits" }
+      }
+    }
+  }
+}

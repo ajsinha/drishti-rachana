@@ -1,0 +1,119 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). Normative with PROTOCOL.md; where they disagree, that is a defect in one of them.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/data-protocol/bridge.json",
+  "title": "Rachana Data Protocol v1: bridge message",
+  "description": "Every message of the in-process bridge (PROTOCOL.md section 12): a JSON object with rdp 1 and a type t. Exactly one definition applies, chosen by t.",
+  "type": "object",
+  "required": ["rdp", "t"],
+  "properties": { "rdp": { "const": 1 }, "t": { "type": "string" } },
+  "oneOf": [
+    { "$ref": "#/$defs/hello" }, { "$ref": "#/$defs/welcome" }, { "$ref": "#/$defs/request" }, { "$ref": "#/$defs/res" },
+    { "$ref": "#/$defs/resArrow" }, { "$ref": "#/$defs/sub" }, { "$ref": "#/$defs/unsub" }, { "$ref": "#/$defs/msg" },
+    { "$ref": "#/$defs/table" }, { "$ref": "#/$defs/action" }, { "$ref": "#/$defs/control" }, { "$ref": "#/$defs/ping" }, { "$ref": "#/$defs/pong" }
+  ],
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "hello": {
+      "description": "view to host: first message.",
+      "type": "object", "required": ["rdp", "t", "client", "v"],
+      "properties": { "rdp": { "const": 1 }, "t": { "const": "hello" }, "client": { "type": "string" }, "v": { "const": 1 } }
+    },
+    "welcome": {
+      "description": "host to view: answers hello.",
+      "type": "object", "required": ["rdp", "t", "v"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "welcome" }, "v": { "const": 1 },
+        "can": { "$ref": "schema.json#/$defs/can" }, "limits": { "$ref": "schema.json#/$defs/limits" }
+      }
+    },
+    "request": {
+      "description": "view to host: tables, schema, rows or query. body is the request's own content: absent for tables and schema, the query-parameter object of the HTTP form for rows, the query document for query.",
+      "type": "object", "required": ["rdp", "t", "id"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "enum": ["tables", "schema", "rows", "query"] }, "id": { "$ref": "#/$defs/id" },
+        "table": { "type": "string" },
+        "body": { "type": "object" },
+        "accept": { "enum": ["json", "arrow"], "default": "json" }
+      },
+      "allOf": [
+        { "if": { "properties": { "t": { "enum": ["schema", "rows", "query"] } } }, "then": { "required": ["table"] } },
+        { "if": { "properties": { "t": { "const": "query" } } }, "then": { "properties": { "body": { "$ref": "filter.json#/$defs/query" } } } }
+      ]
+    },
+    "res": {
+      "description": "host to view: the answer to a request, exactly once; body is the HTTP response body of PROTOCOL.md sections 3 to 7, error the error object of section 10.",
+      "type": "object", "required": ["rdp", "t", "re"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "res" }, "re": { "$ref": "#/$defs/id" },
+        "body": {}, "error": { "$ref": "error.json#/$defs/error" }
+      },
+      "oneOf": [ { "required": ["body"], "not": { "required": ["error"] } }, { "required": ["error"], "not": { "required": ["body"] } } ]
+    },
+    "resArrow": {
+      "description": "host to view: Arrow IPC stream bytes. In JSON form buffer is base64; a platform with transferable or shared buffers sends the bytes themselves in the same field.",
+      "type": "object", "required": ["rdp", "t", "re", "buffer"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "res.arrow" }, "re": { "$ref": "#/$defs/id" },
+        "buffer": { "type": "string" }, "encoding": { "enum": ["base64"] }
+      }
+    },
+    "sub": {
+      "type": "object", "required": ["rdp", "t", "id", "table"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "sub" }, "id": { "$ref": "#/$defs/id" }, "table": { "type": "string" },
+        "after": { "$ref": "schema.json#/$defs/version" }, "filter": { "$ref": "filter.json#/$defs/node" }
+      }
+    },
+    "unsub": {
+      "type": "object", "required": ["rdp", "t", "id"],
+      "properties": { "rdp": { "const": 1 }, "t": { "const": "unsub" }, "id": { "$ref": "#/$defs/id" } }
+    },
+    "msg": {
+      "description": "host to view: one patch of a subscribed table.",
+      "type": "object", "required": ["rdp", "t", "table", "epoch", "seq", "data"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "msg" }, "table": { "type": "string" }, "epoch": { "type": "string" },
+        "seq": { "type": "integer", "minimum": 1 }, "data": { "$ref": "patch.json" }
+      }
+    },
+    "table": {
+      "description": "host to view, unasked: a whole table (schema, rows in one of the two forms of page.json, version).",
+      "type": "object", "required": ["rdp", "t", "name", "schema"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "table" }, "name": { "type": "string" }, "schema": { "$ref": "schema.json" },
+        "columns": { "type": "array", "items": { "type": "string" } }, "values": { "type": "array", "items": { "type": "array" } },
+        "rows": { "type": "array", "items": { "type": "object" } }, "version": { "$ref": "schema.json#/$defs/version" }
+      },
+      "oneOf": [
+        { "required": ["columns", "values"], "not": { "required": ["rows"] } },
+        { "required": ["rows"], "not": { "anyOf": [ { "required": ["columns"] }, { "required": ["values"] } ] } }
+      ]
+    },
+    "action": {
+      "description": "view to host: what the reader did.",
+      "type": "object", "required": ["rdp", "t", "view", "name"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "action" }, "view": { "type": "string" }, "panel": { "type": "string" },
+        "name": { "enum": ["select", "open", "control", "key", "submit", "ready", "error"] },
+        "payload": {}
+      }
+    },
+    "control": {
+      "description": "host to view: sets control values.",
+      "type": "object", "required": ["rdp", "t", "view", "set"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "control" }, "view": { "type": "string" },
+        "set": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "value"], "properties": { "id": { "type": "string" }, "value": {} } } }
+      }
+    },
+    "ping": {
+      "type": "object", "required": ["rdp", "t", "ts"],
+      "properties": { "rdp": { "const": 1 }, "t": { "const": "ping" }, "ts": { "type": "integer" } }
+    },
+    "pong": {
+      "type": "object", "required": ["rdp", "t", "ts"],
+      "properties": { "rdp": { "const": 1 }, "t": { "const": "pong" }, "ts": { "type": "integer" } }
+    }
+  }
+}

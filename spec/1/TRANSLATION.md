@@ -75,7 +75,7 @@ bind: "$.mtm", fmt: signed0, tone: sign, emphasis: true, with $.mtm = 1209000
 ```
 
 **R-FMT.** No format: the value's text form (SPEC 4.2; empty → `""`). A known format: that format's rendering (the
-shared `formats.yaml`), a masked value → `•••`, a link → its label, empty → `""` [CS]. An unknown name: the text form.
+[formats.yaml](formats.yaml)), a masked value → `•••`, a link → its label, empty → `""` [CS]. An unknown name: the text form.
 
 **R-TONE.** SPEC 2.6. No tone word → no tone. A masked value never gets `pos`/`neg`.
 
@@ -202,10 +202,10 @@ field name in words. A column with `link: true`, or whose `bind` is a path endin
 `Id`, `Ref`, `_id`) [today; profile-flavoured, see section 11], links its value through R-LINK.
 
 ```yaml
-- { id: terms, kind: kv, columns: [ { label: Coupon, bind: "$.coupon", fmt: pct4 } ] }
+- { id: terms, kind: kv, columns: [ { label: Coupon, bind: "$.coupon", fmt: pct2 } ] }
 ```
 ```json
-{"fields": [{"label": "Coupon", "text": "4.2500%", "path": "$.coupon"}]}
+{"fields": [{"label": "Coupon", "text": "4.25%", "path": "$.coupon"}]}
 ```
 
 ### 3.2 `table` and 3.3 `ladder` → `Table`

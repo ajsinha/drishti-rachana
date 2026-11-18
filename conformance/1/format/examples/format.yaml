@@ -13,12 +13,12 @@ cases:
     tone: sign
     expect: { text: "+1,209,000", tone: pos }
 
-  - id: percent-four-places
+  - id: percent-two-places
     kind: format
-    source: TRANSLATION 3.1 example
+    source: TRANSLATION 3.1 example; spec/1/formats.yaml
     value: 0.0425
-    format: pct4
-    expect: { text: "4.2500%" }
+    format: pct2
+    expect: { text: "4.25%" }
 
   - id: masked-prints-dots-and-no-sign-tone
     kind: format

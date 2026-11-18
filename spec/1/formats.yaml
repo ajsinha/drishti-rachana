@@ -1,0 +1,54 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force).
+#
+# formats.yaml - the Core format names of `rachana: 1` (SPEC 2.6, TRANSLATION R-FMT).
+#
+# STATUS: draft, written by reading the reference (Drishti `compute/drishti-rachana` format/FormatSpec.java and
+# Formats.java, and the table it bundles, shared with Drishti Elements). Nothing here was run. The `format` cases of
+# conformance/1/format/ pin the output; where this file and a case disagree, the case wins until it is settled.
+#
+# A format is a name, never a style. A profile MAY add names (Drishti's core pack adds pct4, rate5, pips1, df4, bp1,
+# price4); it MUST NOT redefine one of these. An unknown name formats as the value's text form (SPEC 4.2).
+#
+# Rules every format keeps, before its type's rule:
+#   empty   -> ""            a link -> its label, else its id            a masked value -> "•••" (U+2022 x 3)
+#
+# Types and fields:
+#   text     the value's text form (SPEC 4.2).
+#   number   fields: decimals (default 0), grouping (default true), sign (auto | always; default auto),
+#            scale (default 1), suffix (default none).
+#            A value that does not read as a number (number-like text counts) is printed as its text form, unchanged.
+#            Otherwise x = value * scale in binary floating point; |x| is taken as the shortest decimal that reads back
+#            to it (FORMAT 9, N2/N3 digits) and rounded half away from zero to `decimals` places; the whole part is
+#            grouped by 3 with "," when grouping; a non-zero negative result is preceded by U+2212 (the true minus
+#            sign, not "-"); with sign: always a non-zero positive result is preceded by "+"; a result that rounds to
+#            zero has no sign; the suffix follows.
+#   compact  field: decimals. NaN or a non-number -> "". |x| >= 1e9: x / 1e9 and "bn"; >= 1e6: "m"; >= 1e3: "k";
+#            else x as is; the quotient is printed by the number rule above (grouping on, sign auto, no scale or
+#            suffix) followed by the unit. The unit is chosen before rounding (999999.96 -> "1,000.0k").
+#   date     field: pattern. With pattern yyyy-MM-dd, or text shorter than 10 characters, the text as is. Otherwise its
+#            first 10 characters are read as an ISO date and printed by the pattern (yyyy, MM, dd, MMM = the English
+#            three-letter month); text that is not a date is printed as is.
+#
+# Open (FRONTLOAD_REVIEW): the reference prints MMM in the JVM's default locale; it formats +/-Infinity by failing;
+# both are to be pinned before 1.0.
+
+formats_version: 1
+language: "1.0"
+status: draft
+
+formats:
+  text:     { type: text }
+  amount0:  { type: number, decimals: 0 }                                # 1234.5 -> "1,235"; -1234.5 -> "−1,235"
+  amount2:  { type: number, decimals: 2 }                                # 1234.5 -> "1,234.50"
+  signed0:  { type: number, decimals: 0, sign: always }                  # 1209000 -> "+1,209,000"
+  signed2:  { type: number, decimals: 2, sign: always }
+  pct0:     { type: number, decimals: 0, scale: 100, suffix: "%" }       # 0.425 -> "43%"
+  pct2:     { type: number, decimals: 2, scale: 100, suffix: "%" }       # 0.0425 -> "4.25%"
+  price2:   { type: number, decimals: 2 }
+  compact:  { type: compact, decimals: 1 }                               # 1250000 -> "1.3m"
+  date:     { type: date, pattern: yyyy-MM-dd }
+  dmy:      { type: date, pattern: dd MMM yyyy }                         # "2026-11-17" -> "17 Nov 2026"
+
+# Built in, not a table entry: `list` prints a list as the JSON text of its non-blank elements' text forms
+# (["fx","rates"]), which renderers draw as chips; a text holding a JSON list is read as that list; empty or an
+# empty list -> "".

@@ -2,7 +2,7 @@
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """FastAPI adapter: STUB of the planned API (docs/MODES.md 3, "subject to change"). Real work is plan B5.
 
-    from rachana.adapters.fastapi import RachanaRouter
+    from drishti_rachana.adapters.fastapi import RachanaRouter
     rachana = RachanaRouter(sutras="sutras/")
 
     @rachana.table("sales")
@@ -25,7 +25,7 @@ from typing import Callable, Optional, Union
 
 class RachanaRouter:
     def __init__(self, sutras: Union[str, Path, None] = None) -> None:
-        raise NotImplementedError("rachana.adapters.fastapi is a stub of the planned API (plan B5)")
+        raise NotImplementedError("drishti_rachana.adapters.fastapi is a stub of the planned API (plan B5)")
 
     def table(self, name: str, *, key: Optional[list[str]] = None) -> Callable:
         """Decorator: expose ``name`` as a Data Protocol table."""

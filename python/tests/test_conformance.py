@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from rachana.cli import main
-from rachana.conformance import Adapter, NoneAdapter, Options, run
-from rachana.conformance.canonical import dumps, number_text
-from rachana.conformance.compare import diff
+from drishti_rachana.cli import main
+from drishti_rachana.conformance import Adapter, NoneAdapter, Options, run
+from drishti_rachana.conformance.canonical import dumps, number_text
+from drishti_rachana.conformance.compare import diff
 
 CASES = Path(__file__).resolve().parents[2] / "conformance" / "1"
 

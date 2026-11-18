@@ -6,10 +6,10 @@ formatter. Compiling is done by the JVM reference or the Node CLI until the WebA
 
 | Module | What it is |
 |---|---|
-| `rachana.protocol` | Data Protocol v1 messages as dataclasses with `to_json` / `from_json`: table schema, rows page, query and filter tree, keyed patch, error. Standard library only. Names to be aligned with `spec/1/data-protocol` (F8) |
-| `rachana.conformance` | the runner of `conformance/RUNNER.md`: loads and validates case files, runs an `Adapter`, compares (FORMAT 6, 7), writes `results/<runtime>.jsonl` and the summary, exit codes 0/1/2/3. `NoneAdapter` marks every case `unsupported` |
-| `rachana.adapters.flask`, `.fastapi` | **stubs** of the planned API (`docs/MODES.md` 3): mount Sutras, `@table`, `@live`. They raise `NotImplementedError` (plan B5) |
-| `rachana.cli` | `rachana conformance run` |
+| `drishti_rachana.protocol` | Data Protocol v1 messages as dataclasses with `to_json` / `from_json`: table schema, rows page, query and filter tree, keyed patch, error. Standard library only. Names to be aligned with `spec/1/data-protocol` (F8) |
+| `drishti_rachana.conformance` | the runner of `conformance/RUNNER.md`: loads and validates case files, runs an `Adapter`, compares (FORMAT 6, 7), writes `results/<runtime>.jsonl` and the summary, exit codes 0/1/2/3. `NoneAdapter` marks every case `unsupported` |
+| `drishti_rachana.adapters.flask`, `.fastapi` | **stubs** of the planned API (`docs/MODES.md` 3): mount Sutras, `@table`, `@live`. They raise `NotImplementedError` (plan B5) |
+| `drishti_rachana.cli` | `rachana conformance run` |
 
 ```bash
 pip install -e 'python[conformance]'          # PyYAML + jsonschema to read case files

@@ -2,7 +2,7 @@
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 import json
 
-from rachana.protocol import Column, Patch, ProtocolError, Query, RowsPage, TableSchema, Version, col, lit, op
+from drishti_rachana.protocol import Column, Patch, ProtocolError, Query, RowsPage, TableSchema, Version, col, lit, op
 
 
 def test_schema_roundtrip_keeps_order_and_drops_absent():

@@ -1,0 +1,36 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content: fictional customers, items and orders.
+rachana: 1
+sutra: orders-board
+version: 1
+title: { id: "'Orders, live'" }
+description: A live order book. The orders table is keyed by order_id; keyed patches change the panels without a reload.
+data:
+  orders: { table: orders, key: [order_id], live: true }
+panels:
+  - { id: open, kind: metric, label: Open orders, span: 3,
+      value: "count($.orders[?@.status == 'Pending' || @.status == 'Packed'])", fmt: amount0 }
+  - { id: value, kind: metric, label: Open value, span: 3,
+      value: "sum($.orders[?@.status == 'Pending' || @.status == 'Packed'], 'amount')", fmt: amount0 }
+  - { id: shipped, kind: metric, label: Shipped, span: 3,
+      value: "count($.orders[?@.status == 'Shipped'])", fmt: amount0 }
+  - { id: rejected, kind: metric, label: Rejected, span: 3, tone: bad,
+      value: "count($.orders[?@.status == 'Rejected'])", fmt: amount0 }
+  - { id: by-status, kind: hbar, title: Order value by status, span: 5,
+      rows: "group($.orders, 'status', 'amount')", label: label, value: value, fmt: amount0 }
+  - id: book
+    kind: table
+    title: "Order book (${size($.orders)} orders)"
+    rows: "$.orders"
+    span: 7
+    height: 12
+    columns:
+      - { label: Order, bind: "@.order_id" }
+      - { label: Time, bind: "@.ts" }
+      - { label: Customer, bind: "@.customer" }
+      - { label: Region, bind: "@.region" }
+      - { label: Item, bind: "@.item" }
+      - { label: Qty, bind: "@.qty", fmt: amount0 }
+      - { label: Amount, bind: "@.amount", fmt: amount0 }
+      - { label: Status, bind: "@.status", tone: status }

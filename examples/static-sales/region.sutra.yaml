@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content: fictional products, regions and figures.
+rachana: 1
+sutra: sales-region
+version: 1
+title: { id: "'Region: ' + ctl.region" }
+description: One region in detail. Pick a region; every panel reads it as ctl.region.
+data:
+  sales:   { table: sales, key: [region, product, month] }
+  targets: { table: targets, key: [region, month] }
+  regions: /data/regions.csv                       # text form: shorthand for { url: /data/regions.csv }
+controls:
+  - { id: region, kind: dropdown, label: Region, from: "$.regions[*].name", default: first }
+panels:
+  - { id: revenue, kind: metric, label: Revenue, value: "sum($.sales[?@.region == ctl.region], 'revenue')", fmt: amount0, span: 4 }
+  - { id: target, kind: metric, label: Target, value: "sum($.targets[?@.region == ctl.region], 'target')", fmt: amount0, span: 4 }
+  - { id: gap, kind: metric, label: Against target,
+      value: "sum($.sales[?@.region == ctl.region], 'revenue') - sum($.targets[?@.region == ctl.region], 'target')",
+      fmt: signed0, tone: sign, span: 4 }
+  - { id: office, kind: kv, title: Office, span: 4,
+      rows: "first($.regions[?@.name == ctl.region])",
+      columns: [ { label: Office, bind: "@.office" }, { label: Hub, bind: "@.hub" }, { label: Staff, bind: "@.staff" } ] }
+  - { id: by-product, kind: hbar, title: "Revenue by product, ${ctl.region}",
+      rows: "group($.sales[?@.region == ctl.region], 'product', 'revenue')", label: label, value: value, fmt: amount0, span: 8 }
+  - { id: trend, kind: line, title: "Monthly revenue, ${ctl.region}",
+      rows: "group($.sales[?@.region == ctl.region], 'month', 'revenue')", x: label, y: value, fmt: amount0, span: 12 }
+  - id: detail
+    kind: table
+    title: Sales rows
+    rows: "$.sales[?@.region == ctl.region]"
+    span: 12
+    columns:
+      - { label: Month, bind: "@.month", fmt: date }
+      - { label: Product, bind: "@.product" }
+      - { label: Units, bind: "@.units", fmt: amount0, total: true }
+      - { label: Revenue, bind: "@.revenue", fmt: amount0, total: true }

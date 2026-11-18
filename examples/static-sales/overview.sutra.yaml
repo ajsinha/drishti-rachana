@@ -1,0 +1,36 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content: fictional products, regions and figures.
+rachana: 1
+sutra: sales-overview
+version: 1
+title: { id: "'Sales overview, first half of 2026'" }
+description: Revenue against target, by region and over time. Written in Sutra Core; every table comes from data/.
+data:
+  sales:   { table: sales, key: [region, product, month] }   # the host resolves the name: in static mode, data/sales.csv
+  targets: { table: targets, key: [region, month] }          # data/targets.csv
+panels:
+  - { id: revenue, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')", fmt: amount0, span: 3,
+      caption: "${size($.sales)} sales rows" }
+  - { id: units, kind: metric, label: Units sold, value: "sum($.sales, 'units')", fmt: amount0, span: 3 }
+  - { id: attainment, kind: metric, label: Target attainment,
+      value: "sum($.sales, 'revenue') / sum($.targets, 'target')", fmt: pct0, span: 3 }
+  - { id: june, kind: metric, label: June revenue,
+      value: "sum($.sales[?@.month == '2026-06-01'], 'revenue')", fmt: amount0,
+      delta: "sum($.sales[?@.month == '2026-06-01'], 'revenue') - sum($.sales[?@.month == '2026-05-01'], 'revenue')",
+      deltaFmt: signed0, span: 3, caption: change on May }
+  - { id: by-region, kind: hbar, title: Revenue by region, rows: "group($.sales, 'region', 'revenue')",
+      label: label, value: value, fmt: amount0, span: 6 }
+  - { id: trend, kind: line, title: Revenue by month, rows: "group($.sales, 'month', 'revenue')",
+      x: label, y: value, fmt: amount0, span: 6 }
+  - id: top-combos
+    kind: table
+    title: Top region and product pairs
+    rows: "take(sort(group($.sales, @.region + ' / ' + @.product, 'revenue'), @.value, true), 8)"
+    search: false
+    span: 12
+    columns:
+      - { label: "#", bind: "#index + 1" }
+      - { label: Region and product, bind: "@.label" }
+      - { label: Revenue, bind: "@.value", fmt: amount0 }
+      - { label: Months, bind: "@.count" }

@@ -1,0 +1,68 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/nested-tabs
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "The panels of a tabs panel: what a tab may hold, and the problems; harvested from NestedTabsTest."
+cases:
+
+  - id: "tab-panels-valid"
+    kind: "problem"
+    source: "NestedTabsTest#aTabsPanelHoldsPanelsReadAgainstTheTabsElement / theSutraWrittenBackParsesToTheSamePanels"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - id: terms\n        kind: kv\n        columns:\n          - { label: Index, bind: \"@.index\" }\n      - id: flows\n        kind: table\n        rows: \"@.cashflows\"\n        children: \"@.fixings\"\n        expand: 1\n        columns:\n          - { label: Pay date, bind: \"@.payDate\", fmt: date }\n          - { label: Rate, bind: \"@.rate\", fmt: pct4 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "tab-expression-broken"
+    kind: "problem"
+    source: "NestedTabsTest#anExpressionInsideATabIsCheckedLikeAnyOther"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - id: terms\n        kind: kv\n        columns:\n          - { label: Index, bind: \"@.index +\" }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '@.index +': the expression ends early: a value is missing at 9", "range": {"start": {"line": 11, "column": 9}}}]}
+
+  - id: "tab-panel-needs-id"
+    kind: "problem"
+    source: "NestedTabsTest#aPanelInATabNeedsAnIdAndAKindATabCanHold"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - { kind: kv }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2010", "severity": "error", "message": "a panel inside a tab needs an 'id'", "range": {"start": {"line": 11, "column": 9}}}]}
+
+  - id: "tab-own-chart-valid"
+    kind: "problem"
+    source: "NestedTabsTest#aPanelInATabNeedsAnIdAndAKindATabCanHold"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - { id: curve, kind: line, rows: \"@.points\", x: t, y: v, step: true }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "tab-surface-refused"
+    kind: "problem"
+    source: "NestedTabsTest#aPanelInATabNeedsAnIdAndAKindATabCanHold"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - { id: surf, kind: surface, rows: \"@.points\", y: v }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "a 'surface' panel cannot sit inside a tab; use one of kv, status, table, ladder, hbar, markdown, metric, line, area, timeline", "range": {"start": {"line": 11, "column": 9}}}]}
+
+  - id: "tab-nested-tabs-refused"
+    kind: "problem"
+    source: "NestedTabsTest#aPanelInATabNeedsAnIdAndAKindATabCanHold"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - { id: more, kind: tabs, each: \"@.x\" }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "a 'tabs' panel cannot sit inside a tab; use one of kv, status, table, ladder, hbar, markdown, metric, line, area, timeline", "range": {"start": {"line": 11, "column": 9}}}]}
+
+  - id: "tab-duplicate-id"
+    kind: "problem"
+    source: "NestedTabsTest#idsAreUniqueWithinATabAndSizesAndPivotsBelongToTopLevelPanels"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - { id: a, kind: kv }\n      - { id: a, kind: kv }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2024", "severity": "error", "message": "two panels of this tab are called 'a'", "range": {"start": {"line": 12, "column": 9}}}]}
+
+  - id: "tab-panel-span-refused"
+    kind: "problem"
+    source: "NestedTabsTest#idsAreUniqueWithinATabAndSizesAndPivotsBelongToTopLevelPanels"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - { id: a, kind: kv, span: 6 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2030", "severity": "error", "message": "'span' sizes a whole panel: a tabs body takes the size of its panel", "range": {"start": {"line": 11, "column": 34}}}]}
+
+  - id: "tab-panel-pivot-refused"
+    kind: "problem"
+    source: "NestedTabsTest#idsAreUniqueWithinATabAndSizesAndPivotsBelongToTopLevelPanels"
+    sutra: "rachana: 1\nsutra: deep-trade\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: legs\n    kind: tabs\n    each: $.legs\n    tabTitle: \"'Leg ' + @.leg\"\n    panels:\n      - { id: a, kind: table, rows: \"@.cashflows\", pivot: true }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "a panel inside a tab cannot have Pivot (the pivot screen); put the table in a panel of its own", "range": {"start": {"line": 11, "column": 9}}}]}
+
+  - id: "panels-only-on-tabs"
+    kind: "problem"
+    source: "NestedTabsTest#onlyTabsTakePanels"
+    sutra: "rachana: 1\nsutra: wrong\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: terms\n    kind: kv\n    panels:\n      - { id: a, kind: kv }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "only 'tabs' panels take 'panels'", "range": {"start": {"line": 9, "column": 7}}}]}

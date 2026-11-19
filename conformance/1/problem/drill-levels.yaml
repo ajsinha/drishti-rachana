@@ -1,0 +1,56 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/drill-levels
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "Tables that drill into levels at any depth: valid levels and the reasons a level is refused; harvested from DrillLevelsTest."
+cases:
+
+  - id: "three-levels-valid"
+    kind: "problem"
+    source: "DrillLevelsTest#aTableDrillsIntoLevelsAtAnyDepth"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    levels:\n      - rows: \"@.cashflows\"\n        title: Cash flows\n        crumb: \"'Flow ' + @.n\"\n        columns:\n          - { label: Pay date, bind: \"@.payDate\", fmt: date }\n          - { label: Amount, bind: \"@.amount\", fmt: amount0, total: true }\n      - rows: \"@.resets\"\n        title: Resets\n        columns:\n          - { label: Fixing, bind: \"@.date\", fmt: date }\n      - rows: \"@.observations\"\n        title: Observations\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "levels-not-a-list"
+    kind: "problem"
+    source: "DrillLevelsTest#aBadLevelIsRefusedWithTheReason"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    levels: \"@.cashflows\"\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'levels' of 'table' panels must be a list of 1 to 6 levels, each { rows, title, crumb, columns }", "range": {"start": {"line": 14, "column": 13}}}]}
+
+  - id: "level-without-rows"
+    kind: "problem"
+    source: "DrillLevelsTest#aBadLevelIsRefusedWithTheReason"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    levels:\n      - { title: Flows }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'levels' of 'table' panels: every level is a mapping with rows (an expression such as \"@.cashflows\"), title, crumb and columns", "range": {"start": {"line": 15, "column": 7}}}]}
+
+  - id: "level-sortby-refused"
+    kind: "problem"
+    source: "DrillLevelsTest#aBadLevelIsRefusedWithTheReason"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    levels:\n      - { rows: \"@.x\", sortBy: date }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'levels' of 'table' panels: a level takes rows, title, crumb and columns, not 'sortBy'", "range": {"start": {"line": 15, "column": 7}}}]}
+
+  - id: "level-column-without-bind"
+    kind: "problem"
+    source: "DrillLevelsTest#aBadLevelIsRefusedWithTheReason"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    levels:\n      - { rows: \"@.x\", columns: [ { label: A } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'levels' of 'table' panels: a column of a level is { label, bind, fmt, tone, total, link } with a bind", "range": {"start": {"line": 15, "column": 7}}}]}
+
+  - id: "levels-and-children"
+    kind: "problem"
+    source: "DrillLevelsTest#aBadLevelIsRefusedWithTheReason"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    children: \"@.kids\"\n    levels:\n      - { rows: \"@.x\" }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "a table with 'levels' drills into its rows level by level; it cannot also have 'children' (a tree)", "range": {"start": {"line": 16, "column": 7}}}]}
+
+  - id: "seven-levels"
+    kind: "problem"
+    source: "DrillLevelsTest#aBadLevelIsRefusedWithTheReason"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    levels:\n      - { rows: \"@.x\" }\n      - { rows: \"@.x\" }\n      - { rows: \"@.x\" }\n      - { rows: \"@.x\" }\n      - { rows: \"@.x\" }\n      - { rows: \"@.x\" }\n      - { rows: \"@.x\" }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'levels' of 'table' panels must be a list of 1 to 6 levels, each { rows, title, crumb, columns }", "range": {"start": {"line": 15, "column": 7}}}]}
+
+  - id: "broken-expressions-in-levels"
+    kind: "problem"
+    source: "DrillLevelsTest#aBrokenExpressionInALevelIsReportedAtLoad"
+    sutra: "rachana: 1\nsutra: deep-deal\nversion: 1\nmatch: { kind: deal }\npanels:\n  - id: legs\n    kind: table\n    rows: $.legs\n    crumb: \"'Leg ' + @.leg\"\n    root: \"'Deal ' + $.id\"\n    empty: No legs\n    columns:\n      - { label: Leg, bind: \"@.leg\" }\n    levels:\n      - rows: \"@.cashflows[\"\n        columns:\n          - { label: A, bind: \"@.a +\" }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '@.cashflows[': the expression ends early: a value is missing at 12", "range": {"start": {"line": 6, "column": 5}}}, {"code": "RCH-2101", "severity": "error", "message": "expression '@.a +': the expression ends early: a value is missing at 5", "range": {"start": {"line": 6, "column": 5}}}]}

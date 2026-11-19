@@ -1,0 +1,116 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/screen-layout
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "A screen's layout: grammar and its lint (areas, split, tabs, sticky, phone, tablet, sections, order); harvested from ScreenLayoutTest."
+cases:
+
+  - id: "layout-with-areas-valid"
+    kind: "problem"
+    source: "ScreenLayoutTest#aLayoutWithAreasReadsEveryPart / lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [detail]\n  sticky: header\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "no-layout-flows-valid"
+    kind: "problem"
+    source: "ScreenLayoutTest#aSutraWithoutALayoutFlowsAsBefore"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\npanels:\n  - { id: a, kind: kv, area: right, span: 6, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": true, "problems": []}
+
+  - id: "flow-grid-sections-valid"
+    kind: "problem"
+    source: "ScreenLayoutTest#theFlowGridTakesSectionsAndOrder"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  columns: 12\n  sections:\n    - { id: overview, title: Overview }\n    - { id: risk, title: Risk, collapsed: true }\n  user-can-arrange: true\npanels:\n  - { id: a, kind: kv, section: overview, span: 6, columns: [ { label: A, bind: $.A } ] }\n  - { id: b, kind: kv, section: risk, order: 1, columns: [ { label: A, bind: $.A } ] }\n  - { id: c, kind: kv, columns: [ { label: A, bind: $.A } ] }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "panel-area-not-in-layout"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [detail]\n  sticky: header\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: risk, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "panel 'limits' is placed in area 'risk', which layout.areas does not have (header, trades, detail, limits)", "range": {"start": {"line": 22, "column": 5}}}]}
+
+  - id: "area-not-a-rectangle"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas: [\"a b\", \"b a\"]\npanels:\n  - { id: x, kind: kv, area: a, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "area 'a' is not a rectangle: its cells overlap another area's or leave a gap", "range": {"start": {"line": 6, "column": 10}}}, {"code": "RCH-2059", "severity": "error", "message": "area 'b' is not a rectangle: its cells overlap another area's or leave a gap", "range": {"start": {"line": 6, "column": 10}}}]}
+
+  - id: "area-rows-cell-count"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas: [\"a b\", \"a\"]\npanels:\n  - { id: x, kind: kv, area: a, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "every row of the picture has the same number of cells: 'a' has 1, the first 2", "range": {"start": {"line": 6, "column": 10}}}]}
+
+  - id: "column-widths-add-up"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 6]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [detail]\n  sticky: header\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "the column widths add up to 13: they share the 12-column grid", "range": {"start": {"line": 10, "column": 12}}}]}
+
+  - id: "split-not-side-by-side"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [header, limits], resizable: true, remember: user }\n  tabs: [detail]\n  sticky: header\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "the split's areas 'header' and 'limits' are not side by side, left then right, in layout.areas", "range": {"start": {"line": 6, "column": 3}}}]}
+
+  - id: "tabs-need-two-or-more"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [limits]\n  sticky: header\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "area 'limits' is shown as tabs but holds 1 panel(s): tabs need two or more", "range": {"start": {"line": 6, "column": 3}}}]}
+
+  - id: "tabs-name-unknown-area"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [nowhere]\n  sticky: header\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "tabs name area 'nowhere', which layout.areas does not have", "range": {"start": {"line": 6, "column": 3}}}]}
+
+  - id: "sticky-unknown-area"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [detail]\n  sticky: top\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "sticky names 'top', which is neither an area nor a panel of this screen", "range": {"start": {"line": 6, "column": 3}}}]}
+
+  - id: "phone-lists-unknown-area"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [detail]\n  sticky: header\n  user-can-arrange: true\n  phone: [ghost, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "phone lists 'ghost', which is neither an area nor a panel of this screen", "range": {"start": {"line": 6, "column": 3}}}]}
+
+  - id: "tablet-width-count"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  areas:\n    - \"header header\"\n    - \"trades detail\"\n    - \"trades limits\"\n  columns: [7, 5]\n  split: { between: [trades, detail], resizable: true, remember: user }\n  tabs: [detail]\n  sticky: header\n  user-can-arrange: true\n  phone: [header, detail, trades, limits]\n  tablet: { areas: [\"header header\", \"trades trades\", \"detail limits\"], columns: [6, 6, 1] }\npanels:\n  - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }\n  - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: \"@.ID\" } ] }\n  - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }\n  - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "columns gives 3 widths for 2 columns of areas", "range": {"start": {"line": 16, "column": 82}}}]}
+
+  - id: "split-without-areas"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  split: { between: [a, b] }\npanels:\n  - { id: x, kind: kv, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "a split divides two areas: name them in layout.areas first", "range": {"start": {"line": 6, "column": 3}}}]}
+
+  - id: "section-not-declared"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  sections: [ { id: s } ]\npanels:\n  - { id: x, kind: kv, section: t, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "panel 'x' names section 't', which layout.sections does not have", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: "layout-unknown-key"
+    kind: "problem"
+    source: "ScreenLayoutTest#lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\nlayout:\n  wobble: 1\npanels:\n  - { id: x, kind: kv, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "unknown key 'wobble' in layout; expected one of areas, columns, split, tabs, sections, sticky, user-can-arrange, phone, tablet", "range": {"start": {"line": 6, "column": 11}}}]}
+
+  - id: "named-area-without-layout"
+    kind: "problem"
+    source: "ScreenLayoutTest#aNamedAreaNeedsTheLayoutToNameIt"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\npanels:\n  - { id: x, kind: kv, area: trades, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2027", "severity": "error", "message": "area 'trades' is not 'main' or 'right': name areas in layout.areas first", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: "order-out-of-range"
+    kind: "problem"
+    source: "ScreenLayoutTest#aNamedAreaNeedsTheLayoutToNameIt"
+    sutra: "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\npanels:\n  - { id: x, kind: kv, order: 1000, columns: [ { label: A, bind: $.A } ] }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2059", "severity": "error", "message": "order is a whole number from 0 to 999 (lower comes first), not '1000'", "range": {"start": {"line": 6, "column": 31}}}]}

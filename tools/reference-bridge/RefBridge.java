@@ -30,7 +30,7 @@ public class RefBridge {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), false, StandardCharsets.UTF_8);
         in.readLine();                                                   // the driver's greeting
-        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"bootstrap-2.9.11.i7a\",\"language\":\"1.0\",\"profiles\":[\"core\",\"drishti\"],\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\"]}");
+        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"bootstrap-2.9.11.i7a\",\"language\":\"1.0\",\"profiles\":[\"core\",\"drishti\"],\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\"]}");
         out.flush();
         String line;
         while ((line = in.readLine()) != null) {
@@ -45,6 +45,7 @@ public class RefBridge {
                     case "expr-error" -> exprError(c, sb);
                     case "format" -> format(c, sb);
                     case "problem" -> problem(c, sb);
+                    case "edit" -> edit(c, sb);
                     default -> throw new IllegalStateException("kind not implemented: " + kind);
                 }
             } catch (Throwable t) {
@@ -134,6 +135,37 @@ public class RefBridge {
         sb.append("]}");
     }
 
+    /**
+     * FORMAT 5.11: one editing operation of the reference (design/ops), its name in kebab case in the case ({@code set-option} is the
+     * reference's {@code setOption}), its other fields as the reference names them. Applied: the new text and no problems. Refused: the
+     * text unchanged and the reference's problem, with its line when it has one (plan H2).
+     */
+    static void edit(JsonNode c, StringBuilder sb) {
+        String sutra = c.get("sutra").asText();
+        com.fasterxml.jackson.databind.node.ObjectNode op = ((com.fasterxml.jackson.databind.node.ObjectNode) c.get("operation")).deepCopy();
+        StringBuilder name = new StringBuilder();
+        boolean up = false;
+        for (char ch : op.get("op").asText().toCharArray()) { if (ch == '-') { up = true; } else { name.append(up ? Character.toUpperCase(ch) : ch); up = false; } }
+        op.put("op", name.toString());
+        String text = sutra;
+        StringBuilder ps = new StringBuilder();
+        try {
+            var r = new com.ash.drishti.rachana.design.ops.OpApplier().apply(sutra, com.ash.drishti.rachana.design.ops.Ops.parse(M.createArrayNode().add(op)));
+            text = r.yaml();
+            for (var p : r.problems()) { editProblem(ps, p.code(), p.message(), p.line()); }
+        } catch (com.ash.drishti.rachana.design.ops.Ops.FormatException e) {
+            editProblem(ps, "DRS-5020", e.getMessage(), 0);
+        }
+        sb.append("{\"text\":").append(str(text)).append(",\"problems\":[").append(ps).append("]}");
+    }
+
+    static void editProblem(StringBuilder ps, String code, String message, int line) {
+        if (ps.length() > 0) { ps.append(','); }
+        ps.append("{\"code\":").append(str(code.replaceFirst("^(DRS|DEL)-", "RCH-"))).append(",\"severity\":\"error\",\"message\":").append(str(message));
+        if (line > 0) { ps.append(",\"range\":{\"start\":{\"line\":").append(line).append("}}"); }
+        ps.append('}');
+    }
+
     static String words(com.ash.drishti.api.error.DrishtiException e) {
         String m = e.getMessage(), c = e.errorCode() == null ? "" : e.errorCode().code();
         return m.startsWith(c + " ") ? m.substring(c.length() + 1) : m;
@@ -151,7 +183,9 @@ public class RefBridge {
         EvalContext c = EvalContext.of(root, formats);
         if (g.has("today")) { c = c.withToday(LocalDate.parse(g.get("today").asText())); }
         Map<String, Object> ctl = new LinkedHashMap<>();
-        if (g.has("ctl")) { g.get("ctl").fields().forEachRemaining(f -> ctl.put(f.getKey(), plain(f.getValue()))); c = c.withControls(ctl); }
+        // a multi-valued control (multi-select, the choices of oneOf/within) reaches the evaluator as a document list, as the host's
+        // ControlValues hands it over (H2: ControlsTest passes DataNode.of(List.of(...))); a scalar as itself
+        if (g.has("ctl")) { g.get("ctl").fields().forEachRemaining(f -> { Object v = plain(f.getValue()); ctl.put(f.getKey(), v instanceof List<?> ? DataNode.of(v) : v); }); c = c.withControls(ctl); }
         Map<String, DataNode> events = new LinkedHashMap<>();
         if (g.has("events")) { g.get("events").fields().forEachRemaining(f -> events.put(f.getKey(), node(f.getValue()))); }
         Object src = g.has("src") ? node(g.get("src")) : null;

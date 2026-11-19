@@ -244,7 +244,9 @@ rows. The plan document is defined with `rachana explain --format json` (plan B1
 `operation` is `{ op, … }`, an editing operation of the tools layer applied to `sutra`. `expect.text` is the whole new
 text: comments, blank lines and layout outside the edit kept byte for byte. `expect.problems` is for an operation
 refused (e.g. it would make the Sutra invalid). The operation names and arguments are those of the reference's
-editing operations, written down when they are harvested (plan H2); the examples use `set`, `insert`, `remove`.
+editing operations, the name in kebab case: `add-panel`, `move`, `set-option`, `bind`, `remove`, `set-title`, `set-strip`,
+`set-controls`, `set-keys`, `set-block`, `text`, and the Drishti profile's `set-match` (harvested in plan H2: `edit/ops.yaml`).
+One case applies one operation. The hand-written examples (`set`, `insert`) predate the harvest and stay unverified.
 
 ### 5.12 `protocol`
 

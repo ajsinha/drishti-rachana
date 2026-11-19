@@ -1,0 +1,146 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/pivot-options
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "The pivot option of table and ladder panels: opting in, the fields and arrangement, and DRS-2031; harvested from PivotOptionTest."
+cases:
+
+  - id: "pivot-absent-valid"
+    kind: "problem"
+    source: "PivotOptionTest#noOptionNoPivotAndFalseIsOff"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "pivot-false-valid"
+    kind: "problem"
+    source: "PivotOptionTest#noOptionNoPivotAndFalseIsOff"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: false\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "pivot-true-valid"
+    kind: "problem"
+    source: "PivotOptionTest#trueOffersTheColumnsNamedByTheirPathsOrLabels"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: true\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "pivot-mapping-ladder-valid"
+    kind: "problem"
+    source: "PivotOptionTest#aMappingListsFieldsAndTheArrangementItOpensWith"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: ladder\n    rows: $.trades\n    pivot:\n      fields: [book, currency, maturityBucket, mtm, { field: year, bind: \"@.maturity\", label: Maturity }]\n      rows: [book, maturityBucket]\n      columns: [currency]\n      values: [{ field: mtm, agg: sum }, { field: mtm, agg: count, show: pctTotal }]\n      filters: [year, { field: currency, values: [USD, EUR] }, { field: mtm, min: -1000000, max: 5e6 }]\n      heat: true\n      chart: heatmap\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "pivot-mode-panes-valid"
+    kind: "problem"
+    source: "PivotOptionTest#aSpecMayNameHowThePivotScreenOpensIt"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { rows: [currency], mode: panes }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "pivot-mode-default-valid"
+    kind: "problem"
+    source: "PivotOptionTest#aSpecMayNameHowThePivotScreenOpensIt"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { rows: [currency] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "pivot-mode-unknown"
+    kind: "problem"
+    source: "PivotOptionTest#aSpecMayNameHowThePivotScreenOpensIt"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { rows: [currency], mode: wide }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot 'mode' must be one of views, compact, panes, not 'wide'", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-not-bool-or-mapping"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: yes please\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "'pivot' is true, false, or a mapping of fields, rows, columns, values, filters, heat, chart, totals, mode; not 'yes please'", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-rows-unknown-field"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { rows: [desk] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot rows name 'desk', which is not one of its fields (currency, mtm, notional-in-usd, tradeId)", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-agg-unknown"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [mtm], values: [{ field: mtm, agg: median }] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot value 'agg' must be one of sum, count, avg, min, max, distinct, not 'median'", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-show-unknown"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [mtm], values: [{ field: mtm, show: pctBook }] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot value 'show' must be one of value, pctRow, pctColumn, pctTotal, not 'pctBook'", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-field-in-rows-and-columns"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [a, b], rows: [a], columns: [a] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot field 'a' is in both rows and columns", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-too-many-row-fields"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [a, b, c, d, e], rows: [a, b, c, d, e] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "a pivot has at most 4 row fields and 4 column fields", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-field-not-a-path"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [\"$.book\"] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot field '$.book' is not a field path (letters, digits, _ and dots); for an expression write { field: name, bind: <expression> }", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-field-listed-twice"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [a, a] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot field 'a' is listed twice", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-unknown-key"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [a], colour: red }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "unknown key 'colour' in pivot; expected fields, rows, columns, values, filters, heat, chart, totals, mode", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-chart-unknown"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [a], chart: pie }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot 'chart' must be one of bar, line, heatmap, not 'pie'", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-heat-not-bool"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [a], heat: maybe }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot 'heat' is true or false, not 'maybe'", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-filter-values-and-range"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [a], filters: [{ field: a, values: [x], min: 1 }] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "a pivot filter keeps either 'values' or a range ('min', 'max'), not both", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-fields-empty"
+    kind: "problem"
+    source: "PivotOptionTest#mistakesAreDrs2031WithTheirReasons"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: trades\n    kind: table\n    rows: $.trades\n    pivot: { fields: [] }\n    columns:\n      - { label: Trade, bind: \"@.tradeId\" }\n      - { label: Currency, bind: \"@.currency\" }\n      - { label: MTM (USD), bind: \"@.mtm\", fmt: signed0 }\n      - { label: Notional in USD, bind: \"@.notional * @.fx\", fmt: amount0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2031", "severity": "error", "message": "pivot 'fields' is a non-empty list of field paths (or { field, bind, label, fmt })", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "pivot-on-kv-refused"
+    kind: "problem"
+    source: "PivotOptionTest#onlyTablesAndLaddersTakeAPivot"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - { id: terms, kind: kv, rows: $.terms, pivot: true }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "option 'pivot' applies only to panels that show a table (table, ladder), not 'kv'", "range": {"start": {"line": 6, "column": 50}}}]}
+
+  - id: "pivot-on-pivot-panel-refused"
+    kind: "problem"
+    source: "PivotOptionTest#onlyTablesAndLaddersTakeAPivot"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - { id: g, kind: pivot, rows: $.p, by: book, across: ccy, pivot: true }"
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "option 'pivot' applies only to panels that show a table (table, ladder), not 'pivot'", "range": {"start": {"line": 6, "column": 68}}}]}
+
+  - id: "pivot-field-expression-broken"
+    kind: "problem"
+    source: "PivotOptionTest#aBrokenFieldExpressionIsCaughtAtLoad"
+    sutra: "rachana: 1\nsutra: book-trades\nversion: 1\nmatch: { kind: book }\npanels:\n  - id: t\n    kind: table\n    rows: $.t\n    pivot: { fields: [{ field: x, bind: \"@.a +\" }] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '@.a +': the expression ends early: a value is missing at 5", "range": {"start": {"line": 6, "column": 5}}}]}

@@ -7,8 +7,8 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.drishti.api.error.DrishtiException;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.hostcompat.HostException;
+import com.ash.rachana.hostcompat.ErrorCode;
 import com.ash.rachana.el.check.Checker;
 import com.ash.rachana.el.check.ElType;
 import com.ash.rachana.el.check.Fields;
@@ -157,9 +157,9 @@ class CheckedModeTest {
 
     @Test
     void requireRefusesWithTheCode() {
-        assertThatThrownBy(() -> CheckedMode.require("trades.DESK == 'X'", Scope.ROW, MODEL)).isInstanceOfSatisfying(DrishtiException.class,
+        assertThatThrownBy(() -> CheckedMode.require("trades.DESK == 'X'", Scope.ROW, MODEL)).isInstanceOfSatisfying(HostException.class,
                 e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.MQ_MASKED));
-        assertThatThrownBy(() -> CheckedMode.require("concat('a', 'b')", Scope.ROW, MODEL)).isInstanceOfSatisfying(DrishtiException.class,
+        assertThatThrownBy(() -> CheckedMode.require("concat('a', 'b')", Scope.ROW, MODEL)).isInstanceOfSatisfying(HostException.class,
                 e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.LATER_WAVE));
         assertThat(CheckedMode.require("trades.N + 1", Scope.ROW, MODEL)).isInstanceOf(Expr.Binary.class);
     }

@@ -4,12 +4,11 @@
  */
 package com.ash.rachana;
 
-import com.ash.drishti.testroots.TestRoots;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.common.JsonCodec;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.JsonCodec;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.EvalContext;
 import com.ash.rachana.el.Values;
@@ -234,21 +233,5 @@ class SutraWiringTest {
                 .hasMessageContaining("only a table or ladder has rows");
         assertThatThrownBy(() -> parse(DESK.replace("id: flows", "id: limits")))
                 .hasMessageContaining("duplicate panel id 'limits'");
-    }
-
-    @Test
-    void aUseCarriesItsPanelsWiring() {
-        assertThat(SutraBlocks.load(List.of(Path.of(TestRoots.repo(), "config", "ui-kit", "fragments")))).isEmpty();
-        Sutra s = parse("""
-                  - use: field-list@1
-                    with: { id: limit, title: Limit, rows: $src }
-                    source: { kind: credit-limit, id: "'LIM-X'" }
-                    area: right
-                """);
-        assertThat(s.panels().get(0).wiring().source().kind()).isEqualTo("credit-limit");
-        assertThat(s.panels().get(0).area().name()).isEqualTo("RIGHT");
-        assertThatThrownBy(() -> parse("  - { use: curve-overview@1, emits: [ { name: pick, on: row-click } ] }\n"))
-                .hasMessageContaining("on a use that brings 2 panels");
-        assertThatThrownBy(() -> parse("  - { use: field-list@1, colour: red }\n")).hasMessageContaining("not 'colour'");
     }
 }

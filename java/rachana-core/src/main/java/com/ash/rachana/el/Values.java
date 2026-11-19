@@ -4,8 +4,8 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.NodeType;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.NodeType;
 
 /**
  * Coercions between evaluation results. A result is a {@link DataNode}, a {@code String}, a

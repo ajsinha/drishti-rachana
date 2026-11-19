@@ -8,8 +8,25 @@
   <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>0.9.0-SNAPSHOT</version></parent>
   <artifactId>rachana-core</artifactId>
   <name>rachana-core</name>
+
   <dependencies>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-api</artifactId><version>${project.version}</version></dependency>
+    <!-- SPLIT EXEMPTIONS (java/SPLIT_EXEMPTIONS.md): carried from the moved code until the step named there removes them. -->
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId></dependency>
+    <dependency><groupId>com.fasterxml.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId></dependency>
+    <dependency><groupId>com.github.ben-manes.caffeine</groupId><artifactId>caffeine</artifactId></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.assertj</groupId><artifactId>assertj-core</artifactId><scope>test</scope></dependency>
   </dependencies>
+
+  <build>
+    <resources>
+      <resource><directory>src/main/resources</directory></resource>
+      <!-- The bundled format table and world regions have their home in Drishti Elements: read from the pinned copy, no second copy. -->
+      <resource>
+        <directory>${rachana.repo.root}/js/vendor/drishti-elements/${drishti.elements.version}/data</directory>
+        <includes><include>world-regions.yaml</include><include>formats.yaml</include></includes>
+      </resource>
+    </resources>
+  </build>
 </project>

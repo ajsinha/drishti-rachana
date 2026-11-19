@@ -4,8 +4,8 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.ErrorCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

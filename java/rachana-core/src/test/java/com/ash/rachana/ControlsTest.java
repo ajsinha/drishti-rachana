@@ -6,8 +6,8 @@ package com.ash.rachana;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.common.JsonCodec;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.JsonCodec;
 import com.ash.rachana.design.ops.OpApplier;
 import com.ash.rachana.design.ops.Ops;
 import com.ash.rachana.el.ElCompiler;

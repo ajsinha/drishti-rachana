@@ -4,11 +4,11 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.error.DrishtiException;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.hostcompat.HostException;
+import com.ash.rachana.hostcompat.ErrorCode;
 
 /** A Rachana-EL expression failed to compile ({@code DRS-2101}) or to evaluate ({@code DRS-2102}). */
-public class ElException extends DrishtiException {
+public class ElException extends HostException {
 
     private static final long serialVersionUID = 1L;
     private final int position;

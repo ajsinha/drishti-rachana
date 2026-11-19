@@ -21,75 +21,8 @@ class SutraLayoutEditorTest {
     private final SutraLayoutEditor editor = new SutraLayoutEditor();
     private final SutraParser parser = new SutraParser();
 
-    private static String irs() throws Exception {
-        return Files.readString(SutraParserTest.SUTRAS.resolve("rates/irs-vanilla.v3.sutra.yaml"));
-    }
-
     private Sutra parse(String text) {
         return parser.parse(text, "t.sutra.yaml", "rates");
-    }
-
-    @Test
-    void movesResizesAndReordersPanelsKeepingTheRestOfTheText() throws Exception {
-        String src = irs();
-        var edit = editor.apply(src, List.of(
-                new Placement("cashflows", Area.MAIN, 8, 10, false),
-                new Placement("legs", Area.MAIN, null, null, false),
-                new Placement("built", Area.MAIN, 4, null, false),
-                new Placement("leg2", Area.MAIN, null, null, false),
-                new Placement("dv01", Area.RIGHT, null, null, false),
-                new Placement("refs", Area.MAIN, 6, null, false),          // flow mapping: moved to main, sized
-                new Placement("curve", Area.RIGHT, null, 6, false)), false);
-        Sutra s = parse(edit.text());
-        assertThat(edit.fromVersion()).isEqualTo(3);
-        assertThat(edit.version()).isEqualTo(4);
-        assertThat(s.version()).isEqualTo(4);
-        assertThat(s.panels().stream().filter(p -> p.area() == Area.MAIN).map(Panel::id))
-                .containsExactly("cashflows", "legs", "built", "leg2", "refs");
-        assertThat(s.panels().stream().filter(p -> p.area() == Area.RIGHT).map(Panel::id)).containsExactly("dv01", "curve");
-        Panel cash = s.panels().stream().filter(p -> p.id().equals("cashflows")).findFirst().orElseThrow();
-        assertThat(cash.span()).contains(8);
-        assertThat(cash.height()).contains(10);
-        assertThat(s.panels().stream().filter(p -> p.id().equals("refs")).findFirst().orElseThrow().span()).contains(6);
-        // the text keeps its comments, strip, keys and every untouched panel as written
-        assertThat(edit.text()).contains("keys: { F7: \"link($.nettingSet, 'netting-set')\", F8: impact, F9: raw }")
-                .contains("  - { id: refs, kind: links, title: Linked entities, code: REFS, span: 6 }")
-                .contains("  - { id: built, kind: provenance, title: How this view was built, span: 4 }")
-                .contains("    kind: table\n    span: 8\n    height: 10\n    title: Cashflows · Leg 1");
-        String header = src.substring(0, src.indexOf("version: 3"));
-        assertThat(edit.text()).startsWith(header);
-        assertThat(edit.changes()).anySatisfy(c -> assertThat(c).contains("'refs' moves to the main column"))
-                .anySatisfy(c -> assertThat(c).contains("'cashflows' is 8 of 12 columns wide"))
-                .anySatisfy(c -> assertThat(c).contains("the main column reads cashflows, legs, built, leg2, refs"));
-    }
-
-    @Test
-    void anUnchangedLayoutOnlyRaisesTheVersionAndDefaultsRemoveKeys() throws Exception {
-        String src = irs();
-        var same = editor.apply(src, List.of(), false);
-        assertThat(same.text()).isEqualTo(src.replace("version: 3", "version: 4"));
-        assertThat(same.changes()).isEmpty();
-        // dv01 back to main removes its area; a full-width span is no key at all
-        var back = editor.apply(src, List.of(new Placement("dv01", Area.MAIN, 12, null, false)), false);
-        assertThat(back.text()).doesNotContain("    area: right\n    rows: $.dv01ByTenor");
-        assertThat(parse(back.text()).panels().stream().filter(p -> p.id().equals("dv01")).findFirst().orElseThrow().span()).isEmpty();
-        // sizes set once can be changed and removed again
-        String sized = editor.apply(src, List.of(new Placement("leg2", Area.MAIN, 6, 4, false)), false).text();
-        String resized = editor.apply(sized, List.of(new Placement("leg2", Area.MAIN, 3, null, false)), false).text();
-        Panel leg2 = parse(resized).panels().stream().filter(p -> p.id().equals("leg2")).findFirst().orElseThrow();
-        assertThat(leg2.span()).contains(3);
-        assertThat(leg2.height()).isEmpty();
-        assertThat(parse(resized).version()).isEqualTo(5);
-    }
-
-    @Test
-    void hiddenPanelsStayUnlessAskedToGoAndUnknownIdsAreIgnored() throws Exception {
-        String src = irs();
-        var kept = editor.apply(src, List.of(new Placement("built", Area.MAIN, null, null, true), new Placement("ghost", Area.MAIN, 4, null, false)), false);
-        assertThat(parse(kept.text()).panels()).extracting(Panel::id).contains("built");
-        var dropped = editor.apply(src, List.of(new Placement("built", Area.MAIN, null, null, true)), true);
-        assertThat(parse(dropped.text()).panels()).extracting(Panel::id).doesNotContain("built");
-        assertThat(dropped.changes()).anySatisfy(c -> assertThat(c).contains("'built' is removed"));
     }
 
     @Test

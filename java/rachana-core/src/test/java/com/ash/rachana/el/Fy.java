@@ -7,8 +7,8 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.common.JsonCodec;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.JsonCodec;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -85,7 +85,7 @@ final class Fy {
 
     static void evalError(String src, String... words) {
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> eval(src)).as(src).isInstanceOfSatisfying(ElException.class, e -> {
-            assertThat(e.errorCode()).isEqualTo(com.ash.drishti.api.error.ErrorCode.EL_EVAL);
+            assertThat(e.errorCode()).isEqualTo(com.ash.rachana.hostcompat.ErrorCode.EL_EVAL);
             for (String w : words) {
                 assertThat(e.getMessage()).contains(w);
             }

@@ -20,10 +20,10 @@ import java.util.Set;
 
 /**
  * The named formats used by {@code fmt:} and {@code fmt(...)}: the bundled {@code formats.yaml}, optionally
- * overridden by a site file. The table is swapped whole when packs change their formats
- * ({@link com.ash.drishti.common.LiveSettings}), so a reader sees the old table or the new one.
+ * overridden by a site file. A host that reloads its formats builds a new table with {@link #load(String, java.util.List)}
+ * and swaps it whole, so a reader sees the old table or the new one.
  */
-public final class Formats implements com.ash.drishti.common.LiveSettings {
+public final class Formats {
 
     private volatile Map<String, FormatSpec> specs;
     private final String overrideFile;
@@ -33,14 +33,6 @@ public final class Formats implements com.ash.drishti.common.LiveSettings {
         this.overrideFile = overrideFile;
     }
 
-    /** Packs changed: the bundled formats, each pack's formats now, then the site file. A file that is not valid YAML refuses the reload. */
-    @Override
-    public Runnable prepare(org.springframework.core.env.Environment candidate) {
-        java.util.List<String> files = org.springframework.boot.context.properties.bind.Binder.get(candidate)
-                .bind("drishti.rachana.pack-formats-files", org.springframework.boot.context.properties.bind.Bindable.listOf(String.class)).orElse(java.util.List.of());
-        Map<String, FormatSpec> next = load(overrideFile, files).specs;
-        return () -> specs = next;
-    }
 
     /** The bundled formats, plus overrides from {@code overrideFile} when it exists. */
     public static Formats load(String overrideFile) {
@@ -102,7 +94,7 @@ public final class Formats implements com.ash.drishti.common.LiveSettings {
             return "";
         }
         java.util.List<Object> items = new java.util.ArrayList<>();
-        if (v instanceof com.ash.drishti.api.DataNode n && n.type() == com.ash.drishti.api.NodeType.ARRAY) {
+        if (v instanceof com.ash.rachana.hostcompat.DataNode n && n.type() == com.ash.rachana.hostcompat.NodeType.ARRAY) {
             for (int i = 0; i < n.size(); i++) {
                 Object e = Values.simplify(n.get(i));
                 if (e != null && !Values.text(e).isBlank()) {
@@ -110,10 +102,10 @@ public final class Formats implements com.ash.drishti.common.LiveSettings {
                 }
             }
         } else {
-            java.util.List<String> parsed = com.ash.drishti.api.ListValues.of(v instanceof CharSequence ? v : Values.text(v));
+            java.util.List<String> parsed = com.ash.rachana.hostcompat.ListValues.of(v instanceof CharSequence ? v : Values.text(v));
             items.addAll(parsed != null ? parsed : java.util.List.of(Values.text(v)));
         }
-        return items.isEmpty() ? "" : com.ash.drishti.api.ListValues.json(items);
+        return items.isEmpty() ? "" : com.ash.rachana.hostcompat.ListValues.json(items);
     }
 
     /** Formats {@code value}; an unknown or null format name falls back to plain text. */

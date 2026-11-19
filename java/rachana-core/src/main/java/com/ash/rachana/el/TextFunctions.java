@@ -4,9 +4,9 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.NodeType;
-import com.ash.drishti.common.SafeRegex;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.hostcompat.SafeRegex;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -96,7 +96,7 @@ final class TextFunctions {
                 if (Functions.literal(args, 2) instanceof Number g && (g.intValue() < 0 || g.intValue() > re.groups())) {
                     return "the pattern '" + p + "' has " + re.groups() + " group(s); group " + g.intValue() + " was asked for";
                 }
-            } catch (com.ash.drishti.api.error.DrishtiException e) {
+            } catch (com.ash.rachana.hostcompat.HostException e) {
                 return "the pattern '" + p + "' is refused: " + e.getMessage();
             }
         }

@@ -4,8 +4,8 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.error.DrishtiException;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.hostcompat.HostException;
+import com.ash.rachana.hostcompat.ErrorCode;
 import com.ash.rachana.el.check.Checker;
 import com.ash.rachana.el.check.Fields;
 import com.ash.rachana.el.check.Problem;
@@ -63,7 +63,7 @@ public final class CheckedMode {
         Checker.Checked c = check(text, scope, fields);
         Problem p = c.firstError().orElse(null);
         if (p != null) {
-            throw new DrishtiException(code(p.code()), p.message() + (p.fix() == null ? "" : " (" + p.fix() + ")"));
+            throw new HostException(code(p.code()), p.message() + (p.fix() == null ? "" : " (" + p.fix() + ")"));
         }
         return parse(text).expr();
     }

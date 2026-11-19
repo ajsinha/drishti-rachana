@@ -4,9 +4,9 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.NodeType;
-import com.ash.drishti.api.error.DrishtiException;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.hostcompat.HostException;
 import java.util.List;
 
 /**
@@ -46,7 +46,7 @@ final class InfoFunctions {
         Object v;
         try {
             v = args.get(0).eval(c);
-        } catch (DrishtiException e) {
+        } catch (HostException e) {
             return true;
         }
         if (Values.masked(v)) {

@@ -165,9 +165,10 @@ public final class Signatures {
 
     // ---- loading -----------------------------------------------------------------------------------------------------
 
-    /** A catalogue from a resource on the class path. */
+    /** A catalogue from a resource of this module (a named module reads its own resources only this way), else on the class path. */
     public static Signatures load(String resource) {
-        try (InputStream in = Signatures.class.getClassLoader().getResourceAsStream(resource)) {
+        InputStream own = Signatures.class.getResourceAsStream("/" + resource);
+        try (InputStream in = own != null ? own : Signatures.class.getClassLoader().getResourceAsStream(resource)) {
             if (in == null) {
                 throw new IllegalStateException(resource + " is missing from the class path");
             }

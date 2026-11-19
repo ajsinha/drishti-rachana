@@ -12,8 +12,8 @@ import static com.ash.rachana.el.Fx.masked;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.drishti.api.error.DrishtiException;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.hostcompat.HostException;
+import com.ash.rachana.hostcompat.ErrorCode;
 import org.junit.jupiter.api.Test;
 
 /** The text functions (FUNCTION_CATALOGUE.md section 2) and the one names of the text tests. */
@@ -94,7 +94,7 @@ class TextFunctionsTest {
         assertThat(masked("regex_extract($.MTM, 'a')")).isTrue();
         compileError("regex_extract('a', '(a)', 3)", "the pattern '(a)' has 1 group(s); group 3 was asked for");
         compileError("regex_extract('ab', '(?<=a)b')", "is refused");
-        assertThatThrownBy(() -> eval("regex_extract('ab', $.TRADE_ID + '(')")).isInstanceOfSatisfying(DrishtiException.class,
+        assertThatThrownBy(() -> eval("regex_extract('ab', $.TRADE_ID + '(')")).isInstanceOfSatisfying(HostException.class,
                 e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.REGEX_REFUSED));
     }
 

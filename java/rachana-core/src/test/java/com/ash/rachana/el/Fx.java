@@ -7,9 +7,9 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.error.ErrorCode;
-import com.ash.drishti.common.JsonCodec;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.ErrorCode;
+import com.ash.rachana.hostcompat.JsonCodec;
 import com.ash.rachana.format.Formats;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ import java.util.Map;
 final class Fx {
 
     static final ElCompiler EL = new ElCompiler();
-    static final Formats F = Formats.load(null, List.of("../../examples/packs/finance/config/formats.yaml"));
+    static final Formats F = Formats.load(null, List.of(com.ash.rachana.TestFormats.file()));
     static final DataNode DOC;
 
     static {

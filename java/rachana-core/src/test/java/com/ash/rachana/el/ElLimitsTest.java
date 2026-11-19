@@ -7,7 +7,7 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.drishti.common.JsonCodec;
+import com.ash.rachana.hostcompat.JsonCodec;
 import com.ash.rachana.format.Formats;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;

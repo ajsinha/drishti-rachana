@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.common.SafeRegex;
+import com.ash.rachana.hostcompat.SafeRegex;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;

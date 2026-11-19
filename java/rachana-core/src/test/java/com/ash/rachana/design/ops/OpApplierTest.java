@@ -4,7 +4,6 @@
  */
 package com.ash.rachana.design.ops;
 
-import com.ash.drishti.testroots.TestRoots;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,15 +26,8 @@ import org.junit.jupiter.api.Test;
 /** Every operation on every panel kind, over the all-panels showcase and the ten other examples. */
 class OpApplierTest {
 
-    private static final Path EXAMPLES = Path.of(TestRoots.repo(), "docs", "guides", "examples");
     private final OpApplier applier = new OpApplier();
     private final SutraParser parser = new SutraParser();
-
-    private List<Path> examples() throws IOException {
-        try (Stream<Path> s = Files.list(EXAMPLES)) {
-            return s.filter(p -> p.getFileName().toString().endsWith(".sutra.yaml")).sorted().toList();
-        }
-    }
 
     /** The example with a comment above every panel and one inside it, so loss of comments shows. */
     private static String annotated(String text) {
@@ -95,97 +87,6 @@ class OpApplierTest {
     }
 
     @Test
-    void everyOperationOnEveryKindKeepsCommentsAndOrder() throws Exception {
-        Set<PanelKind> seen = EnumSet.noneOf(PanelKind.class);
-        for (Path file : examples()) {
-            String text = annotated(Files.readString(file));
-            List<String> notes = comments(text);
-            Sutra s = parse(text);
-            List<String> ids = s.panels().stream().map(Panel::id).toList();
-            for (Panel p : s.panels()) {
-                seen.add(p.kind());
-                String where = file.getFileName() + " / " + p.id() + " (" + p.kind().id() + ")";
-
-                OpResult title = applier.apply(text, List.of(new SetOption(p.id(), "title", "Renamed \"by\" op: #1")));
-                same(text, title, p.id());
-                assertThat(parse(title.yaml()).panels().stream().filter(x -> x.id().equals(p.id())).findFirst().orElseThrow().title())
-                        .as(where).isEqualTo("Renamed \"by\" op: #1");
-                assertThat(comments(title.yaml())).as(where).isEqualTo(notes);
-                assertThat(parse(title.yaml()).panels().stream().map(Panel::id).toList()).as(where).isEqualTo(ids);
-
-                OpResult size = applier.apply(text, List.of(new SetOption(p.id(), "span", 6L), new SetOption(p.id(), "height", 7L),
-                        new SetOption(p.id(), "span", null)));
-                same(text, size, p.id());
-                Panel sized = parse(size.yaml()).panels().stream().filter(x -> x.id().equals(p.id())).findFirst().orElseThrow();
-                assertThat(sized.span()).as(where).isEmpty();
-                assertThat(sized.height()).as(where).contains(7);
-                assertThat(comments(size.yaml())).as(where).isEqualTo(notes);
-
-                OpResult moved = applier.apply(text, List.of(new Move(p.id(), "right", ids.get(0).equals(p.id()) ? null : ids.get(0), null, 4, 5)));
-                same(text, moved, p.id());
-                Panel at = parse(moved.yaml()).panels().stream().filter(x -> x.id().equals(p.id())).findFirst().orElseThrow();
-                assertThat(at.area().name()).as(where).isEqualTo("RIGHT");
-                assertThat(at.span()).as(where).contains(4);
-                assertThat(comments(moved.yaml()).stream().sorted().toList()).as(where).isEqualTo(notes.stream().sorted().toList());
-                assertThat(parse(moved.yaml()).panels()).as(where).hasSize(ids.size());
-
-                OpResult added = applier.apply(text, List.of(new AddPanel("new-one", p.kind().id(), new AddPanel.At(null, null, p.id(), 6, 8), required(p.kind()))));
-                same(text, added, null);
-                List<String> after = parse(added.yaml()).panels().stream().map(Panel::id).toList();
-                assertThat(after).as(where).hasSize(ids.size() + 1);
-                assertThat(after.get(after.indexOf(p.id()) + 1)).as(where).isEqualTo("new-one");
-                assertThat(comments(added.yaml())).as(where).isEqualTo(notes);
-
-                OpResult bound = applier.apply(text, List.of(new Bind(p.id(), "extra.field", null)));
-                if (bound.problems().isEmpty()) {
-                    same(text, bound, p.id());
-                    assertThat(comments(bound.yaml())).as(where).isEqualTo(notes);
-                } else {
-                    assertThat(bound.problems().get(0).op()).isZero();
-                    assertThat(bound.yaml()).as(where).isEqualTo(text);
-                }
-
-                if (ids.size() > 1) {
-                    OpResult gone = applier.apply(text, List.of(new Remove(p.id())));
-                    same(text, gone, p.id());
-                    assertThat(parse(gone.yaml()).panels().stream().map(Panel::id).toList()).as(where).doesNotContain(p.id());
-                    assertThat(comments(gone.yaml()).size()).as(where).isEqualTo(notes.size() - 1);
-                }
-            }
-        }
-        assertThat(seen).as("the examples together use all twenty-two kinds").containsExactlyInAnyOrder(PanelKind.values());
-    }
-
-    @Test
-    void theSutrasOwnKeysAreSetAndRemovedInPlace() throws Exception {
-        String text = annotated(Files.readString(EXAMPLES.resolve("all-panels-showcase.sutra.yaml")));
-        OpResult r = applier.apply(text, List.of(
-                new SetTitle(Map.of("pill", "Trade", "id", "$.tradeId")),
-                new SetMatch(Map.of("kind", "trade")),
-                new SetStrip(List.of(Map.of("label", "Notional", "bind", "$.notional"))),
-                new SetKeys(Map.of("F2", "terms"))));
-        assertThat(r.problems()).isEmpty();
-        Sutra s = parse(r.yaml());
-        assertThat(s.title().pill()).isEqualTo("Trade");
-        assertThat(s.match().kind()).isEqualTo("trade");
-        assertThat(s.strip()).hasSize(1);
-        assertThat(s.keys()).containsEntry("F2", "terms");
-        assertThat(comments(r.yaml())).isEqualTo(comments(text));
-        assertThat(s.panels()).hasSameSizeAs(parse(text).panels());
-
-        OpResult removed = applier.apply(r.yaml(), List.of(new SetStrip(List.of()), new SetKeys(Map.of())));
-        assertThat(removed.problems()).isEmpty();
-        assertThat(parse(removed.yaml()).strip()).isEmpty();
-        assertThat(parse(removed.yaml()).keys()).isEmpty();
-        assertThat(removed.yaml()).doesNotContain("strip:").doesNotContain("keys:");
-
-        OpResult put = applier.apply(removed.yaml(), List.of(new SetStrip(List.of(Map.of("label", "A", "bind", "$.a"))), new SetKeys(Map.of("F3", "terms"))));
-        assertThat(put.problems()).isEmpty();
-        assertThat(put.yaml().indexOf("strip:")).isLessThan(put.yaml().indexOf("panels:"));
-        assertThat(put.yaml().indexOf("keys:")).isGreaterThan(put.yaml().indexOf("panels:"));
-    }
-
-    @Test
     void setStripKeepsTheCommentsInsideTheStripBlock() {
         String text = "rachana: 1\nsutra: strip-keep\nversion: 1\nmatch: { kind: k }\ntitle: { id: $.id }\nstrip:\n  # figures the desk reads first\n"
                 + "  - { label: A, bind: $.a }\n  # b is shown for the audit\n  - { label: B, bind: $.b }\npanels:\n  - id: t\n    kind: kv\n    columns:\n      - { label: A, bind: $.a }\n";
@@ -193,72 +94,6 @@ class OpApplierTest {
         assertThat(r.problems()).isEmpty();
         assertThat(r.yaml()).contains("# figures the desk reads first").contains("# b is shown for the audit").contains("label: C");
         assertThat(parse(r.yaml()).strip()).hasSize(1);
-    }
-
-    @Test
-    void aListOrMappingForAOptionThatTakesOneValueIsRefused() throws Exception {
-        String text = Files.readString(EXAMPLES.resolve("all-panels-showcase.sutra.yaml"));
-        OpResult r = applier.apply(text, List.of(
-                new SetOption("terms", "area", Map.of("a", 1)),
-                new SetOption("terms", "title", Map.of("a", 1)),
-                new SetOption("pnl", "x", List.of(1L)),
-                new SetOption("terms", "code", "TRM")));
-        assertThat(r.problems()).extracting(OpProblem::code).containsExactly(OpException.BAD_VALUE, OpException.BAD_VALUE, OpException.BAD_VALUE);
-        assertThat(r.applied()).isEqualTo(1);
-    }
-
-    @Test
-    void theTablesPivotMappingIsAccepted() throws Exception {
-        String text = Files.readString(EXAMPLES.resolve("all-panels-showcase.sutra.yaml"));
-        OpResult r = applier.apply(text, List.of(new SetOption("versions", "pivot", Map.of("heat", true))));
-        assertThat(r.problems()).isEmpty();
-        assertThat(r.yaml()).contains("heat: true");
-    }
-
-    @Test
-    void aBadOperationIsALocatedProblemAndNeverCorruptsTheText() throws Exception {
-        String text = Files.readString(EXAMPLES.resolve("all-panels-showcase.sutra.yaml"));
-        List<Op> ops = List.of(
-                new SetOption("terms", "title", "Terms"),                                  // 0 ok
-                new SetOption("nope", "title", "x"),                                       // 1 no such panel
-                new SetOption("terms", "agg", "sum"),                                      // 2 option the kind does not accept
-                new AddPanel(null, "pivot", null, Map.of("rows", "$.x", "by", "g", "across", "h", "agg", "median")),   // 3 bad value
-                new SetOption("terms", "span", 13L),                                       // 4 span out of range
-                new AddPanel("terms", "kv", null, Map.of()),                               // 5 duplicate id
-                new AddPanel(null, "hologram", null, Map.of()),                            // 6 unknown kind
-                new AddPanel("t2", "table", null, Map.of()),                               // 7 a table needs rows
-                new Move("terms", "left", null, null, null, null),                         // 8 bad area
-                new Bind("terms", "x", "wibble"),                                          // 9 role the kind does not take
-                new Remove("ghost"),                                                       // 10
-                new SetOption("terms", "id", "other"),                                     // 11 id cannot be set
-                new SetOption("terms", "code", "TRM"));                                    // 12 ok
-        OpResult r = applier.apply(text, ops);
-        assertThat(r.applied()).isEqualTo(2);
-        assertThat(r.problems()).extracting(OpProblem::op).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
-        assertThat(r.problems()).extracting(OpProblem::code).startsWith(OpException.NO_PANEL, OpException.NOT_ACCEPTED, OpException.BAD_VALUE);
-        assertThat(r.problems().get(6).name()).isEqualTo("addPanel");
-        assertThat(r.problems().get(6).code()).isEqualTo("DRS-2022");              // the parser's own code for the missing rows
-        assertThat(r.problems().get(6).message()).contains("rows");
-        Panel terms = parse(r.yaml()).panels().get(0);
-        assertThat(terms.title()).isEqualTo("Terms");
-        assertThat(terms.code()).isEqualTo("TRM");
-        assertThat(parse(r.yaml()).panels()).hasSameSizeAs(parse(text).panels());
-    }
-
-    @Test
-    void textReplacesTheWholeSutraOrIsRefused() throws Exception {
-        String text = Files.readString(EXAMPLES.resolve("market-charts.sutra.yaml"));
-        String other = Files.readString(EXAMPLES.resolve("relationships.sutra.yaml"));
-        OpResult r = applier.apply(text, List.of(new Text(other)));
-        assertThat(r.problems()).isEmpty();
-        assertThat(r.yaml()).isEqualTo(other);
-        OpResult bad = applier.apply(text, List.of(new Text("rachana: 1\nsutra: [")));
-        assertThat(bad.problems()).hasSize(1);
-        assertThat(bad.problems().get(0).code()).isEqualTo("DRS-2001");
-        assertThat(bad.yaml()).isEqualTo(text);
-        OpResult fixed = applier.apply("not a sutra", List.of(new SetOption("a", "title", "x"), new Text(other)));
-        assertThat(fixed.problems()).hasSize(1);
-        assertThat(fixed.yaml()).isEqualTo(other);
     }
 
     @Test

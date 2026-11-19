@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.common.BusinessCalendar;
+import com.ash.rachana.hostcompat.BusinessCalendar;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.DayOfWeek;

@@ -12,4 +12,25 @@
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-core</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!-- The runtime's module path, for tools/conformance/rachana_conformance.py with the jvm option. -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.8.1</version>
+        <executions>
+          <execution>
+            <id>runtime-classpath</id>
+            <phase>package</phase>
+            <goals><goal>build-classpath</goal></goals>
+            <configuration>
+              <outputFile>${project.build.directory}/runtime-classpath.txt</outputFile>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

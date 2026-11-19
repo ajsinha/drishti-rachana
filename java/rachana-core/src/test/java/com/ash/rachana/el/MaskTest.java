@@ -6,7 +6,7 @@ package com.ash.rachana.el;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ash.drishti.api.DataNode;
+import com.ash.rachana.hostcompat.DataNode;
 import com.ash.rachana.format.Formats;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 class MaskTest {
 
     static final ElCompiler EL = new ElCompiler();
-    static final Formats F = Formats.load(null, List.of("../../examples/packs/finance/config/formats.yaml"));
+    static final Formats F = Formats.load(null, List.of(com.ash.rachana.TestFormats.file()));
     static final DataNode DOC;
 
     static {

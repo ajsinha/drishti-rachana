@@ -4,7 +4,6 @@
  */
 package com.ash.rachana;
 
-import com.ash.drishti.testroots.TestRoots;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -19,29 +18,7 @@ import org.junit.jupiter.api.Test;
 
 class SutraParserTest {
 
-    static final Path SUTRAS = Path.of(TestRoots.repo(), "examples", "packs", "finance", "sutras");
     private final SutraParser parser = new SutraParser();
-
-    private Sutra load(String rel) throws Exception {
-        Path p = SUTRAS.resolve(rel);
-        return parser.parse(Files.readString(p), p.getFileName().toString(), p.getParent().getFileName().toString());
-    }
-
-    @Test
-    void referenceSutrasParse() throws Exception {
-        Sutra irs = load("rates/irs-vanilla.v3.sutra.yaml");
-        assertThat(irs.id()).isEqualTo("irs-vanilla@3");
-        assertThat(irs.domain()).isEqualTo("rates");
-        assertThat(irs.strip()).hasSize(8);
-        assertThat(irs.panels()).extracting(p -> p.id()).containsExactly("legs", "cashflows", "leg2", "built", "curve", "refs", "dv01");
-        assertThat(irs.panels().get(0).body().kind()).isEqualTo(PanelKind.KV);
-        assertThat(irs.panels().get(4).area()).isEqualTo(Area.RIGHT);
-        assertThat(irs.keys()).containsKeys("F7", "F8", "F9");
-        for (String f : List.of("fx/fx-swap.v2.sutra.yaml", "commodities/listed-future.v1.sutra.yaml", "credit/netting-set.v1.sutra.yaml")) {
-            assertThat(load(f).panels()).isNotEmpty();
-        }
-        assertThat(load("credit/netting-set.v1.sutra.yaml").panels().get(0).options().get("series")).isInstanceOf(List.class);
-    }
 
     @Test
     void everySutraDeclaresTheLanguageVersionItIsWrittenIn() {

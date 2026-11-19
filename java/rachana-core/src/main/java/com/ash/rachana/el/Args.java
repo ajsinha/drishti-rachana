@@ -4,9 +4,9 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.NodeType;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.hostcompat.ErrorCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;

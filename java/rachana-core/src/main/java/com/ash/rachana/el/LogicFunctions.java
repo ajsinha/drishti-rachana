@@ -4,9 +4,9 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.NodeType;
-import com.ash.drishti.api.error.DrishtiException;
+import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.hostcompat.HostException;
 import java.util.List;
 
 /**
@@ -52,7 +52,7 @@ final class LogicFunctions {
             }
             return out;
         }
-        List<String> parsed = com.ash.drishti.api.ListValues.of(s instanceof DataNode ? Values.text(s) : s);
+        List<String> parsed = com.ash.rachana.hostcompat.ListValues.of(s instanceof DataNode ? Values.text(s) : s);
         return parsed != null ? new java.util.ArrayList<>(parsed) : List.of(s);
     }
 
@@ -115,7 +115,7 @@ final class LogicFunctions {
         Object x;
         try {
             x = args.get(0).eval(c);
-        } catch (DrishtiException e) {
+        } catch (HostException e) {
             return args.get(1).eval(c);
         }
         if (Values.masked(x)) {

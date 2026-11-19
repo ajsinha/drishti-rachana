@@ -4,12 +4,12 @@
  */
 package com.ash.rachana;
 
-import com.ash.drishti.api.error.DrishtiException;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.hostcompat.HostException;
+import com.ash.rachana.hostcompat.ErrorCode;
 import java.util.List;
 
 /** A Sutra failed to parse or validate. Carries every problem found, not only the first. */
-public class SutraException extends DrishtiException {
+public class SutraException extends HostException {
 
     private static final long serialVersionUID = 1L;
     private final transient List<SutraProblem> problems;

@@ -1,0 +1,7 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../LICENSE-SPEC.md (draft, not yet in force).
+# Core entries of spec/1/rachana.lang.json no case covers yet (plan R0 H5): the work queue; it may only shrink.
+# Written by tools/conformance/coverage.py --write-gaps.
+code RCH-2055
+code RCH-5024
+code RCH-9161
+key form.lookup.source.limit

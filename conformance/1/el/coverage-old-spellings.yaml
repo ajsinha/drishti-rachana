@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: el/coverage-old-spellings
+since: "1.0"
+profile: core
+verified: true
+description: "The deprecated function spellings the reference still reads (plan R0 H5 coverage); same results as the new spellings."
+cases:
+
+  - id: "old-startswith"
+    kind: "expr"
+    source: "coverage-gaps (plan R0 H5)"
+    expr: "startsWith('abcdef', 'abc')"
+    expect: {"value": true}
+
+  - id: "old-matchescase"
+    kind: "expr"
+    source: "coverage-gaps (plan R0 H5)"
+    expr: "matchesCase('ABC', 'a.c')"
+    expect: {"value": false}
+
+  - id: "old-oneof"
+    kind: "expr"
+    source: "coverage-gaps (plan R0 H5)"
+    expr: "oneOf('b', ['a', 'b'])"
+    expect: {"value": true}

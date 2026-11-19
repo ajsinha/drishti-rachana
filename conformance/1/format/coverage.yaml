@@ -1,0 +1,122 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: format/coverage
+since: "1.0"
+profile: core
+verified: true
+description: "Formats and tones no other format case names (plan R0 H5 coverage)."
+cases:
+
+  - id: "amount2-1234-5"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 1234.5
+    format: "amount2"
+    expect: {"text": "1,234.50", "tone": null}
+
+  - id: "amount2--1234-567"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: -1234.567
+    format: "amount2"
+    expect: {"text": "−1,234.57", "tone": null}
+
+  - id: "price2-12-3"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 12.3
+    format: "price2"
+    expect: {"text": "12.30", "tone": null}
+
+  - id: "price2-0-5"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 0.5
+    format: "price2"
+    expect: {"text": "0.50", "tone": null}
+
+  - id: "text-eur"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: "EUR"
+    format: "text"
+    expect: {"text": "EUR", "tone": null}
+
+  - id: "text-42"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 42
+    format: "text"
+    expect: {"text": "42", "tone": null}
+
+  - id: "amount0-5-tone-link"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 5
+    format: "amount0"
+    tone: "link"
+    expect: {"text": "5", "tone": "link"}
+
+  - id: "amount0-5-tone-accent"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 5
+    format: "amount0"
+    tone: "accent"
+    expect: {"text": "5", "tone": "accent"}
+
+  - id: "amount0--5-tone-sign"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: -5
+    format: "amount0"
+    tone: "sign"
+    expect: {"text": "−5", "tone": "neg"}
+
+  - id: "amount0-5-tone-pos"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 5
+    format: "amount0"
+    tone: "pos"
+    expect: {"text": "5", "tone": "pos"}
+
+  - id: "amount0--5-tone-neg"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: -5
+    format: "amount0"
+    tone: "neg"
+    expect: {"text": "−5", "tone": "neg"}
+
+  - id: "text-ok-tone-status"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: "OK"
+    format: "text"
+    tone: "status"
+    expect: {"text": "OK", "tone": "ok"}
+
+  - id: "amount0-5-tone-ok"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 5
+    format: "amount0"
+    tone: "ok"
+    expect: {"text": "5", "tone": "ok"}
+
+  - id: "amount0-5-tone-warn"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 5
+    format: "amount0"
+    tone: "warn"
+    expect: {"text": "5", "tone": "warn"}
+
+  - id: "amount0-5-tone-bad"
+    kind: "format"
+    source: "coverage-gaps (plan R0 H5)"
+    value: 5
+    format: "amount0"
+    tone: "bad"
+    expect: {"text": "5", "tone": "bad"}

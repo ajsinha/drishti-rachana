@@ -31,8 +31,6 @@
     <!-- The pinned Drishti Elements release whose data files (formats, world regions) Core bundles: js/vendor/drishti-elements/<this>/ -->
     <drishti.elements.version>2.4.0</drishti.elements.version>
     <!-- SPLIT EXEMPTIONS (SPLIT_EXEMPTIONS.md): versions of the libraries the moved code still uses; each leaves at its step. -->
-    <jackson.version>2.21.4</jackson.version>
-    <snakeyaml.version>2.4</snakeyaml.version>
     <caffeine.version>3.2.4</caffeine.version>
     <assertj.version>3.27.7</assertj.version>
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->
@@ -48,10 +46,6 @@
         <groupId>org.junit</groupId><artifactId>junit-bom</artifactId><version>${junit.version}</version>
         <type>pom</type><scope>import</scope>
       </dependency>
-      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson.version}</version></dependency>
-      <dependency><groupId>com.fasterxml.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId><version>${jackson.version}</version></dependency>
-      <!-- the YAML parser under Jackson at the version the reference ran with -->
-      <dependency><groupId>org.yaml</groupId><artifactId>snakeyaml</artifactId><version>${snakeyaml.version}</version></dependency>
       <dependency><groupId>com.github.ben-manes.caffeine</groupId><artifactId>caffeine</artifactId><version>${caffeine.version}</version></dependency>
       <dependency><groupId>org.assertj</groupId><artifactId>assertj-core</artifactId><version>${assertj.version}</version></dependency>
     </dependencies>
@@ -82,9 +76,6 @@
                 <bannedDependencies>
                   <!-- SPLIT EXEMPTIONS (SPLIT_EXEMPTIONS.md): allowed only until the named step; this list only shrinks. -->
                   <includes>
-                    <include>com.fasterxml.jackson.core:*</include>
-                    <include>com.fasterxml.jackson.dataformat:*</include>
-                    <include>org.yaml:snakeyaml</include>
                     <include>com.github.ben-manes.caffeine:*</include>
                   </includes>
                   <excludes>

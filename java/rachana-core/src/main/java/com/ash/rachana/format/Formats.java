@@ -5,9 +5,7 @@
 package com.ash.rachana.format;
 
 import com.ash.rachana.el.Values;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.ash.rachana.internal.Plain;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -65,15 +63,13 @@ public final class Formats {
     }
 
     private static void read(InputStream in, Map<String, FormatSpec> into) throws IOException {
-        JsonNode root = new ObjectMapper(new YAMLFactory()).readTree(in).path("formats");
-        Iterator<Map.Entry<String, JsonNode>> it = root.fields();
-        while (it.hasNext()) {
-            Map.Entry<String, JsonNode> e = it.next();
-            JsonNode f = e.getValue();
-            into.put(e.getKey(), new FormatSpec(f.path("type").asText("number"), f.path("decimals").asInt(0),
-                    f.path("grouping").asBoolean(true), f.path("sign").asText("auto"), f.path("scale").asDouble(1),
-                    f.hasNonNull("suffix") ? f.get("suffix").asText() : null,
-                    f.hasNonNull("pattern") ? f.get("pattern").asText() : null));
+        Object root = Plain.path(Plain.yaml(in), "formats");
+        for (Map.Entry<String, Object> e : Plain.entries(root)) {
+            Object f = e.getValue();
+            into.put(e.getKey(), new FormatSpec(Plain.text(Plain.path(f, "type"), "number"), Plain.asInt(Plain.path(f, "decimals"), 0),
+                    Plain.asBoolean(Plain.path(f, "grouping"), true), Plain.text(Plain.path(f, "sign"), "auto"),
+                    Plain.asDouble(Plain.path(f, "scale"), 1), Plain.hasNonNull(f, "suffix") ? Plain.text(Plain.path(f, "suffix")) : null,
+                    Plain.hasNonNull(f, "pattern") ? Plain.text(Plain.path(f, "pattern")) : null));
         }
     }
 

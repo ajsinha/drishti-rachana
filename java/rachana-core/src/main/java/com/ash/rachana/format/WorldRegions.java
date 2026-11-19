@@ -4,9 +4,7 @@
  */
 package com.ash.rachana.format;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.ash.rachana.internal.Plain;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -31,22 +29,18 @@ public final class WorldRegions {
     private final Map<String, List<String>> subCountries = new LinkedHashMap<>();
     private final Map<String, String> countrySub = new LinkedHashMap<>();
 
-    private WorldRegions(JsonNode root) {
-        Iterator<Map.Entry<String, JsonNode>> cs = root.path("continents").fields();
-        while (cs.hasNext()) {
-            Map.Entry<String, JsonNode> e = cs.next();
-            continents.put(e.getKey(), e.getValue().asText());
+    private WorldRegions(Object root) {
+        for (Map.Entry<String, Object> e : Plain.entries(Plain.path(root, "continents"))) {
+            continents.put(e.getKey(), Plain.text(e.getValue()));
         }
-        Iterator<Map.Entry<String, JsonNode>> ss = root.path("subregions").fields();
-        while (ss.hasNext()) {
-            Map.Entry<String, JsonNode> e = ss.next();
-            JsonNode s = e.getValue();
-            subNames.put(e.getKey(), s.path("name").asText());
-            subContinent.put(e.getKey(), s.path("continent").asText());
+        for (Map.Entry<String, Object> e : Plain.entries(Plain.path(root, "subregions"))) {
+            Object s = e.getValue();
+            subNames.put(e.getKey(), Plain.text(Plain.path(s, "name")));
+            subContinent.put(e.getKey(), Plain.text(Plain.path(s, "continent")));
             List<String> list = new ArrayList<>();
-            for (JsonNode c : s.path("countries")) {
-                list.add(c.asText());
-                countrySub.put(c.asText(), e.getKey());
+            for (Object c : Plain.elements(Plain.path(s, "countries"))) {
+                list.add(Plain.text(c));
+                countrySub.put(Plain.text(c), e.getKey());
             }
             subCountries.put(e.getKey(), List.copyOf(list));
         }
@@ -55,7 +49,7 @@ public final class WorldRegions {
     /** The bundled grouping. */
     public static WorldRegions load() {
         try (InputStream in = WorldRegions.class.getClassLoader().getResourceAsStream("world-regions.yaml")) {
-            return new WorldRegions(new ObjectMapper(new YAMLFactory()).readTree(in));
+            return new WorldRegions(Plain.yaml(in));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

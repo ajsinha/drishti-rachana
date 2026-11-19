@@ -5,7 +5,6 @@
 package com.ash.rachana.parse;
 
 import com.ash.rachana.SutraProblem;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,7 +35,7 @@ public final class BlockUses {
         PNode root;
         try {
             root = new PositionalYamlReader().read(text == null ? "" : text, new ArrayList<>());
-        } catch (IOException | RuntimeException e) {
+        } catch (RuntimeException e) {
             return List.of();
         }
         if (root == null || !root.isMap() || root.map().get("panels") == null || !root.map().get("panels").isList()) {

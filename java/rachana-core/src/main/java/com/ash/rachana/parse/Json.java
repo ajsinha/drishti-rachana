@@ -13,11 +13,11 @@ import java.util.Map;
 
 /**
  * Core's JSON reader and writer, over plain values: {@code Map<String, Object>} (written order), {@code List<Object>},
- * {@code String}, {@code Long}, {@code Double}, {@code Boolean} and null (the writer also takes {@code Integer},
- * {@code BigInteger} and {@code BigDecimal}).
+ * {@code String}, {@code Long} (a {@code BigInteger} beyond a {@code long}), {@code Double}, {@code Boolean} and null
+ * (the writer also takes {@code Integer} and {@code BigDecimal}).
  *
  * <p>The reader takes one JSON value (RFC 8259) and ignores what follows it; a key written twice keeps its first place
- * and its last value; a whole number outside a {@code long} is refused. The writer writes compact JSON: no spaces, keys in the map's order, {@code "} and {@code \} and
+ * and its last value. The writer writes compact JSON: no spaces, keys in the map's order, {@code "} and {@code \} and
  * control characters escaped ({@code \b \t \n \f \r}, others as {@code \\u00XX}), other characters as they are; a
  * non-finite double is written as a string ({@code "NaN"}). Both are the forms the language's JSON had from the start.
  * Thread-safe: static methods, no shared state.
@@ -402,10 +402,7 @@ public final class Json {
                 return Long.parseLong(text);
             }
             BigInteger n = new BigInteger(text);
-            if (n.bitLength() > 63) {
-                throw fail("Numeric value (" + text + ") out of range of long (" + Long.MIN_VALUE + " - " + Long.MAX_VALUE + ")");
-            }
-            return n.longValue();
+            return n.bitLength() <= 63 ? (Object) n.longValue() : n;
         }
     }
 }

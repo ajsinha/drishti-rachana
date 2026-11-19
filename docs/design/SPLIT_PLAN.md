@@ -36,7 +36,7 @@ migration's proof (step 11).
 | 5 Spring out | A4 | here | planned (Spring never moved: `Formats` lost its reload hook at A10, the configuration classes stayed in Drishti) | |
 | 6 registries per instance | A6 | here | planned | |
 | 7 model and parser split, FormExpr into Rachana-EL | A7, A7b | here | planned | |
-| 8 own YAML and JSON | A8a, A8b | here, the other Opus lane | planned | |
+| 8 own YAML and JSON | A8a, A8b | here, the other Opus lane | **done** | `tools/yaml-diff`: 168,923 inputs identical to the reference's reader (but the new anchor issue); conformance results byte-identical before and after A8b; Jackson and SnakeYAML gone |
 | 9 aggregate kernel | A9 | here, the other Opus lane | planned | |
 | 13, 14 binder | A13, A14 | here | planned; `v0.10.0` | |
 | 1, 11, 12 guards and the pin in Drishti | H3, A11, A12 | Drishti | **held** (DRISHTI_MIGRATION_TODO 8) | |

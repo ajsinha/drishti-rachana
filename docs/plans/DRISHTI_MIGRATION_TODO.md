@@ -160,3 +160,13 @@ here. What Drishti must do when the migration starts, in this order:
       targeted set of A1 to A9, then one gate and the release's single drill (PD1); Drishti's tag.
 - [ ] 8.9 **Retire the reference bridge** here (`tools/reference-bridge`) once 8.8 is green: until then it is the reference every
       Rachana step is compared with.
+
+### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
+
+| Rachana API | Was | Is | Drishti callers |
+|---|---|---|---|
+| `parse.PositionalYamlReader.read` | throws `IOException` (Jackson's `JsonProcessingException`) | throws unchecked `YamlSyntaxException` (`getMessage()` is the old `getOriginalMessage()`; `line()`, `column()`) | `server/cli/SutraCli` (catch), `SutraFragmentsTest` |
+| `design.ops.Ops.parse(JsonNode)` | Jackson tree | `Ops.parse(Object)`: plain JSON values (`Json.read`, or the host's tree converted to maps and lists) | `BuilderController`, `DesignRebase` |
+| `design.ops.Ops.toJson` | `ObjectNode` / `ArrayNode` | `Map<String,Object>` / `List<Map<String,Object>>` (same bytes when written) | `DesignRebase` |
+| `el.check.Signatures.parse(JsonNode, String)` | Jackson tree | `parse(Object, String)` | none found |
+

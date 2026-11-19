@@ -8,12 +8,10 @@ used fails it too, so **this list only shrinks**. When the last line goes, the f
 
 ## Dependencies (read by `DependencyAllowListTest`; the enforcer's `includes` in `pom.xml` say the same)
 
-- dependency: rachana-core com.fasterxml.jackson.core:jackson-databind until A8b (Core's own YAML and JSON reader)
-- dependency: rachana-core com.fasterxml.jackson.dataformat:jackson-dataformat-yaml until A8b
 - dependency: rachana-core com.github.ben-manes.caffeine:caffeine until A3 (Core's LRU)
 - dependency: rachana-core org.assertj:assertj-core until never (test scope; the moved unit tests are written with it)
 
-`org.yaml:snakeyaml` comes with `jackson-dataformat-yaml` and is pinned to the version the reference ran with (2.4).
+Jackson and SnakeYAML left with A8b (2026-11-19): Core reads YAML and JSON itself (`com.ash.rachana.parse`).
 
 ## Host types (package `com.ash.rachana.hostcompat`, read by `NamesNoHostTest`)
 

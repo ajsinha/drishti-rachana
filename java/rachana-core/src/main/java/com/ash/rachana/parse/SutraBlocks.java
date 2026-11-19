@@ -7,7 +7,6 @@ package com.ash.rachana.parse;
 import com.ash.rachana.SutraException;
 import com.ash.rachana.SutraProblem;
 import com.ash.rachana.model.SourceLocation;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -386,14 +385,15 @@ public final class SutraBlocks {
     }
 
     private static void json(PNode v, StringBuilder out) {
-        var quote = com.fasterxml.jackson.core.io.JsonStringEncoder.getInstance();
         if (v == null || v.value() == null) {
             out.append("null");
         } else if (v.isMap()) {
             out.append('{');
             String sep = "";
             for (Map.Entry<String, PNode> e : v.map().entrySet()) {
-                out.append(sep).append('"').append(quote.quoteAsString(e.getKey())).append("\": ");
+                out.append(sep);
+                Json.quote(e.getKey(), out);
+                out.append(": ");
                 json(e.getValue(), out);
                 sep = ", ";
             }
@@ -408,7 +408,7 @@ public final class SutraBlocks {
             }
             out.append(']');
         } else if (v.value() instanceof String s) {
-            out.append('"').append(quote.quoteAsString(s)).append('"');
+            Json.quote(s, out);
         } else {
             out.append(v.value());
         }
@@ -608,12 +608,9 @@ public final class SutraBlocks {
     private static PNode parse(String text, String file) {
         try {
             return READER.read(text, new ArrayList<>());
-        } catch (JsonProcessingException e) {
-            var l = e.getLocation();
-            throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getOriginalMessage(),
-                    new SourceLocation(file, l == null ? 0 : l.getLineNr(), l == null ? 0 : l.getColumnNr()))));
-        } catch (IOException e) {
-            throw new SutraException(List.of(problem("cannot read: " + e.getMessage(), file, 0, 0)));
+        } catch (YamlSyntaxException e) {
+            throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getMessage(),
+                    new SourceLocation(file, e.line(), e.column()))));
         }
     }
 

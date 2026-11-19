@@ -9,6 +9,13 @@ Entries are written per release; the regime's unreleased work is listed after th
   and error codes; every code is `RCH-` with the number it always had (problems, editing refusals, evaluation and syntax errors,
   checked-mode refusals). A host maps them to its own by the number at its edge. The accepted options in an editing refusal are
   named sorted (they were in an unordered set's order, which changed between runs).
+- **A8a, A8b, Core's own YAML and JSON**: `PositionalYamlReader` is now Core's own reader (no library, no regular expressions):
+  the same tree, types, positions, issues and error texts as before (`tools/yaml-diff`: 168,923 inputs, every Drishti and
+  Rachana YAML file, case texts, edge inputs and mutations; `PositionalYamlReaderTest` on 1,113 recorded vectors). New: an
+  anchor or alias is an issue (`RCH-2033` in a Sutra). `Json` reads and writes JSON. Jackson and SnakeYAML leave the build.
+  API: `PositionalYamlReader.read` throws the unchecked `YamlSyntaxException` (message, line, column) instead of an
+  `IOException`; `Ops.parse` takes a plain JSON value and `Ops.toJson` returns maps and lists; `Signatures.parse` takes a
+  plain value; `PNode.plain()` added. Conformance results byte-identical before and after.
 - `tools/split/compare_results.py` and `known-differences.txt`: the proof of each split step against the reference bridge.
 
 ## v0.9.0 (2026-11-19): the compiler moves here

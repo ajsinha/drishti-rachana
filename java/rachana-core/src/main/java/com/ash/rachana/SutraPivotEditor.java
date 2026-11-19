@@ -9,8 +9,8 @@ import com.ash.rachana.model.PivotSpec;
 import com.ash.rachana.model.Sutra;
 import com.ash.rachana.parse.PNode;
 import com.ash.rachana.parse.PositionalYamlReader;
+import com.ash.rachana.parse.YamlSyntaxException;
 import com.ash.rachana.parse.SutraParser;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,7 +54,7 @@ public final class SutraPivotEditor {
         PNode root;
         try {
             root = reader.read(source);
-        } catch (IOException e) {
+        } catch (YamlSyntaxException e) {
             throw new IllegalArgumentException("cannot read the Sutra: " + e.getMessage(), e);
         }
         List<String> lines = new ArrayList<>(List.of(source.split("\n", -1)));

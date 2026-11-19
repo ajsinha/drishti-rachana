@@ -26,6 +26,7 @@ class JsonTest {
         assertEquals(m, Json.read(" {\"a\":1,\"b\":[1,2.5,true,\"x\\u00e9\\n\"],\"c\":null,\"a\":2} trailing"));
         assertNull(Json.read("  "));
         assertEquals(Long.MIN_VALUE, Json.read("-9223372036854775808"));
+        assertEquals(new BigInteger("9223372036854775808"), Json.read("9223372036854775808"));
     }
 
     @Test
@@ -33,7 +34,6 @@ class JsonTest {
         assertThrows(Json.JsonException.class, () -> Json.read("[1, 2"));
         assertThrows(Json.JsonException.class, () -> Json.read("{a:1}"));
         assertThrows(Json.JsonException.class, () -> Json.read("01"));
-        assertThrows(Json.JsonException.class, () -> Json.read("9223372036854775808"));
         Json.JsonException e = assertThrows(Json.JsonException.class, () -> Json.read("{\n  \"a\" 1}"));
         assertEquals(2, e.line());
     }

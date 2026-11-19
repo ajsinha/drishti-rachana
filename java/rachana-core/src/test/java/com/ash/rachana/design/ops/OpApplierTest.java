@@ -133,7 +133,7 @@ class OpApplierTest {
                 SetStrip.class, SetKeys.class, SetMatch.class, Text.class);
         assertThat(((AddPanel) ops.get(0)).options()).containsEntry("limit", 5L);
         assertThat(Ops.parse(Ops.toJson(ops))).isEqualTo(ops);
-        assertThat(Ops.toJson(ops).get(2).has("value")).isTrue();
+        assertThat(Ops.toJson(ops).get(2).containsKey("value")).isTrue();
 
         assertThatThrownBy(() -> Ops.parse("[{\"op\":\"remove\",\"panel\":\"a\"},{\"op\":\"zap\"}]")).isInstanceOf(Ops.FormatException.class)
                 .hasMessageContaining("operation 1").hasMessageContaining("unknown operation 'zap'");

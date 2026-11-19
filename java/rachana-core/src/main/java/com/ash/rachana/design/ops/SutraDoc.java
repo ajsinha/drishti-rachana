@@ -9,9 +9,9 @@ import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.Sutra;
 import com.ash.rachana.parse.PNode;
 import com.ash.rachana.parse.PositionalYamlReader;
+import com.ash.rachana.parse.YamlSyntaxException;
 import com.ash.rachana.parse.SutraBlocks;
 import com.ash.rachana.parse.SutraParser;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +59,7 @@ final class SutraDoc {
     private PNode root() {
         try {
             return reader.read(text());
-        } catch (IOException e) {
+        } catch (YamlSyntaxException e) {
             throw new OpException(OpException.UNEDITABLE, "cannot read the Sutra: " + e.getMessage());
         }
     }

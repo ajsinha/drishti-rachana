@@ -4,9 +4,7 @@
  */
 package com.ash.rachana.el.check;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.ash.rachana.internal.Plain;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -172,34 +170,37 @@ public final class Signatures {
             if (in == null) {
                 throw new IllegalStateException(resource + " is missing from the class path");
             }
-            return parse(new ObjectMapper(new YAMLFactory()).readTree(in), resource);
+            return parse(Plain.yaml(in), resource);
         } catch (IOException e) {
             throw new UncheckedIOException("cannot read " + resource, e);
         }
     }
 
-    /** A catalogue from its YAML tree ({@code functions:} entries); {@code what} names it in a problem. */
-    public static Signatures parse(JsonNode root, String what) {
+    /** A catalogue from its YAML tree as plain values ({@code functions:} entries); {@code what} names it in a problem. */
+    public static Signatures parse(Object root, String what) {
         Map<String, Signature> out = new LinkedHashMap<>();
-        for (JsonNode f : root.path("functions")) {
-            String name = f.path("name").asText();
+        for (Object f : Plain.elements(Plain.path(root, "functions"))) {
+            String name = Plain.text(Plain.path(f, "name"));
             List<Param> params = new ArrayList<>();
-            for (JsonNode p : f.path("params")) {
-                JsonNode d = p.get("default");
-                String def = d == null ? null : d.isNull() ? "None" : d.asText();
-                params.add(new Param(p.path("name").asText(), p.path("type").asText("any"), def, p.path("keyword-only").asBoolean(false),
-                        p.path("variadic").asBoolean(false)));
+            for (Object p : Plain.elements(Plain.path(f, "params"))) {
+                Object d = Plain.path(p, "default");
+                String def = d == Plain.MISSING ? null : d == null ? "None" : Plain.text(d);
+                params.add(new Param(Plain.text(Plain.path(p, "name")), Plain.text(Plain.path(p, "type"), "any"), def,
+                        Plain.asBoolean(Plain.path(p, "keyword-only"), false), Plain.asBoolean(Plain.path(p, "variadic"), false)));
             }
             List<String> scopes = new ArrayList<>();
-            f.path("scopes").forEach(s -> scopes.add(s.asText()));
+            Plain.elements(Plain.path(f, "scopes")).forEach(s -> scopes.add(Plain.text(s)));
             List<Example> examples = new ArrayList<>();
-            f.path("examples").forEach(e -> examples.add(new Example(e.path("expr").asText(), e.path("says").asText())));
+            Plain.elements(Plain.path(f, "examples")).forEach(e -> examples.add(new Example(Plain.text(Plain.path(e, "expr")),
+                    Plain.text(Plain.path(e, "says")))));
             Map<String, String> edges = new LinkedHashMap<>();
-            f.path("edge-cases").properties().forEach(e -> edges.put(e.getKey(), e.getValue().asText()));
-            String legacy = f.hasNonNull("legacy") ? f.path("legacy").asText() : f.hasNonNull("del") ? f.path("del").asText() : null;
-            if (out.put(name, new Signature(name, f.path("family").asText(), f.path("runs").asText(""), f.path("signature").asText(), params,
-                    f.path("returns").asText("any"), scopes, f.path("status").asText(BUILT), f.path("since").asText(""), legacy,
-                    f.path("description").asText(""), examples, edges)) != null) {
+            Plain.entries(Plain.path(f, "edge-cases")).forEach(e -> edges.put(e.getKey(), Plain.text(e.getValue())));
+            String legacy = Plain.hasNonNull(f, "legacy") ? Plain.text(Plain.path(f, "legacy"))
+                    : Plain.hasNonNull(f, "del") ? Plain.text(Plain.path(f, "del")) : null;
+            if (out.put(name, new Signature(name, Plain.text(Plain.path(f, "family")), Plain.text(Plain.path(f, "runs"), ""),
+                    Plain.text(Plain.path(f, "signature")), params, Plain.text(Plain.path(f, "returns"), "any"), scopes,
+                    Plain.text(Plain.path(f, "status"), BUILT), Plain.text(Plain.path(f, "since"), ""), legacy,
+                    Plain.text(Plain.path(f, "description"), ""), examples, edges)) != null) {
                 throw new IllegalStateException(what + ": the function " + name + " is listed twice");
             }
         }

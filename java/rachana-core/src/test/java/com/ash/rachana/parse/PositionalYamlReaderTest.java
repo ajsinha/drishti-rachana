@@ -25,15 +25,15 @@ import org.junit.jupiter.api.Test;
  * this repository's own inputs: the edge inputs, every text of the conformance case files, and three mutations of each.
  * The one accepted difference: Core adds an issue for an anchor or alias, which the reference read silently.
  */
-class YamlReaderTest {
+class PositionalYamlReaderTest {
 
-    private static final YamlReader READER = new YamlReader();
+    private static final PositionalYamlReader READER = new PositionalYamlReader();
 
     @Test
     void everyVectorReadsAsTheReferenceReadIt() throws Exception {
         List<String> failures = new ArrayList<>();
         int n = 0;
-        try (InputStream in = YamlReaderTest.class.getResourceAsStream("/yaml/reference-vectors.jsonl");
+        try (InputStream in = PositionalYamlReaderTest.class.getResourceAsStream("/yaml/reference-vectors.jsonl");
                 BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             String line;
             while ((line = r.readLine()) != null) {
@@ -53,8 +53,8 @@ class YamlReaderTest {
 
     @Test
     void anchorsAndAliasesAreIssues() {
-        List<YamlReader.Issue> issues = new ArrayList<>();
-        YamlNode n = READER.read("a: &x 1\nb: *x\n", issues);
+        List<PositionalYamlReader.Issue> issues = new ArrayList<>();
+        PNode n = READER.read("a: &x 1\nb: *x\n", issues);
         assertEquals(2, issues.size());
         assertTrue(issues.get(0).message().contains("anchor '&x'"));
         assertTrue(issues.get(1).message().contains("alias '*x'"));
@@ -63,7 +63,7 @@ class YamlReaderTest {
 
     @Test
     void typesFollowYaml11() {
-        Map<String, YamlNode> m = READER.read("a: yes\nb: 1.0\nc: 0x1F\nd: '12'\ne: 2026-11-19\nf: ~\ng: 123456789012345678901234567890\n").map();
+        Map<String, PNode> m = READER.read("a: yes\nb: 1.0\nc: 0x1F\nd: '12'\ne: 2026-11-19\nf: ~\ng: 123456789012345678901234567890\n").map();
         assertEquals(Boolean.TRUE, m.get("a").value());
         assertEquals(1.0, m.get("b").value());
         assertEquals(31L, m.get("c").value());
@@ -86,7 +86,7 @@ class YamlReaderTest {
     void plainValuesDropPositions() {
         Object plain = READER.read("a: [1, {b: x}]\n").plain();
         assertEquals(Map.of("a", List.of(1L, Map.of("b", "x"))), plain);
-        assertFalse(plain.toString().contains("YamlNode"));
+        assertFalse(plain.toString().contains("PNode"));
     }
 
     // ---- the vectors' canonical form (as tools/yaml-diff writes it) ----
@@ -101,9 +101,9 @@ class YamlReaderTest {
     }
 
     private static String core(String text) {
-        List<YamlReader.Issue> issues = new ArrayList<>();
+        List<PositionalYamlReader.Issue> issues = new ArrayList<>();
         try {
-            YamlNode n = READER.read(text, issues);
+            PNode n = READER.read(text, issues);
             StringBuilder sb = new StringBuilder("{\"tree\":");
             dump(n, sb);
             sb.append(",\"issues\":[");
@@ -125,13 +125,13 @@ class YamlReaderTest {
         return dump.replaceAll(",?\\{\"message\":\"YAML (anchor|alias) [^\"]*\"[^}]*\\}", "").replace("[,", "[");
     }
 
-    private static void dump(YamlNode node, StringBuilder sb) {
+    private static void dump(PNode node, StringBuilder sb) {
         Object v = node.value();
         sb.append("{\"at\":[").append(node.line()).append(',').append(node.column()).append("],");
         if (v instanceof Map<?, ?>) {
             sb.append("\"map\":[");
             boolean first = true;
-            for (Map.Entry<String, YamlNode> e : node.map().entrySet()) {
+            for (Map.Entry<String, PNode> e : node.map().entrySet()) {
                 if (!first) {
                     sb.append(',');
                 }
@@ -143,7 +143,7 @@ class YamlReaderTest {
             sb.append(']');
         } else if (v instanceof List<?>) {
             sb.append("\"list\":[");
-            List<YamlNode> l = node.list();
+            List<PNode> l = node.list();
             for (int i = 0; i < l.size(); i++) {
                 if (i > 0) {
                     sb.append(',');

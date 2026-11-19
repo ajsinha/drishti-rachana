@@ -7,8 +7,7 @@ package com.ash.rachana.conformance;
 import com.ash.rachana.hostcompat.DataNode;
 import com.ash.rachana.el.*;
 import com.ash.rachana.format.Formats;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ash.rachana.parse.Json;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +25,6 @@ public final class JvmRuntime {
     private JvmRuntime() { }
 
     static final String VERSION = "0.10.0-SNAPSHOT";
-    static final ObjectMapper M = new ObjectMapper();
     static Formats formats;
     static final ElCompiler EL = new ElCompiler();
 
@@ -46,10 +44,10 @@ public final class JvmRuntime {
         String line;
         while ((line = in.readLine()) != null) {
             if (line.isBlank()) { continue; }
-            JsonNode c = M.readTree(line);
-            StringBuilder sb = new StringBuilder("{\"case\":").append(str(c.get("case").asText()));
+            Map<String, Object> c = obj(Json.read(line));
+            StringBuilder sb = new StringBuilder("{\"case\":").append(str(text(c.get("case"))));
             try {
-                String kind = c.get("kind").asText();
+                String kind = text(c.get("kind"));
                 sb.append(",\"actual\":");
                 switch (kind) {
                     case "expr" -> expr(c, sb);
@@ -70,20 +68,20 @@ public final class JvmRuntime {
 
     // ---- expr ----------------------------------------------------------------------------------------------------
 
-    static void expr(JsonNode c, StringBuilder sb) {
-        JsonNode given = c.path("given");
+    static void expr(Map<String, Object> c, StringBuilder sb) {
+        Map<String, Object> given = obj(c.get("given"));
         EvalContext ctx = context(given);
         Object v;
         List<String> reads = new ArrayList<>();
         try {
-            if (c.has("template")) {
-                Template t = EL.template(c.get("template").asText());
+            if (c.containsKey("template")) {
+                Template t = EL.template(text(c.get("template")));
                 v = t.render(ctx);
                 LinkedHashSet<String> s = new LinkedHashSet<>();
                 t.paths(s::add);
                 reads.addAll(s);
             } else {
-                Expr e = EL.compile(c.get("expr").asText());
+                Expr e = EL.compile(text(c.get("expr")));
                 v = e.eval(ctx);
                 LinkedHashSet<String> s = new LinkedHashSet<>();
                 e.paths(s::add);
@@ -104,12 +102,13 @@ public final class JvmRuntime {
         sb.append("]}");
     }
 
-    static void exprError(JsonNode c, StringBuilder sb) {
-        String src = c.has("template") ? c.get("template").asText() : c.get("expr").asText();
-        int depth = c.path("given").path("limits").path("depth").asInt(200), len = c.path("given").path("limits").path("length").asInt(10_000);
+    static void exprError(Map<String, Object> c, StringBuilder sb) {
+        String src = c.containsKey("template") ? text(c.get("template")) : text(c.get("expr"));
+        Map<String, Object> limits = obj(obj(c.get("given")).get("limits"));
+        int depth = whole(limits.get("depth"), 200), len = whole(limits.get("length"), 10_000);
         ElCompiler comp = new ElCompiler(1000, new ElLimits(depth, len));
         try {
-            if (c.has("template")) { comp.template(src); } else { comp.compile(src); }
+            if (c.containsKey("template")) { comp.template(src); } else { comp.compile(src); }
             sb.append("{\"problems\":[]}");
         } catch (ElException e) {
             int at = Math.max(0, e.position());
@@ -118,20 +117,20 @@ public final class JvmRuntime {
         }
     }
 
-    static void format(JsonNode c, StringBuilder sb) {
-        Object v = plain(c.path("value"));
+    static void format(Map<String, Object> c, StringBuilder sb) {
+        Object v = c.containsKey("value") ? plain(c.get("value")) : new LinkedHashMap<String, Object>();
         Object node = v instanceof DataNode ? v : (v == null ? null : v);
-        String text = c.has("format") ? formats.format(c.get("format").asText(), node) : Values.text(node);
-        String tone = c.has("tone") && !Values.masked(node) ? com.ash.rachana.format.Tones.resolve(c.get("tone").asText(), v) : null;
+        String text = c.containsKey("format") ? formats.format(text(c.get("format")), node) : Values.text(node);
+        String tone = c.containsKey("tone") && !Values.masked(node) ? com.ash.rachana.format.Tones.resolve(text(c.get("tone")), v) : null;
         sb.append("{\"text\":").append(str(text)).append(",\"tone\":").append(tone == null ? "null" : str(tone)).append('}');
     }
 
     /** The Sutra is parsed, then its expressions are checked: the problems in the order found. */
-    static void problem(JsonNode c, StringBuilder sb) {
+    static void problem(Map<String, Object> c, StringBuilder sb) {
         List<com.ash.rachana.SutraProblem> ps = new ArrayList<>();
-        String file = c.path("file").asText("case.sutra.yaml");
+        String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         try {
-            var sutra = new com.ash.rachana.parse.SutraParser().parse(c.get("sutra").asText(), file, "conformance");
+            var sutra = new com.ash.rachana.parse.SutraParser().parse(text(c.get("sutra")), file, "conformance");
             ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler()).check(sutra));
         } catch (com.ash.rachana.SutraException e) {
             ps.addAll(e.problems());
@@ -151,17 +150,17 @@ public final class JvmRuntime {
      * reference's {@code setOption}), its other fields as the reference names them. Applied: the new text and no problems. Refused: the
      * text unchanged and the reference's problem, with its line when it has one (plan H2).
      */
-    static void edit(JsonNode c, StringBuilder sb) {
-        String sutra = c.get("sutra").asText();
-        com.fasterxml.jackson.databind.node.ObjectNode op = ((com.fasterxml.jackson.databind.node.ObjectNode) c.get("operation")).deepCopy();
+    static void edit(Map<String, Object> c, StringBuilder sb) {
+        String sutra = text(c.get("sutra"));
+        Map<String, Object> op = new LinkedHashMap<>(obj(c.get("operation")));
         StringBuilder name = new StringBuilder();
         boolean up = false;
-        for (char ch : op.get("op").asText().toCharArray()) { if (ch == '-') { up = true; } else { name.append(up ? Character.toUpperCase(ch) : ch); up = false; } }
+        for (char ch : text(op.get("op")).toCharArray()) { if (ch == '-') { up = true; } else { name.append(up ? Character.toUpperCase(ch) : ch); up = false; } }
         op.put("op", name.toString());
         String text = sutra;
         StringBuilder ps = new StringBuilder();
         try {
-            var r = new com.ash.rachana.design.ops.OpApplier().apply(sutra, com.ash.rachana.design.ops.Ops.parse(M.createArrayNode().add(op)));
+            var r = new com.ash.rachana.design.ops.OpApplier().apply(sutra, com.ash.rachana.design.ops.Ops.parse((Object) List.of(op)));
             text = r.yaml();
             for (var p : r.problems()) { editProblem(ps, p.code(), p.message(), p.line()); }
         } catch (com.ash.rachana.design.ops.Ops.FormatException e) {
@@ -189,46 +188,59 @@ public final class JvmRuntime {
 
     // ---- context -------------------------------------------------------------------------------------------------
 
-    static EvalContext context(JsonNode g) {
-        DataNode root = node(g.has("record") ? g.get("record") : M.createObjectNode());
+    static EvalContext context(Map<String, Object> g) {
+        DataNode root = node(g.containsKey("record") ? g.get("record") : new LinkedHashMap<String, Object>());
         EvalContext c = EvalContext.of(root, formats);
-        if (g.has("today")) { c = c.withToday(LocalDate.parse(g.get("today").asText())); }
+        if (g.containsKey("today")) { c = c.withToday(LocalDate.parse(text(g.get("today")))); }
         Map<String, Object> ctl = new LinkedHashMap<>();
         // a multi-valued control (multi-select, the choices of oneOf/within) reaches the evaluator as a document list, as the host's
         // ControlValues hands it over (H2: ControlsTest passes DataNode.of(List.of(...))); a scalar as itself
-        if (g.has("ctl")) { g.get("ctl").fields().forEachRemaining(f -> { Object v = plain(f.getValue()); ctl.put(f.getKey(), v instanceof List<?> ? DataNode.of(v) : v); }); c = c.withControls(ctl); }
+        if (g.containsKey("ctl")) { obj(g.get("ctl")).forEach((k, x) -> { Object v = plain(x); ctl.put(k, v instanceof List<?> ? DataNode.of(v) : v); }); c = c.withControls(ctl); }
         Map<String, DataNode> events = new LinkedHashMap<>();
-        if (g.has("events")) { g.get("events").fields().forEachRemaining(f -> events.put(f.getKey(), node(f.getValue()))); }
-        Object src = g.has("src") ? node(g.get("src")) : null;
+        if (g.containsKey("events")) { obj(g.get("events")).forEach((k, x) -> events.put(k, node(x))); }
+        Object src = g.containsKey("src") ? node(g.get("src")) : null;
         if (!events.isEmpty() || src != null) { c = c.withScope(new EvalContext.Scope(events, null, src)); }
         List<Object> chain = new ArrayList<>();
-        if (g.has("parents")) { List<Object> ps = new ArrayList<>(); g.get("parents").forEach(p -> ps.add(node(p))); Collections.reverse(ps); chain.addAll(ps); }
-        if (g.has("row")) { chain.add(node(g.get("row"))); }
+        if (g.containsKey("parents")) { List<Object> ps = new ArrayList<>(); items(g.get("parents")).forEach(p -> ps.add(node(p))); Collections.reverse(ps); chain.addAll(ps); }
+        if (g.containsKey("row")) { chain.add(node(g.get("row"))); }
         if (!chain.isEmpty()) {
             EvalContext base = c;
-            int idx = g.path("index").asInt(-1);
+            int idx = whole(g.get("index"), -1);
             c = new EvalContext(base.root(), base.row(), idx, base.formats(), base.ctl(), base.today(), base.scope(), base.locals()).withRows(chain);
         }
         return c;
     }
 
-    static DataNode node(JsonNode n) { return DataNode.of(plain(n)); }
+    static DataNode node(Object n) { return DataNode.of(plain(n)); }
 
     /** JSON to Java values; the tags of FORMAT 4 become the reference's own values. */
-    static Object plain(JsonNode n) {
-        if (n.isNull()) { return null; }
-        if (n.isBoolean()) { return n.booleanValue(); }
-        if (n.isIntegralNumber()) { return n.longValue(); }
-        if (n.isNumber()) { return n.doubleValue(); }
-        if (n.isTextual()) { return n.textValue(); }
-        if (n.isArray()) { List<Object> l = new ArrayList<>(); n.forEach(x -> l.add(plain(x))); return l; }
-        if (n.size() == 1 && n.has("$masked")) { return DataNode.masked(); }
-        if (n.size() == 1 && n.has("$dec")) { return new BigDecimal(n.get("$dec").asText()); }
-        if (n.size() == 1 && n.has("$num")) { return switch (n.get("$num").asText()) { case "NaN" -> Double.NaN; case "Infinity" -> Double.POSITIVE_INFINITY; default -> Double.NEGATIVE_INFINITY; }; }
+    static Object plain(Object n) {
+        if (n == null) { return null; }
+        if (n instanceof Boolean || n instanceof String || n instanceof Long || n instanceof Double) { return n; }
+        if (n instanceof Number x) { return x.longValue(); }
+        if (n instanceof List<?> a) { List<Object> l = new ArrayList<>(); a.forEach(x -> l.add(plain(x))); return l; }
+        Map<String, Object> o = obj(n);
+        if (o.size() == 1 && o.containsKey("$masked")) { return DataNode.masked(); }
+        if (o.size() == 1 && o.containsKey("$dec")) { return new BigDecimal(text(o.get("$dec"))); }
+        if (o.size() == 1 && o.containsKey("$num")) { return switch (text(o.get("$num"))) { case "NaN" -> Double.NaN; case "Infinity" -> Double.POSITIVE_INFINITY; default -> Double.NEGATIVE_INFINITY; }; }
         Map<String, Object> m = new LinkedHashMap<>();
-        n.fields().forEachRemaining(f -> m.put(f.getKey(), plain(f.getValue())));
+        o.forEach((k, x) -> m.put(k, plain(x)));
         return m;
     }
+
+    // ---- reading a case (plain JSON values) ----------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> obj(Object v) { return v instanceof Map<?, ?> m ? (Map<String, Object>) m : Map.of(); }
+
+    static List<?> items(Object v) { return v instanceof List<?> l ? l : v instanceof Map<?, ?> m ? new ArrayList<>(m.values()) : List.of(); }
+
+    /** A value's text as the case wrote it: text as itself, a number or flag in its JSON form, a missing value empty. */
+    static String text(Object v) { return v == null ? "" : v instanceof String s ? s : v instanceof Map || v instanceof List ? "" : String.valueOf(v); }
+
+    static int whole(Object v, int otherwise) { return v instanceof Number n ? n.intValue() : v instanceof String s ? parseInt(s, otherwise) : otherwise; }
+
+    static int parseInt(String s, int otherwise) { try { return Integer.parseInt(s.trim()); } catch (NumberFormatException e) { return otherwise; } }
 
     // ---- results -------------------------------------------------------------------------------------------------
 

@@ -4,16 +4,19 @@
  */
 package com.ash.rachana.parse;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * A YAML node that remembers where it was written. Values are {@code Map<String, PNode>},
- * {@code List<PNode>} or a scalar ({@code String}, {@code Long}, {@code Double}, {@code Boolean}, null).
+ * A YAML node that remembers where it was written. Values are {@code Map<String, PNode>} (in written order, the first
+ * of a repeated key), {@code List<PNode>} or a scalar: {@code String}, {@code Long}, {@code BigInteger} (a whole number
+ * too large for a {@code long}), {@code Double}, {@code Boolean} or null.
  *
  * @param value the value
  * @param line 1-based line
- * @param column 1-based column
+ * @param column 1-based column, in code points
  */
 public record PNode(Object value, int line, int column) {
 
@@ -41,5 +44,20 @@ public record PNode(Object value, int line, int column) {
 
     public String text() {
         return value == null || !isScalar() ? null : value.toString();
+    }
+
+    /** The value without positions: {@code LinkedHashMap}, {@code ArrayList} and the scalars. */
+    public Object plain() {
+        if (value instanceof Map<?, ?>) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            map().forEach((k, v) -> out.put(k, v.plain()));
+            return out;
+        }
+        if (value instanceof List<?>) {
+            List<Object> out = new ArrayList<>();
+            list().forEach(v -> out.add(v.plain()));
+            return out;
+        }
+        return value;
     }
 }

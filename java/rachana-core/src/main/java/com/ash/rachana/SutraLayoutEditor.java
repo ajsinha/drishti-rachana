@@ -9,8 +9,8 @@ import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.Sutra;
 import com.ash.rachana.parse.PNode;
 import com.ash.rachana.parse.PositionalYamlReader;
+import com.ash.rachana.parse.YamlSyntaxException;
 import com.ash.rachana.parse.SutraParser;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,7 +63,7 @@ public final class SutraLayoutEditor {
         PNode root;
         try {
             root = reader.read(source);
-        } catch (IOException e) {
+        } catch (YamlSyntaxException e) {
             throw new IllegalArgumentException("cannot read the Sutra: " + e.getMessage(), e);
         }
         Map<String, Placement> wanted = new LinkedHashMap<>();

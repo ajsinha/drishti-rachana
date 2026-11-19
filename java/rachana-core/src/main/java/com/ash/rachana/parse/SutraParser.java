@@ -8,8 +8,6 @@ import com.ash.rachana.SutraException;
 import com.ash.rachana.SutraProblem;
 import com.ash.rachana.model.SourceLocation;
 import com.ash.rachana.model.Sutra;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,13 +42,9 @@ public final class SutraParser {
         List<PositionalYamlReader.Issue> issues = new ArrayList<>();
         try {
             root = reader.read(yaml, issues);
-        } catch (JsonProcessingException e) {
-            var l = e.getLocation();
-            throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getOriginalMessage(),
-                    new SourceLocation(file, l == null ? 0 : l.getLineNr(), l == null ? 0 : l.getColumnNr()))));
-        } catch (IOException e) {
-            throw new SutraException(List.of(new SutraProblem("RCH-2001", "cannot read: " + e.getMessage(),
-                    new SourceLocation(file, 0, 0))));
+        } catch (YamlSyntaxException e) {
+            throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getMessage(),
+                    new SourceLocation(file, e.line(), e.column()))));
         }
         SutraBuilder b = new SutraBuilder(file);
         Sutra s = b.build(root, domain);

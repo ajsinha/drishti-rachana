@@ -19,7 +19,6 @@ import com.ash.rachana.parse.YamlNode;
 import com.ash.rachana.parse.YamlReader;
 import com.ash.rachana.parse.YamlSyntaxException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
@@ -31,7 +30,7 @@ import java.util.*;
 public class YamlDiff {
     static final PositionalYamlReader REF = new PositionalYamlReader();
     static final YamlReader CORE = new YamlReader();
-    static final ObjectMapper JSON = new ObjectMapper().configure(DeserializationFeature.USE_LONG_FOR_INTS, true);
+    static final ObjectMapper JSON = new ObjectMapper();
 
     static int compared, same, differ, refusedOnly, treesCompared, errorsCompared;
     static final Map<String, Integer> classes = new TreeMap<>();

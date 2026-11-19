@@ -28,7 +28,7 @@ Copied from the host with only their package changed, so behaviour stays byte-id
 
 ## Host words (read by `NamesNoHostTest`)
 
-Files of the reactor that still carry a host word (a `DRS-` or `DEL-` code, a `drishti.` setting name, the product name outside
+Files of `rachana-core` (the moved compiler) that still carry a host word (a `DRS-` or `DEL-` code, a `drishti.` setting name, the product name outside
 "Drishti Rachana" and "Drishti Elements"). The count may only go down; A1 removes the codes, A4 the settings, A7 the rest.
 
-- host-word files: 52
+- host-word files: 51

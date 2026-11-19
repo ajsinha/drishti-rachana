@@ -34,6 +34,15 @@ flowchart LR
   R2c --> R3
 ```
 
+## M1 progress: the compatibility regime
+
+Part of milestone M1 (the split), tracked here because it gates every later release. Done: the customer-corpus export and the first
+corpus (`drishti-compat-corpus-2.9.11.i7a`), `RecordedHost`, the CG1, CG3, CG4 and CG6 tests, the CG8 driver in dry-run form, and the
+CG7 forward-vector file list. Waiting on the compiler move (`v0.9.0`): `CustomerCorpusTest` over Core instead of the reference bridge,
+the pin of `FROZEN.sha384` and `spec/1/released/` at the release, the CG8 run against a candidate. Waiting on the binder (`v0.10.0`):
+the corpus's `binds/`. Not started: CG2 level replay, CG5 API surface, CG10 speed. See the README's table and
+[SUTRA_EXPANSION 6](design/SUTRA_EXPANSION.md).
+
 ## Sutra libraries (planning)
 
 Owner direction (2026-11-19): Rachana ships **prebuilt Sutra libraries** of fragments that an author references,

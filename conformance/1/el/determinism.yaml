@@ -1,0 +1,1791 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# P2's determinism probes (docs/plans/JS_PROOF.md section 3; results in docs/plans/P2_RESULTS.md). expect is the JVM
+# reference's actual result (Drishti's compiler, Java 21), recorded by tools/proofs; verified stays false until H1 and a review.
+suite: el/determinism
+since: "1.0"
+profile: core
+verified: false
+description: "Determinism probes: number text and reading, text order and case, dates, booleans, regular expressions, limits, real-number functions."
+cases:
+
+  - id: "d-n01-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "0.1 + 0.2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.30000000000000004, "type": "number", "text": "0.30000000000000004"}
+
+  - id: "d-n02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1 / 3"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.3333333333333333, "type": "number", "text": "0.3333333333333333"}
+
+  - id: "d-n03-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "2 / 3"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.6666666666666666, "type": "number", "text": "0.6666666666666666"}
+
+  - id: "d-n03-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "100 / 7"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 14.285714285714286, "type": "number", "text": "14.285714285714286"}
+
+  - id: "d-n03-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1e-7 * 3"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 3e-07, "type": "number", "text": "3.0E-7"}
+
+  - id: "d-n04-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1e15"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1000000000000000.0, "type": "number", "text": "1.0E15"}
+
+  - id: "d-n04-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1e15 + 0.5"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1000000000000000.5, "type": "number", "text": "1.0000000000000005E15"}
+
+  - id: "d-n04-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "999999999999999 + 0.5"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 999999999999999.5, "type": "number", "text": "9.999999999999995E14"}
+
+  - id: "d-n05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1e20"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1e+20, "type": "number", "text": "1.0E20"}
+
+  - id: "d-n05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1e21"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1e+21, "type": "number", "text": "1.0E21"}
+
+  - id: "d-n05-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1e22"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1e+22, "type": "number", "text": "1.0E22"}
+
+  - id: "d-n05-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "123456789012345678901"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.2345678901234568e+20, "type": "number", "text": "1.2345678901234568E20"}
+
+  - id: "d-n06-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "-0 * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0, "type": "number", "text": "0"}
+
+  - id: "d-n06-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "0 * -1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0, "type": "number", "text": "0"}
+
+  - id: "d-n06-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "-0.0 + 0"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0, "type": "number", "text": "0"}
+
+  - id: "d-n07-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "0 / 0"
+    given: {"today": "2026-11-17"}
+    expect: {"value": null, "type": "empty", "text": ""}
+
+  - id: "d-n07-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "sqrt(-1)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n07-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "ln(0)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n07-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "exp(1000)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n07-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "-exp(1000)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n08-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "5e-324"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 5e-324, "type": "number", "text": "4.9E-324"}
+
+  - id: "d-n08-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "2.2250738585072014e-308"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2.2250738585072014e-308, "type": "number", "text": "2.2250738585072014E-308"}
+
+  - id: "d-n08-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1.7976931348623157e308"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.7976931348623157e+308, "type": "number", "text": "1.7976931348623157E308"}
+
+  - id: "d-n09-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "0.000001"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1e-06, "type": "number", "text": "1.0E-6"}
+
+  - id: "d-n09-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "0.0000001"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1e-07, "type": "number", "text": "1.0E-7"}
+
+  - id: "d-n09-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1234567.125"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1234567.125, "type": "number", "text": "1234567.125"}
+
+  - id: "d-n10-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(2.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 3, "type": "number", "text": "3"}
+
+  - id: "d-n10-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(-2.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -3, "type": "number", "text": "-3"}
+
+  - id: "d-n10-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-n10-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(1.005, 2)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.01, "type": "decimal", "text": "1.01"}
+
+  - id: "d-n10-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(2.675, 2)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2.68, "type": "decimal", "text": "2.68"}
+
+  - id: "d-n11-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "trunc(1e300)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-n11-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "int(-1e300)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-n11-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "trunc(0/0)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-n12-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "mod(-3, 2)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-n12-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "-3 % 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -1, "type": "number", "text": "-1"}
+
+  - id: "d-n12-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "5.5 % 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.5, "type": "number", "text": "1.5"}
+
+  - id: "d-n12-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "-5.5 % 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -1.5, "type": "number", "text": "-1.5"}
+
+  - id: "d-n13-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "floor(-0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -1, "type": "number", "text": "-1"}
+
+  - id: "d-n13-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "ceiling(-0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0, "type": "number", "text": "0"}
+
+  - id: "d-n14-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "power(2, 0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.4142135623730951, "type": "number", "text": "1.4142135623730951"}
+
+  - id: "d-n14-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "power(10, -5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1e-05, "type": "decimal", "text": "0.00001"}
+
+  - id: "d-n14-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "power(1.1, 2)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.21, "type": "decimal", "text": "1.21"}
+
+  - id: "d-n20-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round_up(0.1 + 0.2, 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.3, "type": "decimal", "text": "0.3"}
+
+  - id: "d-n20-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "sum([0.1, 0.2, 0.3])"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n20-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "sum([1e16, 1, -1e16])"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n21-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "sequence(3, 0.1, 0.1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": [0.1, 0.2, 0.3], "type": "list", "text": "[3]"}
+
+  - id: "d-n21-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "yearfrac('2024-02-29', '2025-03-01', 'ACT/ACT')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.000441649824089, "type": "decimal", "text": "1.000441649824089"}
+
+  - id: "d-n22-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fmt(1234.5, 'amount0')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "1,235", "type": "text", "text": "1,235"}
+
+  - id: "d-n22-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fmt(-0.004, 'amount2')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "0.00", "type": "text", "text": "0.00"}
+
+  - id: "d-n22-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fmt(1e9, 'compact')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "1.0bn", "type": "text", "text": "1.0bn"}
+
+  - id: "d-n22-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fmt(0.125, 'pct1')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "0.125", "type": "text", "text": "0.125"}
+
+  - id: "d-n23-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "text(1234.5678, '#,##0.00')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "1,234.57", "type": "text", "text": "1,234.57"}
+
+  - id: "d-n23-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "text(-1, '0;(0)')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "(1)", "type": "text", "text": "(1)"}
+
+  - id: "d-n23-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "text(0, '0;-0;\"zero\"')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "zero", "type": "text", "text": "zero"}
+
+  - id: "d-n23-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "text(12345, '0.00E+00')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "1.23E+04", "type": "text", "text": "1.23E+04"}
+
+  - id: "d-n23-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "text(0.5, '0%')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "50%", "type": "text", "text": "50%"}
+
+  - id: "d-n24-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "value('1,234.5')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1234.5, "type": "decimal", "text": "1234.5"}
+
+  - id: "d-n24-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "value('1.234,5', ',', '.')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1234.5, "type": "decimal", "text": "1234.5"}
+
+  - id: "d-n25-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "percentile([1,2,3,4], 0.3)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n25-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "median([1, 2])"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-n25-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "stddev([1, 2, 3, 4])"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-r01-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'5' * 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 10, "type": "number", "text": "10"}
+
+  - id: "d-r01-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "' 5 ' * 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 10, "type": "number", "text": "10"}
+
+  - id: "d-r01-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'5\t' * 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 10, "type": "number", "text": "10"}
+
+  - id: "d-r02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'1d' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-r02-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'1f' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-r02-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'0x1p3' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 8, "type": "number", "text": "8"}
+
+  - id: "d-r02-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'1_000' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "d-r03-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'Infinity' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": {"$num": "Infinity"}, "type": "number", "text": "Infinity"}
+
+  - id: "d-r03-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'NaN' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "d-r03-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'-Infinity' > 0"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-r03-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'inf' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
+
+  - id: "d-r04-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'9007199254740993' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 9007199254740992.0, "type": "number", "text": "9.007199254740992E15"}
+
+  - id: "d-r04-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'2.2250738585072012e-308' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2.2250738585072014e-308, "type": "number", "text": "2.2250738585072014E-308"}
+
+  - id: "d-r04-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'0.1e-400' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0, "type": "number", "text": "0"}
+
+  - id: "d-r04-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'1e400' * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": {"$num": "Infinity"}, "type": "number", "text": "Infinity"}
+
+  - id: "d-r05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'10' > '9'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-r05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'1e3' == 1000"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-r05-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'.5' == 0.5"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-r05-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'+5' == 5"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-r05-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'5.' == 5"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-r06-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "٣ + 1"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-r06-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "１ + 1"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-u01-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'Z' < 'a'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-u01-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'a' < 'B'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-u01-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'é' > 'z'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-u02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'\uffff' < '😀'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-u02-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'😀' < '｡'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-u03-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "len('😀')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-u03-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "left('😀a', 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "\ud83d", "type": "text", "text": "\ud83d"}
+
+  - id: "d-u03-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "mid('a😀b', 2, 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "\ud83d", "type": "text", "text": "\ud83d"}
+
+  - id: "d-u03-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "reverse('a😀')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "😀a", "type": "text", "text": "😀a"}
+
+  - id: "d-u04-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "sort(['b', 'A', 'a', 'B', '😀', '\uffff'])"
+    given: {"today": "2026-11-17"}
+    expect: {"value": ["A", "B", "a", "b", "😀", "\uffff"], "type": "list", "text": "[6]"}
+
+  - id: "d-u04-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "unique(['a', 'A'])"
+    given: {"today": "2026-11-17"}
+    expect: {"value": ["a", "A"], "type": "list", "text": "[2]"}
+
+  - id: "d-u05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "upper('ß')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "SS", "type": "text", "text": "SS"}
+
+  - id: "d-u05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "upper('ﬁ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "FI", "type": "text", "text": "FI"}
+
+  - id: "d-u05-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "lower('İ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "i̇", "type": "text", "text": "i̇"}
+
+  - id: "d-u05-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "lower('Σ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "σ", "type": "text", "text": "σ"}
+
+  - id: "d-u05-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "lower('AΣ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "aς", "type": "text", "text": "aς"}
+
+  - id: "d-u05-f"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "proper('ǆemal')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "Ǆemal", "type": "text", "text": "Ǆemal"}
+
+  - id: "d-u06-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "upper('ꭰ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "Ꭰ", "type": "text", "text": "Ꭰ"}
+
+  - id: "d-u06-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "lower('Ა')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "ა", "type": "text", "text": "ა"}
+
+  - id: "d-u06-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "upper('𞤢')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "𞤀", "type": "text", "text": "𞤀"}
+
+  - id: "d-u07-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "$.ꭰ"
+    given: {"today": "2026-11-17"}
+    expect: {"value": null, "type": "empty", "text": ""}
+
+  - id: "d-u07-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "$.ࡰ"
+    given: {"today": "2026-11-17"}
+    expect: {"value": null, "type": "empty", "text": ""}
+
+  - id: "d-u07-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "$.𑼄"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-u08-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "trim(' x ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "x", "type": "text", "text": "x"}
+
+  - id: "d-u08-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "clean('a\u0007b')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "ab", "type": "text", "text": "ab"}
+
+  - id: "d-u08-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "trim(' x ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": " x", "type": "text", "text": " x"}
+
+  - id: "d-u08-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1 + 1"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-u09-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "contains('STRASSE', 'ß')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-u09-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('ǅ', '(?i)ǆ')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-u09-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('K', '(?i)k')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-u10-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "char(128512)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "😀", "type": "text", "text": "😀"}
+
+  - id: "d-u10-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "code('😀')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 128512, "type": "number", "text": "128512"}
+
+  - id: "d-u10-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "char(55357)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-t01-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "edate('2024-01-31', 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2024-02-29", "type": "text", "text": "2024-02-29"}
+
+  - id: "d-t01-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "edate('2023-01-31', 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2023-02-28", "type": "text", "text": "2023-02-28"}
+
+  - id: "d-t01-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "edate('2024-02-29', 12)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2025-02-28", "type": "text", "text": "2025-02-28"}
+
+  - id: "d-t02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date(2026, 14, 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2027-02-01", "type": "text", "text": "2027-02-01"}
+
+  - id: "d-t02-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date(2026, 0, 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2025-12-01", "type": "text", "text": "2025-12-01"}
+
+  - id: "d-t02-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date(2026, 1, 0)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2025-12-31", "type": "text", "text": "2025-12-31"}
+
+  - id: "d-t02-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date(2026, 2, 30)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2026-03-02", "type": "text", "text": "2026-03-02"}
+
+  - id: "d-t03-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "week('2027-01-01')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 53, "type": "number", "text": "53"}
+
+  - id: "d-t03-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "week('2026-12-31')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 53, "type": "number", "text": "53"}
+
+  - id: "d-t03-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "week('2020-12-31')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 53, "type": "number", "text": "53"}
+
+  - id: "d-t04-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "days_between('2024-02-28', '2024-03-01')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2, "type": "number", "text": "2"}
+
+  - id: "d-t04-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'2026-11-17' - '2026-11-01'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 16, "type": "number", "text": "16"}
+
+  - id: "d-t04-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'2026-11-17T23:59:59Z' - '2026-11-16'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-t05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "yearfrac('2024-02-29', '2025-02-28', '30/360')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-t05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "yearfrac('2024-02-29', '2025-02-28', 'ACT/ACT')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.9977019237966914, "type": "decimal", "text": "0.9977019237966914"}
+
+  - id: "d-t05-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "yearfrac('2024-02-29', '2025-02-28', 'ACT/360')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.013888888888889, "type": "decimal", "text": "1.013888888888889"}
+
+  - id: "d-t05-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "yearfrac('2024-02-29', '2025-02-28', 'ACT/365')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-t05-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "yearfrac('2024-02-29', '2025-02-28', '30E/360')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.9972222222222222, "type": "decimal", "text": "0.9972222222222222"}
+
+  - id: "d-t05-f"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "days360('2024-02-29', '2024-03-31', true)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 31, "type": "number", "text": "31"}
+
+  - id: "d-t06-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "datedif('2024-02-29', '2025-02-28', 'Y')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0, "type": "number", "text": "0"}
+
+  - id: "d-t06-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "datedif('2024-02-29', '2025-02-28', 'YD')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 365, "type": "number", "text": "365"}
+
+  - id: "d-t06-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "datedif('2024-02-29', '2025-02-28', 'MD')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 30, "type": "number", "text": "30"}
+
+  - id: "d-t07-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date('0001-01-01')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "0001-01-01", "type": "text", "text": "0001-01-01"}
+
+  - id: "d-t07-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date('9999-12-31')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "9999-12-31", "type": "text", "text": "9999-12-31"}
+
+  - id: "d-t07-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date('1582-10-10')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "1582-10-10", "type": "text", "text": "1582-10-10"}
+
+  - id: "d-t07-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "edate('9999-12-31', 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "+10000-01-31", "type": "text", "text": "+10000-01-31"}
+
+  - id: "d-t08-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date('2026-02-29')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-t08-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date('2026-13-01')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-t08-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date('26-1-1')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-t08-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "date('2026-1-1')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-t09-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "hour('2026-03-08T02:30:00-05:00')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2, "type": "number", "text": "2"}
+
+  - id: "d-t09-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "timestamp('2026-11-01T01:30:00Z')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2026-11-01T01:30:00Z", "type": "text", "text": "2026-11-01T01:30:00Z"}
+
+  - id: "d-t10-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "shift_date('2026-11-27', 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2026-11-30", "type": "text", "text": "2026-11-30"}
+
+  - id: "d-t10-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "business_days_between('2026-12-24', '2027-01-04')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 5, "type": "number", "text": "5"}
+
+  - id: "d-t11-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "text('2026-11-17', 'dddd d mmmm yyyy')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "Tuesday 17 November 2026", "type": "text", "text": "Tuesday 17 November 2026"}
+
+  - id: "d-t11-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "text('2026-11-17', 'ddd mmm')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "Tue Nov", "type": "text", "text": "Tue Nov"}
+
+  - id: "d-t12-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fmt('2026-11-17', 'date')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "2026-11-17", "type": "text", "text": "2026-11-17"}
+
+  - id: "d-t14-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "asof()"
+    given: {"today": "2024-02-29"}
+    expect: {"value": "2024-02-29", "type": "text", "text": "2024-02-29"}
+
+  - id: "d-t14-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "edate(asof(), -12)"
+    given: {"today": "2024-02-29"}
+    expect: {"value": "2023-02-28", "type": "text", "text": "2023-02-28"}
+
+  - id: "d-b01-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true + 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "true1", "type": "text", "text": "true1"}
+
+  - id: "d-b01-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1 + true"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "1true", "type": "text", "text": "1true"}
+
+  - id: "d-b01-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true + true"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "truetrue", "type": "text", "text": "truetrue"}
+
+  - id: "d-b01-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'x' + false"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "xfalse", "type": "text", "text": "xfalse"}
+
+  - id: "d-b02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true * 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-b02-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true - false"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-b02-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "-true"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -1, "type": "number", "text": "-1"}
+
+  - id: "d-b02-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true / 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.5, "type": "number", "text": "0.5"}
+
+  - id: "d-b03-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true == 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b03-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true == 'true'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b03-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "1 == '1.0'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b03-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true == '1'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-b04-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true > false"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b04-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "true < 2"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b04-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "'true' > 'false'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "0 < 5 < 10"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "10 < 5 < 1"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b06-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "!'0'"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-b06-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "!0"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b06-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "!(0/0)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b06-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "![]"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-b06-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "!$.missing"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-x01-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "regex_extract('aaa', 'a*?', 0)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "", "type": "text", "text": ""}
+
+  - id: "d-x01-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "regex_extract('abab', '(ab)+', 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "ab", "type": "text", "text": "ab"}
+
+  - id: "d-x01-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "regex_extract('ab', '(a|ab)(b?)', 2)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "b", "type": "text", "text": "b"}
+
+  - id: "d-x02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('aa', '(a)\\\\1')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "d-x02-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('a', '(?=a)')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "d-x02-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('aa', 'a++')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "d-x02-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('a', '(?>a)')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "d-x02-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('x', '\\\\bx')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "d-x03-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "regex_replace('a.b', '.', '-')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "---", "type": "text", "text": "---"}
+
+  - id: "d-x03-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "regex_replace('x', 'x', '$1')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "d-x03-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "regex_replace('x', 'x', '\\\\$')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": "\\$", "type": "text", "text": "\\$"}
+
+  - id: "d-x04-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('é', '\\\\w')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-x04-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('٣', '\\\\d')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-x04-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches(' ', '\\\\s')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-x05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('a', 'a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": true, "type": "boolean", "text": "true"}
+
+  - id: "d-x05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('a', 'a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "d-x05-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches($.long, 'b')"
+    given: {"record": {"long": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, "today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-x06-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches($.long, '(a|aa)*c')"
+    given: {"record": {"long": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, "today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-x07-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('A\nB', '^B$')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-x07-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "matches('a\r\n', 'a$')"
+    given: {"today": "2026-11-17"}
+    expect: {"value": false, "type": "boolean", "text": "false"}
+
+  - id: "d-o02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "size(group($.rows, 'k', 'v'))"
+    given: {"record": {"rows": [{"k": "k000", "v": 0}, {"k": "k119", "v": 1}, {"k": "k238", "v": 2}, {"k": "k357", "v": 3}, {"k": "k476", "v": 4}, {"k": "k595", "v": 5}, {"k": "k114", "v": 6}, {"k": "k233", "v": 7}, {"k": "k352", "v": 8}, {"k": "k471", "v": 9}, {"k": "k590", "v": 10}, {"k": "k109", "v": 11}, {"k": "k228", "v": 12}, {"k": "k347", "v": 13}, {"k": "k466", "v": 14}, {"k": "k585", "v": 15}, {"k": "k104", "v": 16}, {"k": "k223", "v": 17}, {"k": "k342", "v": 18}, {"k": "k461", "v": 19}, {"k": "k580", "v": 20}, {"k": "k099", "v": 21}, {"k": "k218", "v": 22}, {"k": "k337", "v": 23}, {"k": "k456", "v": 24}, {"k": "k575", "v": 25}, {"k": "k094", "v": 26}, {"k": "k213", "v": 27}, {"k": "k332", "v": 28}, {"k": "k451", "v": 29}, {"k": "k570", "v": 30}, {"k": "k089", "v": 31}, {"k": "k208", "v": 32}, {"k": "k327", "v": 33}, {"k": "k446", "v": 34}, {"k": "k565", "v": 35}, {"k": "k084", "v": 36}, {"k": "k203", "v": 37}, {"k": "k322", "v": 38}, {"k": "k441", "v": 39}, {"k": "k560", "v": 40}, {"k": "k079", "v": 41}, {"k": "k198", "v": 42}, {"k": "k317", "v": 43}, {"k": "k436", "v": 44}, {"k": "k555", "v": 45}, {"k": "k074", "v": 46}, {"k": "k193", "v": 47}, {"k": "k312", "v": 48}, {"k": "k431", "v": 49}, {"k": "k550", "v": 50}, {"k": "k069", "v": 51}, {"k": "k188", "v": 52}, {"k": "k307", "v": 53}, {"k": "k426", "v": 54}, {"k": "k545", "v": 55}, {"k": "k064", "v": 56}, {"k": "k183", "v": 57}, {"k": "k302", "v": 58}, {"k": "k421", "v": 59}, {"k": "k540", "v": 60}, {"k": "k059", "v": 61}, {"k": "k178", "v": 62}, {"k": "k297", "v": 63}, {"k": "k416", "v": 64}, {"k": "k535", "v": 65}, {"k": "k054", "v": 66}, {"k": "k173", "v": 67}, {"k": "k292", "v": 68}, {"k": "k411", "v": 69}, {"k": "k530", "v": 70}, {"k": "k049", "v": 71}, {"k": "k168", "v": 72}, {"k": "k287", "v": 73}, {"k": "k406", "v": 74}, {"k": "k525", "v": 75}, {"k": "k044", "v": 76}, {"k": "k163", "v": 77}, {"k": "k282", "v": 78}, {"k": "k401", "v": 79}, {"k": "k520", "v": 80}, {"k": "k039", "v": 81}, {"k": "k158", "v": 82}, {"k": "k277", "v": 83}, {"k": "k396", "v": 84}, {"k": "k515", "v": 85}, {"k": "k034", "v": 86}, {"k": "k153", "v": 87}, {"k": "k272", "v": 88}, {"k": "k391", "v": 89}, {"k": "k510", "v": 90}, {"k": "k029", "v": 91}, {"k": "k148", "v": 92}, {"k": "k267", "v": 93}, {"k": "k386", "v": 94}, {"k": "k505", "v": 95}, {"k": "k024", "v": 96}, {"k": "k143", "v": 97}, {"k": "k262", "v": 98}, {"k": "k381", "v": 99}, {"k": "k500", "v": 100}, {"k": "k019", "v": 101}, {"k": "k138", "v": 102}, {"k": "k257", "v": 103}, {"k": "k376", "v": 104}, {"k": "k495", "v": 105}, {"k": "k014", "v": 106}, {"k": "k133", "v": 107}, {"k": "k252", "v": 108}, {"k": "k371", "v": 109}, {"k": "k490", "v": 110}, {"k": "k009", "v": 111}, {"k": "k128", "v": 112}, {"k": "k247", "v": 113}, {"k": "k366", "v": 114}, {"k": "k485", "v": 115}, {"k": "k004", "v": 116}, {"k": "k123", "v": 117}, {"k": "k242", "v": 118}, {"k": "k361", "v": 119}, {"k": "k480", "v": 120}, {"k": "k599", "v": 121}, {"k": "k118", "v": 122}, {"k": "k237", "v": 123}, {"k": "k356", "v": 124}, {"k": "k475", "v": 125}, {"k": "k594", "v": 126}, {"k": "k113", "v": 127}, {"k": "k232", "v": 128}, {"k": "k351", "v": 129}, {"k": "k470", "v": 130}, {"k": "k589", "v": 131}, {"k": "k108", "v": 132}, {"k": "k227", "v": 133}, {"k": "k346", "v": 134}, {"k": "k465", "v": 135}, {"k": "k584", "v": 136}, {"k": "k103", "v": 137}, {"k": "k222", "v": 138}, {"k": "k341", "v": 139}, {"k": "k460", "v": 140}, {"k": "k579", "v": 141}, {"k": "k098", "v": 142}, {"k": "k217", "v": 143}, {"k": "k336", "v": 144}, {"k": "k455", "v": 145}, {"k": "k574", "v": 146}, {"k": "k093", "v": 147}, {"k": "k212", "v": 148}, {"k": "k331", "v": 149}, {"k": "k450", "v": 150}, {"k": "k569", "v": 151}, {"k": "k088", "v": 152}, {"k": "k207", "v": 153}, {"k": "k326", "v": 154}, {"k": "k445", "v": 155}, {"k": "k564", "v": 156}, {"k": "k083", "v": 157}, {"k": "k202", "v": 158}, {"k": "k321", "v": 159}, {"k": "k440", "v": 160}, {"k": "k559", "v": 161}, {"k": "k078", "v": 162}, {"k": "k197", "v": 163}, {"k": "k316", "v": 164}, {"k": "k435", "v": 165}, {"k": "k554", "v": 166}, {"k": "k073", "v": 167}, {"k": "k192", "v": 168}, {"k": "k311", "v": 169}, {"k": "k430", "v": 170}, {"k": "k549", "v": 171}, {"k": "k068", "v": 172}, {"k": "k187", "v": 173}, {"k": "k306", "v": 174}, {"k": "k425", "v": 175}, {"k": "k544", "v": 176}, {"k": "k063", "v": 177}, {"k": "k182", "v": 178}, {"k": "k301", "v": 179}, {"k": "k420", "v": 180}, {"k": "k539", "v": 181}, {"k": "k058", "v": 182}, {"k": "k177", "v": 183}, {"k": "k296", "v": 184}, {"k": "k415", "v": 185}, {"k": "k534", "v": 186}, {"k": "k053", "v": 187}, {"k": "k172", "v": 188}, {"k": "k291", "v": 189}, {"k": "k410", "v": 190}, {"k": "k529", "v": 191}, {"k": "k048", "v": 192}, {"k": "k167", "v": 193}, {"k": "k286", "v": 194}, {"k": "k405", "v": 195}, {"k": "k524", "v": 196}, {"k": "k043", "v": 197}, {"k": "k162", "v": 198}, {"k": "k281", "v": 199}, {"k": "k400", "v": 200}, {"k": "k519", "v": 201}, {"k": "k038", "v": 202}, {"k": "k157", "v": 203}, {"k": "k276", "v": 204}, {"k": "k395", "v": 205}, {"k": "k514", "v": 206}, {"k": "k033", "v": 207}, {"k": "k152", "v": 208}, {"k": "k271", "v": 209}, {"k": "k390", "v": 210}, {"k": "k509", "v": 211}, {"k": "k028", "v": 212}, {"k": "k147", "v": 213}, {"k": "k266", "v": 214}, {"k": "k385", "v": 215}, {"k": "k504", "v": 216}, {"k": "k023", "v": 217}, {"k": "k142", "v": 218}, {"k": "k261", "v": 219}, {"k": "k380", "v": 220}, {"k": "k499", "v": 221}, {"k": "k018", "v": 222}, {"k": "k137", "v": 223}, {"k": "k256", "v": 224}, {"k": "k375", "v": 225}, {"k": "k494", "v": 226}, {"k": "k013", "v": 227}, {"k": "k132", "v": 228}, {"k": "k251", "v": 229}, {"k": "k370", "v": 230}, {"k": "k489", "v": 231}, {"k": "k008", "v": 232}, {"k": "k127", "v": 233}, {"k": "k246", "v": 234}, {"k": "k365", "v": 235}, {"k": "k484", "v": 236}, {"k": "k003", "v": 237}, {"k": "k122", "v": 238}, {"k": "k241", "v": 239}, {"k": "k360", "v": 240}, {"k": "k479", "v": 241}, {"k": "k598", "v": 242}, {"k": "k117", "v": 243}, {"k": "k236", "v": 244}, {"k": "k355", "v": 245}, {"k": "k474", "v": 246}, {"k": "k593", "v": 247}, {"k": "k112", "v": 248}, {"k": "k231", "v": 249}, {"k": "k350", "v": 250}, {"k": "k469", "v": 251}, {"k": "k588", "v": 252}, {"k": "k107", "v": 253}, {"k": "k226", "v": 254}, {"k": "k345", "v": 255}, {"k": "k464", "v": 256}, {"k": "k583", "v": 257}, {"k": "k102", "v": 258}, {"k": "k221", "v": 259}, {"k": "k340", "v": 260}, {"k": "k459", "v": 261}, {"k": "k578", "v": 262}, {"k": "k097", "v": 263}, {"k": "k216", "v": 264}, {"k": "k335", "v": 265}, {"k": "k454", "v": 266}, {"k": "k573", "v": 267}, {"k": "k092", "v": 268}, {"k": "k211", "v": 269}, {"k": "k330", "v": 270}, {"k": "k449", "v": 271}, {"k": "k568", "v": 272}, {"k": "k087", "v": 273}, {"k": "k206", "v": 274}, {"k": "k325", "v": 275}, {"k": "k444", "v": 276}, {"k": "k563", "v": 277}, {"k": "k082", "v": 278}, {"k": "k201", "v": 279}, {"k": "k320", "v": 280}, {"k": "k439", "v": 281}, {"k": "k558", "v": 282}, {"k": "k077", "v": 283}, {"k": "k196", "v": 284}, {"k": "k315", "v": 285}, {"k": "k434", "v": 286}, {"k": "k553", "v": 287}, {"k": "k072", "v": 288}, {"k": "k191", "v": 289}, {"k": "k310", "v": 290}, {"k": "k429", "v": 291}, {"k": "k548", "v": 292}, {"k": "k067", "v": 293}, {"k": "k186", "v": 294}, {"k": "k305", "v": 295}, {"k": "k424", "v": 296}, {"k": "k543", "v": 297}, {"k": "k062", "v": 298}, {"k": "k181", "v": 299}, {"k": "k300", "v": 300}, {"k": "k419", "v": 301}, {"k": "k538", "v": 302}, {"k": "k057", "v": 303}, {"k": "k176", "v": 304}, {"k": "k295", "v": 305}, {"k": "k414", "v": 306}, {"k": "k533", "v": 307}, {"k": "k052", "v": 308}, {"k": "k171", "v": 309}, {"k": "k290", "v": 310}, {"k": "k409", "v": 311}, {"k": "k528", "v": 312}, {"k": "k047", "v": 313}, {"k": "k166", "v": 314}, {"k": "k285", "v": 315}, {"k": "k404", "v": 316}, {"k": "k523", "v": 317}, {"k": "k042", "v": 318}, {"k": "k161", "v": 319}, {"k": "k280", "v": 320}, {"k": "k399", "v": 321}, {"k": "k518", "v": 322}, {"k": "k037", "v": 323}, {"k": "k156", "v": 324}, {"k": "k275", "v": 325}, {"k": "k394", "v": 326}, {"k": "k513", "v": 327}, {"k": "k032", "v": 328}, {"k": "k151", "v": 329}, {"k": "k270", "v": 330}, {"k": "k389", "v": 331}, {"k": "k508", "v": 332}, {"k": "k027", "v": 333}, {"k": "k146", "v": 334}, {"k": "k265", "v": 335}, {"k": "k384", "v": 336}, {"k": "k503", "v": 337}, {"k": "k022", "v": 338}, {"k": "k141", "v": 339}, {"k": "k260", "v": 340}, {"k": "k379", "v": 341}, {"k": "k498", "v": 342}, {"k": "k017", "v": 343}, {"k": "k136", "v": 344}, {"k": "k255", "v": 345}, {"k": "k374", "v": 346}, {"k": "k493", "v": 347}, {"k": "k012", "v": 348}, {"k": "k131", "v": 349}, {"k": "k250", "v": 350}, {"k": "k369", "v": 351}, {"k": "k488", "v": 352}, {"k": "k007", "v": 353}, {"k": "k126", "v": 354}, {"k": "k245", "v": 355}, {"k": "k364", "v": 356}, {"k": "k483", "v": 357}, {"k": "k002", "v": 358}, {"k": "k121", "v": 359}, {"k": "k240", "v": 360}, {"k": "k359", "v": 361}, {"k": "k478", "v": 362}, {"k": "k597", "v": 363}, {"k": "k116", "v": 364}, {"k": "k235", "v": 365}, {"k": "k354", "v": 366}, {"k": "k473", "v": 367}, {"k": "k592", "v": 368}, {"k": "k111", "v": 369}, {"k": "k230", "v": 370}, {"k": "k349", "v": 371}, {"k": "k468", "v": 372}, {"k": "k587", "v": 373}, {"k": "k106", "v": 374}, {"k": "k225", "v": 375}, {"k": "k344", "v": 376}, {"k": "k463", "v": 377}, {"k": "k582", "v": 378}, {"k": "k101", "v": 379}, {"k": "k220", "v": 380}, {"k": "k339", "v": 381}, {"k": "k458", "v": 382}, {"k": "k577", "v": 383}, {"k": "k096", "v": 384}, {"k": "k215", "v": 385}, {"k": "k334", "v": 386}, {"k": "k453", "v": 387}, {"k": "k572", "v": 388}, {"k": "k091", "v": 389}, {"k": "k210", "v": 390}, {"k": "k329", "v": 391}, {"k": "k448", "v": 392}, {"k": "k567", "v": 393}, {"k": "k086", "v": 394}, {"k": "k205", "v": 395}, {"k": "k324", "v": 396}, {"k": "k443", "v": 397}, {"k": "k562", "v": 398}, {"k": "k081", "v": 399}, {"k": "k200", "v": 400}, {"k": "k319", "v": 401}, {"k": "k438", "v": 402}, {"k": "k557", "v": 403}, {"k": "k076", "v": 404}, {"k": "k195", "v": 405}, {"k": "k314", "v": 406}, {"k": "k433", "v": 407}, {"k": "k552", "v": 408}, {"k": "k071", "v": 409}, {"k": "k190", "v": 410}, {"k": "k309", "v": 411}, {"k": "k428", "v": 412}, {"k": "k547", "v": 413}, {"k": "k066", "v": 414}, {"k": "k185", "v": 415}, {"k": "k304", "v": 416}, {"k": "k423", "v": 417}, {"k": "k542", "v": 418}, {"k": "k061", "v": 419}, {"k": "k180", "v": 420}, {"k": "k299", "v": 421}, {"k": "k418", "v": 422}, {"k": "k537", "v": 423}, {"k": "k056", "v": 424}, {"k": "k175", "v": 425}, {"k": "k294", "v": 426}, {"k": "k413", "v": 427}, {"k": "k532", "v": 428}, {"k": "k051", "v": 429}, {"k": "k170", "v": 430}, {"k": "k289", "v": 431}, {"k": "k408", "v": 432}, {"k": "k527", "v": 433}, {"k": "k046", "v": 434}, {"k": "k165", "v": 435}, {"k": "k284", "v": 436}, {"k": "k403", "v": 437}, {"k": "k522", "v": 438}, {"k": "k041", "v": 439}, {"k": "k160", "v": 440}, {"k": "k279", "v": 441}, {"k": "k398", "v": 442}, {"k": "k517", "v": 443}, {"k": "k036", "v": 444}, {"k": "k155", "v": 445}, {"k": "k274", "v": 446}, {"k": "k393", "v": 447}, {"k": "k512", "v": 448}, {"k": "k031", "v": 449}, {"k": "k150", "v": 450}, {"k": "k269", "v": 451}, {"k": "k388", "v": 452}, {"k": "k507", "v": 453}, {"k": "k026", "v": 454}, {"k": "k145", "v": 455}, {"k": "k264", "v": 456}, {"k": "k383", "v": 457}, {"k": "k502", "v": 458}, {"k": "k021", "v": 459}, {"k": "k140", "v": 460}, {"k": "k259", "v": 461}, {"k": "k378", "v": 462}, {"k": "k497", "v": 463}, {"k": "k016", "v": 464}, {"k": "k135", "v": 465}, {"k": "k254", "v": 466}, {"k": "k373", "v": 467}, {"k": "k492", "v": 468}, {"k": "k011", "v": 469}, {"k": "k130", "v": 470}, {"k": "k249", "v": 471}, {"k": "k368", "v": 472}, {"k": "k487", "v": 473}, {"k": "k006", "v": 474}, {"k": "k125", "v": 475}, {"k": "k244", "v": 476}, {"k": "k363", "v": 477}, {"k": "k482", "v": 478}, {"k": "k001", "v": 479}, {"k": "k120", "v": 480}, {"k": "k239", "v": 481}, {"k": "k358", "v": 482}, {"k": "k477", "v": 483}, {"k": "k596", "v": 484}, {"k": "k115", "v": 485}, {"k": "k234", "v": 486}, {"k": "k353", "v": 487}, {"k": "k472", "v": 488}, {"k": "k591", "v": 489}, {"k": "k110", "v": 490}, {"k": "k229", "v": 491}, {"k": "k348", "v": 492}, {"k": "k467", "v": 493}, {"k": "k586", "v": 494}, {"k": "k105", "v": 495}, {"k": "k224", "v": 496}, {"k": "k343", "v": 497}, {"k": "k462", "v": 498}, {"k": "k581", "v": 499}, {"k": "k100", "v": 500}, {"k": "k219", "v": 501}, {"k": "k338", "v": 502}, {"k": "k457", "v": 503}, {"k": "k576", "v": 504}, {"k": "k095", "v": 505}, {"k": "k214", "v": 506}, {"k": "k333", "v": 507}, {"k": "k452", "v": 508}, {"k": "k571", "v": 509}, {"k": "k090", "v": 510}, {"k": "k209", "v": 511}, {"k": "k328", "v": 512}, {"k": "k447", "v": 513}, {"k": "k566", "v": 514}, {"k": "k085", "v": 515}, {"k": "k204", "v": 516}, {"k": "k323", "v": 517}, {"k": "k442", "v": 518}, {"k": "k561", "v": 519}, {"k": "k080", "v": 520}, {"k": "k199", "v": 521}, {"k": "k318", "v": 522}, {"k": "k437", "v": 523}, {"k": "k556", "v": 524}, {"k": "k075", "v": 525}, {"k": "k194", "v": 526}, {"k": "k313", "v": 527}, {"k": "k432", "v": 528}, {"k": "k551", "v": 529}, {"k": "k070", "v": 530}, {"k": "k189", "v": 531}, {"k": "k308", "v": 532}, {"k": "k427", "v": 533}, {"k": "k546", "v": 534}, {"k": "k065", "v": 535}, {"k": "k184", "v": 536}, {"k": "k303", "v": 537}, {"k": "k422", "v": 538}, {"k": "k541", "v": 539}, {"k": "k060", "v": 540}, {"k": "k179", "v": 541}, {"k": "k298", "v": 542}, {"k": "k417", "v": 543}, {"k": "k536", "v": 544}, {"k": "k055", "v": 545}, {"k": "k174", "v": 546}, {"k": "k293", "v": 547}, {"k": "k412", "v": 548}, {"k": "k531", "v": 549}, {"k": "k050", "v": 550}, {"k": "k169", "v": 551}, {"k": "k288", "v": 552}, {"k": "k407", "v": 553}, {"k": "k526", "v": 554}, {"k": "k045", "v": 555}, {"k": "k164", "v": 556}, {"k": "k283", "v": 557}, {"k": "k402", "v": 558}, {"k": "k521", "v": 559}, {"k": "k040", "v": 560}, {"k": "k159", "v": 561}, {"k": "k278", "v": 562}, {"k": "k397", "v": 563}, {"k": "k516", "v": 564}, {"k": "k035", "v": 565}, {"k": "k154", "v": 566}, {"k": "k273", "v": 567}, {"k": "k392", "v": 568}, {"k": "k511", "v": 569}, {"k": "k030", "v": 570}, {"k": "k149", "v": 571}, {"k": "k268", "v": 572}, {"k": "k387", "v": 573}, {"k": "k506", "v": 574}, {"k": "k025", "v": 575}, {"k": "k144", "v": 576}, {"k": "k263", "v": 577}, {"k": "k382", "v": 578}, {"k": "k501", "v": 579}, {"k": "k020", "v": 580}, {"k": "k139", "v": 581}, {"k": "k258", "v": 582}, {"k": "k377", "v": 583}, {"k": "k496", "v": 584}, {"k": "k015", "v": 585}, {"k": "k134", "v": 586}, {"k": "k253", "v": 587}, {"k": "k372", "v": 588}, {"k": "k491", "v": 589}, {"k": "k010", "v": 590}, {"k": "k129", "v": 591}, {"k": "k248", "v": 592}, {"k": "k367", "v": 593}, {"k": "k486", "v": 594}, {"k": "k005", "v": 595}, {"k": "k124", "v": 596}, {"k": "k243", "v": 597}, {"k": "k362", "v": 598}, {"k": "k481", "v": 599}]}, "today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-o02-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "group($.rows, 'k', 'v')"
+    given: {"record": {"rows": [{"k": "k0", "v": 0}, {"k": "k11", "v": 1}, {"k": "k9", "v": 2}, {"k": "k7", "v": 3}, {"k": "k5", "v": 4}, {"k": "k3", "v": 5}, {"k": "k1", "v": 6}, {"k": "k12", "v": 7}, {"k": "k10", "v": 8}, {"k": "k8", "v": 9}, {"k": "k6", "v": 10}, {"k": "k4", "v": 11}, {"k": "k2", "v": 12}, {"k": "k0", "v": 13}, {"k": "k11", "v": 14}, {"k": "k9", "v": 15}, {"k": "k7", "v": 16}, {"k": "k5", "v": 17}, {"k": "k3", "v": 18}, {"k": "k1", "v": 19}, {"k": "k12", "v": 20}, {"k": "k10", "v": 21}, {"k": "k8", "v": 22}, {"k": "k6", "v": 23}, {"k": "k4", "v": 24}, {"k": "k2", "v": 25}, {"k": "k0", "v": 26}, {"k": "k11", "v": 27}, {"k": "k9", "v": 28}, {"k": "k7", "v": 29}, {"k": "k5", "v": 30}, {"k": "k3", "v": 31}, {"k": "k1", "v": 32}, {"k": "k12", "v": 33}, {"k": "k10", "v": 34}, {"k": "k8", "v": 35}, {"k": "k6", "v": 36}, {"k": "k4", "v": 37}, {"k": "k2", "v": 38}, {"k": "k0", "v": 39}]}, "today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-o03-a"
+    kind: "expr-error"
+    tags: ["determinism"]
+    expr: "sumx(1)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "d-o05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "unique([1, 1.0, '1', 2, 0.1 + 0.2, 0.3])"
+    given: {"today": "2026-11-17"}
+    expect: {"value": [1, "1", 2, 0.30000000000000004], "type": "list", "text": "[4]"}
+
+  - id: "d-o05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "unique([0, -0, 0.0])"
+    given: {"today": "2026-11-17"}
+    expect: {"value": [0], "type": "list", "text": "[1]"}
+
+  - id: "d-l1-a"
+    kind: "expr-error"
+    tags: ["determinism"]
+    expr: "(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "d-l1-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-l2-a"
+    kind: "expr-error"
+    tags: ["determinism"]
+    expr: "1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "d-l2-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "size(sequence(10001))"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-l2-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "size([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-e1-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "sqrt(-4)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-e1-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "eomonth('soon')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-e1-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round_up('abc')"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-m01-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "exp(1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2.718281828459045, "type": "number", "text": "2.718281828459045"}
+
+  - id: "d-m01-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "exp(-745)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 5e-324, "type": "number", "text": "4.9E-324"}
+
+  - id: "d-m01-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "exp(709.78)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.7928227943945155e+308, "type": "number", "text": "1.7928227943945155E308"}
+
+  - id: "d-m01-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "ln(2)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.6931471805599453, "type": "number", "text": "0.6931471805599453"}
+
+  - id: "d-m01-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "ln(1e-300)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -690.7755278982137, "type": "number", "text": "-690.7755278982137"}
+
+  - id: "d-m01-f"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "log(1000, 10)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 3, "type": "number", "text": "3"}
+
+  - id: "d-m01-g"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "log(8, 2)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 3, "type": "number", "text": "3"}
+
+  - id: "d-m01-h"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "log10(1000)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 3, "type": "number", "text": "3"}
+
+  - id: "d-m02-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "power(2, 0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.4142135623730951, "type": "number", "text": "1.4142135623730951"}
+
+  - id: "d-m02-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "power(10, 0.1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.2589254117941673, "type": "number", "text": "1.2589254117941673"}
+
+  - id: "d-m02-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "power(1.0000001, 1e7)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2.7182816941320818, "type": "number", "text": "2.7182816941320818"}
+
+  - id: "d-m02-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "power(-8, 1/3)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2102"}}
+
+  - id: "d-m03-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "norm_s_inv(0.99)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2.3263478740408408, "type": "number", "text": "2.3263478740408408"}
+
+  - id: "d-m03-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "norm_s_dist(1.96, true)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.9750021048517795, "type": "number", "text": "0.9750021048517795"}
+
+  - id: "d-m03-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "norm_inv(0.025, 0, 1)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -1.9599639845400563, "type": "number", "text": "-1.9599639845400563"}
+
+  - id: "d-m03-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "t_inv(0.975, 10)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 2.228138851986274, "type": "number", "text": "2.228138851986274"}
+
+  - id: "d-m03-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "chisq_inv(0.95, 3)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 7.814727903251176, "type": "number", "text": "7.814727903251176"}
+
+  - id: "d-m03-f"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "gamma(0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.772453850905515, "type": "number", "text": "1.772453850905515"}
+
+  - id: "d-m03-g"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "gamma_ln(100)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 359.13420536957534, "type": "number", "text": "359.13420536957534"}
+
+  - id: "d-m03-h"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "erf(0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.5204998778130469, "type": "number", "text": "0.5204998778130469"}
+
+  - id: "d-m03-i"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "beta_inv(0.5, 2, 3)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.38572756813239073, "type": "number", "text": "0.38572756813239073"}
+
+  - id: "d-m04-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "irr([-100, 60, 60])"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.13066238629180732, "type": "number", "text": "0.13066238629180732"}
+
+  - id: "d-m04-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "xirr([-1000, 600, 600], ['2026-01-01', '2026-07-01', '2027-01-01'])"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.27933299665393785, "type": "number", "text": "0.27933299665393785"}
+
+  - id: "d-m04-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "rate(10, -100, 800)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.0427749780351113, "type": "number", "text": "0.0427749780351113"}
+
+  - id: "d-m04-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "npv(0.1, [100, 100])"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 173.55371900826447, "type": "number", "text": "173.55371900826447"}
+
+  - id: "d-m04-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "pmt(0.05/12, 360, 200000)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -1073.6432460242725, "type": "number", "text": "-1073.6432460242725"}
+
+  - id: "d-m05-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fisher(0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.5493061443340549, "type": "number", "text": "0.5493061443340549"}
+
+  - id: "d-m05-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fisher_inv(0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 0.46211715726000974, "type": "number", "text": "0.46211715726000974"}
+
+  - id: "d-m05-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fisher_inv(400)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-m05-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "tanh(20)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-m05-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "tanh(400)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1, "type": "number", "text": "1"}
+
+  - id: "d-m06-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "pmt(1e-12, 360, 200000)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -555.5555556558511, "type": "number", "text": "-555.5555556558511"}
+
+  - id: "d-m06-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "pv(1e-12, 360, -1000)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 359999.99993500847, "type": "number", "text": "359999.99993500847"}
+
+  - id: "d-m06-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "fv(1e-12, 360, -1000)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 360000.00006462, "type": "number", "text": "360000.00006462"}
+
+  - id: "d-m06-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "nper(1e-12, -1000, 200000)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 200.0000165281742, "type": "number", "text": "200.0000165281742"}
+
+  - id: "d-m06-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "effect(1e-10, 12)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1.0000000000458333e-10, "type": "number", "text": "1.0000000000458333E-10"}
+
+  - id: "d-m06-f"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "nominal(1e-10, 12)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 9.999999999541667e-11, "type": "number", "text": "9.999999999541667E-11"}
+
+  - id: "d-m07-a"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(2.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 3, "type": "number", "text": "3"}
+
+  - id: "d-m07-b"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(3.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 4, "type": "number", "text": "4"}
+
+  - id: "d-m07-c"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(-0.5)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": -1, "type": "number", "text": "-1"}
+
+  - id: "d-m07-d"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "round(1e300)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, "type": "decimal", "text": "1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
+
+  - id: "d-m07-e"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "trunc(1e19)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-m07-f"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "int(-1e19)"
+    given: {"today": "2026-11-17"}
+    expect: {"error": {"code": "RCH-2101"}}
+
+  - id: "d-m07-g"
+    kind: "expr"
+    tags: ["determinism"]
+    expr: "mod(1e19, 7)"
+    given: {"today": "2026-11-17"}
+    expect: {"value": 3, "type": "number", "text": "3"}

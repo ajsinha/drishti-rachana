@@ -7,8 +7,8 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.JsonCodec;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.JsonCodec;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,7 +22,7 @@ import java.util.Map;
  */
 final class Fy {
 
-    static final DataNode DOC;
+    static final Node DOC;
 
     static {
         StringBuilder bond = new StringBuilder("[");
@@ -31,7 +31,7 @@ final class Fy {
             bond.append(k == 59 ? "104" : "4").append(k == 59 ? "]" : ",");
             times.append(k / 2.0).append(k == 59 ? "]" : ",");
         }
-        DataNode plain = new JsonCodec().read("""
+        Node plain = new JsonCodec().read("""
                 {"NPV":[-10000,3000,4200,6800],
                  "XF":[-10000,2750,4250,3250,2750],"XD":["2008-01-01","2008-03-01","2008-10-30","2009-02-15","2009-04-01"],
                  "IRR1":[-70000,12000,15000,18000,21000],"IRR2":[-70000,12000,15000,18000,21000,26000],"IRR3":[-70000,12000,15000],
@@ -45,11 +45,11 @@ final class Fy {
                  "S1":["USD","EUR",1,2],"S2":["EUR",2,"GBP",2.0],"EMPTY":[],
                  "TRADES":[{"DESK":"B","N":3},{"DESK":"A","N":2},{"DESK":"B","N":1},{"DESK":"A","N":5},{"N":0}]}"""
                 .formatted(bond, times));
-        Map<String, DataNode> fields = new LinkedHashMap<>(((DataNode.Obj) plain).fields());
-        fields.put("MTM", DataNode.masked());
-        List<DataNode> hidden = new ArrayList<>(List.of(DataNode.of(-100), DataNode.masked(), DataNode.of(60)));
-        fields.put("HIDDEN", new DataNode.Arr(List.copyOf(hidden)));
-        DOC = new DataNode.Obj(fields);
+        Map<String, Node> fields = new LinkedHashMap<String, Node>(plain.fields());
+        fields.put("MTM", Node.masked());
+        List<Node> hidden = new ArrayList<>(List.of(Node.of(-100), Node.masked(), Node.of(60)));
+        fields.put("HIDDEN", Node.list(List.copyOf(hidden)));
+        DOC = Node.of(fields);
     }
 
     private Fy() {}
@@ -79,8 +79,8 @@ final class Fy {
 
     static List<Object> list(String src) {
         Object v = eval(src);
-        assertThat(v).as(src).isInstanceOf(DataNode.Arr.class);
-        return ((DataNode.Arr) v).elements().stream().map(Values::simplify).toList();
+        assertThat(v).as(src).isInstanceOf(Node.class);
+        return ((Node) v).elements().stream().map(Values::simplify).toList();
     }
 
     static void evalError(String src, String... words) {

@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
-package com.ash.rachana.hostcompat;
+package com.ash.rachana.el;
 
 import com.ash.rachana.RachanaCode;
 import com.ash.rachana.RachanaException;
@@ -24,22 +24,21 @@ import java.util.List;
  */
 public final class SafeRegex {
 
-    /**
-     * The caps. {@link #defaults()} reads the system properties {@code drishti.search.regex.max-pattern}, {@code .max-program},
-     * {@code .max-input} and {@code .timeout-ms} (defaults 200, 4000, 8192 and 50).
-     */
+    /** The caps: the longest pattern, the largest expanded program, the longest value read and the time budget of one match. */
     public record Limits(int maxPattern, int maxProgram, int maxInput, long timeoutNanos) {
-        public static Limits defaults() {
-            return new Limits(intProp("max-pattern", 200), intProp("max-program", 4000), intProp("max-input", 8192),
-                    intProp("timeout-ms", 50) * 1_000_000L);
+        /** The caps Core uses unless a host's {@code RachanaOptions} say otherwise: 200, 4000, 8192 characters and 50 ms. */
+        public static final Limits DEFAULTS = new Limits(200, 4000, 8192, 50 * 1_000_000L);
+
+        public Limits {
+            if (maxPattern < 1 || maxProgram < 1 || maxInput < 1 || timeoutNanos < 1) {
+                throw new IllegalArgumentException("regular-expression caps must be positive: " + maxPattern + ", " + maxProgram + ", "
+                        + maxInput + ", " + timeoutNanos + " ns");
+            }
         }
 
-        private static int intProp(String name, int dflt) {
-            try {
-                return Math.max(1, Integer.parseInt(System.getProperty("drishti.search.regex." + name, String.valueOf(dflt)).trim()));
-            } catch (NumberFormatException e) {
-                return dflt;
-            }
+        /** The default caps. */
+        public static Limits defaults() {
+            return DEFAULTS;
         }
     }
 

@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.RachanaCode;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +55,7 @@ public interface Expr {
     record Each(Expr target) implements Expr {
         public Object eval(EvalContext c) {
             Object t = target.eval(c);
-            return Values.masked(t) ? Values.mask() : t instanceof DataNode.Arr ? t : DataNode.missing();
+            return Values.masked(t) ? Values.mask() : (t instanceof Node list && list.isArray()) ? t : Node.missing();
         }
 
         public void paths(Consumer<String> sink) {
@@ -70,14 +70,14 @@ public interface Expr {
             if (Values.masked(t)) {
                 return Values.mask();
             }
-            if (!(t instanceof DataNode.Arr a)) {
-                return DataNode.missing();
+            if (!(t instanceof Node a && a.isArray())) {
+                return Node.missing();
             }
-            List<DataNode> out = new ArrayList<>(a.size());
+            List<Node> out = new ArrayList<>(a.size());
             for (int i = 0; i < a.size(); i++) {
                 out.add(a.get(i).get(name));
             }
-            return new DataNode.Arr(out);
+            return Node.list(out);
         }
 
         public void paths(Consumer<String> sink) {
@@ -98,14 +98,14 @@ public interface Expr {
      */
     record Event(String panel) implements Expr {
         public Object eval(EvalContext c) {
-            return c == null ? DataNode.missing() : c.event(panel);
+            return c == null ? Node.missing() : c.event(panel);
         }
     }
 
     /** {@code $src}: the record (or the records) the panel's {@code source:} names; nothing outside a sourced panel. */
     record Src() implements Expr {
         public Object eval(EvalContext c) {
-            return c == null || c.src() == null ? DataNode.missing() : c.src();
+            return c == null || c.src() == null ? Node.missing() : c.src();
         }
     }
 
@@ -125,7 +125,7 @@ public interface Expr {
     record Field(Expr target, String name, String rootPath) implements Expr {
         public Object eval(EvalContext c) {
             Object t = c == null ? null : target.eval(c);
-            return t instanceof DataNode n ? n.get(name) : Values.masked(t) ? Values.mask() : DataNode.missing();
+            return t instanceof Node n ? n.get(name) : Values.masked(t) ? Values.mask() : Node.missing();
         }
 
         public void paths(Consumer<String> sink) {
@@ -143,8 +143,8 @@ public interface Expr {
             if (Values.masked(t)) {
                 return Values.mask();
             }
-            if (!(t instanceof DataNode n)) {
-                return DataNode.missing();
+            if (!(t instanceof Node n)) {
+                return Node.missing();
             }
             Object i = Values.simplify(index.eval(c));
             if (Values.masked(i)) {
@@ -170,16 +170,16 @@ public interface Expr {
             if (Values.masked(t)) {
                 return Values.mask();
             }
-            if (!(t instanceof DataNode.Arr a)) {
-                return DataNode.missing();
+            if (!(t instanceof Node a && a.isArray())) {
+                return Node.missing();
             }
-            List<DataNode> kept = new ArrayList<>();
+            List<Node> kept = new ArrayList<>();
             for (int i = 0; i < a.size(); i++) {
                 if (Values.truthy(predicate.eval(c.withRow(a.get(i), i)))) {
                     kept.add(a.get(i));
                 }
             }
-            return new DataNode.Arr(kept);
+            return Node.list(kept);
         }
 
         public void paths(Consumer<String> sink) {
@@ -453,7 +453,7 @@ public interface Expr {
 
         /** True when {@code list} holds {@code v}. */
         static boolean holds(Object v, Object list) {
-            if (list instanceof DataNode.Arr n) {
+            if (list instanceof Node n && n.isArray()) {
                 for (int i = 0; i < n.size(); i++) {
                     if (!Values.masked(n.get(i)) && Values.equal(v, n.get(i))) {
                         return true;
@@ -461,7 +461,7 @@ public interface Expr {
                 }
                 return false;
             }
-            if (list == null || list instanceof String s && s.isEmpty() || list instanceof DataNode) {
+            if (list == null || list instanceof String s && s.isEmpty() || list instanceof Node) {
                 return false;
             }
             return Values.equal(v, list);
@@ -482,7 +482,7 @@ public interface Expr {
      */
     record Parent(int up) implements Expr {
         public Object eval(EvalContext c) {
-            return c == null ? DataNode.missing() : c.parent(up);
+            return c == null ? Node.missing() : c.parent(up);
         }
     }
 

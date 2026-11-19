@@ -4,8 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.RachanaException;
 import java.util.List;
 
@@ -43,7 +42,7 @@ final class LogicFunctions {
         if (s == null) {
             return List.of();
         }
-        if (s instanceof DataNode n && n.type() == NodeType.ARRAY) {
+        if (s instanceof Node n && n.kind() == Node.Kind.ARRAY) {
             List<Object> out = new java.util.ArrayList<>();
             for (int i = 0; i < n.size(); i++) {
                 if (!Values.isNull(n.get(i))) {
@@ -52,13 +51,13 @@ final class LogicFunctions {
             }
             return out;
         }
-        List<String> parsed = com.ash.rachana.hostcompat.ListValues.of(s instanceof DataNode ? Values.text(s) : s);
+        List<String> parsed = com.ash.rachana.format.ListValues.of(s instanceof Node ? Values.text(s) : s);
         return parsed != null ? new java.util.ArrayList<>(parsed) : List.of(s);
     }
 
     private static List<Object> choices(Object v) {
         Object s = Values.simplify(v);
-        return s instanceof DataNode n && n.type() == NodeType.ARRAY ? listItems(s) : s == null ? List.of() : List.of(s);
+        return s instanceof Node n && n.kind() == Node.Kind.ARRAY ? listItems(s) : s == null ? List.of() : List.of(s);
     }
 
     /**
@@ -153,7 +152,7 @@ final class LogicFunctions {
     /** {@code one_of(value, list)}: the value is one of a multi-select control's choices; nothing chosen holds everything. */
     private static boolean oneOf(Object value, Object choices) {
         Object list = Values.simplify(choices);
-        if (list instanceof DataNode n && n.type() == NodeType.ARRAY) {
+        if (list instanceof Node n && n.kind() == Node.Kind.ARRAY) {
             if (n.size() == 0) {
                 return true;
             }

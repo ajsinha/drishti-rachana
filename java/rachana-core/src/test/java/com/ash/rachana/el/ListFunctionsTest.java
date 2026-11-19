@@ -13,7 +13,7 @@ import static com.ash.rachana.el.Fx.list;
 import static com.ash.rachana.el.Fx.masked;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import java.util.TreeSet;
 import org.junit.jupiter.api.Test;
 
@@ -86,8 +86,8 @@ class ListFunctionsTest {
         assertThat(eval("map($.NOPE, @)")).isNull();
         assertThat(masked("map($.MASKED_LIST, @)")).isTrue();
         Object v = EL.compile("map($.PVS, @.PV)").eval(Fx.ctx());
-        assertThat(((DataNode.Arr) v).get(0).asDouble()).isEqualTo(5.0);
-        assertThat(((DataNode.Arr) v).get(1).isMasked()).isTrue();             // only the hidden element is masked
+        assertThat(((Node) v).get(0).asDouble()).isEqualTo(5.0);
+        assertThat(((Node) v).get(1).isMasked()).isTrue();             // only the hidden element is masked
         evalError("map('x', @)", "map", "'x' is not a list");
         TreeSet<String> paths = new TreeSet<>();
         EL.compile("map($.LEGS, @.NOTIONAL * $.QUANTITY)").paths(paths::add);

@@ -4,8 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.RachanaException;
 import java.util.List;
 
@@ -73,8 +72,8 @@ final class InfoFunctions {
         if (v instanceof Link) {
             return "link";
         }
-        if (v instanceof DataNode n) {
-            return n.type() == NodeType.ARRAY ? "list" : "object";
+        if (v instanceof Node n) {
+            return n.kind() == Node.Kind.ARRAY ? "list" : "object";
         }
         return "text";
     }

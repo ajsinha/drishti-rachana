@@ -166,8 +166,8 @@ flowchart LR
 
 | Module | Packages | Depends on |
 |---|---|---|
-| `rachana-api` | `com.ash.rachana.api` (`Node`, not read yet by the evaluator) | the JDK |
-| `rachana-core` | `com.ash.rachana` (writer, text, expressions, wiring, schema, editors, problems), `.el`, `.el.check`, `.format`, `.model`, `.parse`, `.design.ops`, `.profile`; `.hostcompat` (temporary) | `rachana-api`; Jackson and Caffeine as split exemptions ([java/SPLIT_EXEMPTIONS.md](../java/SPLIT_EXEMPTIONS.md)) until A3 and A8b |
+| `rachana-api` | `com.ash.rachana.api` (`Node`, the value interface every reader uses; Rachana's own nodes behind `Node.of`) | the JDK |
+| `rachana-core` | `com.ash.rachana` (writer, text, expressions, wiring, schema, editors, problems), `.el`, `.el.check`, `.format`, `.model`, `.parse`, `.design.ops`, `.profile` | `rachana-api`; Jackson as a split exemption ([java/SPLIT_EXEMPTIONS.md](../java/SPLIT_EXEMPTIONS.md)) until A8b |
 | `rachana-conformance` | `JvmRuntime`, the conformance runtime program | `rachana-core` |
 | `rachana-compat` | the compatibility regime's tests | JUnit |
 | `rachana-guards` | the guards over the reactor | JUnit |

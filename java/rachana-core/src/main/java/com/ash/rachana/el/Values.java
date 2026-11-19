@@ -4,11 +4,10 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.api.Node;
 
 /**
- * Coercions between evaluation results. A result is a {@link DataNode}, a {@code String}, a
+ * Coercions between evaluation results. A result is a {@link Node}, a {@code String}, a
  * {@code Number}, a {@code Boolean}, a {@link Link} or null. Missing and null behave the same.
  */
 public final class Values {
@@ -17,10 +16,10 @@ public final class Values {
 
     /** Unwraps scalar nodes to Java values; containers stay nodes; missing becomes null. */
     public static Object simplify(Object v) {
-        if (v instanceof DataNode n) {
-            return switch (n.type()) {
+        if (v instanceof Node n) {
+            return switch (n.kind()) {
                 case MISSING, NULL -> null;
-                case STRING, NUMBER, BOOLEAN -> ((DataNode.Val) n).value();
+                case STRING, NUMBER, BOOLEAN -> n.value();
                 default -> n;
             };
         }
@@ -28,17 +27,17 @@ public final class Values {
     }
 
     /**
-     * True for the masked value ({@link DataNode#MASK}): a field the caller's role may not see, or anything computed from
+     * True for the masked value ({@link Node#MASK}): a field the caller's role may not see, or anything computed from
      * one. Expressions carry the mask through (arithmetic, comparisons, functions), so a value derived from a masked field
      * is masked too, and a condition on one is never true.
      */
     public static boolean masked(Object v) {
-        return v instanceof DataNode n ? n.isMasked() : DataNode.MASK.equals(v);
+        return v instanceof Node n ? n.isMasked() : Node.MASK.equals(v);
     }
 
     /** The masked value, as an expression result. */
-    public static DataNode mask() {
-        return DataNode.masked();
+    public static Node mask() {
+        return Node.masked();
     }
 
     public static boolean isNull(Object v) {
@@ -111,8 +110,8 @@ public final class Values {
         if (s instanceof Link l) {
             return l.display();
         }
-        if (s instanceof DataNode n) {
-            return n.type() == NodeType.ARRAY ? "[" + n.size() + "]" : "{" + n.size() + "}";
+        if (s instanceof Node n) {
+            return n.kind() == Node.Kind.ARRAY ? "[" + n.size() + "]" : "{" + n.size() + "}";
         }
         return s.toString();
     }
@@ -131,7 +130,7 @@ public final class Values {
         if (s instanceof String str) {
             return !str.isEmpty();
         }
-        if (s instanceof DataNode n) {
+        if (s instanceof Node n) {
             return n.size() > 0;
         }
         return true;

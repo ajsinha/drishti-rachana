@@ -13,7 +13,7 @@ import static com.ash.rachana.el.Fx.list;
 import static com.ash.rachana.el.Fx.masked;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +31,7 @@ class FoldedSyntaxTest {
         assertThat(list("[]")).isEmpty();
         assertThat(list("[1, 2,]")).containsExactly(1L, 2L);                       // a trailing comma, as DEL allowed
         assertThat(eval("size([$.LEGS, $.EVENTS])")).isEqualTo(2L);
-        assertThat(((DataNode.Arr) Values.simplify(EL.compile("[$.MTM, 1]").eval(ctx()))).get(0).isMasked()).isTrue();
+        assertThat(((Node) Values.simplify(EL.compile("[$.MTM, 1]").eval(ctx()))).get(0).isMasked()).isTrue();
         compileError("[1, 2", "']'");
     }
 
@@ -58,9 +58,9 @@ class FoldedSyntaxTest {
     void theParentPathReadsTheElementAbove() {
         assertThat(list("$.LEGS[?^.DESK == 'DESK-COMM'][*].LEG_ID")).containsExactly(1L, 2L);
         assertThat(list("$.LEGS[?@.LEG_ID == ^.LEG_ID][*].LEG_TYPE")).isEmpty();    // ^.LEG_ID is the trade's ('7')
-        assertThat(eval("map($.LEGS, ^.TRADE_ID)")).isInstanceOf(DataNode.Arr.class);
+        assertThat(eval("map($.LEGS, ^.TRADE_ID)")).isInstanceOf(Node.class);
         assertThat(list("map($.LEGS, ^.TRADE_ID)")).containsExactly("MX-20000001", "MX-20000001");
-        EvalContext deep = ctx().withRows(List.of(DataNode.of(java.util.Map.of("LEG_ID", 9)), DataNode.of(java.util.Map.of("AMOUNT", 5))));
+        EvalContext deep = ctx().withRows(List.of(Node.of(java.util.Map.of("LEG_ID", 9)), Node.of(java.util.Map.of("AMOUNT", 5))));
         assertThat(Values.simplify(EL.compile("^.LEG_ID").eval(deep))).isEqualTo(9);
         assertThat(Values.simplify(EL.compile("^^.TRADE_ID").eval(deep))).isEqualTo("MX-20000001");
         assertThat(Values.simplify(EL.compile("@.AMOUNT").eval(deep))).isEqualTo(5);

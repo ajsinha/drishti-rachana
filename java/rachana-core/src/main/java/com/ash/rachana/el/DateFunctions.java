@@ -4,7 +4,6 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.BusinessCalendar;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.DayOfWeek;
@@ -14,13 +13,12 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Dates, on the bank's calendars (FUNCTION_CATALOGUE.md section 3): {@code today}, {@code days_between}, {@code eomonth},
  * {@code edate}, {@code yearfrac}, {@code intck}, {@code is_business_day}. A date is ISO text ({@code 2026-10-16}; a
  * timestamp counts by its date) and a date result is ISO text. Business days are the platform's own calendars
- * ({@link BusinessCalendar}: {@code USNY}, {@code GBLO}, {@code EUTA}, {@code JPTO}, {@code CATO}, {@code WEEKENDS}, or a
+ * ({@link Calendars}, by default {@link BusinessCalendar}: {@code USNY}, {@code GBLO}, {@code EUTA}, {@code JPTO}, {@code CATO}, {@code WEEKENDS}, or a
  * joint {@code USNY+GBLO}), the ones the business date, the history windows and BI's {@code business_days_between} use;
  * {@value #DEFAULT_CALENDAR} when none is given.
  */
@@ -68,7 +66,7 @@ final class DateFunctions {
         t.fn("intck", 3, 4, (a, c) -> intck(a)).check("intck", DateFunctions::checkIntck);
         t.fn("is_business_day", 1, 2, (a, c) -> {
             LocalDate d = Args.date("is_business_day", a.get(0));
-            BusinessCalendar cal = calendar("is_business_day", a, 1);
+            Calendars.Calendar cal = calendar("is_business_day", a, 1);
             return d == null || cal == null ? null : (Object) cal.isBusinessDay(d);
         }).check("is_business_day", args -> calendarProblem(Functions.literal(args, 1)));
     }
@@ -86,33 +84,24 @@ final class DateFunctions {
         }
     }
 
-    private static final ConcurrentHashMap<String, BusinessCalendar> CALENDARS = new ConcurrentHashMap<>();
-
     /** The calendar of argument {@code i} ({@value #DEFAULT_CALENDAR} when not given); null when given empty. */
-    static BusinessCalendar calendar(String fn, List<Object> a, int i) {
+    static Calendars.Calendar calendar(String fn, List<Object> a, int i) {
         String spec = a.size() > i ? Args.text(fn, a.get(i)) : DEFAULT_CALENDAR;
         if (spec == null) {
             return null;
         }
         String key = spec.trim().toUpperCase(Locale.ROOT);
-        BusinessCalendar cal = CALENDARS.get(key);
-        if (cal == null) {
-            try {
-                cal = BusinessCalendar.of(key);
-            } catch (IllegalArgumentException e) {
-                throw Args.error(fn, e.getMessage());
-            }
-            if (CALENDARS.size() < 64) {
-                CALENDARS.put(key, cal);                                  // holidays are worked out once per year per calendar
-            }
+        try {
+            return Calendars.held(key);
+        } catch (IllegalArgumentException e) {
+            throw Args.error(fn, e.getMessage());
         }
-        return cal;
     }
 
     static String calendarProblem(Object literal) {
         if (literal instanceof String spec) {
             try {
-                BusinessCalendar.of(spec.trim());
+                Calendars.resolve(spec.trim());
             } catch (IllegalArgumentException e) {
                 return e.getMessage();
             }
@@ -233,7 +222,7 @@ final class DateFunctions {
             case "quarter" -> quarters(y) - quarters(x);
             case "year" -> (long) y.getYear() - x.getYear();
             default -> {
-                BusinessCalendar cal = calendar("intck", a, 3);
+                Calendars.Calendar cal = calendar("intck", a, 3);
                 yield cal == null ? null : (Object) businessDays(cal, x, y);
             }
         };
@@ -255,7 +244,7 @@ final class DateFunctions {
     /** The most days {@code intck('business_day', ...)} walks: about 400 years, a bound on the work. */
     static final long MAX_BUSINESS_SPAN = 146_100;
 
-    private static long businessDays(BusinessCalendar cal, LocalDate a, LocalDate b) {
+    private static long businessDays(Calendars.Calendar cal, LocalDate a, LocalDate b) {
         if (Math.abs(ChronoUnit.DAYS.between(a, b)) > MAX_BUSINESS_SPAN) {
             throw Args.error("intck", "'business_day' counts at most " + MAX_BUSINESS_SPAN + " days apart");
         }

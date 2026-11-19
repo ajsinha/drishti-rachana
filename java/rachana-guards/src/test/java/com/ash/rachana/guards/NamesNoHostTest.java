@@ -4,7 +4,6 @@
  */
 package com.ash.rachana.guards;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.*;
@@ -58,22 +57,9 @@ class NamesNoHostTest {
     }
 
     @Test
-    void hostCompatHoldsOnlyTheListedTypes() throws Exception {
-        Path dir = Sources.javaRoot().resolve("rachana-core/src/main/java/com/ash/rachana/hostcompat");
-        Set<String> listed = new TreeSet<>();
-        java.util.regex.Matcher row = java.util.regex.Pattern.compile("(?m)^\\| (`.*?)\\|").matcher(
-                Files.readString(Sources.javaRoot().resolve("SPLIT_EXEMPTIONS.md")));
-        while (row.find()) {
-            java.util.regex.Matcher name = java.util.regex.Pattern.compile("`(\\w+)`").matcher(row.group(1));
-            while (name.find()) listed.add(name.group(1));
-        }
-        Set<String> present = new TreeSet<>();
-        if (Files.isDirectory(dir)) {
-            try (var s = Files.list(dir)) {
-                s.map(f -> f.getFileName().toString()).filter(n -> n.endsWith(".java") && !n.equals("package-info.java"))
-                        .forEach(n -> present.add(n.substring(0, n.length() - 5)));
-            }
-        }
-        assertEquals(listed, present, "hostcompat types and the SPLIT_EXEMPTIONS.md table differ");
+    void noHostTypesAreHeld() {
+        // the host types the moved compiler named were held in a temporary package until A3 removed the last of them
+        assertTrue(!Files.exists(Sources.javaRoot().resolve("rachana-core/src/main/java/com/ash/rachana/hostcompat")),
+                "the hostcompat package is back: Core names no host type");
     }
 }

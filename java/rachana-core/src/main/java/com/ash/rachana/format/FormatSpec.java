@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.format;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.el.Link;
 import com.ash.rachana.el.Values;
 import java.math.BigDecimal;
@@ -36,7 +36,7 @@ public record FormatSpec(String type, int decimals, boolean grouping, String sig
             return l.display();
         }
         if (Values.masked(v)) {
-            return DataNode.MASK;                 // a masked value reads as the mask in every format
+            return Node.MASK;                 // a masked value reads as the mask in every format
         }
         return switch (type) {
             case "date" -> date(Values.text(v));

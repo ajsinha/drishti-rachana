@@ -4,7 +4,6 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.BusinessCalendar;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +55,7 @@ public final class DatePartFunctions {
     }
 
     /** The calendar of argument {@code i}: the one named, or the default when none is (null or left out). */
-    private static BusinessCalendar calendar(String fn, List<Object> a, int i) {
+    private static Calendars.Calendar calendar(String fn, List<Object> a, int i) {
         List<Object> given = a.size() > i && !Values.isNull(a.get(i)) ? a : List.of();
         return DateFunctions.calendar(fn, given.isEmpty() ? List.of() : given, i);
     }
@@ -68,7 +67,7 @@ public final class DatePartFunctions {
     private static Object businessDays(List<Object> a) {
         LocalDate x = Args.date("business_days_between", a.get(0));
         LocalDate y = Args.date("business_days_between", a.get(1));
-        BusinessCalendar cal = calendar("business_days_between", a, 2);
+        Calendars.Calendar cal = calendar("business_days_between", a, 2);
         if (x == null || y == null) {
             return null;
         }
@@ -109,7 +108,7 @@ public final class DatePartFunctions {
     }
 
     /** A date moved by {@code n} units (business days on the calendar: holidays and weekends skipped). */
-    public static LocalDate shift(LocalDate d, int n, String unit, BusinessCalendar cal) {
+    public static LocalDate shift(LocalDate d, int n, String unit, Calendars.Calendar cal) {
         return switch (unit) {
             case "day" -> d.plusDays(n);
             case "week" -> d.plusWeeks(n);

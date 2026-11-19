@@ -90,7 +90,7 @@ public final class Formats {
             return "";
         }
         java.util.List<Object> items = new java.util.ArrayList<>();
-        if (v instanceof com.ash.rachana.hostcompat.DataNode n && n.type() == com.ash.rachana.hostcompat.NodeType.ARRAY) {
+        if (v instanceof com.ash.rachana.api.Node n && n.kind() == com.ash.rachana.api.Node.Kind.ARRAY) {
             for (int i = 0; i < n.size(); i++) {
                 Object e = Values.simplify(n.get(i));
                 if (e != null && !Values.text(e).isBlank()) {
@@ -98,10 +98,10 @@ public final class Formats {
                 }
             }
         } else {
-            java.util.List<String> parsed = com.ash.rachana.hostcompat.ListValues.of(v instanceof CharSequence ? v : Values.text(v));
+            java.util.List<String> parsed = com.ash.rachana.format.ListValues.of(v instanceof CharSequence ? v : Values.text(v));
             items.addAll(parsed != null ? parsed : java.util.List.of(Values.text(v)));
         }
-        return items.isEmpty() ? "" : com.ash.rachana.hostcompat.ListValues.json(items);
+        return items.isEmpty() ? "" : com.ash.rachana.format.ListValues.json(items);
     }
 
     /** Formats {@code value}; an unknown or null format name falls back to plain text. */

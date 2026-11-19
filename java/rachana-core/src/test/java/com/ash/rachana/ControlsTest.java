@@ -6,8 +6,7 @@ package com.ash.rachana;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.JsonCodec;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.design.ops.OpApplier;
 import com.ash.rachana.design.ops.Ops;
 import com.ash.rachana.el.ElCompiler;
@@ -29,7 +28,7 @@ class ControlsTest {
     private final SutraParser parser = new SutraParser();
     private static final ElCompiler EL = new ElCompiler();
     private static final Formats F = Formats.load(null, List.of());
-    private static final DataNode DOC = new JsonCodec().read("""
+    private static final Node DOC = new JsonCodec().read("""
             {"legs":[{"id":"L1","leg":1,"payer":true},{"id":"L2","leg":2,"payer":false}],
              "schedule":[{"leg":1,"payDate":"2026-10-15","amount":10},{"leg":2,"payDate":"2026-11-15","amount":20},{"leg":1,"payDate":"2027-01-15","amount":30}]}""");
 
@@ -183,7 +182,7 @@ class ControlsTest {
 
     @Test
     void ctlReadsTheControlValuesInExpressions() {
-        Map<String, Object> ctl = Map.of("leg", "L2", "legs", DataNode.of(List.of("1")), "when", "2026-10-01..2026-12-31", "top", 3L, "q", "");
+        Map<String, Object> ctl = Map.of("leg", "L2", "legs", Node.of(List.of("1")), "when", "2026-10-01..2026-12-31", "top", 3L, "q", "");
         assertThat(eval("$.legs[?(@.id == ctl.leg)][0].leg", ctl)).isEqualTo(2L);
         assertThat(eval("size($.legs[?(@.id == ctl.leg)])", ctl)).isEqualTo(1L);
         assertThat(eval("ctl.top + 1", ctl)).isEqualTo(4L);
@@ -194,7 +193,7 @@ class ControlsTest {
 
     @Test
     void projectionListsAFieldOfEveryElement() {
-        DataNode ids = (DataNode) EL.compile("$.legs[*].id").eval(EvalContext.of(DOC, F));
+        Node ids = (Node) EL.compile("$.legs[*].id").eval(EvalContext.of(DOC, F));
         assertThat(ids.size()).isEqualTo(2);
         assertThat(ids.get(0).asText()).isEqualTo("L1");
         assertThat(ids.get(1).asText()).isEqualTo("L2");
@@ -204,7 +203,7 @@ class ControlsTest {
 
     @Test
     void withinAndOneOfFilterRows() {
-        Map<String, Object> ctl = Map.of("when", "2026-10-01..2026-12-31", "legs", DataNode.of(List.of("1")), "none", DataNode.of(List.of()));
+        Map<String, Object> ctl = Map.of("when", "2026-10-01..2026-12-31", "legs", Node.of(List.of("1")), "none", Node.of(List.of()));
         assertThat(eval("$.schedule[?(within(@.payDate, ctl.when))][*].amount", ctl).toString()).contains("10", "20").doesNotContain("30");
         assertThat(eval("size($.schedule[?(within(@.payDate, ctl.when) && oneOf(@.leg, ctl.legs))])", ctl)).isEqualTo(1L);
         assertThat(eval("size($.schedule[?(oneOf(@.leg, ctl.none))])", ctl)).isEqualTo(3L);               // nothing chosen: no filter
@@ -219,7 +218,7 @@ class ControlsTest {
 
     @Test
     void aMaskedValueIsNeverWithinOrOneOf() {
-        DataNode masked = new JsonCodec().read("{\"d\":\"" + DataNode.MASK + "\"}");
+        Node masked = new JsonCodec().read("{\"d\":\"" + Node.MASK + "\"}");
         EvalContext ctx = EvalContext.of(masked, F).withControls(Map.of("when", "2026-10-01..2026-12-31"));
         assertThat(Values.truthy(EL.compile("within($.d, ctl.when)").eval(ctx))).isFalse();
     }

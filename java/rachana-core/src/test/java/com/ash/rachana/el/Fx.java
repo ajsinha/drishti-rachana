@@ -7,9 +7,9 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.RachanaCode;
-import com.ash.rachana.hostcompat.JsonCodec;
+import com.ash.rachana.JsonCodec;
 import com.ash.rachana.format.Formats;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,10 +25,10 @@ final class Fx {
 
     static final ElCompiler EL = new ElCompiler();
     static final Formats F = Formats.load(null, List.of(com.ash.rachana.TestFormats.file()));
-    static final DataNode DOC;
+    static final Node DOC;
 
     static {
-        DataNode plain = new JsonCodec().read("""
+        Node plain = new JsonCodec().read("""
                 {"TRADE_ID":"MX-20000001","PRODUCT_TYPE":"ComSwap","DESK":"DESK-COMM","TT_BOOK":"BOOK-RATES-3","QUANTITY":242000000,
                  "PRICE":0.040829,"DIRECTION":"SHORT","TRADE_DATE":"2025-11-21","START_DATE":"2025-11-25","MATURITY_DATE":"2032-06-25",
                  "INSTRUMENT":"USD 2026-10 swap","TAGS":"ir,swap,,aud","LEG_ID":"7","STRATEGY":null,"BLANK":"","TEXTNUM":"12.5",
@@ -39,11 +39,11 @@ final class Fx {
                            {"EVENT_TYPE":"CASH_SETTLEMENT","EVENT_DATE":"2026-01-15","AMOUNT":-1500.25}],
                  "NUMS":[3, 1.5, "2", 10],"MIXED":[1, "1", 1.0, "a", "a"],
                  "UNDATED":[{"ID":"a","D":"2026-02-01"},{"ID":"b"},{"ID":"c","D":"2026-01-01"}]}""");
-        Map<String, DataNode> fields = new LinkedHashMap<>(((DataNode.Obj) plain).fields());
-        fields.put("MTM", DataNode.masked());
-        fields.put("MASKED_LIST", DataNode.masked());
-        fields.put("PVS", DataNode.of(List.of(Map.of("PV", 5), Map.of("PV", DataNode.masked()))));
-        DOC = new DataNode.Obj(fields);
+        Map<String, Node> fields = new LinkedHashMap<String, Node>(plain.fields());
+        fields.put("MTM", Node.masked());
+        fields.put("MASKED_LIST", Node.masked());
+        fields.put("PVS", Node.of(List.of(Map.of("PV", 5), Map.of("PV", Node.masked()))));
+        DOC = Node.of(fields);
     }
 
     private Fx() {}
@@ -68,8 +68,8 @@ final class Fx {
     /** The elements of a list result, simplified. */
     static List<Object> list(String src) {
         Object v = eval(src);
-        assertThat(v).as(src).isInstanceOf(DataNode.Arr.class);
-        return ((DataNode.Arr) v).elements().stream().map(Values::simplify).toList();
+        assertThat(v).as(src).isInstanceOf(Node.class);
+        return ((Node) v).elements().stream().map(Values::simplify).toList();
     }
 
     /** Evaluating fails with RCH-2102 and words naming the problem. */

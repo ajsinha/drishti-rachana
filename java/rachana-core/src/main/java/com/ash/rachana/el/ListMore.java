@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -50,13 +50,13 @@ final class ListMore {
 
     /** The list's elements as numbers, NaN for a missing one; null for an empty argument; masked element: masked. */
     static double[] numbers(String fn, Object v) {
-        DataNode.Arr list = Args.list(fn, v);
+        Node list = Args.list(fn, v);
         if (list == null) {
             return null;
         }
         double[] x = new double[list.size()];
         for (int i = 0; i < x.length; i++) {
-            DataNode e = list.get(i);
+            Node e = list.get(i);
             MaskedValue.check(e);
             Object s = Values.simplify(e);
             x[i] = s instanceof Boolean ? Double.NaN : Values.number(s);
@@ -65,12 +65,12 @@ final class ListMore {
     }
 
     /** Numbers as a list, NaN as an empty element. */
-    static DataNode.Arr out(double[] x) {
-        List<DataNode> out = new ArrayList<>(x.length);
+    static Node out(double[] x) {
+        List<Node> out = new ArrayList<>(x.length);
         for (double d : x) {
-            out.add(Double.isNaN(d) || Double.isInfinite(d) ? DataNode.nullValue() : DataNode.of(Values.normalise(d)));
+            out.add(Double.isNaN(d) || Double.isInfinite(d) ? Node.nullValue() : Node.of(Values.normalise(d)));
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /**
@@ -80,7 +80,7 @@ final class ListMore {
      * values, MATLAB's default end rule), {@code 'constant'} (value). Elements that are present are kept as they are.
      */
     private static Object fillmissing(List<Object> a) {
-        DataNode.Arr list = Args.list("fillmissing", a.get(0));
+        Node list = Args.list("fillmissing", a.get(0));
         String method = Args.text("fillmissing", a.get(1));
         if (list == null || method == null) {
             return null;
@@ -90,7 +90,7 @@ final class ListMore {
         }
         double[] x = numbers("fillmissing", list);
         int n = x.length;
-        List<DataNode> out = new ArrayList<>(list.elements());
+        List<Node> out = new ArrayList<>(list.elements());
         if ("constant".equals(method)) {
             if (a.size() < 3) {
                 throw Args.error("fillmissing", "'constant' needs the value to fill with: fillmissing(list, 'constant', 0)");
@@ -101,7 +101,7 @@ final class ListMore {
                     out.set(i, Args.node(fill));
                 }
             }
-            return new DataNode.Arr(List.copyOf(out));
+            return Node.list(List.copyOf(out));
         }
         int[] prev = new int[n];
         int[] next = new int[n];
@@ -154,10 +154,10 @@ final class ListMore {
                 }
             }
             if (!Double.isNaN(v)) {
-                out.set(i, DataNode.of(Values.normalise(v)));
+                out.set(i, Node.of(Values.normalise(v)));
             }
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /**
@@ -192,7 +192,7 @@ final class ListMore {
                 throw Args.error("interp1", "two points share x = " + Values.text(Values.normalise(pts.get(i)[0])));
             }
         }
-        if (q instanceof DataNode.Arr ql) {
+        if (q instanceof Node ql && ql.isArray()) {
             double[] at = numbers("interp1", ql);
             double[] out = new double[at.length];
             for (int i = 0; i < at.length; i++) {
@@ -248,7 +248,7 @@ final class ListMore {
                 return null;
             }
         }
-        if (x instanceof DataNode.Arr xl) {
+        if (x instanceof Node xl && xl.isArray()) {
             double[] at = numbers("polyval", xl);
             double[] out = new double[at.length];
             for (int i = 0; i < at.length; i++) {
@@ -300,22 +300,22 @@ final class ListMore {
     }
 
     /** An element's identity for the set functions: numbers by value, text as written, lists and objects by content. */
-    private static Object key(DataNode e) {
+    private static Object key(Node e) {
         Object s = Values.simplify(e);
         if (s instanceof Number) {
             BigDecimal d = Args.decimal("union", s);
             return d.signum() == 0 ? BigDecimal.ZERO : d.stripTrailingZeros();
         }
-        return s instanceof DataNode n ? n.unwrap() : s == null ? List.of() : s;
+        return s instanceof Node n ? n.unwrap() : s == null ? List.of() : s;
     }
 
-    private static Map<Object, DataNode> distinct(String fn, Object v) {
-        DataNode.Arr list = Args.list(fn, v);
+    private static Map<Object, Node> distinct(String fn, Object v) {
+        Node list = Args.list(fn, v);
         if (list == null) {
             return null;
         }
-        Map<Object, DataNode> out = new LinkedHashMap<>();
-        for (DataNode e : list.elements()) {
+        Map<Object, Node> out = new LinkedHashMap<>();
+        for (Node e : list.elements()) {
             MaskedValue.check(e);
             out.putIfAbsent(key(e), e);
         }
@@ -324,12 +324,12 @@ final class ListMore {
 
     /** {@code union(a, b)}, {@code intersect(a, b)}, {@code difference(a, b)}: each value once, in {@code sort}'s order. */
     private static Object sets(String fn, List<Object> a) {
-        Map<Object, DataNode> x = distinct(fn, a.get(0));
-        Map<Object, DataNode> y = distinct(fn, a.get(1));
+        Map<Object, Node> x = distinct(fn, a.get(0));
+        Map<Object, Node> y = distinct(fn, a.get(1));
         if (x == null || y == null) {
             return null;
         }
-        List<DataNode> out = new ArrayList<>();
+        List<Node> out = new ArrayList<>();
         switch (fn) {
             case "union" -> {
                 out.addAll(x.values());
@@ -357,7 +357,7 @@ final class ListMore {
             boolean ve = Args.empty(v);
             return ue || ve ? Boolean.compare(ue, ve) : ListFunctions.compare(u, v);
         });
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /**
@@ -367,18 +367,18 @@ final class ListMore {
      */
     private static Object isMember(List<Object> a) {
         Object x = Values.simplify(a.get(0));
-        Map<Object, DataNode> set = distinct("is_member", a.get(1));
+        Map<Object, Node> set = distinct("is_member", a.get(1));
         if (set == null) {
             return null;
         }
-        if (x instanceof DataNode.Arr xl) {
-            List<DataNode> out = new ArrayList<>(xl.size());
-            for (DataNode e : xl.elements()) {
+        if (x instanceof Node xl && xl.isArray()) {
+            List<Node> out = new ArrayList<>(xl.size());
+            for (Node e : xl.elements()) {
                 MaskedValue.check(e);
-                out.add(DataNode.of(set.containsKey(key(e))));
+                out.add(Node.of(set.containsKey(key(e))));
             }
-            return new DataNode.Arr(List.copyOf(out));
+            return Node.list(List.copyOf(out));
         }
-        return x == null ? (Object) set.containsKey(List.of()) : (Object) set.containsKey(key(DataNode.of(x)));
+        return x == null ? (Object) set.containsKey(List.of()) : (Object) set.containsKey(key(Node.of(x)));
     }
 }

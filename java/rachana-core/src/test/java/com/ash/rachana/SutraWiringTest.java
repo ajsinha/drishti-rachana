@@ -7,8 +7,7 @@ package com.ash.rachana;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.JsonCodec;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.EvalContext;
 import com.ash.rachana.el.Values;
@@ -140,9 +139,9 @@ class SutraWiringTest {
 
     @Test
     void eventsAndSourceAreReadInExpressions() {
-        DataNode doc = new JsonCodec().read("{\"A\":1}");
-        DataNode open = new JsonCodec().read("{\"open\":{\"trade\":\"T-1\"}}");
-        DataNode src = new JsonCodec().read("{\"POINTS\":[1,2,3]}");
+        Node doc = new JsonCodec().read("{\"A\":1}");
+        Node open = new JsonCodec().read("{\"open\":{\"trade\":\"T-1\"}}");
+        Node src = new JsonCodec().read("{\"POINTS\":[1,2,3]}");
         EvalContext c = EvalContext.of(doc, Formats.defaults()).withScope(new EvalContext.Scope(Map.of("by-book", open), open, src));
         assertThat(Values.simplify(EL.compile("@by-book.open.trade").eval(c))).isEqualTo("T-1");
         assertThat(Values.simplify(EL.compile("@parent.open.trade").eval(c))).isEqualTo("T-1");

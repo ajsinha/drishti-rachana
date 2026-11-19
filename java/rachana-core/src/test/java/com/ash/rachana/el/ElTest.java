@@ -7,8 +7,8 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.JsonCodec;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.JsonCodec;
 import com.ash.rachana.format.Formats;
 import java.util.SplittableRandom;
 import java.util.TreeSet;
@@ -21,7 +21,7 @@ class ElTest {
 
     static final ElCompiler EL = new ElCompiler();
     static final Formats F = Formats.load(null, java.util.List.of(com.ash.rachana.TestFormats.file()));
-    static final DataNode DOC = new JsonCodec().read("""
+    static final Node DOC = new JsonCodec().read("""
             {"tradeId":"IRS-1","notional":50000000,"direction":"PAY_FIXED","rate":0.0385,
              "legs":[{"leg":1,"payer":true,"label":"Pay fixed","rows":[{"a":1},{"a":2.5}]},
                      {"leg":2,"payer":false,"label":"Receive SOFR"}],
@@ -61,7 +61,7 @@ class ElTest {
 
     @Test
     void groupSumsByAKeyAndDaysCountFromTheViewsBusinessDate() {
-        DataNode doc = new JsonCodec().read("""
+        Node doc = new JsonCodec().read("""
                 {"EVENTS":[{"EVENT_DATE":"2026-10-20","AMOUNT":"-1500.5","LEG":{"ID":1}},{"EVENT_DATE":"2026-10-20","AMOUNT":2000,"LEG":{"ID":2}},
                            {"EVENT_DATE":"2026-11-03","AMOUNT":"","LEG":{"ID":1}},{"EVENT_DATE":"","AMOUNT":7},{"EVENT_DATE":"2027-01-15","AMOUNT":"x"}]}""");
         EvalContext at = EvalContext.of(doc, F).withToday(java.time.LocalDate.of(2026, 10, 16));
@@ -84,7 +84,7 @@ class ElTest {
 
     @Test
     void pathsReachAnyDepthThroughObjectsAndArrays() {
-        DataNode deep = new JsonCodec().read("""
+        Node deep = new JsonCodec().read("""
                 {"trade": {"parties": {"us": {"entity": {"name": "Drishti Bank plc", "lei": "5493001"}}},
                            "legs": [{"schedule": {"periods": [{"fixing": {"rate": 0.0371, "source": {"index": "SOFR"}}},
                                                               {"fixing": {"rate": 0.0368, "source": {"index": "SOFR"}}}]}},

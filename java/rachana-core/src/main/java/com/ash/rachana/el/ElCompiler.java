@@ -4,8 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.ash.rachana.internal.Lru;
 
 /**
  * Compiles Rachana-EL source to {@link Expr} trees, caching by source text: the same few hundred
@@ -13,13 +12,13 @@ import com.github.benmanes.caffeine.cache.Caffeine;
  */
 public final class ElCompiler {
 
-    private final Cache<String, Expr> exprs;
-    private final Cache<String, Template> templates;
+    private final Lru<String, Expr> exprs;
+    private final Lru<String, Template> templates;
     private final ElLimits limits;
 
     public ElCompiler(long maxEntries, ElLimits limits) {
-        this.exprs = Caffeine.newBuilder().maximumSize(maxEntries).build();
-        this.templates = Caffeine.newBuilder().maximumSize(maxEntries).build();
+        this.exprs = new Lru<>(maxEntries);
+        this.templates = new Lru<>(maxEntries);
         this.limits = limits;
     }
 
@@ -50,6 +49,6 @@ public final class ElCompiler {
     }
 
     public long size() {
-        return exprs.estimatedSize();
+        return exprs.size();
     }
 }

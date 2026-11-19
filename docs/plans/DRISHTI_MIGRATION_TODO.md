@@ -144,13 +144,19 @@ here. What Drishti must do when the migration starts, in this order:
       `RachanaProperties`, `SutraRegistry` (the directory registry, on Core's `SutraStore` after A7) and their tests.
 - [ ] 8.3 **The import rewrite**: `com.ash.drishti.rachana` → `com.ash.rachana` across the product (about 184 files), scripted and
       re-runnable; the other Drishti builders paused on those modules.
+- [ ] 8.3b **Settings (A4)**: `RachanaConfiguration` builds one `RachanaOptions` from `RachanaProperties` (`expression-cache-size`,
+      `max-expression-depth`, `max-expression-length`, `formats-file`, `pack-formats-files`, the regex caps) and makes the compiler and
+      the format table from it (`options.compiler()`, `options.formats()`); no setting is renamed, `CONFIGURATION.md` unchanged.
 - [ ] 8.4 **The formats reload hook**: `Formats` no longer implements `LiveSettings` (Spring cannot be a Rachana dependency). Drishti
       adds a small `LiveSettings` adapter in its profile part that reads `drishti.rachana.pack-formats-files`, builds the table with
       `Formats.load(override, files)` and swaps it into the holder the readers use (the behaviour of the deleted `Formats.prepare`).
 - [ ] 8.5 **The host types**: Rachana's `hostcompat` copies (`DataNode`, `NodeType`, `ListValues`, `PathWalker`, `IdText`,
       `SafeRegex`, `BusinessCalendar`, `HostException`, `ErrorCode`) are never used by Drishti; Drishti keeps its own and, from A2,
-      adapts `DataNode` to `com.ash.rachana.api.Node`; from A1 maps `RCH-` codes to `DRS-` at its API edge (`ApiExceptionHandler`);
-      from A3 its `SafeRegex` delegates to Core's and its `BusinessCalendar` is registered through the `Calendars` hook.
+      makes `DataNode` **implement** `com.ash.rachana.api.Node` (no wrapping): `kind()` from its `type()`, and `value()`, `elements()`,
+      `fields()` which its records already have (covariant returns), `isArray()`; then `HotPathBenchmark` within 3% of the H7 baseline; from A1 maps `RCH-` codes to `DRS-` at its API edge (`ApiExceptionHandler`);
+      from A3 its `SafeRegex` delegates to Core's `com.ash.rachana.el.SafeRegex` (Core reads the caps from `rachana.regex.*`
+      system properties until A4; since A4 Core reads none: Drishti passes its `drishti.search.regex.*` settings through
+      `RachanaOptions.regexLimits`, which reaches the text functions with A6), and its `BusinessCalendar` is replaced by Core's (the same code) or installed with `Calendars.use(...)`.
 - [ ] 8.6 **The tests that stayed** (they read Drishti's files, so they did not move): `SutraParserTest.referenceSutrasParse`,
       `SutraWiringTest.aUseCarriesItsPanelsWiring`, `SutraLayoutEditorTest` (three methods over the IRS example), `OpApplierTest`
       (six methods over `docs/guides/examples`), `PackSutrasTest`, `ReferenceSutrasTest`, `DocumentedSutrasTest`,

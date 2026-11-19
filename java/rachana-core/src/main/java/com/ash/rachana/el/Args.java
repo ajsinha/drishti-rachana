@@ -4,8 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.RachanaCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -34,8 +33,8 @@ final class Args {
     /** A value as a problem names it: text in quotes, a list or object by its kind. */
     static String describe(Object value) {
         Object v = Values.simplify(value);
-        if (v instanceof DataNode n) {
-            return n.type() == NodeType.ARRAY ? "a list" : "an object";
+        if (v instanceof Node n) {
+            return n.kind() == Node.Kind.ARRAY ? "a list" : "an object";
         }
         if (v instanceof String s) {
             return "'" + (s.length() > 40 ? s.substring(0, 40) + "…" : s) + "'";
@@ -131,7 +130,7 @@ final class Args {
         if (v == null) {
             return null;
         }
-        if (v instanceof DataNode) {
+        if (v instanceof Node) {
             throw typeError(fn, v, "text");
         }
         return Values.text(v);
@@ -172,34 +171,34 @@ final class Args {
     }
 
     /** The argument as a list; null when empty. */
-    static DataNode.Arr list(String fn, Object value) {
+    static Node list(String fn, Object value) {
         Object v = Values.simplify(value);
         if (v == null) {
             return null;
         }
-        if (v instanceof DataNode.Arr a) {
+        if (v instanceof Node a && a.isArray()) {
             return a;
         }
         throw typeError(fn, v, "a list");
     }
 
     /** A list result: each value a node (a link as its text, a masked value masked). */
-    static DataNode.Arr list(List<?> values) {
-        List<DataNode> out = new java.util.ArrayList<>(values.size());
+    static Node list(List<?> values) {
+        List<Node> out = new java.util.ArrayList<>(values.size());
         for (Object v : values) {
             out.add(node(v));
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /** A value as a node, to be an element of a list. */
-    static DataNode node(Object v) {
-        if (v instanceof DataNode n) {
+    static Node node(Object v) {
+        if (v instanceof Node n) {
             return n;
         }
         if (Values.masked(v)) {
-            return DataNode.masked();
+            return Node.masked();
         }
-        return v instanceof Link l ? DataNode.of(l.display()) : DataNode.of(v);
+        return v instanceof Link l ? Node.of(l.display()) : Node.of(v);
     }
 }

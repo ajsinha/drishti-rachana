@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -162,7 +162,7 @@ final class FinanceFunctions {
         if (Values.masked(v)) {
             throw MaskedValue.INSTANCE;
         }
-        DataNode.Arr list = Args.list(fn, v);
+        Node list = Args.list(fn, v);
         if (list == null || list.size() == 0) {
             return null;
         }
@@ -171,7 +171,7 @@ final class FinanceFunctions {
         }
         double[] out = new double[list.size()];
         for (int i = 0; i < out.length; i++) {
-            DataNode e = list.get(i);
+            Node e = list.get(i);
             if (e.isMasked()) {
                 throw MaskedValue.INSTANCE;
             }
@@ -192,7 +192,7 @@ final class FinanceFunctions {
         if (Values.masked(v)) {
             throw MaskedValue.INSTANCE;
         }
-        DataNode.Arr list = Args.list(fn, v);
+        Node list = Args.list(fn, v);
         if (list == null || f == null) {
             return null;
         }
@@ -202,7 +202,7 @@ final class FinanceFunctions {
         double[] out = new double[f.length];
         LocalDate first = null;
         for (int i = 0; i < out.length; i++) {
-            DataNode e = list.get(i);
+            Node e = list.get(i);
             if (e.isMasked()) {
                 throw MaskedValue.INSTANCE;
             }
@@ -528,7 +528,7 @@ final class FinanceFunctions {
 
     /** The times of {@link #duration}: numbers as years, or dates counted from {@code settle} (argument 5) in days / 365. */
     private static double[] times(String fn, List<Object> a, int n) {
-        DataNode.Arr list = Args.list(fn, a.get(1));
+        Node list = Args.list(fn, a.get(1));
         if (list == null) {
             return null;
         }

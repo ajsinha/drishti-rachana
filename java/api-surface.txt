@@ -27,6 +27,7 @@ class public final class com.ash.rachana.el.Calendars
 class public final class com.ash.rachana.el.CheckedMode
 class public final class com.ash.rachana.el.DatePartFunctions
 class public final class com.ash.rachana.el.ElCompiler
+class public final class com.ash.rachana.el.FunctionTable
 class public final class com.ash.rachana.el.Functions
 class public final class com.ash.rachana.el.MeasureFunctions
 class public final class com.ash.rachana.el.Printer
@@ -97,6 +98,7 @@ class public final record com.ash.rachana.model.Wiring
 class public final record com.ash.rachana.parse.PNode
 class public static final class com.ash.rachana.design.ops.Ops$FormatException
 class public static final class com.ash.rachana.parse.Json$JsonException
+class public static final class com.ash.rachana.profile.Profile$Builder
 class public static final enum com.ash.rachana.api.Node$Kind
 class public static final enum com.ash.rachana.model.Control$Placement
 class public static final enum com.ash.rachana.model.PivotSpec$Mode
@@ -172,6 +174,14 @@ class public static final record com.ash.rachana.parse.BlockUses$Use
 class public static final record com.ash.rachana.parse.PositionalYamlReader$Issue
 class public static final record com.ash.rachana.parse.SutraBlocks$Block
 class public static final record com.ash.rachana.parse.SutraBlocks$Contribution
+com.ash.rachana.Rachana :: public com.ash.rachana.RachanaOptions com.ash.rachana.Rachana.options()
+com.ash.rachana.Rachana :: public com.ash.rachana.el.ElCompiler com.ash.rachana.Rachana.compiler()
+com.ash.rachana.Rachana :: public com.ash.rachana.el.FunctionTable com.ash.rachana.Rachana.functions()
+com.ash.rachana.Rachana :: public com.ash.rachana.format.Formats com.ash.rachana.Rachana.formats()
+com.ash.rachana.Rachana :: public java.util.List<com.ash.rachana.profile.Profile> com.ash.rachana.Rachana.profiles()
+com.ash.rachana.Rachana :: public java.util.Optional<com.ash.rachana.profile.Profile> com.ash.rachana.Rachana.profile(java.lang.String)
+com.ash.rachana.Rachana :: public static com.ash.rachana.Rachana com.ash.rachana.Rachana.core()
+com.ash.rachana.Rachana :: public static com.ash.rachana.Rachana com.ash.rachana.Rachana.with(com.ash.rachana.RachanaOptions,com.ash.rachana.profile.Profile...)
 com.ash.rachana.Rachana :: public static java.lang.String com.ash.rachana.Rachana.name()
 com.ash.rachana.RachanaCode :: public java.lang.String com.ash.rachana.RachanaCode.code()
 com.ash.rachana.RachanaCode :: public static com.ash.rachana.RachanaCode com.ash.rachana.RachanaCode.valueOf(java.lang.String)
@@ -450,8 +460,10 @@ com.ash.rachana.el.BusinessCalendar :: public java.time.LocalDate com.ash.rachan
 com.ash.rachana.el.BusinessCalendar :: public java.util.Set<java.time.LocalDate> com.ash.rachana.el.BusinessCalendar.holidays(int)
 com.ash.rachana.el.BusinessCalendar :: public java.util.SortedMap<java.time.LocalDate, java.lang.String> com.ash.rachana.el.BusinessCalendar.holidayNames(int)
 com.ash.rachana.el.BusinessCalendar :: public static com.ash.rachana.el.BusinessCalendar com.ash.rachana.el.BusinessCalendar.of(java.lang.String)
+com.ash.rachana.el.Calendars :: public com.ash.rachana.el.Calendars$Resolver com.ash.rachana.el.Calendars.resolver()
+com.ash.rachana.el.Calendars :: public static com.ash.rachana.el.Calendars com.ash.rachana.el.Calendars.core()
+com.ash.rachana.el.Calendars :: public static com.ash.rachana.el.Calendars com.ash.rachana.el.Calendars.of(com.ash.rachana.el.Calendars$Resolver)
 com.ash.rachana.el.Calendars :: public static final com.ash.rachana.el.Calendars$Resolver com.ash.rachana.el.Calendars.CORE
-com.ash.rachana.el.Calendars :: public static void com.ash.rachana.el.Calendars.use(com.ash.rachana.el.Calendars$Resolver)
 com.ash.rachana.el.Calendars$Calendar :: public abstract boolean com.ash.rachana.el.Calendars$Calendar.isBusinessDay(java.time.LocalDate)
 com.ash.rachana.el.Calendars$Calendar :: public abstract java.lang.String com.ash.rachana.el.Calendars$Calendar.name()
 com.ash.rachana.el.Calendars$Calendar :: public abstract java.time.LocalDate com.ash.rachana.el.Calendars$Calendar.next(java.time.LocalDate)
@@ -474,8 +486,10 @@ com.ash.rachana.el.DatePartFunctions :: public static java.time.LocalDate com.as
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long)
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long,com.ash.rachana.el.ElLimits)
+com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long,com.ash.rachana.el.ElLimits,com.ash.rachana.el.FunctionTable)
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElLimits com.ash.rachana.el.ElCompiler.limits()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.Expr com.ash.rachana.el.ElCompiler.compile(java.lang.String)
+com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.FunctionTable com.ash.rachana.el.ElCompiler.functions()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.Template com.ash.rachana.el.ElCompiler.template(java.lang.String)
 com.ash.rachana.el.ElCompiler :: public long com.ash.rachana.el.ElCompiler.size()
 com.ash.rachana.el.ElException :: public com.ash.rachana.el.ElException(com.ash.rachana.RachanaCode,java.lang.String)
@@ -756,13 +770,22 @@ com.ash.rachana.el.FunctionProvider$Provided :: public java.lang.String com.ash.
 com.ash.rachana.el.FunctionProvider$Provided :: public java.lang.String com.ash.rachana.el.FunctionProvider$Provided.example()
 com.ash.rachana.el.FunctionProvider$Provided :: public java.lang.String com.ash.rachana.el.FunctionProvider$Provided.form()
 com.ash.rachana.el.FunctionProvider$Provided :: public java.lang.String com.ash.rachana.el.FunctionProvider$Provided.name()
-com.ash.rachana.el.Functions :: public static java.lang.String com.ash.rachana.el.Functions.liveSource(java.lang.String)
+com.ash.rachana.el.FunctionTable :: public boolean com.ash.rachana.el.FunctionTable.has(java.lang.String)
+com.ash.rachana.el.FunctionTable :: public com.ash.rachana.el.Calendars com.ash.rachana.el.FunctionTable.calendars()
+com.ash.rachana.el.FunctionTable :: public com.ash.rachana.el.SafeRegex$Limits com.ash.rachana.el.FunctionTable.regexLimits()
+com.ash.rachana.el.FunctionTable :: public java.lang.String com.ash.rachana.el.FunctionTable.oneName(java.lang.String)
+com.ash.rachana.el.FunctionTable :: public java.lang.String com.ash.rachana.el.FunctionTable.providerOf(java.lang.String)
+com.ash.rachana.el.FunctionTable :: public java.util.List<com.ash.rachana.el.Functions$Entry> com.ash.rachana.el.FunctionTable.catalogue()
+com.ash.rachana.el.FunctionTable :: public java.util.Map<java.lang.String, int[]> com.ash.rachana.el.FunctionTable.arity()
+com.ash.rachana.el.FunctionTable :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.FunctionTable.oldSpellings()
+com.ash.rachana.el.FunctionTable :: public java.util.Optional<com.ash.rachana.el.Functions$AggregateCall> com.ash.rachana.el.FunctionTable.aggregateCall(com.ash.rachana.el.Expr)
+com.ash.rachana.el.FunctionTable :: public static com.ash.rachana.el.FunctionTable com.ash.rachana.el.FunctionTable.core()
+com.ash.rachana.el.FunctionTable :: public static com.ash.rachana.el.FunctionTable com.ash.rachana.el.FunctionTable.of(java.util.List<com.ash.rachana.el.FunctionProvider>,com.ash.rachana.el.Calendars,com.ash.rachana.el.SafeRegex$Limits)
 com.ash.rachana.el.Functions :: public static java.lang.String com.ash.rachana.el.Functions.oneName(java.lang.String)
 com.ash.rachana.el.Functions :: public static java.util.List<com.ash.rachana.el.Functions$Entry> com.ash.rachana.el.Functions.catalogue()
 com.ash.rachana.el.Functions :: public static java.util.Map<java.lang.String, int[]> com.ash.rachana.el.Functions.arity()
 com.ash.rachana.el.Functions :: public static java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Functions.oldSpellings()
 com.ash.rachana.el.Functions :: public static java.util.Optional<com.ash.rachana.el.Functions$AggregateCall> com.ash.rachana.el.Functions.aggregateCall(com.ash.rachana.el.Expr)
-com.ash.rachana.el.Functions :: public static synchronized java.lang.Runnable com.ash.rachana.el.Functions.register(java.lang.String,java.util.List<com.ash.rachana.el.FunctionProvider$Provided>)
 com.ash.rachana.el.Functions$AggregateCall :: public com.ash.rachana.el.Expr com.ash.rachana.el.Functions$AggregateCall.input()
 com.ash.rachana.el.Functions$AggregateCall :: public com.ash.rachana.el.Functions$AggregateCall(java.lang.String,com.ash.rachana.el.Expr,java.util.List<java.lang.Object>)
 com.ash.rachana.el.Functions$AggregateCall :: public final boolean com.ash.rachana.el.Functions$AggregateCall.equals(java.lang.Object)
@@ -790,6 +813,7 @@ com.ash.rachana.el.Link :: public java.lang.String com.ash.rachana.el.Link.id()
 com.ash.rachana.el.Link :: public java.lang.String com.ash.rachana.el.Link.kind()
 com.ash.rachana.el.Link :: public java.lang.String com.ash.rachana.el.Link.label()
 com.ash.rachana.el.MeasureFunctions :: public static java.lang.String com.ash.rachana.el.MeasureFunctions.expand(java.lang.String,java.util.Map<java.lang.String, com.ash.rachana.el.MeasureFunctions$Def>)
+com.ash.rachana.el.MeasureFunctions :: public static java.lang.String com.ash.rachana.el.MeasureFunctions.expand(java.lang.String,java.util.Map<java.lang.String, com.ash.rachana.el.MeasureFunctions$Def>,com.ash.rachana.el.FunctionTable)
 com.ash.rachana.el.MeasureFunctions$Def :: public com.ash.rachana.el.MeasureFunctions$Def(java.util.List<java.lang.String>,java.lang.String)
 com.ash.rachana.el.MeasureFunctions$Def :: public final boolean com.ash.rachana.el.MeasureFunctions$Def.equals(java.lang.Object)
 com.ash.rachana.el.MeasureFunctions$Def :: public final int com.ash.rachana.el.MeasureFunctions$Def.hashCode()
@@ -1658,5 +1682,15 @@ com.ash.rachana.parse.SutraParser :: public static final java.lang.String com.as
 com.ash.rachana.parse.YamlSyntaxException :: public com.ash.rachana.parse.YamlSyntaxException(java.lang.String,int,int)
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.column()
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.line()
+com.ash.rachana.profile.Profile :: public boolean com.ash.rachana.profile.Profile.isCore()
+com.ash.rachana.profile.Profile :: public com.ash.rachana.el.Calendars$Resolver com.ash.rachana.profile.Profile.calendars()
 com.ash.rachana.profile.Profile :: public java.lang.String com.ash.rachana.profile.Profile.name()
+com.ash.rachana.profile.Profile :: public java.lang.String com.ash.rachana.profile.Profile.toString()
+com.ash.rachana.profile.Profile :: public java.util.List<com.ash.rachana.el.FunctionProvider> com.ash.rachana.profile.Profile.functions()
+com.ash.rachana.profile.Profile :: public java.util.List<java.lang.String> com.ash.rachana.profile.Profile.formatFiles()
 com.ash.rachana.profile.Profile :: public static com.ash.rachana.profile.Profile com.ash.rachana.profile.Profile.core()
+com.ash.rachana.profile.Profile :: public static com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile.named(java.lang.String)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile com.ash.rachana.profile.Profile$Builder.build()
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.calendars(com.ash.rachana.el.Calendars$Resolver)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.formats(java.lang.String...)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.functions(com.ash.rachana.el.FunctionProvider...)

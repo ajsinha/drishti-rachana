@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.conformance;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.el.*;
 import com.ash.rachana.format.Formats;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -120,7 +120,7 @@ public final class JvmRuntime {
 
     static void format(JsonNode c, StringBuilder sb) {
         Object v = plain(c.path("value"));
-        Object node = v instanceof DataNode ? v : (v == null ? null : v);
+        Object node = v instanceof Node ? v : (v == null ? null : v);
         String text = c.has("format") ? formats.format(c.get("format").asText(), node) : Values.text(node);
         String tone = c.has("tone") && !Values.masked(node) ? com.ash.rachana.format.Tones.resolve(c.get("tone").asText(), v) : null;
         sb.append("{\"text\":").append(str(text)).append(",\"tone\":").append(tone == null ? "null" : str(tone)).append('}');
@@ -190,14 +190,14 @@ public final class JvmRuntime {
     // ---- context -------------------------------------------------------------------------------------------------
 
     static EvalContext context(JsonNode g) {
-        DataNode root = node(g.has("record") ? g.get("record") : M.createObjectNode());
+        Node root = node(g.has("record") ? g.get("record") : M.createObjectNode());
         EvalContext c = EvalContext.of(root, formats);
         if (g.has("today")) { c = c.withToday(LocalDate.parse(g.get("today").asText())); }
         Map<String, Object> ctl = new LinkedHashMap<>();
         // a multi-valued control (multi-select, the choices of oneOf/within) reaches the evaluator as a document list, as the host's
-        // ControlValues hands it over (H2: ControlsTest passes DataNode.of(List.of(...))); a scalar as itself
-        if (g.has("ctl")) { g.get("ctl").fields().forEachRemaining(f -> { Object v = plain(f.getValue()); ctl.put(f.getKey(), v instanceof List<?> ? DataNode.of(v) : v); }); c = c.withControls(ctl); }
-        Map<String, DataNode> events = new LinkedHashMap<>();
+        // ControlValues hands it over (H2: ControlsTest passes Node.of(List.of(...))); a scalar as itself
+        if (g.has("ctl")) { g.get("ctl").fields().forEachRemaining(f -> { Object v = plain(f.getValue()); ctl.put(f.getKey(), v instanceof List<?> ? Node.of(v) : v); }); c = c.withControls(ctl); }
+        Map<String, Node> events = new LinkedHashMap<>();
         if (g.has("events")) { g.get("events").fields().forEachRemaining(f -> events.put(f.getKey(), node(f.getValue()))); }
         Object src = g.has("src") ? node(g.get("src")) : null;
         if (!events.isEmpty() || src != null) { c = c.withScope(new EvalContext.Scope(events, null, src)); }
@@ -212,7 +212,7 @@ public final class JvmRuntime {
         return c;
     }
 
-    static DataNode node(JsonNode n) { return DataNode.of(plain(n)); }
+    static Node node(JsonNode n) { return Node.of(plain(n)); }
 
     /** JSON to Java values; the tags of FORMAT 4 become the reference's own values. */
     static Object plain(JsonNode n) {
@@ -222,7 +222,7 @@ public final class JvmRuntime {
         if (n.isNumber()) { return n.doubleValue(); }
         if (n.isTextual()) { return n.textValue(); }
         if (n.isArray()) { List<Object> l = new ArrayList<>(); n.forEach(x -> l.add(plain(x))); return l; }
-        if (n.size() == 1 && n.has("$masked")) { return DataNode.masked(); }
+        if (n.size() == 1 && n.has("$masked")) { return Node.masked(); }
         if (n.size() == 1 && n.has("$dec")) { return new BigDecimal(n.get("$dec").asText()); }
         if (n.size() == 1 && n.has("$num")) { return switch (n.get("$num").asText()) { case "NaN" -> Double.NaN; case "Infinity" -> Double.POSITIVE_INFINITY; default -> Double.NEGATIVE_INFINITY; }; }
         Map<String, Object> m = new LinkedHashMap<>();
@@ -240,7 +240,7 @@ public final class JvmRuntime {
         if (s instanceof Number) { return "number"; }
         if (s instanceof String) { return "text"; }
         if (s instanceof Link) { return "link"; }
-        if (s instanceof DataNode d) { return d.type().toString().equals("ARRAY") ? "list" : "object"; }
+        if (s instanceof Node d) { return d.kind() == Node.Kind.ARRAY ? "list" : "object"; }
         if (s instanceof Collection) { return "list"; }
         if (s instanceof Map) { return "object"; }
         return "text";
@@ -255,7 +255,7 @@ public final class JvmRuntime {
         else if (s instanceof Number n) { sb.append(n.longValue()); }
         else if (s instanceof String t) { sb.append(str(t)); }
         else if (s instanceof Link l) { sb.append("{\"$link\":{\"id\":").append(str(l.id())).append(l.kind() == null ? "" : ",\"kind\":" + str(l.kind())).append(l.label() == null ? "" : ",\"label\":" + str(l.label())).append("}}"); }
-        else if (s instanceof DataNode d) { value(Values.simplify(d.unwrap()), sb); }
+        else if (s instanceof Node d) { value(Values.simplify(d.unwrap()), sb); }
         else if (s instanceof Map<?, ?> m) {
             sb.append('{'); boolean f = true;
             for (Map.Entry<?, ?> e : m.entrySet()) { if (!f) { sb.append(','); } f = false; sb.append(str(String.valueOf(e.getKey()))).append(':'); value(Values.simplify(e.getValue()), sb); }

@@ -31,7 +31,7 @@ migration's proof (step 11).
 | 0a to 0e | H1 to H6 | here (Drishti halves held) | done in R0 | cases verified against the reference |
 | 10 move with history | A10 | here | **done, `v0.9.0`** | 2,112 cases byte-identical; 783 unit tests; guards |
 | 2 errors | A1 | here | **done** | 2,110 of 2,112 identical, 2 known differences (`tools/split/known-differences.txt`); 0 verified failing |
-| 3 value interface | A2 | here | planned | |
+| 3 value interface | A2 | here | **done** | 2,110 identical, the 2 known; `ForeignNodeTest` (a host's own `Node` gives the same answers); `HotPathBenchmark` held for the migration (it runs in Drishti) |
 | 4 small dependencies | A3 | here | planned | |
 | 5 Spring out | A4 | here | planned (Spring never moved: `Formats` lost its reload hook at A10, the configuration classes stayed in Drishti) | |
 | 6 registries per instance | A6 | here | planned | |

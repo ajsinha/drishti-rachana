@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,7 +38,7 @@ final class GroupForm {
         if (Values.masked(v)) {
             return Values.mask();
         }
-        if (!(Values.simplify(v) instanceof DataNode.Arr arr)) {
+        if (!(Values.simplify(v) instanceof Node arr && arr.isArray())) {
             return null;
         }
         String by = "";
@@ -78,7 +78,7 @@ final class GroupForm {
             columns.add(new ArrayList<>(arr.size()));
         }
         for (int i = 0; i < arr.size(); i++) {
-            DataNode e = arr.get(i);
+            Node e = arr.get(i);
             String k;
             if (keyPath != null) {
                 k = e.at(keyPath).asText();
@@ -104,16 +104,16 @@ final class GroupForm {
         }
         String aggregate = call != null ? call.name() : field != null ? "sum" : "count";
         List<FunctionProvider.Group> groups = Aggregates.grouping().group(keys, columns, aggregate, options, ListFunctions.MAX_GROUPS);
-        List<DataNode> out = new ArrayList<>(groups.size());
+        List<Node> out = new ArrayList<>(groups.size());
         for (FunctionProvider.Group g : groups) {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("label", g.key());
             Object value = g.value();
             row.put("value", call == null && Values.masked(value) ? null : value);   // the quoted form: a masked group has no value
             row.put("count", g.count());
-            out.add(DataNode.of(row));
+            out.add(Node.of(row));
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /** True for an aggregate's name, as the third argument of the expression form. */

@@ -2,7 +2,9 @@
  * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
-package com.ash.rachana.hostcompat;
+package com.ash.rachana;
+
+import com.ash.rachana.api.Node;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -18,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Streams JSON straight into {@link DataNode} trees and back, without an intermediate Jackson tree.
+ * Streams JSON straight into {@link Node} trees and back, without an intermediate Jackson tree.
  * Thread-safe: the factory is shared, parsers are per call.
  */
 public final class JsonCodec {
@@ -26,13 +28,13 @@ public final class JsonCodec {
     private final JsonFactory factory =
             JsonFactory.builder().enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION).build();
 
-    public DataNode read(InputStream in) throws IOException {
+    public Node read(InputStream in) throws IOException {
         try (JsonParser p = factory.createParser(in)) {
             return readRoot(p);
         }
     }
 
-    public DataNode read(String json) {
+    public Node read(String json) {
         try (JsonParser p = factory.createParser(json)) {
             return readRoot(p);
         } catch (IOException e) {
@@ -40,82 +42,51 @@ public final class JsonCodec {
         }
     }
 
-    private DataNode readRoot(JsonParser p) throws IOException {
+    private Node readRoot(JsonParser p) throws IOException {
         JsonToken t = p.nextToken();
         if (t == null) {
-            return DataNode.missing();
+            return Node.missing();
         }
         return readValue(p, t);
     }
 
-    private DataNode readValue(JsonParser p, JsonToken t) throws IOException {
+    private Node readValue(JsonParser p, JsonToken t) throws IOException {
         switch (t) {
             case START_OBJECT: {
-                Map<String, DataNode> fields = new LinkedHashMap<>();
+                Map<String, Node> fields = new LinkedHashMap<>();
                 while (p.nextToken() == JsonToken.FIELD_NAME) {
                     String name = p.currentName();
                     fields.put(name, readValue(p, p.nextToken()));
                 }
-                return new DataNode.Obj(fields);
+                return Node.of(fields);
             }
             case START_ARRAY: {
-                ArrayList<DataNode> items = new ArrayList<>();
+                ArrayList<Node> items = new ArrayList<>();
                 JsonToken n;
                 while ((n = p.nextToken()) != JsonToken.END_ARRAY) {
                     items.add(readValue(p, n));
                 }
-                return new DataNode.Arr(items);
+                return Node.list(items);
             }
             case VALUE_STRING:
-                return new DataNode.Val(p.getText());
+                return Node.of(p.getText());
             case VALUE_NUMBER_INT:
-                return new DataNode.Val(p.getNumberType() == JsonParser.NumberType.BIG_INTEGER
+                return Node.of(p.getNumberType() == JsonParser.NumberType.BIG_INTEGER
                         ? p.getBigIntegerValue() : (Object) p.getLongValue());
             case VALUE_NUMBER_FLOAT:
-                return new DataNode.Val(p.getDoubleValue());
+                return Node.of(p.getDoubleValue());
             case VALUE_TRUE:
-                return new DataNode.Val(Boolean.TRUE);
+                return Node.of(Boolean.TRUE);
             case VALUE_FALSE:
-                return new DataNode.Val(Boolean.FALSE);
+                return Node.of(Boolean.FALSE);
             case VALUE_NULL:
-                return DataNode.nullValue();
+                return Node.nullValue();
             default:
                 throw new IllegalArgumentException("unexpected token " + t + " at " + p.currentLocation());
         }
     }
 
-    public void write(DataNode node, JsonGenerator g) throws IOException {
-        switch (node) {
-            case DataNode.Obj o -> {
-                g.writeStartObject();
-                for (Map.Entry<String, DataNode> e : o.fields().entrySet()) {
-                    g.writeFieldName(e.getKey());
-                    write(e.getValue(), g);
-                }
-                g.writeEndObject();
-            }
-            case DataNode.Arr a -> {
-                g.writeStartArray();
-                for (DataNode e : a.elements()) {
-                    write(e, g);
-                }
-                g.writeEndArray();
-            }
-            case DataNode.Val v -> g.writeObject(v.value());
-            case DataNode.Missing m -> g.writeNull();
-        }
-    }
 
-    public String toJson(DataNode node) {
-        StringWriter w = new StringWriter();
-        try (JsonGenerator g = factory.createGenerator(w)) {
-            g.setCodec(new com.fasterxml.jackson.databind.ObjectMapper(factory));
-            write(node, g);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        return w.toString();
-    }
 
     public JsonFactory factory() {
         return factory;

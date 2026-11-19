@@ -8,7 +8,7 @@ module (`module-info.java`).
 
 | Module | Holds | State |
 |---|---|---|
-| `rachana-api` | `Node` (the value interface) | skeleton; the evaluator does not read it yet (step A2) |
+| `rachana-api` | `Node` (the value interface) and Rachana's own nodes (`Node.of`); zero dependencies | built (A2): the evaluator, formats and checker read only `Node` |
 | `rachana-core` | **the compiler, moved from its first host with its history** (split step A10): `com.ash.rachana` (Sutra writer, text, expressions, wiring, schema, layout and pivot editors, problems), `el` and `el.check` (Rachana-EL and its checker), `format` (formats, tones, world regions), `model`, `parse` (the positional YAML reader and the section readers), `design.ops` (editing operations); `profile` (skeleton); `hostcompat` (temporary, see below) | built; 783 unit tests |
 | `rachana-tools` | editing tools, writer, generators | skeleton (the editing code is still in `rachana-core`) |
 | `rachana-data` | Data Protocol | skeleton |

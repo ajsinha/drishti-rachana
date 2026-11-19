@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -218,7 +218,7 @@ final class MathFunctions {
      * {@code least}/{@code greatest}: numbers only, anything else skipped; empty if none; masked when an argument is.
      */
     private static Object lenient(List<Object> a, boolean min, EvalContext c) {
-        if (a.size() == 1 && a.get(0) instanceof DataNode.Arr) {
+        if (a.size() == 1 && (a.get(0) instanceof Node first && first.isArray())) {
             return Aggregates.call(min ? "min" : "max", a, c);
         }
         Double best = null;

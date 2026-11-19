@@ -149,7 +149,8 @@ here. What Drishti must do when the migration starts, in this order:
       `Formats.load(override, files)` and swaps it into the holder the readers use (the behaviour of the deleted `Formats.prepare`).
 - [ ] 8.5 **The host types**: Rachana's `hostcompat` copies (`DataNode`, `NodeType`, `ListValues`, `PathWalker`, `IdText`,
       `SafeRegex`, `BusinessCalendar`, `HostException`, `ErrorCode`) are never used by Drishti; Drishti keeps its own and, from A2,
-      adapts `DataNode` to `com.ash.rachana.api.Node`; from A1 maps `RCH-` codes to `DRS-` at its API edge (`ApiExceptionHandler`);
+      makes `DataNode` **implement** `com.ash.rachana.api.Node` (no wrapping): `kind()` from its `type()`, and `value()`, `elements()`,
+      `fields()` which its records already have (covariant returns), `isArray()`; then `HotPathBenchmark` within 3% of the H7 baseline; from A1 maps `RCH-` codes to `DRS-` at its API edge (`ApiExceptionHandler`);
       from A3 its `SafeRegex` delegates to Core's and its `BusinessCalendar` is registered through the `Calendars` hook.
 - [ ] 8.6 **The tests that stayed** (they read Drishti's files, so they did not move): `SutraParserTest.referenceSutrasParse`,
       `SutraWiringTest.aUseCarriesItsPanelsWiring`, `SutraLayoutEditorTest` (three methods over the IRS example), `OpApplierTest`

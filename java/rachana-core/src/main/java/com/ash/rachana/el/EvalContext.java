@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.format.Formats;
 
 /**
@@ -20,7 +20,7 @@ import com.ash.rachana.format.Formats;
  * @param scope events and source of the panel being bound (never null)
  * @param locals the names {@code let} bound and {@code reduce}'s {@code @acc}, innermost first (null when none)
  */
-public record EvalContext(DataNode root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl, java.time.LocalDate today,
+public record EvalContext(Node root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl, java.time.LocalDate today,
         Scope scope, Locals locals) {
 
     /**
@@ -30,7 +30,7 @@ public record EvalContext(DataNode root, Object row, int index, Formats formats,
      * @param parent the parent panel's events, for a child panel ({@code @parent}); null elsewhere
      * @param src the record or records the panel's {@code source:} names ({@code $src}); null when it has none
      */
-    public record Scope(java.util.Map<String, DataNode> events, DataNode parent, Object src) {
+    public record Scope(java.util.Map<String, Node> events, Node parent, Object src) {
         public static final Scope NONE = new Scope(java.util.Map.of(), null, null);
 
         public Scope {
@@ -48,12 +48,12 @@ public record EvalContext(DataNode root, Object row, int index, Formats formats,
         scope = scope == null ? Scope.NONE : scope;
     }
 
-    public EvalContext(DataNode root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl, java.time.LocalDate today,
+    public EvalContext(Node root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl, java.time.LocalDate today,
             Scope scope) {
         this(root, row, index, formats, ctl, today, scope, null);
     }
 
-    public EvalContext(DataNode root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl, java.time.LocalDate today) {
+    public EvalContext(Node root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl, java.time.LocalDate today) {
         this(root, row, index, formats, ctl, today, Scope.NONE);
     }
 
@@ -72,14 +72,14 @@ public record EvalContext(DataNode root, Object row, int index, Formats formats,
                 return l.value();
             }
         }
-        return DataNode.missing();
+        return Node.missing();
     }
 
-    public EvalContext(DataNode root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl) {
+    public EvalContext(Node root, Object row, int index, Formats formats, java.util.Map<String, Object> ctl) {
         this(root, row, index, formats, ctl, null);
     }
 
-    public EvalContext(DataNode root, Object row, int index, Formats formats) {
+    public EvalContext(Node root, Object row, int index, Formats formats) {
         this(root, row, index, formats, java.util.Map.of());
     }
 
@@ -88,7 +88,7 @@ public record EvalContext(DataNode root, Object row, int index, Formats formats,
         return new EvalContext(root, row, index, formats, ctl, date, scope, locals);
     }
 
-    public static EvalContext of(DataNode root, Formats formats) {
+    public static EvalContext of(Node root, Formats formats) {
         return new EvalContext(root, null, -1, formats);
     }
 
@@ -120,10 +120,10 @@ public record EvalContext(DataNode root, Object row, int index, Formats formats,
         int seen = 0;
         for (Locals l = locals; l != null; l = l.outer()) {
             if (PARENT.equals(l.name()) && ++seen == up) {
-                return l.value() == null ? DataNode.missing() : l.value();
+                return l.value() == null ? Node.missing() : l.value();
             }
         }
-        return DataNode.missing();
+        return Node.missing();
     }
 
     /** The as-of date of the view or query ({@code asof()}, read also as {@code today()}); null outside one. */
@@ -145,7 +145,7 @@ public record EvalContext(DataNode root, Object row, int index, Formats formats,
     }
 
     /** The same context over another document, keeping the controls, the date and the events. */
-    public EvalContext withRoot(DataNode next) {
+    public EvalContext withRoot(Node next) {
         return new EvalContext(next, null, -1, formats, ctl, today, scope, locals);
     }
 
@@ -155,8 +155,8 @@ public record EvalContext(DataNode root, Object row, int index, Formats formats,
     }
 
     /** What {@code panel} emitted ({@code @<panel>}), or for {@code parent} the parent panel's; missing until it fires. */
-    public DataNode event(String panel) {
-        DataNode d = "parent".equals(panel) ? scope.parent() : scope.events().get(panel);
-        return d == null ? DataNode.missing() : d;
+    public Node event(String panel) {
+        Node d = "parent".equals(panel) ? scope.parent() : scope.events().get(panel);
+        return d == null ? Node.missing() : d;
     }
 }

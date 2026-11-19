@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
+import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,8 +31,8 @@ final class ListFunctions {
 
     static void register(Functions.Table t) {
         t.fn("size", 1, 1, (a, c) -> size(a.get(0)));
-        t.fn("first", 1, 1, (a, c) -> a.get(0) instanceof DataNode n ? n.get(0) : null);
-        t.fn("last", 1, 1, (a, c) -> a.get(0) instanceof DataNode n ? n.get(-1) : null);
+        t.fn("first", 1, 1, (a, c) -> a.get(0) instanceof Node n ? n.get(0) : null);
+        t.fn("last", 1, 1, (a, c) -> a.get(0) instanceof Node n ? n.get(-1) : null);
         t.fn("flatten", 1, 1, (a, c) -> flatten(a.get(0)));
         t.form("group", 2, 4, GroupForm::group);
         t.form("sort", 1, 17, ListFunctions::sort);
@@ -47,7 +47,7 @@ final class ListFunctions {
 
     private static Object size(Object v) {
         Object s = Values.simplify(v);
-        if (s instanceof DataNode n) {
+        if (s instanceof Node n) {
             return (long) n.size();
         }
         return s instanceof String str ? (long) str.length() : 0L;
@@ -58,18 +58,18 @@ final class ListFunctions {
      * order); elements that are not lists are kept as they are; anything but a list is empty. One level only, so it stays cheap.
      */
     private static Object flatten(Object v) {
-        if (!(Values.simplify(v) instanceof DataNode.Arr arr)) {
+        if (!(Values.simplify(v) instanceof Node arr && arr.isArray())) {
             return null;
         }
-        List<DataNode> out = new ArrayList<>();
-        for (DataNode e : arr.elements()) {
-            if (e instanceof DataNode.Arr inner) {
+        List<Node> out = new ArrayList<>();
+        for (Node e : arr.elements()) {
+            if (e instanceof Node inner && inner.isArray()) {
                 out.addAll(inner.elements());
             } else if (!e.isNull()) {
                 out.add(e);
             }
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /** The list argument of a form, evaluated: null when empty, the mask when masked. */
@@ -90,7 +90,7 @@ final class ListFunctions {
      */
     private static Object sort(List<Expr> args, EvalContext c) {
         Object v = listOf("sort", args.get(0), c);
-        if (!(v instanceof DataNode.Arr list)) {
+        if (!(v instanceof Node list && list.isArray())) {
             return v;
         }
         int keys = Math.max(1, args.size() / 2);                           // (list), (list, k), (list, k, d), (list, k, d, k2) …
@@ -107,7 +107,7 @@ final class ListFunctions {
         }
         List<Object[]> keyed = new ArrayList<>(list.size());
         for (int i = 0; i < list.size(); i++) {
-            DataNode e = list.get(i);
+            Node e = list.get(i);
             Object[] row = new Object[keys + 1];
             for (int j = 0; j < keys; j++) {
                 Object k = args.size() > 1 + 2 * j ? args.get(1 + 2 * j).eval(c.withRow(e, i)) : e;
@@ -136,9 +136,9 @@ final class ListFunctions {
             }
             return 0;
         });
-        List<DataNode> out = new ArrayList<>(keyed.size());
-        keyed.forEach(k -> out.add((DataNode) k[keys]));
-        return new DataNode.Arr(List.copyOf(out));
+        List<Node> out = new ArrayList<>(keyed.size());
+        keyed.forEach(k -> out.add((Node) k[keys]));
+        return Node.list(List.copyOf(out));
     }
 
     /** Numbers (and number-like text) as numbers, before text; text character by character; anything else by its text. */
@@ -159,18 +159,18 @@ final class ListFunctions {
      * text exactly; lists and objects by their content). Masked when an element is.
      */
     private static Object unique(Object v) {
-        DataNode.Arr list = Args.list("unique", v);
+        Node list = Args.list("unique", v);
         if (list == null) {
             return null;
         }
         Set<Object> seen = new HashSet<>();
-        List<DataNode> out = new ArrayList<>();
-        for (DataNode e : list.elements()) {
+        List<Node> out = new ArrayList<>();
+        for (Node e : list.elements()) {
             if (e.isMasked()) {
                 return Values.mask();
             }
             Object s = Values.simplify(e);
-            Object key = s instanceof Number ? Args.out(Args.decimal("unique", s)) : s instanceof DataNode n ? n.unwrap() : s;
+            Object key = s instanceof Number ? Args.out(Args.decimal("unique", s)) : s instanceof Node n ? n.unwrap() : s;
             if (key instanceof BigDecimal b) {
                 key = b.stripTrailingZeros();
             }
@@ -178,7 +178,7 @@ final class ListFunctions {
                 out.add(e);
             }
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /**
@@ -186,21 +186,21 @@ final class ListFunctions {
      * (all but the last |n|). Beyond the list's length, the whole list or nothing.
      */
     private static Object slice(String fn, List<Object> a, boolean take) {
-        DataNode.Arr list = Args.list(fn, a.get(0));
+        Node list = Args.list(fn, a.get(0));
         Integer n = Args.whole(fn, a.get(1));
         if (list == null || n == null) {
             return null;
         }
         int size = list.size();
         int k = Math.min(Math.abs(n), size);
-        List<DataNode> all = list.elements();
-        List<DataNode> out;
+        List<? extends Node> all = list.elements();
+        List<? extends Node> out;
         if (take) {
             out = n >= 0 ? all.subList(0, k) : all.subList(size - k, size);
         } else {
             out = n >= 0 ? all.subList(k, size) : all.subList(0, size - k);
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 
     /** {@code sequence(n, [start], [step])}: n numbers from start (1) by step (1), in decimal: {@code sequence(3, 0.1, 0.1)} is 0.1, 0.2, 0.3. */
@@ -224,7 +224,7 @@ final class ListFunctions {
     /** {@code map(list, expr)}: {@code expr} for each element ({@code @} the element, {@code #index} its position), as a list. */
     private static Object map(List<Expr> args, EvalContext c) {
         Object v = listOf("map", args.get(0), c);
-        if (!(v instanceof DataNode.Arr list)) {
+        if (!(v instanceof Node list && list.isArray())) {
             return v;
         }
         List<Object> out = new ArrayList<>(list.size());
@@ -241,7 +241,7 @@ final class ListFunctions {
      */
     private static Object reduce(List<Expr> args, EvalContext c) {
         Object v = listOf("reduce", args.get(0), c);
-        if (!(v instanceof DataNode.Arr list)) {
+        if (!(v instanceof Node list && list.isArray())) {
             return v;
         }
         Object acc = args.get(1).eval(c);

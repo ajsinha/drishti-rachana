@@ -4,8 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.NodeType;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.hostcompat.SafeRegex;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,7 @@ final class TextFunctions {
     /** Case-insensitive: text contains the part, or a list has an element that does. */
     private static boolean contains(Object where, String part) {
         String p = part.toLowerCase(Locale.ROOT);
-        if (where instanceof DataNode n && n.type() == NodeType.ARRAY) {
+        if (where instanceof Node n && n.kind() == Node.Kind.ARRAY) {
             for (int i = 0; i < n.size(); i++) {
                 if (contains(n.get(i), part)) {
                     return true;

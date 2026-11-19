@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+# Drafted by reading Drishti's tests (plan F2); verified by the reference runner (plan H1); a case with verified: false pins what SPEC says where the reference differs (el/KNOWN_DIFFERENCES.md).
 suite: el/text
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Text functions: joining, slicing, searching, regular expressions, case, number-from-text and text-from-number."
 given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
 cases:
@@ -291,6 +291,7 @@ cases:
 
   - id: "bad-pad-a-3-00"
     kind: "expr-error"
+    verified: false
     source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
     note: "Message contains: \"pad: the fill '00' is not one character\"."
     expr: "pad('a', 3, '00')"
@@ -298,6 +299,7 @@ cases:
 
   - id: "bad-pad-a-3-middle"
     kind: "expr-error"
+    verified: false
     source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
     note: "Message contains: \"the side 'middle' is neither 'left' nor 'right'\"."
     expr: "pad('a', 3, ' ', 'middle')"
@@ -355,6 +357,7 @@ cases:
 
   - id: "bad-regex-extract-a-a-3"
     kind: "expr-error"
+    verified: false
     source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
     note: "Message contains: \"the pattern '(a)' has 1 group(s); group 3 was asked for\"."
     expr: "regex_extract('a', '(a)', 3)"
@@ -362,6 +365,7 @@ cases:
 
   - id: "bad-regex-extract-ab-a-b"
     kind: "expr-error"
+    verified: false
     source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
     note: "A refused regular expression is a literal check (SPEC 4.10 rule 2). Message contains: 'is refused'."
     expr: "regex_extract('ab', '(?<=a)b')"
@@ -369,6 +373,7 @@ cases:
 
   - id: "regex-extract-ab-trade-id"
     kind: "expr"
+    verified: false
     source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
     tags: ["code-unmapped"]
     note: "The Java test asserts ErrorCode.REGEX_REFUSED (a DrishtiException), not EL_EVAL; SPEC 6.2 lists no separate code, so RCH-2102 is the draft mapping and H1 must confirm it."

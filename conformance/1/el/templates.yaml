@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+# Drafted by reading Drishti's tests (plan F2); verified by the reference runner (plan H1); a case with verified: false pins what SPEC says where the reference differs (el/KNOWN_DIFFERENCES.md).
 suite: el/templates
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Templates (SPEC 4.11): text with ${expression} parts, inserted as their text form."
 given: {"record": {"tradeId": "IRS-1", "legs": [{"leg": 1, "label": "Pay fixed"}, {"leg": 2, "label": "Receive SOFR", "type": "FLOAT"}], "sales": [1, 2, 3], "mtm": {"$masked": true}, "cp": {"id": "CP-1", "name": "Northbridge"}}}
 cases:
@@ -71,6 +71,7 @@ cases:
 
   - id: "bad-total-sum-a"
     kind: "expr-error"
+    verified: false
     source: "SPEC 4.11"
     note: "An unclosed ${ is RCH-2101 at the template offset of ${."
     template: "Total ${sum($.a)"

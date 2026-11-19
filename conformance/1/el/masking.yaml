@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+# Drafted by reading Drishti's tests (plan F2); verified by the reference runner (plan H1); a case with verified: false pins what SPEC says where the reference differs (el/KNOWN_DIFFERENCES.md).
 suite: el/masking
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Masked values (SPEC 4.9): they propagate through paths, operators and functions, and a condition on a mask is never true."
 given: {"record": {"id": "T-1", "notional": 100, "rows": [{"pv": 1}, {"pv": 2}], "mtm": {"$masked": true}, "counterparty": {"$masked": true}, "legs": [{"pv": 5}, {"pv": {"$masked": true}}]}}
 cases:

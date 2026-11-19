@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+# Drafted by reading Drishti's tests (plan F2); verified by the reference runner (plan H1); a case with verified: false pins what SPEC says where the reference differs (el/KNOWN_DIFFERENCES.md).
 suite: el/paths-operators
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Paths, filters, operators, precedence, ordering and number printing over a small trade record."
 given: {"record": {"tradeId": "IRS-1", "notional": 50000000, "direction": "PAY_FIXED", "rate": 0.0385, "legs": [{"leg": 1, "payer": true, "label": "Pay fixed", "rows": [{"a": 1}, {"a": 2.5}]}, {"leg": 2, "payer": false, "label": "Receive SOFR"}], "cp": {"id": "CP-1", "name": "Northbridge"}}}
 cases:
@@ -48,6 +48,7 @@ cases:
 
   - id: "fmt-rate-pct4-fixed"
     kind: "expr"
+    profile: ["core", "drishti"]
     source: "ElTest#pathsOperatorsAndFunctions"
     tags: ["format-table"]
     note: "Needs the shared format table's pct4 (SPEC 2.6)."
@@ -151,6 +152,7 @@ cases:
 
   - id: "fixing-source-index-fmt-fixing-rate-pct4"
     kind: "expr"
+    profile: ["core", "drishti"]
     source: "ElTest#pathsReachAnyDepthThroughObjectsAndArrays"
     tags: ["format-table"]
     note: "A row inside a nested array reads further nesting relative to itself. Needs the format table's pct4."
@@ -571,6 +573,7 @@ cases:
 
   - id: "bad-1-2"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
     note: "Message contains: \"']'\"."
     expr: "[1, 2"

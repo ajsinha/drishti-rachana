@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+# Drafted by reading Drishti's tests (plan F2); verified by the reference runner (plan H1); a case with verified: false pins what SPEC says where the reference differs (el/KNOWN_DIFFERENCES.md).
 suite: el/logic
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Logic and choice: if, ifs, switch, iferror, let, choose, coalesce, information tests, the null rule, and the function-name rules."
 given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
 cases:
@@ -47,6 +47,7 @@ cases:
 
   - id: "bad-if-true"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
     note: "Message contains: 'if takes 2-3 argument(s), got 1'."
     expr: "if(true)"
@@ -91,6 +92,7 @@ cases:
 
   - id: "bad-ifs-true"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
     note: "Message contains: 'ifs takes 2-64 argument(s), got 1'."
     expr: "ifs(true)"
@@ -154,6 +156,7 @@ cases:
 
   - id: "bad-switch-a-a"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#switchMatchesAValue"
     note: "Message contains: 'switch takes 3-64 argument(s), got 2'."
     expr: "switch('A', 'A')"
@@ -269,6 +272,7 @@ cases:
 
   - id: "bad-let-5"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: 'let needs a name = value before its result'."
     expr: "let(5)"
@@ -276,6 +280,7 @@ cases:
 
   - id: "bad-let-a-1"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"expected ',' and then the result\"."
     expr: "let(a = 1)"
@@ -283,6 +288,7 @@ cases:
 
   - id: "bad-let-true-1-2"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"let: 'true' cannot be a name\"."
     expr: "let(true = 1, 2)"
@@ -290,6 +296,7 @@ cases:
 
   - id: "bad-let-a-1-a-2-a"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"let: 'a' is named twice\"."
     expr: "let(a = 1, a = 2, a)"
@@ -297,6 +304,7 @@ cases:
 
   - id: "bad-let-a-1-a-2"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: 'only the last argument is the result'."
     expr: "let(a = 1, a, 2)"
@@ -304,6 +312,7 @@ cases:
 
   - id: "bad-a-1"
     kind: "expr-error"
+    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"unexpected '='\"."
     expr: "a = 1"
@@ -595,6 +604,7 @@ cases:
 
   - id: "bad-round-2-5-digits-1"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'round has no argument named digits'."
     expr: "round(2.5, digits = 1)"
@@ -602,6 +612,7 @@ cases:
 
   - id: "bad-round-2-5-n-1-n-2"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'n is named twice'."
     expr: "round(2.5, n = 1, n = 2)"
@@ -609,6 +620,7 @@ cases:
 
   - id: "bad-round-n-1-2-5"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'a value without a name follows a named one'."
     expr: "round(n = 1, 2.5)"
@@ -616,6 +628,7 @@ cases:
 
   - id: "bad-round-2-5-1-n-2"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'n is given twice'."
     expr: "round(2.5, 1, n = 2)"
@@ -623,6 +636,7 @@ cases:
 
   - id: "bad-concat-a-sep"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'concat takes no named arguments'."
     expr: "concat('a', sep = '-')"

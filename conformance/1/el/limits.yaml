@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+# Drafted by reading Drishti's tests (plan F2); verified by the reference runner (plan H1); a case with verified: false pins what SPEC says where the reference differs (el/KNOWN_DIFFERENCES.md).
 suite: el/limits
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Expression limits (SPEC 4.12): nesting depth, length, and host-lowered bounds. The Java tests use 3,000 to 100,000 levels; the cases use the smallest sizes that cross the bound so files stay small."
 given: {"record": {"mtm": 3}}
 cases:
@@ -73,6 +73,7 @@ cases:
 
   - id: "host-lowered-depth-is-named"
     kind: "expr-error"
+    verified: false
     source: "ElLimitsTest#theLimitsAreSettingsAndLengthIsBoundedToo"
     note: "Message contains: 'nested deeper than 10'."
     given: {"record": {"mtm": 3}, "limits": {"depth": 10, "length": 50}}

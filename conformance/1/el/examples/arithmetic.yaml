@@ -3,7 +3,7 @@
 suite: el/examples/arithmetic
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Arithmetic and text joining with +, the null rule, division by zero, remainders, dates, number text.
 given: { today: "2026-01-15" }
 cases:

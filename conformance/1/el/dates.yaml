@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Drafted by reading Drishti's tests (plan F2); every case unverified until the reference runner's record mode (plan H1) has produced it.
+# Drafted by reading Drishti's tests (plan F2); verified by the reference runner (plan H1); a case with verified: false pins what SPEC says where the reference differs (el/KNOWN_DIFFERENCES.md).
 suite: el/dates
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Date functions: parts, differences, day-count fractions, month ends, intervals, business days and calendars. Dates are ISO text."
 given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
 cases:
@@ -338,6 +338,7 @@ cases:
 
   - id: "bad-yearfrac-start-date-maturity-date-act-999"
     kind: "expr-error"
+    verified: false
     source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
     note: "Message contains: \"yearfrac: unknown day-count basis 'ACT/999'\"; 'ACT/360, ACT/365F, 30/360, 30E/360, ACT/ACT'."
     expr: "yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/999')"
@@ -467,6 +468,7 @@ cases:
 
   - id: "bad-intck-fortnight-trade-date-today"
     kind: "expr-error"
+    verified: false
     source: "DateFunctionsTest#intckCountsBoundariesCrossed"
     note: "Message contains: \"intck: unknown interval 'fortnight'\"."
     expr: "intck('fortnight', $.TRADE_DATE, today())"
@@ -474,6 +476,7 @@ cases:
 
   - id: "bad-intck-month-trade-date-today-usny"
     kind: "expr-error"
+    verified: false
     source: "DateFunctionsTest#intckCountsBoundariesCrossed"
     note: "Message contains: \"a calendar counts only 'business_day'\"."
     expr: "intck('month', $.TRADE_DATE, today(), 'USNY')"
@@ -481,6 +484,7 @@ cases:
 
   - id: "bad-intck-business-day-trade-date-today-xxny"
     kind: "expr-error"
+    verified: false
     source: "DateFunctionsTest#intckCountsBoundariesCrossed"
     note: "Message contains: 'unknown calendar XXNY'."
     expr: "intck('business_day', $.TRADE_DATE, today(), 'XXNY')"
@@ -573,6 +577,7 @@ cases:
 
   - id: "bad-is-business-day-2026-11-26-nope"
     kind: "expr-error"
+    verified: false
     source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
     note: "Message contains: 'unknown calendar NOPE'."
     expr: "is_business_day('2026-11-26', 'NOPE')"
@@ -932,6 +937,7 @@ cases:
 
   - id: "bad-shift-date-2026-10-16-1-fortnight"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#theDateParts"
     note: "Message contains: 'unit is one of'."
     expr: "shift_date('2026-10-16', 1, 'fortnight')"
@@ -939,6 +945,7 @@ cases:
 
   - id: "bad-shift-date-2026-10-16-1-unit-fortnight"
     kind: "expr-error"
+    verified: false
     source: "FoldedSyntaxTest#theDateParts"
     note: "Message contains: 'unit is one of'."
     expr: "shift_date('2026-10-16', 1, unit = 'fortnight')"

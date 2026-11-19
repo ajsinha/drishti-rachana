@@ -2,11 +2,12 @@
 suite: el/examples/expr-error
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Expressions that do not compile, matched by code, message words (SPEC 6.3) and offsets.
 cases:
   - id: double-star-is-not-rachana
     kind: expr-error
+    verified: false
     source: SPEC 6.3
     expr: "2 ** 3"
     expect:
@@ -15,6 +16,7 @@ cases:
 
   - id: unterminated-string
     kind: expr-error
+    verified: false
     source: SPEC 6.3
     expr: "'abc"
     expect:
@@ -23,6 +25,7 @@ cases:
 
   - id: arity-out-of-range
     kind: expr-error
+    verified: false
     source: SPEC 4.10 rule 1, 6.3
     expr: "size($.a, 'b')"
     expect:
@@ -31,6 +34,7 @@ cases:
 
   - id: unknown-function-names-near-matches
     kind: expr-error
+    verified: false
     source: SPEC 4.10 rule 1, 6.3
     note: The list of known names after the colon is not pinned here.
     expr: "roundd(1)"
@@ -40,6 +44,7 @@ cases:
 
   - id: unclosed-template-part-at-template-offset
     kind: expr-error
+    verified: false
     source: SPEC 4.11
     template: "Total ${sum($.a)"
     expect:
@@ -48,6 +53,7 @@ cases:
 
   - id: host-lowered-depth-is-named
     kind: expr-error
+    verified: false
     source: SPEC 4.12
     given: { limits: { depth: 3 } }
     expr: "((((1))))"

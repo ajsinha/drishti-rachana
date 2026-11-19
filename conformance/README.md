@@ -1,7 +1,7 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../LICENSE-SPEC.md (draft, not yet in force). -->
 # Rachana conformance suite
 
-**Status: draft 1 (2026-11-17).** The format and the runner contract are written (front-load item F1); cases are being
+**Status: draft 1.** The format and the runner contract are written (F1); the driver is `tools/conformance/` (H1); cases are being
 harvested from the reference implementation (plan items F2, H1 to H6). Nothing here has been run yet: every case is
 `verified: false` until the reference runner has produced it and a person has reviewed it.
 

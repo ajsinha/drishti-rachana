@@ -1,0 +1,137 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Written by hand from the 1.0 decisions of 2026-11-19 (EL_EXPANSION XD2 to XD4); verified: false until the reference changes after v0.10.0 is pinned (SPLIT_PLAN rule 4; el/KNOWN_DIFFERENCES.md).
+suite: el/text-code-points
+since: "1.0"
+profile: core
+verified: false
+description: "Text measured and ordered by code point (SPEC 4.13, decision XD4, EL_EXPANSION X31); source positions stay in UTF-16 units."
+cases:
+
+  - id: "length-of-an-emoji-is-one"
+    kind: "expr"
+    source: "SPEC 4.13"
+    note: "UTF-16 would give 2."
+    tags: ["code-point", "non-bmp"]
+    expr: "len('😀')"
+    expect: {"value": 1}
+
+  - id: "length-around-an-emoji"
+    kind: "expr"
+    source: "SPEC 4.13"
+    note: "SPEC 4.13 rule 1."
+    tags: ["code-point", "non-bmp"]
+    expr: "len('a😀b')"
+    expect: {"value": 3}
+
+  - id: "mid-takes-whole-code-points"
+    kind: "expr"
+    source: "SPEC 4.13"
+    note: "Position 2 is the emoji."
+    tags: ["code-point", "non-bmp"]
+    expr: "mid('a😀b', 2, 1)"
+    expect: {"value": "😀"}
+
+  - id: "left-takes-a-whole-code-point"
+    kind: "expr"
+    source: "SPEC 4.13"
+    tags: ["code-point", "non-bmp"]
+    expr: "left('😀x', 1)"
+    expect: {"value": "😀"}
+
+  - id: "right-takes-a-whole-code-point"
+    kind: "expr"
+    source: "SPEC 4.13"
+    tags: ["code-point", "non-bmp"]
+    expr: "right('x😀', 1)"
+    expect: {"value": "😀"}
+
+  - id: "find-counts-code-points"
+    kind: "expr"
+    source: "SPEC 4.13"
+    tags: ["code-point", "non-bmp"]
+    expr: "find('b', 'a😀b')"
+    expect: {"value": 3}
+
+  - id: "code-of-an-emoji"
+    kind: "expr"
+    source: "SPEC 4.13"
+    note: "The code point, not the high surrogate."
+    tags: ["code-point", "non-bmp"]
+    expr: "code('😀')"
+    expect: {"value": 128512}
+
+  - id: "char-of-a-code-point-outside-the-bmp"
+    kind: "expr"
+    source: "SPEC 4.13"
+    tags: ["code-point", "non-bmp"]
+    expr: "char(128512)"
+    expect: {"value": "😀"}
+
+  - id: "a-char-outside-the-bmp-has-length-one"
+    kind: "expr"
+    source: "SPEC 4.13"
+    tags: ["code-point", "non-bmp"]
+    expr: "len(char(128512))"
+    expect: {"value": 1}
+
+  - id: "reverse-keeps-code-points-whole"
+    kind: "expr"
+    source: "SPEC 4.13"
+    note: "UTF-16 reversal would split the pair."
+    tags: ["code-point", "non-bmp"]
+    expr: "reverse('a😀')"
+    expect: {"value": "😀a"}
+
+  - id: "pad-counts-code-points"
+    kind: "expr"
+    source: "SPEC 4.13"
+    note: "Left by default."
+    tags: ["code-point", "non-bmp"]
+    expr: "pad('😀', 3, '*')"
+    expect: {"value": "**😀"}
+
+  - id: "ordering-by-code-point"
+    kind: "expr"
+    source: "SPEC 4.13 rule 2; 4.7"
+    note: "U+FF61 before U+1F600; by UTF-16 unit the emoji (D83D) would sort first."
+    tags: ["code-point", "non-bmp"]
+    expr: "'｡' < '😀'"
+    expect: {"value": true}
+
+  - id: "sort-by-code-point"
+    kind: "expr"
+    source: "SPEC 4.13 rule 2"
+    tags: ["code-point", "non-bmp"]
+    expr: "sort(['😀', '｡'])"
+    expect: {"value": ["｡", "😀"]}
+
+  - id: "least-of-texts-by-code-point"
+    kind: "expr"
+    source: "SPEC 4.13 rule 2"
+    tags: ["code-point", "non-bmp"]
+    expr: "least('😀', '｡')"
+    expect: {"value": "｡"}
+
+  - id: "upper-case-before-lower-case"
+    kind: "expr"
+    source: "SPEC 4.13 rule 2"
+    note: "No collation, no case folding."
+    tags: ["code-point"]
+    expr: "'B' < 'a'"
+    expect: {"value": true}
+
+  - id: "a-combining-mark-is-its-own-code-point"
+    kind: "expr"
+    source: "SPEC 4.13 rule 1"
+    note: "e and U+0301: graphemes are a later minor's functions."
+    tags: ["code-point"]
+    expr: "len('é')"
+    expect: {"value": 2}
+
+  - id: "source-offsets-stay-in-utf-16-units"
+    kind: "expr-error"
+    source: "SPEC 4.13 rule 4"
+    note: "The '&' is the fifth code point but at UTF-16 offset 5."
+    tags: ["code-point", "non-bmp"]
+    expr: "'😀' & 1"
+    expect: {"problems": [{"code": "RCH-2101", "message": "expression ''😀' & 1': unexpected character '&' at 5", "expr": {"start": 5, "end": 6}}]}

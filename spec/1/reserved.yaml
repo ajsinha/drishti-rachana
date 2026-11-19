@@ -1,0 +1,94 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force).
+#
+# reserved.yaml - what `rachana: 1` holds back for its later minors (SPEC 4.15; decision XD2, EL_EXPANSION X1).
+#
+# Everything here is refused in 1.0 with a message that names it as reserved, so that each later minor that defines it
+# stays an addition (SPEC 7.2). A later minor that defines a token or a name moves it out of this file in the same change
+# that adds it to the grammar or to functions.yaml with its `since`; nothing is ever added back.
+#
+#   tokens    every character sequence of an expression that is refused today and kept for a later construct:
+#             the token, the addition it is kept for, and the exact reason of the RCH-2101 message (SPEC 6.3)
+#   names     Core function names held for the families of EL_EXPANSION section 3, by addition: a call of one is
+#             RCH-2101 "'<name>' is reserved for a later version of Rachana", and no profile may register one
+#   promoted  names in `names` that the Drishti profile or its engine supplies today (SPEC 5.11): it keeps them until Core
+#             defines them with the same meaning, proven by the profile's own cases (EL_EXPANSION rule 9); no other
+#             profile may take them
+
+reserved_version: 1
+language: "1.0"
+status: draft
+
+tokens:
+  - { token: "|>", for: "X11 the pipe", reason: "'|>' is reserved for a later version of Rachana: write the call, f(x, ...)" }
+  - { token: "??", for: "X12 the empty-default operator", reason: "'??' is reserved for a later version of Rachana: write coalesce(a, b)" }
+  - { token: "=>", for: "X13 lambdas", reason: "'=>' is reserved for a later version of Rachana" }
+  - { token: "...", for: "X6 spread in record and list literals", reason: "'...' is reserved for a later version of Rachana" }
+  - { token: "..", for: "X7 ranges and slices", reason: "'..' is reserved for a later version of Rachana: write sequence(...) or a list" }
+  - { token: "{", for: "X6 record literals", reason: "'{' is reserved for a later version of Rachana" }
+  - { token: "}", for: "X6 record literals", reason: "'}' is reserved for a later version of Rachana" }
+  - { token: "/*", for: "X14 comments", reason: "'/*' is reserved for a later version of Rachana" }
+  - { token: "*/", for: "X14 comments", reason: "'*/' is reserved for a later version of Rachana" }
+  - { token: "_", for: "digit separators, inside a number only", reason: "'_' in a number is reserved for a later version of Rachana: write the digits without it" }
+
+names:                 # 278 names; none is a Core function of 1.0, and none is offered (SPEC 4.15)
+  - addition: X3      # dates, times, timestamps, durations
+    functions: [age, between_time, date_bucket, date_trunc, duration, overlap_days, seconds, timestamp_add]
+  - addition: X4      # time zones
+    functions: [at_zone, from_local, local_date, zone, zone_offset]
+  - addition: X5      # money
+    functions: [amount, convert, currency, money, round_money]
+  - addition: X9      # units of measure (library units)
+    functions: [qty, to_unit]
+  - addition: X10      # vectors and matrices (library linalg)
+    functions: [cholesky, covariance_matrix, dot, matrix, mmult, quad_form, solve, transpose, vec]
+  - addition: X15      # small choice functions
+    functions: [between, bucket, nullif, safe_div]
+  - addition: X17      # the list and record toolkit
+    functions: [all, any, arg_max, arg_min, bin, bottom, chunk, count_by, drop_while, entries, extent, filter, flat_map, from_entries, get, index_by, index_of, keys, merge, nice_ticks, omit, pairwise, pick, scan, sliding, take_while, text_join, top, values, zip, zip_with]
+  - addition: X18      # the engine list functions classified into Core
+    functions: [avedev, avg_once, bounds, corr, count_once, covar, covar_pop, cummax, cummin, cumprod, cumsum, cv, devsq, geomean, harmean, intercept, iqr, isoutlier, kth_largest, kth_smallest, kurtosis, maxk, mink, mode, mode_multi, movmean, movmedian, movstd, movsum, nmiss, percent_rank_of, percentile_exc, polyfit, product, range, rank_avg, rescale, rsq, skewness, skewness_pop, slope, stderr, steyx, string_agg, sum_once, sumproduct, sumsq, trimmean, zscore]
+  - addition: X19      # grouping with records
+    functions: [group_by]
+  - addition: X20      # table verbs
+    functions: [append, distinct_rows, extend, lookup, row_count, select]
+  - addition: X21      # joins
+    functions: [join]
+  - addition: X22      # pivot, unpivot, subtotals
+    functions: [pivot, rollup, unpivot]
+  - addition: X23      # windows
+    functions: [dense_rank, first_value, lag, last_value, lead, moving_avg, moving_max, moving_median, moving_min, moving_stddev, moving_sum, nth_value, ntile, over, percent_rank, rank, row_number, running, window]
+  - addition: X24      # time series (library timeseries)
+    functions: [asof_join, date_spine, diff, ewma, fill_gaps, fiscal_ytd, mtd, pct_change, prior_period, qtd, rebase, resample, returns, same_period_last_year, ytd]
+  - addition: X25      # calendars and schedules
+    functions: [add_tenor, adjust, fiscal_period, fiscal_quarter, fiscal_year, holidays_between, imm_date, is_holiday, next_business_day, schedule]
+  - addition: X26      # statistics (library statistics)
+    functions: [annualise, beta, correlation_matrix, drawdown, ecdf, histogram, hit_rate, information_ratio, linear_fit, max_drawdown, quantiles, random_normal, sample, sharpe, sortino, tracking_error, volatility, winsorize]
+  - addition: X27      # risk (library risk)
+    functions: [backtest_exceptions, component_var, es_hist, es_parametric, incremental_var, kupiec, scale_horizon, traffic_light, var_hist, var_parametric]
+  - addition: X28      # fixed income (library finance)
+    functions: [bond_duration, bond_price, bond_yield, coupon_dates, coupon_days, discount_factor, forward_rate, zero_rate]
+  - addition: X29      # options (library quant)
+    functions: [bachelier_price, black76_price, bs_delta, bs_gamma, bs_price, bs_rho, bs_theta, bs_vega, implied_vol]
+  - addition: X30      # text II
+    functions: [base64, edit_distance, hash, initials, parse_json, regex_count, regex_extract_all, regex_match, regex_split, similarity, slug, squeeze, stable_index, starts_with_any, to_json, truncate, url_encode]
+  - addition: X31      # Unicode
+    functions: [casefold, graphemes, normalize, strip_accents]
+  - addition: X32      # languages and plurals
+    functions: [ago, list_and, locale, msg, ordinal, plural]
+  - addition: X34      # geography (library geo)
+    functions: [bbox, bearing, centroid, geo_distance, geohash, in_bbox, in_polygon, region_of]
+  - addition: X35      # display values
+    functions: [badge, bar, bullet, delta, heat, icon, spark]
+  - addition: X36      # screen state
+    functions: [control_label, controls, drill_level, drill_path, is_set, panel_rows, selection, viewer, width_class]
+  - addition: X37      # what-if
+    functions: [goal_seek, grid, sensitivity, what_if]
+  - addition: X38      # live-row state
+    functions: [changed, direction, previous, row_age]
+  - addition: X39      # approximation and sketches (library sketches)
+    functions: [approx_distinct, approx_percentile, approx_top]
+  - addition: X40      # masking and policy
+    functions: [is_masked, mask, suppress_small]
+
+promoted:               # 66 names among `names` that Drishti supplies today: its profile's windows, time and money functions, and its engine's list functions (X18)
+  drishti: [avedev, avg_once, bounds, convert, corr, count_once, covar, covar_pop, cummax, cummin, cumprod, cumsum, cv, dense_rank, devsq, fiscal_ytd, geomean, harmean, intercept, iqr, isoutlier, kth_largest, kth_smallest, kurtosis, lag, lead, maxk, mink, mode, mode_multi, moving_avg, moving_max, moving_min, moving_sum, movmean, movmedian, movstd, movsum, mtd, nmiss, percent_rank, percent_rank_of, percentile_exc, polyfit, prior_period, product, qtd, range, rank, rank_avg, rescale, rsq, running, same_period_last_year, skewness, skewness_pop, slope, stderr, steyx, string_agg, sum_once, sumproduct, sumsq, trimmean, ytd, zscore]

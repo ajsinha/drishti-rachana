@@ -288,7 +288,7 @@ core:
   returns: "text"
   nulls: {empty: "an empty x gives 'empty'; the answer is always text", masked: "a masked x gives masked"}
   errors: []
-  description: "One of 'empty', 'number', 'text', 'boolean', 'link', 'list', 'object'. An ISO date is 'text' (dates are text in Rachana). Never raises."
+  description: "One of 'empty', 'number', 'text', 'boolean', 'link', 'list', 'object'. An ISO date is 'text' (dates are text in Rachana). Never raises. The answers are an open set (SPEC 4.15 rule 3): a later minor may add words, and a caller MUST accept a word it does not know; in 1.0 an integer or a decimal is 'number'."
   examples:
   - {expr: "type_of([1])", result: "list"}
   - {expr: "type_of('a')", result: "text"}
@@ -1127,7 +1127,7 @@ core:
   returns: "integer"
   nulls: {empty: "empty in, empty out", masked: "masked"}
   errors: []
-  description: "Length in UTF-16 code units (SPEC 4.13); the length of a number is that of the text it prints. `len(empty)` is empty (`size` counts a list)."
+  description: "Length in code points (SPEC 4.13); the length of a number is that of the text it prints. `len(empty)` is empty (`size` counts a list)."
   examples:
   - {expr: "len('MX-2000')", result: 7}
   since: "1.0"
@@ -2050,7 +2050,7 @@ core:
   returns: "list"
   nulls: {empty: "an empty list argument gives empty", masked: "a masked key gives masked"}
   errors: []
-  description: "Elements ordered by key (an expression over `@`; the element itself by default), ascending unless desc is true; several keys, each with its own direction: `sort(list, key1, desc1, key2, desc2, ...)`. Numbers (and number-like text) as numbers and before text; text by UTF-16 unit; empty keys last either way; stable. Arity 1 to 17."
+  description: "Elements ordered by key (an expression over `@`; the element itself by default), ascending unless desc is true; several keys, each with its own direction: `sort(list, key1, desc1, key2, desc2, ...)`. Numbers (and number-like text) as numbers and before text; text by code point (SPEC 4.13); empty keys last either way; stable. Arity 1 to 17."
   examples:
   - {expr: "sort([3, 1, 2])", result: [1, 2, 3]}
   - {expr: "sort($.events, @.date, true)", result: "see says", says: "the events, latest first"}

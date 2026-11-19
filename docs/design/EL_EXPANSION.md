@@ -658,6 +658,11 @@ Everything fits `rachana: 1` as additive minors. **No `rachana: 2` is needed for
 | Phase | Language | With | Contents | Size |
 |---|---|---|---|---|
 | 0 | 1.0 (R0) | i7b, specification only | X1 reservations (2) · X2 numeric rules (2) · X16 first table (2) · X18 classification (2) · X31 code points (1) · X45 catalogue `cost` field (1) | **10 bd** |
+
+**Phase 0 progress (2026-11-19).** X1, X2 (its rules) and X31 (its decision) are in the specification: SPEC 4.13, 4.15 and
+4.16, the grammar's `reserved-token`, `spec/1/reserved.yaml` (10 tokens, 278 names, 66 of them to be promoted from Drishti), and 92 conformance
+cases (`el/reserved`, `grammar/reserved`, `el/numbers-exact`, `el/text-code-points`), unverified until the compiler changes
+after `v0.10.0` is pinned (`conformance/1/el/KNOWN_DIFFERENCES.md`). X16, X18 and X45 are other lanes'.
 | 1 | 1.1 (R1) | i8 | **the syntax batch**, in one grammar revision: X6 records (4) · X7 ranges (4) · X11 pipe (3) · X12 `??` (1) · X13 lambdas (8) · X14 comments (2); and X2 decimal build (8) · X8 types I (6) · X15 choice (2) · X16 habits (4) · X17 toolkit (8) · X18 kernel (5) · X19 `group_by` (4) · X41 names and functions (8) · X45 budgets (6) · X47 formatter and linter (6) · X49 AI kit I (6) | **85 bd** |
 | 2 | 1.2 (R2) | i9 | X3 temporal (10) · X5 money (7) · X8 types II (6) · X20 verbs and plan (18) · X21 joins (8) · X23 windows (12) · X33 formats (5) · X35 display values (8) · X36 screen state (7) · X42 libraries (12) · X43 tests (4) · X44 explanation (12) · X46 optimiser (15) · X48 language server (12) · X49 AI kit II (4) | **140 bd** |
 | 3 | 1.3 | later | X4 zones (8) · X22 pivot (8) · X24 time series (12) · X25 calendars (6) · X26 statistics (8) · X27 risk (8) · X30 text (7) · X37 what-if (7) · X38 live state (4) · X40 masking and policy (9) · X50 Excel translator (8) | **85 bd** |

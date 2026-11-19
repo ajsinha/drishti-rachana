@@ -1,9 +1,10 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). -->
 # The Rachana specification, `rachana: 1`
 
-**Status: draft 1 (2026-11-17).** Normative once the owner approves it and the first conformance suite is cut. Until then
-it describes the language as the reference implementation (Drishti's `compute/drishti-rachana`) behaves today, plus the
-settled additions of the design ([../../docs/design/SPEC.md](../../docs/design/SPEC.md),
+**Status: draft 1 (2026-11-17), with the decisions for 1.0 taken on 2026-11-19 (EL_EXPANSION XD2 to XD4: the reservations
+of 4.15, the numbers of 4.16, text by code point in 4.13).** Normative once the owner approves it and the first conformance
+suite is cut. Until then it describes the language as the reference implementation (Drishti's `compute/drishti-rachana`)
+behaves today, plus the settled additions of the design ([../../docs/design/SPEC.md](../../docs/design/SPEC.md),
 [CORE_AND_PROFILES](../../docs/design/CORE_AND_PROFILES.md), [DECISIONS](../../docs/design/DECISIONS.md)).
 
 Companion files in this folder:
@@ -11,10 +12,11 @@ Companion files in this folder:
 | File | Normative for | State |
 |---|---|---|
 | this text | meaning: document model, evaluation, functions, errors, versions | draft 1 |
-| [rachana-el.ebnf](rachana-el.ebnf) | expression syntax (59 rules, ISO 14977) | draft 1 |
+| [rachana-el.ebnf](rachana-el.ebnf) | expression syntax (60 rules, ISO 14977) | draft 1 |
 | [TRANSLATION.md](TRANSLATION.md) | Sutra + data → ViewModel | draft 1 |
 | [functions.yaml](functions.yaml) | every Core function: signature, types, nulls, errors, examples | draft, completed in R0 step H5 |
 | [formats.yaml](formats.yaml) | the Core format names and how each prints (2.6) | draft |
+| [reserved.yaml](reserved.yaml) | the tokens and names held back for later minors, and the profile names to be promoted (4.15) | draft |
 | `rachana.lang.json`, `sutra.schema.json` | every key, kind, option; document structure | generated, R0 step 0c |
 | [viewmodel.schema.json](viewmodel.schema.json) | the ViewModel | draft by reading; generated in R0 step H4 (decision D6) |
 | [data-protocol/PROTOCOL.md](data-protocol/PROTOCOL.md) and its JSON Schemas | the Data Protocol v1: tables, rows, query and filter tree, live patches, errors, bridge | draft 1 |
@@ -205,7 +207,8 @@ The syntax is [rachana-el.ebnf](rachana-el.ebnf). This section gives the meaning
 1. **Closed and pure.** No loops, no assignment outside `let`, no I/O. An expression reads only its context (4.3).
 2. **Total paths.** A missing field, an index out of range, a path through a non-container: `empty`. Never an error.
 3. **Null in, null out.** Operators and scalar functions on `empty` give `empty`, with the exceptions stated.
-4. **Wrong types in functions are errors** (`RCH-2102`), which `iferror` catches; operators never raise one.
+4. **Wrong types in functions are errors** (`RCH-2102`), which `iferror` catches; operators never raise one, except
+   exact arithmetic that would lose a whole unit (4.16).
 5. **Deterministic.** The same expression over the same context gives the same value in every implementation: no clock,
    locale or random source except through the context (`asof()`), which the host sets [CS].
 
@@ -215,7 +218,7 @@ The syntax is [rachana-el.ebnf](rachana-el.ebnf). This section gives the meaning
 |---|---|---|
 | empty | `null`, a missing field | missing and `null` are the same value |
 | boolean | `true`, `false` | |
-| number | `42`, `0.5`, `.5`, `1e6` | IEEE 754 double. A whole result below 10¹⁵ in magnitude is an integer and prints without decimals (`1 + 1` → `2`, `0.5 * 4` → `2`). Decimal functions (4.10) compute exactly and may return an exact decimal |
+| number | `42`, `0.5`, `.5`, `1e6` | three kinds (4.16): an **integer** (`42`) and a **decimal** (`0.5`, `.5`) are exact, 34 significant digits; a literal with an exponent (`1e6`) and every real-number result is a **number**, an IEEE 754 double. A whole double below 10¹⁵ in magnitude prints without decimals (`1e0 + 1` → `2`) |
 | text | `'a'`, `"a"` | Unicode; `''` is a text, not empty |
 | date, timestamp | `'2026-11-17'`, `'2026-11-17T09:30:00Z'` | carried as ISO-8601 text; typed only in checked mode |
 | list | `[1, 2]`, `$.legs` | ordered |
@@ -227,8 +230,9 @@ The syntax is [rachana-el.ebnf](rachana-el.ebnf). This section gives the meaning
 are true); list and object true unless they have no elements; link true; masked never true.
 
 **Text form** of a value (used by `+` joining, templates, comparisons as text) [CS]: empty → `''`; a whole number below
-10¹⁵ → digits (`2`, `-7`); an exact decimal → plain digits (`0.1`, never `1E-1`); another number → the shortest
-round-trip decimal of the double as the reference prints it (`0.30000000000000004`, `1.0E20`, `NaN`, `Infinity`);
+10¹⁵ → digits (`2`, `-7`); an integer or a decimal → plain digits with no exponent and no trailing zeros after the point
+(`0.1`, never `1E-1`; `1.10 * 3` → `3.3`; `0.0` → `0`); another number → the shortest round-trip decimal of the double as
+the reference prints it (`0.30000000000000004`, `1.0E20`, `NaN`, `Infinity`);
 boolean → `true`/`false`; link → its label, else its id; list → `[n]`; object → `{n}` (n = size).
 
 ### 4.3 The context: names an expression reads
@@ -272,15 +276,16 @@ projecting: `$.a[*].b.c` is the `c` of each `b`. An index of a masked list is ma
 | Expression | Rule | Examples |
 |---|---|---|
 | `a + b` | empty if one side is empty and the other is empty or a number; number + number adds; otherwise both sides' text forms are joined | `1 + 2` → `3`; `'Leg ' + 1` → `'Leg 1'`; `'1' + 1` → `'11'`; `empty + 1` → empty; `'x' + empty` → `'x'`; `true + 1` → `'true1'` |
-| `a - b`, `a * b`, `a / b`, `a % b` | empty if either side is empty; otherwise both sides as numbers (number-like text counts, `true` is 1, `false` 0, other text is NaN) | `'5' * 2` → `10`; `'x' * 2` → NaN |
+| `a - b`, `a * b`, `a / b`, `a % b` | empty if either side is empty; otherwise both sides as numbers (number-like text counts, read as a literal is (4.16); `true` is 1, `false` 0, other text is NaN) | `'5' * 2` → `10`; `'0.1' * 3` → `0.3`; `'x' * 2` → NaN |
 | `a / 0`, `a % 0` | empty | `1 / 0` → empty |
 | `a % b` | remainder with the sign of `a` (truncated division) | `-3 % 2` → `-1` (`mod(-3, 2)` → `1`) |
 | date − date | two texts that both read as dates (ISO, or a timestamp's first 10 characters followed by `T` or a space) subtract to whole days | `'2026-11-17' - '2026-11-01'` → `16` |
 | `-a` | empty stays empty; otherwise the negated number | `-'3'` → `-3` |
 | `!a` | the negation of truthiness; masked stays masked | `!empty` → `true`; `!'0'` → `false` |
 
-Numbers are doubles throughout the operators; whole results print as integers (4.2). [CS] pins the text of non-whole
-results.
+Which kind of number a result is, and how exact, is 4.16: integers and decimals are exact (`0.1 + 0.2` → `0.3`), `/`
+rounds half-even to 34 significant digits, and a double on either side makes the result a double. [CS] pins the text of
+every result.
 
 ### 4.6 Equality
 
@@ -289,7 +294,8 @@ results.
 1. If either side is empty: true only when both are (`empty == null` → `true`; `empty == 'X'` → `false`;
    `empty != 'X'` → **`true`**).
 2. Else if either side is a number: both as numbers (`1 == '1.0'` → `true`; `1 == true` → `true`; `1 == 'a'` → `false`;
-   NaN equals nothing).
+   NaN equals nothing). Two exact numbers compare exactly (`0.1 + 0.2 == 0.3` → `true`); an exact number against a double
+   compares as two doubles (4.16).
 3. Else both text forms compared exactly, case-sensitive (`'USD' == 'usd'` → `false`; `true == 'true'` → `true`).
 
 `!=` is the negation of `==`. A masked side gives the mask.
@@ -299,9 +305,10 @@ results.
 `<`, `<=`, `>`, `>=`:
 
 1. A masked side gives the mask.
-2. Both sides as numbers; if both are numbers the comparison is numeric (`'10' > '9'` → `true`).
-3. If either is not a number **and both are texts**, compared as text, character by character by UTF-16 code unit
-   (ISO dates order correctly: `'2026-01-31' < '2026-02-01'` → `true`) [CS].
+2. Both sides as numbers; if both are numbers the comparison is numeric (`'10' > '9'` → `true`), exact between exact
+   numbers and as doubles when either is a double (4.16).
+3. If either is not a number **and both are texts**, compared as text, character by character by Unicode **code point**
+   (ISO dates order correctly: `'2026-01-31' < '2026-02-01'` → `true`; `'｡' < '😀'` → `true`) (4.13) [CS].
 4. Otherwise `false`: anything against empty, a number against a non-numeric text, a list or object.
 
 A chain `0 < x < 10` parses as `(0 < x) < 10` (a boolean against 10, numerically); write `0 < x && x < 10`.
@@ -356,9 +363,10 @@ A host's `Masker` marks values the reader may not see. A masked value prints `�
    (`round_up: 'abc' is not a number`, `sqrt: -4 is negative`, `eomonth: 'soon' is not a date (yyyy-mm-dd)`).
    Number-like text counts as a number; a number counts as the text it prints (`left(20261016, 4)` → `'2026'`).
 7. **Decimals stay decimal.** Rounding, multiples, remainders, whole powers up to ±64, `sqrt`, `clamp`,
-   `least`/`greatest`, `sequence`, `yearfrac` compute in decimal arithmetic; a double argument is first read to 15
-   significant digits (`round_up(0.1 + 0.2, 1)` → `0.3`; `power(1.1, 2)` → `1.21`). Real-number functions (`exp`,
-   `ln`, trigonometry, distributions, discounting) compute in binary floating point [CS].
+   `least`/`greatest`, `sequence`, `yearfrac` compute in decimal arithmetic; an integer or decimal argument is taken as it
+   is, a double argument is first read to 15 significant digits (`round_up(1e-1 + 2e-1, 1)` → `0.3`; `power(1.1, 2)` →
+   `1.21`). Real-number functions (`exp`, `ln`, trigonometry, distributions, discounting) compute in binary floating point
+   and return a number (4.16) [CS].
 8. **Dates** are ISO text in and out; a timestamp counts by its date. `asof()` is the as-of date the host sets.
 
 ### 4.11 Templates
@@ -387,16 +395,32 @@ TRANSLATION.md says where.
 | names in one `let` | 63 | `RCH-2101` |
 | `sequence` length | 10,000 | compile error for a literal, `RCH-2102` otherwise |
 | `group` result | 500 groups | further groups left out [CS] |
+| significant digits of a number literal without an exponent | 34 | `RCH-2101` "number '…' has more than 34 significant digits" at the literal (4.16) |
 
 A host MAY lower the depth and length bounds (settings `rachana.max-expression-depth`, `rachana.max-expression-length`)
 and MUST report the bound in the message.
 
 ### 4.13 Characters
 
-Expressions are sequences of Unicode characters; the reference measures lengths, positions and `len()` in **UTF-16
-code units**, and orders text by UTF-16 code unit. Whether `rachana: 1` keeps code units or moves to code points is an
-open point for the conformance suite [CS]; until it is decided, implementations MUST match the reference on text made of
-characters of the Basic Multilingual Plane, and SHOULD match it elsewhere.
+Expressions and texts are sequences of Unicode characters, and a character is a **code point** (decision XD4, EL_EXPANSION
+X31): every length, position and order of a text value is counted in code points, in every runtime.
+
+1. **Lengths and positions.** `len`, `left`, `right`, `mid`, `find`, `search`, `pad`, `reverse`, `rept`'s limit, `code`
+   (the first character), every position a text function takes or gives, and the 10,000-character bound of an expression
+   (4.12) count code points: `len('😀')` → `1`; `mid('a😀b', 2, 1)` → `'😀'`; `code('😀')` → `128512`; `reverse('a😀')` →
+   `'😀a'`. A combining mark is a code point of its own (`len('é')` written as `e` and U+0301 → `2`): graphemes are a
+   later minor's functions (X31), not the meaning of a length.
+2. **Order.** Texts are ordered code point by code point, then the shorter first (4.7, `sort`, and `least` and
+   `greatest` over texts): U+FF61 `'｡'` sorts before U+1F600 `'😀'`, although its UTF-16 code unit is larger. No
+   locale collation and no case folding: `'B' < 'a'` → `true`.
+3. **Lone surrogates.** A text from the host may hold an unpaired surrogate (U+D800 to U+DFFF); it counts as one code
+   point with that value. An expression's own text cannot hold one (the file is UTF-8).
+4. **Source positions are not text values.** The offsets of a problem (6.1, `expr.start`, `range`) and the `at <offset>`
+   of a message stay in **UTF-16 code units**, the unit editors and the Language Server Protocol use, so a tool can place
+   them without converting (FORMAT 6).
+
+Only characters outside the Basic Multilingual Plane are counted differently from the reference's UTF-16 code units; the
+reference changes to this rule (KNOWN_DIFFERENCES, `el/text-code-points`).
 
 ### 4.14 Checked mode
 
@@ -408,7 +432,75 @@ before it runs. Types: `integer`, `decimal`, `number`, `string`, `boolean`, `dat
 against `'9 Oct'`), chained comparisons, screen-only roots (`ctl`, `@panel`, `$src`, `#index`) in data scopes, old
 spellings (`RCH-9127`); functions without a signature yet (`RCH-9129`); unknown names with "did you mean"
 (`RCH-9152`); a filter, `in`, sort or grouping on a field masked for the reader (`RCH-9161`). **Checked mode only
-refuses more; it never changes what a text means.**
+refuses more; it never changes what a text means.** A literal's type is `integer` (whole, no exponent), `decimal` (a
+fraction, no exponent) or `number` (with an exponent), as 4.16 says.
+
+### 4.15 Reservations
+
+`rachana: 1.0` holds back what its later minors need, so that each of them stays an addition (7.2; decision XD2,
+EL_EXPANSION X1). The list is [reserved.yaml](reserved.yaml); everything in it is refused in 1.0 with a message that names it
+as reserved, and leaves the file only when a minor defines it.
+
+1. **Tokens.** `|>`, `??`, `=>`, `...`, `..`, `{`, `}`, `/*`, `*/` are tokens of the grammar (EBNF `reserved-token`) and
+   are always `RCH-2101`, with the reason reserved.yaml gives (6.3), at the token's offset: `$.a ?? 0` →
+   `expression '$.a ?? 0': '??' is reserved for a later version of Rachana: write coalesce(a, b) at 4`. The lexer reads
+   them greedily, before the operators: `...` before `..`, and a number stops before `..` (`1..5` is `1`, `..`, `5`).
+   An underscore directly inside a number (`1_000`) is refused the same way (`'_' in a number is reserved …`), so digit
+   separators can come later. Inside a quoted text none of these is anything but characters (`'{'` is a text).
+2. **Core names.** reserved.yaml's `names` (278 function names, by the addition each is held for) are not Core
+   functions in 1.0 and are never offered (not in `expected`, near-match lists, completion or the prompt kit). A call of
+   one is `RCH-2101` "'<name>' is reserved for a later version of Rachana", in place of "unknown function"; a profile
+   that registers one is refused at registration, **unless** reserved.yaml lists it under `promoted` for that profile:
+   the profile keeps it, with its meaning, until Core defines the name with the same meaning proven by the profile's own
+   cases (EL_EXPANSION rule 9). A call of a name a known profile owns keeps that profile's problem when the profile is not
+   loaded (`RCH-2060`, 5.11). A field of that name (`$.filter`, `@.rank`) is a field as before: only calls are held.
+3. **Answers are open sets.** Words a function answers from a closed list today may gain members in a later minor:
+   `type_of` (`'decimal'`, `'date'`, `'money'`, …), the kinds of `sort` keys, the tones. A host and a caller MUST accept a
+   word they do not know, as a painter accepts an unknown tone (it draws nothing for it); a runtime of 1.0 itself answers
+   only the 1.0 words (`type_of` of an integer or a decimal is `'number'`).
+4. **Names an author defines win.** A name an author defines (a `let` name today; a function or a library alias in a later
+   minor, X41) is never taken away by a Core name a later minor adds: where it is in scope it keeps its meaning, and the
+   compiler warns that it hides a Core name (the warning's code is assigned with X41). Core's new names therefore never
+   change what an existing Sutra means.
+
+### 4.16 Numbers: integer, decimal, number
+
+Three kinds of number, as checked mode names them (decision XD3, EL_EXPANSION X2). The arithmetic is Core's own code
+(`CoreDecimal`, `CoreMath`) in every runtime, so the same expression gives the same digits everywhere.
+
+| Kind | What it is | Written as |
+|---|---|---|
+| **integer** | an exact whole number of at most 34 digits; an integer is a decimal with no fraction, so 64-bit identifiers survive (`9007199254740993` stays itself) | `42`, `0`, `1234567890123456789` |
+| **decimal** | an exact decimal of at most 34 significant digits: IEEE 754 **decimal128** values, exponent range included | `0.1`, `.5`, `1.10`, `1.` |
+| **number** | an IEEE 754 binary64 double | a literal with an exponent (`1e-3`, `2.5E3`), a real-number function's result, a double from the host |
+
+1. **Literals.** A number literal without an exponent is an integer or a decimal, exactly as written; one with more than
+   34 significant digits does not compile (`RCH-2101` "number '…' has more than 34 significant digits"). A literal with
+   an exponent is a double: write `1e-3` for a double, `0.001` for an exact thousandth. Number-like text that an operator
+   or a function reads as a number follows the same rule (`'0.1' * 3` → `0.3`).
+2. **`+`, `-`, `*`, `%` and unary `-` on integers and decimals are exact**: `0.1 + 0.2` → `0.3`; `1.10 * 3` → `3.3`;
+   `5.5 % 2` → `1.5`. A result that needs more than 34 significant digits is rounded **half to even** to 34 digits
+   (decimal128 rounding), and only digits after the point can be lost that way: a result whose integer part has more
+   than 34 digits (its magnitude is 10³⁴ or more) is `RCH-2102` "the result needs more than 34 digits before the point",
+   never a silent loss of a unit. `date − date` (4.5) is an integer of days.
+3. **`/` on integers and decimals** gives the quotient rounded half to even to 34 significant digits: `1 / 3` →
+   `0.3333333333333333333333333333333333`; `2 / 3` → `0.6666666666666666666666666666666667`; `10 / 4` → `2.5`. `/ 0`
+   and `% 0` are empty, as for every kind (4.5).
+4. **A double on either side makes a double.** An integer or decimal meeting a number is converted to the nearest
+   double and the operation is binary floating point: `1e-3 * 2` → `0.002` (a number); `0.1 + 1e-1` →
+   `0.2` (a number). Equality and ordering follow the same rule: two exact numbers compare exactly, anything with a
+   double compares as doubles (`0.1 == 1e-1` → `true`).
+5. **Real-number functions** (`exp`, `ln`, `log`, the trigonometry, `power` beyond whole exponents, distributions,
+   discounting) take doubles and return a number; the decimal functions of 4.10 rule 7 keep their exact results.
+6. **Values from the host** keep the kind the host gives: a JSON number in a record is a double; a column the Data
+   Protocol types `decimal` or `integer` arrives exact. `$.qty * 2` with a JSON `qty` of `3` is the double `6`, which
+   prints `6`.
+7. **List aggregates** add as `+` does: exact over integers and decimals (`sum([0.1, 0.2])` → `0.3`); once a double is
+   among the elements, the whole sum is the compensated double sum of 5.7.
+8. **Text form**: 4.2. A decimal never prints an exponent, trailing zeros after the point, or a negative zero.
+
+`type_of` answers `'number'` for all three kinds in 1.0 (4.15 rule 3); `expr` cases name the kind in their `type`
+(`number` for a double, `decimal` for an exact result: FORMAT 5.2).
 
 ## 5. Function catalogue (Core)
 
@@ -661,6 +753,10 @@ reasons the parser gives (exact words pinned by [CS]):
 | `let: 'in' cannot be a name` | `let(in = 1, in)` |
 | `reduce does not add up a list: use sum(...) …` | `reduce($.l, 0, @acc + @.v)` |
 | `a list written in an expression holds at most 1000 values` | a list of 1,001 items |
+| `'??' is reserved for a later version of Rachana: write coalesce(a, b)` (each token of reserved.yaml with its reason) | `$.a ?? 0` |
+| `'_' in a number is reserved for a later version of Rachana: write the digits without it` | `1_000` |
+| `'group_by' is reserved for a later version of Rachana` | `group_by($.t, 'desk')` |
+| `number '12345678901234567890123456789012345' has more than 34 significant digits` | a 35-digit literal |
 
 ### 6.4 Run-time states are not problems
 
@@ -713,8 +809,8 @@ An implementation conforms to `rachana: 1.x` when it passes every case of `confo
 `sutra` (Sutra + data → ViewModel, see TRANSLATION.md), `problem`, `patch`, `plan`, `edit` and, for Data Protocol
 hosts, `protocol`. The suite will pin, in particular:
 
-1. the text form of non-whole numbers, NaN and the infinities (4.2);
-2. text ordering and lengths for characters outside the Basic Multilingual Plane (4.13);
+1. the text form of non-whole numbers, NaN and the infinities (4.2), and every result of 4.16;
+2. text ordering and lengths by code point, outside the Basic Multilingual Plane too (4.13);
 3. the exact words of problem messages and their offsets, including inside templates (6.3, 4.11);
 4. the order of problems and the effect of fixes (6.1);
 5. real-number function results, each with its tolerance (5.8, 5.9);
@@ -735,7 +831,8 @@ to be settled with the conformance suite.
    calendar (5.5).
 2. **Checked-mode syntax errors** are reported as `RCH-9127` by the reference, not `RCH-2101`.
 3. **Template error offsets** are relative to the part, except an unclosed `${` (relative to the template) (4.11).
-4. **Ordering by UTF-16 code unit**, where the design said code point (4.7, 4.13).
+4. **Ordering by UTF-16 code unit**, where the design said code point (4.7, 4.13). **Settled** (XD4, 2026-11-19): code
+   point; the reference changes (cases `el/text-code-points`).
 5. **`+` with booleans** joins text (`true + 1` → `'true1'`) while `*` and `==` treat `true` as 1 (4.5, 4.6).
 6. **Links in a list literal** become their display text (the link is lost) (4.2).
 7. **Named keyword-only arguments** of profile functions compile in Core and fail only at evaluation (4.10).

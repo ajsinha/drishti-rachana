@@ -33,9 +33,10 @@ white-space = ? U+0009 to U+000D, U+001C to U+001F, U+0020, and every character 
                 except U+00A0, U+2007, U+202F ? ;
 
 (* One token. The lexer tries the alternatives in this order at each position: number, string, identifier,         *)
-(* refused pair, two-character operator, filter opener, event reference, $src, #index, single character.           *)
-token = number | string | identifier | refused-pair | operator | filter-open | event-ref | src-ref | index-ref
-      | punctuator ;
+(* reserved token, refused pair, two-character operator, filter opener, event reference, $src, #index, single       *)
+(* character.                                                                                                       *)
+token = number | string | identifier | reserved-token | refused-pair | operator | filter-open | event-ref | src-ref
+      | index-ref | punctuator ;
 
 (* ---- numbers ---------------------------------------------------------------------------------------------------- *)
 
@@ -44,7 +45,9 @@ digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
 (* A number literal: integer part, optional fraction, optional exponent; or a leading point. "1." and ".5" are      *)
 (* numbers; "1e6" and "2.5E-3" are numbers. There is no sign: "-1" is unary minus applied to 1. No hexadecimal,    *)
-(* no digit separators, no "Infinity" or "NaN" literals.                                                           *)
+(* no digit separators (reserved: "1_000" is refused, SPEC.md 4.15), no "Infinity" or "NaN" literals.               *)
+(* MEANING (SPEC.md 4.16): a literal without an exponent is an exact integer or decimal of at most 34 significant    *)
+(* digits (more is "has more than 34 significant digits"); a literal with an exponent is a binary64 double.          *)
 number = digits, [ ".", [ digits ] ], [ exponent ]
        | ".", digits, [ exponent ] ;
 
@@ -54,13 +57,16 @@ digits = digit, { digit } ;
 (* A power of ten. The sign is part of the number only directly after "e" or "E". *)
 exponent = ( "e" | "E" ), [ "+" | "-" ], digits ;
 
-(* LEXER BEHAVIOUR (normative): a number token is the longest run of digits, ".", "e", "E", and "+"/"-" directly     *)
-(* after "e"/"E", starting at a digit or at a "." followed by a digit. If that run is not a `number` the expression *)
-(* does not compile ("bad number"): "1.2.3", "3e", "12em" (run "12e"), "1e5e5". A "." followed by a digit always    *)
-(* starts a number, so "$.items.0" and "a.5" do NOT select a field: they are errors; write "$.items[0]".             *)
+(* LEXER BEHAVIOUR (normative): a number token is the longest run of digits, ".", "_", "e", "E", and "+"/"-"        *)
+(* directly after "e"/"E", starting at a digit or at a "." followed by a digit; the run ends before a "." that is     *)
+(* followed by another "." (so "1..5" is "1", the reserved "..", "5"). A run that holds "_" is refused as reserved   *)
+(* ("'_' in a number is reserved ...": "1_000", "1_x"). Any other run that is not a `number` does not compile ("bad  *)
+(* number"): "1.2.3", "3e", "12em" (run "12e"), "1e5e5". A "." followed by a digit always starts a number, so        *)
+(* "$.items.0" and "a.5" do NOT select a field: they are errors; write "$.items[0]".                                 *)
 (* UNDOCUMENTED. A run may start at any Unicode decimal digit (category Nd), but only ASCII digits form a number;     *)
 (* a non-ASCII digit there is a "bad number" error.                                                                *)
-number-run = ( any-digit | ".", digit ), { any-digit | "." | "e" | "E" | ( "e" | "E" ), ( "+" | "-" ) } ;
+number-run = ( any-digit | ".", digit ), { any-digit | "_" | ".", ? not followed by "." ? | "e" | "E"
+           | ( "e" | "E" ), ( "+" | "-" ) } ;
 
 (* Any Unicode decimal digit (category Nd), as Java's Character.isDigit. *)
 any-digit = ? any character of Unicode category Nd ? ;
@@ -83,7 +89,7 @@ double-quoted-char = escape | ( any-char - ( '"' | "\" ) ) ;
 (* the string unterminated.                                                                                        *)
 escape = "\", any-char ;
 
-(* Any Unicode character (a UTF-16 code unit in the reference; see SPEC.md 4.13). *)
+(* Any Unicode character: one code point (SPEC.md 4.13). *)
 any-char = ? any character ? ;
 
 (* ---- names ------------------------------------------------------------------------------------------------------ *)
@@ -119,6 +125,14 @@ src-ref = "$src" ;
 (* The 0-based position of the current row. Matched as a prefix: "#indexes" is "#index" then "es" (an error).       *)
 index-ref = "#index" ;
 
+(* ---- reserved tokens (SPEC.md 4.15, spec/1/reserved.yaml) ------------------------------------------------------ *)
+
+(* Tokens kept for later minors (the pipe, the empty default, lambdas, spread, ranges, record literals, comments).    *)
+(* Each is ALWAYS a compile error in rachana 1.0, "'<token>' is reserved for a later version of Rachana", with the    *)
+(* reason reserved.yaml gives. Matched greedily before the operators: "..." before ".."; "||>" is still "||" then    *)
+(* ">" (no reserved token starts at its first character); inside a string they are only characters.                 *)
+reserved-token = "|>" | "??" | "=>" | "..." | ".." | "{" | "}" | "/*" | "*/" ;
+
 (* ---- operators and punctuation ---------------------------------------------------------------------------------- *)
 
 (* Refused with their Rachana spelling: "'**' is not Rachana: write power(x, y)", "'//' is not Rachana: write         *)
@@ -132,7 +146,7 @@ operator = "&&" | "||" | "==" | "!=" | "<=" | ">=" ;
 filter-open = "[?" ;
 
 (* Single characters. "=" is valid only in a named argument and a let binding. "&", "|", ";", "#" (other than        *)
-(* #index), "`", "{", "}" and every other character are "unexpected character" errors.                              *)
+(* #index), "`" and every other character are "unexpected character" errors ("{" and "}" are reserved tokens).      *)
 punctuator = "$" | "@" | "^" | "(" | ")" | "[" | "]" | "." | "," | "?" | ":"
            | "+" | "-" | "*" | "/" | "%" | "<" | ">" | "!" | "=" ;
 
@@ -283,4 +297,4 @@ template-part = "${", balanced-text, "}" ;
 (* Text whose braces balance. Its content must be an `expression-source` (Part A). *)
 balanced-text = { ( any-char - ( "{" | "}" ) ) | "{", balanced-text, "}" } ;
 
-(* End of grammar: 59 rules (24 lexical, 31 syntactic, 4 template). *)
+(* End of grammar: 60 rules (25 lexical, 31 syntactic, 4 template). *)

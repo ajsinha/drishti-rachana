@@ -1,0 +1,138 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Written by hand from the 1.0 decisions of 2026-11-19 (EL_EXPANSION XD2 to XD4); verified: false until the reference changes after v0.10.0 is pinned (SPLIT_PLAN rule 4; el/KNOWN_DIFFERENCES.md).
+suite: grammar/reserved
+since: "1.0"
+profile: core
+verified: false
+description: "The reserved tokens of rachana-el.ebnf (SPEC 4.15): refused wherever an expression stands, characters inside a text, and the near spellings that stay valid."
+cases:
+
+  - id: "pipe-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "X11."
+    tags: ["reserved"]
+    text: "$.a |> f($.b)"
+    expect: {"accepted": false}
+
+  - id: "empty-default-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "X12."
+    tags: ["reserved"]
+    text: "$.a ?? 0"
+    expect: {"accepted": false}
+
+  - id: "arrow-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "X13."
+    tags: ["reserved"]
+    text: "map($.l, x => x)"
+    expect: {"accepted": false}
+
+  - id: "spread-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "X6."
+    tags: ["reserved"]
+    text: "[...$.l]"
+    expect: {"accepted": false}
+
+  - id: "range-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "X7."
+    tags: ["reserved"]
+    text: "$.a[1..2]"
+    expect: {"accepted": false}
+
+  - id: "empty-record-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "X6."
+    tags: ["reserved"]
+    text: "{}"
+    expect: {"accepted": false}
+
+  - id: "comment-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "X14."
+    tags: ["reserved"]
+    text: "$.a /* c */"
+    expect: {"accepted": false}
+
+  - id: "digit-separator-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "Digit separators."
+    tags: ["reserved"]
+    text: "1_000"
+    expect: {"accepted": false}
+
+  - id: "reserved-tokens-in-a-string-accepted"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "Inside quotes they are characters."
+    tags: ["reserved"]
+    text: "'|> ?? => .. { } /* */ 1_000'"
+    expect: {"accepted": true}
+
+  - id: "or-accepted"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "'||' is the operator."
+    tags: ["reserved"]
+    text: "$.a || $.b"
+    expect: {"accepted": true}
+
+  - id: "conditional-accepted"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "One '?' is the conditional."
+    tags: ["reserved"]
+    text: "$.a ? $.b : $.c"
+    expect: {"accepted": true}
+
+  - id: "filter-accepted"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "'[?' is the filter opener."
+    tags: ["reserved"]
+    text: "$.a[?@.x > 1]"
+    expect: {"accepted": true}
+
+  - id: "numbers-with-points-accepted"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "A single point in a number."
+    tags: ["reserved"]
+    text: ".5 + 1. + 1.5"
+    expect: {"accepted": true}
+
+  - id: "underscore-in-a-name-accepted"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    note: "'_' is reserved inside numbers only."
+    tags: ["reserved"]
+    text: "$.a_1 + _b"
+    expect: {"accepted": true}
+
+  - id: "braces-in-template-text-accepted"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    rule: "template"
+    note: "A lone brace outside a part is template text."
+    tags: ["reserved"]
+    text: "Total {x}: ${size($.a)}"
+    expect: {"accepted": true}
+
+  - id: "reserved-token-in-a-template-part-refused"
+    kind: "grammar"
+    source: "SPEC 4.15; rachana-el.ebnf reserved-token"
+    rule: "template"
+    note: "A part is an expression."
+    tags: ["reserved"]
+    text: "Total ${$.a ?? 0}"
+    expect: {"accepted": false}

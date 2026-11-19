@@ -9,12 +9,14 @@ given: { today: "2026-01-15" }
 cases:
   - id: add-two-numbers
     kind: expr
+    tags: ["changes-with-xd3"]
     source: SPEC 4.5
     expr: "1 + 2"
     expect: { value: 3, type: number, text: "3", reads: [] }
 
   - id: whole-result-prints-without-decimals
     kind: expr
+    tags: ["changes-with-xd3"]
     source: SPEC 4.2
     expr: "0.5 * 4"
     expect: { value: 2, type: number, text: "2" }
@@ -22,7 +24,7 @@ cases:
   - id: non-whole-result-shortest-round-trip
     kind: expr
     source: SPEC 4.2
-    tags: [determinism]
+    tags: [determinism, "changes-with-xd3"]
     expr: "0.1 + 0.2"
     expect: { value: 0.30000000000000004, type: number, text: "0.30000000000000004" }
 
@@ -68,6 +70,7 @@ cases:
 
   - id: numeric-text-times-number
     kind: expr
+    tags: ["changes-with-xd3"]
     source: SPEC 4.5
     expr: "'5' * 2"
     expect: { value: 10, type: number }
@@ -87,12 +90,14 @@ cases:
 
   - id: remainder-takes-sign-of-left
     kind: expr
+    tags: ["changes-with-xd3"]
     source: SPEC 4.5
     expr: "-3 % 2"
     expect: { value: -1, type: number, text: "-1" }
 
   - id: date-minus-date-is-whole-days
     kind: expr
+    tags: ["changes-with-xd3"]
     source: SPEC 4.5
     expr: "'2026-11-17' - '2026-11-01'"
     expect: { value: 16, type: number }

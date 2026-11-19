@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/liquidity-risk/sutras/liquidity/hqla-holding.v1.sutra.yaml",
+  "group": "examples/packs/liquidity-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: hqla-holding\nversion: 1\ndescription: \nmatch: { kind: hqla-holding, priority: 10 }\ntitle: { pill: \"Liquidity · HQLA holding\", id: \"$.holdingId\" }\nstrip:\n  - { label: \"Security\", bind: \"$.security\" }\n  - { label: \"Level\", bind: \"$.level\" }\n  - { label: \"Market value\", bind: \"$.marketValue\", fmt: \"amount0\" }\n  - { label: \"Haircut\", bind: \"$.haircut\", fmt: \"pct0\" }\n  - { label: \"Liquidity value\", bind: \"$.liquidityValue\", fmt: \"amount0\", emphasis: true }\n  - { label: \"Encumbered\", bind: \"$.encumbered\" }\npanels:\n  - id: details\n    kind: kv\n    title: \"Holding\"\n    key: \"F2\"\n    rows: \"$.details\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.bond, 'bond')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

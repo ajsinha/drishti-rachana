@@ -1,0 +1,7 @@
+{
+  "file": "config/packs/core/core/sutras/market-data/calendar.v1.sutra.yaml",
+  "group": "config/packs/core/core",
+  "problems": [],
+  "model": "rachana: 1\nsutra: calendar\nversion: 1\ndescription: \nmatch: { kind: calendar, priority: 10 }\ntitle: { pill: \"Market data · Holiday calendar\", id: \"$.CALENDAR_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Holidays 2026\", bind: \"$.HOLIDAYS_2026\", emphasis: true }\n  - { label: \"Holidays 2027\", bind: \"$.HOLIDAYS_2027\" }\n  - { label: \"Next holiday\", bind: \"$.NEXT_HOLIDAY\" }\n  - { label: \"On\", bind: \"$.NEXT_HOLIDAY_DATE\", fmt: \"date\" }\npanels:\n  - id: holidays\n    kind: table\n    title: \"Holidays\"\n    key: \"F2\"\n    rows: \"$.HOLIDAYS\"\n    columns:\n      - { label: \"Date\", bind: \"@.DATE\", fmt: \"date\" }\n      - { label: \"Day\", bind: \"@.WEEKDAY\" }\n      - { label: \"Holiday\", bind: \"@.NAME\" }\n      - { label: \"Observed\", bind: \"@.OBSERVED\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

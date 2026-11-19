@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/genomics/sutras/genomics-and-biology/sequencing-run.v1.sutra.yaml",
+  "group": "examples/packs/genomics",
+  "problems": [],
+  "model": "rachana: 1\nsutra: sequencing-run\nversion: 1\ndescription: \nmatch: { kind: sequencing-run, priority: 10 }\ntitle: { pill: \"Genomics and biology · Sequencing run\", id: \"$.runId\" }\nstrip:\n  - { label: \"Instrument\", bind: \"$.instrument\" }\n  - { label: \"Flow cell\", bind: \"$.flowcell\" }\n  - { label: \"Yield (Gb)\", bind: \"$.yieldGb\", fmt: \"price2\", emphasis: true }\n  - { label: \"Q30\", bind: \"$.q30\", fmt: \"pct2\" }\n  - { label: \"Clusters PF\", bind: \"$.clustersPf\", fmt: \"pct2\" }\n  - { label: \"Status\", bind: \"$.status\", tone: \"status\" }\npanels:\n  - id: quality\n    kind: line\n    title: \"Mean quality score by cycle\"\n    key: \"F2\"\n    rows: \"$.qualityByCycle\"\n    x: \"cycle\"\n    y: \"q\"\n    fmt: \"price2\"\n  - id: samples\n    kind: table\n    title: \"Samples\"\n    key: \"F3\"\n    rows: \"$.samples\"\n    columns:\n      - { label: \"Sample\", bind: \"@.sample\" }\n      - { label: \"Reads (M)\", bind: \"@.readsM\", fmt: \"price2\", total: true }\n      - { label: \"Mean coverage\", bind: \"@.coverage\", fmt: \"amount0\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

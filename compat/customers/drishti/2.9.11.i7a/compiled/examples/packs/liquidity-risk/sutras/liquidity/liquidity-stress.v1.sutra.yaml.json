@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/liquidity-risk/sutras/liquidity/liquidity-stress.v1.sutra.yaml",
+  "group": "examples/packs/liquidity-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: liquidity-stress\nversion: 1\ndescription: \nmatch: { kind: liquidity-stress, priority: 10 }\ntitle: { pill: \"Liquidity · Liquidity stress result\", id: \"$.resultId\" }\nstrip:\n  - { label: \"Scenario\", bind: \"$.scenarioName\" }\n  - { label: \"Entity\", bind: \"$.legalEntityName\" }\n  - { label: \"Survival (days)\", bind: \"$.survivalDays\", fmt: \"amount0\", emphasis: true }\n  - { label: \"Lowest position\", bind: \"$.minimumPosition\", fmt: \"signed0\", tone: \"sign\" }\n  - { label: \"Appetite (days)\", bind: \"$.appetiteDays\", fmt: \"amount0\" }\npanels:\n  - id: path\n    kind: line\n    title: \"Cumulative liquidity position (90 days)\"\n    key: \"F2\"\n    code: \"PATH\"\n    rows: \"$.path\"\n    x: \"day\"\n    y: \"position\"\n    fmt: \"compact\"\n  - id: drivers\n    kind: hbar\n    title: \"Outflow drivers\"\n    area: right\n    rows: \"$.drivers\"\n    label: \"driver\"\n    value: \"outflow\"\n    fmt: \"compact\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.legalEntity, 'legal-entity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

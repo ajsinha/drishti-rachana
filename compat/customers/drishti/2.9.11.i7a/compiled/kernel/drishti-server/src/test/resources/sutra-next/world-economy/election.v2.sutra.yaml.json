@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/world-economy/election.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/world-economy",
+  "problems": [],
+  "model": "rachana: 1\nsutra: election\nversion: 2\ndescription: \nmatch: { kind: election, priority: 10 }\ntitle: { pill: \"Politics and society · Election\", id: \"$.ELECTION_ID\" }\nstrip:\n  - { label: \"Election\", bind: \"$.TITLE\" }\n  - { label: \"Held\", bind: \"$.DATE_TEXT\" }\n  - { label: \"System\", bind: \"$.SYSTEM\" }\n  - { label: \"Largest party\", bind: \"$.WINNER\", emphasis: true }\n  - { label: \"Next election\", bind: \"$.NEXT_ELECTION\" }\npanels:\n  - id: results\n    kind: table\n    title: \"Seats by party\"\n    key: \"F2\"\n    rows: \"$.RESULTS\"\n    columns:\n      - { label: \"Party\", bind: \"@.PARTY\" }\n      - { label: \"Seats\", bind: \"@.SEATS\", fmt: \"amount0\", total: true }\n      - { label: \"Share, %\", bind: \"@.SHARE\", fmt: \"pc1\" }\n  - id: summary\n    kind: kv\n    title: \"Election facts (as published)\"\n    area: right\n    rows: \"$.SUMMARY\"\n  - id: source\n    kind: kv\n    title: \"Data source and licence\"\n    area: right\n    rows: \"$.PROVENANCE\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.JURISDICTION, 'jurisdiction')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

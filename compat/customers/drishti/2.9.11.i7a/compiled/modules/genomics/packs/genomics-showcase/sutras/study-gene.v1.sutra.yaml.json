@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/genomics-showcase/sutras/study-gene.v1.sutra.yaml",
+  "group": "modules/genomics/packs/genomics-showcase",
+  "problems": [],
+  "model": "rachana: 1\nsutra: study-gene\nversion: 1\ndescription: \nmatch: { kind: study-gene, priority: 10 }\ntitle: { pill: \"Genomics · Study gene\", id: \"$.GENE\" }\nstrip:\n  - { label: \"Gene\", bind: \"$.GENE\" }\n  - { label: \"Chrom\", bind: \"$.CHROM\" }\n  - { label: \"Role\", bind: \"$.ROLE\" }\n  - { label: \"Protein length\", bind: \"$.PROTEIN_LENGTH\" }\n  - { label: \"Altered fraction\", bind: \"$.ALTERED_FRACTION\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Study gene\"\n    columns:\n      - { label: \"Gene\", bind: \"$.GENE\" }\n      - { label: \"Chrom\", bind: \"$.CHROM\" }\n      - { label: \"Start\", bind: \"$.START\", fmt: \"amount0\" }\n      - { label: \"End\", bind: \"$.END\", fmt: \"amount0\" }\n      - { label: \"Strand\", bind: \"$.STRAND\" }\n      - { label: \"Role\", bind: \"$.ROLE\" }\n      - { label: \"Protein length\", bind: \"$.PROTEIN_LENGTH\" }\n      - { label: \"Driver\", bind: \"$.DRIVER\" }\n      - { label: \"Variants\", bind: \"$.VARIANTS\", fmt: \"amount0\" }\n      - { label: \"Altered samples\", bind: \"$.ALTERED_SAMPLES\", fmt: \"amount0\" }\n      - { label: \"Altered fraction\", bind: \"$.ALTERED_FRACTION\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/genomics/sutras/genomics-and-biology/pathway.v1.sutra.yaml",
+  "group": "examples/packs/genomics",
+  "problems": [],
+  "model": "rachana: 1\nsutra: pathway\nversion: 1\ndescription: \nmatch: { kind: pathway, priority: 10 }\ntitle: { pill: \"Genomics and biology · Pathway\", id: \"$.pathwayId\" }\nstrip:\n  - { label: \"Pathway\", bind: \"$.name\", emphasis: true }\n  - { label: \"Category\", bind: \"$.category\" }\n  - { label: \"Genes\", bind: \"$.geneCount\", fmt: \"amount0\" }\npanels:\n  - id: members\n    kind: table\n    title: \"Member genes\"\n    key: \"F2\"\n    rows: \"$.members\"\n    columns:\n      - { label: \"Gene\", bind: \"@.symbol\" }\n      - { label: \"Role\", bind: \"@.role\" }\n      - { label: \"Location\", bind: \"@.location\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

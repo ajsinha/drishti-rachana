@@ -1,0 +1,7 @@
+{
+  "file": "modules/market-data/packs/market-data/sutras/market-data/commodity-curve.v1.sutra.yaml",
+  "group": "modules/market-data/packs/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: commodity-curve\nversion: 1\ndescription: \nmatch: { kind: commodity-curve, priority: 10 }\ntitle: { pill: \"Market data · Commodity forward curve\", id: \"$.CURVE_ID\" }\nstrip:\n  - { label: \"Commodity\", bind: \"$.COMMODITY\" }\n  - { label: \"Front\", bind: \"$.FRONT\", fmt: \"price2\", emphasis: true }\n  - { label: \"Shape\", bind: \"$.SHAPE\" }\n  - { label: \"M1–M12\", bind: \"$.ROLL\", fmt: \"price2\", tone: \"sign\" }\npanels:\n  - id: curve\n    kind: line\n    title: \"Forward curve\"\n    key: \"F2\"\n    phone: { tier: \"glance\", from: \"fragment\" }\n    rows: \"$.POINTS\"\n    x: \"MONTH\"\n    y: \"PRICE\"\n    fmt: \"price2\"\n  - id: points\n    kind: table\n    title: \"Settlements\"\n    rows: \"$.POINTS\"\n    columns:\n      - { label: \"Month\", bind: \"@.MONTH\" }\n      - { label: \"Price\", bind: \"@.PRICE\", fmt: \"price2\" }\n      - { label: \"OI\", bind: \"@.OPEN_INTEREST\", fmt: \"amount0\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F7: \"link($.COMMODITY_REF, 'commodity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

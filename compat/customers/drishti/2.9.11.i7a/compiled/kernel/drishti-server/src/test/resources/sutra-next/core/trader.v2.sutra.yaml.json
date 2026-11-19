@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/core/trader.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/core",
+  "problems": [],
+  "model": "rachana: 1\nsutra: trader\nversion: 2\ndescription: \nmatch: { kind: trader, priority: 10 }\ntitle: { pill: \"Organisation · Trader\", id: \"$.TRADER_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Desk\", bind: \"$.DESK_NAME\" }\n  - { label: \"Trades\", bind: \"$.TRADE_COUNT\", emphasis: true }\npanels:\n  - id: books\n    kind: table\n    title: \"Books\"\n    key: \"F2\"\n    rows: \"$.BOOKS\"\n    columns:\n      - { label: \"Book\", bind: \"@.ID\", link: true }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.DESK, 'desk')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

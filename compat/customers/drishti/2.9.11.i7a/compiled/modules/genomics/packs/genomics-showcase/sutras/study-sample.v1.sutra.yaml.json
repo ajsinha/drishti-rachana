@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/genomics-showcase/sutras/study-sample.v1.sutra.yaml",
+  "group": "modules/genomics/packs/genomics-showcase",
+  "problems": [],
+  "model": "rachana: 1\nsutra: study-sample\nversion: 1\ndescription: \nmatch: { kind: study-sample, priority: 10 }\ntitle: { pill: \"Genomics · Study sample\", id: \"$.SAMPLE_ID\" }\nstrip:\n  - { label: \"Sample id\", bind: \"$.SAMPLE_ID\" }\n  - { label: \"Tumour type\", bind: \"$.TUMOUR_TYPE\" }\n  - { label: \"Stage\", bind: \"$.STAGE\" }\n  - { label: \"Response\", bind: \"$.RESPONSE\" }\n  - { label: \"Cluster\", bind: \"$.CLUSTER\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Study sample\"\n    columns:\n      - { label: \"Sample id\", bind: \"$.SAMPLE_ID\" }\n      - { label: \"Cohort\", bind: \"$.COHORT\" }\n      - { label: \"Tumour type\", bind: \"$.TUMOUR_TYPE\" }\n      - { label: \"Stage\", bind: \"$.STAGE\" }\n      - { label: \"Age band\", bind: \"$.AGE_BAND\" }\n      - { label: \"Response\", bind: \"$.RESPONSE\" }\n      - { label: \"Toxicity\", bind: \"$.TOXICITY\" }\n      - { label: \"Relapse\", bind: \"$.RELAPSE\" }\n      - { label: \"Cluster\", bind: \"$.CLUSTER\" }\n      - { label: \"Emb x\", bind: \"$.EMB_X\" }\n      - { label: \"Emb y\", bind: \"$.EMB_Y\" }\n      - { label: \"Mutation count\", bind: \"$.MUTATION_COUNT\", fmt: \"amount0\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

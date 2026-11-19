@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/dividend-curve.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: dividend-curve\nversion: 2\ndescription: \nmatch: { kind: dividend-curve, priority: 10 }\ntitle: { pill: \"Market data · Dividend curve\", id: \"$.CURVE_ID\" }\nstrip:\n  - { label: \"Underlier\", bind: \"$.UNDERLIER\" }\n  - { label: \"Yield\", bind: \"$.DIVIDEND_YIELD\", fmt: \"pct2\", emphasis: true }\npanels:\n  - id: divs\n    kind: hbar\n    title: \"Expected dividends\"\n    key: \"F2\"\n    rows: \"$.POINTS\"\n    label: \"YEAR\"\n    value: \"AMOUNT\"\n    fmt: \"price2\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.UNDERLYING_EQUITY, 'equity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

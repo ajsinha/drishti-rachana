@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/protein-engineering/sutras/residue-contact.v1.sutra.yaml",
+  "group": "modules/genomics/packs/protein-engineering",
+  "problems": [],
+  "model": "rachana: 1\nsutra: residue-contact\nversion: 1\ndescription: \nmatch: { kind: residue-contact, priority: 10 }\ntitle: { pill: \"Protein engineering · Residue contact\", id: \"$.CONTACT_ID\" }\nstrip:\n  - { label: \"Contact id\", bind: \"$.CONTACT_ID\" }\n  - { label: \"Protein\", bind: \"link($.PROTEIN, 'protein')\" }\n  - { label: \"Pos a\", bind: \"$.POS_A\", fmt: \"amount0\" }\n  - { label: \"Pos b\", bind: \"$.POS_B\", fmt: \"amount0\" }\n  - { label: \"Distance\", bind: \"$.DISTANCE\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Residue contact\"\n    columns:\n      - { label: \"Contact id\", bind: \"$.CONTACT_ID\" }\n      - { label: \"Protein\", bind: \"link($.PROTEIN, 'protein')\" }\n      - { label: \"Pos a\", bind: \"$.POS_A\", fmt: \"amount0\" }\n      - { label: \"Pos b\", bind: \"$.POS_B\", fmt: \"amount0\" }\n      - { label: \"Distance\", bind: \"$.DISTANCE\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

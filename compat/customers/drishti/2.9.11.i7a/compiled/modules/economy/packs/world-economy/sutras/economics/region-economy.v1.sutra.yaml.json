@@ -1,0 +1,7 @@
+{
+  "file": "modules/economy/packs/world-economy/sutras/economics/region-economy.v1.sutra.yaml",
+  "group": "modules/economy/packs/world-economy",
+  "problems": [],
+  "model": "rachana: 1\nsutra: region-economy\nversion: 1\ndescription: \nmatch: { kind: region-economy, priority: 10 }\ntitle: { pill: \"Economics · Region economy\", id: \"$.REGION_ID\" }\nstrip:\n  - { label: \"Region\", bind: \"$.NAME\" }\n  - { label: \"Code\", bind: \"$.REGION_CODE\" }\n  - { label: \"Country\", bind: \"$.COUNTRY_NAME\" }\n  - { label: \"Population (m)\", bind: \"$.POPULATION_M\", fmt: \"price2\" }\n  - { label: \"GDP (USD bn)\", bind: \"$.GDP_USD_BN\", fmt: \"amount0\" }\n  - { label: \"GDP per capita (USD)\", bind: \"$.GDP_PER_CAPITA\", fmt: \"amount0\", emphasis: true }\npanels:\n  - id: facts\n    kind: kv\n    title: \"About these figures\"\n    phone: { tier: \"must\", from: \"fragment\" }\n    rows: \"$.FACTS\"\n  - id: source\n    kind: kv\n    title: \"Data source and licence\"\n    area: right\n    phone: { tier: \"must\", from: \"fragment\" }\n    rows: \"$.PROVENANCE\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F7: \"link($.ECONOMY, 'economy')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

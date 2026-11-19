@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/genomics/sutras/genomics-and-biology/clinical-trial.v1.sutra.yaml",
+  "group": "examples/packs/genomics",
+  "problems": [],
+  "model": "rachana: 1\nsutra: clinical-trial\nversion: 1\ndescription: \nmatch: { kind: clinical-trial, priority: 10 }\ntitle: { pill: \"Genomics and biology · Clinical trial\", id: \"$.trialId\" }\nstrip:\n  - { label: \"Trial\", bind: \"$.title\" }\n  - { label: \"Phase\", bind: \"$.phase\" }\n  - { label: \"Status\", bind: \"$.status\", tone: \"status\" }\n  - { label: \"Enrolled\", bind: \"$.enrolled\", fmt: \"amount0\", emphasis: true }\n  - { label: \"Target\", bind: \"$.target\", fmt: \"amount0\" }\n  - { label: \"Biomarker\", bind: \"$.biomarkerName\" }\npanels:\n  - id: enrolment\n    kind: line\n    title: \"Cumulative enrolment\"\n    key: \"F2\"\n    rows: \"$.enrolment\"\n    x: \"month\"\n    y: \"patients\"\n    fmt: \"amount0\"\n  - id: arms\n    kind: table\n    title: \"Arms\"\n    key: \"F3\"\n    rows: \"$.arms\"\n    columns:\n      - { label: \"Arm\", bind: \"@.arm\" }\n      - { label: \"Intervention\", bind: \"@.intervention\" }\n      - { label: \"Patients\", bind: \"@.patients\", fmt: \"amount0\" }\n      - { label: \"Response rate\", bind: \"@.orr\", fmt: \"pct0\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.gene, 'gene')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "config/packs/core/core/sutras/counterparty-and-legal/counterparty-group.v1.sutra.yaml",
+  "group": "config/packs/core/core",
+  "problems": [],
+  "model": "rachana: 1\nsutra: counterparty-group\nversion: 1\ndescription: \nmatch: { kind: counterparty-group, priority: 10 }\ntitle: { pill: \"Counterparty and legal · Counterparty group\", id: \"$.GROUP_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Members\", bind: \"size($.MEMBERS)\" }\n  - { label: \"Group limit\", bind: \"$.LIMIT\", fmt: \"compact\" }\n  - { label: \"Utilisation\", bind: \"$.UTILISATION\", fmt: \"pct0\", emphasis: true }\npanels:\n  - id: members\n    kind: table\n    title: \"Members\"\n    key: \"F2\"\n    rows: \"$.MEMBERS\"\n    columns:\n      - { label: \"Counterparty\", bind: \"@.ID\", link: true }\n      - { label: \"Name\", bind: \"@.NAME\" }\n      - { label: \"Rating\", bind: \"@.RATING\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/world-economy/party.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/world-economy",
+  "problems": [],
+  "model": "rachana: 1\nsutra: party\nversion: 2\ndescription: \nmatch: { kind: party, priority: 10 }\ntitle: { pill: \"Politics and society · Party\", id: \"$.PARTY_ID\" }\nstrip:\n  - { label: \"Party\", bind: \"$.NAME\", emphasis: true }\n  - { label: \"Country\", bind: \"$.COUNTRY_NAME\" }\n  - { label: \"Seats\", bind: \"$.SEATS\", fmt: \"amount0\" }\n  - { label: \"Seat share, %\", bind: \"$.SEAT_SHARE\", fmt: \"pc1\" }\n  - { label: \"Chamber\", bind: \"$.CHAMBER\" }\n  - { label: \"Election\", bind: \"$.ELECTION_DATE\" }\npanels:\n  - id: results\n    kind: hbar\n    title: \"Seats in the chamber\"\n    key: \"F2\"\n    rows: \"$.RESULTS\"\n    label: \"PARTY\"\n    value: \"SEATS\"\n    fmt: \"amount0\"\n  - id: source\n    kind: kv\n    title: \"Data source and licence\"\n    area: right\n    rows: \"$.PROVENANCE\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.ELECTION, 'election')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

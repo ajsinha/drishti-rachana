@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/protein-engineering/sutras/residue.v1.sutra.yaml",
+  "group": "modules/genomics/packs/protein-engineering",
+  "problems": [],
+  "model": "rachana: 1\nsutra: residue\nversion: 1\ndescription: \nmatch: { kind: residue, priority: 10 }\ntitle: { pill: \"Protein engineering · Residue\", id: \"$.RESIDUE_ID\" }\nstrip:\n  - { label: \"Residue id\", bind: \"$.RESIDUE_ID\" }\n  - { label: \"Aa\", bind: \"$.AA\" }\n  - { label: \"Secondary\", bind: \"$.SECONDARY\" }\n  - { label: \"Domain\", bind: \"$.DOMAIN\" }\n  - { label: \"Burial\", bind: \"$.BURIAL\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Residue\"\n    columns:\n      - { label: \"Residue id\", bind: \"$.RESIDUE_ID\" }\n      - { label: \"Protein\", bind: \"link($.PROTEIN, 'protein')\" }\n      - { label: \"Pos\", bind: \"$.POS\", fmt: \"amount0\" }\n      - { label: \"Aa\", bind: \"$.AA\" }\n      - { label: \"Secondary\", bind: \"$.SECONDARY\" }\n      - { label: \"Domain\", bind: \"$.DOMAIN\" }\n      - { label: \"Burial\", bind: \"$.BURIAL\" }\n      - { label: \"Active site\", bind: \"$.ACTIVE_SITE\" }\n      - { label: \"X\", bind: \"$.X\" }\n      - { label: \"Y\", bind: \"$.Y\" }\n      - { label: \"Z\", bind: \"$.Z\" }\n      - { label: \"Mean activity\", bind: \"$.MEAN_ACTIVITY\" }\n      - { label: \"Mean stability\", bind: \"$.MEAN_STABILITY\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

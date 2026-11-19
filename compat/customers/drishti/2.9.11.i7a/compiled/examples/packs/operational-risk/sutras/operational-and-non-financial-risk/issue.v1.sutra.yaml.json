@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/issue.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: issue\nversion: 1\ndescription: \nmatch: { kind: issue, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Issue and action\", id: \"$.issueId\" }\nstrip:\n  - { label: \"Title\", bind: \"$.title\" }\n  - { label: \"Source\", bind: \"$.source\" }\n  - { label: \"Severity\", bind: \"$.severity\", emphasis: true }\n  - { label: \"Owner\", bind: \"$.owner\" }\n  - { label: \"Due\", bind: \"$.due\", fmt: \"date\" }\n  - { label: \"Status\", bind: \"$.status\", tone: \"status\" }\npanels:\n  - id: actions\n    kind: ladder\n    title: \"Actions\"\n    key: \"F2\"\n    rows: \"$.actions\"\n    columns:\n      - { label: \"Due\", bind: \"@.due\", fmt: \"date\" }\n      - { label: \"Action\", bind: \"@.action\" }\n      - { label: \"Status\", bind: \"@.status\", tone: \"status\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.desk, 'desk')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

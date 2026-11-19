@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/equity-index.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: equity-index\nversion: 2\ndescription: \nmatch: { kind: equity-index, priority: 10 }\ntitle: { pill: \"Market data · Equity index\", id: \"$.INDEX_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Level\", bind: \"$.LEVEL\", fmt: \"price2\", emphasis: true }\n  - { label: \"1D\", bind: \"$.CHANGE_1D\", fmt: \"pct2\", tone: \"sign\" }\n  - { label: \"Constituents\", bind: \"$.CONSTITUENT_COUNT\" }\n  - { label: \"Currency\", bind: \"$.CURRENCY\" }\npanels:\n  - id: constituents\n    kind: table\n    title: \"Top constituents\"\n    key: \"F2\"\n    rows: \"$.CONSTITUENTS\"\n    columns:\n      - { label: \"Equity\", bind: \"@.EQUITY\" }\n      - { label: \"Weight\", bind: \"@.WEIGHT\", fmt: \"pct2\" }\n  - id: history\n    kind: line\n    title: \"Level, last 30 days\"\n    area: right\n    rows: \"$.HISTORY\"\n    x: \"DATE\"\n    y: \"CLOSE\"\n    fmt: \"price2\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.EQUITY_VOL_SURFACE, 'equity-vol-surface')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/protein-engineering/sutras/protein.v1.sutra.yaml",
+  "group": "modules/genomics/packs/protein-engineering",
+  "problems": [],
+  "model": "rachana: 1\nsutra: protein\nversion: 1\ndescription: \nmatch: { kind: protein, priority: 10 }\ntitle: { pill: \"Protein engineering · Protein\", id: \"$.PROTEIN\" }\nstrip:\n  - { label: \"Protein\", bind: \"$.PROTEIN\" }\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Length\", bind: \"$.LENGTH\" }\n  - { label: \"Family\", bind: \"$.FAMILY\" }\n  - { label: \"Design rounds\", bind: \"$.DESIGN_ROUNDS\", fmt: \"amount0\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Protein\"\n    columns:\n      - { label: \"Protein\", bind: \"$.PROTEIN\" }\n      - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n      - { label: \"Name\", bind: \"$.NAME\" }\n      - { label: \"Length\", bind: \"$.LENGTH\" }\n      - { label: \"Family\", bind: \"$.FAMILY\" }\n      - { label: \"Sequence\", bind: \"$.SEQUENCE\" }\n      - { label: \"Active site\", bind: \"$.ACTIVE_SITE\" }\n      - { label: \"Design rounds\", bind: \"$.DESIGN_ROUNDS\", fmt: \"amount0\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

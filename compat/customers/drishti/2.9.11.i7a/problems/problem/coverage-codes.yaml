@@ -1,0 +1,38 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/coverage-codes
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "Sutras that raise problem codes no other case reaches (plan R0 H5 coverage)."
+cases:
+
+  - id: "rachana-version-missing"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "sutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2009", "severity": "error", "message": "missing 'rachana: 1' (the Rachana language version) at the top", "range": {"start": {"line": 1, "column": 1}}}]}
+
+  - id: "rachana-version-unknown"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 2\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2009", "severity": "error", "message": "'rachana: 2' is not a language version this server reads (it reads 1)", "range": {"start": {"line": 1, "column": 10}}}]}
+
+  - id: "function-key-used-twice-by-panels"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: a, kind: markdown, text: hi, key: F2 }\n  - { id: b, kind: markdown, text: ho, key: F2 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2025", "severity": "error", "message": "function key F2 is used twice", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: "function-key-not-f1-to-f12"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\nkeys:\n  F13: open\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2025", "severity": "error", "message": "'F13' is not a function key (F1-F12)", "range": {"start": {"line": 7, "column": 8}}}]}
+
+  - id: "strip-too-many-figures"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\nstrip:\n  - { label: L0, bind: $.v0 }\n  - { label: L1, bind: $.v1 }\n  - { label: L2, bind: $.v2 }\n  - { label: L3, bind: $.v3 }\n  - { label: L4, bind: $.v4 }\n  - { label: L5, bind: $.v5 }\n  - { label: L6, bind: $.v6 }\n  - { label: L7, bind: $.v7 }\n  - { label: L8, bind: $.v8 }\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2026", "severity": "error", "message": "the strip holds at most 8 figures, found 9", "range": {"start": {"line": 7, "column": 3}}}]}

@@ -1,0 +1,7 @@
+{
+  "file": "modules/banking/packs/counterparty-risk/sutras/collateral-and-margin/margin-call.v1.sutra.yaml",
+  "group": "modules/banking/packs/counterparty-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: margin-call\nversion: 1\ndescription: \nmatch: { kind: margin-call, priority: 10 }\ntitle: { pill: \"Collateral and margin · Margin call\", id: \"$.CALL_ID\" }\nstrip:\n  - { label: \"Date\", bind: \"$.CALL_DATE\", fmt: \"date\" }\n  - { label: \"Type\", bind: \"$.MARGIN_TYPE\" }\n  - { label: \"Direction\", bind: \"$.DIRECTION\" }\n  - { label: \"Amount\", bind: \"$.AMOUNT\", fmt: \"amount0\", emphasis: true }\n  - { label: \"Status\", bind: \"$.STATUS\", tone: \"status\" }\n  - { label: \"Dispute\", bind: \"$.DISPUTE_AMOUNT\", fmt: \"amount0\" }\npanels:\n  - id: events\n    kind: ladder\n    title: \"Workflow\"\n    key: \"F2\"\n    rows: \"$.EVENTS\"\n    columns:\n      - { label: \"Time\", bind: \"@.AT\" }\n      - { label: \"Event\", bind: \"@.EVENT\" }\n      - { label: \"By\", bind: \"@.BY\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F7: \"link($.NETTING_SET, 'netting-set')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

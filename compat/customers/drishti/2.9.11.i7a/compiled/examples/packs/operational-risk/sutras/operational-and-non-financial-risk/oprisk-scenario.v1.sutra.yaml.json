@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/oprisk-scenario.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: oprisk-scenario\nversion: 1\ndescription: \nmatch: { kind: oprisk-scenario, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Operational-risk scenario\", id: \"$.scenarioId\" }\nstrip:\n  - { label: \"Scenario\", bind: \"$.name\" }\n  - { label: \"Event type\", bind: \"$.eventType\" }\n  - { label: \"Frequency (1 in N years)\", bind: \"$.returnPeriod\", fmt: \"amount0\" }\n  - { label: \"Severity p50\", bind: \"$.p50\", fmt: \"compact\" }\n  - { label: \"Severity p99.9\", bind: \"$.p999\", fmt: \"compact\", emphasis: true }\npanels:\n  - id: severity\n    kind: hbar\n    title: \"Severity by percentile\"\n    key: \"F2\"\n    rows: \"$.percentiles\"\n    label: \"percentile\"\n    value: \"loss\"\n    fmt: \"compact\"\n  - id: context\n    kind: kv\n    title: \"Context\"\n    area: right\n    rows: \"$.context\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.legalEntity, 'legal-entity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

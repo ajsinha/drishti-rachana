@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/core/legal-entity.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/core",
+  "problems": [],
+  "model": "rachana: 1\nsutra: legal-entity\nversion: 2\ndescription: \nmatch: { kind: legal-entity, priority: 10 }\ntitle: { pill: \"Organisation · Bank legal entity\", id: \"$.ENTITY_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"LEI\", bind: \"$.LEI\" }\n  - { label: \"Jurisdiction\", bind: \"$.JURISDICTION\" }\n  - { label: \"Regulator\", bind: \"$.REGULATOR\" }\n  - { label: \"VaR 99% 1D (engine)\", bind: \"$.VAR_ENGINE.VAR\", fmt: \"compact\", emphasis: true }\npanels:\n  - id: desks\n    kind: table\n    title: \"Desks\"\n    key: \"F2\"\n    rows: \"$.DESKS\"\n    columns:\n      - { label: \"Desk\", bind: \"@.ID\", link: true }\n      - { label: \"Name\", bind: \"@.NAME\" }\n  - id: riskReturn\n    kind: scatter\n    title: \"Risk and return (books: VaR against today's P&L, USD)\"\n    key: \"F3\"\n    code: \"RR\"\n    rows: \"$.VAR_ENGINE.BOOKS\"\n    x: \"VAR\"\n    y: \"PNL\"\n    label: \"BOOK\"\n    fmt: \"signed0\"\n    size: \"TRADES\"\n    group: \"DESK\"\n    xFmt: \"compact\"\n    xLabel: \"VaR 99% 1D (USD)\"\n    yLabel: \"P&L 1D (USD)\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

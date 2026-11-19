@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/climate-risk/sutras/climate/physical-asset.v1.sutra.yaml",
+  "group": "examples/packs/climate-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: physical-asset\nversion: 1\ndescription: \nmatch: { kind: physical-asset, priority: 10 }\ntitle: { pill: \"Climate · Physical-risk asset\", id: \"$.assetId\" }\nstrip:\n  - { label: \"Asset\", bind: \"$.name\" }\n  - { label: \"Owner\", bind: \"$.counterpartyName\" }\n  - { label: \"Country\", bind: \"$.country\" }\n  - { label: \"Value\", bind: \"$.value\", fmt: \"compact\" }\n  - { label: \"Worst hazard\", bind: \"$.worstHazard\", emphasis: true }\n  - { label: \"Insured\", bind: \"$.insured\", fmt: \"pct0\" }\npanels:\n  - id: hazards\n    kind: hbar\n    title: \"Hazard scores (0-100, 2050, RCP 4.5)\"\n    key: \"F2\"\n    rows: \"$.hazards\"\n    label: \"hazard\"\n    value: \"score\"\n    fmt: \"amount0\"\n  - id: location\n    kind: kv\n    title: \"Location\"\n    area: right\n    rows: \"$.location\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.counterparty, 'counterparty')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

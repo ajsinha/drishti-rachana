@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/third-party.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: third-party\nversion: 1\ndescription: \nmatch: { kind: third-party, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Third-party (vendor)\", id: \"$.vendorId\" }\nstrip:\n  - { label: \"Vendor\", bind: \"$.name\" }\n  - { label: \"Criticality\", bind: \"$.criticality\", emphasis: true }\n  - { label: \"Services\", bind: \"$.serviceCount\", fmt: \"amount0\" }\n  - { label: \"Annual spend\", bind: \"$.annualSpend\", fmt: \"compact\" }\n  - { label: \"Last assessed\", bind: \"$.lastAssessed\", fmt: \"date\" }\n  - { label: \"SLA breaches (12m)\", bind: \"$.slaBreaches\", fmt: \"amount0\" }\npanels:\n  - id: services\n    kind: table\n    title: \"Services\"\n    key: \"F2\"\n    rows: \"$.services\"\n    columns:\n      - { label: \"Service\", bind: \"@.service\" }\n      - { label: \"Desk\", bind: \"@.desk\" }\n      - { label: \"Exit plan\", bind: \"@.exitPlan\" }\n  - id: incidents\n    kind: table\n    title: \"Incidents\"\n    key: \"F3\"\n    rows: \"$.incidents\"\n    columns:\n      - { label: \"Date\", bind: \"@.date\", fmt: \"date\" }\n      - { label: \"Incident\", bind: \"@.incident\" }\n      - { label: \"Impact\", bind: \"@.impact\", tone: \"status\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

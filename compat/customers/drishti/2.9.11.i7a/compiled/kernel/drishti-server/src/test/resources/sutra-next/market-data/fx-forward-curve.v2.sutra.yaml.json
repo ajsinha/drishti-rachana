@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/fx-forward-curve.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: fx-forward-curve\nversion: 2\ndescription: \nmatch: { kind: fx-forward-curve, priority: 10 }\ntitle: { pill: \"Market data · FX forward curve\", id: \"$.CURVE_ID\" }\nstrip:\n  - { label: \"Pair\", bind: \"$.PAIR\" }\n  - { label: \"Spot\", bind: \"$.SPOT\", fmt: \"rate5\" }\n  - { label: \"3M points\", bind: \"$.POINTS_3M\", fmt: \"pips1\", tone: \"sign\", emphasis: true }\n  - { label: \"1Y points\", bind: \"$.POINTS_1Y\", fmt: \"pips1\", tone: \"sign\" }\npanels:\n  - id: points\n    kind: line\n    title: \"Forward points (pips)\"\n    key: \"F2\"\n    rows: \"$.POINTS\"\n    x: \"TENOR\"\n    y: \"PIPS\"\n    fmt: \"pips1\"\n  - id: outright\n    kind: table\n    title: \"Outrights\"\n    rows: \"$.POINTS\"\n    columns:\n      - { label: \"Tenor\", bind: \"@.TENOR\" }\n      - { label: \"Points\", bind: \"@.PIPS\", fmt: \"pips1\", tone: \"sign\" }\n      - { label: \"Outright\", bind: \"@.OUTRIGHT\", fmt: \"rate5\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.FX_SPOT, 'fx-spot')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

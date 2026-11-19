@@ -1,0 +1,7 @@
+{
+  "file": "config/packs/core/core/sutras/counterparty-and-legal/ccp.v1.sutra.yaml",
+  "group": "config/packs/core/core",
+  "problems": [],
+  "model": "rachana: 1\nsutra: ccp\nversion: 1\ndescription: \nmatch: { kind: ccp, priority: 10 }\ntitle: { pill: \"Counterparty and legal · Central counterparty\", id: \"$.CCP_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Default fund\", bind: \"$.DEFAULT_FUND\", fmt: \"compact\" }\n  - { label: \"IM posted\", bind: \"$.IM_POSTED\", fmt: \"compact\", emphasis: true }\n  - { label: \"Model\", bind: \"$.MARGIN_MODEL\" }\npanels:\n  - id: accounts\n    kind: table\n    title: \"Clearing accounts\"\n    key: \"F2\"\n    rows: \"$.ACCOUNTS\"\n    columns:\n      - { label: \"Account\", bind: \"@.ID\", link: true }\n      - { label: \"IM\", bind: \"@.IM\", fmt: \"compact\", total: true }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

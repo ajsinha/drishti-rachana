@@ -19,6 +19,7 @@
     <module>rachana-cli</module>
     <module>rachana-conformance</module>
     <module>rachana-conformance-cases</module>
+    <module>rachana-compat</module>
     <module>rachana-guards</module>
   </modules>
 
@@ -35,6 +36,8 @@
     <caffeine.version>3.2.4</caffeine.version>
     <assertj.version>3.27.7</assertj.version>
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->
+    <rachana.reference.classpath></rachana.reference.classpath>
+    <rachana.compat.runtime>auto</rachana.compat.runtime>
     <rachana.java.root>${maven.multiModuleProjectDirectory}</rachana.java.root>
     <rachana.repo.root>${maven.multiModuleProjectDirectory}/..</rachana.repo.root>
   </properties>

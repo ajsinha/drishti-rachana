@@ -33,7 +33,6 @@
     <!-- SPLIT EXEMPTIONS (SPLIT_EXEMPTIONS.md): versions of the libraries the moved code still uses; each leaves at its step. -->
     <jackson.version>2.21.4</jackson.version>
     <snakeyaml.version>2.4</snakeyaml.version>
-    <caffeine.version>3.2.4</caffeine.version>
     <assertj.version>3.27.7</assertj.version>
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->
     <rachana.reference.classpath></rachana.reference.classpath>
@@ -52,7 +51,6 @@
       <dependency><groupId>com.fasterxml.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId><version>${jackson.version}</version></dependency>
       <!-- the YAML parser under Jackson at the version the reference ran with -->
       <dependency><groupId>org.yaml</groupId><artifactId>snakeyaml</artifactId><version>${snakeyaml.version}</version></dependency>
-      <dependency><groupId>com.github.ben-manes.caffeine</groupId><artifactId>caffeine</artifactId><version>${caffeine.version}</version></dependency>
       <dependency><groupId>org.assertj</groupId><artifactId>assertj-core</artifactId><version>${assertj.version}</version></dependency>
     </dependencies>
   </dependencyManagement>
@@ -85,7 +83,6 @@
                     <include>com.fasterxml.jackson.core:*</include>
                     <include>com.fasterxml.jackson.dataformat:*</include>
                     <include>org.yaml:snakeyaml</include>
-                    <include>com.github.ben-manes.caffeine:*</include>
                   </includes>
                   <excludes>
                     <exclude>org.springframework*:*</exclude>

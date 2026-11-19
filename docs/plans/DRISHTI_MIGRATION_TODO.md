@@ -151,7 +151,9 @@ here. What Drishti must do when the migration starts, in this order:
       `SafeRegex`, `BusinessCalendar`, `HostException`, `ErrorCode`) are never used by Drishti; Drishti keeps its own and, from A2,
       makes `DataNode` **implement** `com.ash.rachana.api.Node` (no wrapping): `kind()` from its `type()`, and `value()`, `elements()`,
       `fields()` which its records already have (covariant returns), `isArray()`; then `HotPathBenchmark` within 3% of the H7 baseline; from A1 maps `RCH-` codes to `DRS-` at its API edge (`ApiExceptionHandler`);
-      from A3 its `SafeRegex` delegates to Core's and its `BusinessCalendar` is registered through the `Calendars` hook.
+      from A3 its `SafeRegex` delegates to Core's `com.ash.rachana.el.SafeRegex` (Core reads the caps from `rachana.regex.*`
+      system properties: Drishti sets them from its `drishti.search.regex.*` settings, or passes them through `RachanaOptions` once
+      A4 adds them), and its `BusinessCalendar` is replaced by Core's (the same code) or installed with `Calendars.use(...)`.
 - [ ] 8.6 **The tests that stayed** (they read Drishti's files, so they did not move): `SutraParserTest.referenceSutrasParse`,
       `SutraWiringTest.aUseCarriesItsPanelsWiring`, `SutraLayoutEditorTest` (three methods over the IRS example), `OpApplierTest`
       (six methods over `docs/guides/examples`), `PackSutrasTest`, `ReferenceSutrasTest`, `DocumentedSutrasTest`,

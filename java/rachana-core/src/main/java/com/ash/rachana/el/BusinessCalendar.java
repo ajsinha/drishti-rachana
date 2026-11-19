@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
-package com.ash.rachana.hostcompat;
+package com.ash.rachana.el;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@code USNY+GBLO}: weekends plus each centre's public holidays, with weekend observance where the centre
  * observes it. Holiday sets are computed per year and cached; instances are immutable and thread-safe.
  */
-public final class BusinessCalendar {
+public final class BusinessCalendar implements Calendars.Calendar {
 
     private static final Set<String> KNOWN = Set.of("USNY", "GBLO", "EUTA", "JPTO", "CATO", "WEEKENDS");
     private final List<String> centers;
@@ -41,10 +41,12 @@ public final class BusinessCalendar {
         return new BusinessCalendar(cs);
     }
 
+    @Override
     public String name() {
         return String.join("+", centers);
     }
 
+    @Override
     public boolean isBusinessDay(LocalDate d) {
         DayOfWeek w = d.getDayOfWeek();
         return w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY && !holidays(d.getYear()).contains(d);
@@ -59,10 +61,12 @@ public final class BusinessCalendar {
         return out;
     }
 
+    @Override
     public LocalDate previous(LocalDate d) {
         return onOrBefore(d.minusDays(1));
     }
 
+    @Override
     public LocalDate next(LocalDate d) {
         LocalDate out = d.plusDays(1);
         while (!isBusinessDay(out)) {

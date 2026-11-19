@@ -9,7 +9,7 @@ module (`module-info.java`).
 | Module | Holds | State |
 |---|---|---|
 | `rachana-api` | `Node` (the value interface) and Rachana's own nodes (`Node.of`); zero dependencies | built (A2): the evaluator, formats and checker read only `Node` |
-| `rachana-core` | **the compiler, moved from its first host with its history** (split step A10): `com.ash.rachana` (Sutra writer, text, expressions, wiring, schema, layout and pivot editors, problems), `el` and `el.check` (Rachana-EL and its checker), `format` (formats, tones, world regions), `model`, `parse` (the positional YAML reader and the section readers), `design.ops` (editing operations); `profile` (skeleton); `hostcompat` (temporary, see below) | built; 783 unit tests |
+| `rachana-core` | **the compiler, moved from its first host with its history** (split step A10): `com.ash.rachana` (Sutra writer, text, expressions, wiring, schema, layout and pivot editors, problems), `el` and `el.check` (Rachana-EL and its checker), `format` (formats, tones, world regions), `model`, `parse` (the positional YAML reader and the section readers), `design.ops` (editing operations); `profile` (skeleton) | built; 790 unit tests |
 | `rachana-tools` | editing tools, writer, generators | skeleton (the editing code is still in `rachana-core`) |
 | `rachana-data` | Data Protocol | skeleton |
 | `rachana-cli` | command line | skeleton |
@@ -23,8 +23,7 @@ pinned copy under `js/vendor/drishti-elements/<drishti.elements.version>/data/`;
 
 ## Split exemptions
 
-The compiler moved before it was untangled, so it still uses Jackson and Caffeine and names a few host types (held in
-`com.ash.rachana.hostcompat`). [SPLIT_EXEMPTIONS.md](SPLIT_EXEMPTIONS.md) lists each with the step that removes it; the guards
+The compiler moved before it was untangled, so it still uses Jackson (until A8b). [SPLIT_EXEMPTIONS.md](SPLIT_EXEMPTIONS.md) lists each with the step that removes it; the guards
 read that file, fail on anything not listed, and fail when a listed item is no longer used, so the list only shrinks.
 
 ## Build and test

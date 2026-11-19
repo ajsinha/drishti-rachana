@@ -13,6 +13,10 @@ Entries are written per release; the regime's unreleased work is listed after th
   missing, path navigation, and Rachana's own nodes behind `Node.of`; the evaluator, the formats and the checker read only `Node`, so a
   host passes its own document type by implementing it (`ForeignNodeTest`), never by copying. The host's `DataNode`, `NodeType`,
   `PathWalker` left `hostcompat`; `ListValues` and `IdText` are now `com.ash.rachana.format`'s own.
+- **A3, small dependencies out**: `SafeRegex` (the linear-time regular expressions) and `BusinessCalendar` are Core's own
+  (`com.ash.rachana.el`); the date functions read business days through the `Calendars` hook (Core's calendars unless a host
+  installs its resolver); the compiler's cache is Core's own LRU, so **Caffeine is gone**; the regular-expression caps are read
+  from `rachana.regex.*` (they were the host's setting names). The temporary `hostcompat` package is gone.
 - `tools/split/compare_results.py` and `known-differences.txt`: the proof of each split step against the reference bridge.
 
 ## v0.9.0 (2026-11-19): the compiler moves here

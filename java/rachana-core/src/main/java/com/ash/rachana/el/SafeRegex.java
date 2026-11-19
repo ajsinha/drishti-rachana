@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
-package com.ash.rachana.hostcompat;
+package com.ash.rachana.el;
 
 import com.ash.rachana.RachanaCode;
 import com.ash.rachana.RachanaException;
@@ -25,7 +25,7 @@ import java.util.List;
 public final class SafeRegex {
 
     /**
-     * The caps. {@link #defaults()} reads the system properties {@code drishti.search.regex.max-pattern}, {@code .max-program},
+     * The caps. {@link #defaults()} reads the system properties {@code rachana.regex.max-pattern}, {@code .max-program},
      * {@code .max-input} and {@code .timeout-ms} (defaults 200, 4000, 8192 and 50).
      */
     public record Limits(int maxPattern, int maxProgram, int maxInput, long timeoutNanos) {
@@ -36,7 +36,7 @@ public final class SafeRegex {
 
         private static int intProp(String name, int dflt) {
             try {
-                return Math.max(1, Integer.parseInt(System.getProperty("drishti.search.regex." + name, String.valueOf(dflt)).trim()));
+                return Math.max(1, Integer.parseInt(System.getProperty("rachana.regex." + name, String.valueOf(dflt)).trim()));
             } catch (NumberFormatException e) {
                 return dflt;
             }

@@ -10,23 +10,17 @@ used fails it too, so **this list only shrinks**. When the last line goes, the f
 
 - dependency: rachana-core com.fasterxml.jackson.core:jackson-databind until A8b (Core's own YAML and JSON reader)
 - dependency: rachana-core com.fasterxml.jackson.dataformat:jackson-dataformat-yaml until A8b
-- dependency: rachana-core com.github.ben-manes.caffeine:caffeine until A3 (Core's LRU)
 - dependency: rachana-core org.assertj:assertj-core until never (test scope; the moved unit tests are written with it)
 
 `org.yaml:snakeyaml` comes with `jackson-dataformat-yaml` and is pinned to the version the reference ran with (2.4).
 
-## Host types (package `com.ash.rachana.hostcompat`, read by `NamesNoHostTest`)
+## Host types
 
-Copied from the host with only their package changed, so behaviour stays byte-identical:
-
-| Type | Removed by |
-|---|---|
-| `SafeRegex` | A3: becomes Core's own (`com.ash.rachana.el.SafeRegex`) |
-| `BusinessCalendar` | A3: the `Calendars` hook with Core's default calendar |
+None left: the last host types left the temporary `hostcompat` package at A3 (`NamesNoHostTest` keeps it from coming back).
 
 ## Host words (read by `NamesNoHostTest`)
 
 Files of `rachana-core` (the moved compiler) that still carry a host word (a `DRS-` or `DEL-` code, a `drishti.` setting name, the product name outside
 "Drishti Rachana" and "Drishti Elements"). The count may only go down; A1 removes the codes, A4 the settings, A7 the rest.
 
-- host-word files: 7
+- host-word files: 6

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2026 Ashutosh Sinha. All rights reserved.
+  Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+  The reference side of the M0 proofs: only resolves the libraries Drishti's compiler jars need at run time (the versions of
+  Drishti's Spring Boot 3.5.16 bill of materials), for proof.py's classpath. Never built, never installed.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.ash.rachana.proofs</groupId>
+  <artifactId>rachana-proofs-reference</artifactId>
+  <version>0.0.0-proof</version>
+  <packaging>pom</packaging>
+  <dependencies>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>2.21.4</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId><version>2.21.4</version></dependency>
+    <dependency><groupId>org.yaml</groupId><artifactId>snakeyaml</artifactId><version>2.4</version></dependency>
+    <dependency><groupId>com.github.ben-manes.caffeine</groupId><artifactId>caffeine</artifactId><version>3.2.4</version></dependency>
+  </dependencies>
+</project>

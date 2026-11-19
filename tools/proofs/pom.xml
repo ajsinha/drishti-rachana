@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2026 Ashutosh Sinha. All rights reserved.
+  Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+  M0 proofs (P1 JavaScript, W WebAssembly GC): a throwaway build of the copied compiler with TeaVM. Never installed.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.ash.rachana.proofs</groupId>
+  <artifactId>rachana-proofs</artifactId>
+  <version>0.0.0-proof</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
+    <teavm.version>0.16.0</teavm.version>
+    <!-- work/: the cut copy of the compiler made by proof.py (git-ignored); java/: this proof's own sources -->
+    <proof.work>${project.basedir}/work</proof.work>
+    <proof.entry>js</proof.entry>
+    <proof.target>JAVASCRIPT</proof.target>
+    <proof.out>${project.basedir}/out/js</proof.out>
+    <proof.file>rachana-proof.js</proof.file>
+    <proof.minify>true</proof.minify>
+    <proof.opt>FULL</proof.opt>
+    <proof.module>ES2015</proof.module>
+    <proof.mainClass>JsMain</proof.mainClass>
+  </properties>
+
+  <dependencies>
+    <dependency><groupId>org.teavm</groupId><artifactId>teavm-interop</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.teavm</groupId><artifactId>teavm-jso</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+  </dependencies>
+
+  <profiles>
+    <profile><id>stock</id><activation><property><name>!proof.classlib</name></property></activation>
+      <dependencies><dependency><groupId>org.teavm</groupId><artifactId>teavm-classlib</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency></dependencies>
+    </profile>
+    <!-- W1: TeaVM's class library with the one TThrowable change of WASM_RESULTS.md, for the Python host only -->
+    <profile><id>patched</id><activation><property><name>proof.classlib</name></property></activation>
+      <dependencies><dependency><groupId>org.teavm</groupId><artifactId>teavm-classlib</artifactId><version>${teavm.version}</version><scope>system</scope>
+        <systemPath>${proof.classlib}</systemPath></dependency>
+        <!-- the stock class library's own dependencies (a system-scoped jar brings none) -->
+        <dependency><groupId>org.teavm</groupId><artifactId>teavm-core</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.teavm</groupId><artifactId>teavm-platform</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.teavm</groupId><artifactId>teavm-jso-apis</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.teavm</groupId><artifactId>teavm-jso-impl</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.teavm</groupId><artifactId>teavm-metaprogramming-impl</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.teavm</groupId><artifactId>teavm-extension-spi</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
+  <build>
+    <sourceDirectory>${proof.work}/src</sourceDirectory>
+    <plugins>
+      <plugin><artifactId>maven-compiler-plugin</artifactId><version>3.13.0</version><configuration><compilerArgs><arg>-nowarn</arg></compilerArgs></configuration></plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>3.6.0</version>
+        <executions><execution><id>sources</id><phase>generate-sources</phase><goals><goal>add-source</goal></goals>
+          <configuration><sources><source>${project.basedir}/java/stubs</source><source>${project.basedir}/java/harness</source><source>${project.basedir}/java/entry/${proof.entry}</source><source>${proof.work}/gen</source></sources></configuration>
+        </execution></executions>
+      </plugin>
+      <plugin>
+        <groupId>org.teavm</groupId><artifactId>teavm-maven-plugin</artifactId><version>${teavm.version}</version>
+        <executions><execution><id>teavm</id><phase>process-classes</phase><goals><goal>compile</goal></goals>
+          <configuration>
+            <mainClass>com.ash.proof.${proof.mainClass}</mainClass>
+            <targetType>${proof.target}</targetType>
+            <targetDirectory>${proof.out}</targetDirectory>
+            <targetFileName>${proof.file}</targetFileName>
+            <jsModuleType>${proof.module}</jsModuleType>
+            <minifying>${proof.minify}</minifying>
+            <optimizationLevel>${proof.opt}</optimizationLevel>
+            <debugInformationGenerated>false</debugInformationGenerated>
+            <sourceMapsGenerated>false</sourceMapsGenerated>
+            <stopOnErrors>false</stopOnErrors>
+          </configuration>
+        </execution></executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

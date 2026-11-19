@@ -1,0 +1,6 @@
+# M0 proofs only (tools/proofs/proof.py); pinned. Playwright 1.63.0 drives Chromium 1243, Firefox 1543, WebKit 2359.
+playwright==1.63.0
+wasmtime==50.0.1
+brotli==1.2.1
+mini-racer==0.14.1
+quickjs==1.19.4

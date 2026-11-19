@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * The shared blocks a Sutra's text uses, as the designer shows them: each {@code { use: name@N, with: {...} }} of its panels (and of
  * a tabs panel's panels) with the block it resolves to, the block's parameters (defaults and the values given), the panels it brings
- * (id, kind, title, after the parameters are filled) and its {@code DRS-2048} problems. The expansion is {@link SutraBlocks}'s own, so
+ * (id, kind, title, after the parameters are filled) and its {@code RCH-2048} problems. The expansion is {@link SutraBlocks}'s own, so
  * the designer groups exactly the panels the server draws. Stateless and thread-safe.
  */
 public final class BlockUses {

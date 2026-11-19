@@ -18,7 +18,7 @@ import java.util.Set;
 /**
  * Reads the phone display's grammar (docs/guides/BUILD_GUIDE.md section 5): a panel's {@code phone:} (a tier, or a tier with its compact options),
  * a fragment's {@code doc.phone} (brought onto the fragment's panels, marked {@code from: fragment}) and the screen's {@code phone:}
- * block. Every problem is {@code DRS-2059}, the layout family: a word that is not a tier, a compact option that does not fit the panel's
+ * block. Every problem is {@code RCH-2059}, the layout family: a word that is not a tier, a compact option that does not fit the panel's
  * kind, a phone order naming a panel that does not exist or is not must or glance.
  */
 final class PhoneReader {

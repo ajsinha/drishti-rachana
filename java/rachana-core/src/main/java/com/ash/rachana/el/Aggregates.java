@@ -14,7 +14,7 @@ import java.util.ServiceLoader;
  * The functions Rachana's table holds from {@link FunctionProvider}s (docs/architecture/ARCHITECTURE.md parts 1 and 2): found once, by
  * {@link ServiceLoader}, when the table is built. Rachana implements no aggregate: these names are the ones it asks a provider for,
  * so that an expression using one compiles whether or not the provider is on the class path; without it, evaluating one is refused
- * with the reason ({@code DRS-2102}), never computed another way.
+ * with the reason ({@code RCH-2102}), never computed another way.
  */
 final class Aggregates {
 

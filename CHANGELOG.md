@@ -3,6 +3,14 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased (toward v0.10.0, the untangling)
+
+- **A1, errors**: `RachanaException` (code, words; message is the code and the words) and `RachanaCode` replace the host's exception
+  and error codes; every code is `RCH-` with the number it always had (problems, editing refusals, evaluation and syntax errors,
+  checked-mode refusals). A host maps them to its own by the number at its edge. The accepted options in an editing refusal are
+  named sorted (they were in an unordered set's order, which changed between runs).
+- `tools/split/compare_results.py` and `known-differences.txt`: the proof of each split step against the reference bridge.
+
 ## v0.9.0 (2026-11-19): the compiler moves here
 
 - **The compiler, with its history** (split step A10): Drishti's `compute/drishti-rachana` (and its earlier paths) at Drishti

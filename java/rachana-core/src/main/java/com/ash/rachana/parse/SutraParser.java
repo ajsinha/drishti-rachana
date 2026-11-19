@@ -29,7 +29,7 @@ public final class SutraParser {
      * YAML a Sutra must not depend on: a key written twice in one mapping, a second document, a tag other than the core
      * ones (see {@link PositionalYamlReader}).
      */
-    public static final String AMBIGUOUS_YAML = "DRS-2033";
+    public static final String AMBIGUOUS_YAML = "RCH-2033";
 
     private final PositionalYamlReader reader = new PositionalYamlReader();
 
@@ -46,10 +46,10 @@ public final class SutraParser {
             root = reader.read(yaml, issues);
         } catch (JsonProcessingException e) {
             var l = e.getLocation();
-            throw new SutraException(List.of(new SutraProblem("DRS-2001", "YAML syntax: " + e.getOriginalMessage(),
+            throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getOriginalMessage(),
                     new SourceLocation(file, l == null ? 0 : l.getLineNr(), l == null ? 0 : l.getColumnNr()))));
         } catch (IOException e) {
-            throw new SutraException(List.of(new SutraProblem("DRS-2001", "cannot read: " + e.getMessage(),
+            throw new SutraException(List.of(new SutraProblem("RCH-2001", "cannot read: " + e.getMessage(),
                     new SourceLocation(file, 0, 0))));
         }
         SutraBuilder b = new SutraBuilder(file);

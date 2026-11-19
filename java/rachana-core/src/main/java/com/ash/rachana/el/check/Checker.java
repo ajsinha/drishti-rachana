@@ -18,8 +18,8 @@ import java.util.Set;
  * Rachana's checked mode (docs/architecture/ARCHITECTURE.md §28 2.1 and 2.2; the type checker ported from DEL's {@code DelChecker}, which now calls
  * this one): checks a parsed expression against the scope it is written in ({@link Scope}), the {@link Signatures} and (when known)
  * the fields, measures and parameters the caller may use. Types (no implicit casts, booleans only for conditions), aggregates where
- * they belong ({@code DRS-9127} "an aggregate belongs in a measure", "wrap it: sum(...)"), names that exist ({@code DRS-9152}), masked
- * fields in filters ({@code DRS-9161}), what is not yet built ({@code DRS-9129}), a chained comparison, a document path in a measure,
+ * they belong ({@code RCH-9127} "an aggregate belongs in a measure", "wrap it: sum(...)"), names that exist ({@code RCH-9152}), masked
+ * fields in filters ({@code RCH-9161}), what is not yet built ({@code RCH-9129}), a chained comparison, a document path in a measure,
  * display functions in tables and models, and the filter-context functions nesting at most three deep. Collects every problem (it does
  * not stop at the first) and the type of the result. It is not a second language: the same text means the same thing checked or not;
  * checked mode only refuses more. One checker checks one expression; not thread-safe, cheap to make.

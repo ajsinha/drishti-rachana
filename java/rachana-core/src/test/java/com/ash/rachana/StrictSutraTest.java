@@ -40,20 +40,20 @@ class StrictSutraTest {
     @Test
     void ambiguousYamlIsAProblemWithItsLine() {
         assertThat(problems(HEAD + "panels: []\nversion: 2\n")).singleElement().satisfies(p -> {
-            assertThat(p.code()).isEqualTo("DRS-2033");
+            assertThat(p.code()).isEqualTo("RCH-2033");
             assertThat(p.message()).contains("duplicate key 'version'", "line 3");
             assertThat(p.location().line()).isEqualTo(7);
         });
-        assertThat(problems(panel("{ id: a, id: b, kind: provenance }"))).extracting(SutraProblem::code).containsExactly("DRS-2033");
+        assertThat(problems(panel("{ id: a, id: b, kind: provenance }"))).extracting(SutraProblem::code).containsExactly("RCH-2033");
         assertThat(problems(HEAD + "panels: []\n---\nrachana: 1\nsutra: other\n")).singleElement().satisfies(p -> {
-            assertThat(p.code()).isEqualTo("DRS-2033");
+            assertThat(p.code()).isEqualTo("RCH-2033");
             assertThat(p.message()).contains("second YAML document");
             assertThat(p.location().line()).isEqualTo(7);
         });
         assertThat(problems(HEAD + "panels:\n  - !panel { id: a, kind: provenance }\n")).singleElement()
                 .satisfies(p -> assertThat(p.message()).contains("tag '!panel'"));
         assertThat(problems(HEAD.replace("version: 1", "version: !!binary MQ==") + "panels: []\n"))
-                .extracting(SutraProblem::code).contains("DRS-2033");
+                .extracting(SutraProblem::code).contains("RCH-2033");
         // a leading '---' and the core tags are plain YAML
         assertThat(parser.parse("---\n" + HEAD.replace("sutra: qa-strict", "sutra: !!str qa-strict") + "panels: []\n", "qa.sutra.yaml", "qa").id())
                 .isEqualTo("qa-strict@1");
@@ -61,10 +61,10 @@ class StrictSutraTest {
 
     @ParameterizedTest(name = "{0}")
     @CsvSource(delimiter = '|', textBlock = """
-            match.kind 42          | match: { kind: 42 }                    | DRS-2012 | 'kind' in match
-            match.priority high    | match: { kind: trade, priority: high } | DRS-2012 | 'priority' in match
-            match.priority 1e99    | match: { kind: trade, priority: 1e99 } | DRS-2012 | 'priority' in match
-            title without id       | title: { pill: X }                     | DRS-2010 | missing 'id' in title
+            match.kind 42          | match: { kind: 42 }                    | RCH-2012 | 'kind' in match
+            match.priority high    | match: { kind: trade, priority: high } | RCH-2012 | 'priority' in match
+            match.priority 1e99    | match: { kind: trade, priority: 1e99 } | RCH-2012 | 'priority' in match
+            title without id       | title: { pill: X }                     | RCH-2010 | missing 'id' in title
             """)
     void headerValuesOfTheWrongShape(String name, String line, String code, String message) {
         String key = line.substring(0, line.indexOf(':') + 1);
@@ -97,7 +97,7 @@ class StrictSutraTest {
             """)
     void panelOptionsOfTheWrongType(String name, String panel, String message) {
         assertThat(problems(panel(panel))).singleElement().satisfies(p -> {
-            assertThat(p.code()).isEqualTo("DRS-2029");
+            assertThat(p.code()).isEqualTo("RCH-2029");
             assertThat(p.message()).contains(message);
             assertThat(p.location().line()).isEqualTo(7);
         });
@@ -114,15 +114,15 @@ class StrictSutraTest {
     void anExpressionProblemSaysItsCodeOnce() {
         com.ash.rachana.model.Sutra sutra = parser.parse(panel("{ id: a, kind: kv, rows: \"$.mtm +\", columns: [ { label: A, bind: \"@.a\" } ] }"), "qa.sutra.yaml", "qa");
         SutraProblem p = new SutraExpressions(new ElCompiler()).check(sutra).get(0);
-        assertThat(p.code()).isEqualTo("DRS-2101");
-        assertThat(p.message()).doesNotContain("DRS-2101");
+        assertThat(p.code()).isEqualTo("RCH-2101");
+        assertThat(p.message()).doesNotContain("RCH-2101");
     }
 
     @Test
     void anOutOfRangeVersionIsAVersionProblemNotYamlSyntax() {
         for (String v : List.of("99999999999999999999", "3000000000")) {
             assertThat(problems(HEAD.replace("version: 1", "version: " + v) + "panels: []\n")).singleElement().satisfies(p -> {
-                assertThat(p.code()).isEqualTo("DRS-2020");
+                assertThat(p.code()).isEqualTo("RCH-2020");
                 assertThat(p.message()).contains("version must be a positive integer", v);
             });
         }

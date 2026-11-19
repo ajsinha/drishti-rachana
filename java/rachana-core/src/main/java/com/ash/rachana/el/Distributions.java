@@ -16,8 +16,8 @@ import java.util.function.DoubleUnaryOperator;
  * {@code beta_dist}, {@code beta_inv}, {@code weibull_dist}, {@code hypgeom_dist}, {@code negbinom_dist}, {@code erf}, {@code erfc},
  * {@code standardize}, {@code confidence_norm}, {@code confidence_t}, {@code fisher}, {@code fisher_inv}.
  *
- * <p>Rules: an empty argument gives an empty result, a masked one a masked result; text that is not a number is {@code DRS-2102}; an
- * argument outside the function's domain (a standard deviation of 0, a probability of 1.2: Excel's {@code #NUM!}) is {@code DRS-2102}
+ * <p>Rules: an empty argument gives an empty result, a masked one a masked result; text that is not a number is {@code RCH-2102}; an
+ * argument outside the function's domain (a standard deviation of 0, a probability of 1.2: Excel's {@code #NUM!}) is {@code RCH-2102}
  * naming the argument, which {@code iferror} turns into a fallback. {@code cumulative} is optional and true by default (Excel requires it);
  * degrees of freedom and counts are cut to whole numbers, as Excel cuts them. These are real-number functions: computed in binary floating
  * point, as Excel computes them, by the algorithms {@link SpecialFunctions} cites; the tests hold them to Excel's documented figures.

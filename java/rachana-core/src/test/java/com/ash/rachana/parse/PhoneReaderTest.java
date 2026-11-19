@@ -59,7 +59,7 @@ class PhoneReaderTest {
     void aWordThatIsNotATierOrAnOptionThatDoesNotFitTheKindIsDrs2059() {
         assertThatThrownBy(() -> new SutraParser().parse(sutra("", "  - { id: a, kind: kv, columns: [ { label: A, bind: $.A } ], phone: always }\n"), "a.yaml", "x"))
                 .isInstanceOf(SutraException.class)
-                .satisfies(e -> assertThat(((SutraException) e).problems()).extracting(SutraProblem::code).contains("DRS-2059"))
+                .satisfies(e -> assertThat(((SutraException) e).problems()).extracting(SutraProblem::code).contains("RCH-2059"))
                 .hasMessageContaining("not a phone tier");
         assertThatThrownBy(() -> new SutraParser().parse(sutra("", "  - { id: a, kind: kv, columns: [ { label: A, bind: $.A } ], phone: { tier: glance, rows: 5 } }\n"), "a.yaml", "x"))
                 .isInstanceOf(SutraException.class).hasMessageContaining("'rows' is a compact option of");

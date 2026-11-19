@@ -5,7 +5,7 @@
 package com.ash.rachana.el;
 
 import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.ErrorCode;
+import com.ash.rachana.RachanaCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -319,7 +319,7 @@ public interface Expr {
                 case "<=" -> x <= y;
                 case ">" -> x > y;
                 case ">=" -> x >= y;
-                default -> throw new ElException(ErrorCode.EL_EVAL, "unknown operator " + op);
+                default -> throw new ElException(RachanaCode.EL_EVAL, "unknown operator " + op);
             };
         }
 
@@ -351,11 +351,11 @@ public interface Expr {
 
         public Object eval(EvalContext c) {
             if (!named.isEmpty()) {
-                throw new ElException(ErrorCode.EL_EVAL, name + ": " + String.join(", ", named.keySet().stream().map(k -> k + " =").toList())
+                throw new ElException(RachanaCode.EL_EVAL, name + ": " + String.join(", ", named.keySet().stream().map(k -> k + " =").toList())
                         + " belongs to a measure of a model or a column of a table, computed by the pivot engine; a list has no such argument");
             }
             if (fn == null) {
-                throw new ElException(ErrorCode.EL_EVAL, name + " is not a function of Rachana");
+                throw new ElException(RachanaCode.EL_EVAL, name + " is not a function of Rachana");
             }
             List<Object> values = new ArrayList<>(args.size());
             boolean masked = false;

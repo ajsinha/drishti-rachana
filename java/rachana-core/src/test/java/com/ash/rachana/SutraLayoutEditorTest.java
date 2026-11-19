@@ -68,7 +68,7 @@ class SutraLayoutEditorTest {
         assertThat(ok.panels().get(0).height()).contains(24);
         for (String bad : List.of("span: 0", "span: 13", "span: wide", "height: 25", "height: 2.5")) {
             assertThatThrownBy(() -> parse(base + "  - { id: a, kind: markdown, text: A, " + bad + " }\n"))
-                    .satisfies(e -> assertThat(((SutraException) e).problems()).extracting(SutraProblem::code).containsExactly("DRS-2030"));
+                    .satisfies(e -> assertThat(((SutraException) e).problems()).extracting(SutraProblem::code).containsExactly("RCH-2030"));
         }
         assertThatThrownBy(() -> parse(base + "  - { id: t, kind: tabs, each: $.legs, body: { kind: kv, span: 4 } }\n"))
                 .satisfies(e -> assertThat(((SutraException) e).problems().get(0).message()).contains("a tabs body takes the size of its panel"));

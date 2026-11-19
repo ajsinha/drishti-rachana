@@ -1,6 +1,8 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Sutra libraries: the catalogue
 
+**Screens become assembly, not writing.**
+
 Status: **planning (design proposal for the owner, 2026-11-19).** No library and no fragment below is built in this
 repository. Names, parameters and defaults are proposals; each is settled when its fragment is written with its
 document, examples and tests ([LIBRARIES](LIBRARIES.md) 15.1). The framework (what a fragment is, typed parameters,

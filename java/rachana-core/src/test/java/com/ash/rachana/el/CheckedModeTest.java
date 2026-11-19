@@ -7,8 +7,8 @@ package com.ash.rachana.el;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ash.rachana.hostcompat.HostException;
-import com.ash.rachana.hostcompat.ErrorCode;
+import com.ash.rachana.RachanaException;
+import com.ash.rachana.RachanaCode;
 import com.ash.rachana.el.check.Checker;
 import com.ash.rachana.el.check.ElType;
 import com.ash.rachana.el.check.Fields;
@@ -68,41 +68,41 @@ class CheckedModeTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = '|', value = {
-        "trades.MTM * 2                          | AGGREGATE | DRS-9127 | wrap it: sum(trades.MTM)",
-        "sum(trades.MTM)                         | ROW       | DRS-9127 | an aggregate belongs in a measure",
-        "sum(trades.MTM, trades.STATUS == 'L')   | AGGREGATE | DRS-9127 | name it: where = ...",
-        "sum(trades.MTM, where = trades.MTM)     | AGGREGATE | DRS-9127 | is a boolean",
-        "sum(trades.MTX)                         | AGGREGATE | DRS-9152 | did you mean trades.MTM?",
-        "measure('MTN')                          | AGGREGATE | DRS-9152 | no measure 'MTN'",
-        "trades.MTM && trades.N                  | ROW       | DRS-9127 | takes conditions",
-        "trades.STATUS + 1                       | ROW       | DRS-9127 | text cannot be used",
-        "trades.TRADE_DATE > '9 Oct'             | ROW       | DRS-9127 | cannot compare a date",
-        "trades.DESK == 'RATES'                  | ROW       | DRS-9161 | masked",
-        "'RATES' != trades.DESK                  | ROW       | DRS-9161 | masked",
-        "trades.DESK in ['RATES']                | ROW       | DRS-9161 | masked",
-        "calc(calc(calc(calc(sum(trades.MTM), ignore = ALL), ignore = ALL), ignore = ALL), ignore = ALL) | AGGREGATE | DRS-9127 | nest at most 3 deep",
-        "sum(trades.MTM, where = ALL)            | AGGREGATE | DRS-9127 | ALL is only the value",
-        "trades.MTM * param.cap                  | ROW       | DRS-9152 | no parameter 'cap'",
-        "trades.STATUS                           | RULE      | DRS-9127 | a row rule is a condition",
-        "trades.STATUS == user.name              | ROW       | DRS-9127 | is for row rules",
-        "trades.STATUS in param.shock            | RULE      | DRS-9127 | security never depends on a what-if value",
-        "sum(sum(trades.MTM))                    | AGGREGATE | DRS-9127 | an aggregate inside an aggregate",
-        "percentile(trades.MTM, 2)               | AGGREGATE | DRS-9127 | between 0 and 1",
-        "startsWith(trades.STATUS, 'L')          | ROW       | DRS-9127 | write starts_with",
-        "count(trades)                           | ROW       | DRS-9127 | an aggregate belongs in a measure",
-        "date('09/10/2026') < trades.TRADE_DATE  | ROW       | DRS-9127 | not an ISO date",
-        "0 < trades.N <= 10                      | ROW       | DRS-9127 | write 0 < trades.N && trades.N <= 10",
-        "sum($.NOTIONAL)                         | AGGREGATE | DRS-9127 | a path of the source",
-        "ctl.desk == trades.STATUS               | ROW       | DRS-9127 | a Sutra's control",
-        "concat(trades.STATUS, 'x')              | ROW       | DRS-9129 | not yet in a table or a model",
-        "let(x = trades.N, x * 2)                | ROW       | DRS-9129 | not yet in a table or a model",
-        "trades.STATUS in trades.N               | ROW       | DRS-9127 | takes a list",
-        "trades.STATUS in [1, 2]                 | ROW       | DRS-9127 | the list has a integer",
-        "round(trades.MTM, trades.N)             | ROW       | DRS-9127 | is a whole number written in the expression",
-        "rank(sum(trades.MTM), up = true)        | AGGREGATE | DRS-9127 | has no argument named up",
-        "sum(trades.LEGS[*].NOTIONAL)            | AGGREGATE | DRS-9127 | a list of the source",
-        "trades.N ? 1 : 2                        | ROW       | DRS-9127 | must be true or false",
-        "trades                                  | ROW       | DRS-9127 | is a table, not a column",
+        "trades.MTM * 2                          | AGGREGATE | RCH-9127 | wrap it: sum(trades.MTM)",
+        "sum(trades.MTM)                         | ROW       | RCH-9127 | an aggregate belongs in a measure",
+        "sum(trades.MTM, trades.STATUS == 'L')   | AGGREGATE | RCH-9127 | name it: where = ...",
+        "sum(trades.MTM, where = trades.MTM)     | AGGREGATE | RCH-9127 | is a boolean",
+        "sum(trades.MTX)                         | AGGREGATE | RCH-9152 | did you mean trades.MTM?",
+        "measure('MTN')                          | AGGREGATE | RCH-9152 | no measure 'MTN'",
+        "trades.MTM && trades.N                  | ROW       | RCH-9127 | takes conditions",
+        "trades.STATUS + 1                       | ROW       | RCH-9127 | text cannot be used",
+        "trades.TRADE_DATE > '9 Oct'             | ROW       | RCH-9127 | cannot compare a date",
+        "trades.DESK == 'RATES'                  | ROW       | RCH-9161 | masked",
+        "'RATES' != trades.DESK                  | ROW       | RCH-9161 | masked",
+        "trades.DESK in ['RATES']                | ROW       | RCH-9161 | masked",
+        "calc(calc(calc(calc(sum(trades.MTM), ignore = ALL), ignore = ALL), ignore = ALL), ignore = ALL) | AGGREGATE | RCH-9127 | nest at most 3 deep",
+        "sum(trades.MTM, where = ALL)            | AGGREGATE | RCH-9127 | ALL is only the value",
+        "trades.MTM * param.cap                  | ROW       | RCH-9152 | no parameter 'cap'",
+        "trades.STATUS                           | RULE      | RCH-9127 | a row rule is a condition",
+        "trades.STATUS == user.name              | ROW       | RCH-9127 | is for row rules",
+        "trades.STATUS in param.shock            | RULE      | RCH-9127 | security never depends on a what-if value",
+        "sum(sum(trades.MTM))                    | AGGREGATE | RCH-9127 | an aggregate inside an aggregate",
+        "percentile(trades.MTM, 2)               | AGGREGATE | RCH-9127 | between 0 and 1",
+        "startsWith(trades.STATUS, 'L')          | ROW       | RCH-9127 | write starts_with",
+        "count(trades)                           | ROW       | RCH-9127 | an aggregate belongs in a measure",
+        "date('09/10/2026') < trades.TRADE_DATE  | ROW       | RCH-9127 | not an ISO date",
+        "0 < trades.N <= 10                      | ROW       | RCH-9127 | write 0 < trades.N && trades.N <= 10",
+        "sum($.NOTIONAL)                         | AGGREGATE | RCH-9127 | a path of the source",
+        "ctl.desk == trades.STATUS               | ROW       | RCH-9127 | a Sutra's control",
+        "concat(trades.STATUS, 'x')              | ROW       | RCH-9129 | not yet in a table or a model",
+        "let(x = trades.N, x * 2)                | ROW       | RCH-9129 | not yet in a table or a model",
+        "trades.STATUS in trades.N               | ROW       | RCH-9127 | takes a list",
+        "trades.STATUS in [1, 2]                 | ROW       | RCH-9127 | the list has a integer",
+        "round(trades.MTM, trades.N)             | ROW       | RCH-9127 | is a whole number written in the expression",
+        "rank(sum(trades.MTM), up = true)        | AGGREGATE | RCH-9127 | has no argument named up",
+        "sum(trades.LEGS[*].NOTIONAL)            | AGGREGATE | RCH-9127 | a list of the source",
+        "trades.N ? 1 : 2                        | ROW       | RCH-9127 | must be true or false",
+        "trades                                  | ROW       | RCH-9127 | is a table, not a column",
     })
     void refusesWithDelsCodes(String text, Scope scope, String code, String says) {
         Checker.Checked c = check(text.strip(), scope);
@@ -157,10 +157,10 @@ class CheckedModeTest {
 
     @Test
     void requireRefusesWithTheCode() {
-        assertThatThrownBy(() -> CheckedMode.require("trades.DESK == 'X'", Scope.ROW, MODEL)).isInstanceOfSatisfying(HostException.class,
-                e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.MQ_MASKED));
-        assertThatThrownBy(() -> CheckedMode.require("concat('a', 'b')", Scope.ROW, MODEL)).isInstanceOfSatisfying(HostException.class,
-                e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.LATER_WAVE));
+        assertThatThrownBy(() -> CheckedMode.require("trades.DESK == 'X'", Scope.ROW, MODEL)).isInstanceOfSatisfying(RachanaException.class,
+                e -> assertThat(e.code()).isEqualTo(RachanaCode.MASKED_FIELD));
+        assertThatThrownBy(() -> CheckedMode.require("concat('a', 'b')", Scope.ROW, MODEL)).isInstanceOfSatisfying(RachanaException.class,
+                e -> assertThat(e.code()).isEqualTo(RachanaCode.LATER_WAVE));
         assertThat(CheckedMode.require("trades.N + 1", Scope.ROW, MODEL)).isInstanceOf(Expr.Binary.class);
     }
 

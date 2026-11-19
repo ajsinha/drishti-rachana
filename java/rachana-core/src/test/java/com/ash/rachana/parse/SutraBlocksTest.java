@@ -18,7 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Shared panel blocks: written once beside the Sutras, used by many, parameters filled, versions chosen, mistakes named (DRS-2048). */
+/** Shared panel blocks: written once beside the Sutras, used by many, parameters filled, versions chosen, mistakes named (RCH-2048). */
 class SutraBlocksTest {
 
     @TempDir Path dir;

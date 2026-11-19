@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** The {@code pivot} option of table and ladder panels: opting in, the fields and arrangement, and DRS-2031. */
+/** The {@code pivot} option of table and ladder panels: opting in, the fields and arrangement, and RCH-2031. */
 class PivotOptionTest {
 
     private final SutraParser parser = new SutraParser();
@@ -114,7 +114,7 @@ class PivotOptionTest {
     void mistakesAreDrs2031WithTheirReasons() {
         String head = "- id: trades\n  kind: table\n  rows: $.trades\n";
         assertThat(problems(head + "  pivot: yes please\n" + COLUMNS))
-                .anySatisfy(m -> assertThat(m).startsWith("DRS-2031").contains("true, false, or a mapping"));
+                .anySatisfy(m -> assertThat(m).startsWith("RCH-2031").contains("true, false, or a mapping"));
         assertThat(problems(head + "  pivot: { rows: [desk] }\n" + COLUMNS))
                 .anySatisfy(m -> assertThat(m).contains("pivot rows name 'desk', which is not one of its fields (currency, mtm, notional-in-usd, tradeId)"));
         assertThat(problems(head + "  pivot: { fields: [mtm], values: [{ field: mtm, agg: median }] }\n" + COLUMNS))
@@ -139,16 +139,16 @@ class PivotOptionTest {
     @Test
     void onlyTablesAndLaddersTakeAPivot() {
         assertThat(problems("- { id: terms, kind: kv, rows: $.terms, pivot: true }"))
-                .anySatisfy(m -> assertThat(m).isEqualTo("DRS-2023 option 'pivot' applies only to panels that show a table (table, ladder), not 'kv'"));
+                .anySatisfy(m -> assertThat(m).isEqualTo("RCH-2023 option 'pivot' applies only to panels that show a table (table, ladder), not 'kv'"));
         assertThat(problems("- { id: g, kind: pivot, rows: $.p, by: book, across: ccy, pivot: true }"))
-                .anySatisfy(m -> assertThat(m).startsWith("DRS-2023"));
+                .anySatisfy(m -> assertThat(m).startsWith("RCH-2023"));
     }
 
     @Test
     void aBrokenFieldExpressionIsCaughtAtLoad() {
         Sutra s = parser.parse(sutra("- id: t\n  kind: table\n  rows: $.t\n  pivot: { fields: [{ field: x, bind: \"@.a +\" }] }\n"), "t.yaml", "x");
         var problems = new SutraExpressions(new com.ash.rachana.el.ElCompiler()).check(s);
-        assertThat(problems).anySatisfy(p -> assertThat(p.code()).isEqualTo("DRS-2101"));
+        assertThat(problems).anySatisfy(p -> assertThat(p.code()).isEqualTo("RCH-2101"));
     }
 
     @Test

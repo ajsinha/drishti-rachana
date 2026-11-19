@@ -71,7 +71,7 @@ final class TextFunctions {
 
     private static final ConcurrentHashMap<String, SafeRegex> PATTERNS = new ConcurrentHashMap<>();
 
-    /** A compiled pattern, by the linear-time engine ({@link SafeRegex}): a pattern it refuses raises DRS-4010. */
+    /** A compiled pattern, by the linear-time engine ({@link SafeRegex}): a pattern it refuses raises RCH-4010. */
     private static SafeRegex pattern(String pattern, boolean ignoreCase) {
         if (PATTERNS.size() > 512) {
             PATTERNS.clear();
@@ -80,8 +80,8 @@ final class TextFunctions {
     }
 
     /**
-     * Regular-expression search over text, by the linear-time engine: a pattern it refuses raises DRS-4010, one that runs
-     * past its time budget DRS-4011. Matches anywhere in the value; null never matches.
+     * Regular-expression search over text, by the linear-time engine: a pattern it refuses raises RCH-4010, one that runs
+     * past its time budget RCH-4011. Matches anywhere in the value; null never matches.
      */
     private static boolean matches(Object value, String pattern, boolean ignoreCase) {
         SafeRegex re = pattern(pattern, ignoreCase);
@@ -96,7 +96,7 @@ final class TextFunctions {
                 if (Functions.literal(args, 2) instanceof Number g && (g.intValue() < 0 || g.intValue() > re.groups())) {
                     return "the pattern '" + p + "' has " + re.groups() + " group(s); group " + g.intValue() + " was asked for";
                 }
-            } catch (com.ash.rachana.hostcompat.HostException e) {
+            } catch (com.ash.rachana.RachanaException e) {
                 return "the pattern '" + p + "' is refused: " + e.getMessage();
             }
         }

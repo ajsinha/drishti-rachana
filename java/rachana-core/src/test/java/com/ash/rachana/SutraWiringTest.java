@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Sutra Next phases 2 and 3, the grammar: {@code source:} as a mapping, {@code emits:}, {@code waits:}, {@code children:} as groups,
- * {@code @panel.event.field}, {@code @parent} and {@code $src} in Rachana-EL, and the lint (DRS-2057 events and sources, DRS-2056
+ * {@code @panel.event.field}, {@code @parent} and {@code $src} in Rachana-EL, and the lint (RCH-2057 events and sources, RCH-2056
  * children): unknown panels, events and fields, a cycle, a depth over three, a type mismatch, a use that wires its panel.
  */
 class SutraWiringTest {
@@ -119,9 +119,9 @@ class SutraWiringTest {
         assertThat(src.params()).containsExactly(Map.entry("confidence", "ctl.conf"), Map.entry("horizon", "1"), Map.entry("live", "true"));
         assertThat(src.expressions()).contains("ctl.conf", "1");
         assertThat(problems("  - { id: v, kind: kv, source: { kind: var-result, where: \"@.A > 1\", params: { x: 1 } } }\n"))
-                .anySatisfy(p -> assertThat(p.code() + " " + p.message()).contains("DRS-2057").contains("'params' goes with a source read by id"));
+                .anySatisfy(p -> assertThat(p.code() + " " + p.message()).contains("RCH-2057").contains("'params' goes with a source read by id"));
         assertThat(problems("  - { id: v, kind: kv, source: { kind: var-result, id: $.A, params: [1, 2] } }\n"))
-                .anySatisfy(p -> assertThat(p.code() + " " + p.message()).contains("DRS-2012").contains("mapping of parameter names"));
+                .anySatisfy(p -> assertThat(p.code() + " " + p.message()).contains("RCH-2012").contains("mapping of parameter names"));
         assertThat(problems("  - { id: v, kind: kv, source: { kind: var-result, id: $.A, params: { 9x: 1, y: { a: 1 } } } }\n"))
                 .anySatisfy(p -> assertThat(p.message()).contains("'9x' is not a parameter name"))
                 .anySatisfy(p -> assertThat(p.message()).contains("parameter y is an expression"));
@@ -156,13 +156,13 @@ class SutraWiringTest {
     @Test
     void lintFindsUnknownPanelsEventsAndFields() {
         assertThat(problems(DESK.replace("@trades.open.cpty}", "@trade.open.cpty}")))
-                .anySatisfy(p -> assertThat(p.code() + " " + p.message()).contains("DRS-2057").contains("@trade, which is no panel"));
+                .anySatisfy(p -> assertThat(p.code() + " " + p.message()).contains("RCH-2057").contains("@trade, which is no panel"));
         assertThat(problems(DESK.replace("${@trades.open.cpty}", "${@trades.pick.cpty}")))
                 .anySatisfy(p -> assertThat(p.message()).contains("emits open"));
         assertThat(problems(DESK.replace("${@trades.open.cpty}", "${@trades.open.desk}")))
                 .anySatisfy(p -> assertThat(p.message()).contains("payload of open has trade, cpty, n"));
         assertThat(problems(DESK.replace("rows: $src.EVENTS", "rows: $src.EVENTS\n            title: \"${@parent.drill.x}\"")))
-                .anySatisfy(p -> assertThat(p.code()).isEqualTo("DRS-2056"));
+                .anySatisfy(p -> assertThat(p.code()).isEqualTo("RCH-2056"));
         assertThat(problems(DESK.replace("id: \"@parent.open.trade\"", "id: \"@parent.open.n\"")))
                 .anySatisfy(p -> assertThat(p.message()).contains("a number; an id is text"));
         assertThat(problems("  - { id: a, kind: kv, title: \"${@parent.x.y}\", columns: [ { label: A, bind: $.A } ] }\n"))
@@ -212,7 +212,7 @@ class SutraWiringTest {
                                       - panels: [ { id: l4, kind: kv, title: "${@parent.pick.k}", columns: [ { label: K, bind: $.K } ] } ]
                 """;
         assertThat(problems(deep)).anySatisfy(p -> {
-            assertThat(p.code()).isEqualTo("DRS-2056");
+            assertThat(p.code()).isEqualTo("RCH-2056");
             assertThat(p.message()).contains("'l4' is nested 4 deep");
         });
         assertThat(problems(deep.substring(0, deep.indexOf("\n", deep.lastIndexOf("emits")) + 1)))

@@ -21,7 +21,6 @@ Copied from the host with only their package changed, so behaviour stays byte-id
 
 | Type | Removed by |
 |---|---|
-| `HostException`, `ErrorCode` (ten codes, with the host's `DRS-` text) | A1: `RachanaException` and `RCH-` codes |
 | `DataNode`, `NodeType`, `ListValues`, `PathWalker`, `IdText` | A2: the evaluator reads `com.ash.rachana.api.Node` |
 | `SafeRegex` | A3: becomes Core's own (`com.ash.rachana.el.SafeRegex`) |
 | `BusinessCalendar` | A3: the `Calendars` hook with Core's default calendar |
@@ -31,4 +30,4 @@ Copied from the host with only their package changed, so behaviour stays byte-id
 Files of `rachana-core` (the moved compiler) that still carry a host word (a `DRS-` or `DEL-` code, a `drishti.` setting name, the product name outside
 "Drishti Rachana" and "Drishti Elements"). The count may only go down; A1 removes the codes, A4 the settings, A7 the rest.
 
-- host-word files: 51
+- host-word files: 8

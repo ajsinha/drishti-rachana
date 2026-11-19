@@ -20,5 +20,6 @@ python3 tools/split/rename_packages.py java/rachana-core/src
 |---|---|
 | `a10-paths.txt` | the reviewed path allow-list (main code, the signatures catalogue, the unit tests that need only the compiler) |
 | `rename_packages.py` | headers and the package rename of the rename commit |
+| `compare_results.py` | the proof of each step: results over this code against the reference bridge's, byte for byte but for `known-differences.txt` |
 
 The binder (step A14) moves the same way with its own allow-list.

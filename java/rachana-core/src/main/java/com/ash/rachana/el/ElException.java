@@ -4,21 +4,21 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.HostException;
-import com.ash.rachana.hostcompat.ErrorCode;
+import com.ash.rachana.RachanaException;
+import com.ash.rachana.RachanaCode;
 
-/** A Rachana-EL expression failed to compile ({@code DRS-2101}) or to evaluate ({@code DRS-2102}). */
-public class ElException extends HostException {
+/** A Rachana-EL expression failed to compile ({@code RCH-2101}) or to evaluate ({@code RCH-2102}). */
+public class ElException extends RachanaException {
 
     private static final long serialVersionUID = 1L;
     private final int position;
 
     public ElException(String message, int position) {
-        super(ErrorCode.EL_SYNTAX, message + " at " + position);
+        super(RachanaCode.EL_SYNTAX, message + " at " + position);
         this.position = position;
     }
 
-    public ElException(ErrorCode code, String message) {
+    public ElException(RachanaCode code, String message) {
         super(code, message);
         this.position = -1;
     }

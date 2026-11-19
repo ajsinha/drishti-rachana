@@ -20,7 +20,7 @@ import java.util.Set;
 
 /**
  * Knows which Sutra values are Rachana-EL and compiles them all at load time, so a typo in an expression
- * is reported against the file (with {@code DRS-2101}) instead of surfacing as a broken view.
+ * is reported against the file (with {@code RCH-2101}) instead of surfacing as a broken view.
  */
 public final class SutraExpressions {
 
@@ -50,9 +50,9 @@ public final class SutraExpressions {
         return all;
     }
 
-    /** The message without its leading DRS-nnnn: the problem carries the code itself. */
+    /** The message without its leading RCH-nnnn: the problem carries the code itself. */
     private static String withoutCode(String message) {
-        return message == null ? "" : message.replaceFirst("^DRS-\\d+\\s*:?\\s*", "");
+        return message == null ? "" : message.replaceFirst("^RCH-\\d+\\s*:?\\s*", "");
     }
 
     /** The problems of one check, and the control ids the Sutra declares (for {@code ctl.<id>} references). */
@@ -71,7 +71,7 @@ public final class SutraExpressions {
         void references(String src, SourceLocation at) {
             for (String id : ControlRules.references(src)) {
                 if (!declared.contains(id)) {
-                    problems.add(new SutraProblem("DRS-2036", "'ctl." + id + "' reads a control the Sutra does not declare"
+                    problems.add(new SutraProblem("RCH-2036", "'ctl." + id + "' reads a control the Sutra does not declare"
                             + (declared.isEmpty() ? " (it has no controls:)" : " (it has " + String.join(", ", new java.util.TreeSet<>(declared)) + ")"), at));
                 }
             }
@@ -195,7 +195,7 @@ public final class SutraExpressions {
         try {
             compiler.compile(src);
         } catch (ElException e) {
-            out.add(new SutraProblem("DRS-2101", "expression '" + src + "': " + withoutCode(e.getMessage()), at));
+            out.add(new SutraProblem("RCH-2101", "expression '" + src + "': " + withoutCode(e.getMessage()), at));
         }
     }
 
@@ -207,7 +207,7 @@ public final class SutraExpressions {
         try {
             compiler.template(src);
         } catch (ElException e) {
-            out.add(new SutraProblem("DRS-2101", "template '" + src + "': " + withoutCode(e.getMessage()), at));
+            out.add(new SutraProblem("RCH-2101", "template '" + src + "': " + withoutCode(e.getMessage()), at));
         }
     }
 }

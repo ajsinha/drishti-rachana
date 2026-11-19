@@ -17,13 +17,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Reads a screen's {@code layout:} (RACHANA_REFERENCE.md 13) and checks it against the panels: {@code DRS-2059} for every layout problem
+ * Reads a screen's {@code layout:} (RACHANA_REFERENCE.md 13) and checks it against the panels: {@code RCH-2059} for every layout problem
  * (an unknown area, an area that is not a rectangle, rows of different widths, columns that do not sum to 12, a split of areas that
  * are not side by side, tabs or a sticky area that does not exist, a phone order naming nothing, sections with areas).
  */
 final class LayoutReader {
 
-    static final String CODE = "DRS-2059";
+    static final String CODE = "RCH-2059";
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]{0,31}");
     private static final Set<String> KEYS = Set.of("areas", "columns", "split", "tabs", "sections", "sticky", "user-can-arrange", "phone", "tablet");
 
@@ -110,7 +110,7 @@ final class LayoutReader {
             SourceLocation where = p.location();
             if (named != null) {
                 if (layout == null || !layout.hasAreas()) {
-                    problems.add(new SutraProblem("DRS-2027", "area '" + named + "' is not 'main' or 'right': name areas in layout.areas first", where));
+                    problems.add(new SutraProblem("RCH-2027", "area '" + named + "' is not 'main' or 'right': name areas in layout.areas first", where));
                 } else if (!areaNames.contains(named)) {
                     problems.add(new SutraProblem(CODE, "panel '" + p.id() + "' is placed in area '" + named + "', which layout.areas does not have ("
                             + String.join(", ", layout.areaNames()) + ")", where));

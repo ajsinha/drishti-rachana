@@ -9,7 +9,7 @@ import com.ash.rachana.model.SourceLocation;
 /**
  * One thing wrong with a Sutra file.
  *
- * @param code stable {@code DRS-2nnn} code
+ * @param code stable {@code RCH-2nnn} code
  * @param message what is wrong and how to fix it
  * @param location where
  */

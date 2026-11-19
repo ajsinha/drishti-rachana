@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-/** A panel's {@code form:} (RACHANA_REFERENCE.md 10): the grammar, its lint (DRS-2058), the expressions and the checks the server runs. */
+/** A panel's {@code form:} (RACHANA_REFERENCE.md 10): the grammar, its lint (RCH-2058), the expressions and the checks the server runs. */
 class FormTest {
 
     private final SutraParser parser = new SutraParser();
@@ -93,7 +93,7 @@ class FormTest {
                 "key: trade_id", "key: nothing",
                 "pattern: \"[A-Z]{3}\"", "pattern: \"[A-Z\"");
         bad.forEach((from, to) -> assertThatThrownBy(() -> parser.parse(SUTRA.replace(from, to), "bad.yaml", "x")).as(to)
-                .isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::code).contains("DRS-2058")));
+                .isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::code).contains("RCH-2058")));
         assertThatThrownBy(() -> parser.parse(SUTRA.replace("\"notional <= 30000000\"", "\"notionl <= 30000000\""), "bad.yaml", "x"))
                 .isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::message)
                         .anySatisfy(m -> assertThat(m).contains("reads 'notionl', which is not a field of the form")));
@@ -179,7 +179,7 @@ class FormTest {
                 "\"=notional * 0.01\"", "\"=notionl * 0.01\"",
                 "kind: counterparty }", "kind: counterparty, where: x, search: y }");
         bad.forEach((from, to) -> assertThatThrownBy(() -> parser.parse(SUTRA.replace(from, to), "bad.yaml", "x")).as(to)
-                .isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::code).contains("DRS-2058")));
+                .isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::code).contains("RCH-2058")));
         assertThatThrownBy(() -> parser.parse(SUTRA.replace("currency: ccy,", "currency: cash,"), "bad.yaml", "x"))
                 .isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::message)
                         .anySatisfy(m -> assertThat(m).contains("currency is a code (USD) or the id of the field holding it")));

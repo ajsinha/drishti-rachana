@@ -75,8 +75,8 @@ class DrillLevelsTest {
 
     @Test
     void aBadLevelIsRefusedWithTheReason() {
-        assertThat(problems("levels: \"@.cashflows\"")).anyMatch(m -> m.startsWith("DRS-2029") && m.contains("list of 1 to 6 levels"));
-        assertThat(problems("levels:\n  - { title: Flows }")).anyMatch(m -> m.startsWith("DRS-2029") && m.contains("rows"));
+        assertThat(problems("levels: \"@.cashflows\"")).anyMatch(m -> m.startsWith("RCH-2029") && m.contains("list of 1 to 6 levels"));
+        assertThat(problems("levels:\n  - { title: Flows }")).anyMatch(m -> m.startsWith("RCH-2029") && m.contains("rows"));
         assertThat(problems("levels:\n  - { rows: \"@.x\", sortBy: date }")).anyMatch(m -> m.contains("not 'sortBy'"));
         assertThat(problems("levels:\n  - { rows: \"@.x\", columns: [ { label: A } ] }")).anyMatch(m -> m.contains("with a bind"));
         assertThat(problems("children: \"@.kids\"\nlevels:\n  - { rows: \"@.x\" }")).anyMatch(m -> m.contains("cannot also have 'children'"));
@@ -88,6 +88,6 @@ class DrillLevelsTest {
     void aBrokenExpressionInALevelIsReportedAtLoad() {
         Sutra s = parser.parse(sutra("levels:\n  - rows: \"@.cashflows[\"\n    columns:\n      - { label: A, bind: \"@.a +\" }"), "t.sutra.yaml", "x");
         assertThat(new SutraExpressions(new ElCompiler()).check(s)).hasSizeGreaterThanOrEqualTo(2)
-                .allMatch(p -> p.code().equals("DRS-2101"));
+                .allMatch(p -> p.code().equals("RCH-2101"));
     }
 }

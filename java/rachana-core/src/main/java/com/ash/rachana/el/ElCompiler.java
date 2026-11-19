@@ -32,7 +32,7 @@ public final class ElCompiler {
     }
 
     /**
-     * @throws ElException ({@code DRS-2101}) with the offset of the problem, including an expression beyond the
+     * @throws ElException ({@code RCH-2101}) with the offset of the problem, including an expression beyond the
      *     {@linkplain ElLimits limits} (too deeply nested or too long)
      */
     public Expr compile(String source) {

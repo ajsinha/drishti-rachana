@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** A screen's {@code layout:} (RACHANA_REFERENCE.md 13): the grammar, each panel's place, and lint DRS-2059. */
+/** A screen's {@code layout:} (RACHANA_REFERENCE.md 13): the grammar, each panel's place, and lint RCH-2059. */
 class ScreenLayoutTest {
 
     private final SutraParser parser = new SutraParser();
@@ -104,7 +104,7 @@ class ScreenLayoutTest {
     @Test
     void lintFindsUnknownAreasOverlapsAndBadSplitsOrTabs() {
         assertThat(problems(AREAS, PANELS.replace("area: limits", "area: risk")))
-                .anyMatch(p -> p.startsWith("DRS-2059") && p.contains("area 'risk'"));
+                .anyMatch(p -> p.startsWith("RCH-2059") && p.contains("area 'risk'"));
         assertThat(problems("areas: [\"a b\", \"b a\"]", "- { id: x, kind: kv, area: a, columns: [ { label: A, bind: $.A } ] }"))
                 .anyMatch(p -> p.contains("'a' is not a rectangle"));
         assertThat(problems("areas: [\"a b\", \"a\"]", "- { id: x, kind: kv, area: a, columns: [ { label: A, bind: $.A } ] }"))
@@ -129,7 +129,7 @@ class ScreenLayoutTest {
     @Test
     void aNamedAreaNeedsTheLayoutToNameIt() {
         assertThat(problems("", "- { id: x, kind: kv, area: trades, columns: [ { label: A, bind: $.A } ] }"))
-                .anyMatch(p -> p.startsWith("DRS-2027") && p.contains("layout.areas"));
+                .anyMatch(p -> p.startsWith("RCH-2027") && p.contains("layout.areas"));
         assertThat(problems("", "- { id: x, kind: kv, order: 1000, columns: [ { label: A, bind: $.A } ] }"))
                 .anyMatch(p -> p.contains("0 to 999"));
     }

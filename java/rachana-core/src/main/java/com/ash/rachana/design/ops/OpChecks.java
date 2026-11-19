@@ -41,6 +41,7 @@ final class OpChecks {
         if (!COMMON.contains(option) && !kind.accepts(option)) {
             List<String> ok = new ArrayList<>(kind.required());
             ok.addAll(kind.optional());
+            ok.sort(null);                                   // the kind's sets have no order of their own: name them sorted, every run alike
             throw new OpException(OpException.NOT_ACCEPTED, "option '" + option + "' is not valid for '" + kind.id() + "' panels; expected one of "
                     + String.join(", ", ok) + " or " + String.join(", ", COMMON.stream().sorted().toList()));
         }

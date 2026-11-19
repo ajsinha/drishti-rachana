@@ -66,7 +66,7 @@ public final class RachanaSchema {
                 "items", controlSchema()));
         p.put("refresh", refreshSchema("Refresh every top-level panel without its own refresh:"));
         p.put("panels", Map.of("type", "array", "items", Map.of("$ref", "#/$defs/panel")));
-        Map<String, Object> grid = new LinkedHashMap<>();         // RACHANA_REFERENCE.md 13: lint DRS-2059
+        Map<String, Object> grid = new LinkedHashMap<>();         // RACHANA_REFERENCE.md 13: lint RCH-2059
         grid.put("areas", Map.of("type", "array", "items", Map.of("type", "string"), "description", "A picture of the screen: one string a row, one area name a cell (. empty)"));
         grid.put("columns", Map.of("type", List.of("integer", "array"), "description", "12, or the grid columns of each area column (summing to 12)"));
         grid.put("split", Map.of("type", "object", "description", "{ between: [left, right], resizable: true, remember: user }: a draggable divider between two side-by-side areas"));
@@ -113,7 +113,7 @@ public final class RachanaSchema {
         return Map.of("description", what, "oneOf", List.of(every, obj));
     }
 
-    /** {@code form:} on a panel (RACHANA_REFERENCE.md 10): typed fields, rules, hints and how it opens; checked as DRS-2058. */
+    /** {@code form:} on a panel (RACHANA_REFERENCE.md 10): typed fields, rules, hints and how it opens; checked as RCH-2058. */
     private static Map<String, Object> formSchema() {
         Map<String, Object> roles = Map.of("type", "array", "items", Map.of("type", "string"), "description", "Role names");
         Map<String, Object> field = new LinkedHashMap<>();
@@ -179,7 +179,7 @@ public final class RachanaSchema {
         return f;
     }
 
-    /** A use of a shared block in a panels list: {@code { use: legs@1, with: { rate-fmt: pct4 } }} (DRS-2048 when it does not resolve). */
+    /** A use of a shared block in a panels list: {@code { use: legs@1, with: { rate-fmt: pct4 } }} (RCH-2048 when it does not resolve). */
     private static Map<String, Object> use() {
         Map<String, Object> props = new LinkedHashMap<>();
         props.put("use", Map.of("type", "string", "pattern", "^([a-z][a-z0-9-]{0,63}/)?[a-z][a-z0-9-]{1,63}(@[0-9]+)?$",

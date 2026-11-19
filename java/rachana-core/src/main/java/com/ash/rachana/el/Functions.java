@@ -22,7 +22,7 @@ import java.util.function.Function;
  * {@code measure(...)} and {@code cell(...)} come from the pivot engine, registered into this table by a {@link FunctionProvider}
  * ({@link Aggregates}; docs/architecture/ARCHITECTURE.md parts 1 to 3). Functions are pure and cheap; an empty argument gives an empty result unless the
  * function says otherwise, a masked one a masked result, and a value of the wrong type (text where a number is needed)
- * raises {@code DRS-2102} naming the function and the value, which {@code iferror(...)} turns into a fallback.
+ * raises {@code RCH-2102} naming the function and the value, which {@code iferror(...)} turns into a fallback.
  *
  * <p>Three kinds of entry: an <b>eager</b> function ({@link ElFunction}) gets its arguments evaluated; a <b>form</b>
  * ({@link ElForm}) gets them unevaluated, to evaluate lazily or once per list element with {@code @} bound

@@ -25,7 +25,7 @@ class SutraParserTest {
         String body = "sutra: v-check\nversion: 1\nmatch: { kind: trade }\n";
         assertThat(parser.parse("rachana: 1\n" + body, "v.sutra.yaml", "rates").id()).isEqualTo("v-check@1");
         assertThatThrownBy(() -> parser.parse(body, "v.sutra.yaml", "rates"))
-                .satisfies(e -> assertThat(((SutraException) e).problems()).extracting(SutraProblem::code).contains("DRS-2009"));
+                .satisfies(e -> assertThat(((SutraException) e).problems()).extracting(SutraProblem::code).contains("RCH-2009"));
         assertThatThrownBy(() -> parser.parse("rachana: 2\n" + body, "v.sutra.yaml", "rates"))
                 .satisfies(e -> assertThat(((SutraException) e).problems().get(0).message()).contains("not a language version this server reads"));
         assertThatThrownBy(() -> parser.parse("rachana: 1\nnotes: [a, b]\n" + body, "v.sutra.yaml", "rates"))
@@ -50,8 +50,8 @@ class SutraParserTest {
         assertThatThrownBy(() -> parser.parse(yaml, "bad.yaml", "x"))
                 .isInstanceOfSatisfying(SutraException.class, e -> {
                     assertThat(e.problems()).extracting(SutraProblem::code).contains(
-                            "DRS-2020", "DRS-2011", "DRS-2010", "DRS-2022", "DRS-2021", "DRS-2023", "DRS-2025");
-                    assertThat(e.problems()).filteredOn(p -> p.code().equals("DRS-2011"))
+                            "RCH-2020", "RCH-2011", "RCH-2010", "RCH-2022", "RCH-2021", "RCH-2023", "RCH-2025");
+                    assertThat(e.problems()).filteredOn(p -> p.code().equals("RCH-2011"))
                             .first().satisfies(p -> assertThat(p.location().line()).isEqualTo(5));
                 });
     }
@@ -60,7 +60,7 @@ class SutraParserTest {
     void yamlSyntaxErrorsHaveAPosition() {
         assertThatThrownBy(() -> parser.parse("rachana: 1\nsutra: x\n  version: [1,\n", "broken.yaml", "x"))
                 .isInstanceOfSatisfying(SutraException.class,
-                        e -> assertThat(e.problems().get(0).code()).isEqualTo("DRS-2001"));
+                        e -> assertThat(e.problems().get(0).code()).isEqualTo("RCH-2001"));
     }
 
     @Test
@@ -132,7 +132,7 @@ class SutraParserTest {
                 """;
         assertThatThrownBy(() -> parser.parse(bad, "bad-charts.yaml", "x"))
                 .isInstanceOfSatisfying(SutraException.class, e -> {
-                    assertThat(e.problems()).filteredOn(p -> p.code().equals("DRS-2029")).extracting(SutraProblem::message).hasSize(6)
+                    assertThat(e.problems()).filteredOn(p -> p.code().equals("RCH-2029")).extracting(SutraProblem::message).hasSize(6)
                             .anySatisfy(m -> assertThat(m).contains("must be one of sum, count, avg, min, max, not 'median'"))
                             .anySatisfy(m -> assertThat(m).contains("'heat' of 'pivot' panels must be true or false"))
                             .anySatisfy(m -> assertThat(m).contains("'bins' of 'histogram' panels must be a whole number from 1 to 200"))
@@ -143,7 +143,7 @@ class SutraParserTest {
                 });
     }
 
-    /** {@code refresh:} (seconds) on the Sutra goes on every top-level panel without its own (RACHANA_REFERENCE.md 9); a wrong one is DRS-2012. */
+    /** {@code refresh:} (seconds) on the Sutra goes on every top-level panel without its own (RACHANA_REFERENCE.md 9); a wrong one is RCH-2012. */
     @Test
     void refreshIsWholeSeconds() {
         String ok = "rachana: 1\nsutra: my-desk\nversion: 1\nmatch: { kind: trade }\nrefresh: 30\ntitle: { id: $.id }\npanels:\n  - { id: refs, kind: links }\n"
@@ -155,7 +155,7 @@ class SutraParserTest {
         for (String bad : new String[] {"refresh: soon", "refresh: 0", "refresh: 2.5", "refresh: { every: 5, often: true }", "refresh: { user-can-pause: true }",
                 "refresh: { every: 5, user-can-pause: maybe }"}) {
             assertThatThrownBy(() -> parser.parse(ok.replace("refresh: 30", bad), "bad.yaml", "x"))
-                    .as(bad).isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::code).contains("DRS-2012"));
+                    .as(bad).isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::code).contains("RCH-2012"));
         }
     }
 

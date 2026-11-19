@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.ash.rachana.hostcompat.DataNode;
-import com.ash.rachana.hostcompat.ErrorCode;
+import com.ash.rachana.RachanaCode;
 import com.ash.rachana.hostcompat.JsonCodec;
 import com.ash.rachana.format.Formats;
 import java.math.BigDecimal;
@@ -72,20 +72,20 @@ final class Fx {
         return ((DataNode.Arr) v).elements().stream().map(Values::simplify).toList();
     }
 
-    /** Evaluating fails with DRS-2102 and words naming the problem. */
+    /** Evaluating fails with RCH-2102 and words naming the problem. */
     static void evalError(String src, String... words) {
         assertThatThrownBy(() -> eval(src)).as(src).isInstanceOfSatisfying(ElException.class, e -> {
-            assertThat(e.errorCode()).isEqualTo(ErrorCode.EL_EVAL);
+            assertThat(e.code()).isEqualTo(RachanaCode.EL_EVAL);
             for (String w : words) {
                 assertThat(e.getMessage()).contains(w);
             }
         });
     }
 
-    /** Compiling fails with DRS-2101 and words naming the problem. */
+    /** Compiling fails with RCH-2101 and words naming the problem. */
     static void compileError(String src, String... words) {
         assertThatThrownBy(() -> EL.compile(src)).as(src).isInstanceOfSatisfying(ElException.class, e -> {
-            assertThat(e.errorCode()).isEqualTo(ErrorCode.EL_SYNTAX);
+            assertThat(e.code()).isEqualTo(RachanaCode.EL_SYNTAX);
             for (String w : words) {
                 assertThat(e.getMessage()).contains(w);
             }

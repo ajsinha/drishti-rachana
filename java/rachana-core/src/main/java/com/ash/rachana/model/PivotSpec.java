@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * </pre>
  *
  * The same object, with document paths for fields, opts a kind's search results in ({@code pivot:} in pack.yaml). Parsing
- * collects every problem (the Sutra's {@code DRS-2031}); a spec is immutable and thread-safe.
+ * collects every problem (the Sutra's {@code RCH-2031}); a spec is immutable and thread-safe.
  *
  * @param fields the fields offered, in order (for {@code pivot: true}, the panel's columns or the kind's key fields)
  * @param explicit true when the Sutra (or pack) listed {@code fields} itself

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** {@code controls:} in Sutras: the grammar, its problem codes (DRS-2034 to 2039), {@code ctl.<id>} and {@code [*]} in Rachana-EL. */
+/** {@code controls:} in Sutras: the grammar, its problem codes (RCH-2034 to 2039), {@code ctl.<id>} and {@code [*]} in Rachana-EL. */
 class ControlsTest {
 
     private final SutraParser parser = new SutraParser();
@@ -93,39 +93,39 @@ class ControlsTest {
 
     @Test
     void malformedControlsAreDrs2034() {
-        assertThat(problems("controls:\n  - { id: leg, kind: knob }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("unknown control kind"));
-        assertThat(problems("controls:\n  - { id: leg, kind: dropdown }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("needs 'options'"));
-        assertThat(problems("controls:\n  - { id: 9x, kind: search }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("control id"));
-        assertThat(problems("controls:\n  - { kind: search }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("needs an 'id'"));
-        assertThat(problems("controls:\n  - { id: q, kind: search, options: [a] }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("takes no 'options'"));
-        assertThat(problems("controls:\n  - { id: q, kind: search, placement: left }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("placement"));
-        assertThat(problems("controls:\n  - { id: q, kind: search, placement: header }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("names the panel"));
-        assertThat(problems("controls:\n  - { id: q, kind: search, placement: header, panel: nope }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("'nope'"));
-        assertThat(problems("controls:\n  - { id: q, kind: search, remember: always }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("remember"));
-        assertThat(problems("controls:\n  - { id: q, kind: search, colour: red }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2011"));
-        assertThat(problems("controls: 5\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2012"));
+        assertThat(problems("controls:\n  - { id: leg, kind: knob }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("unknown control kind"));
+        assertThat(problems("controls:\n  - { id: leg, kind: dropdown }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("needs 'options'"));
+        assertThat(problems("controls:\n  - { id: 9x, kind: search }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("control id"));
+        assertThat(problems("controls:\n  - { kind: search }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("needs an 'id'"));
+        assertThat(problems("controls:\n  - { id: q, kind: search, options: [a] }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("takes no 'options'"));
+        assertThat(problems("controls:\n  - { id: q, kind: search, placement: left }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("placement"));
+        assertThat(problems("controls:\n  - { id: q, kind: search, placement: header }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("names the panel"));
+        assertThat(problems("controls:\n  - { id: q, kind: search, placement: header, panel: nope }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("'nope'"));
+        assertThat(problems("controls:\n  - { id: q, kind: search, remember: always }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("remember"));
+        assertThat(problems("controls:\n  - { id: q, kind: search, colour: red }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2011"));
+        assertThat(problems("controls: 5\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2012"));
     }
 
     @Test
     void duplicateIdsAreDrs2035() {
-        assertThat(problems("controls:\n  - { id: q, kind: search }\n  - { id: q, kind: search }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2035"));
+        assertThat(problems("controls:\n  - { id: q, kind: search }\n  - { id: q, kind: search }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2035"));
     }
 
     @Test
     void aCtlReferenceToAnUnknownControlIsDrs2036() {
         String panels = "  - id: cf\n    kind: table\n    rows: $.schedule\n    where: \"@.leg == ctl.nope\"\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n";
-        assertThat(problems("controls:\n  - { id: leg, kind: search }\n", panels)).anyMatch(p -> p.startsWith("DRS-2036") && p.contains("ctl.nope") && p.contains("leg"));
-        assertThat(problems("", panels)).anyMatch(p -> p.startsWith("DRS-2036") && p.contains("no controls"));
+        assertThat(problems("controls:\n  - { id: leg, kind: search }\n", panels)).anyMatch(p -> p.startsWith("RCH-2036") && p.contains("ctl.nope") && p.contains("leg"));
+        assertThat(problems("", panels)).anyMatch(p -> p.startsWith("RCH-2036") && p.contains("no controls"));
         String title = "  - id: cf\n    kind: table\n    title: \"Leg ${ctl.gone}\"\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n";
-        assertThat(problems("controls:\n  - { id: leg, kind: search }\n", title)).anyMatch(p -> p.startsWith("DRS-2036"));
+        assertThat(problems("controls:\n  - { id: leg, kind: search }\n", title)).anyMatch(p -> p.startsWith("RCH-2036"));
         assertThat(problems("controls:\n  - { id: leg, kind: search }\n", panels.replace("ctl.nope", "ctl.leg"))).isEmpty();
     }
 
     @Test
     void aCascadingControlNeedsAnEarlierParentDrs2037() {
-        assertThat(problems("controls:\n  - { id: c, kind: cascading, options: \"$.x\" }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2037"));
+        assertThat(problems("controls:\n  - { id: c, kind: cascading, options: \"$.x\" }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2037"));
         assertThat(problems("controls:\n  - { id: c, kind: cascading, parent: p, options: \"$.x\" }\n  - { id: p, kind: search }\n", TABLE))
-                .anyMatch(p -> p.startsWith("DRS-2037") && p.contains("declared before"));
+                .anyMatch(p -> p.startsWith("RCH-2037") && p.contains("declared before"));
     }
 
     @Test
@@ -142,13 +142,13 @@ class ControlsTest {
         assertThat(floor.step()).isEqualTo("5");
         assertThat(floor.range()).isFalse();
         assertThat(s.controls().get(1).range()).isTrue();
-        assertThat(problems("controls:\n  - { id: a, kind: slider, max: 10 }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("'min' and 'max'"));
-        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, step: 0 }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("step"));
-        assertThat(problems("controls:\n  - { id: a, kind: dropdown, options: [x], step: 5 }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034"));
-        assertThat(problems("controls:\n  - { id: a, kind: dropdown, options: [x], range: true }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2034") && p.contains("slider"));
-        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, default: abc }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039"));
-        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, default: \"1..5\" }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039") && p.contains("range: true"));
-        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, range: true, default: 5 }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039"));
+        assertThat(problems("controls:\n  - { id: a, kind: slider, max: 10 }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("'min' and 'max'"));
+        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, step: 0 }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("step"));
+        assertThat(problems("controls:\n  - { id: a, kind: dropdown, options: [x], step: 5 }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034"));
+        assertThat(problems("controls:\n  - { id: a, kind: dropdown, options: [x], range: true }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2034") && p.contains("slider"));
+        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, default: abc }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039"));
+        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, default: \"1..5\" }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039") && p.contains("range: true"));
+        assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, range: true, default: 5 }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039"));
         assertThat(problems("controls:\n  - { id: a, kind: slider, min: 0, max: 10, step: 2, default: 4 }\n  - { id: b, kind: slider, min: 0, max: 10, range: true, default: \"2..8\" }\n",
                 TABLE + "    where: \"@.leg >= ctl.a && within(@.leg, ctl.b)\"\n")).isEmpty();
     }
@@ -157,18 +157,18 @@ class ControlsTest {
     void onSelectMustNameAControlAndPanelsDrs2038() {
         String ok = "controls:\n  - { id: leg, kind: search }\n";
         assertThat(problems(ok, TABLE + "    on-select: { by: leg, filter: [cf] }\n")).isEmpty();
-        assertThat(problems(ok, TABLE + "    on-select: { by: nope }\n")).anyMatch(p -> p.startsWith("DRS-2038") && p.contains("'by'"));
-        assertThat(problems(ok, TABLE + "    on-select: { by: leg, filter: [ghost] }\n")).anyMatch(p -> p.startsWith("DRS-2038") && p.contains("ghost"));
-        assertThat(problems(ok, TABLE + "    on-select: { by: leg, colour: red }\n")).anyMatch(p -> p.startsWith("DRS-2038"));
+        assertThat(problems(ok, TABLE + "    on-select: { by: nope }\n")).anyMatch(p -> p.startsWith("RCH-2038") && p.contains("'by'"));
+        assertThat(problems(ok, TABLE + "    on-select: { by: leg, filter: [ghost] }\n")).anyMatch(p -> p.startsWith("RCH-2038") && p.contains("ghost"));
+        assertThat(problems(ok, TABLE + "    on-select: { by: leg, colour: red }\n")).anyMatch(p -> p.startsWith("RCH-2038"));
     }
 
     @Test
     void defaultsMustFitTheKindDrs2039() {
-        assertThat(problems("controls:\n  - { id: a, kind: dropdown, options: [x, y], default: z }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039"));
-        assertThat(problems("controls:\n  - { id: a, kind: top-n, options: [5], default: 7 }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039"));
-        assertThat(problems("controls:\n  - { id: a, kind: date-range, default: soon }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039") && p.contains("next-90d"));
-        assertThat(problems("controls:\n  - { id: a, kind: date, default: 2026-13-45 }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039"));
-        assertThat(problems("controls:\n  - { id: a, kind: number-range, default: abc }\n", TABLE)).anyMatch(p -> p.startsWith("DRS-2039"));
+        assertThat(problems("controls:\n  - { id: a, kind: dropdown, options: [x, y], default: z }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039"));
+        assertThat(problems("controls:\n  - { id: a, kind: top-n, options: [5], default: 7 }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039"));
+        assertThat(problems("controls:\n  - { id: a, kind: date-range, default: soon }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039") && p.contains("next-90d"));
+        assertThat(problems("controls:\n  - { id: a, kind: date, default: 2026-13-45 }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039"));
+        assertThat(problems("controls:\n  - { id: a, kind: number-range, default: abc }\n", TABLE)).anyMatch(p -> p.startsWith("RCH-2039"));
         assertThat(problems("controls:\n  - { id: a, kind: date-range, default: \"2026-10-01..2026-12-31\" }\n  - { id: b, kind: date, default: previous-business-day }\n"
                 + "  - { id: c, kind: number-range, default: \"..5000000\" }\n", TABLE)).isEmpty();
     }
@@ -176,8 +176,8 @@ class ControlsTest {
     @Test
     void wherePivotFreeOptionsAreChecked() {
         String panels = "  - id: cf\n    kind: table\n    rows: $.schedule\n    where: 5\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n";
-        assertThat(problems("", panels)).anyMatch(p -> p.startsWith("DRS-2029") && p.contains("condition"));
-        assertThat(problems("", "  - id: k\n    kind: kv\n    where: \"true\"\n    columns: [{ label: A, bind: \"$.x\" }]\n")).anyMatch(p -> p.startsWith("DRS-2023"));
+        assertThat(problems("", panels)).anyMatch(p -> p.startsWith("RCH-2029") && p.contains("condition"));
+        assertThat(problems("", "  - id: k\n    kind: kv\n    where: \"true\"\n    columns: [{ label: A, bind: \"$.x\" }]\n")).anyMatch(p -> p.startsWith("RCH-2023"));
         assertThat(problems("controls:\n  - { id: top, kind: top-n, options: [5] }\n", TABLE + "    limit: ctl.top\n")).isEmpty();
     }
 

@@ -23,13 +23,13 @@ import java.util.regex.Pattern;
  * {@code children:} written as a list of groups. The older forms stay the kind's options: {@code source: "link(...)"} (an expression,
  * the panel reads that linked entity as {@code $}) and a tree table's {@code children: "@.kids"}.
  *
- * <p>Codes: {@code DRS-2057} a source or an event that cannot be read, {@code DRS-2056} a group of children that cannot be read,
- * {@code DRS-2010}/{@code 2011}/{@code 2012} a missing, unknown or mistyped key. Not thread-safe (one per builder).
+ * <p>Codes: {@code RCH-2057} a source or an event that cannot be read, {@code RCH-2056} a group of children that cannot be read,
+ * {@code RCH-2010}/{@code 2011}/{@code 2012} a missing, unknown or mistyped key. Not thread-safe (one per builder).
  */
 final class WiringReader {
 
-    static final String EVENTS = "DRS-2057";
-    static final String CHILDREN = "DRS-2056";
+    static final String EVENTS = "RCH-2057";
+    static final String CHILDREN = "RCH-2056";
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]{0,63}");
     private static final Set<String> SOURCE_KEYS = Set.of("pack", "kind", "id", "where", "search", "limit", "as-of", "model", "params", "table");
     /** A virtual table's name: {@code <domain>.<name>} (bi/TABLES_AND_MODELS.md section 2), with an optional major ({@code @1}). */
@@ -88,7 +88,7 @@ final class WiringReader {
     private Wiring.Source tableSource(PNode n, Map<String, PNode> m) {
         String table = text(m.get("table"));
         if (table == null || !TABLE.matcher(table).matches()) {
-            problem("DRS-2012", "'table' in a source is a virtual table's name, <domain>.<name> (trading.trade_legs)", m.get("table"));
+            problem("RCH-2012", "'table' in a source is a virtual table's name, <domain>.<name> (trading.trade_legs)", m.get("table"));
             return null;
         }
         for (String k : List.of("kind", "pack", "id", "search", "params", "model")) {
@@ -113,7 +113,7 @@ final class WiringReader {
         Map<String, PNode> m = n.map();
         m.forEach((k, v) -> {
             if (!SOURCE_KEYS.contains(k)) {
-                problem("DRS-2011", "unknown key '" + k + "' in source; a source takes pack, kind, id, where, search, limit, as-of, params, or table", v);
+                problem("RCH-2011", "unknown key '" + k + "' in source; a source takes pack, kind, id, where, search, limit, as-of, params, or table", v);
             }
         });
         if (m.containsKey("model")) {
@@ -125,12 +125,12 @@ final class WiringReader {
         }
         String kind = text(m.get("kind"));
         if (kind == null || !NAME.matcher(kind).matches()) {
-            problem("DRS-2010", "a source names the entity kind it reads: kind: <kind>", n);
+            problem("RCH-2010", "a source names the entity kind it reads: kind: <kind>", n);
             return null;
         }
         String pack = text(m.get("pack"));
         if (m.containsKey("pack") && (pack == null || !NAME.matcher(pack).matches())) {
-            problem("DRS-2012", "'pack' in a source is a pack name (lower-case kebab)", m.get("pack"));
+            problem("RCH-2012", "'pack' in a source is a pack name (lower-case kebab)", m.get("pack"));
         }
         String id = expr(m.get("id"));
         String where = expr(m.get("where"));
@@ -163,7 +163,7 @@ final class WiringReader {
             return Map.of();
         }
         if (!n.isMap()) {
-            problem("DRS-2012", "'params' in a source is a mapping of parameter names to expressions ({ confidence: ctl.confidence })", n);
+            problem("RCH-2012", "'params' in a source is a mapping of parameter names to expressions ({ confidence: ctl.confidence })", n);
             return Map.of();
         }
         if (!single) {
@@ -173,15 +173,15 @@ final class WiringReader {
         Map<String, String> out = new java.util.TreeMap<>();
         n.map().forEach((k, v) -> {
             if (!PARAM.matcher(k).matches()) {
-                problem("DRS-2012", "'" + k + "' is not a parameter name (letters, digits, '_' and '-', starting with a letter)", v);
+                problem("RCH-2012", "'" + k + "' is not a parameter name (letters, digits, '_' and '-', starting with a letter)", v);
             } else if (v == null || v.value() == null || !v.isScalar()) {
-                problem("DRS-2012", "parameter " + k + " is an expression written as text, a number or true/false", v == null ? n : v);
+                problem("RCH-2012", "parameter " + k + " is an expression written as text, a number or true/false", v == null ? n : v);
             } else {
                 out.put(k, v.text());
             }
         });
         if (out.size() > Wiring.Source.MAX_PARAMS) {
-            problem("DRS-2012", "a source takes at most " + Wiring.Source.MAX_PARAMS + " parameters", n);
+            problem("RCH-2012", "a source takes at most " + Wiring.Source.MAX_PARAMS + " parameters", n);
         }
         return out;
     }
@@ -201,7 +201,7 @@ final class WiringReader {
             Map<String, PNode> m = e.map();
             m.forEach((k, v) -> {
                 if (!EMIT_KEYS.contains(k)) {
-                    problem("DRS-2011", "unknown key '" + k + "' in an event; an event takes name, on, payload", v);
+                    problem("RCH-2011", "unknown key '" + k + "' in an event; an event takes name, on, payload", v);
                 }
             });
             String name = text(m.get("name"));
@@ -271,7 +271,7 @@ final class WiringReader {
             Map<String, PNode> m = g.map();
             m.forEach((k, v) -> {
                 if (!GROUP_KEYS.contains(k)) {
-                    problem("DRS-2011", "unknown key '" + k + "' in children; a group takes place, show, source, waits, panels", v);
+                    problem("RCH-2011", "unknown key '" + k + "' in children; a group takes place, show, source, waits, panels", v);
                 }
             });
             String place = text(m.get("place"));
@@ -321,7 +321,7 @@ final class WiringReader {
             return null;
         }
         if (!n.isScalar()) {
-            problem("DRS-2012", "a source's id, where, search and as-of are expressions written as text", n);
+            problem("RCH-2012", "a source's id, where, search and as-of are expressions written as text", n);
             return null;
         }
         return n.text();

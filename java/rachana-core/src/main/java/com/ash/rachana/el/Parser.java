@@ -39,7 +39,7 @@ import java.util.Set;
  *
  * <p>Both the parse and the tree it builds are bounded by {@link ElLimits}: the parser counts how deep it has recursed, and every node
  * records how deep its subtree is (a chain {@code a + b + c} parses in a loop but builds a tree as deep as it is long, and evaluation
- * walks that tree recursively). Past either bound the expression is a compile error ({@code DRS-2101}) at the offending position, never
+ * walks that tree recursively). Past either bound the expression is a compile error ({@code RCH-2101}) at the offending position, never
  * a {@link StackOverflowError}. Every node records where it was written ({@link #spans}), so the checker can point at it.
  */
 final class Parser {

@@ -9,6 +9,8 @@
 
 **Describe a screen. Supply the data. Get a fast, professional UI.**
 
+**Screens become assembly, not writing.**
+
 Drishti Rachana is a declarative UI platform. You write a short **Sutra** (a screen or dashboard described in the
 **Rachana** grammar), point it at your data in the agreed **Rachana Data Protocol**, and get a fast, dense,
 professional interface drawn with **Drishti Elements**: grids, charts, maps, pivots, forms and live updates.

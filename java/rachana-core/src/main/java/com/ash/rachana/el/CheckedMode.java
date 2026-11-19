@@ -4,8 +4,8 @@
  */
 package com.ash.rachana.el;
 
-import com.ash.rachana.hostcompat.HostException;
-import com.ash.rachana.hostcompat.ErrorCode;
+import com.ash.rachana.RachanaException;
+import com.ash.rachana.RachanaCode;
 import com.ash.rachana.el.check.Checker;
 import com.ash.rachana.el.check.Fields;
 import com.ash.rachana.el.check.Problem;
@@ -19,8 +19,8 @@ import java.util.Set;
  * Rachana's checked mode, from text (docs/architecture/ARCHITECTURE.md §28 2.1): the one parser, then the {@link Checker} with the types, masks and
  * measures of a table or model. Wherever the types are known (a virtual table's source contract, a model's tables, a pivot over a typed
  * source) an expression is read here; a Sutra over untyped documents stays unchecked ({@link ElCompiler}). The same text means the same
- * thing in both: checked mode only refuses more, with DEL's codes ({@code DRS-9127}, {@code DRS-9129}, {@code DRS-9152},
- * {@code DRS-9161}).
+ * thing in both: checked mode only refuses more, with DEL's codes ({@code RCH-9127}, {@code RCH-9129}, {@code RCH-9152},
+ * {@code RCH-9161}).
  */
 public final class CheckedMode {
 
@@ -35,13 +35,13 @@ public final class CheckedMode {
         }
     }
 
-    /** Parses with spans (a syntax error is {@code DRS-2101}, as everywhere in Rachana). */
+    /** Parses with spans (a syntax error is {@code RCH-2101}, as everywhere in Rachana). */
     public static Parsed parse(String text) {
         Parser.Parsed p = Parser.parseWithSpans(text, ElLimits.DEFAULTS);
         return new Parsed(text, p.expr(), p.spans());
     }
 
-    /** Parses and checks; a text that does not parse is one {@code DRS-9127} problem at the place it stops. */
+    /** Parses and checks; a text that does not parse is one {@code RCH-9127} problem at the place it stops. */
     public static Checker.Checked check(String text, Scope scope, Fields fields) {
         Parsed p;
         try {
@@ -56,24 +56,24 @@ public final class CheckedMode {
     }
 
     /**
-     * The checked expression, or a refusal: the first error's code ({@code DRS-9127} type or scope, {@code DRS-9129} not yet,
-     * {@code DRS-9152} unknown name, {@code DRS-9161} masked field filtered) and its words.
+     * The checked expression, or a refusal: the first error's code ({@code RCH-9127} type or scope, {@code RCH-9129} not yet,
+     * {@code RCH-9152} unknown name, {@code RCH-9161} masked field filtered) and its words.
      */
     public static Expr require(String text, Scope scope, Fields fields) {
         Checker.Checked c = check(text, scope, fields);
         Problem p = c.firstError().orElse(null);
         if (p != null) {
-            throw new HostException(code(p.code()), p.message() + (p.fix() == null ? "" : " (" + p.fix() + ")"));
+            throw new RachanaException(code(p.code()), p.message() + (p.fix() == null ? "" : " (" + p.fix() + ")"));
         }
         return parse(text).expr();
     }
 
-    static ErrorCode code(String code) {
+    static RachanaCode code(String code) {
         return switch (code) {
-            case Problem.LATER -> ErrorCode.LATER_WAVE;
-            case Problem.NAME -> ErrorCode.MQ_NAME;
-            case Problem.MASKED -> ErrorCode.MQ_MASKED;
-            default -> ErrorCode.EXPR_INVALID;
+            case Problem.LATER -> RachanaCode.LATER_WAVE;
+            case Problem.NAME -> RachanaCode.NAME_UNKNOWN;
+            case Problem.MASKED -> RachanaCode.MASKED_FIELD;
+            default -> RachanaCode.EXPR_INVALID;
         };
     }
 }

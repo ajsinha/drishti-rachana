@@ -174,7 +174,7 @@ final class TextParts {
     /**
      * {@code value(text, [decimal_separator], [group_separator])}: text read as a number, as Excel's VALUE and NUMBERVALUE: spaces around,
      * the group separator (',' by default) anywhere, one leading currency sign ($ € £ ¥), a trailing % (divides by 100) and accounting
-     * brackets for a negative ({@code (1,250.50)}) are allowed; a number is itself. Anything else (a date among them) is {@code DRS-2102}.
+     * brackets for a negative ({@code (1,250.50)}) are allowed; a number is itself. Anything else (a date among them) is {@code RCH-2102}.
      */
     private static Object value(List<Object> a) {
         Object v = Values.simplify(a.get(0));

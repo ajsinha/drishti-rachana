@@ -22,14 +22,15 @@ before the move, so they cannot run there. The order is now **move first, untang
 
 The proof of every step: `rachana_conformance.py --jvm` (this code) and `--classpath-file` (the reference bridge over the jars
 built from the same Drishti commit) write byte-identical results files over all 2,112 cases (1,908 pass, 74 unverified failing as
-recorded, 130 unsupported kinds, **0 verified failing**). Drishti's ViewModel goldens cannot run here; they are part of the
+recorded, 130 unsupported kinds, **0 verified failing**). `tools/split/compare_results.py` compares the two files; the few cases
+whose line may differ are listed with the step and the reason in `tools/split/known-differences.txt` (each still passes). Drishti's ViewModel goldens cannot run here; they are part of the
 migration's proof (step 11).
 
 | Step | Plan id | Where | State | Proof |
 |---|---|---|---|---|
 | 0a to 0e | H1 to H6 | here (Drishti halves held) | done in R0 | cases verified against the reference |
 | 10 move with history | A10 | here | **done, `v0.9.0`** | 2,112 cases byte-identical; 783 unit tests; guards |
-| 2 errors | A1 | here | next | |
+| 2 errors | A1 | here | **done** | 2,110 of 2,112 identical, 2 known differences (`tools/split/known-differences.txt`); 0 verified failing |
 | 3 value interface | A2 | here | planned | |
 | 4 small dependencies | A3 | here | planned | |
 | 5 Spring out | A4 | here | planned (Spring never moved: `Formats` lost its reload hook at A10, the configuration classes stayed in Drishti) | |

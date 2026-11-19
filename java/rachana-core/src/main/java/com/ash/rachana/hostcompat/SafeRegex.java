@@ -4,6 +4,8 @@
  */
 package com.ash.rachana.hostcompat;
 
+import com.ash.rachana.RachanaCode;
+import com.ash.rachana.RachanaException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,9 +17,9 @@ import java.util.List;
  * literals, {@code .}, classes ({@code [a-z]}, {@code [^0-9]}, {@code \d \w \s} and their negations), groups
  * {@code (..)} and {@code (?:..)}, alternation, {@code * + ? {n} {n,} {n,m}} (greedy or lazy: a yes/no match does not
  * care), the anchors {@code ^} and {@code $}, and a leading {@code (?i)} or {@code (?-i)}. Back-references, look-around,
- * atomic groups, possessive quantifiers and word boundaries are refused with {@link ErrorCode#REGEX_REFUSED}, as are
+ * atomic groups, possessive quantifiers and word boundaries are refused with {@link RachanaCode#REGEX_REFUSED}, as are
  * patterns over {@link Limits#maxPattern()} characters or whose expanded program passes {@link Limits#maxProgram()}.
- * A match that runs past {@link Limits#timeoutNanos()} raises {@link ErrorCode#REGEX_TIMEOUT}; a value is cut to
+ * A match that runs past {@link Limits#timeoutNanos()} raises {@link RachanaCode#REGEX_TIMEOUT}; a value is cut to
  * {@link Limits#maxInput()} characters. A compiled pattern is immutable and may be shared between threads.
  */
 public final class SafeRegex {
@@ -77,7 +79,7 @@ public final class SafeRegex {
         return compile(pattern, caseInsensitive, Limits.defaults());
     }
 
-    /** Compiles, or refuses with {@link ErrorCode#REGEX_REFUSED} saying why. */
+    /** Compiles, or refuses with {@link RachanaCode#REGEX_REFUSED} saying why. */
     public static SafeRegex compile(String pattern, boolean caseInsensitive, Limits limits) {
         if (pattern == null || pattern.isEmpty()) {
             throw refused("the pattern is empty");
@@ -112,7 +114,7 @@ public final class SafeRegex {
         long deadline = System.nanoTime() + limits.timeoutNanos();
         for (int i = 0; i <= n; i++) {
             if ((i & 255) == 0 && System.nanoTime() > deadline) {
-                throw new HostException(ErrorCode.REGEX_TIMEOUT, "the pattern '" + source + "' took longer than "
+                throw new RachanaException(RachanaCode.REGEX_TIMEOUT, "the pattern '" + source + "' took longer than "
                         + limits.timeoutNanos() / 1_000_000 + " ms on a value");
             }
             curN = add(cur, curN, 0, i, n, mark, stack);                 // an unanchored search: a new thread at every position
@@ -202,8 +204,8 @@ public final class SafeRegex {
      * least); null when the pattern does not match or the group took no part. Linear time like {@link #find}: a Pike
      * simulation whose threads carry their capture positions, cut to the threads of higher priority once one matches.
      *
-     * @throws HostException {@link ErrorCode#REGEX_REFUSED} for a group the pattern does not have,
-     *     {@link ErrorCode#REGEX_TIMEOUT} past the time budget
+     * @throws RachanaException {@link RachanaCode#REGEX_REFUSED} for a group the pattern does not have,
+     *     {@link RachanaCode#REGEX_TIMEOUT} past the time budget
      */
     public String extract(CharSequence text, int group) {
         if (group < 0 || group > groups) {
@@ -287,7 +289,7 @@ public final class SafeRegex {
         long deadline = System.nanoTime() + limits.timeoutNanos();
         for (int i = from; i <= n; i++) {
             if ((i & 255) == 0 && System.nanoTime() > deadline) {
-                throw new HostException(ErrorCode.REGEX_TIMEOUT, "the pattern '" + source + "' took longer than "
+                throw new RachanaException(RachanaCode.REGEX_TIMEOUT, "the pattern '" + source + "' took longer than "
                         + limits.timeoutNanos() / 1_000_000 + " ms on a value");
             }
             if (matched == null) {                                     // a later start has the lowest priority, so it comes last
@@ -368,8 +370,8 @@ public final class SafeRegex {
         return n;
     }
 
-    private static HostException refused(String why) {
-        return new HostException(ErrorCode.REGEX_REFUSED, why);
+    private static RachanaException refused(String why) {
+        return new RachanaException(RachanaCode.REGEX_REFUSED, why);
     }
 
     /** Parses the pattern into a small syntax tree, then emits the NFA program from it. */

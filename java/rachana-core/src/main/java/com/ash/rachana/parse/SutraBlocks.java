@@ -43,16 +43,16 @@ import java.util.stream.Stream;
  *
  * A use is replaced by the block's panels, in order, before the Sutra is checked, so the panels are linted, matched and drawn as if
  * they had been written in place. A fragment ({@code <name>.v<N>.fragment.yaml}, {@code fragment: <name>}, the shared library in
- * the Drishti UI kit) is a block whose {@code doc:} is complete ({@link SutraDocstring}, {@code DRS-2055}); it is
+ * the Drishti UI kit) is a block whose {@code doc:} is complete ({@link SutraDocstring}, {@code RCH-2055}); it is
  * used the same way. The platform's fragments are the Drishti UI kit ({@code config/ui-kit/fragments}, {@link #kit(Path)}), read by every
  * load whatever packs are enabled; a pack's own blocks are namespaced by the pack ({@code trading/legs@1}). {@code @1} names the block's version (without one, the newest); {@code with} sets its parameters
- * (an unknown one, an unknown block or a block that uses another is {@code DRS-2048}). The library is a snapshot replaced whole when
+ * (an unknown one, an unknown block or a block that uses another is {@code RCH-2048}). The library is a snapshot replaced whole when
  * the Sutra folders are read again; a parse reads the snapshot of that moment. Thread-safe.
  */
 public final class SutraBlocks {
 
     /** A block's problem: unknown, badly written, a parameter it does not declare. */
-    public static final String BLOCK = "DRS-2048";
+    public static final String BLOCK = "RCH-2048";
     private static final Pattern PARAM = Pattern.compile("%\\{([a-z][a-z0-9-]*)}");
     private static final Pattern FILE = Pattern.compile("(.+)\\.v(\\d+)\\.(block|fragment)\\.yaml");
     private static final PositionalYamlReader READER = new PositionalYamlReader();
@@ -293,7 +293,7 @@ public final class SutraBlocks {
         return out;
     }
 
-    /** The names a pack or site block shares with a Drishti UI kit fragment, read last: the kit's won ({@code DRS-2048}, a warning). */
+    /** The names a pack or site block shares with a Drishti UI kit fragment, read last: the kit's won ({@code RCH-2048}, a warning). */
     public static List<SutraProblem> clashes() {
         return CLASHES.get();
     }
@@ -308,7 +308,7 @@ public final class SutraBlocks {
         return PROBLEMS.get();
     }
 
-    /** The warnings of the block files read last: an older block without a complete {@code doc:} ({@code DRS-2055}). */
+    /** The warnings of the block files read last: an older block without a complete {@code doc:} ({@code RCH-2055}). */
     public static List<SutraProblem> warnings() {
         return WARNINGS.get();
     }
@@ -563,7 +563,7 @@ public final class SutraBlocks {
 
     /**
      * The panels a use brings with the use's own wiring and size on them ({@code { use: series-line@1, with: {...}, source: {...} }}): source,
-     * when and waits on each, emits, children, span, height and area only on a use that brings one panel ({@code DRS-2048} otherwise).
+     * when and waits on each, emits, children, span, height and area only on a use that brings one panel ({@code RCH-2048} otherwise).
      */
     private static List<PNode> wired(PNode use, List<PNode> brought, String file, List<SutraProblem> problems) {
         Map<String, PNode> extra = new LinkedHashMap<>();
@@ -610,7 +610,7 @@ public final class SutraBlocks {
             return READER.read(text, new ArrayList<>());
         } catch (JsonProcessingException e) {
             var l = e.getLocation();
-            throw new SutraException(List.of(new SutraProblem("DRS-2001", "YAML syntax: " + e.getOriginalMessage(),
+            throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getOriginalMessage(),
                     new SourceLocation(file, l == null ? 0 : l.getLineNr(), l == null ? 0 : l.getColumnNr()))));
         } catch (IOException e) {
             throw new SutraException(List.of(problem("cannot read: " + e.getMessage(), file, 0, 0)));

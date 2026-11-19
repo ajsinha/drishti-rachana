@@ -25,7 +25,7 @@ import java.util.*;
 public final class JvmRuntime {
     private JvmRuntime() { }
 
-    static final String VERSION = "0.9.0";
+    static final String VERSION = "0.10.0-SNAPSHOT";
     static final ObjectMapper M = new ObjectMapper();
     static Formats formats;
     static final ElCompiler EL = new ElCompiler();
@@ -89,7 +89,7 @@ public final class JvmRuntime {
                 e.paths(s::add);
                 reads.addAll(s);
             }
-        } catch (com.ash.rachana.hostcompat.HostException e) {
+        } catch (com.ash.rachana.RachanaException e) {
             sb.append("{\"error\":{\"code\":").append(str(code(e))).append(",\"message\":").append(str(words(e))).append("}}");
             return;
         }
@@ -140,7 +140,7 @@ public final class JvmRuntime {
         boolean f = true;
         for (var p : ps) {
             if (!f) { sb.append(','); } f = false;
-            sb.append("{\"code\":").append(str(p.code().replaceFirst("^(DRS|DEL)-", "RCH-"))).append(",\"severity\":\"error\",\"message\":").append(str(p.message()))
+            sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":\"error\",\"message\":").append(str(p.message()))
                     .append(",\"range\":{\"start\":{\"line\":").append(p.location().line()).append(",\"column\":").append(p.location().column()).append("}}}");
         }
         sb.append("]}");
@@ -165,26 +165,26 @@ public final class JvmRuntime {
             text = r.yaml();
             for (var p : r.problems()) { editProblem(ps, p.code(), p.message(), p.line()); }
         } catch (com.ash.rachana.design.ops.Ops.FormatException e) {
-            editProblem(ps, "DRS-5020", e.getMessage(), 0);
+            editProblem(ps, "RCH-5020", e.getMessage(), 0);
         }
         sb.append("{\"text\":").append(str(text)).append(",\"problems\":[").append(ps).append("]}");
     }
 
     static void editProblem(StringBuilder ps, String code, String message, int line) {
         if (ps.length() > 0) { ps.append(','); }
-        ps.append("{\"code\":").append(str(code.replaceFirst("^(DRS|DEL)-", "RCH-"))).append(",\"severity\":\"error\",\"message\":").append(str(message));
+        ps.append("{\"code\":").append(str(code)).append(",\"severity\":\"error\",\"message\":").append(str(message));
         if (line > 0) { ps.append(",\"range\":{\"start\":{\"line\":").append(line).append("}}"); }
         ps.append('}');
     }
 
-    static String words(com.ash.rachana.hostcompat.HostException e) {
-        String m = e.getMessage(), c = e.errorCode() == null ? "" : e.errorCode().code();
+    static String words(com.ash.rachana.RachanaException e) {
+        String m = e.getMessage(), c = e.code() == null ? "" : e.code().code();
         return m.startsWith(c + " ") ? m.substring(c.length() + 1) : m;
     }
 
-    static String code(com.ash.rachana.hostcompat.HostException e) {
-        String c = e.errorCode() == null ? "" : e.errorCode().code();
-        return c.replaceFirst("^(DRS|DEL)-", "RCH-");
+    static String code(com.ash.rachana.RachanaException e) {
+        String c = e.code() == null ? "" : e.code().code();
+        return c;
     }
 
     // ---- context -------------------------------------------------------------------------------------------------

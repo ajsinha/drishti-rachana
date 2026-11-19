@@ -4,18 +4,16 @@
  */
 package com.ash.rachana;
 
-import com.ash.rachana.hostcompat.HostException;
-import com.ash.rachana.hostcompat.ErrorCode;
 import java.util.List;
 
 /** A Sutra failed to parse or validate. Carries every problem found, not only the first. */
-public class SutraException extends HostException {
+public class SutraException extends RachanaException {
 
     private static final long serialVersionUID = 1L;
     private final transient List<SutraProblem> problems;
 
     public SutraException(List<SutraProblem> problems) {
-        super(ErrorCode.SUTRA_INVALID, problems.size() + " problem(s): " + problems);
+        super(RachanaCode.SUTRA_INVALID, problems.size() + " problem(s): " + problems);
         this.problems = List.copyOf(problems);
     }
 

@@ -34,7 +34,7 @@ public record Wiring(Source source, List<Emit> emits, String waits, List<Childre
     public static final List<String> SHOWS = List.of("on-select", "always", "on-expand");
     /** The types a payload field may declare; {@code any} when it declares none. */
     public static final List<String> TYPES = List.of("id", "text", "number", "date", "bool", "any");
-    /** Screen panel, child, grandchild: a great-grandchild is refused ({@code DRS-2056}). */
+    /** Screen panel, child, grandchild: a great-grandchild is refused ({@code RCH-2056}). */
     public static final int MAX_DEPTH = 3;
 
     public Wiring {

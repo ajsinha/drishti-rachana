@@ -16,7 +16,7 @@ import java.util.Set;
  * {@code rows}, {@code each}, {@code nodes}, {@code edges} and {@code source} as expression text, {@code markdown} text
  * as text, {@code fields} ({@code kv}, {@code status}) and {@code series} ({@code area}) as lists,
  * {@code markers} as a list of mappings with a {@code value}. The parser reports a value outside them as
- * {@code DRS-2029}, so a Sutra is rejected before it meets data rather than drawing something unexpected.
+ * {@code RCH-2029}, so a Sutra is rejected before it meets data rather than drawing something unexpected.
  */
 public final class PanelOptions {
 

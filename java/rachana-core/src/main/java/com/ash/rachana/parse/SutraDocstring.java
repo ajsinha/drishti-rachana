@@ -31,13 +31,13 @@ import java.util.Set;
  *   since: "2.7.0"
  * </pre>
  *
- * A fragment's doc is checked strictly (a problem is an error, {@code DRS-2055}, and the fragment is not loaded); a Sutra's and an
+ * A fragment's doc is checked strictly (a problem is an error, {@code RCH-2055}, and the fragment is not loaded); a Sutra's and an
  * older block's are checked as warnings. Stateless and thread-safe.
  */
 public final class SutraDocstring {
 
     /** A missing or incomplete {@code doc:}. */
-    public static final String CODE = "DRS-2055";
+    public static final String CODE = "RCH-2055";
     /** The kinds of value a parameter may hold. */
     public static final Set<String> TYPES = Set.of("text", "expression", "field", "format", "key", "area", "id", "number", "boolean", "kind", "columns");
     /** The longest summary line. */

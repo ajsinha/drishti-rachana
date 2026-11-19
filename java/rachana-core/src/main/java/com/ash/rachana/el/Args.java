@@ -6,7 +6,7 @@ package com.ash.rachana.el;
 
 import com.ash.rachana.hostcompat.DataNode;
 import com.ash.rachana.hostcompat.NodeType;
-import com.ash.rachana.hostcompat.ErrorCode;
+import com.ash.rachana.RachanaCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * How the function families read their arguments and write their results: numbers as decimals (money never passes
  * through binary floating point in a function), whole numbers, text, ISO dates and lists, each null for an empty value
- * and a {@code DRS-2102} {@link ElException} naming the function and the value for one of the wrong type.
+ * and a {@code RCH-2102} {@link ElException} naming the function and the value for one of the wrong type.
  */
 final class Args {
 
@@ -23,12 +23,12 @@ final class Args {
 
     /** The problem a function raises for a value of the wrong type: {@code round_up: 'abc' is not a number}. */
     static ElException typeError(String fn, Object value, String wanted) {
-        return new ElException(ErrorCode.EL_EVAL, fn + ": " + describe(value) + " is not " + wanted);
+        return new ElException(RachanaCode.EL_EVAL, fn + ": " + describe(value) + " is not " + wanted);
     }
 
     /** A problem with an argument's value: {@code sqrt: -4 is negative}. */
     static ElException error(String fn, String why) {
-        return new ElException(ErrorCode.EL_EVAL, fn + ": " + why);
+        return new ElException(RachanaCode.EL_EVAL, fn + ": " + why);
     }
 
     /** A value as a problem names it: text in quotes, a list or object by its kind. */

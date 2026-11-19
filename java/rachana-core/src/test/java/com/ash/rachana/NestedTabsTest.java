@@ -83,15 +83,15 @@ class NestedTabsTest {
                   columns:
                     - { label: Index, bind: "@.index +" }
                 """), "t.sutra.yaml", "x");
-        assertThat(new SutraExpressions(new com.ash.rachana.el.ElCompiler()).check(s)).anyMatch(p -> p.code().equals("DRS-2101"));
+        assertThat(new SutraExpressions(new com.ash.rachana.el.ElCompiler()).check(s)).anyMatch(p -> p.code().equals("RCH-2101"));
     }
 
     @Test
     void aPanelInATabNeedsAnIdAndAKindATabCanHold() {
-        assertThat(problems("- { kind: kv }\n")).anyMatch(p -> p.startsWith("DRS-2010"));
+        assertThat(problems("- { kind: kv }\n")).anyMatch(p -> p.startsWith("RCH-2010"));
         assertThat(problems("- { id: curve, kind: line, rows: \"@.points\", x: t, y: v, step: true }\n")).isEmpty();               // a leg's own chart
-        assertThat(problems("- { id: surf, kind: surface, rows: \"@.points\", y: v }\n")).anyMatch(p -> p.startsWith("DRS-2023") && p.contains("cannot sit inside a tab"));
-        assertThat(problems("- { id: more, kind: tabs, each: \"@.x\" }\n")).anyMatch(p -> p.startsWith("DRS-2023"));
+        assertThat(problems("- { id: surf, kind: surface, rows: \"@.points\", y: v }\n")).anyMatch(p -> p.startsWith("RCH-2023") && p.contains("cannot sit inside a tab"));
+        assertThat(problems("- { id: more, kind: tabs, each: \"@.x\" }\n")).anyMatch(p -> p.startsWith("RCH-2023"));
     }
 
     @Test
@@ -99,8 +99,8 @@ class NestedTabsTest {
         assertThat(problems("""
                 - { id: a, kind: kv }
                 - { id: a, kind: kv }
-                """)).anyMatch(p -> p.startsWith("DRS-2024"));
-        assertThat(problems("- { id: a, kind: kv, span: 6 }\n")).anyMatch(p -> p.startsWith("DRS-2030"));
+                """)).anyMatch(p -> p.startsWith("RCH-2024"));
+        assertThat(problems("- { id: a, kind: kv, span: 6 }\n")).anyMatch(p -> p.startsWith("RCH-2030"));
         assertThat(problems("- { id: a, kind: table, rows: \"@.cashflows\", pivot: true }\n")).anyMatch(p -> p.contains("cannot have Pivot (the pivot screen)"));
     }
 
@@ -118,9 +118,9 @@ class NestedTabsTest {
                         panels:
                           - { id: a, kind: kv }
                     """, "t.sutra.yaml", "x");
-            throw new AssertionError("expected DRS-2023");
+            throw new AssertionError("expected RCH-2023");
         } catch (SutraException e) {
-            assertThat(e.problems()).anyMatch(p -> p.code().equals("DRS-2023") && p.message().contains("only 'tabs'"));
+            assertThat(e.problems()).anyMatch(p -> p.code().equals("RCH-2023") && p.message().contains("only 'tabs'"));
         }
     }
 

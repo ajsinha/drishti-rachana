@@ -23,7 +23,7 @@ import java.util.Set;
  * emits that event with that field, a child's {@code @parent} has a parent that provides it, no panel waits on itself or on a
  * panel that waits on it (a cycle), children nest at most {@link Wiring#MAX_DEPTH} deep, {@code $src} is read only where a source
  * is named, and a source's id does not read a payload field typed as a number, a date or a truth value (an id is text).
- * {@code DRS-2057} for events and sources, {@code DRS-2056} for children. Stateless.
+ * {@code RCH-2057} for events and sources, {@code RCH-2056} for children. Stateless.
  */
 public final class SutraWiring {
 
@@ -95,10 +95,10 @@ public final class SutraWiring {
         for (Node n : nodes.values()) {
             Panel p = n.panel();
             if ("parent".equals(p.id())) {
-                out.add(new SutraProblem("DRS-2057", "no panel may be called 'parent': @parent names a child's parent", p.location()));
+                out.add(new SutraProblem("RCH-2057", "no panel may be called 'parent': @parent names a child's parent", p.location()));
             }
             if (n.depth() > Wiring.MAX_DEPTH) {
-                out.add(new SutraProblem("DRS-2056", "panel '" + p.id() + "' is nested " + n.depth() + " deep: children nest at most " + Wiring.MAX_DEPTH
+                out.add(new SutraProblem("RCH-2056", "panel '" + p.id() + "' is nested " + n.depth() + " deep: children nest at most " + Wiring.MAX_DEPTH
                         + " (screen panel, child, grandchild)", p.location()));
             }
             Set<String> d = deps.computeIfAbsent(p.id(), k -> new LinkedHashSet<>());
@@ -115,7 +115,7 @@ public final class SutraWiring {
             }
             for (String t : texts(p, n.group())) {
                 if (!sourced && t.replaceAll("'[^']*'|\"[^\"]*\"", "").matches("(?s).*\\$src\\b.*")) {
-                    out.add(new SutraProblem("DRS-2057", "panel '" + p.id() + "' reads $src but names no source: (nor does its group of children)", p.location()));
+                    out.add(new SutraProblem("RCH-2057", "panel '" + p.id() + "' reads $src but names no source: (nor does its group of children)", p.location()));
                 }
                 for (Wiring.Ref r : Wiring.refs(t)) {
                     ref(n, r, nodes, idTexts.contains(t), out).ifPresent(d::add);
@@ -131,7 +131,7 @@ public final class SutraWiring {
         Panel p = n.panel();
         boolean parent = "parent".equals(r.panel());
         Panel target;
-        String code = parent ? "DRS-2056" : "DRS-2057";
+        String code = parent ? "RCH-2056" : "RCH-2057";
         if (parent) {
             if (n.parent() == null) {
                 out.add(new SutraProblem(code, "panel '" + p.id() + "' reads @parent but is not a child panel (no parent provides it)", p.location()));
@@ -195,7 +195,7 @@ public final class SutraWiring {
             List<String> loop = new ArrayList<>(path.subList(path.indexOf(id), path.size()));
             loop.add(id);
             if (reported.add(new java.util.TreeSet<>(loop).toString())) {
-                out.add(new SutraProblem("DRS-2057", "panels wait on each other in a cycle: " + String.join(" > ", loop)
+                out.add(new SutraProblem("RCH-2057", "panels wait on each other in a cycle: " + String.join(" > ", loop)
                         + " (each waits on the next one's event, or is its child)", nodes.get(id).panel().location()));
             }
             return;

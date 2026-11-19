@@ -36,7 +36,7 @@ public final class JsonCodec {
         try (JsonParser p = factory.createParser(json)) {
             return readRoot(p);
         } catch (IOException e) {
-            throw new HostException(ErrorCode.INVALID_JSON, e.getMessage(), e);
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
 
@@ -80,7 +80,7 @@ public final class JsonCodec {
             case VALUE_NULL:
                 return DataNode.nullValue();
             default:
-                throw new HostException(ErrorCode.INVALID_JSON, "unexpected token " + t + " at " + p.currentLocation());
+                throw new IllegalArgumentException("unexpected token " + t + " at " + p.currentLocation());
         }
     }
 

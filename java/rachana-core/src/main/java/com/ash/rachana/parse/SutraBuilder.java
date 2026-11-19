@@ -61,34 +61,34 @@ final class SutraBuilder {
 
     Sutra build(PNode root, String domain) {
         if (!root.isMap()) {
-            problem("DRS-2012", "a Sutra must be a mapping", root);
+            problem("RCH-2012", "a Sutra must be a mapping", root);
             return null;
         }
         Map<String, PNode> m = root.map();
         unknownKeys(m, TOP, "top level");
         PNode lang = m.get("rachana");
         if (lang == null) {
-            problem("DRS-2009", "missing 'rachana: " + LANGUAGE + "' (the Rachana language version) at the top", root);
+            problem("RCH-2009", "missing 'rachana: " + LANGUAGE + "' (the Rachana language version) at the top", root);
         } else if (!(lang.value() instanceof Long l) || l != LANGUAGE) {
-            problem("DRS-2009", "'rachana: " + lang.value() + "' is not a language version this server reads (it reads " + LANGUAGE + ")", lang);
+            problem("RCH-2009", "'rachana: " + lang.value() + "' is not a language version this server reads (it reads " + LANGUAGE + ")", lang);
         }
         for (String doc : new String[] {"description", "notes"}) {
             PNode d = m.get(doc);
             if (d != null && !(d.value() instanceof String)) {
-                problem("DRS-2012", "'" + doc + "' is plain text", d);
+                problem("RCH-2012", "'" + doc + "' is plain text", d);
             }
         }
         Object screenRefresh = refresh(m.get("refresh"));   // RACHANA_REFERENCE.md 9: on every top-level panel without its own
         String name = requiredText(m, "sutra", root);
         if (name != null && !NAME.matcher(name).matches()) {
-            problem("DRS-2020", "name '" + name + "' must be lower-case kebab, 2-64 characters", m.get("sutra"));
+            problem("RCH-2020", "name '" + name + "' must be lower-case kebab, 2-64 characters", m.get("sutra"));
         }
         int version = 0;
         PNode v = m.get("version");
         if (v == null) {
-            problem("DRS-2010", "missing 'version'", root);
+            problem("RCH-2010", "missing 'version'", root);
         } else if (!(v.value() instanceof Long l) || l < 1 || l > Integer.MAX_VALUE) {
-            problem("DRS-2020", "version must be a positive integer up to " + Integer.MAX_VALUE + ", not '" + v.value() + "'", v);
+            problem("RCH-2020", "version must be a positive integer up to " + Integer.MAX_VALUE + ", not '" + v.value() + "'", v);
         } else {
             version = l.intValue();
         }
@@ -106,10 +106,10 @@ final class SutraBuilder {
             Panel panel = panel(p, false);
             if (panel != null) {
                 if (!ids.add(panel.id())) {
-                    problem("DRS-2024", "duplicate panel id '" + panel.id() + "'", p);
+                    problem("RCH-2024", "duplicate panel id '" + panel.id() + "'", p);
                 }
                 if (panel.key() != null && !keys.add(panel.key())) {
-                    problem("DRS-2025", "function key " + panel.key() + " is used twice", p);
+                    problem("RCH-2025", "function key " + panel.key() + " is used twice", p);
                 }
                 panels.add(panel);
             }
@@ -131,15 +131,15 @@ final class SutraBuilder {
         PNode k = m.get("keys");
         if (k != null) {
             if (!k.isMap()) {
-                problem("DRS-2012", "'keys' must be a mapping of F-key to action", k);
+                problem("RCH-2012", "'keys' must be a mapping of F-key to action", k);
             } else {
                 k.map().forEach((key, action) -> {
                     if (!FKEY.matcher(key).matches()) {
-                        problem("DRS-2025", "'" + key + "' is not a function key (F1-F12)", action);
+                        problem("RCH-2025", "'" + key + "' is not a function key (F1-F12)", action);
                     } else if (!keys.add(key)) {
-                        problem("DRS-2025", "function key " + key + " is used twice", action);
+                        problem("RCH-2025", "function key " + key + " is used twice", action);
                     } else if (action.text() == null) {
-                        problem("DRS-2012", "action for " + key + " must be text", action);
+                        problem("RCH-2012", "action for " + key + " must be text", action);
                     } else {
                         keyMap.put(key, action.text());
                     }
@@ -155,17 +155,17 @@ final class SutraBuilder {
 
     private Match match(PNode n, PNode root) {
         if (n == null || !n.isMap()) {
-            problem("DRS-2010", "missing 'match' mapping with at least 'kind'", n == null ? root : n);
+            problem("RCH-2010", "missing 'match' mapping with at least 'kind'", n == null ? root : n);
             return new Match("?", null, 0);
         }
         unknownKeys(n.map(), Set.of("kind", "where", "priority"), "match");
         String kind = requiredText(n.map(), "kind", n);
         if (kind != null && !(n.map().get("kind").value() instanceof String)) {
-            problem("DRS-2012", "'kind' in match is an entity kind written as text (such as trade), not '" + kind + "'", n.map().get("kind"));
+            problem("RCH-2012", "'kind' in match is an entity kind written as text (such as trade), not '" + kind + "'", n.map().get("kind"));
         }
         PNode where = n.map().get("where");
         if (where != null && where.value() != null && !(where.value() instanceof String)) {
-            problem("DRS-2012", "'where' in match is an expression written as text, not '" + plain(where) + "'", where);
+            problem("RCH-2012", "'where' in match is an expression written as text, not '" + plain(where) + "'", where);
         }
         PNode pr = n.map().get("priority");
         int priority = 0;
@@ -173,7 +173,7 @@ final class SutraBuilder {
             if (pr.value() instanceof Long l && l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE) {
                 priority = l.intValue();
             } else {
-                problem("DRS-2012", "'priority' in match must be a whole number (higher is tried first), not '" + plain(pr) + "'", pr);
+                problem("RCH-2012", "'priority' in match must be a whole number (higher is tried first), not '" + plain(pr) + "'", pr);
             }
         }
         return new Match(kind, text(where, null), priority);
@@ -184,13 +184,13 @@ final class SutraBuilder {
             return new Title(null, "$.id", null);
         }
         if (!n.isMap()) {
-            problem("DRS-2012", "'title' must be a mapping (pill, id, with)", n);
+            problem("RCH-2012", "'title' must be a mapping (pill, id, with)", n);
             return null;
         }
         unknownKeys(n.map(), Set.of("pill", "id", "with"), "title");
         if (n.map().get("id") == null || n.map().get("id").value() == null) {
             // without 'title' the default is { id: $.id }; a title written out says which expression is the identifier
-            problem("DRS-2010", "missing 'id' in title: the expression for the large identifier, such as $.TRADE_ID", n);
+            problem("RCH-2010", "missing 'id' in title: the expression for the large identifier, such as $.TRADE_ID", n);
         }
         return new Title(text(n.map().get("pill"), null), text(n.map().get("id"), "$.id"), text(n.map().get("with"), null));
     }
@@ -199,11 +199,11 @@ final class SutraBuilder {
         List<StripItem> out = new ArrayList<>();
         List<PNode> items = listOf(n, "strip");
         if (items.size() > com.ash.rachana.model.Sutra.MAX_STRIP) {
-            problem("DRS-2026", "the strip holds at most " + Sutra.MAX_STRIP + " figures, found " + items.size(), n);
+            problem("RCH-2026", "the strip holds at most " + Sutra.MAX_STRIP + " figures, found " + items.size(), n);
         }
         for (PNode i : items) {
             if (!i.isMap()) {
-                problem("DRS-2012", "a strip item must be a mapping (label, bind, fmt, tone, emphasis)", i);
+                problem("RCH-2012", "a strip item must be a mapping (label, bind, fmt, tone, emphasis)", i);
                 continue;
             }
             Map<String, PNode> m = i.map();
@@ -216,20 +216,20 @@ final class SutraBuilder {
 
     private Panel panel(PNode n, boolean nested) {
         if (!n.isMap()) {
-            problem("DRS-2012", "a panel must be a mapping", n);
+            problem("RCH-2012", "a panel must be a mapping", n);
             return null;
         }
         Map<String, PNode> m = n.map();
         String kindText = requiredText(m, "kind", n);
         PanelKind kind = kindText == null ? null : PanelKind.parse(kindText).orElse(null);
         if (kindText != null && kind == null) {
-            problem("DRS-2021", "unknown panel kind '" + kindText + "'; expected one of " + kinds(), m.get("kind"));
+            problem("RCH-2021", "unknown panel kind '" + kindText + "'; expected one of " + kinds(), m.get("kind"));
             return null;
         }
         String id = nested ? text(m.get("id"), "body") : requiredText(m, "id", n);
         String key = text(m.get("key"), null);
         if (key != null && !FKEY.matcher(key).matches()) {
-            problem("DRS-2025", "'" + key + "' is not a function key (F1-F12)", m.get("key"));
+            problem("RCH-2025", "'" + key + "' is not a function key (F1-F12)", m.get("key"));
         }
         Area area = Area.MAIN;
         String gridArea = null;
@@ -240,13 +240,13 @@ final class SutraBuilder {
             } else if (!nested && AREA_NAME.matcher(areaText).matches()) {
                 gridArea = areaText;                                       // a named area of layout.areas, checked with the layout
             } else {
-                problem("DRS-2027", "area must be 'main', 'right' or an area named in layout.areas", m.get("area"));
+                problem("RCH-2027", "area must be 'main', 'right' or an area named in layout.areas", m.get("area"));
             }
         }
         List<Column> columns = new ArrayList<>();
         for (PNode c : listOf(m.get("columns"), "columns")) {
             if (!c.isMap()) {
-                problem("DRS-2012", "a column must be a mapping (label, bind, fmt, tone, total, link)", c);
+                problem("RCH-2012", "a column must be a mapping (label, bind, fmt, tone, total, link)", c);
                 continue;
             }
             unknownKeys(c.map(), COLUMN, "column");
@@ -257,7 +257,7 @@ final class SutraBuilder {
         Panel body = null;
         if (m.containsKey("body")) {
             if (kind != PanelKind.TABS) {
-                problem("DRS-2023", "only 'tabs' panels take a 'body'", m.get("body"));
+                problem("RCH-2023", "only 'tabs' panels take a 'body'", m.get("body"));
             } else {
                 body = panel(m.get("body"), true);
             }
@@ -265,9 +265,9 @@ final class SutraBuilder {
         List<Panel> parts = new ArrayList<>();
         if (m.containsKey("panels")) {
             if (kind != PanelKind.TABS) {
-                problem("DRS-2023", "only 'tabs' panels take 'panels'", m.get("panels"));
+                problem("RCH-2023", "only 'tabs' panels take 'panels'", m.get("panels"));
             } else if (nested) {
-                problem("DRS-2023", "a panel inside a tab cannot hold tabs of its own", m.get("panels"));
+                problem("RCH-2023", "a panel inside a tab cannot hold tabs of its own", m.get("panels"));
             } else {
                 parts = parts(m.get("panels"));
             }
@@ -277,7 +277,7 @@ final class SutraBuilder {
         size(m, Panel.HEIGHT, Panel.MAX_HEIGHT, "grid rows", nested, options);
         if (m.containsKey(com.ash.rachana.model.Refresh.KEY)) {
             if (nested) {
-                problem("DRS-2012", "'refresh' refreshes a whole panel: put it on the tabs panel", m.get(com.ash.rachana.model.Refresh.KEY));
+                problem("RCH-2012", "'refresh' refreshes a whole panel: put it on the tabs panel", m.get(com.ash.rachana.model.Refresh.KEY));
             } else {
                 Object r = refresh(m.get(com.ash.rachana.model.Refresh.KEY));
                 if (r != null) {
@@ -302,7 +302,7 @@ final class SutraBuilder {
             Object raw = form.isScalar() ? form.value() : plain(form);
             List<String> why = nested ? List.of("a form edits a whole panel's records: put it on the tabs panel")
                     : com.ash.rachana.model.Form.problems(raw);
-            why.forEach(w -> problem("DRS-2058", w, form));
+            why.forEach(w -> problem("RCH-2058", w, form));
             if (why.isEmpty()) {
                 options.put(com.ash.rachana.model.Form.KEY, raw);
             }
@@ -313,27 +313,27 @@ final class SutraBuilder {
                     return;
                 }
                 if (!kind.accepts(opt)) {
-                    problem("DRS-2023", "search".equals(opt) || Panel.PIVOT.equals(opt)
+                    problem("RCH-2023", "search".equals(opt) || Panel.PIVOT.equals(opt)
                             ? "option '" + opt + "' applies only to panels that show a table (table, ladder), not '" + kind.id() + "'"
                             : "option '" + opt + "' is not valid for '" + kind.id() + "' panels", val);
                 } else if (Panel.PIVOT.equals(opt)) {
                     Object v = val.isScalar() ? val.value() : plain(val);
                     PivotSpec.parse(v, PivotSpec.Mode.PANEL, PivotSpec.fromColumns(columns)).problems()
-                            .forEach(why -> problem("DRS-2031", why, val));
+                            .forEach(why -> problem("RCH-2031", why, val));
                     options.put(opt, v);
                 } else if (val.value() != null) {
                     Object v = val.isScalar() ? val.value() : plain(val);
-                    PanelOptions.problem(kind, opt, v).ifPresent(why -> problem("DRS-2029", why, val));
+                    PanelOptions.problem(kind, opt, v).ifPresent(why -> problem("RCH-2029", why, val));
                     options.put(opt, v);
                 }
             });
             if (options.containsKey("levels") && (options.containsKey("children") || options.containsKey(Panel.PIVOT))) {
-                problem("DRS-2029", "a table with 'levels' drills into its rows level by level; it cannot also have "
+                problem("RCH-2029", "a table with 'levels' drills into its rows level by level; it cannot also have "
                         + (options.containsKey("children") ? "'children' (a tree)" : "Pivot (the pivot screen)"), m.get("levels"));
             }
             for (String req : kind.required()) {
                 if (!m.containsKey(req)) {
-                    problem("DRS-2022", "'" + kind.id() + "' panel '" + id + "' needs option '" + req + "'", n);
+                    problem("RCH-2022", "'" + kind.id() + "' panel '" + id + "' needs option '" + req + "'", n);
                 }
             }
         }
@@ -364,7 +364,7 @@ final class SutraBuilder {
             for (var g : p.wiring().children()) {
                 for (Panel c : g.panels()) {
                     if (!ids.add(c.id())) {
-                        problems.add(new SutraProblem("DRS-2024", "duplicate panel id '" + c.id() + "': a child panel's id is unique on the whole screen",
+                        problems.add(new SutraProblem("RCH-2024", "duplicate panel id '" + c.id() + "': a child panel's id is unique on the whole screen",
                                 c.location()));
                     }
                 }
@@ -386,7 +386,7 @@ final class SutraBuilder {
         java.util.Set<String> ids = new java.util.HashSet<>();
         for (PNode n : listOf(list, "panels")) {
             if (n.isMap() && !n.map().containsKey("id")) {
-                problem("DRS-2010", "a panel inside a tab needs an 'id'", n);
+                problem("RCH-2010", "a panel inside a tab needs an 'id'", n);
                 continue;
             }
             Panel part = panel(n, true);
@@ -394,13 +394,13 @@ final class SutraBuilder {
                 continue;
             }
             if (part.kind() != null && !TAB_PARTS.contains(part.kind())) {
-                problem("DRS-2023", "a '" + part.kind().id() + "' panel cannot sit inside a tab; use one of kv, status, table, ladder, hbar, markdown, metric, line, area, timeline", n);
+                problem("RCH-2023", "a '" + part.kind().id() + "' panel cannot sit inside a tab; use one of kv, status, table, ladder, hbar, markdown, metric, line, area, timeline", n);
             }
             if (part.options().containsKey(Panel.PIVOT)) {
-                problem("DRS-2023", "a panel inside a tab cannot have Pivot (the pivot screen); put the table in a panel of its own", n);
+                problem("RCH-2023", "a panel inside a tab cannot have Pivot (the pivot screen); put the table in a panel of its own", n);
             }
             if (!ids.add(part.id())) {
-                problem("DRS-2024", "two panels of this tab are called '" + part.id() + "'", n);
+                problem("RCH-2024", "two panels of this tab are called '" + part.id() + "'", n);
             }
             out.add(part);
         }
@@ -416,7 +416,7 @@ final class SutraBuilder {
         Object raw = n.isScalar() ? n.value() : plain(n);
         var why = com.ash.rachana.model.Refresh.problem(raw);
         if (why.isPresent()) {
-            problem("DRS-2012", why.get(), n);
+            problem("RCH-2012", why.get(), n);
             return null;
         }
         return com.ash.rachana.model.Refresh.fromOption(raw).map(com.ash.rachana.model.Refresh::asOption).orElse(null);
@@ -434,9 +434,9 @@ final class SutraBuilder {
             return;
         }
         if (nested) {
-            problem("DRS-2030", "'" + key + "' sizes a whole panel: a tabs body takes the size of its panel", n);
+            problem("RCH-2030", "'" + key + "' sizes a whole panel: a tabs body takes the size of its panel", n);
         } else if (!(n.value() instanceof Long l) || l < 1 || l > max) {
-            problem("DRS-2030", key + " must be a whole number from 1 to " + max + " (" + unit + "), not '" + n.value() + "'", n);
+            problem("RCH-2030", key + " must be a whole number from 1 to " + max + " (" + unit + "), not '" + n.value() + "'", n);
         } else {
             options.put(key, l);
         }
@@ -497,7 +497,7 @@ final class SutraBuilder {
             return List.of();
         }
         if (!n.isList()) {
-            problem("DRS-2012", "'" + what + "' must be a list", n);
+            problem("RCH-2012", "'" + what + "' must be a list", n);
             return List.of();
         }
         return "panels".equals(what) ? SutraBlocks.expand(n.list(), file, problems) : n.list();   // { use: <block> } brings a block's panels
@@ -506,7 +506,7 @@ final class SutraBuilder {
     private void unknownKeys(Map<String, PNode> m, Set<String> allowed, String where) {
         m.forEach((k, v) -> {
             if (!allowed.contains(k)) {
-                problem("DRS-2011", "unknown key '" + k + "' in " + where, v);
+                problem("RCH-2011", "unknown key '" + k + "' in " + where, v);
             }
         });
     }
@@ -514,11 +514,11 @@ final class SutraBuilder {
     private String requiredText(Map<String, PNode> m, String key, PNode parent) {
         PNode n = m.get(key);
         if (n == null || n.value() == null) {
-            problem("DRS-2010", "missing '" + key + "'", parent);
+            problem("RCH-2010", "missing '" + key + "'", parent);
             return null;
         }
         if (!n.isScalar()) {
-            problem("DRS-2012", "'" + key + "' must be text", n);
+            problem("RCH-2012", "'" + key + "' must be text", n);
             return null;
         }
         return n.text();

@@ -6,18 +6,18 @@ package com.ash.rachana.design.ops;
 
 /**
  * An operation that cannot be applied: carries a stable code and, when the Sutra's text is to blame, the 1-based line.
- * Codes: {@code DRS-5020} the operation itself is malformed, {@code DRS-5021} no such panel, {@code DRS-5022} the panel
- * kind or option is unknown or not accepted, {@code DRS-5023} the value is not valid for the option, {@code DRS-5024} the
+ * Codes: {@code RCH-5020} the operation itself is malformed, {@code RCH-5021} no such panel, {@code RCH-5022} the panel
+ * kind or option is unknown or not accepted, {@code RCH-5023} the value is not valid for the option, {@code RCH-5024} the
  * text cannot be edited in place (for example panels written as one flow list). A result that is not a valid Sutra keeps the
- * parser's own {@code DRS-2nnn} code.
+ * parser's own {@code RCH-2nnn} code.
  */
 public final class OpException extends RuntimeException {
 
-    public static final String MALFORMED = "DRS-5020";
-    public static final String NO_PANEL = "DRS-5021";
-    public static final String NOT_ACCEPTED = "DRS-5022";
-    public static final String BAD_VALUE = "DRS-5023";
-    public static final String UNEDITABLE = "DRS-5024";
+    public static final String MALFORMED = "RCH-5020";
+    public static final String NO_PANEL = "RCH-5021";
+    public static final String NOT_ACCEPTED = "RCH-5022";
+    public static final String BAD_VALUE = "RCH-5023";
+    public static final String UNEDITABLE = "RCH-5024";
 
     private static final long serialVersionUID = 1L;
     private final String code;

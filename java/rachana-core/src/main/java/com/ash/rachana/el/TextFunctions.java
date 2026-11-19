@@ -8,7 +8,6 @@ import com.ash.rachana.api.Node;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Text (FUNCTION_CATALOGUE.md section 2): {@code fmt}, {@code upper}, {@code lower}, the tests {@code contains},
@@ -25,6 +24,7 @@ final class TextFunctions {
     static final int MAX_PAD = 10_000;
 
     static void register(Functions.Table t) {
+        Regexes rx = t.regexes();
         t.fn("fmt", 2, 2, (a, c) -> c.formats().format(Values.text(a.get(1)), a.get(0)));
         t.fn("upper", 1, 1, (a, c) -> Values.isNull(a.get(0)) ? null : Values.text(a.get(0)).toUpperCase(Locale.ROOT));   // null in, null out
         t.fn("lower", 1, 1, (a, c) -> Values.isNull(a.get(0)) ? null : Values.text(a.get(0)).toLowerCase(Locale.ROOT));   // null in, null out
@@ -32,8 +32,8 @@ final class TextFunctions {
         t.fn("starts_with", 2, 2, (a, c) -> lower(a.get(0)).startsWith(lower(a.get(1))));
         t.old("startsWith", "starts_with", 2, 2);                       // read for compatibility: existing Sutras write startsWith
         t.fn("ends_with", 2, 2, (a, c) -> lower(a.get(0)).endsWith(lower(a.get(1))));
-        t.fn("matches", 2, 2, (a, c) -> matches(a.get(0), Values.text(a.get(1)), true));
-        t.fn("matches_case", 2, 2, (a, c) -> matches(a.get(0), Values.text(a.get(1)), false));
+        t.fn("matches", 2, 2, (a, c) -> matches(rx, a.get(0), Values.text(a.get(1)), true));
+        t.fn("matches_case", 2, 2, (a, c) -> matches(rx, a.get(0), Values.text(a.get(1)), false));
         t.old("matchesCase", "matches_case", 2, 2);                     // read for compatibility
         t.fn("concat", 1, 64, (a, c) -> concat(a));
         t.fn("left", 2, 2, (a, c) -> part("left", a.get(0), a.get(1), true));
@@ -46,7 +46,7 @@ final class TextFunctions {
             return s == null ? null : s.strip();
         });
         t.fn("pad", 2, 4, (a, c) -> pad(a)).check("pad", TextFunctions::checkPad);
-        t.fn("regex_extract", 2, 3, (a, c) -> regexExtract(a)).check("regex_extract", TextFunctions::checkPattern);
+        t.fn("regex_extract", 2, 3, (a, c) -> regexExtract(rx, a)).check("regex_extract", args -> checkPattern(rx, args));
     }
 
     private static String lower(Object v) {
@@ -67,30 +67,20 @@ final class TextFunctions {
         return !Values.isNull(where) && Values.text(where).toLowerCase(Locale.ROOT).contains(p);
     }
 
-    private static final ConcurrentHashMap<String, SafeRegex> PATTERNS = new ConcurrentHashMap<>();
-
-    /** A compiled pattern, by the linear-time engine ({@link SafeRegex}): a pattern it refuses raises RCH-4010. */
-    private static SafeRegex pattern(String pattern, boolean ignoreCase) {
-        if (PATTERNS.size() > 512) {
-            PATTERNS.clear();
-        }
-        return PATTERNS.computeIfAbsent((ignoreCase ? "i:" : "c:") + pattern, k -> SafeRegex.compile(pattern, ignoreCase));
-    }
-
     /**
      * Regular-expression search over text, by the linear-time engine: a pattern it refuses raises RCH-4010, one that runs
      * past its time budget RCH-4011. Matches anywhere in the value; null never matches.
      */
-    private static boolean matches(Object value, String pattern, boolean ignoreCase) {
-        SafeRegex re = pattern(pattern, ignoreCase);
+    private static boolean matches(Regexes rx, Object value, String pattern, boolean ignoreCase) {
+        SafeRegex re = rx.pattern(pattern, ignoreCase);
         return !Values.isNull(value) && re.find(Values.text(value));
     }
 
     /** A pattern written in {@code regex_extract} is compiled when the expression is, so a refused one is found at load. */
-    private static String checkPattern(List<Expr> args) {
+    private static String checkPattern(Regexes rx, List<Expr> args) {
         if (Functions.literal(args, 1) instanceof String p) {
             try {
-                SafeRegex re = SafeRegex.compile(p, false);
+                SafeRegex re = rx.compile(p, false);
                 if (Functions.literal(args, 2) instanceof Number g && (g.intValue() < 0 || g.intValue() > re.groups())) {
                     return "the pattern '" + p + "' has " + re.groups() + " group(s); group " + g.intValue() + " was asked for";
                 }
@@ -226,14 +216,14 @@ final class TextFunctions {
      * {@code (}); empty when nothing matches. Case counts (start the pattern with {@code (?i)} to ignore it); the same
      * linear-time engine as {@code matches}.
      */
-    private static Object regexExtract(List<Object> a) {
+    private static Object regexExtract(Regexes rx, List<Object> a) {
         String s = Args.text("regex_extract", a.get(0));
         String p = Args.text("regex_extract", a.get(1));
         Integer g = a.size() > 2 ? Args.whole("regex_extract", a.get(2)) : Integer.valueOf(0);
         if (s == null || p == null || g == null) {
             return null;
         }
-        SafeRegex re = pattern(p, false);
+        SafeRegex re = rx.pattern(p, false);
         if (g < 0 || g > re.groups()) {
             throw Args.error("regex_extract", "the pattern '" + p + "' has " + re.groups() + " group(s); group " + g + " was asked for");
         }

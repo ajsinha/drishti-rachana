@@ -8,18 +8,26 @@ import com.ash.rachana.internal.Lru;
 
 /**
  * Compiles Rachana-EL source to {@link Expr} trees, caching by source text: the same few hundred
- * expressions are evaluated millions of times, so they are parsed once. Thread-safe.
+ * expressions are evaluated millions of times, so they are parsed once. Thread-safe. Each compiler reads one
+ * {@link FunctionTable} (Core's alone unless given another: a {@code Rachana} instance gives its own) and holds its own cache, so
+ * two instances never share a compiled expression.
  */
 public final class ElCompiler {
 
     private final Lru<String, Expr> exprs;
     private final Lru<String, Template> templates;
     private final ElLimits limits;
+    private final FunctionTable table;
 
-    public ElCompiler(long maxEntries, ElLimits limits) {
+    public ElCompiler(long maxEntries, ElLimits limits, FunctionTable table) {
         this.exprs = new Lru<>(maxEntries);
         this.templates = new Lru<>(maxEntries);
         this.limits = limits;
+        this.table = table == null ? FunctionTable.core() : table;
+    }
+
+    public ElCompiler(long maxEntries, ElLimits limits) {
+        this(maxEntries, limits, FunctionTable.core());
     }
 
     public ElCompiler(long maxEntries) {
@@ -35,7 +43,12 @@ public final class ElCompiler {
      *     {@linkplain ElLimits limits} (too deeply nested or too long)
      */
     public Expr compile(String source) {
-        return exprs.get(source, s -> Parser.parse(s, limits));
+        return exprs.get(source, s -> Parser.parse(s, limits, table));
+    }
+
+    /** The function table expressions are compiled against. */
+    public FunctionTable functions() {
+        return table;
     }
 
     /** The bounds every compiled expression is held to. */

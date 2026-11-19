@@ -29,6 +29,7 @@ final class MathFunctions {
     static final int MAX_EXACT_EXPONENT = 64;
 
     static void register(Functions.Table t) {
+        Aggregates agg = t.aggregates();
         t.fn("abs", 1, 1, (a, c) -> Values.isNull(a.get(0)) ? null : Values.normalise(Math.abs(Values.number(a.get(0)))));   // null in, null out
         t.fn("round_up", 1, 2, (a, c) -> round("round_up", a, RoundingMode.UP));
         t.fn("round_down", 1, 2, (a, c) -> round("round_down", a, RoundingMode.DOWN));
@@ -50,8 +51,8 @@ final class MathFunctions {
         t.fn("greatest", 1, 64, (a, c) -> pick("greatest", a, false));
         // min/max over one list are the pivot engine's aggregates (docs/architecture/ARCHITECTURE.md part 2); with several arguments they are the
         // old spelling of least/greatest, read for compatibility with the results they always gave
-        t.fn("min", 1, 8, (a, c) -> lenient(a, true, c));
-        t.fn("max", 1, 8, (a, c) -> lenient(a, false, c));
+        t.fn("min", 1, 8, (a, c) -> lenient(agg, a, true, c));
+        t.fn("max", 1, 8, (a, c) -> lenient(agg, a, false, c));
     }
 
     /** {@code round_up(x, [n])}, {@code round_down(x, [n])}: away from or towards zero, to n decimal places (negative: tens …). */
@@ -217,9 +218,9 @@ final class MathFunctions {
      * with the reason where the engine is not on the class path); over several arguments, the old spelling of
      * {@code least}/{@code greatest}: numbers only, anything else skipped; empty if none; masked when an argument is.
      */
-    private static Object lenient(List<Object> a, boolean min, EvalContext c) {
+    private static Object lenient(Aggregates agg, List<Object> a, boolean min, EvalContext c) {
         if (a.size() == 1 && (a.get(0) instanceof Node first && first.isArray())) {
-            return Aggregates.call(min ? "min" : "max", a, c);
+            return agg.call(min ? "min" : "max", a, c);
         }
         Double best = null;
         for (Object o : a) {

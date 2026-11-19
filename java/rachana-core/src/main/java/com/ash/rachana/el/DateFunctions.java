@@ -36,6 +36,7 @@ final class DateFunctions {
     static final Set<String> INTERVALS = Set.of("day", "week", "month", "quarter", "year", "business_day");
 
     static void register(Functions.Table t) {
+        Calendars cals = t.calendars();
         // asof(): the view's or the query's as-of date; today() is read as asof() (docs/architecture/ARCHITECTURE.md §28 Q7)
         t.fn("asof", 0, 0, (a, c) -> c.asOf() == null ? null : c.asOf().toString());
         t.old("today", "asof", 0, 0);
@@ -63,12 +64,12 @@ final class DateFunctions {
         });
         t.fn("yearfrac", 3, 3, (a, c) -> yearfrac(a)).check("yearfrac", args -> Functions.literal(args, 2) instanceof String b
                 && !BASES.contains(b) ? basisProblem(b) : null);
-        t.fn("intck", 3, 4, (a, c) -> intck(a)).check("intck", DateFunctions::checkIntck);
+        t.fn("intck", 3, 4, (a, c) -> intck(cals, a)).check("intck", args -> checkIntck(cals, args));
         t.fn("is_business_day", 1, 2, (a, c) -> {
             LocalDate d = Args.date("is_business_day", a.get(0));
-            Calendars.Calendar cal = calendar("is_business_day", a, 1);
+            Calendars.Calendar cal = calendar(cals, "is_business_day", a, 1);
             return d == null || cal == null ? null : (Object) cal.isBusinessDay(d);
-        }).check("is_business_day", args -> calendarProblem(Functions.literal(args, 1)));
+        }).check("is_business_day", args -> calendarProblem(cals, Functions.literal(args, 1)));
     }
 
     /** How {@code days} has always read a date: the first ten characters of the text, or empty. */
@@ -85,23 +86,23 @@ final class DateFunctions {
     }
 
     /** The calendar of argument {@code i} ({@value #DEFAULT_CALENDAR} when not given); null when given empty. */
-    static Calendars.Calendar calendar(String fn, List<Object> a, int i) {
+    static Calendars.Calendar calendar(Calendars cals, String fn, List<Object> a, int i) {
         String spec = a.size() > i ? Args.text(fn, a.get(i)) : DEFAULT_CALENDAR;
         if (spec == null) {
             return null;
         }
         String key = spec.trim().toUpperCase(Locale.ROOT);
         try {
-            return Calendars.held(key);
+            return cals.held(key);
         } catch (IllegalArgumentException e) {
             throw Args.error(fn, e.getMessage());
         }
     }
 
-    static String calendarProblem(Object literal) {
+    static String calendarProblem(Calendars cals, Object literal) {
         if (literal instanceof String spec) {
             try {
-                Calendars.resolve(spec.trim());
+                cals.resolve(spec.trim());
             } catch (IllegalArgumentException e) {
                 return e.getMessage();
             }
@@ -202,7 +203,7 @@ final class DateFunctions {
      * {@code 'day'}, {@code 'week'} (weeks start on Sunday), {@code 'month'}, {@code 'quarter'}, {@code 'year'}, or
      * {@code 'business_day'}: the business days after a up to and including b on the calendar. Negative when b is before a.
      */
-    private static Object intck(List<Object> a) {
+    private static Object intck(Calendars cals, List<Object> a) {
         String interval = Args.text("intck", a.get(0));
         LocalDate x = Args.date("intck", a.get(1));
         LocalDate y = Args.date("intck", a.get(2));
@@ -222,7 +223,7 @@ final class DateFunctions {
             case "quarter" -> quarters(y) - quarters(x);
             case "year" -> (long) y.getYear() - x.getYear();
             default -> {
-                Calendars.Calendar cal = calendar("intck", a, 3);
+                Calendars.Calendar cal = calendar(cals, "intck", a, 3);
                 yield cal == null ? null : (Object) businessDays(cal, x, y);
             }
         };
@@ -264,7 +265,7 @@ final class DateFunctions {
         return "unknown interval '" + interval + "' (known: " + String.join(", ", new java.util.TreeSet<>(INTERVALS)) + ")";
     }
 
-    private static String checkIntck(List<Expr> args) {
+    private static String checkIntck(Calendars cals, List<Expr> args) {
         if (Functions.literal(args, 0) instanceof String interval) {
             if (!INTERVALS.contains(interval)) {
                 return intervalProblem(interval);
@@ -273,6 +274,6 @@ final class DateFunctions {
                 return "a calendar counts only 'business_day', not '" + interval + "'";
             }
         }
-        return calendarProblem(Functions.literal(args, 3));
+        return calendarProblem(cals, Functions.literal(args, 3));
     }
 }

@@ -32,39 +32,9 @@ import java.util.function.Function;
  */
 public final class Functions {
 
-    /** Name to {min args, max args}, every kind of entry, old spellings included. */
-    static final Map<String, int[]> ARITY;
-    private static final Map<String, ElFunction> FUNCTIONS;
-    private static final Map<String, ElForm> FORMS;
-    private static final Set<String> SYNTAX;
-    private static final Set<String> PASS_MASK;
-    private static final Map<String, Function<List<Expr>, String>> CHECKS;
-    private static final Map<String, String> OLD_SPELLINGS;
-    private static final Map<String, String> FAMILY;
-
-    static {
-        Table t = new Table();
-        LogicFunctions.register(t.family("logic"));
-        InfoFunctions.register(t.family("logic"));
-        MathFunctions.register(t.family("math"));
-        NumberFunctions.register(t.family("math"));
-        TextFunctions.register(t.family("text"));
-        TextParts.register(t.family("text"));
-        DateFunctions.register(t.family("dates"));
-        DateParts.register(t.family("dates"));
-        ListFunctions.register(t.family("lists"));
-        ListMore.register(t.family("lists"));
-        Distributions.register(t.family("statistics"));
-        FinanceFunctions.register(t.family("finance"));
-        Aggregates.install(t);
-        ARITY = Collections.unmodifiableMap(t.arity);
-        FUNCTIONS = Map.copyOf(t.functions);
-        FORMS = Map.copyOf(t.forms);
-        SYNTAX = Set.copyOf(t.syntax);
-        PASS_MASK = Set.copyOf(t.passMask);
-        CHECKS = Map.copyOf(t.checks);
-        OLD_SPELLINGS = Collections.unmodifiableMap(new TreeMap<>(t.old));
-        FAMILY = Map.copyOf(t.family);
+    /** The table of Core alone, which the static methods below read. */
+    private static FunctionTable core() {
+        return FunctionTable.core();
     }
 
     /**
@@ -96,18 +66,7 @@ public final class Functions {
      * are not literals is not one either.
      */
     public static java.util.Optional<AggregateCall> aggregateCall(Expr e) {
-        if (!(e instanceof Expr.Call call) || call.args().isEmpty() || "measure".equals(call.name()) || "cell".equals(call.name())
-                || !(Aggregates.EXPECTED.contains(call.name()) || Aggregates.all().containsKey(call.name()))) {
-            return java.util.Optional.empty();
-        }
-        List<Object> options = new java.util.ArrayList<>();
-        for (Expr a : call.args().subList(1, call.args().size())) {
-            if (!(a instanceof Expr.Lit lit)) {
-                return java.util.Optional.empty();
-            }
-            options.add(lit.value());
-        }
-        return java.util.Optional.of(new AggregateCall(call.name(), call.args().get(0), Collections.unmodifiableList(options)));
+        return core().aggregateCall(e);
     }
 
     /**
@@ -115,101 +74,14 @@ public final class Functions {
      * lists. {@code min} and {@code max} are listed once, as the engine's aggregates over one list; {@code group} as the engine's.
      */
     public static List<Entry> catalogue() {
-        List<Entry> out = new java.util.ArrayList<>();
-        for (String name : ARITY.keySet()) {
-            if (OLD_SPELLINGS.containsKey(name)) {
-                continue;
-            }
-            FunctionProvider.Provided p = Aggregates.all().get(name);
-            boolean engine = p != null || Aggregates.EXPECTED.contains(name) || Aggregates.MEASURE_LEVEL.contains(name) || "group".equals(name);
-            if (!engine) {
-                out.add(new Entry(name, FAMILY.getOrDefault(name, ""), "R", "Rachana", "", "", ""));
-                continue;
-            }
-            String source = Aggregates.source(name);
-            if ("group".equals(name)) {
-                out.add(new Entry(name, "aggregates", "E", source == null ? "none on the class path" : source, "list, key, [aggregate], [by]",
-                        "the engine's grouping", "one row {label, value, count} per key, the aggregate over each group (sum of a quoted field, "
-                        + "or any aggregate over @)"));
-                continue;
-            }
-            String family = Aggregates.MEASURE_LEVEL.contains(name) ? "measures"
-                    : p != null && "list".equals(p.form()) ? "lists" : "aggregates";
-            out.add(new Entry(name, family, "E", source == null ? "none on the class path" : source,
-                    p == null ? "" : p.args(), p == null ? "" : p.form(), p == null ? "" : p.description()));
-        }
-        return out;
+        return core().catalogue();
     }
 
     private Functions() {}
 
-    /** The functions of loaded modules (KERNEL_AND_MODULES.md section 12.3): name to the function and its provider's source. */
-    private static final Map<String, FunctionProvider.Provided> LIVE = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final Map<String, String> LIVE_SOURCE = new java.util.concurrent.ConcurrentHashMap<>();
-
-    /**
-     * Adds a loaded module's functions to the table while it is loaded; the returned action takes them out again. A name Rachana or another
-     * provider already has is refused (nothing is added). An expression compiled while the function was there and evaluated after it left is
-     * refused with the reason, the way a missing aggregate is.
-     */
-    public static synchronized Runnable register(String source, List<FunctionProvider.Provided> functions) {
-        List<FunctionProvider.Provided> fs = List.copyOf(functions);
-        for (FunctionProvider.Provided f : fs) {
-            if (ARITY.containsKey(f.name()) || LIVE.containsKey(f.name())) {
-                throw new IllegalStateException("Rachana-EL function " + f.name() + " is provided twice ("
-                        + (LIVE.containsKey(f.name()) ? LIVE_SOURCE.get(f.name()) : "Rachana") + ", " + source + ")");
-            }
-        }
-        for (FunctionProvider.Provided f : fs) {
-            LIVE.put(f.name(), f);
-            LIVE_SOURCE.put(f.name(), source);
-        }
-        return () -> {
-            synchronized (Functions.class) {
-                for (FunctionProvider.Provided f : fs) {
-                    LIVE.remove(f.name(), f);
-                    if (!LIVE.containsKey(f.name())) {
-                        LIVE_SOURCE.remove(f.name());
-                    }
-                }
-            }
-        };
-    }
-
-    /** The source of a loaded module's function, or null. */
-    public static String liveSource(String name) {
-        return LIVE_SOURCE.get(name);
-    }
-
-    /** {min, max} arguments of a function of the table or of a loaded module, or null when there is none of the name. */
-    static int[] arityOf(String name) {
-        int[] a = ARITY.get(name);
-        if (a != null) {
-            return a;
-        }
-        FunctionProvider.Provided f = LIVE.get(name);
-        return f == null ? null : new int[] {f.minArgs(), f.maxArgs()};
-    }
-
-    /** A loaded module's function, looked up by name on every call (an expression never holds the module's code). */
-    private static ElFunction live(String name) {
-        return (args, context) -> {
-            FunctionProvider.Provided f = LIVE.get(name);
-            if (f == null) {
-                throw new ElException(name + "(...) is not available: the module that provides it is not loaded", 0);
-            }
-            return f.function().apply(args, context);
-        };
-    }
-
     /** Every function of Rachana-EL with its argument count: {name: [min, max]}, old spellings included. */
     public static Map<String, int[]> arity() {
-        if (LIVE.isEmpty()) {
-            return ARITY;
-        }
-        Map<String, int[]> all = new HashMap<>(ARITY);
-        LIVE.forEach((n, f) -> all.putIfAbsent(n, new int[] {f.minArgs(), f.maxArgs()}));
-        return Collections.unmodifiableMap(all);
+        return core().arity();
     }
 
     /**
@@ -217,37 +89,17 @@ public final class Functions {
      * ({@code startsWith} → {@code starts_with}); never offered for new work.
      */
     public static Map<String, String> oldSpellings() {
-        return OLD_SPELLINGS;
+        return core().oldSpellings();
     }
 
     /** The one name of {@code name}: itself, or the name an old spelling stands for ({@code startsWith} is {@code starts_with}). */
     public static String oneName(String name) {
-        return OLD_SPELLINGS.getOrDefault(name, name);
+        return core().oneName(name);
     }
 
-    static ElFunction get(String name) {
-        ElFunction f = FUNCTIONS.get(name);
-        return f != null || !LIVE.containsKey(name) ? f : live(name);
-    }
-
-    static ElForm form(String name) {
-        return FORMS.get(name);
-    }
-
-    /** True for a name the parser builds itself ({@code if}, {@code ifs}, {@code let}). */
-    static boolean syntax(String name) {
-        return SYNTAX.contains(name);
-    }
-
-    /** True for a function given a masked argument as it is ({@code coalesce}, {@code nonblank}), not masked for it. */
+    /** True for a function given a masked argument as it is ({@code coalesce}, {@code nonblank}), not masked for it: Core's own only. */
     static boolean passesMask(String name) {
-        return PASS_MASK.contains(name);
-    }
-
-    /** A problem with the written (literal) arguments of a call, found when it compiles; null when there is none. */
-    static String check(String name, List<Expr> args) {
-        Function<List<Expr>, String> c = CHECKS.get(name);
-        return c == null ? null : c.apply(args);
+        return core().passesMask(name);
     }
 
     /** The value of a literal argument, or {@link #NOT_LITERAL} for anything computed. */
@@ -258,17 +110,41 @@ public final class Functions {
     /** What {@link #literal} gives for an argument that is not written as a literal. */
     static final Object NOT_LITERAL = new Object();
 
-    /** What the families register into; each name once. */
+    /** What the families register into, with the parts of one table their functions use; each name once. */
     static final class Table {
-        private final Map<String, int[]> arity = new TreeMap<>();
-        private final Map<String, ElFunction> functions = new HashMap<>();
-        private final Map<String, ElForm> forms = new HashMap<>();
-        private final Set<String> syntax = new HashSet<>();
-        private final Set<String> passMask = new HashSet<>();
-        private final Map<String, Function<List<Expr>, String>> checks = new HashMap<>();
-        private final Map<String, String> old = new HashMap<>();
-        private final Map<String, String> family = new HashMap<>();
+        final Map<String, int[]> arity = new TreeMap<>();
+        final Map<String, ElFunction> functions = new HashMap<>();
+        final Map<String, ElForm> forms = new HashMap<>();
+        final Set<String> syntax = new HashSet<>();
+        final Set<String> passMask = new HashSet<>();
+        final Map<String, Function<List<Expr>, String>> checks = new HashMap<>();
+        final Map<String, String> old = new HashMap<>();
+        final Map<String, String> family = new HashMap<>();
+        private final Aggregates aggregates;
+        private final Calendars calendars;
+        private final Regexes regexes;
         private String current = "";
+
+        Table(Aggregates aggregates, Calendars calendars, Regexes regexes) {
+            this.aggregates = aggregates;
+            this.calendars = calendars;
+            this.regexes = regexes;
+        }
+
+        /** The aggregates of the table being built (its profiles' providers). */
+        Aggregates aggregates() {
+            return aggregates;
+        }
+
+        /** The calendars of the table being built. */
+        Calendars calendars() {
+            return calendars;
+        }
+
+        /** The compiled patterns of the table being built, under its caps. */
+        Regexes regexes() {
+            return regexes;
+        }
 
         /** The family the names registered next belong to (the catalogue's sections). */
         Table family(String name) {

@@ -30,11 +30,12 @@ final class ListFunctions {
     static final int MAX_SEQUENCE = 10_000;
 
     static void register(Functions.Table t) {
+        Aggregates agg = t.aggregates();
         t.fn("size", 1, 1, (a, c) -> size(a.get(0)));
         t.fn("first", 1, 1, (a, c) -> a.get(0) instanceof Node n ? n.get(0) : null);
         t.fn("last", 1, 1, (a, c) -> a.get(0) instanceof Node n ? n.get(-1) : null);
         t.fn("flatten", 1, 1, (a, c) -> flatten(a.get(0)));
-        t.form("group", 2, 4, GroupForm::group);
+        t.form("group", 2, 4, (args, c) -> GroupForm.group(agg, args, c));
         t.form("sort", 1, 17, ListFunctions::sort);
         t.fn("unique", 1, 1, (a, c) -> unique(a.get(0)));
         t.fn("take", 2, 2, (a, c) -> slice("take", a, true));

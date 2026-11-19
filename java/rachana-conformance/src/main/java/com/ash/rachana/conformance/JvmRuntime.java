@@ -26,7 +26,8 @@ public final class JvmRuntime {
 
     static final String VERSION = "0.10.0-SNAPSHOT";
     static Formats formats;
-    static final ElCompiler EL = new ElCompiler();
+    static ElCompiler EL;
+    static com.ash.rachana.Rachana rachana;
 
     public static void main(String[] a) throws Exception {
         List<String> files = new ArrayList<>(List.of(a));
@@ -35,7 +36,9 @@ public final class JvmRuntime {
             profiles = files.get(1);
             files = files.subList(2, files.size());
         }
-        formats = Formats.load(null, files);               // the Core table first, then a profile's names when given
+        rachana = instance(profiles, files);
+        formats = rachana.formats();
+        EL = rachana.compiler();
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), false, StandardCharsets.UTF_8);
         in.readLine();                                                   // the driver's greeting
@@ -64,6 +67,26 @@ public final class JvmRuntime {
             out.println(sb.append('}'));
             out.flush();
         }
+    }
+
+    /**
+     * The instance the cases run on (split step A6): the first file is Core's format table, the others the format names of the first
+     * profile named after {@code core} ({@code drishti}: the profile object of the conformance suite, which registers no function).
+     */
+    static com.ash.rachana.Rachana instance(String profiles, List<String> files) {
+        List<String> names = new ArrayList<>(List.of(profiles.split(",")));
+        names.removeIf(n -> n.isBlank() || n.equals("core"));
+        com.ash.rachana.RachanaOptions options = com.ash.rachana.RachanaOptions.DEFAULTS
+                .withFormats(null, files.isEmpty() ? List.of() : files.subList(0, names.isEmpty() ? files.size() : 1));
+        List<com.ash.rachana.profile.Profile> ps = new ArrayList<>();
+        for (int i = 0; i < names.size(); i++) {
+            com.ash.rachana.profile.Profile.Builder b = com.ash.rachana.profile.Profile.named(names.get(i).trim());
+            if (i == 0 && files.size() > 1) {
+                b.formats(files.subList(1, files.size()).toArray(String[]::new));
+            }
+            ps.add(b.build());
+        }
+        return com.ash.rachana.Rachana.with(options, ps.toArray(com.ash.rachana.profile.Profile[]::new));
     }
 
     // ---- expr ----------------------------------------------------------------------------------------------------
@@ -106,7 +129,7 @@ public final class JvmRuntime {
         String src = c.containsKey("template") ? text(c.get("template")) : text(c.get("expr"));
         Map<String, Object> limits = obj(obj(c.get("given")).get("limits"));
         int depth = whole(limits.get("depth"), 200), len = whole(limits.get("length"), 10_000);
-        ElCompiler comp = new ElCompiler(1000, new ElLimits(depth, len));
+        ElCompiler comp = new ElCompiler(1000, new ElLimits(depth, len), rachana.functions());
         try {
             if (c.containsKey("template")) { comp.template(src); } else { comp.compile(src); }
             sb.append("{\"problems\":[]}");
@@ -131,7 +154,7 @@ public final class JvmRuntime {
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         try {
             var sutra = new com.ash.rachana.parse.SutraParser().parse(text(c.get("sutra")), file, "conformance");
-            ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler()).check(sutra));
+            ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions())).check(sutra));
         } catch (com.ash.rachana.SutraException e) {
             ps.addAll(e.problems());
         }

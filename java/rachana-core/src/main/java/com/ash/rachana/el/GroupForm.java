@@ -33,7 +33,7 @@ final class GroupForm {
 
     private GroupForm() {}
 
-    static Object group(List<Expr> args, EvalContext c) {
+    static Object group(Aggregates agg, List<Expr> args, EvalContext c) {
         Object v = args.get(0).eval(c);
         if (Values.masked(v)) {
             return Values.mask();
@@ -49,7 +49,7 @@ final class GroupForm {
             }
             by = Values.text(b);
         }
-        Expr.Call call = args.size() > 2 && args.get(2) instanceof Expr.Call k && aggregate(k.name()) ? k : null;
+        Expr.Call call = args.size() > 2 && args.get(2) instanceof Expr.Call k && aggregate(agg, k.name()) ? k : null;
         String field = null;
         if (call == null && args.size() > 2) {
             Object f = args.get(2).eval(c);
@@ -103,7 +103,7 @@ final class GroupForm {
             }
         }
         String aggregate = call != null ? call.name() : field != null ? "sum" : "count";
-        List<FunctionProvider.Group> groups = Aggregates.grouping().group(keys, columns, aggregate, options, ListFunctions.MAX_GROUPS);
+        List<FunctionProvider.Group> groups = agg.grouping().group(keys, columns, aggregate, options, ListFunctions.MAX_GROUPS);
         List<Node> out = new ArrayList<>(groups.size());
         for (FunctionProvider.Group g : groups) {
             Map<String, Object> row = new LinkedHashMap<>();
@@ -117,7 +117,7 @@ final class GroupForm {
     }
 
     /** True for an aggregate's name, as the third argument of the expression form. */
-    private static boolean aggregate(String name) {
-        return Aggregates.provided(name) || Aggregates.SHARED.contains(name) || Aggregates.EXPECTED.contains(name);
+    private static boolean aggregate(Aggregates agg, String name) {
+        return agg.provided(name) || Aggregates.SHARED.contains(name) || Aggregates.EXPECTED.contains(name);
     }
 }

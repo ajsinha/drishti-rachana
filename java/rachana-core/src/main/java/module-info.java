@@ -11,8 +11,6 @@
 module com.ash.rachana.core {
     requires transitive com.ash.rachana.api;
 
-    uses com.ash.rachana.el.FunctionProvider;
-
     exports com.ash.rachana;
     exports com.ash.rachana.design.ops;
     exports com.ash.rachana.el;

@@ -15,3 +15,10 @@ reference is to change (plan N5 settles each; A1 for the codes and messages), an
 Other findings of the run: `check` cases (20) are `unsupported` by the bootstrap bridge, because the reference's checked mode reads a
 Drishti pivot model (`trades.FIELD`), not record types; they wait for Core's checker (A-steps). Cases that use the Drishti
 profile's format names (`pct4`) carry `profile: [core, drishti]`.
+
+## The hand-written `problem` examples (plan H2)
+
+Five of `problem/examples/problem` fail on the reference and stay `verified: false`: `valid-sutra-has-no-problems` (the example's Sutra
+uses a key the reference refuses), `unknown-top-level-key` and `profile-key-without-the-profile` (the reference reports one more
+problem than the example expects), `problems-in-position-order` and `expression-problem-inside-a-panel` (the reference reports
+`RCH-2010` first). Each is settled with decision N5 before the examples are frozen.

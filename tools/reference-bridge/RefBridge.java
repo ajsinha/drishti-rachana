@@ -30,7 +30,7 @@ public class RefBridge {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), false, StandardCharsets.UTF_8);
         in.readLine();                                                   // the driver's greeting
-        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"bootstrap-2.9.11.i7a\",\"language\":\"1.0\",\"profiles\":[\"core\",\"drishti\"],\"kinds\":[\"expr\",\"expr-error\"]}");
+        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"bootstrap-2.9.11.i7a\",\"language\":\"1.0\",\"profiles\":[\"core\",\"drishti\"],\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\"]}");
         out.flush();
         String line;
         while ((line = in.readLine()) != null) {
@@ -43,6 +43,8 @@ public class RefBridge {
                 switch (kind) {
                     case "expr" -> expr(c, sb);
                     case "expr-error" -> exprError(c, sb);
+                    case "format" -> format(c, sb);
+                    case "problem" -> problem(c, sb);
                     default -> throw new IllegalStateException("kind not implemented: " + kind);
                 }
             } catch (Throwable t) {
@@ -102,6 +104,34 @@ public class RefBridge {
             sb.append("{\"problems\":[{\"code\":").append(str(code(e))).append(",\"severity\":\"error\",\"message\":").append(str(words(e)))
                     .append(",\"expr\":{\"source\":").append(str(src)).append(",\"start\":").append(at).append(",\"end\":").append(Math.min(src.length(), at + 1)).append("}}]}");
         }
+    }
+
+    static void format(JsonNode c, StringBuilder sb) {
+        Object v = plain(c.path("value"));
+        Object node = v instanceof DataNode ? v : (v == null ? null : v);
+        String text = c.has("format") ? formats.format(c.get("format").asText(), node) : Values.text(node);
+        String tone = c.has("tone") && !Values.masked(node) ? com.ash.drishti.rachana.format.Tones.resolve(c.get("tone").asText(), v) : null;
+        sb.append("{\"text\":").append(str(text)).append(",\"tone\":").append(tone == null ? "null" : str(tone)).append('}');
+    }
+
+    /** The Sutra is parsed, then its expressions are checked: the problems in the order found. */
+    static void problem(JsonNode c, StringBuilder sb) {
+        List<com.ash.drishti.rachana.SutraProblem> ps = new ArrayList<>();
+        String file = c.path("file").asText("case.sutra.yaml");
+        try {
+            var sutra = new com.ash.drishti.rachana.parse.SutraParser().parse(c.get("sutra").asText(), file, "conformance");
+            ps.addAll(new com.ash.drishti.rachana.SutraExpressions(new ElCompiler()).check(sutra));
+        } catch (com.ash.drishti.rachana.SutraException e) {
+            ps.addAll(e.problems());
+        }
+        sb.append("{\"ok\":").append(ps.isEmpty()).append(",\"problems\":[");
+        boolean f = true;
+        for (var p : ps) {
+            if (!f) { sb.append(','); } f = false;
+            sb.append("{\"code\":").append(str(p.code().replaceFirst("^(DRS|DEL)-", "RCH-"))).append(",\"severity\":\"error\",\"message\":").append(str(p.message()))
+                    .append(",\"range\":{\"start\":{\"line\":").append(p.location().line()).append(",\"column\":").append(p.location().column()).append("}}}");
+        }
+        sb.append("]}");
     }
 
     static String words(com.ash.drishti.api.error.DrishtiException e) {

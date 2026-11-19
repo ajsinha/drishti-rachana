@@ -1,0 +1,171 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/strict-sutra
+since: "1.0"
+profile: core
+verified: true
+description: "Sutras the parser refuses, by code and line; harvested from StrictSutraTest and SutraParserTest."
+cases:
+
+  - id: "duplicate-header-key"
+    kind: "problem"
+    source: "StrictSutraTest#ambiguousYamlIsAProblemWithItsLine"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels: []\nversion: 2\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2033", "range": {"start": {"line": 7}}}]}
+
+  - id: "duplicate-panel-key"
+    kind: "problem"
+    source: "StrictSutraTest#ambiguousYamlIsAProblemWithItsLine"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, id: b, kind: provenance }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2033"}]}
+
+  - id: "second-yaml-document"
+    kind: "problem"
+    source: "StrictSutraTest#ambiguousYamlIsAProblemWithItsLine"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels: []\n---\nrachana: 1\nsutra: other\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2033", "range": {"start": {"line": 7}}}]}
+
+  - id: "explicit-tag-refused"
+    kind: "problem"
+    source: "StrictSutraTest#ambiguousYamlIsAProblemWithItsLine"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - !panel { id: a, kind: provenance }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2033"}]}
+
+  - id: "match-kind-not-text"
+    kind: "problem"
+    source: "StrictSutraTest#headerValuesOfTheWrongShape"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: 42 }\ntitle: { id: $.tradeId }\npanels: []\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2012"}]}
+
+  - id: "match-priority-not-number"
+    kind: "problem"
+    source: "StrictSutraTest#headerValuesOfTheWrongShape"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade, priority: high }\ntitle: { id: $.tradeId }\npanels: []\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2012"}]}
+
+  - id: "match-priority-too-large"
+    kind: "problem"
+    source: "StrictSutraTest#headerValuesOfTheWrongShape"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade, priority: 1e99 }\ntitle: { id: $.tradeId }\npanels: []\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2012"}]}
+
+  - id: "title-without-id"
+    kind: "problem"
+    source: "StrictSutraTest#headerValuesOfTheWrongShape"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: X }\npanels: []\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2010"}]}
+
+  - id: "table-rows-5"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: table, rows: 5 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "table-limit-many"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: table, rows: $.cashflows, limit: many }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "table-limit-negative"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: table, rows: $.cashflows, limit: -5 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "table-search-maybe"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: table, rows: $.cashflows, search: maybe }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "ladder-search-maybe"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: ladder, rows: $.cashflows, search: maybe }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "table-children-5"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: table, rows: $.cashflows, children: 5 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "table-expand-zero"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: table, rows: $.cashflows, expand: 0 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "pivot-expand-negative"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: pivot, rows: $.cashflows, by: x, across: y, expand: -1 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "pivot-by-5"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: pivot, rows: $.cashflows, by: 5, across: y }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "pivot-by-empty-list"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: pivot, rows: $.cashflows, by: [], across: y }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "status-fields-5"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: status, fields: 5 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "area-series-5"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: area, rows: $.cashflows, series: 5 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "markdown-text-list"
+    kind: "problem"
+    source: "StrictSutraTest#panelOptionsOfTheWrongType"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: markdown, text: [1, 2] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "range": {"start": {"line": 7}}}]}
+
+  - id: "links-panel-may-not-name-a-source"
+    kind: "problem"
+    source: "StrictSutraTest#aMarkdownPanelMayNameASourceButLinksAndProvenanceMayNot"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: links, source: \"link($.desk, 'desk')\" }\n"
+    expect: {"ok": false}
+
+  - id: "expression-problem-in-a-panel"
+    kind: "problem"
+    source: "StrictSutraTest#anExpressionProblemSaysItsCodeOnce"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: kv, rows: \"$.mtm +\", columns: [ { label: A, bind: \"@.a\" } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2101"}]}
+
+  - id: "version-out-of-range-9999"
+    kind: "problem"
+    source: "StrictSutraTest#anOutOfRangeVersionIsAVersionProblemNotYamlSyntax"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 99999999999999999999\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels: []\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2020"}]}
+
+  - id: "version-out-of-range-3000"
+    kind: "problem"
+    source: "StrictSutraTest#anOutOfRangeVersionIsAVersionProblemNotYamlSyntax"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 3000000000\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels: []\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2020"}]}
+
+  - id: "valid-panels-have-no-problem"
+    kind: "problem"
+    source: "StrictSutraTest#aMarkdownPanelMayNameASourceButLinksAndProvenanceMayNot"
+    sutra: "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\npanels:\n  - { id: a, kind: markdown, text: \"${$.x}\", source: \"link($.desk, 'desk')\" }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "chart-options-of-the-wrong-value"
+    kind: "problem"
+    source: "SutraParserTest#theChartAndAggregateKindsParseAndRejectValuesTheyDoNotAllow"
+    note: "Pins the count of RCH-2029 problems found by the reference (six); the words are not pinned."
+    sutra: "rachana: 1\nsutra: bad-charts\nversion: 1\nmatch: { kind: trade }\npanels:\n  - { id: p, kind: pivot, rows: $.positions, by: book, across: currency, agg: median, heat: yes please }\n  - { id: h, kind: histogram, rows: $.scenarios, bins: 0, markers: [ { label: VaR } ] }\n  - { id: g, kind: graph, nodes: $.n, layout: circle }\n  - { id: s, kind: scatter, rows: $.books, x: var }\n  - { id: w, kind: waterfall, rows: $.explain, colors: rainbow }\n"
+    expect: {"ok": false}

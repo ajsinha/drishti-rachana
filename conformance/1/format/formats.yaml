@@ -1,0 +1,144 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: format/formats
+since: "1.0"
+profile: core
+verified: true
+description: "Formats by name, as Drishti's FormatsTest pins them."
+cases:
+
+  - id: "amount0-50000000"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: 50000000
+    format: "amount0"
+    expect: {"text": "50,000,000"}
+
+  - id: "signed2-1962430-56"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: -1962430.56
+    format: "signed2"
+    expect: {"text": "−1,962,430.56"}
+
+  - id: "signed0-22310"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: 22310
+    format: "signed0"
+    expect: {"text": "+22,310"}
+
+  - id: "signed0-0"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: 0
+    format: "signed0"
+    expect: {"text": "0"}
+
+  - id: "pct4-0-0385"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    profile: ["core", "drishti"]
+    value: 0.0385
+    format: "pct4"
+    expect: {"text": "3.8500%"}
+
+  - id: "pct0-0-65"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: 0.65
+    format: "pct0"
+    expect: {"text": "65%"}
+
+  - id: "rate5-1-174"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    profile: ["core", "drishti"]
+    value: 1.174
+    format: "rate5"
+    expect: {"text": "1.17400"}
+
+  - id: "pips1-55-8"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    profile: ["core", "drishti"]
+    value: 55.8
+    format: "pips1"
+    expect: {"text": "+55.8"}
+
+  - id: "compact-4100000"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: 4100000
+    format: "compact"
+    expect: {"text": "4.1m"}
+
+  - id: "compact-15000000"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: 15000000
+    format: "compact"
+    expect: {"text": "15.0m"}
+
+  - id: "date-2026-10-02"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: "2026-10-02"
+    format: "date"
+    expect: {"text": "2026-10-02"}
+
+  - id: "dmy-2026-10-02"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: "2026-10-02"
+    format: "dmy"
+    expect: {"text": "02 Oct 2026"}
+
+  - id: "nosuch-12"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: 12
+    format: "nosuch"
+    expect: {"text": "12"}
+
+  - id: "amount0-none"
+    kind: "format"
+    source: "FormatsTest#numbersSignsPercentsAndCompact"
+    value: null
+    format: "amount0"
+    expect: {"text": ""}
+
+  - id: "tone-sign-negative"
+    kind: "format"
+    source: "FormatsTest#tones"
+    value: -3
+    tone: "sign"
+    expect: {"tone": "neg"}
+
+  - id: "tone-sign-positive"
+    kind: "format"
+    source: "FormatsTest#tones"
+    value: 3
+    tone: "sign"
+    expect: {"tone": "pos"}
+
+  - id: "tone-sign-0"
+    kind: "format"
+    source: "FormatsTest#tones"
+    value: 0
+    tone: "sign"
+    expect: {"tone": null}
+
+  - id: "tone-status-confirmed"
+    kind: "format"
+    source: "FormatsTest#tones"
+    value: "Confirmed"
+    tone: "status"
+    expect: {"tone": "ok"}
+
+  - id: "tone-status-disputed"
+    kind: "format"
+    source: "FormatsTest#tones"
+    value: "Disputed"
+    tone: "status"
+    expect: {"tone": "bad"}

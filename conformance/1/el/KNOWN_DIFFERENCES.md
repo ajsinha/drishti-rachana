@@ -2,25 +2,26 @@
 # Where the reference differs from the specification (found by the first run, plan H1)
 
 The expression cases were run on the reference (Drishti's `compute/drishti-rachana`, release i7a) by
-`tools/conformance/rachana_conformance.py` through `tools/reference-bridge/RefBridge.java`. 991 cases pass and are
-`verified: true`. The 45 below fail on the reference and keep `verified: false`: each case pins what SPEC says, the
-reference is to change (plan N5 settles each; A1 for the codes and messages), and no case is changed to fit a defect.
+`tools/conformance/rachana_conformance.py` through `tools/reference-bridge/RefBridge.java`. The expression cases that differ from the draft specification were settled by decision N5: at level 1.0 the reference wins and the case is verified; the
+specified behaviour is the 1.1 variant of the case.
 
-| Cases | SPEC | Reference | Settled by |
+| Cases | SPEC (draft) | Reference (level 1.0) | Settled |
 |---|---|---|---|
-| 43 `bad-*`, `expr-error` and limit cases | 6.3: a compile or argument problem reads `expression '<source>': <words>` (a template: `template '<source>': ...`) | the words alone, with ` at <offset>` appended | A1 (the error mapper), N5 |
-| `el/text#regex-extract-ab-trade-id` | an unsupported pattern raises `RCH-2102` | `DRS-4010` (look-around refused) | A1 / A3 (SafeRegex into Core) |
-| `el/distributions#standardize-42-40-1-5` | `standardize` returns a number | a decimal | N5 |
+| 43 `bad-*`, `expr-error` and limit cases | 6.3: `expression '<source>': <reason>` | the words alone, with ` at <offset>` | N5: the cases pin the reference and are verified; the prefix is level 1.1 (`el/messages-level-1-1`, 43 cases, unverified) |
+| `el/text#regex-extract-ab-trade-id` | `RCH-2102` | `RCH-4010` | N5: `RCH-4010` verified; `-l11` expects `RCH-2102` |
+| `el/distributions#standardize-42-40-1-5` | a number | a decimal | N5: decimal verified; `-l11` expects a number |
 
 Other findings of the run: `check` cases (20) are `unsupported` by the bootstrap bridge, because the reference's checked mode reads a
 Drishti pivot model (`trades.FIELD`), not record types; they wait for Core's checker (A-steps). Cases that use the Drishti
 profile's format names (`pct4`) carry `profile: [core, drishti]`.
 
-## The hand-written `problem` examples (plan H2)
+## The hand-written `problem` examples (plan H2, analysed)
 
-Five of `problem/examples/problem` fail on the reference and stay `verified: false`: `valid-sutra-has-no-problems` (the reference reports problems),
-`unknown-top-level-key` and `profile-key-without-the-profile` (one problem more than expected), `problems-in-position-order` and
-`expression-problem-inside-a-panel` (a different first code). The causes are not yet analysed; each is settled with decision N5 before the examples are frozen.
+The examples assumed a Core Sutra with no `match` and JSON-pointer paths. The reference always loads the Drishti profile (so `match: { kind }`
+is required) and reports lines and columns but no `path` or `expr` offsets inside a Sutra, and stops at the first problem a later one depends on.
+By N5 level 1.0 is the reference: the examples gained a `match` line, lost `path`/`expr`, and `unknown-top-level-key` expects the reference's column; four are verified.
+`problems-in-position-order` reports one problem at 1.0 and two at 1.1 (`-l11`, unverified). `profile-key-without-the-profile` needs a Core runtime
+with no profile and waits for rachana-core (unverified).
 
 ## The function examples (plan H5)
 

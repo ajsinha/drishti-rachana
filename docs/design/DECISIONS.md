@@ -119,3 +119,9 @@ Still open after the owner's acceptance of 2026-11-17 (proofs to run, not decisi
 | L-19 | **Accepted as recommended**: C1 (typed fragments) and X42 (libraries) are pulled forward to directly after the split. |
 | L-20 | **Accepted**: the 209 fragments are the backlog; each library releases its 1.0 when its baseline wave is done. |
 | others | L-1 to L-10, L-13, L-14, L-16 to L-18: as recommended unless the owner objects. |
+
+## N5: the known differences between the reference and the specification
+
+| # | Decision | Status |
+|---|---|---|
+| N5 | **Accepted (lead, 2026-11-19, from the compatibility regime Q1: byte for byte, including problem wording).** At language level 1.0 the reference (Drishti i7a behaviour) wins wherever it differs from the draft specification: the cases pin the reference and are `verified: true`. The specification's intended behaviour becomes the next level (1.1) and is pinned by cases with `since: "1.1"` and `verified: false` until the reference changes at that level. Applied to: the problem-message prefix, `RCH-4010` for a refused pattern, `standardize` as a decimal, problem paths, the dependent-problem rule. List aggregates, `min`/`max` over a list and the 14 `el/functions-*` aggregate examples are not differences of wording but missing behaviour: they stay unverified until the aggregates move into Core. | Accepted |

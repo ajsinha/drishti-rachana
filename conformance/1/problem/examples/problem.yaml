@@ -2,7 +2,7 @@
 suite: problem/examples/problem
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: A Sutra's complete, ordered problem list (SPEC 6), matched by code, path and range.
 cases:
   - id: valid-sutra-has-no-problems
@@ -12,6 +12,7 @@ cases:
       rachana: 1
       sutra: demo
       version: 1
+      match: { kind: demo }
       panels:
         - { id: note, kind: markdown, text: "Hello" }
     expect: { ok: true, problems: [] }
@@ -23,28 +24,48 @@ cases:
       rachana: 1
       sutra: demo
       version: 1
+      match: { kind: demo }
       colour: blue
     expect:
       ok: false
       problems:
-        - { code: RCH-2011, severity: error, path: /colour, range: { start: { line: 4, column: 1, offset: 34 } } }
+        - { code: RCH-2011, severity: error, range: { start: { line: 5, column: 9 } } }
 
   - id: problems-in-position-order
     kind: problem
     source: SPEC 2.3, 6.1
-    note: Both problems are reported (a compile returns all of them), first by position.
+    note: "Level 1.0 is the reference (decision N5): a Sutra with an unknown panel kind reports that problem alone; the duplicate id is found only once the kind is valid. Level 1.1 reports both, first by position (problems-in-position-order-l11)."
     sutra: |
       rachana: 1
       sutra: demo
       version: 1
+      match: { kind: demo }
       panels:
         - { id: a, kind: pie }
         - { id: a, kind: markdown, text: "x" }
     expect:
       ok: false
       problems:
-        - { code: RCH-2021, path: /panels/0/kind, range: { start: { line: 5 } } }
-        - { code: RCH-2024, path: /panels/1/id, range: { start: { line: 6 } } }
+        - { code: RCH-2021, range: { start: { line: 6 } } }
+
+  - id: problems-in-position-order-l11
+    kind: problem
+    since: "1.1"
+    verified: false
+    source: SPEC 2.3, 6.1
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: a, kind: pie }
+        - { id: a, kind: markdown, text: "x" }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2021, path: /panels/0/kind, range: { start: { line: 6 } } }
+        - { code: RCH-2024, path: /panels/1/id, range: { start: { line: 7 } } }
 
   - id: expression-problem-inside-a-panel
     kind: problem
@@ -53,19 +74,20 @@ cases:
       rachana: 1
       sutra: demo
       version: 1
+      match: { kind: demo }
       panels:
         - { id: total, kind: metric, value: "2 ** 3" }
     expect:
       ok: false
       problems:
         - code: RCH-2101
-          path: /panels/0/value
-          range: { start: { line: 5 } }
+          range: { start: { line: 6 } }
           messageStart: "expression '2 ** 3': '**' is not Rachana"
-          expr: { source: "2 ** 3", start: 2 }
 
   - id: profile-key-without-the-profile
     kind: problem
+    verified: false
+    note: A Core runtime with no profile loaded; the reference always loads the Drishti profile (it reports an unknown key and a missing kind), so this waits for rachana-core.
     source: SPEC 2.2 (match belongs to the drishti profile, D12)
     sutra: |
       rachana: 1

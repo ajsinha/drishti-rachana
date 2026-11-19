@@ -1,0 +1,440 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# The message wording of language level 1.1 (decision N5): the same compile problems as the cases of level 1.0, with the prefix expression '<source>': (SPEC 6.3). Unverified until the reference changes at that level.
+suite: el/messages-level-1-1
+since: "1.1"
+profile: core
+verified: false
+description: "Problem messages with the source prefix, language level 1.1."
+cases:
+
+  - id: "dates-bad-yearfrac-start-date-maturity-date-act-999-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
+    note: "Message contains: \"yearfrac: unknown day-count basis 'ACT/999'\"; 'ACT/360, ACT/365F, 30/360, 30E/360, ACT/ACT'."
+    expr: "yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/999')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/999')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "dates-bad-intck-fortnight-trade-date-today-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Message contains: \"intck: unknown interval 'fortnight'\"."
+    expr: "intck('fortnight', $.TRADE_DATE, today())"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('fortnight', $.TRADE_DATE, today())': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "dates-bad-intck-month-trade-date-today-usny-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Message contains: \"a calendar counts only 'business_day'\"."
+    expr: "intck('month', $.TRADE_DATE, today(), 'USNY')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('month', $.TRADE_DATE, today(), 'USNY')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "dates-bad-intck-business-day-trade-date-today-xxny-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "DateFunctionsTest#intckCountsBoundariesCrossed"
+    note: "Message contains: 'unknown calendar XXNY'."
+    expr: "intck('business_day', $.TRADE_DATE, today(), 'XXNY')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('business_day', $.TRADE_DATE, today(), 'XXNY')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "dates-bad-is-business-day-2026-11-26-nope-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
+    note: "Message contains: 'unknown calendar NOPE'."
+    expr: "is_business_day('2026-11-26', 'NOPE')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'is_business_day('2026-11-26', 'NOPE')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "dates-bad-shift-date-2026-10-16-1-fortnight-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#theDateParts"
+    note: "Message contains: 'unit is one of'."
+    expr: "shift_date('2026-10-16', 1, 'fortnight')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'shift_date('2026-10-16', 1, 'fortnight')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "dates-bad-shift-date-2026-10-16-1-unit-fortnight-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#theDateParts"
+    note: "Message contains: 'unit is one of'."
+    expr: "shift_date('2026-10-16', 1, unit = 'fortnight')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'shift_date('2026-10-16', 1, unit = 'fortnight')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "expr-error-double-star-is-not-rachana-l11"
+    kind: expr-error
+    since: "1.1"
+    verified: false
+    source: SPEC 6.3
+    expr: "2 ** 3"
+    expect:
+      problems:
+        - { code: RCH-2101, messageStart: "expression '2 ** 3': '**' is not Rachana: write power(x, y)", expr: { start: 2 } }
+
+  - id: "expr-error-unterminated-string-l11"
+    kind: expr-error
+    since: "1.1"
+    verified: false
+    source: SPEC 6.3
+    expr: "'abc"
+    expect:
+      problems:
+        - { code: RCH-2101, messageStart: "expression ''abc': unterminated string" }
+
+  - id: "expr-error-arity-out-of-range-l11"
+    kind: expr-error
+    since: "1.1"
+    verified: false
+    source: SPEC 4.10 rule 1, 6.3
+    expr: "size($.a, 'b')"
+    expect:
+      problems:
+        - { code: RCH-2101, messageStart: "expression 'size($.a, 'b')': size takes 1 argument(s), got 2" }
+
+  - id: "expr-error-unknown-function-names-near-matches-l11"
+    kind: expr-error
+    since: "1.1"
+    verified: false
+    source: SPEC 4.10 rule 1, 6.3
+    note: The list of known names after the colon is not pinned here.
+    expr: "roundd(1)"
+    expect:
+      problems:
+        - { code: RCH-2101, messageStart: "expression 'roundd(1)': unknown function 'roundd'" }
+
+  - id: "expr-error-unclosed-template-part-at-template-offset-l11"
+    kind: expr-error
+    since: "1.1"
+    verified: false
+    source: SPEC 4.11
+    template: "Total ${sum($.a)"
+    expect:
+      problems:
+        - { code: RCH-2101, messageStart: "template 'Total ${sum($.a)'", expr: { start: 6 } }
+
+  - id: "expr-error-host-lowered-depth-is-named-l11"
+    kind: expr-error
+    since: "1.1"
+    verified: false
+    source: SPEC 4.12
+    given: { limits: { depth: 3 } }
+    expr: "((((1))))"
+    expect:
+      problems:
+        - { code: RCH-2101, messageStart: "expression '((((1))))': expression nested deeper than 3 levels" }
+
+  - id: "limits-host-lowered-depth-is-named-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "ElLimitsTest#theLimitsAreSettingsAndLengthIsBoundedToo"
+    note: "Message contains: 'nested deeper than 10'."
+    given: {"record": {"mtm": 3}, "limits": {"depth": 10, "length": 50}}
+    expr: "((((((((((($.mtm)))))))))))"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '((((((((((($.mtm)))))))))))': "}]}
+
+  - id: "lists-bad-sequence-20000-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "ListFunctionsTest#sequenceCountsInDecimal"
+    note: "SPEC 4.12: a compile error for a literal. Message contains: 'sequence: the length 20000 is outside 0..10000'."
+    expr: "sequence(20000)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'sequence(20000)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "lists-bad-reduce-nums-0-acc-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "SPEC 4.10 rule 5. Message contains: 'reduce does not add up a list: use sum(...)'."
+    expr: "reduce($.NUMS, 0, @acc + @)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.NUMS, 0, @acc + @)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "lists-bad-reduce-legs-0-notional-acc-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "Message contains: 'use sum(...)'."
+    expr: "reduce($.LEGS, 0, @.NOTIONAL - @acc)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.LEGS, 0, @.NOTIONAL - @acc)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "lists-bad-reduce-events-acc-event-type-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
+    note: "Message contains: 'concat(...) to join text'."
+    expr: "reduce($.EVENTS, '', @acc + ', ' + @.EVENT_TYPE)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.EVENTS, '', @acc + ', ' + @.EVENT_TYPE)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "lists-more-bad-fillmissing-gaps-spline-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "ListMoreTest#fillmissingByEachMethod"
+    note: "Message contains: \"unknown method 'spline'\"."
+    expr: "fillmissing($.GAPS, 'spline')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'fillmissing($.GAPS, 'spline')': "}]}
+    given: {"record": {"NPV": [-10000, 3000, 4200, 6800], "XF": [-10000, 2750, 4250, 3250, 2750], "XD": ["2008-01-01", "2008-03-01", "2008-10-30", "2009-02-15", "2009-04-01"], "IRR1": [-70000, 12000, 15000, 18000, 21000], "IRR2": [-70000, 12000, 15000, 18000, 21000, 26000], "IRR3": [-70000, 12000, 15000], "MIRR": [-120000, 39000, 30000, 21000, 37000, 46000], "FVS": [0.09, 0.11, 0.1], "POS": [1, 2, 3], "GAP": [-100, null, 50], "TXT": [-100, "abc"], "BACK": ["2008-01-01", "2007-12-31"], "BOND": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 104], "TIMES": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 16.0, 16.5, 17.0, 17.5, 18.0, 18.5, 19.0, 19.5, 20.0, 20.5, 21.0, 21.5, 22.0, 22.5, 23.0, 23.5, 24.0, 24.5, 25.0, 25.5, 26.0, 26.5, 27.0, 27.5, 28.0, 28.5, 29.0, 29.5], "BDATES": ["2027-10-16", "2028-10-16"], "B2": [5, 105], "T12": [1, 2], "A": [4, 8, 6, -1, -2, -3, -1, 3, 4, 5], "OUT": [57, 59, 60, 100, 59, 58, 57, 58, 300, 61, 62, 60, 62, 58, 57], "SQ": [1, 4, 9, 16, 25], "P": [3, 2, 1], "PX": [5, 7, 9], "B": [2, 4, -1, 10, 6, 3, 0, -16], "ONE23": [1, 2, 3], "XS": [1, 2, 3], "VS": [10, 20, 30], "GAPS": [null, 2, null, 4, null], "QX": [0, 1.5, 2.5, 4], "PFX": [0, 1, 2, 3, 4], "PFY": [1, 0, 3, 10, 21], "SAME": [2, 2, 2], "S1": ["USD", "EUR", 1, 2], "S2": ["EUR", 2, "GBP", 2.0], "EMPTY": [], "TRADES": [{"DESK": "B", "N": 3}, {"DESK": "A", "N": 2}, {"DESK": "B", "N": 1}, {"DESK": "A", "N": 5}, {"N": 0}], "MTM": {"$masked": true}, "HIDDEN": [-100, {"$masked": true}, 60]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-if-true-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
+    note: "Message contains: 'if takes 2-3 argument(s), got 1'."
+    expr: "if(true)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'if(true)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-ifs-true-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
+    note: "Message contains: 'ifs takes 2-64 argument(s), got 1'."
+    expr: "ifs(true)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'ifs(true)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-switch-a-a-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#switchMatchesAValue"
+    note: "Message contains: 'switch takes 3-64 argument(s), got 2'."
+    expr: "switch('A', 'A')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'switch('A', 'A')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-let-5-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: 'let needs a name = value before its result'."
+    expr: "let(5)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(5)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-let-a-1-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"expected ',' and then the result\"."
+    expr: "let(a = 1)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-let-true-1-2-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"let: 'true' cannot be a name\"."
+    expr: "let(true = 1, 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(true = 1, 2)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-let-a-1-a-2-a-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"let: 'a' is named twice\"."
+    expr: "let(a = 1, a = 2, a)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1, a = 2, a)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-let-a-1-a-2-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: 'only the last argument is the result'."
+    expr: "let(a = 1, a, 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1, a, 2)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-a-1-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "LogicFunctionsTest#letNamesAPartToReuse"
+    note: "Message contains: \"unexpected '='\"."
+    expr: "a = 1"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'a = 1': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-round-2-5-digits-1-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'round has no argument named digits'."
+    expr: "round(2.5, digits = 1)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, digits = 1)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-round-2-5-n-1-n-2-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'n is named twice'."
+    expr: "round(2.5, n = 1, n = 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, n = 1, n = 2)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-round-n-1-2-5-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'a value without a name follows a named one'."
+    expr: "round(n = 1, 2.5)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(n = 1, 2.5)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-round-2-5-1-n-2-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'n is given twice'."
+    expr: "round(2.5, 1, n = 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, 1, n = 2)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "logic-bad-concat-a-sep-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
+    note: "Message contains: 'concat takes no named arguments'."
+    expr: "concat('a', sep = '-')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'concat('a', sep = '-')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "math-bad-round-up-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "MathFunctionsTest#writtenArgumentsAreCountedWhenCompiling"
+    note: "Message contains: 'round_up takes 1-2 argument(s), got 0'."
+    expr: "round_up()"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round_up()': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "math-bad-clamp-1-2-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "MathFunctionsTest#writtenArgumentsAreCountedWhenCompiling"
+    note: "Message contains: 'clamp takes 3 argument(s), got 2'."
+    expr: "clamp(1, 2)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'clamp(1, 2)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "math-bad-quantity-2-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    note: "Message contains: \"'**' is not Rachana: write power(x, y)\"."
+    expr: "$.QUANTITY ** 2"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '$.QUANTITY ** 2': ", "expr": {"start": 11}}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "math-bad-quantity-7-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
+    note: "Message contains: \"'//' is not Rachana: write floor(x / y)\"."
+    expr: "$.QUANTITY // 7"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '$.QUANTITY // 7': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "paths-operators-bad-1-2-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
+    note: "Message contains: \"']'\"."
+    expr: "[1, 2"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '[1, 2': "}]}
+    given: {"record": {"tradeId": "IRS-1", "notional": 50000000, "direction": "PAY_FIXED", "rate": 0.0385, "legs": [{"leg": 1, "payer": true, "label": "Pay fixed", "rows": [{"a": 1}, {"a": 2.5}]}, {"leg": 2, "payer": false, "label": "Receive SOFR"}], "cp": {"id": "CP-1", "name": "Northbridge"}}}
+
+  - id: "templates-bad-total-sum-a-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "SPEC 4.11"
+    note: "An unclosed ${ is RCH-2101 at the template offset of ${."
+    template: "Total ${sum($.a)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "template 'Total ${sum($.a)': ", "expr": {"start": 6}}]}
+    given: {"record": {"tradeId": "IRS-1", "legs": [{"leg": 1, "label": "Pay fixed"}, {"leg": 2, "label": "Receive SOFR", "type": "FLOAT"}], "sales": [1, 2, 3], "mtm": {"$masked": true}, "cp": {"id": "CP-1", "name": "Northbridge"}}}
+
+  - id: "text-bad-pad-a-3-00-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    note: "Message contains: \"pad: the fill '00' is not one character\"."
+    expr: "pad('a', 3, '00')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'pad('a', 3, '00')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "text-bad-pad-a-3-middle-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
+    note: "Message contains: \"the side 'middle' is neither 'left' nor 'right'\"."
+    expr: "pad('a', 3, ' ', 'middle')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'pad('a', 3, ' ', 'middle')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "text-bad-regex-extract-a-a-3-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    note: "Message contains: \"the pattern '(a)' has 1 group(s); group 3 was asked for\"."
+    expr: "regex_extract('a', '(a)', 3)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'regex_extract('a', '(a)', 3)': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}
+
+  - id: "text-bad-regex-extract-ab-a-b-l11"
+    kind: "expr-error"
+    since: "1.1"
+    verified: false
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    note: "A refused regular expression is a literal check (SPEC 4.10 rule 2). Message contains: 'is refused'."
+    expr: "regex_extract('ab', '(?<=a)b')"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'regex_extract('ab', '(?<=a)b')': "}]}
+    given: {"record": {"TRADE_ID": "MX-20000001", "PRODUCT_TYPE": "ComSwap", "DESK": "DESK-COMM", "TT_BOOK": "BOOK-RATES-3", "QUANTITY": 242000000, "PRICE": 0.040829, "DIRECTION": "SHORT", "TRADE_DATE": "2025-11-21", "START_DATE": "2025-11-25", "MATURITY_DATE": "2032-06-25", "INSTRUMENT": "USD 2026-10 swap", "TAGS": "ir,swap,,aud", "LEG_ID": "7", "STRATEGY": null, "BLANK": "", "TEXTNUM": "12.5", "BASIS": "ACT/999", "DESKS": ["DESK-COMM", "DESK-RATES"], "LEGS": [{"LEG_ID": 1, "LEG_TYPE": "FIXED", "NOTIONAL": 242000000, "CURRENCY": "AUD"}, {"LEG_ID": 2, "LEG_TYPE": "FLOAT", "NOTIONAL": 242000000, "CURRENCY": "AUD"}], "EVENTS": [{"EVENT_TYPE": "BOOKED", "EVENT_DATE": "2025-11-21"}, {"EVENT_TYPE": "AMENDED", "EVENT_DATE": "2026-03-02"}, {"EVENT_TYPE": "CASH_SETTLEMENT", "EVENT_DATE": "2026-01-15", "AMOUNT": -1500.25}], "NUMS": [3, 1.5, "2", 10], "MIXED": [1, "1", 1.0, "a", "a"], "UNDATED": [{"ID": "a", "D": "2026-02-01"}, {"ID": "b"}, {"ID": "c", "D": "2026-01-01"}], "MTM": {"$masked": true}, "MASKED_LIST": {"$masked": true}, "PVS": [{"PV": 5}, {"PV": {"$masked": true}}]}, "today": "2026-10-16"}

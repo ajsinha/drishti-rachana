@@ -73,12 +73,11 @@ cases:
 
   - id: "host-lowered-depth-is-named"
     kind: "expr-error"
-    verified: false
     source: "ElLimitsTest#theLimitsAreSettingsAndLengthIsBoundedToo"
     note: "Message contains: 'nested deeper than 10'."
     given: {"record": {"mtm": 3}, "limits": {"depth": 10, "length": 50}}
     expr: "((((((((((($.mtm)))))))))))"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '((((((((((($.mtm)))))))))))': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "host-lowered-length-is-named"
     kind: "expr-error"

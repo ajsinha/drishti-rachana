@@ -291,19 +291,17 @@ cases:
 
   - id: "bad-pad-a-3-00"
     kind: "expr-error"
-    verified: false
     source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
     note: "Message contains: \"pad: the fill '00' is not one character\"."
     expr: "pad('a', 3, '00')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'pad('a', 3, '00')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-pad-a-3-middle"
     kind: "expr-error"
-    verified: false
     source: "TextFunctionsTest#padWidensOnTheLeftByDefault"
     note: "Message contains: \"the side 'middle' is neither 'left' nor 'right'\"."
     expr: "pad('a', 3, ' ', 'middle')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'pad('a', 3, ' ', 'middle')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "pad-a-quantity"
     kind: "expr"
@@ -357,26 +355,30 @@ cases:
 
   - id: "bad-regex-extract-a-a-3"
     kind: "expr-error"
-    verified: false
     source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
     note: "Message contains: \"the pattern '(a)' has 1 group(s); group 3 was asked for\"."
     expr: "regex_extract('a', '(a)', 3)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'regex_extract('a', '(a)', 3)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-regex-extract-ab-a-b"
     kind: "expr-error"
-    verified: false
     source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
     note: "A refused regular expression is a literal check (SPEC 4.10 rule 2). Message contains: 'is refused'."
     expr: "regex_extract('ab', '(?<=a)b')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'regex_extract('ab', '(?<=a)b')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "regex-extract-ab-trade-id"
     kind: "expr"
+    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
+    note: "Level 1.0 is the reference: a refused pattern raises RCH-4010 (decision N5). Level 1.1 raises RCH-2102: regex-extract-ab-trade-id-l11."
+    expr: "regex_extract('ab', $.TRADE_ID + '(')"
+    expect: {"error": {"code": "RCH-4010"}}
+
+  - id: "regex-extract-ab-trade-id-l11"
+    kind: "expr"
+    since: "1.1"
     verified: false
     source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
-    tags: ["code-unmapped"]
-    note: "The Java test asserts ErrorCode.REGEX_REFUSED (a DrishtiException), not EL_EVAL; SPEC 6.2 lists no separate code, so RCH-2102 is the draft mapping and H1 must confirm it."
     expr: "regex_extract('ab', $.TRADE_ID + '(')"
     expect: {"error": {"code": "RCH-2102"}}
 

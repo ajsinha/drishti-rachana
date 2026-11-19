@@ -71,11 +71,10 @@ cases:
 
   - id: "bad-total-sum-a"
     kind: "expr-error"
-    verified: false
     source: "SPEC 4.11"
     note: "An unclosed ${ is RCH-2101 at the template offset of ${."
     template: "Total ${sum($.a)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "template 'Total ${sum($.a)': ", "expr": {"start": 6}}]}
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 6}}]}
 
   - id: "mtm-fmt-mtm-signed0"
     kind: "expr"

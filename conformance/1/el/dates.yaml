@@ -338,11 +338,10 @@ cases:
 
   - id: "bad-yearfrac-start-date-maturity-date-act-999"
     kind: "expr-error"
-    verified: false
     source: "DateFunctionsTest#yearfracIsDecimalAndChecksItsBasis"
     note: "Message contains: \"yearfrac: unknown day-count basis 'ACT/999'\"; 'ACT/360, ACT/365F, 30/360, 30E/360, ACT/ACT'."
     expr: "yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/999')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'yearfrac($.START_DATE, $.MATURITY_DATE, 'ACT/999')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "yearfrac-start-date-maturity-date-basis"
     kind: "expr"
@@ -468,27 +467,24 @@ cases:
 
   - id: "bad-intck-fortnight-trade-date-today"
     kind: "expr-error"
-    verified: false
     source: "DateFunctionsTest#intckCountsBoundariesCrossed"
     note: "Message contains: \"intck: unknown interval 'fortnight'\"."
     expr: "intck('fortnight', $.TRADE_DATE, today())"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('fortnight', $.TRADE_DATE, today())': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-intck-month-trade-date-today-usny"
     kind: "expr-error"
-    verified: false
     source: "DateFunctionsTest#intckCountsBoundariesCrossed"
     note: "Message contains: \"a calendar counts only 'business_day'\"."
     expr: "intck('month', $.TRADE_DATE, today(), 'USNY')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('month', $.TRADE_DATE, today(), 'USNY')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-intck-business-day-trade-date-today-xxny"
     kind: "expr-error"
-    verified: false
     source: "DateFunctionsTest#intckCountsBoundariesCrossed"
     note: "Message contains: 'unknown calendar XXNY'."
     expr: "intck('business_day', $.TRADE_DATE, today(), 'XXNY')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('business_day', $.TRADE_DATE, today(), 'XXNY')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "intck-month-x-today"
     kind: "expr"
@@ -577,11 +573,10 @@ cases:
 
   - id: "bad-is-business-day-2026-11-26-nope"
     kind: "expr-error"
-    verified: false
     source: "DateFunctionsTest#isBusinessDayReadsTheBanksCalendars"
     note: "Message contains: 'unknown calendar NOPE'."
     expr: "is_business_day('2026-11-26', 'NOPE')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'is_business_day('2026-11-26', 'NOPE')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "is-business-day-2026-11-26-trade-id"
     kind: "expr"
@@ -937,19 +932,17 @@ cases:
 
   - id: "bad-shift-date-2026-10-16-1-fortnight"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#theDateParts"
     note: "Message contains: 'unit is one of'."
     expr: "shift_date('2026-10-16', 1, 'fortnight')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'shift_date('2026-10-16', 1, 'fortnight')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-shift-date-2026-10-16-1-unit-fortnight"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#theDateParts"
     note: "Message contains: 'unit is one of'."
     expr: "shift_date('2026-10-16', 1, unit = 'fortnight')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'shift_date('2026-10-16', 1, unit = 'fortnight')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "year-mtm"
     kind: "expr"

@@ -660,19 +660,17 @@ cases:
 
   - id: "bad-round-up"
     kind: "expr-error"
-    verified: false
     source: "MathFunctionsTest#writtenArgumentsAreCountedWhenCompiling"
     note: "Message contains: 'round_up takes 1-2 argument(s), got 0'."
     expr: "round_up()"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round_up()': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-clamp-1-2"
     kind: "expr-error"
-    verified: false
     source: "MathFunctionsTest#writtenArgumentsAreCountedWhenCompiling"
     note: "Message contains: 'clamp takes 3 argument(s), got 2'."
     expr: "clamp(1, 2)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'clamp(1, 2)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "round-2-15-1"
     kind: "expr"
@@ -1062,19 +1060,17 @@ cases:
 
   - id: "bad-quantity-2"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
     note: "Message contains: \"'**' is not Rachana: write power(x, y)\"."
     expr: "$.QUANTITY ** 2"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '$.QUANTITY ** 2': ", "expr": {"start": 11}}]}
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 11}}]}
 
   - id: "bad-quantity-7"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
     note: "Message contains: \"'//' is not Rachana: write floor(x / y)\"."
     expr: "$.QUANTITY // 7"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '$.QUANTITY // 7': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "power-1-1-2-2"
     kind: "expr"

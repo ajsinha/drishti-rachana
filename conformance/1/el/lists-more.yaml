@@ -41,11 +41,10 @@ cases:
 
   - id: "bad-fillmissing-gaps-spline"
     kind: "expr-error"
-    verified: false
     source: "ListMoreTest#fillmissingByEachMethod"
     note: "Message contains: \"unknown method 'spline'\"."
     expr: "fillmissing($.GAPS, 'spline')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'fillmissing($.GAPS, 'spline')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "fillmissing-gaps-concat-spl-ine"
     kind: "expr"

@@ -47,11 +47,10 @@ cases:
 
   - id: "bad-if-true"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#ifEvaluatesOnlyTheBranchTaken"
     note: "Message contains: 'if takes 2-3 argument(s), got 1'."
     expr: "if(true)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'if(true)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "ifs-quantity-1e6-large-quantity-1e5-medium-small"
     kind: "expr"
@@ -92,11 +91,10 @@ cases:
 
   - id: "bad-ifs-true"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#ifsTakesTheFirstTrueCondition"
     note: "Message contains: 'ifs takes 2-64 argument(s), got 1'."
     expr: "ifs(true)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'ifs(true)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "switch-legs-0-leg-type-fixed-f-float-v"
     kind: "expr"
@@ -156,11 +154,10 @@ cases:
 
   - id: "bad-switch-a-a"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#switchMatchesAValue"
     note: "Message contains: 'switch takes 3-64 argument(s), got 2'."
     expr: "switch('A', 'A')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'switch('A', 'A')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "iferror-1-0-0"
     kind: "expr"
@@ -272,51 +269,45 @@ cases:
 
   - id: "bad-let-5"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: 'let needs a name = value before its result'."
     expr: "let(5)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(5)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-let-a-1"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"expected ',' and then the result\"."
     expr: "let(a = 1)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-let-true-1-2"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"let: 'true' cannot be a name\"."
     expr: "let(true = 1, 2)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(true = 1, 2)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-let-a-1-a-2-a"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"let: 'a' is named twice\"."
     expr: "let(a = 1, a = 2, a)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1, a = 2, a)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-let-a-1-a-2"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: 'only the last argument is the result'."
     expr: "let(a = 1, a, 2)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'let(a = 1, a, 2)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-a-1"
     kind: "expr-error"
-    verified: false
     source: "LogicFunctionsTest#letNamesAPartToReuse"
     note: "Message contains: \"unexpected '='\"."
     expr: "a = 1"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'a = 1': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "one-of-desk-desks-oneof-desk-desks"
     kind: "expr"
@@ -604,43 +595,38 @@ cases:
 
   - id: "bad-round-2-5-digits-1"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'round has no argument named digits'."
     expr: "round(2.5, digits = 1)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, digits = 1)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-round-2-5-n-1-n-2"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'n is named twice'."
     expr: "round(2.5, n = 1, n = 2)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, n = 1, n = 2)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-round-n-1-2-5"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'a value without a name follows a named one'."
     expr: "round(n = 1, 2.5)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(n = 1, 2.5)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-round-2-5-1-n-2"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'n is given twice'."
     expr: "round(2.5, 1, n = 2)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'round(2.5, 1, n = 2)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-concat-a-sep"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
     note: "Message contains: 'concat takes no named arguments'."
     expr: "concat('a', sep = '-')"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'concat('a', sep = '-')': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "sum-legs-notional-where-desk-x"
     kind: "expr"

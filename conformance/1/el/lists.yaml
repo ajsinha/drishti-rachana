@@ -249,11 +249,10 @@ cases:
 
   - id: "bad-sequence-20000"
     kind: "expr-error"
-    verified: false
     source: "ListFunctionsTest#sequenceCountsInDecimal"
     note: "SPEC 4.12: a compile error for a literal. Message contains: 'sequence: the length 20000 is outside 0..10000'."
     expr: "sequence(20000)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'sequence(20000)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "sequence-quantity"
     kind: "expr"
@@ -371,27 +370,24 @@ cases:
 
   - id: "bad-reduce-nums-0-acc"
     kind: "expr-error"
-    verified: false
     source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
     note: "SPEC 4.10 rule 5. Message contains: 'reduce does not add up a list: use sum(...)'."
     expr: "reduce($.NUMS, 0, @acc + @)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.NUMS, 0, @acc + @)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-reduce-legs-0-notional-acc"
     kind: "expr-error"
-    verified: false
     source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
     note: "Message contains: 'use sum(...)'."
     expr: "reduce($.LEGS, 0, @.NOTIONAL - @acc)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.LEGS, 0, @.NOTIONAL - @acc)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-reduce-events-acc-event-type"
     kind: "expr-error"
-    verified: false
     source: "ListFunctionsTest#reduceFoldsButNeverAddsUp"
     note: "Message contains: 'concat(...) to join text'."
     expr: "reduce($.EVENTS, '', @acc + ', ' + @.EVENT_TYPE)"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'reduce($.EVENTS, '', @acc + ', ' + @.EVENT_TYPE)': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "bad-reduce-legs-0-leg-type-fixed-acc-notional-acc"
     kind: "expr-error"

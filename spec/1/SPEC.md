@@ -732,7 +732,10 @@ Codes outside these ranges belong to a host. A code never changes meaning; wordi
 
 ### 6.3 Expression messages
 
-An expression problem's message is `expression '<source>': <reason> at <offset>` (or `template '<source>': …`). The
+An expression problem's message is **level-gated** (decision N5): at language level 1.0, byte for byte as the reference gives it,
+`<reason> at <offset>` for a problem found compiling an expression on its own (and `expression '<source>': <reason> at <offset>`
+for one reported inside a Sutra, as the reference writes it there); from level 1.1 it is always
+`expression '<source>': <reason> at <offset>` (or `template '<source>': …`). The reasons are the same at both levels. The
 reasons the parser gives (exact words pinned by [CS]):
 
 | Reason | Example input |
@@ -836,5 +839,14 @@ to be settled with the conformance suite.
 5. **`+` with booleans** joins text (`true + 1` → `'true1'`) while `*` and `==` treat `true` as 1 (4.5, 4.6).
 6. **Links in a list literal** become their display text (the link is lost) (4.2).
 7. **Named keyword-only arguments** of profile functions compile in Core and fail only at evaluation (4.10).
-8. The Drishti reference guide's grammar and error table predate list literals, `in`/`not in`, `^`, `@panel`, `$src`
+8. **Message prefix, regex refusal, `standardize`** (settled, decision N5, 2026-11-19): at language level 1.0 the reference
+   wins byte for byte (Q1): a compile problem of an expression alone has no `expression '<source>': ` prefix (6.3), a
+   refused regular expression raises `RCH-4010`, and `standardize` gives a decimal. Each changes only at a raised level
+   (1.1: the prefix, `RCH-2102`, a number); the cases `el/messages-level-1-1`, `*-l11` carry the 1.1 behaviour,
+   unverified until the reference changes at that level.
+9. **Problem paths and expression offsets inside a Sutra.** The reference's Sutra problems carry a line and column but no
+   JSON Pointer `path` and no `expr` offsets, and it reports one problem where a later one depends on the first (a panel
+   with an unknown kind hides its duplicate id). Level 1.0 is the reference; the paths and the complete list are level 1.1.
+   A Core runtime with no profile does not require `match` (D12); the reference always loads the Drishti profile.
+10. The Drishti reference guide's grammar and error table predate list literals, `in`/`not in`, `^`, `@panel`, `$src`
    and named arguments, and still say "there are no list literals"; this specification supersedes them.

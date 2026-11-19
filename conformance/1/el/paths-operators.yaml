@@ -580,11 +580,10 @@ cases:
 
   - id: "bad-1-2"
     kind: "expr-error"
-    verified: false
     source: "FoldedSyntaxTest#listsAreWrittenInTheExpression"
     note: "Message contains: \"']'\"."
     expr: "[1, 2"
-    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression '[1, 2': "}]}
+    expect: {"problems": [{"code": "RCH-2101"}]}
 
   - id: "not-a-number-2026-09-09"
     kind: "expr"

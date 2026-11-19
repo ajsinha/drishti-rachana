@@ -1,8 +1,9 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Architecture
 
-Status: **planning.** The diagrams show the target design. The language and compiler exist today inside Drishti; the
-separate packages, protocol, SDKs and tooling are planned.
+Status: **partly built.** The diagrams show the target design. The compiler is in this repository (`java/rachana-core`,
+`v0.9.0`, moved from Drishti with its history; section "Module layout as built"); the binder still lives in Drishti; the
+protocol, Views, SDKs and tooling are planned.
 
 ## Components
 
@@ -52,7 +53,7 @@ flowchart TB
 |---|---|---|
 | Sutra spec | Defines valid Sutras: JSON Schema for structure, EBNF for Rachana-EL | planned (R0); exists today inside Drishti (schema served at `GET /api/v1/rachana/schema`) |
 | Conformance suite | Cases of (Sutra, data, expected ViewModel). Any implementation must pass all | planned (R0), harvested from Drishti's Sutra tests |
-| Compiler | Parse, validate, bind, produce ViewModel | exists today inside Drishti (Java); separate repository planned (R1) |
+| Compiler | Parse, validate, bind, produce ViewModel | parse, validate, check, format, edit: **built here** (`java/rachana-core`, `v0.9.0`); bind and ViewModel still in Drishti until A14 |
 | Views | `<rachana-view>`: compile, bind, and paint a ViewModel with Drishti Elements' painter | planned (R1) |
 | Data Protocol | Move tables and live changes | planned (R0 written, R1 built) |
 | SDKs | Embed the compiler and protocol in a host language | planned (R1 Python, JS, Java) |
@@ -160,6 +161,20 @@ flowchart LR
 - Every release carries UI speed budgets, as with Drishti Elements.
 - The painter (`<elements-view>`, the `drishti-views` library) is Drishti Elements code, vendored here at a pin;
   this repository adds `<rachana-view>`, which compiles and binds a Sutra and hands the ViewModel to the painter.
+
+## Module layout as built
+
+| Module | Packages | Depends on |
+|---|---|---|
+| `rachana-api` | `com.ash.rachana.api` (`Node`, not read yet by the evaluator) | the JDK |
+| `rachana-core` | `com.ash.rachana` (writer, text, expressions, wiring, schema, editors, problems), `.el`, `.el.check`, `.format`, `.model`, `.parse`, `.design.ops`, `.profile`; `.hostcompat` (temporary) | `rachana-api`; Jackson and Caffeine as split exemptions ([java/SPLIT_EXEMPTIONS.md](../java/SPLIT_EXEMPTIONS.md)) until A3 and A8b |
+| `rachana-conformance` | `JvmRuntime`, the conformance runtime program | `rachana-core` |
+| `rachana-compat` | the compatibility regime's tests | JUnit |
+| `rachana-guards` | the guards over the reactor | JUnit |
+| `rachana-tools`, `rachana-data`, `rachana-cli` | skeletons | `rachana-core` |
+
+The editing operations are still in `rachana-core`; they move to `rachana-tools` when the public API is reviewed. `rachana-core`
+reads the format table and world regions from the pinned Drishti Elements data (`js/vendor/drishti-elements/2.4.0/data`).
 
 ## Design documents
 

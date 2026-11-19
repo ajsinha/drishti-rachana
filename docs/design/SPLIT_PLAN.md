@@ -1,8 +1,44 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # The split: plan for Drishti i8
 
-Status: **plan.** Nothing here has been done. The split is the first step of Drishti i8; phase R0 (the
-specification and the conformance harvest) runs during Drishti i7b and prepares it.
+Status: **in progress** (M1 of the i7b plan). Phase A (R0) is done; the move (step 10) is done and tagged `v0.9.0`; the
+untangling steps now run **inside this repository** (section 0). Sections 1 to 9 are the plan as written; section 0 says what
+changed and where each step stands.
+
+## 0. Status, and the re-order of 2026-11-19
+
+**Why the order changed.** The owner's rule for M1 (2026-11-19): Drishti is not modified. Steps 1 to 9 untangle inside Drishti
+before the move, so they cannot run there. The order is now **move first, untangle here**:
+
+1. **Step 10 (A10) first**: `git filter-repo` on a fresh clone of Drishti `main` (`c6bc1d1bc`), keeping only the reviewed path
+   allow-list, into `java/rachana-core` with its history (138 commits); the package rename in one commit; this repository's
+   headers. The host types the moved code still names are held in `com.ash.rachana.hostcompat` and the libraries it still uses
+   are allowed, each listed with the step that removes it in [java/SPLIT_EXEMPTIONS.md](../../java/SPLIT_EXEMPTIONS.md) (the guards
+   read that file; it only shrinks).
+2. **Steps 2 to 7 (A1 to A7b) and 13, 14 (A13, A14) inside this repository**, on the moved code, each proven by the conformance
+   suite over the moved code being byte-identical to the reference bridge over Drishti's jars (0 verified failing).
+3. **Drishti's half waits** for the migration: deleting its copy, consuming the pin (step 11), its guards (steps 1 and 12), its
+   tag and drill. Each is written down in [DRISHTI_MIGRATION_TODO](../plans/DRISHTI_MIGRATION_TODO.md) section 8.
+
+The proof of every step: `rachana_conformance.py --jvm` (this code) and `--classpath-file` (the reference bridge over the jars
+built from the same Drishti commit) write byte-identical results files over all 2,112 cases (1,908 pass, 74 unverified failing as
+recorded, 130 unsupported kinds, **0 verified failing**). Drishti's ViewModel goldens cannot run here; they are part of the
+migration's proof (step 11).
+
+| Step | Plan id | Where | State | Proof |
+|---|---|---|---|---|
+| 0a to 0e | H1 to H6 | here (Drishti halves held) | done in R0 | cases verified against the reference |
+| 10 move with history | A10 | here | **done, `v0.9.0`** | 2,112 cases byte-identical; 783 unit tests; guards |
+| 2 errors | A1 | here | next | |
+| 3 value interface | A2 | here | planned | |
+| 4 small dependencies | A3 | here | planned | |
+| 5 Spring out | A4 | here | planned (Spring never moved: `Formats` lost its reload hook at A10, the configuration classes stayed in Drishti) | |
+| 6 registries per instance | A6 | here | planned | |
+| 7 model and parser split, FormExpr into Rachana-EL | A7, A7b | here | planned | |
+| 8 own YAML and JSON | A8a, A8b | here, the other Opus lane | planned | |
+| 9 aggregate kernel | A9 | here, the other Opus lane | planned | |
+| 13, 14 binder | A13, A14 | here | planned; `v0.10.0` | |
+| 1, 11, 12 guards and the pin in Drishti | H3, A11, A12 | Drishti | **held** (DRISHTI_MIGRATION_TODO 8) | |
 
 Sizes are from the Drishti i7a tree: `compute/drishti-rachana` has about 22,300 lines of Java (main) and about 7,000
 of tests (264 test methods); the binder and its neighbours in `kernel/drishti-engine` about 4,700; the list

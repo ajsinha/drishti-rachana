@@ -1,7 +1,8 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Drishti Rachana roadmap
 
-Status: **planning.** Nothing below is built in this repository yet.
+Status: **R0 done; R1 in progress.** The compiler moved here with its history and is tagged `v0.9.0`; the untangling steps
+run in this repository ([SPLIT_PLAN](design/SPLIT_PLAN.md) section 0 has each step's state). Everything after R1's split is planned.
 
 Rachana is built alongside the Drishti product; each phase lands with a Drishti release, and Drishti is always the
 first customer of what ships here. The designs behind each phase are in [design/](design/DECISIONS.md).
@@ -9,7 +10,7 @@ first customer of what ships here. The designs behind each phase are in [design/
 | Phase | Lands with Drishti | What |
 |---|---|---|
 | **R0: the spec, written down** | i7b | The specification ([SPEC](design/SPEC.md)): EBNF for Rachana-EL, the Sutra JSON Schema and the language definition generated from the compiler's tables and published, versioning rules, the error model with machine-readable problems. The complete Core function catalogue. The conformance suite harvested from Drishti's existing Sutra tests, and the ViewModel goldens frozen. The Rachana Data Protocol v1 written down ([DATA_PROTOCOL](design/DATA_PROTOCOL.md)). The line between **Sutra Core** and the **Drishti profile** ([CORE_AND_PROFILES](design/CORE_AND_PROFILES.md)). Split steps 0a to 0e. |
-| **R1: the split** | i8 (its first step) | Untangle inside Drishti, then this repository takes the compiler with its git history; first release `v1.0.0`; Drishti consumes the pin, with guards on both sides ([SPLIT_PLAN](design/SPLIT_PLAN.md) steps 1 to 12). Then, each as a Rachana minor: the binder moves into Core (steps 13, 14); `data:` and tables with the Data Protocol client (step 15); the JavaScript build after its one-week proof, and `<rachana-view>` over Drishti Elements' painter (step 16); the CLI and static mode; the **Python SDK with Flask and FastAPI adapters** (serving Sutras and tables, streaming changes). |
+| **R1: the split** (in progress: `v0.9.0` done) | i7b M1 | This repository took the compiler with its git history first (`v0.9.0`, done), and untangles it here, because Drishti may not change during M1; `v0.10.0` when the binder has moved; Drishti consumes the pin, with guards on both sides ([SPLIT_PLAN](design/SPLIT_PLAN.md) steps 1 to 12). Then, each as a Rachana minor: the binder moves into Core (steps 13, 14); `data:` and tables with the Data Protocol client (step 15); the JavaScript build after its one-week proof, and `<rachana-view>` over Drishti Elements' painter (step 16); the CLI and static mode; the **Python SDK with Flask and FastAPI adapters** (serving Sutras and tables, streaming changes). |
 | **R2a: desktop, Electron first** | i8.x | The **in-process bridge transport** of the Data Protocol and the page-side bridge module; the **Node/Electron host SDK** (`drishti-rachana-electron`). It needs R1's JavaScript build, `<rachana-view>` and the Data Protocol, which is why it is the first item after R1 and not inside it. |
 | **R2b: desktop, Java Swing** | i8.x | `rachana-swing`: a Swing panel over **JCEF** (JavaFX WebView as a fallback, subject to a painter test run). |
 | **R2c: desktop, .NET** | i8.x, i9 | `Rachana.WebView2`: WinForms and WPF controls over **Microsoft WebView2** (MAUI on Windows through the same control; CefSharp as an alternative). |

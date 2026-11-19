@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/retail-banking/sutras/retail-banking/customer.v1.sutra.yaml",
+  "group": "examples/packs/retail-banking",
+  "problems": [],
+  "model": "rachana: 1\nsutra: customer\nversion: 1\ndescription: \nmatch: { kind: customer, priority: 10 }\ntitle: { pill: \"Retail banking · Customer\", id: \"$.customerId\" }\nstrip:\n  - { label: \"Customer\", bind: \"$.name\" }\n  - { label: \"Segment\", bind: \"$.segment\" }\n  - { label: \"Deposits\", bind: \"$.totalDeposits\", fmt: \"compact\", emphasis: true }\n  - { label: \"Lending\", bind: \"$.totalLending\", fmt: \"compact\" }\n  - { label: \"KYC risk\", bind: \"$.kycRisk\", tone: \"status\" }\n  - { label: \"Customer since\", bind: \"$.since\", fmt: \"date\" }\npanels:\n  - id: products\n    kind: table\n    title: \"Products held\"\n    key: \"F2\"\n    rows: \"$.products\"\n    columns:\n      - { label: \"Product\", bind: \"@.product\" }\n      - { label: \"Account\", bind: \"@.id\" }\n      - { label: \"Balance\", bind: \"@.balance\", fmt: \"signed2\", tone: \"sign\", total: true }\n  - id: profile\n    kind: kv\n    title: \"Profile\"\n    key: \"F3\"\n    area: right\n    rows: \"$.profile\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.branch, 'branch')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

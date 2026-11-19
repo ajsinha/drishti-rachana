@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/genomics-showcase/sutras/pathway-gene.v1.sutra.yaml",
+  "group": "modules/genomics/packs/genomics-showcase",
+  "problems": [],
+  "model": "rachana: 1\nsutra: pathway-gene\nversion: 1\ndescription: \nmatch: { kind: pathway-gene, priority: 10 }\ntitle: { pill: \"Genomics · Pathway membership\", id: \"$.PATHWAY_GENE_ID\" }\nstrip:\n  - { label: \"Pathway gene id\", bind: \"$.PATHWAY_GENE_ID\" }\n  - { label: \"Pathway\", bind: \"$.PATHWAY\" }\n  - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n  - { label: \"Role in pathway\", bind: \"$.ROLE_IN_PATHWAY\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Pathway membership\"\n    columns:\n      - { label: \"Pathway gene id\", bind: \"$.PATHWAY_GENE_ID\" }\n      - { label: \"Pathway\", bind: \"$.PATHWAY\" }\n      - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n      - { label: \"Role in pathway\", bind: \"$.ROLE_IN_PATHWAY\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

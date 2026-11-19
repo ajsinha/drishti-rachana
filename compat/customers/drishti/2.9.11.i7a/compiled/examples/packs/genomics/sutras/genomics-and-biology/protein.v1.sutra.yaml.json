@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/genomics/sutras/genomics-and-biology/protein.v1.sutra.yaml",
+  "group": "examples/packs/genomics",
+  "problems": [],
+  "model": "rachana: 1\nsutra: protein\nversion: 1\ndescription: \nmatch: { kind: protein, priority: 10 }\ntitle: { pill: \"Genomics and biology · Protein\", id: \"$.proteinId\" }\nstrip:\n  - { label: \"Protein\", bind: \"$.name\" }\n  - { label: \"Accession\", bind: \"$.accession\", emphasis: true }\n  - { label: \"Length (aa)\", bind: \"$.length\", fmt: \"amount0\" }\n  - { label: \"Mass (kDa)\", bind: \"$.massKda\", fmt: \"price2\" }\n  - { label: \"Location\", bind: \"$.subcellular\" }\npanels:\n  - id: domains\n    kind: table\n    title: \"Domains and regions\"\n    key: \"F2\"\n    rows: \"$.domains\"\n    columns:\n      - { label: \"Region\", bind: \"@.name\" }\n      - { label: \"Start\", bind: \"@.start\", fmt: \"amount0\" }\n      - { label: \"End\", bind: \"@.end\", fmt: \"amount0\" }\n  - id: function\n    kind: kv\n    title: \"Function\"\n    area: right\n    rows: \"$.function\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.gene, 'gene')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

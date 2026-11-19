@@ -1,0 +1,266 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/controls
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "controls: sections of Sutras, problem codes 2034 to 2039, where, on-select, limit; harvested from ControlsTest."
+cases:
+
+  - id: "every-kind-valid"
+    kind: "problem"
+    source: "ControlsTest#everyKindReadsWithItsFields"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: dropdown, label: Leg, options: \"$.legs[*].id\", default: first, remember: user, required: true }\n  - { id: legs, kind: multi-select, options: [\"L1\", { value: L2, label: Second }], default: all }\n  - { id: sub, kind: cascading, parent: leg, options: \"$.legs[?(@.id == ctl.leg)][*].leg\" }\n  - { id: side, kind: toggle, options: [Pay, Receive], default: Pay }\n  - { id: view, kind: segmented, options: [A, B, C] }\n  - { id: d, kind: date, default: today }\n  - { id: when, kind: date-range, default: next-90d, placement: side }\n  - { id: size, kind: number-range, min: 0, max: \"max($.legs[*].leg)\" }\n  - { id: top, kind: top-n, options: [5, 10], default: 10 }\n  - { id: q, kind: search, placement: header, panel: cf }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "no-controls-valid"
+    kind: "problem"
+    source: "ControlsTest#aSutraWithoutControlsHasNone"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "malformed-unknown-kind"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: knob }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "unknown control kind 'knob'; expected one of dropdown, multi-select, cascading, toggle, segmented, date, date-range, number-range, slider, top-n, search", "range": {"start": {"line": 6, "column": 22}}}]}
+
+  - id: "malformed-dropdown-needs-options"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: dropdown }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "a dropdown control needs 'options': a list, an expression such as $.legs[*].id, or { kind: <entity kind> }", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: "malformed-bad-id"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: 9x, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "control id '9x' must be a letter, then letters, digits and underscores (it is read as ctl.9x)", "range": {"start": {"line": 6, "column": 11}}}]}
+
+  - id: "malformed-missing-id"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "a control needs an 'id' (what ctl.<id> reads)", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: "malformed-search-takes-no-options"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: q, kind: search, options: [a] }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "a search control takes no 'options'", "range": {"start": {"line": 6, "column": 37}}}]}
+
+  - id: "malformed-bad-placement"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: q, kind: search, placement: left }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "placement must be strip, header or side, not 'left'", "range": {"start": {"line": 6, "column": 39}}}]}
+
+  - id: "malformed-header-needs-panel"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: q, kind: search, placement: header }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "a control placed in a panel header names the panel: panel: <panel id>", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: "malformed-header-unknown-panel"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: q, kind: search, placement: header, panel: nope }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "control 'q' is placed in the header of panel 'nope', which the Sutra does not have", "range": {"start": {"line": 6, "column": 54}}}]}
+
+  - id: "malformed-bad-remember"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: q, kind: search, remember: always }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "remember is user or none, not 'always'", "range": {"start": {"line": 6, "column": 38}}}]}
+
+  - id: "malformed-unknown-option"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: q, kind: search, colour: red }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2011", "severity": "error", "message": "unknown key 'colour' in control", "range": {"start": {"line": 6, "column": 36}}}]}
+
+  - id: "malformed-controls-not-a-list"
+    kind: "problem"
+    source: "ControlsTest#malformedControlsAreDrs2034"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols: 5\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2012", "severity": "error", "message": "'controls' must be a list", "range": {"start": {"line": 5, "column": 11}}}]}
+
+  - id: "duplicate-ids"
+    kind: "problem"
+    source: "ControlsTest#duplicateIdsAreDrs2035"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: q, kind: search }\n  - { id: q, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2035", "severity": "error", "message": "duplicate control id 'q'", "range": {"start": {"line": 7, "column": 5}}}]}
+
+  - id: "ctl-unknown-control"
+    kind: "problem"
+    source: "ControlsTest#aCtlReferenceToAnUnknownControlIsDrs2036"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    where: \"@.leg == ctl.nope\"\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2036", "severity": "error", "message": "'ctl.nope' reads a control the Sutra does not declare (it has leg)", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: "ctl-with-no-controls"
+    kind: "problem"
+    source: "ControlsTest#aCtlReferenceToAnUnknownControlIsDrs2036"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    where: \"@.leg == ctl.nope\"\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2036", "severity": "error", "message": "'ctl.nope' reads a control the Sutra does not declare (it has no controls:)", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: "ctl-unknown-in-title"
+    kind: "problem"
+    source: "ControlsTest#aCtlReferenceToAnUnknownControlIsDrs2036"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    title: \"Leg ${ctl.gone}\"\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2036", "severity": "error", "message": "'ctl.gone' reads a control the Sutra does not declare (it has leg)", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: "ctl-known-control-valid"
+    kind: "problem"
+    source: "ControlsTest#aCtlReferenceToAnUnknownControlIsDrs2036"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    where: \"@.leg == ctl.leg\"\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "cascading-without-parent"
+    kind: "problem"
+    source: "ControlsTest#aCascadingControlNeedsAnEarlierParentDrs2037"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: c, kind: cascading, options: \"$.x\" }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2037", "severity": "error", "message": "a cascading control names the control it depends on: parent: <control id>", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: "cascading-parent-declared-later"
+    kind: "problem"
+    source: "ControlsTest#aCascadingControlNeedsAnEarlierParentDrs2037"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: c, kind: cascading, parent: p, options: \"$.x\" }\n  - { id: p, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2037", "severity": "error", "message": "control 'c' depends on 'p', which must be a control declared before it", "range": {"start": {"line": 6, "column": 39}}}]}
+
+  - id: "slider-valid-parse"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: floor, kind: slider, min: 0, max: \"max($.schedule[*].amount)\", step: 5, default: 10 }\n  - { id: band, kind: slider, min: 0, max: 100, range: true, default: \"20..80\" }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "slider-needs-min-and-max"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: slider, max: 10 }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "a slider needs both 'min' and 'max': a number or an expression over the record ($.limits.max)", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: "slider-step-zero"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: slider, min: 0, max: 10, step: 0 }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "step is a number above zero, not '0'", "range": {"start": {"line": 6, "column": 51}}}]}
+
+  - id: "dropdown-takes-no-step"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: dropdown, options: [x], step: 5 }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "'min', 'max' and 'step' are for number-range and slider controls", "range": {"start": {"line": 6, "column": 50}}}]}
+
+  - id: "dropdown-takes-no-range"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: dropdown, options: [x], range: true }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2034", "severity": "error", "message": "'range' is for slider controls", "range": {"start": {"line": 6, "column": 51}}}]}
+
+  - id: "slider-default-not-a-number"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: slider, min: 0, max: 10, default: abc }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': 'abc' is not a number (5000000) or a range of numbers (1000000..5000000)", "range": {"start": {"line": 6, "column": 54}}}]}
+
+  - id: "slider-range-default-without-range"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: slider, min: 0, max: 10, default: \"1..5\" }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': a slider takes one number (use range: true for two handles)", "range": {"start": {"line": 6, "column": 54}}}]}
+
+  - id: "slider-range-default-single"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: slider, min: 0, max: 10, range: true, default: 5 }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': a range slider takes a range (1000..5000)", "range": {"start": {"line": 6, "column": 67}}}]}
+
+  - id: "slider-where-with-ctl-valid"
+    kind: "problem"
+    source: "ControlsTest#aSliderReadsItsBoundsStepAndHandlesAndIsCheckedDrs2034And2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: slider, min: 0, max: 10, step: 2, default: 4 }\n  - { id: b, kind: slider, min: 0, max: 10, range: true, default: \"2..8\" }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n    where: \"@.leg >= ctl.a && within(@.leg, ctl.b)\"\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "on-select-valid"
+    kind: "problem"
+    source: "ControlsTest#onSelectMustNameAControlAndPanelsDrs2038"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n    on-select: { by: leg, filter: [cf] }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "on-select-unknown-control"
+    kind: "problem"
+    source: "ControlsTest#onSelectMustNameAControlAndPanelsDrs2038"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n    on-select: { by: nope }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2038", "severity": "error", "message": "on-select of panel 'cf': 'by' must name one of the Sutra's controls (leg), not 'nope'", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: "on-select-unknown-panel"
+    kind: "problem"
+    source: "ControlsTest#onSelectMustNameAControlAndPanelsDrs2038"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n    on-select: { by: leg, filter: [ghost] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2038", "severity": "error", "message": "on-select of panel 'cf' filters panel 'ghost', which the Sutra does not have", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: "on-select-unknown-option"
+    kind: "problem"
+    source: "ControlsTest#onSelectMustNameAControlAndPanelsDrs2038"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n    on-select: { by: leg, colour: red }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2038", "severity": "error", "message": "on-select of panel 'cf' has no key 'colour'; it takes filter, by and field", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: "dropdown-default-not-an-option"
+    kind: "problem"
+    source: "ControlsTest#defaultsMustFitTheKindDrs2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: dropdown, options: [x, y], default: z }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': 'z' is not one of its options (x, y) or first", "range": {"start": {"line": 6, "column": 56}}}]}
+
+  - id: "top-n-default-not-an-option"
+    kind: "problem"
+    source: "ControlsTest#defaultsMustFitTheKindDrs2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: top-n, options: [5], default: 7 }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': '7' is not one of its options (5)", "range": {"start": {"line": 6, "column": 50}}}]}
+
+  - id: "date-range-default-word"
+    kind: "problem"
+    source: "ControlsTest#defaultsMustFitTheKindDrs2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: date-range, default: soon }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': 'soon' is not a range (2026-10-01..2026-12-31) or a relative one (next-90d, last-30d, this-month, ytd)", "range": {"start": {"line": 6, "column": 41}}}]}
+
+  - id: "date-default-bad-date"
+    kind: "problem"
+    source: "ControlsTest#defaultsMustFitTheKindDrs2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: date, default: 2026-13-45 }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': '2026-13-45' is not a date (2026-10-01) or a relative one (today, yesterday, previous-business-day, next-5bd)", "range": {"start": {"line": 6, "column": 35}}}]}
+
+  - id: "number-range-default-text"
+    kind: "problem"
+    source: "ControlsTest#defaultsMustFitTheKindDrs2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: number-range, default: abc }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2039", "severity": "error", "message": "default of control 'a': 'abc' is not a range of numbers (1000000..5000000, either end may be empty)", "range": {"start": {"line": 6, "column": 43}}}]}
+
+  - id: "defaults-valid"
+    kind: "problem"
+    source: "ControlsTest#defaultsMustFitTheKindDrs2039"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: a, kind: date-range, default: \"2026-10-01..2026-12-31\" }\n  - { id: b, kind: date, default: previous-business-day }\n  - { id: c, kind: number-range, default: \"..5000000\" }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "where-not-a-condition"
+    kind: "problem"
+    source: "ControlsTest#wherePivotFreeOptionsAreChecked"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    where: 5\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'where' of 'table' panels is a condition written as text (such as oneOf(@.leg, ctl.legs)), not '5'", "range": {"start": {"line": 9, "column": 12}}}]}
+
+  - id: "where-on-kv-refused"
+    kind: "problem"
+    source: "ControlsTest#wherePivotFreeOptionsAreChecked"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: k\n    kind: kv\n    where: \"true\"\n    columns: [{ label: A, bind: \"$.x\" }]\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "option 'where' is not valid for 'kv' panels", "range": {"start": {"line": 8, "column": 12}}}]}
+
+  - id: "limit-from-ctl-valid"
+    kind: "problem"
+    source: "ControlsTest#wherePivotFreeOptionsAreChecked"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: top, kind: top-n, options: [5] }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n    limit: ctl.top\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "panel-options-valid"
+    kind: "problem"
+    source: "ControlsTest#thePanelOptionsAreKeptOnThePanel"
+    sutra: "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\ncontrols:\n  - { id: leg, kind: search }\npanels:\n  - id: cf\n    kind: table\n    rows: $.schedule\n    columns: [{ label: Leg, bind: \"@.leg\" }]\n    where: \"@.leg == 1\"\n    on-select: { by: leg, field: leg, filter: [cf] }\n"
+    expect: {"ok": true, "problems": []}

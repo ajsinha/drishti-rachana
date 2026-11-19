@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/inflation-index.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: inflation-index\nversion: 2\ndescription: \nmatch: { kind: inflation-index, priority: 10 }\ntitle: { pill: \"Market data · Inflation index\", id: \"$.INDEX_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Latest\", bind: \"$.LATEST\", fmt: \"price2\", emphasis: true }\n  - { label: \"YoY\", bind: \"$.YOY\", fmt: \"pct2\", tone: \"sign\" }\n  - { label: \"Publication lag\", bind: \"$.LAG\" }\npanels:\n  - id: fixings\n    kind: ladder\n    title: \"Monthly fixings\"\n    key: \"F2\"\n    rows: \"$.FIXINGS\"\n    columns:\n      - { label: \"Month\", bind: \"@.MONTH\" }\n      - { label: \"Index\", bind: \"@.VALUE\", fmt: \"price2\" }\n      - { label: \"YoY\", bind: \"@.YOY\", fmt: \"pct2\", tone: \"sign\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.INFLATION_CURVE, 'inflation-curve')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

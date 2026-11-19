@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/rate-fixing.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: rate-fixing\nversion: 2\ndescription: \nmatch: { kind: rate-fixing, priority: 10 }\ntitle: { pill: \"Market data · Rate index fixings\", id: \"$.INDEX_ID\" }\nstrip:\n  - { label: \"Index\", bind: \"$.NAME\" }\n  - { label: \"Latest\", bind: \"$.LATEST\", fmt: \"pct4\", emphasis: true }\n  - { label: \"Administrator\", bind: \"$.ADMINISTRATOR\" }\n  - { label: \"Tenor\", bind: \"$.TENOR\" }\npanels:\n  - id: fixings\n    kind: ladder\n    title: \"Recent fixings\"\n    key: \"F2\"\n    rows: \"$.FIXINGS\"\n    columns:\n      - { label: \"Date\", bind: \"@.DATE\", fmt: \"date\" }\n      - { label: \"Rate\", bind: \"@.RATE\", fmt: \"pct4\" }\n      - { label: \"Volume (bn)\", bind: \"@.VOLUME_BN\", fmt: \"amount0\" }\n  - id: chart\n    kind: line\n    title: \"Last 30 fixings\"\n    area: right\n    rows: \"$.FIXINGS\"\n    x: \"DATE\"\n    y: \"RATE_PCT\"\n    fmt: \"price2\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

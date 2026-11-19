@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/climate-risk/sutras/climate/climate-stress.v1.sutra.yaml",
+  "group": "examples/packs/climate-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: climate-stress\nversion: 1\ndescription: \nmatch: { kind: climate-stress, priority: 10 }\ntitle: { pill: \"Climate · Climate stress result\", id: \"$.resultId\" }\nstrip:\n  - { label: \"Scenario\", bind: \"$.scenarioName\" }\n  - { label: \"Desk\", bind: \"$.deskName\" }\n  - { label: \"Loss (2030)\", bind: \"$.loss2030\", fmt: \"signed0\", tone: \"sign\", emphasis: true }\n  - { label: \"Loss (2050)\", bind: \"$.loss2050\", fmt: \"signed0\", tone: \"sign\" }\n  - { label: \"Share of capital\", bind: \"$.capitalShare\", fmt: \"pct2\" }\npanels:\n  - id: bySector\n    kind: hbar\n    title: \"Loss by sector (2030)\"\n    key: \"F2\"\n    rows: \"$.bySector\"\n    label: \"sector\"\n    value: \"loss\"\n    fmt: \"signed0\"\n    tone: \"sign\"\n  - id: horizon\n    kind: line\n    title: \"Loss by horizon\"\n    area: right\n    rows: \"$.byHorizon\"\n    x: \"year\"\n    y: \"loss\"\n    fmt: \"compact\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.climateScenario, 'climate-scenario')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

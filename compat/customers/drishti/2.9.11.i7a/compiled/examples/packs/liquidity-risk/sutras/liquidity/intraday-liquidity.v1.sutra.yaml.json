@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/liquidity-risk/sutras/liquidity/intraday-liquidity.v1.sutra.yaml",
+  "group": "examples/packs/liquidity-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: intraday-liquidity\nversion: 1\ndescription: \nmatch: { kind: intraday-liquidity, priority: 10 }\ntitle: { pill: \"Liquidity · Intraday liquidity\", id: \"$.reportId\" }\nstrip:\n  - { label: \"Entity\", bind: \"$.legalEntityName\" }\n  - { label: \"Currency\", bind: \"$.currency\" }\n  - { label: \"Peak usage\", bind: \"$.peakUsage\", fmt: \"compact\", emphasis: true }\n  - { label: \"Available\", bind: \"$.available\", fmt: \"compact\" }\n  - { label: \"Usage\", bind: \"$.usagePct\", fmt: \"pct0\" }\npanels:\n  - id: usage\n    kind: line\n    title: \"Liquidity used through the day\"\n    key: \"F2\"\n    rows: \"$.usage\"\n    x: \"time\"\n    y: \"used\"\n    fmt: \"compact\"\n  - id: payments\n    kind: table\n    title: \"Largest payments\"\n    key: \"F3\"\n    rows: \"$.largePayments\"\n    columns:\n      - { label: \"Time\", bind: \"@.time\" }\n      - { label: \"Counterparty\", bind: \"@.counterparty\" }\n      - { label: \"Amount\", bind: \"@.amount\", fmt: \"signed0\", tone: \"sign\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.legalEntity, 'legal-entity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

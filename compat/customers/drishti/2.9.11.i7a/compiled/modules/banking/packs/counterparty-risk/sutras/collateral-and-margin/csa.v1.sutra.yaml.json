@@ -1,0 +1,7 @@
+{
+  "file": "modules/banking/packs/counterparty-risk/sutras/collateral-and-margin/csa.v1.sutra.yaml",
+  "group": "modules/banking/packs/counterparty-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: csa\nversion: 1\ndescription: \nmatch: { kind: csa, priority: 10 }\ntitle: { pill: \"Collateral and margin · Credit support annex\", id: \"$.CSA_ID\" }\nstrip:\n  - { label: \"Margin\", bind: \"$.MARGIN_TYPE\" }\n  - { label: \"Threshold (us)\", bind: \"$.THRESHOLD_US\", fmt: \"compact\" }\n  - { label: \"Threshold (them)\", bind: \"$.THRESHOLD_THEM\", fmt: \"compact\" }\n  - { label: \"MTA\", bind: \"$.MTA\", fmt: \"compact\" }\n  - { label: \"IA\", bind: \"$.INDEPENDENT_AMOUNT\", fmt: \"compact\" }\n  - { label: \"Currency\", bind: \"$.CSA_CURRENCY\" }\n  - { label: \"Frequency\", bind: \"$.FREQUENCY\" }\n  - { label: \"MPoR (business days)\", bind: \"$.MPOR_DAYS\", fmt: \"amount0\", emphasis: true }\npanels:\n  - id: eligible\n    kind: table\n    title: \"Eligible collateral and haircuts\"\n    key: \"F2\"\n    rows: \"$.ELIGIBLE\"\n    columns:\n      - { label: \"Asset\", bind: \"@.ASSET\" }\n      - { label: \"Haircut\", bind: \"@.HAIRCUT\", fmt: \"pct2\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F7: \"link($.AGREEMENT, 'agreement')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,52 @@
+# Project Drishti · Any data. Any domain. One grammar.
+#
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>.
+# All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL.
+#
+# This file is the confidential and proprietary property of Ashutosh Sinha.
+# Unauthorised copying, use, modification, distribution or disclosure of this
+# file, via any medium, is strictly prohibited except with the express prior
+# written permission of the copyright holder.
+#
+# See the LICENSE file in the root of this repository for the full terms.
+
+
+# Hand-written since 2.7.0 (Sutra Next phase 1): built from the Drishti UI kit (config/ui-kit/fragments, loaded by every server).
+# tools/packgen/world/make.py leaves it alone (hand_written); SutraNextEquivalenceTest proves it draws exactly what the generated
+# layout drew.
+rachana: 1
+sutra: labour-market
+version: 1
+description: "Unemployment, participation, youth and female labour, and employment and output by sector."
+doc:
+  summary: "An economy's labour market: unemployment, participation, youth and female labour, jobs and output by sector."
+  description: >-
+    One page per economy's labour market: the unemployment rate path, employment and output by sector (share of jobs,
+    totalled, beside share of GDP), the data source and licence, how the view was built and its links (F7 opens the
+    economy). The strip gives the economy, unemployment, participation, youth unemployment, the employment ratio and female
+    participation.
+  params: {}
+  emits: []
+  expects: []
+  examples:
+    - "/v/labour-market/LABR-NGA"
+    - "LABR LABR-NGA"
+  since: "2.7.0"
+match: { kind: labour-market, priority: 10 }
+title: { pill: Economics · Labour market, id: $.LABOUR_ID }
+strip:
+  - { label: Economy, bind: $.ECONOMY_NAME }
+  - { label: Unemployment, bind: $.UNEMPLOYMENT, fmt: pc2, emphasis: true }
+  - { label: Participation, bind: $.PARTICIPATION, fmt: pc1 }
+  - { label: Youth unemployment, bind: $.YOUTH_UNEMPLOYMENT, fmt: pc1 }
+  - { label: Employment ratio, bind: $.EMPLOYMENT_RATIO, fmt: pc1 }
+  - { label: Female participation, bind: $.FEMALE_PARTICIPATION, fmt: pc1 }
+panels:
+  - { use: series-line@1, with: { id: unemploymentPath, title: "Unemployment rate, % of labour force", key: F2, rows: $.UNEMPLOYMENT_PATH, x: YEAR, y: RATE, fmt: pc2 } }
+  - use: measure-table@1
+    with: { id: bySector, title: Employment and output by sector, key: F3, rows: $.BY_SECTOR, name-label: Sector, name: SECTOR,
+            first-label: "Share of jobs, %", first: EMPLOYMENT_SHARE, first-fmt: pc1, second-label: "Share of GDP, %", second: VALUE_ADDED_SHARE, second-fmt: pc1 }
+  - { use: source-footer@1 }
+keys: { F7: "link($.ECONOMY, 'economy')", F8: impact, F9: raw }

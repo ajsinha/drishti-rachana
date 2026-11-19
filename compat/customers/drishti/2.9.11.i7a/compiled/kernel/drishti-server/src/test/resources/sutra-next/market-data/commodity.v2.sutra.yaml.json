@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/commodity.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: commodity\nversion: 2\ndescription: \nmatch: { kind: commodity, priority: 10 }\ntitle: { pill: \"Market data · Commodity\", id: \"$.COMMODITY_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Front month\", bind: \"$.FRONT\", fmt: \"price2\", emphasis: true }\n  - { label: \"Unit\", bind: \"$.UNIT\" }\n  - { label: \"Exchange\", bind: \"$.EXCHANGE\" }\n  - { label: \"Sector\", bind: \"$.SECTOR\" }\npanels:\n  - id: spec\n    kind: kv\n    title: \"Contract specification\"\n    key: \"F2\"\n    rows: \"$.SPEC\"\n  - id: ohlc\n    kind: candlestick\n    title: \"Front month (daily bars, last 60 days)\"\n    key: \"F3\"\n    code: \"OHLC\"\n    rows: \"$.OHLC\"\n    x: \"DATE\"\n    fmt: \"price2\"\n    volume: \"VOLUME\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.COMMODITY_CURVE, 'commodity-curve')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

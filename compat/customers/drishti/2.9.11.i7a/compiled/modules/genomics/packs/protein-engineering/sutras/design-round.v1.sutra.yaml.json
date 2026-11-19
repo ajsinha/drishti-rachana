@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/protein-engineering/sutras/design-round.v1.sutra.yaml",
+  "group": "modules/genomics/packs/protein-engineering",
+  "problems": [],
+  "model": "rachana: 1\nsutra: design-round\nversion: 1\ndescription: \nmatch: { kind: design-round, priority: 10 }\ntitle: { pill: \"Protein engineering · Design round\", id: \"$.ROUND_ID\" }\nstrip:\n  - { label: \"Round id\", bind: \"$.ROUND_ID\" }\n  - { label: \"Round\", bind: \"$.ROUND\", fmt: \"amount0\" }\n  - { label: \"Method\", bind: \"$.METHOD\" }\n  - { label: \"Best activity\", bind: \"$.BEST_ACTIVITY\" }\n  - { label: \"Median activity\", bind: \"$.MEDIAN_ACTIVITY\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Design round\"\n    columns:\n      - { label: \"Round id\", bind: \"$.ROUND_ID\" }\n      - { label: \"Protein\", bind: \"link($.PROTEIN, 'protein')\" }\n      - { label: \"Round\", bind: \"$.ROUND\", fmt: \"amount0\" }\n      - { label: \"Method\", bind: \"$.METHOD\" }\n      - { label: \"Started\", bind: \"$.STARTED\", fmt: \"date\" }\n      - { label: \"Designs\", bind: \"$.DESIGNS\", fmt: \"amount0\" }\n      - { label: \"Best design\", bind: \"link($.BEST_DESIGN, 'design')\" }\n      - { label: \"Best activity\", bind: \"$.BEST_ACTIVITY\" }\n      - { label: \"Median activity\", bind: \"$.MEDIAN_ACTIVITY\" }\n      - { label: \"Trapped\", bind: \"$.TRAPPED\", fmt: \"amount0\" }\n      - { label: \"Note\", bind: \"$.NOTE\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

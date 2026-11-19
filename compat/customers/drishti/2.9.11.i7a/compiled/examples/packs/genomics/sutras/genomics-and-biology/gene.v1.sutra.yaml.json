@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/genomics/sutras/genomics-and-biology/gene.v1.sutra.yaml",
+  "group": "examples/packs/genomics",
+  "problems": [],
+  "model": "rachana: 1\nsutra: gene\nversion: 1\ndescription: \nmatch: { kind: gene, priority: 10 }\ntitle: { pill: \"Genomics and biology · Gene\", id: \"$.geneId\" }\nstrip:\n  - { label: \"Symbol\", bind: \"$.symbol\", emphasis: true }\n  - { label: \"Name\", bind: \"$.name\" }\n  - { label: \"Location\", bind: \"$.location\" }\n  - { label: \"Length (bp)\", bind: \"$.length\", fmt: \"amount0\" }\n  - { label: \"Strand\", bind: \"$.strand\" }\n  - { label: \"Transcripts\", bind: \"$.transcripts\", fmt: \"amount0\" }\npanels:\n  - id: expression\n    kind: hbar\n    title: \"Expression by tissue (TPM)\"\n    key: \"F2\"\n    rows: \"$.expression\"\n    label: \"tissue\"\n    value: \"tpm\"\n    fmt: \"price2\"\n  - id: variants\n    kind: table\n    title: \"Known variants\"\n    key: \"F3\"\n    rows: \"$.variants\"\n    columns:\n      - { label: \"Variant\", bind: \"@.id\" }\n      - { label: \"Protein change\", bind: \"@.protein\" }\n      - { label: \"Significance\", bind: \"@.significance\" }\n  - id: identifiers\n    kind: kv\n    title: \"Identifiers\"\n    area: right\n    rows: \"$.identifiers\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.protein, 'protein')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

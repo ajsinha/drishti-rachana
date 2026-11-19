@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/genomics-showcase/sutras/variant-call.v1.sutra.yaml",
+  "group": "modules/genomics/packs/genomics-showcase",
+  "problems": [],
+  "model": "rachana: 1\nsutra: variant-call\nversion: 1\ndescription: \nmatch: { kind: variant-call, priority: 10 }\ntitle: { pill: \"Genomics · Variant call\", id: \"$.CALL_ID\" }\nstrip:\n  - { label: \"Call id\", bind: \"$.CALL_ID\" }\n  - { label: \"Sample id\", bind: \"link($.SAMPLE_ID, 'study-sample')\" }\n  - { label: \"Variant id\", bind: \"link($.VARIANT_ID, 'study-variant')\" }\n  - { label: \"Genotype\", bind: \"$.GENOTYPE\" }\n  - { label: \"Vaf\", bind: \"$.VAF\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Variant call\"\n    columns:\n      - { label: \"Call id\", bind: \"$.CALL_ID\" }\n      - { label: \"Sample id\", bind: \"link($.SAMPLE_ID, 'study-sample')\" }\n      - { label: \"Variant id\", bind: \"link($.VARIANT_ID, 'study-variant')\" }\n      - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n      - { label: \"Genotype\", bind: \"$.GENOTYPE\" }\n      - { label: \"Vaf\", bind: \"$.VAF\" }\n      - { label: \"Depth\", bind: \"$.DEPTH\", fmt: \"amount0\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

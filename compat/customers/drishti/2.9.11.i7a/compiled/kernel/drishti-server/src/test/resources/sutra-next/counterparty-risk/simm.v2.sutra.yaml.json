@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk/simm.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: simm\nversion: 2\ndescription: \nmatch: { kind: simm, priority: 10 }\ntitle: { pill: \"Collateral and margin · ISDA SIMM initial margin\", id: \"$.CALC_ID\" }\nstrip:\n  - { label: \"Total IM\", bind: \"$.TOTAL\", fmt: \"compact\", emphasis: true }\n  - { label: \"Posted\", bind: \"$.POSTED\", fmt: \"compact\" }\n  - { label: \"Received\", bind: \"$.RECEIVED\", fmt: \"compact\" }\n  - { label: \"Version\", bind: \"$.VERSION\" }\npanels:\n  - id: classes\n    kind: hbar\n    title: \"IM by risk class\"\n    key: \"F2\"\n    rows: \"$.RISK_CLASSES\"\n    label: \"RISK_CLASS\"\n    value: \"IM\"\n    fmt: \"compact\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.NETTING_SET, 'netting-set')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/genomics-showcase/sutras/association.v1.sutra.yaml",
+  "group": "modules/genomics/packs/genomics-showcase",
+  "problems": [],
+  "model": "rachana: 1\nsutra: association\nversion: 1\ndescription: \nmatch: { kind: association, priority: 10 }\ntitle: { pill: \"Genomics · Association of a variant with a trait\", id: \"$.ASSOC_ID\" }\nstrip:\n  - { label: \"Assoc id\", bind: \"$.ASSOC_ID\" }\n  - { label: \"Trait\", bind: \"$.TRAIT\" }\n  - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n  - { label: \"Neg log10 p\", bind: \"$.NEG_LOG10_P\" }\n  - { label: \"Beta\", bind: \"$.BETA\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Association of a variant with a trait\"\n    columns:\n      - { label: \"Assoc id\", bind: \"$.ASSOC_ID\" }\n      - { label: \"Trait\", bind: \"$.TRAIT\" }\n      - { label: \"Variant id\", bind: \"link($.VARIANT_ID, 'study-variant')\" }\n      - { label: \"Chrom\", bind: \"$.CHROM\" }\n      - { label: \"Pos\", bind: \"$.POS\", fmt: \"amount0\" }\n      - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n      - { label: \"P\", bind: \"$.P\" }\n      - { label: \"Neg log10 p\", bind: \"$.NEG_LOG10_P\" }\n      - { label: \"Beta\", bind: \"$.BETA\" }\n      - { label: \"Se\", bind: \"$.SE\" }\n      - { label: \"R2 lead\", bind: \"$.R2_LEAD\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

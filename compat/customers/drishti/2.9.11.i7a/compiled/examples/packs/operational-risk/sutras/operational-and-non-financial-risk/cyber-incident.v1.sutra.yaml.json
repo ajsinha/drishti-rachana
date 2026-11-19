@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/cyber-incident.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: cyber-incident\nversion: 1\ndescription: \nmatch: { kind: cyber-incident, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Cyber incident\", id: \"$.incidentId\" }\nstrip:\n  - { label: \"Incident\", bind: \"$.title\" }\n  - { label: \"Severity\", bind: \"$.severity\", emphasis: true }\n  - { label: \"Detected in (h)\", bind: \"$.detectHours\", fmt: \"price2\" }\n  - { label: \"Contained in (h)\", bind: \"$.containHours\", fmt: \"price2\" }\n  - { label: \"Records affected\", bind: \"$.recordsAffected\", fmt: \"amount0\" }\n  - { label: \"Status\", bind: \"$.status\", tone: \"status\" }\npanels:\n  - id: timeline\n    kind: ladder\n    title: \"Timeline\"\n    key: \"F2\"\n    rows: \"$.timeline\"\n    columns:\n      - { label: \"At\", bind: \"@.at\" }\n      - { label: \"Step\", bind: \"@.step\" }\n  - id: systems\n    kind: kv\n    title: \"Systems\"\n    area: right\n    rows: \"$.systems\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.legalEntity, 'legal-entity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

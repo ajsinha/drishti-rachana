@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/genomics/sutras/genomics-and-biology/expression-study.v1.sutra.yaml",
+  "group": "examples/packs/genomics",
+  "problems": [],
+  "model": "rachana: 1\nsutra: expression-study\nversion: 1\ndescription: \nmatch: { kind: expression-study, priority: 10 }\ntitle: { pill: \"Genomics and biology · Expression study\", id: \"$.studyId\" }\nstrip:\n  - { label: \"Study\", bind: \"$.title\" }\n  - { label: \"Comparison\", bind: \"$.comparison\" }\n  - { label: \"Samples\", bind: \"$.sampleCount\", fmt: \"amount0\" }\n  - { label: \"Significant genes\", bind: \"$.significant\", fmt: \"amount0\", emphasis: true }\npanels:\n  - id: foldChange\n    kind: hbar\n    title: \"log2 fold change\"\n    key: \"F2\"\n    rows: \"$.results\"\n    label: \"gene\"\n    value: \"log2fc\"\n    fmt: \"price2\"\n    tone: \"sign\"\n  - id: results\n    kind: table\n    title: \"Results\"\n    key: \"F3\"\n    rows: \"$.results\"\n    columns:\n      - { label: \"Gene\", bind: \"@.gene\" }\n      - { label: \"log2 FC\", bind: \"@.log2fc\", fmt: \"signed2\", tone: \"sign\", total: true }\n      - { label: \"Mean expression\", bind: \"@.baseMean\", fmt: \"amount0\" }\n      - { label: \"Adjusted p\", bind: \"@.padj\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

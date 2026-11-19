@@ -1,0 +1,7 @@
+{
+  "file": "config/packs/core/core/sutras/counterparty-and-legal/issuer.v1.sutra.yaml",
+  "group": "config/packs/core/core",
+  "problems": [],
+  "model": "rachana: 1\nsutra: issuer\nversion: 1\ndescription: \nmatch: { kind: issuer, priority: 10 }\ntitle: { pill: \"Counterparty and legal · Issuer\", id: \"$.ISSUER_ID\" }\nstrip:\n  - { label: \"Name\", bind: \"$.NAME\" }\n  - { label: \"Rating\", bind: \"$.RATING\", emphasis: true }\n  - { label: \"Sector\", bind: \"$.SECTOR\" }\n  - { label: \"Country\", bind: \"$.COUNTRY\" }\npanels:\n  - id: bonds\n    kind: table\n    title: \"Bonds outstanding\"\n    key: \"F2\"\n    rows: \"$.BONDS\"\n    columns:\n      - { label: \"ISIN\", bind: \"@.ISIN\" }\n      - { label: \"Coupon\", bind: \"@.COUPON\", fmt: \"pct2\" }\n      - { label: \"Maturity\", bind: \"@.MATURITY\", fmt: \"date\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F7: \"link($.CREDIT_CURVE, 'credit-curve')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

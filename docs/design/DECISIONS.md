@@ -108,3 +108,14 @@ Still open after the owner's acceptance of 2026-11-17 (proofs to run, not decisi
 3. WebAssembly GC support in `wasmtime` for the chosen backend (proof W4).
 4. How deep the binder's entanglement with links and masks really is (split step 13 starts with a one-day spike).
 5. Whether the events design (branch `design/eventing`) ships unchanged; section 6 of the Data Protocol follows it.
+
+### Owner's decisions on the libraries (2026-11-19)
+
+| # | Decision |
+|---|---|
+| L-11 | **Every library is proprietary** (core, finance, genomics, economy, geo, ops, ai): one proprietary library licence, no permissive libraries. |
+| L-12 | **Accepted**: libraries are not published in this public repository; together with L-11 this places **all seven libraries in a private companion repository** until licensing and publishing (R3) are decided. |
+| L-15 | **Accepted**: the new genomics kinds (tracks, sequence, molecular 3D structure), mock-ups first for the 3D viewer and its vendored third-party library. |
+| L-19 | **Accepted as recommended**: C1 (typed fragments) and X42 (libraries) are pulled forward to directly after the split. |
+| L-20 | **Accepted**: the 209 fragments are the backlog; each library releases its 1.0 when its baseline wave is done. |
+| others | L-1 to L-10, L-13, L-14, L-16 to L-18: as recommended unless the owner objects. |

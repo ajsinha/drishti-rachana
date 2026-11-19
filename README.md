@@ -9,13 +9,17 @@
 
 **Describe a screen. Supply the data. Get a fast, professional UI.**
 
+**Screens become assembly, not writing.**
+
 Drishti Rachana is a declarative UI platform. You write a short **Sutra** (a screen or dashboard described in the
 **Rachana** grammar), point it at your data in the agreed **Rachana Data Protocol**, and get a fast, dense,
 professional interface drawn with **Drishti Elements**: grids, charts, maps, pivots, forms and live updates.
 
-Status: **planning.** The language and compiler exist today inside the Drishti product and are being separated into
-this repository. Drishti is the first customer: it will consume pinned releases of Rachana, exactly as it consumes
-Drishti Elements today.
+Status: **the compiler is here** (`v0.9.0`). The Java compiler (Sutra parser, Rachana-EL, formats, checker, editing
+operations) moved from the Drishti product into [`java/rachana-core`](java/README.md) with its git history, and is being
+untangled from its first host step by step ([SPLIT_PLAN](docs/design/SPLIT_PLAN.md) section 0). The binder, Views, the Data
+Protocol, the SDKs and the tooling are still planned. Drishti is the first customer: it will consume pinned releases of Rachana,
+exactly as it consumes Drishti Elements today.
 
 Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)). The specification and conformance suite (`spec/`, `conformance/`) are intended to be under the permissive [LICENSE-SPEC.md](LICENSE-SPEC.md) (draft).
 
@@ -31,6 +35,19 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | **SDKs** | Java, JavaScript and **Python** (Flask and FastAPI adapters: serve Sutras and data endpoints, stream live changes, lint Sutras in CI). |
 | **Sutra libraries** (planning) | Prebuilt fragments to reference, parametrise and use in a Sutra: `core`, `finance`, `genomics`, `economy`, `geo`, `ops`, `ai`. Typed parameters, table contracts, slots, events; versioned, pinned, signed. |
 | **Tooling** | `rachana new / dev / build / lint / preview`, editor support from the compiler, a playground and gallery built with Rachana itself. |
+
+## What this repository holds today
+
+| Folder | What | State |
+|---|---|---|
+| `spec/1/` | the specification: SPEC, EBNF, functions, formats, the generated language definition and schemas | written (R0) |
+| `conformance/1/` | 2,112 cases; [driver](tools/conformance/README.md) in Python | harvested (R0) |
+| `java/` | the Maven reactor ([java/README](java/README.md)): `rachana-core` is the compiler, moved with history; the JVM conformance runtime; the guards; the compatibility regime | **built**: `./mvnw clean verify` |
+| `js/`, `python/` | package skeletons; `js/vendor/drishti-elements/2.4.0/data/` holds the two Elements data files Core bundles | skeleton |
+| `tools/` | conformance driver, reference bridge (until the migration), split tools, regime and release tools | built |
+
+Build and prove: `cd java && ./mvnw clean verify`, then `python3 tools/conformance/rachana_conformance.py --jvm` (every
+verified case passes; see [java/README](java/README.md)).
 
 ## Ways to use it
 
@@ -67,4 +84,21 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | [Generative UI](docs/design/AI_GENUI.md) | Prompt kit, validate-and-fix loop, MCP tool schemas, safety, evaluation |
 | [Decisions](docs/design/DECISIONS.md) | Numbered questions for the owner, each with a recommendation |
 
-Everything described in these documents is planned unless stated otherwise.
+Everything described in these documents is planned unless stated otherwise. What is built is listed above and in the
+[changelog](CHANGELOG.md).
+
+## Compatibility regime (M1 progress)
+
+The promise that a host changes no byte by moving from one Rachana release to a later one of the same major
+([SUTRA_EXPANSION 6](docs/design/SUTRA_EXPANSION.md)) is checked by gates in this repository. Built so far (counts from the file system):
+
+| Gate | What exists |
+|---|---|
+| CG3 customer corpus | `compat/customers/drishti/2.9.11.i7a/`: 478 shipped Sutras and their blocks, the compiled documents (problems, canonical model, plan) and the Drishti-profile case files, 1,043 files with `MANIFEST.sha384`, synthetic demo data only; made by `tools/regime/corpus_export.py` from a read-only Drishti at its tag. `CustomerCorpusTest` replays it (through the reference bridge until the compiler moves here); `RecordedHost` answers host hooks from a recording (binds arrive with the binder, `v0.10.0`) |
+| CG1 frozen cases | `conformance/1/FROZEN.sha384` (63 case files, state pre-release) and `FrozenCasesTest`; `tools/regime/freeze.py` freezes at the release |
+| CG4 contract append-only | `ContractAppendOnlyTest`; `spec/1/released/` is written at the first release |
+| CG6 reserved names | `compat/reserved-names.yaml` (generated from `spec/1/rachana.lang.json`), `compat/promotions.yaml`, `compat/level-switches.yaml`, `ReservedNamesTest` |
+| CG7 painter forward vectors | the file list for the Elements lane: [compat/forward-vectors/FILES.md](compat/forward-vectors/FILES.md) |
+| CG8 release candidate in Drishti | `tools/gate/drishti_gate.py`: read-only dry run today; `--run` drives a scratch copy at release time |
+
+The tests are in `java/rachana-compat` (tests only, no product code). CG2, CG5 and CG10 are not started.

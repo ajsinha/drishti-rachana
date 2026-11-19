@@ -1,0 +1,7 @@
+{
+  "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/repo-curve.v2.sutra.yaml",
+  "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+  "problems": [],
+  "model": "rachana: 1\nsutra: repo-curve\nversion: 2\ndescription: \nmatch: { kind: repo-curve, priority: 10 }\ntitle: { pill: \"Market data · Repo curve\", id: \"$.CURVE_ID\" }\nstrip:\n  - { label: \"Currency\", bind: \"$.CURRENCY\" }\n  - { label: \"Collateral\", bind: \"$.COLLATERAL\" }\n  - { label: \"O/N\", bind: \"$.OVERNIGHT\", fmt: \"pct4\", emphasis: true }\n  - { label: \"As of\", bind: \"$.AS_OF\", fmt: \"date\" }\npanels:\n  - id: curve\n    kind: line\n    title: \"Repo rates (%)\"\n    key: \"F2\"\n    rows: \"$.POINTS\"\n    x: \"TENOR\"\n    y: \"RATE\"\n    fmt: \"price2\"\n  - id: points\n    kind: table\n    title: \"Terms\"\n    rows: \"$.POINTS\"\n    columns:\n      - { label: \"Term\", bind: \"@.TENOR\" }\n      - { label: \"Rate (%)\", bind: \"@.RATE\", fmt: \"price2\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "modules/economy/packs/world-economy/sutras/politics-and-society/office-holder.v1.sutra.yaml",
+  "group": "modules/economy/packs/world-economy",
+  "problems": [],
+  "model": "rachana: 1\nsutra: office-holder\nversion: 1\ndescription: \nmatch: { kind: office-holder, priority: 10 }\ntitle: { pill: \"Politics and society · Office holder\", id: \"$.OFFICE_ID\" }\nstrip:\n  - { label: \"Country\", bind: \"$.COUNTRY_NAME\" }\n  - { label: \"Role\", bind: \"$.ROLE\" }\n  - { label: \"Holder\", bind: \"$.HOLDER\", emphasis: true }\n  - { label: \"Since\", bind: \"$.SINCE\" }\n  - { label: \"Government\", bind: \"$.GOVERNMENT_TYPE\" }\npanels:\n  - id: mandate\n    kind: kv\n    title: \"How the office is filled\"\n    key: \"F2\"\n    phone: { tier: \"must\", from: \"fragment\" }\n    rows: \"$.MANDATE\"\n  - id: source\n    kind: kv\n    title: \"Data source and licence\"\n    area: right\n    phone: { tier: \"must\", from: \"fragment\" }\n    rows: \"$.PROVENANCE\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n    phone: { tier: \"more\", from: \"fragment\" }\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\n    phone: { tier: \"more\", from: \"fragment\" }\nkeys: { F7: \"link($.JURISDICTION, 'jurisdiction')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

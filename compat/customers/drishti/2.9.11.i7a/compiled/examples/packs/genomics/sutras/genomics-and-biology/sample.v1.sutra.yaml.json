@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/genomics/sutras/genomics-and-biology/sample.v1.sutra.yaml",
+  "group": "examples/packs/genomics",
+  "problems": [],
+  "model": "rachana: 1\nsutra: sample\nversion: 1\ndescription: \nmatch: { kind: sample, priority: 10 }\ntitle: { pill: \"Genomics and biology · Sample\", id: \"$.sampleId\" }\nstrip:\n  - { label: \"Tissue\", bind: \"$.tissue\" }\n  - { label: \"Diagnosis\", bind: \"$.diagnosis\" }\n  - { label: \"Tumour purity\", bind: \"$.purity\", fmt: \"pct0\" }\n  - { label: \"Variants called\", bind: \"$.variantCount\", fmt: \"amount0\", emphasis: true }\n  - { label: \"Mean coverage\", bind: \"$.meanCoverage\", fmt: \"amount0\" }\n  - { label: \"Collected\", bind: \"$.collected\", fmt: \"date\" }\npanels:\n  - id: calls\n    kind: table\n    title: \"Variant calls\"\n    key: \"F2\"\n    rows: \"$.calls\"\n    columns:\n      - { label: \"Variant\", bind: \"@.variant\" }\n      - { label: \"Gene\", bind: \"@.gene\" }\n      - { label: \"VAF\", bind: \"@.vaf\", fmt: \"pct2\", total: true }\n      - { label: \"Depth\", bind: \"@.depth\", fmt: \"amount0\" }\n      - { label: \"Filter\", bind: \"@.filter\", tone: \"status\" }\n  - id: qc\n    kind: kv\n    title: \"Quality control\"\n    key: \"F3\"\n    area: right\n    rows: \"$.qc\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.sequencingRun, 'sequencing-run')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

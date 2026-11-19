@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/blocks
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "A use of a block that does not exist; harvested from SutraBlocksTest (the other block cases need library files)."
+cases:
+
+  - id: "use-of-an-unknown-block"
+    kind: "problem"
+    source: "SutraBlocksTest#anUnknownBlockOrParameterIsDrs2048AndABlockMayNotUseAnother"
+    sutra: "rachana: 1\nsutra: deal\nversion: 1\nmatch: { kind: trade, where: \"$.SOURCE_SYSTEM == 'ENDUR' && $.PRODUCT_TYPE == 'Cash'\" }\ntitle: { id: $.TRADE_ID }\npanels:\n  - { use: nothing@1 }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2048", "severity": "error", "message": "no block nothing@1 (no block files are loaded)", "range": {"start": {"line": 7, "column": 5}}}]}

@@ -3,7 +3,7 @@
 
 `RefBridge.java` is a runtime program in the sense of `conformance/RUNNER.md` section 5: cases on standard input, actual documents on
 standard output. It is written against Drishti's reference implementation (`compute/drishti-rachana` and the jars it needs) and
-implements `expr`, `expr-error`, `format`, `problem` and `edit` (one operation of the reference's `design/ops` per case, its name in kebab case). It exists only until `rachana-core` is the reference (plan A10); then it is deleted.
+implements `expr`, `expr-error`, `format`, `problem` and `edit` (one operation of the reference's `design/ops` per case, its name in kebab case). Since A10 the same logic runs over this repository's code as `JvmRuntime` (`rachana_conformance.py --jvm`); this bridge stays as the reference each split step is compared with, byte for byte, until Drishti consumes the pin (DRISHTI_MIGRATION_TODO 8.9).
 
 ```text
 python3 tools/conformance/rachana_conformance.py --classpath-file CP.txt     # CP.txt: the jars of Drishti's release, one class path

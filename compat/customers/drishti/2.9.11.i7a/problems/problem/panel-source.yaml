@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/panel-source
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "Which panel kinds take the source: option; harvested from PanelSourceTest (only the validity of a source: on kinds that read data; PanelKind.accepts is not observable: a source: on links or provenance panels is not refused by the Sutra compiler)."
+cases:
+
+  - id: "table-takes-source"
+    kind: "problem"
+    source: "PanelSourceTest#everyKindThatReadsDataTakesASource"
+    sutra: "rachana: 1\nsutra: src-test\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: p\n    kind: table\n    source: { kind: counterparty, id: CP-1 }\n    rows: $.rows\n    columns: [{ label: A, bind: \"@.a\" }]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "kv-takes-source"
+    kind: "problem"
+    source: "PanelSourceTest#everyKindThatReadsDataTakesASource"
+    sutra: "rachana: 1\nsutra: src-test\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: p\n    kind: kv\n    source: { kind: counterparty, id: CP-1 }\n    columns: [{ label: A, bind: \"$.a\" }]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "metric-takes-source"
+    kind: "problem"
+    source: "PanelSourceTest#everyKindThatReadsDataTakesASource"
+    sutra: "rachana: 1\nsutra: src-test\nversion: 1\nmatch: { kind: trade }\npanels:\n  - id: p\n    kind: metric\n    source: { kind: counterparty, id: CP-1 }\n    value: $.a\n"
+    expect: {"ok": true, "problems": []}

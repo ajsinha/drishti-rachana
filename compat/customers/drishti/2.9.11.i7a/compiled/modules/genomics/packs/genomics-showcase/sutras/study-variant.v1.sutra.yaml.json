@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/genomics-showcase/sutras/study-variant.v1.sutra.yaml",
+  "group": "modules/genomics/packs/genomics-showcase",
+  "problems": [],
+  "model": "rachana: 1\nsutra: study-variant\nversion: 1\ndescription: \nmatch: { kind: study-variant, priority: 10 }\ntitle: { pill: \"Genomics · Study variant\", id: \"$.VARIANT_ID\" }\nstrip:\n  - { label: \"Variant id\", bind: \"$.VARIANT_ID\" }\n  - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n  - { label: \"Consequence\", bind: \"$.CONSEQUENCE\" }\n  - { label: \"Impact\", bind: \"$.IMPACT\" }\n  - { label: \"Carriers\", bind: \"$.CARRIERS\", fmt: \"amount0\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Study variant\"\n    columns:\n      - { label: \"Variant id\", bind: \"$.VARIANT_ID\" }\n      - { label: \"Chrom\", bind: \"$.CHROM\" }\n      - { label: \"Pos\", bind: \"$.POS\", fmt: \"amount0\" }\n      - { label: \"Ref\", bind: \"$.REF\" }\n      - { label: \"Alt\", bind: \"$.ALT\" }\n      - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\n      - { label: \"Consequence\", bind: \"$.CONSEQUENCE\" }\n      - { label: \"Impact\", bind: \"$.IMPACT\" }\n      - { label: \"Protein pos\", bind: \"$.PROTEIN_POS\", fmt: \"amount0\" }\n      - { label: \"Aa ref\", bind: \"$.AA_REF\" }\n      - { label: \"Aa alt\", bind: \"$.AA_ALT\" }\n      - { label: \"Carriers\", bind: \"$.CARRIERS\", fmt: \"amount0\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

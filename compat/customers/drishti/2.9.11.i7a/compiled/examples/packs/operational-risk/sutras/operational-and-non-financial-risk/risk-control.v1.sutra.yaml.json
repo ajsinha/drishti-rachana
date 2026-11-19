@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/risk-control.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: risk-control\nversion: 1\ndescription: \nmatch: { kind: risk-control, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Risk and control assessment\", id: \"$.assessmentId\" }\nstrip:\n  - { label: \"Risk\", bind: \"$.risk\" }\n  - { label: \"Desk\", bind: \"$.deskName\" }\n  - { label: \"Inherent\", bind: \"$.inherent\" }\n  - { label: \"Control effectiveness\", bind: \"$.effectiveness\", tone: \"status\" }\n  - { label: \"Residual\", bind: \"$.residual\", emphasis: true }\n  - { label: \"Next review\", bind: \"$.nextReview\", fmt: \"date\" }\npanels:\n  - id: controls\n    kind: table\n    title: \"Controls\"\n    key: \"F2\"\n    rows: \"$.controls\"\n    columns:\n      - { label: \"Control\", bind: \"@.control\" }\n      - { label: \"Type\", bind: \"@.type\" }\n      - { label: \"Frequency\", bind: \"@.frequency\" }\n      - { label: \"Last test\", bind: \"@.lastTest\", fmt: \"date\" }\n      - { label: \"Result\", bind: \"@.result\", tone: \"status\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.desk, 'desk')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

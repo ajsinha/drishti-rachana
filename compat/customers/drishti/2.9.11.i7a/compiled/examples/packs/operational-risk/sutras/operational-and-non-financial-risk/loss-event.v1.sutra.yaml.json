@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/loss-event.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: loss-event\nversion: 1\ndescription: \nmatch: { kind: loss-event, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Operational loss event\", id: \"$.eventId\" }\nstrip:\n  - { label: \"Event type\", bind: \"$.eventType\" }\n  - { label: \"Desk\", bind: \"$.deskName\" }\n  - { label: \"Gross loss\", bind: \"$.grossLoss\", fmt: \"amount0\" }\n  - { label: \"Recoveries\", bind: \"$.recoveries\", fmt: \"amount0\" }\n  - { label: \"Net loss\", bind: \"$.netLoss\", fmt: \"amount0\", emphasis: true }\n  - { label: \"Status\", bind: \"$.status\", tone: \"status\" }\n  - { label: \"Occurred\", bind: \"$.occurred\", fmt: \"date\" }\npanels:\n  - id: details\n    kind: kv\n    title: \"Event\"\n    key: \"F2\"\n    rows: \"$.details\"\n  - id: timeline\n    kind: ladder\n    title: \"Timeline\"\n    key: \"F3\"\n    rows: \"$.timeline\"\n    columns:\n      - { label: \"Date\", bind: \"@.date\", fmt: \"date\" }\n      - { label: \"Step\", bind: \"@.step\" }\n      - { label: \"By\", bind: \"@.by\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.desk, 'desk')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/protein-engineering/sutras/design-mutation.v1.sutra.yaml",
+  "group": "modules/genomics/packs/protein-engineering",
+  "problems": [],
+  "model": "rachana: 1\nsutra: design-mutation\nversion: 1\ndescription: \nmatch: { kind: design-mutation, priority: 10 }\ntitle: { pill: \"Protein engineering · Design change\", id: \"$.DESIGN_MUTATION_ID\" }\nstrip:\n  - { label: \"Design mutation id\", bind: \"$.DESIGN_MUTATION_ID\" }\n  - { label: \"Design id\", bind: \"link($.DESIGN_ID, 'design')\" }\n  - { label: \"Mutation\", bind: \"$.MUTATION\" }\n  - { label: \"Round\", bind: \"$.ROUND\", fmt: \"amount0\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Design change\"\n    columns:\n      - { label: \"Design mutation id\", bind: \"$.DESIGN_MUTATION_ID\" }\n      - { label: \"Design id\", bind: \"link($.DESIGN_ID, 'design')\" }\n      - { label: \"Protein\", bind: \"link($.PROTEIN, 'protein')\" }\n      - { label: \"Round\", bind: \"$.ROUND\", fmt: \"amount0\" }\n      - { label: \"Pos\", bind: \"$.POS\", fmt: \"amount0\" }\n      - { label: \"Aa from\", bind: \"$.AA_FROM\" }\n      - { label: \"Aa to\", bind: \"$.AA_TO\" }\n      - { label: \"Mutation\", bind: \"$.MUTATION\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

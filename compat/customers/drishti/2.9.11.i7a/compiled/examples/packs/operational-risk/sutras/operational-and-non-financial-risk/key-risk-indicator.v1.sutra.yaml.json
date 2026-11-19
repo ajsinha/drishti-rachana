@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/key-risk-indicator.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: key-risk-indicator\nversion: 1\ndescription: \nmatch: { kind: key-risk-indicator, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Key risk indicator\", id: \"$.kriId\" }\nstrip:\n  - { label: \"Indicator\", bind: \"$.name\" }\n  - { label: \"Desk\", bind: \"$.deskName\" }\n  - { label: \"Value\", bind: \"$.value\", fmt: \"price2\", emphasis: true }\n  - { label: \"Amber\", bind: \"$.amber\", fmt: \"price2\" }\n  - { label: \"Red\", bind: \"$.red\", fmt: \"price2\" }\n  - { label: \"Status\", bind: \"$.status\", tone: \"status\" }\npanels:\n  - id: history\n    kind: line\n    title: \"Last 20 business days\"\n    key: \"F2\"\n    rows: \"$.history\"\n    x: \"date\"\n    y: \"value\"\n    fmt: \"price2\"\n  - id: definition\n    kind: kv\n    title: \"Definition\"\n    area: right\n    rows: \"$.definition\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.desk, 'desk')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

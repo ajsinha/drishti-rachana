@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/climate-risk/sutras/climate/climate-scenario.v1.sutra.yaml",
+  "group": "examples/packs/climate-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: climate-scenario\nversion: 1\ndescription: \nmatch: { kind: climate-scenario, priority: 10 }\ntitle: { pill: \"Climate · Climate scenario\", id: \"$.scenarioId\" }\nstrip:\n  - { label: \"Scenario\", bind: \"$.name\" }\n  - { label: \"Category\", bind: \"$.category\" }\n  - { label: \"Warming by 2100\", bind: \"$.warming\", fmt: \"price2\", emphasis: true }\n  - { label: \"Carbon price 2030\", bind: \"$.carbon2030\", fmt: \"amount0\" }\n  - { label: \"Carbon price 2050\", bind: \"$.carbon2050\", fmt: \"amount0\" }\npanels:\n  - id: carbon\n    kind: line\n    title: \"Carbon price (USD per tCO2e)\"\n    key: \"F2\"\n    rows: \"$.carbonPath\"\n    x: \"year\"\n    y: \"price\"\n    fmt: \"amount0\"\n  - id: shocks\n    kind: table\n    title: \"Sector shocks (equity value, 2030)\"\n    key: \"F3\"\n    rows: \"$.shocks\"\n    columns:\n      - { label: \"Sector\", bind: \"@.sector\" }\n      - { label: \"Shock\", bind: \"@.shock\", fmt: \"pct0\", tone: \"sign\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\nkeys: { F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see LICENSE.
+# The reviewed path allow-list of split step A10 (git filter-repo --paths-from-file), over the three paths the compiler had in
+# the host's history. What is not listed stays in the host (the profile part: about, the matcher, the directory registry,
+# the Spring configuration; tests that read the host's packs, guide examples or UI kit).
+regex:^(drishti-sutra|drishti-rachana|compute/drishti-rachana)/src/main/java/com/ash/drishti/(sutra|rachana)/(el|format|model|parse|design)/.*\.java$
+regex:^(drishti-sutra|drishti-rachana|compute/drishti-rachana)/src/main/java/com/ash/drishti/(sutra|rachana)/(RachanaSchema|SutraException|SutraExpressions|SutraLayoutEditor|SutraPivotEditor|SutraProblem|SutraText|SutraWiring|SutraWriter|package-info)\.java$
+regex:^(drishti-sutra|drishti-rachana|compute/drishti-rachana)/src/main/resources/(rachana|sutra)/el/signatures\.yaml$
+regex:^(drishti-sutra|drishti-rachana|compute/drishti-rachana)/src/test/java/com/ash/drishti/(sutra|rachana)/(el|format|design)/.*\.java$
+regex:^(drishti-sutra|drishti-rachana|compute/drishti-rachana)/src/test/java/com/ash/drishti/(sutra|rachana)/parse/(PhoneReaderTest|SutraBlocksTest)\.java$
+regex:^(drishti-sutra|drishti-rachana|compute/drishti-rachana)/src/test/java/com/ash/drishti/(sutra|rachana)/(ControlsTest|DrillLevelsTest|FormTest|NestedTabsTest|PanelSourceTest|PivotOptionTest|ScreenLayoutTest|StrictSutraTest|SutraLayoutEditorTest|SutraPivotEditorTest|SutraWiringTest|FormatsTest|SutraParserTest)\.java$
+regex:^(drishti-sutra|drishti-rachana|compute/drishti-rachana)/src/test/resources/junit-platform\.properties$

@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/protein-engineering/sutras/design.v1.sutra.yaml",
+  "group": "modules/genomics/packs/protein-engineering",
+  "problems": [],
+  "model": "rachana: 1\nsutra: design\nversion: 1\ndescription: \nmatch: { kind: design, priority: 10 }\ntitle: { pill: \"Protein engineering · Protein design\", id: \"$.DESIGN_ID\" }\nstrip:\n  - { label: \"Design id\", bind: \"$.DESIGN_ID\" }\n  - { label: \"Round\", bind: \"$.ROUND\", fmt: \"amount0\" }\n  - { label: \"N changes\", bind: \"$.N_CHANGES\", fmt: \"amount0\" }\n  - { label: \"Activity\", bind: \"$.ACTIVITY\" }\n  - { label: \"Status\", bind: \"$.STATUS\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Protein design\"\n    columns:\n      - { label: \"Design id\", bind: \"$.DESIGN_ID\" }\n      - { label: \"Protein\", bind: \"link($.PROTEIN, 'protein')\" }\n      - { label: \"Round\", bind: \"$.ROUND\", fmt: \"amount0\" }\n      - { label: \"Parent\", bind: \"$.PARENT\" }\n      - { label: \"N changes\", bind: \"$.N_CHANGES\", fmt: \"amount0\" }\n      - { label: \"Changes\", bind: \"$.CHANGES\" }\n      - { label: \"Activity\", bind: \"$.ACTIVITY\" }\n      - { label: \"Delta tm\", bind: \"$.DELTA_TM\" }\n      - { label: \"Model score\", bind: \"$.MODEL_SCORE\" }\n      - { label: \"Status\", bind: \"$.STATUS\" }\n      - { label: \"Emb x\", bind: \"$.EMB_X\" }\n      - { label: \"Emb y\", bind: \"$.EMB_Y\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

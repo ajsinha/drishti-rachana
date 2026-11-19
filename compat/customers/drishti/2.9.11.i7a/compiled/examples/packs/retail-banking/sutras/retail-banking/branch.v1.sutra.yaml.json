@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/retail-banking/sutras/retail-banking/branch.v1.sutra.yaml",
+  "group": "examples/packs/retail-banking",
+  "problems": [],
+  "model": "rachana: 1\nsutra: branch\nversion: 1\ndescription: \nmatch: { kind: branch, priority: 10 }\ntitle: { pill: \"Retail banking · Branch\", id: \"$.branchId\" }\nstrip:\n  - { label: \"Branch\", bind: \"$.name\" }\n  - { label: \"City\", bind: \"$.city\" }\n  - { label: \"Customers\", bind: \"$.customers\", fmt: \"amount0\" }\n  - { label: \"Deposits\", bind: \"$.deposits\", fmt: \"compact\", emphasis: true }\n  - { label: \"Lending\", bind: \"$.lending\", fmt: \"compact\" }\n  - { label: \"NPS\", bind: \"$.nps\", fmt: \"amount0\" }\npanels:\n  - id: mix\n    kind: hbar\n    title: \"Balances by product\"\n    key: \"F2\"\n    rows: \"$.productMix\"\n    label: \"product\"\n    value: \"balance\"\n    fmt: \"compact\"\n  - id: nps\n    kind: line\n    title: \"Net promoter score by month\"\n    area: right\n    rows: \"$.npsHistory\"\n    x: \"month\"\n    y: \"nps\"\n    fmt: \"amount0\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.legalEntity, 'legal-entity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

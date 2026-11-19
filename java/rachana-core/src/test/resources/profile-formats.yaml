@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+#
+# Test only: the five profile format names the unit tests use (a profile adds names; Core never needs them).
+
+formats:
+  pct4:     { type: number, decimals: 4, scale: 100, suffix: "%" }
+  rate5:    { type: number, decimals: 5, grouping: false }
+  pips1:    { type: number, decimals: 1, sign: always }
+  df4:      { type: number, decimals: 4 }
+  bp1:      { type: number, decimals: 1, sign: always, suffix: " bp" }

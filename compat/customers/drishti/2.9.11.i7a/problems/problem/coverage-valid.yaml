@@ -1,0 +1,170 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: problem/coverage-valid
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "Small valid Sutras exercising panel kinds, options and keys the other suites leave out (plan R0 H5 coverage); each is one point."
+cases:
+
+  - id: "sutra-description-and-notes"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\ndescription: A screen for coverage.\nnotes: Notes for the author.\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "sutra-refresh-seconds"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\nrefresh: 30\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "sutra-doc-complete"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\ndoc:\n  summary: One line.\n  description: What it shows.\n  params: {}\n  emits: []\n  expects: []\n  since: \"1.0\"\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "panel-code-description-key-infer"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: a, kind: kv, columns: [ { label: A, bind: $.a } ], code: TRM, description: The terms, key: F2, infer: true, title: Terms }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "panel-refresh-mapping"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: a, kind: kv, columns: [ { label: A, bind: $.a } ], refresh: { every: 60, user-can-pause: false } }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "strip-fmt-tone-emphasis"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\nstrip:\n  - { label: MTM, bind: $.mtm, fmt: signed2, tone: sign, emphasis: true }\n  - { label: State, bind: $.state, tone: status }\npanels:\n  - { id: a, kind: markdown, text: hi }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "column-link-and-tone"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - id: t\n    kind: table\n    rows: $.rows\n    columns:\n      - { label: Id, bind: \"@.id\", link: { kind: trade, id: \"@.id\" } }\n      - { label: Pnl, bind: \"@.pnl\", fmt: signed2, tone: sign }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "kind-gauge"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: g, kind: gauge, value: $.used, max: 100, label: Used, fmt: pct0 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "kind-hbar-shape-tone"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: h, kind: hbar, rows: $.rows, label: name, value: amount, fmt: amount0, tone: sign, shape: donut }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "kind-map-region-shade-link"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - id: m\n    kind: map\n    highlight: $.iso3\n    unit: USD\n    link: { kind: country, id: \"CTRY-{iso3}\" }\n    shade: { kind: economy, field: $.gdp, by: $.iso3, fmt: amount0, label: GDP }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "kind-map-region"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: m, kind: map, region: $.country }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "kind-timeline-options"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: t, kind: timeline, rows: $.events, date: when, label: what, detail: more, status: state, tone: sign }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "kind-candlestick-options"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: c, kind: candlestick, rows: $.ohlc, x: day, open: o, high: h, low: l, close: c, volume: v, unit: USD, fmt: price2 }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "metric-delta-caption"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: m, kind: metric, value: $.mtm, label: MTM, caption: \"vs ${$.prior}\", delta: $.chg, deltaFmt: signed2, deltaTone: sign, tone: sign, unit: USD }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "line-labels-mark-footer-values"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: l, kind: line, values: $.vals, labels: $.labs, mark: $.last, footer: Source, unit: bp }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "area-limit-label"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: a, kind: area, rows: $.rows, x: day, limit: $.cap, limitLabel: Cap, unit: USD }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "waterfall-sum-total"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: w, kind: waterfall, rows: $.explain, label: step, value: pnl, sum: Closing, total: Opening }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "scatter-size-labels-xfmt"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: s, kind: scatter, rows: $.books, x: var, y: pnl, size: notional, group: desk, xFmt: amount0, xLabel: VaR, yLabel: P&L }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "graph-edges-group"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: g, kind: graph, nodes: $.nodes, edges: $.edges, group: desk, label: name, layout: force }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "pivot-totals"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: p, kind: pivot, rows: $.positions, by: book, across: currency, value: mtm, totals: false }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "surface-view"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: s, kind: surface, rows: $.grid, y: strike, view: heatmap }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "table-more-total-labels-highlight-link"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - id: t\n    kind: table\n    rows: $.rows\n    limit: 5\n    moreLabel: \"'more rows'\"\n    totalLabel: \"'All'\"\n    highlight: \"@.id == $.id\"\n    link: { kind: trade, id: \"@.id\" }\n    columns: [ { label: Id, bind: \"@.id\", total: sum } ]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "marker-tone-and-value"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - id: h\n    kind: histogram\n    rows: $.scenarios\n    bins: 30\n    markers:\n      - { label: VaR 99%, value: \"-$.var99\", tone: neg }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "phone-figures-series-tab-from"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: k, kind: kv, columns: [ { label: A, bind: $.a } ], phone: { tier: glance, figures: 3, from: fragment } }\n  - { id: l, kind: line, rows: $.rows, x: d, y: v, phone: { tier: more, series: [a, b] } }\n  - { id: t, kind: tabs, each: $.legs, tabTitle: \"@.id\", body: { kind: kv, columns: [ { label: A, bind: $.a } ] }, phone: { tier: desk, tab: 1 } }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "emit-on-bar-click-and-children-show"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - id: a\n    kind: hbar\n    rows: $.rows\n    emits: [ { name: pick, \"on\": bar-click, payload: { k: \"@.k\" } } ]\n  - id: b\n    kind: table\n    rows: $.rows\n    columns: [ { label: K, bind: \"@.k\" } ]\n    emits: [ { name: pick2, \"on\": row-click } ]\n    children:\n      - place: expand-row\n        show: on-expand\n        panels: [ { id: c, kind: kv, columns: [ { label: K, bind: $.k } ] } ]\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "source-table-virtual"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - { id: t, kind: line, x: a, y: b, source: { table: trading.trade_legs, where: \"@.ccy == 'USD'\", limit: 10 }  }\n"
+    expect: {"ok": true, "problems": []}
+
+  - id: "form-title-roles-new-label-field-keys"
+    kind: "problem"
+    source: "coverage-gaps (plan R0 H5)"
+    sutra: "rachana: 1\nsutra: cov\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.id }\npanels:\n  - id: trades\n    kind: table\n    rows: $.TRADES\n    columns: [ { label: Trade, bind: \"@.TRADE_ID\" }, { label: Notional, bind: \"@.NOTIONAL\" } ]\n    form:\n      title: Edit trade\n      key: trade_id\n      edit: beside\n      new: drawer\n      new-label: Book a trade\n      roles: [trader]\n      fields:\n        - { id: trade_id, bind: TRADE_ID, readonly: true, reason: Set by the system, new: false }\n        - { id: notional, label: Notional, bind: NOTIONAL, type: number, fmt: amount0, placeholder: \"0\", min: 0 }\n      hints:\n        - { label: Double, value: \"notional * 2\", fmt: amount0 }\n"
+    expect: {"ok": true, "problems": []}

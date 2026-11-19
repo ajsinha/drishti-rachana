@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/climate-risk/sutras/climate/taxonomy-alignment.v1.sutra.yaml",
+  "group": "examples/packs/climate-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: taxonomy-alignment\nversion: 1\ndescription: \nmatch: { kind: taxonomy-alignment, priority: 10 }\ntitle: { pill: \"Climate · Green asset ratio\", id: \"$.reportId\" }\nstrip:\n  - { label: \"Entity\", bind: \"$.legalEntityName\" }\n  - { label: \"Green asset ratio\", bind: \"$.gar\", fmt: \"pct2\", emphasis: true }\n  - { label: \"Eligible\", bind: \"$.eligible\", fmt: \"pct0\" }\n  - { label: \"Covered assets\", bind: \"$.covered\", fmt: \"compact\" }\npanels:\n  - id: objectives\n    kind: hbar\n    title: \"Aligned assets by objective\"\n    key: \"F2\"\n    rows: \"$.objectives\"\n    label: \"objective\"\n    value: \"aligned\"\n    fmt: \"compact\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.legalEntity, 'legal-entity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

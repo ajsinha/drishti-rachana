@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/oprisk-capital.v1.sutra.yaml",
+  "group": "examples/packs/operational-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: oprisk-capital\nversion: 1\ndescription: \nmatch: { kind: oprisk-capital, priority: 10 }\ntitle: { pill: \"Operational and non-financial risk · Operational-risk capital\", id: \"$.calcId\" }\nstrip:\n  - { label: \"Entity\", bind: \"$.legalEntityName\" }\n  - { label: \"Business indicator\", bind: \"$.bi\", fmt: \"compact\" }\n  - { label: \"BI component\", bind: \"$.bic\", fmt: \"compact\" }\n  - { label: \"ILM\", bind: \"$.ilm\", fmt: \"price2\" }\n  - { label: \"Capital\", bind: \"$.capital\", fmt: \"compact\", emphasis: true }\n  - { label: \"RWA\", bind: \"$.rwa\", fmt: \"compact\" }\npanels:\n  - id: components\n    kind: hbar\n    title: \"Business indicator components\"\n    key: \"F2\"\n    rows: \"$.components\"\n    label: \"component\"\n    value: \"amount\"\n    fmt: \"compact\"\n  - id: losses\n    kind: line\n    title: \"Annual losses (10 years)\"\n    area: right\n    rows: \"$.annualLosses\"\n    x: \"year\"\n    y: \"loss\"\n    fmt: \"compact\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.legalEntity, 'legal-entity')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/retail-banking/sutras/retail-banking/personal-loan.v1.sutra.yaml",
+  "group": "examples/packs/retail-banking",
+  "problems": [],
+  "model": "rachana: 1\nsutra: personal-loan\nversion: 1\ndescription: \nmatch: { kind: personal-loan, priority: 10 }\ntitle: { pill: \"Retail banking · Personal loan\", id: \"$.loanId\" }\nstrip:\n  - { label: \"Borrower\", bind: \"$.borrowerName\" }\n  - { label: \"Purpose\", bind: \"$.purpose\" }\n  - { label: \"Balance\", bind: \"$.balance\", fmt: \"amount2\", emphasis: true }\n  - { label: \"Instalment\", bind: \"$.instalment\", fmt: \"amount2\" }\n  - { label: \"Rate\", bind: \"$.rate\", fmt: \"pct2\" }\n  - { label: \"Days past due\", bind: \"$.daysPastDue\", fmt: \"amount0\" }\npanels:\n  - id: schedule\n    kind: ladder\n    title: \"Next instalments\"\n    key: \"F2\"\n    rows: \"$.schedule\"\n    columns:\n      - { label: \"Due\", bind: \"@.due\", fmt: \"date\" }\n      - { label: \"Principal\", bind: \"@.principal\", fmt: \"amount2\" }\n      - { label: \"Interest\", bind: \"@.interest\", fmt: \"amount2\" }\n      - { label: \"Balance after\", bind: \"@.balance\", fmt: \"amount2\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.customer, 'customer')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

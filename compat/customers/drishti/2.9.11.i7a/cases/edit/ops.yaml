@@ -1,0 +1,295 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: edit/ops
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "Editing operations of the reference (design/ops) one at a time: applied, refused, and malformed; harvested from OpApplierTest."
+cases:
+
+  - id: "set-option-title-keeps-comments"
+    kind: "edit"
+    source: "OpApplierTest#everyOperationOnEveryKindKeepsCommentsAndOrder"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "terms", "option": "title", "value": "Renamed \"by\" op: #1"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ], title: \"Renamed \\\"by\\\" op: #1\" }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "set-option-span"
+    kind: "edit"
+    source: "OpApplierTest#everyOperationOnEveryKindKeepsCommentsAndOrder"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "notes", "option": "span", "value": 6}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi, span: 6 }\n"}
+
+  - id: "set-option-null-removes-the-option"
+    kind: "edit"
+    source: "OpApplierTest#everyOperationOnEveryKindKeepsCommentsAndOrder"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi, span: 6 }\n"
+    operation: {"op": "set-option", "panel": "notes", "option": "span", "value": null}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "move-to-right-area-after-a-panel"
+    kind: "edit"
+    source: "OpApplierTest#everyOperationOnEveryKindKeepsCommentsAndOrder"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "move", "panel": "notes", "area": "right", "after": "terms", "span": 4, "height": 5}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi, area: right, span: 4, height: 5 }\n"}
+
+  - id: "add-panel-after-another"
+    kind: "edit"
+    source: "OpApplierTest#everyOperationOnEveryKindKeepsCommentsAndOrder"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "add-panel", "id": "new-one", "kind": "markdown", "at": {"after": "terms", "span": 6, "height": 8}, "options": {"text": "hello"}}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - { id: \"new-one\", kind: markdown, text: hello, span: 6, height: 8 }\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "remove-a-panel-keeps-other-comments"
+    kind: "edit"
+    source: "OpApplierTest#everyOperationOnEveryKindKeepsCommentsAndOrder"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "remove", "panel": "terms"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "bind-adds-a-table-column"
+    kind: "edit"
+    source: "OpApplierTest#bindsPathsInTheRolesAKindTakes"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "bind", "panel": "versions", "path": "notional"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns: [{ label: V, bind: \"@.v\" }, { label: notional, bind: \"@.notional\" }]\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "bind-adds-a-kv-column"
+    kind: "edit"
+    source: "OpApplierTest#bindsPathsInTheRolesAKindTakes"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "bind", "panel": "terms", "path": "tradeId"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [{ label: A, bind: $.a }, { label: tradeId, bind: $.tradeId }] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "bind-a-status-reads-fields"
+    kind: "edit"
+    source: "OpApplierTest#bindsPathsInTheRolesAKindTakes"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: x, across: y }\n  - { id: st, kind: status }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "bind", "panel": "st", "path": "state"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: x, across: y }\n  - { id: st, kind: status, fields: [{ label: state, bind: $.state }] }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "bind-a-pivot-by-role"
+    kind: "edit"
+    source: "OpApplierTest#bindsPathsInTheRolesAKindTakes"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: x, across: y }\n  - { id: st, kind: status }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "bind", "panel": "g", "path": "book", "role": "by"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: [x, book], across: y }\n  - { id: st, kind: status }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "bind-a-pivot-across-role"
+    kind: "edit"
+    source: "OpApplierTest#bindsPathsInTheRolesAKindTakes"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: x, across: y }\n  - { id: st, kind: status }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "bind", "panel": "g", "path": "ccy", "role": "across"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: x, across: ccy }\n  - { id: st, kind: status }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "bind-a-pivot-value-role"
+    kind: "edit"
+    source: "OpApplierTest#bindsPathsInTheRolesAKindTakes"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: x, across: y }\n  - { id: st, kind: status }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "bind", "panel": "g", "path": "pv", "role": "value"}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: g, kind: pivot, rows: $.legs, by: x, across: y, value: pv }\n  - { id: st, kind: status }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "set-option-pivot-mapping-on-a-table"
+    kind: "edit"
+    source: "OpApplierTest#theTablesPivotMappingIsAccepted"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "versions", "option": "pivot", "value": {"heat": true}}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n    pivot: { heat: true }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "refused-area-given-a-mapping"
+    kind: "edit"
+    source: "OpApplierTest#aListOrMappingForAOptionThatTakesOneValueIsRefused"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "terms", "option": "area", "value": {"a": 1}}
+    expect: {"problems": [{"code": "RCH-5023", "severity": "error", "message": "option 'area' of 'kv' panels takes one value (text, number or true/false), not a mapping"}]}
+
+  - id: "refused-title-given-a-mapping"
+    kind: "edit"
+    source: "OpApplierTest#aListOrMappingForAOptionThatTakesOneValueIsRefused"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "terms", "option": "title", "value": {"a": 1}}
+    expect: {"problems": [{"code": "RCH-5023", "severity": "error", "message": "option 'title' of 'kv' panels takes one value (text, number or true/false), not a mapping"}]}
+
+  - id: "refused-option-given-a-list"
+    kind: "edit"
+    source: "OpApplierTest#aListOrMappingForAOptionThatTakesOneValueIsRefused"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  - { id: pnl, kind: line, rows: $.p, x: T, y: Y }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "pnl", "option": "x", "value": [1]}
+    expect: {"problems": [{"code": "RCH-5023", "severity": "error", "message": "option 'x' of 'line' panels takes one value (text, number or true/false), not a list"}]}
+
+  - id: "refused-no-such-panel"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "nope", "option": "title", "value": "x"}
+    expect: {"problems": [{"code": "RCH-5021", "severity": "error", "message": "no panel 'nope' in this Sutra"}]}
+
+  - id: "refused-option-the-kind-does-not-accept"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "terms", "option": "agg", "value": "sum"}
+    expect: {"problems": [{"code": "RCH-5022", "severity": "error", "messageStart": "option 'agg' is not valid for 'kv' panels; expected one of"}]}
+
+  - id: "refused-span-out-of-range"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "terms", "option": "span", "value": 13}
+    expect: {"problems": [{"code": "RCH-5023", "severity": "error", "message": "span must be a whole number from 1 to 12, not '13'"}]}
+
+  - id: "refused-id-cannot-be-set"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "terms", "option": "id", "value": "other"}
+    expect: {"problems": [{"code": "RCH-5022", "severity": "error", "message": "'id' cannot be set on a panel: remove it and add another"}]}
+
+  - id: "refused-add-pivot-with-a-bad-agg"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "add-panel", "kind": "pivot", "options": {"rows": "$.x", "by": "g", "across": "h", "agg": "median"}}
+    expect: {"problems": [{"code": "RCH-5023", "severity": "error", "message": "option 'agg' of 'pivot' panels must be one of sum, count, avg, min, max, not 'median'"}]}
+
+  - id: "refused-add-panel-duplicate-id"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "add-panel", "id": "terms", "kind": "kv", "options": {}}
+    expect: {"problems": [{"code": "RCH-5023", "severity": "error", "message": "there is already a panel 'terms'"}]}
+
+  - id: "refused-add-panel-unknown-kind"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "add-panel", "kind": "hologram", "options": {}}
+    expect: {"problems": [{"code": "RCH-5022", "severity": "error", "message": "unknown panel kind 'hologram'; expected one of kv, table, tabs, line, area, hbar, ladder, links, status, provenance, markdown, gauge, surface, waterfall, histogram, scatter, candlestick, graph, timeline, pivot, metric, map"}]}
+
+  - id: "refused-add-table-without-rows"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "add-panel", "id": "t2", "kind": "table", "options": {}}
+    expect: {"problems": [{"code": "RCH-2022", "severity": "error", "message": "'table' panel 't2' needs option 'rows'", "range": {"start": {"line": 16}}}]}
+
+  - id: "refused-move-to-a-bad-area"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "move", "panel": "terms", "area": "left"}
+    expect: {"problems": [{"code": "RCH-5023", "severity": "error", "message": "area must be main or right, not 'left'"}]}
+
+  - id: "refused-bind-a-role-the-kind-does-not-take"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "bind", "panel": "terms", "path": "x", "role": "wibble"}
+    expect: {"problems": [{"code": "RCH-5022", "severity": "error", "message": "'kv' panels take these roles: rows, source, field; not 'wibble'"}]}
+
+  - id: "refused-remove-a-ghost"
+    kind: "edit"
+    source: "OpApplierTest#aBadOperationIsALocatedProblemAndNeverCorruptsTheText"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "remove", "panel": "ghost"}
+    expect: {"problems": [{"code": "RCH-5021", "severity": "error", "message": "no panel 'ghost' in this Sutra"}]}
+
+  - id: "set-strip-keeps-comments-inside-the-block"
+    kind: "edit"
+    source: "OpApplierTest#setStripKeepsTheCommentsInsideTheStripBlock"
+    sutra: "rachana: 1\nsutra: strip-keep\nversion: 1\nmatch: { kind: k }\ntitle: { id: $.id }\nstrip:\n  # figures the desk reads first\n  - { label: A, bind: $.a }\n  # b is shown for the audit\n  - { label: B, bind: $.b }\npanels:\n  - id: t\n    kind: kv\n    columns:\n      - { label: A, bind: $.a }\n"
+    operation: {"op": "set-strip", "items": [{"label": "C", "bind": "$.c"}]}
+    expect: {"text": "rachana: 1\nsutra: strip-keep\nversion: 1\nmatch: { kind: k }\ntitle: { id: $.id }\nstrip:\n  # figures the desk reads first\n  # b is shown for the audit\n  - { label: C, bind: $.c }\npanels:\n  - id: t\n    kind: kv\n    columns:\n      - { label: A, bind: $.a }\n"}
+
+  - id: "set-title-in-place"
+    kind: "edit"
+    source: "OpApplierTest#theSutrasOwnKeysAreSetAndRemovedInPlace"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-title", "title": {"pill": "Trade", "id": "$.tradeId"}}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: Trade, id: $.tradeId }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "set-match-in-place"
+    kind: "edit"
+    source: "OpApplierTest#theSutrasOwnKeysAreSetAndRemovedInPlace"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-match", "match": {"kind": "position"}}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: position }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "set-strip-added-before-panels"
+    kind: "edit"
+    source: "OpApplierTest#theSutrasOwnKeysAreSetAndRemovedInPlace"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-strip", "items": [{"label": "Notional", "bind": "$.notional"}]}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\nstrip:\n  - { label: Notional, bind: $.notional }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "set-keys-added-after-panels"
+    kind: "edit"
+    source: "OpApplierTest#theSutrasOwnKeysAreSetAndRemovedInPlace"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-keys", "keys": {"F2": "terms"}}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\nkeys:\n  F2: terms\n"}
+
+  - id: "set-strip-empty-removes-the-key"
+    kind: "edit"
+    source: "OpApplierTest#theSutrasOwnKeysAreSetAndRemovedInPlace"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\nstrip:\n  - { label: A, bind: $.a }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-strip", "items": []}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "set-keys-empty-removes-the-key"
+    kind: "edit"
+    source: "OpApplierTest#theSutrasOwnKeysAreSetAndRemovedInPlace"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\nkeys:\n  F2: terms\n"
+    operation: {"op": "set-keys", "keys": {}}
+    expect: {"text": "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"}
+
+  - id: "text-replaces-the-whole-sutra"
+    kind: "edit"
+    source: "OpApplierTest#textReplacesTheWholeSutraOrIsRefused"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "text", "yaml": "rachana: 1\nsutra: other\nversion: 1\nmatch: { kind: trade }\npanels:\n  - { id: a, kind: markdown, text: A }\n"}
+    expect: {"text": "rachana: 1\nsutra: other\nversion: 1\nmatch: { kind: trade }\npanels:\n  - { id: a, kind: markdown, text: A }\n"}
+
+  - id: "refused-text-that-is-not-yaml"
+    kind: "edit"
+    source: "OpApplierTest#textReplacesTheWholeSutraOrIsRefused"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "text", "yaml": "rachana: 1\nsutra: ["}
+    expect: {"problems": [{"code": "RCH-2001", "severity": "error", "message": "YAML syntax: while parsing a flow node\n in 'reader', line 2, column 9:\n    sutra: [\n            ^\nexpected the node content, but found '<stream end>'\n in 'reader', line 2, column 9:\n    sutra: [\n            ^\n", "range": {"start": {"line": 2}}}]}
+
+  - id: "refused-unknown-operation"
+    kind: "edit"
+    source: "OpApplierTest#operationsReadAndWriteJson"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "zap"}
+    expect: {"problems": [{"code": "RCH-5020", "severity": "error", "messageStart": "operation 0: unknown operation 'zap'; expected one of"}]}
+
+  - id: "refused-missing-panel-field"
+    kind: "edit"
+    source: "OpApplierTest#operationsReadAndWriteJson"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "remove"}
+    expect: {"problems": [{"code": "RCH-5020", "severity": "error", "message": "operation 0: 'remove' needs \"panel\""}]}
+
+  - id: "refused-unknown-field"
+    kind: "edit"
+    source: "OpApplierTest#operationsReadAndWriteJson"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "remove", "panel": "terms", "why": 1}
+    expect: {"problems": [{"code": "RCH-5020", "severity": "error", "message": "operation 0: 'remove' has no field 'why'; it takes panel"}]}
+
+  - id: "refused-span-not-a-whole-number"
+    kind: "edit"
+    source: "OpApplierTest#operationsReadAndWriteJson"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "move", "panel": "terms", "span": "wide"}
+    expect: {"problems": [{"code": "RCH-5020", "severity": "error", "message": "operation 0: \"span\" must be a whole number"}]}
+
+  - id: "refused-set-option-without-a-value"
+    kind: "edit"
+    source: "OpApplierTest#operationsReadAndWriteJson"
+    sutra: "rachana: 1\nsutra: ops-test\nversion: 1\nmatch: { kind: trade }\ntitle: { pill: T, id: $.id }\npanels:\n  # the terms\n  - { id: terms, kind: kv, columns: [ { label: A, bind: $.a } ] }  # inline\n  - id: versions\n    kind: table\n    rows: $.versions\n    columns:\n      - { label: V, bind: \"@.v\" }\n  # the notes\n  - { id: notes, kind: markdown, text: hi }\n"
+    operation: {"op": "set-option", "panel": "terms", "option": "b"}
+    expect: {"problems": [{"code": "RCH-5020", "severity": "error", "message": "operation 0: 'setOption' needs a \"value\" (null removes the option)"}]}

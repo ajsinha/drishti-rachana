@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/genomics-showcase/sutras/cnv-segment.v1.sutra.yaml",
+  "group": "modules/genomics/packs/genomics-showcase",
+  "problems": [],
+  "model": "rachana: 1\nsutra: cnv-segment\nversion: 1\ndescription: \nmatch: { kind: cnv-segment, priority: 10 }\ntitle: { pill: \"Genomics · Copy-number segment\", id: \"$.SEGMENT_ID\" }\nstrip:\n  - { label: \"Segment id\", bind: \"$.SEGMENT_ID\" }\n  - { label: \"Sample id\", bind: \"link($.SAMPLE_ID, 'study-sample')\" }\n  - { label: \"Chrom\", bind: \"$.CHROM\" }\n  - { label: \"Copy number\", bind: \"$.COPY_NUMBER\", fmt: \"amount0\" }\n  - { label: \"Call\", bind: \"$.CALL\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Copy-number segment\"\n    columns:\n      - { label: \"Segment id\", bind: \"$.SEGMENT_ID\" }\n      - { label: \"Sample id\", bind: \"link($.SAMPLE_ID, 'study-sample')\" }\n      - { label: \"Chrom\", bind: \"$.CHROM\" }\n      - { label: \"Start\", bind: \"$.START\", fmt: \"amount0\" }\n      - { label: \"End\", bind: \"$.END\", fmt: \"amount0\" }\n      - { label: \"Copy number\", bind: \"$.COPY_NUMBER\", fmt: \"amount0\" }\n      - { label: \"Call\", bind: \"$.CALL\" }\n      - { label: \"Gene\", bind: \"link($.GENE, 'study-gene')\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

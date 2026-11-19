@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/retail-banking/sutras/retail-banking/collections-case.v1.sutra.yaml",
+  "group": "examples/packs/retail-banking",
+  "problems": [],
+  "model": "rachana: 1\nsutra: collections-case\nversion: 1\ndescription: \nmatch: { kind: collections-case, priority: 10 }\ntitle: { pill: \"Retail banking · Collections case\", id: \"$.caseId\" }\nstrip:\n  - { label: \"Customer\", bind: \"$.customerName\" }\n  - { label: \"Arrears\", bind: \"$.arrears\", fmt: \"amount2\", emphasis: true }\n  - { label: \"Days past due\", bind: \"$.daysPastDue\", fmt: \"amount0\" }\n  - { label: \"Stage\", bind: \"$.stage\" }\n  - { label: \"Strategy\", bind: \"$.strategy\" }\n  - { label: \"Status\", bind: \"$.status\", tone: \"status\" }\npanels:\n  - id: contacts\n    kind: ladder\n    title: \"Contact history\"\n    key: \"F2\"\n    rows: \"$.contacts\"\n    columns:\n      - { label: \"Date\", bind: \"@.date\", fmt: \"date\" }\n      - { label: \"Channel\", bind: \"@.channel\" }\n      - { label: \"Outcome\", bind: \"@.outcome\" }\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.customer, 'customer')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

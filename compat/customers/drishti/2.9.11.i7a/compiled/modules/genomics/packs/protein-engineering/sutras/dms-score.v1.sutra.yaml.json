@@ -1,0 +1,7 @@
+{
+  "file": "modules/genomics/packs/protein-engineering/sutras/dms-score.v1.sutra.yaml",
+  "group": "modules/genomics/packs/protein-engineering",
+  "problems": [],
+  "model": "rachana: 1\nsutra: dms-score\nversion: 1\ndescription: \nmatch: { kind: dms-score, priority: 10 }\ntitle: { pill: \"Protein engineering · Deep mutational scan score\", id: \"$.SCORE_ID\" }\nstrip:\n  - { label: \"Score id\", bind: \"$.SCORE_ID\" }\n  - { label: \"Mutation\", bind: \"$.MUTATION\" }\n  - { label: \"Assay\", bind: \"$.ASSAY\" }\n  - { label: \"Score\", bind: \"$.SCORE\" }\n  - { label: \"Se\", bind: \"$.SE\", emphasis: true }\npanels:\n  - id: record\n    kind: kv\n    title: \"Deep mutational scan score\"\n    columns:\n      - { label: \"Score id\", bind: \"$.SCORE_ID\" }\n      - { label: \"Protein\", bind: \"link($.PROTEIN, 'protein')\" }\n      - { label: \"Pos\", bind: \"$.POS\", fmt: \"amount0\" }\n      - { label: \"Aa ref\", bind: \"$.AA_REF\" }\n      - { label: \"Aa\", bind: \"$.AA\" }\n      - { label: \"Mutation\", bind: \"$.MUTATION\" }\n      - { label: \"Assay\", bind: \"$.ASSAY\" }\n      - { label: \"Score\", bind: \"$.SCORE\" }\n      - { label: \"Se\", bind: \"$.SE\" }\n      - { label: \"Replicates\", bind: \"$.REPLICATES\", fmt: \"amount0\" }\nkeys: { F9: \"raw\" }\n",
+  "plan": null
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see LICENSE.
-"""Release outline (draft, not yet run): tag, build, and write the pinned-repository layout Drishti copies.
+"""Release: tag, build, and write the pinned-repository layout Drishti copies.
 
     python3 tools/release/release.py 0.9.0 [--dry-run]
 
@@ -12,11 +12,11 @@ Steps:
       maven/com/ash/rachana/<artifact>/<version>/<artifact>-<version>.jar, .pom, and a .sha1 for each
       (artifacts: rachana-api, rachana-core, rachana-tools, rachana-data, rachana-conformance-cases)
       drishti-rachana.json: version, SHA-384 of each jar, the Elements version and the hashes of formats.yaml and
-      world-regions.yaml Rachana was built with (TODO at A10: read them from the vendored tree)
+      world-regions.yaml Rachana was built with (read from the pinned tree js/vendor/drishti-elements/<version>/data)
     Drishti unpacks maven/ into packaging/pinned/maven and the manifest into packaging/pinned/ (decision N2);
  4. create the tag v<version> locally (pushing and the GitHub release stay a manual step).
 """
-import hashlib, json, subprocess, sys, zipfile
+import hashlib, json, re, subprocess, sys, zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -51,12 +51,16 @@ def main(argv):
     if out("git", "tag", "-l", f"v{version}"):
         sys.exit(f"refusing: tag v{version} exists; a released version is never rebuilt")
     mvnw = str(JAVA / "mvnw")
-    run(mvnw, "-B", "versions:set", f"-DnewVersion={version}", "-DgenerateBackupPoms=false", cwd=JAVA)
+    previous = re.search(r"<artifactId>rachana-parent</artifactId>\s*<version>([^<]+)</version>", (JAVA / "pom.xml").read_text()).group(1)
+    elements = re.search(r"<drishti.elements.version>([^<]+)</drishti.elements.version>", (JAVA / "pom.xml").read_text()).group(1)
+    data = ROOT / "js" / "vendor" / "drishti-elements" / elements / "data"
+    run(mvnw, "-B", "versions:set", f"-DnewVersion={version}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
     try:
         run(mvnw, "-B", "clean", "verify", cwd=JAVA)
         dist = ROOT / "dist"
         dist.mkdir(exist_ok=True)
-        manifest = {"version": version, "jars": {}, "elements": {"version": None, "formats.yaml": None, "world-regions.yaml": None}}
+        manifest = {"version": version, "jars": {}, "elements": {"version": elements, "formats.yaml": digest(data / "formats.yaml", "sha384"),
+                                                          "world-regions.yaml": digest(data / "world-regions.yaml", "sha384")}}
         with zipfile.ZipFile(dist / f"rachana-{version}-pinned.zip", "w", zipfile.ZIP_DEFLATED) as z:
             for a in ARTIFACTS:
                 base = f"{a}-{version}"
@@ -75,7 +79,7 @@ def main(argv):
         if not dry:
             run("git", "tag", f"v{version}")
     finally:
-        run(mvnw, "-B", "versions:set", "-DnewVersion=0.9.0-SNAPSHOT", "-DgenerateBackupPoms=false", cwd=JAVA)
+        run(mvnw, "-B", "versions:set", f"-DnewVersion={previous}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
 
 
 if __name__ == "__main__":

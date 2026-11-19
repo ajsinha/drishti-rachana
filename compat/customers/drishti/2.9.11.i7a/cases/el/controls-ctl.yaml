@@ -1,0 +1,154 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Harvested by reading Drishti's tests (plan H2); verified by the reference runner (plan H1) unless a case says verified: false.
+suite: el/controls-ctl
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: "ctl.<id>, [*] projection, within and oneOf in expressions; harvested from ControlsTest."
+given: {"record": {"legs": [{"id": "L1", "leg": 1, "payer": true}, {"id": "L2", "leg": 2, "payer": false}], "schedule": [{"leg": 1, "payDate": "2026-10-15", "amount": 10}, {"leg": 2, "payDate": "2026-11-15", "amount": 20}, {"leg": 1, "payDate": "2027-01-15", "amount": 30}]}}
+cases:
+
+  - id: "ctl-filters-rows"
+    kind: "expr"
+    source: "ControlsTest#ctlReadsTheControlValuesInExpressions"
+    given: {"ctl": {"leg": "L2", "legs": ["1"], "when": "2026-10-01..2026-12-31", "top": 3, "q": ""}}
+    expr: "$.legs[?(@.id == ctl.leg)][0].leg"
+    expect: {"value": 2}
+
+  - id: "ctl-filter-size"
+    kind: "expr"
+    source: "ControlsTest#ctlReadsTheControlValuesInExpressions"
+    given: {"ctl": {"leg": "L2", "legs": ["1"], "when": "2026-10-01..2026-12-31", "top": 3, "q": ""}}
+    expr: "size($.legs[?(@.id == ctl.leg)])"
+    expect: {"value": 1}
+
+  - id: "ctl-number-plus-one"
+    kind: "expr"
+    source: "ControlsTest#ctlReadsTheControlValuesInExpressions"
+    given: {"ctl": {"leg": "L2", "legs": ["1"], "when": "2026-10-01..2026-12-31", "top": 3, "q": ""}}
+    expr: "ctl.top + 1"
+    expect: {"value": 4}
+
+  - id: "ctl-text-equals"
+    kind: "expr"
+    source: "ControlsTest#ctlReadsTheControlValuesInExpressions"
+    given: {"ctl": {"leg": "L2", "legs": ["1"], "when": "2026-10-01..2026-12-31", "top": 3, "q": ""}}
+    expr: "ctl.leg == 'L2'"
+    expect: {"value": true}
+
+  - id: "ctl-unset-is-empty"
+    kind: "expr"
+    source: "ControlsTest#ctlReadsTheControlValuesInExpressions"
+    given: {"ctl": {"leg": "L2", "legs": ["1"], "when": "2026-10-01..2026-12-31", "top": 3, "q": ""}}
+    expr: "ctl.unset"
+    expect: {"value": null}
+
+  - id: "ctl-no-controls-is-empty"
+    kind: "expr"
+    source: "ControlsTest#ctlReadsTheControlValuesInExpressions"
+    given: {"ctl": {}}
+    expr: "ctl.leg"
+    expect: {"value": null}
+
+  - id: "projection-ids"
+    kind: "expr"
+    source: "ControlsTest#projectionListsAFieldOfEveryElement"
+    expr: "$.legs[*].id"
+    expect: {"value": ["L1", "L2"]}
+
+  - id: "projection-size"
+    kind: "expr"
+    source: "ControlsTest#projectionListsAFieldOfEveryElement"
+    given: {"ctl": {}}
+    expr: "size($.legs[*].id)"
+    expect: {"value": 2}
+
+  - id: "projection-missing-is-empty"
+    kind: "expr"
+    source: "ControlsTest#projectionListsAFieldOfEveryElement"
+    given: {"ctl": {}}
+    expr: "$.nothing[*].id"
+    expect: {"value": null}
+
+  - id: "within-filters-schedule"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "$.schedule[?(within(@.payDate, ctl.when))][*].amount"
+    expect: {"value": [10, 20]}
+
+  - id: "within-and-oneof-size"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "size($.schedule[?(within(@.payDate, ctl.when) && oneOf(@.leg, ctl.legs))])"
+    verified: true
+    note: "A list-valued control reaches the evaluator as a document list, as the host hands a multi-select over (the bridge does so since H2)."
+    expect: {"value": 1}
+
+  - id: "oneof-nothing-chosen-no-filter"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "size($.schedule[?(oneOf(@.leg, ctl.none))])"
+    verified: true
+    note: "A list-valued control reaches the evaluator as a document list, as the host hands a multi-select over (the bridge does so since H2)."
+    expect: {"value": 3}
+
+  - id: "within-number-inside"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "within(5, '1..10')"
+    expect: {"value": true}
+
+  - id: "within-number-outside"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "within(50, '1..10')"
+    expect: {"value": false}
+
+  - id: "within-open-low"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "within(50, '..100')"
+    expect: {"value": true}
+
+  - id: "within-timestamp-by-date"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "within('2026-10-15T10:00:00Z', '2026-10-15..2026-10-15')"
+    expect: {"value": true}
+
+  - id: "within-missing-false"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "within($.missing, '1..2')"
+    expect: {"value": false}
+
+  - id: "within-empty-range-true"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "within(1, '')"
+    expect: {"value": true}
+
+  - id: "oneof-equal-text"
+    kind: "expr"
+    source: "ControlsTest#withinAndOneOfFilterRows"
+    given: {"ctl": {"when": "2026-10-01..2026-12-31", "legs": ["1"], "none": []}}
+    expr: "oneOf('a', 'a')"
+    expect: {"value": true}
+
+  - id: "masked-never-within"
+    kind: "expr"
+    source: "ControlsTest#aMaskedValueIsNeverWithinOrOneOf"
+    given: {"record": {"d": {"$masked": true}}, "ctl": {"when": "2026-10-01..2026-12-31"}}
+    expr: "within($.d, ctl.when)"
+    verified: true
+    note: "Java asserts truthy(result) is false. A condition on a masked value is masked (SPEC 4.9 rules 1 and 2), and a masked condition is never true, so the masked result pins it (as el/masking does)."
+    expect: {"value": {"$masked": true}}

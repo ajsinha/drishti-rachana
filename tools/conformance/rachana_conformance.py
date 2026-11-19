@@ -368,8 +368,18 @@ def main(argv=None) -> int:
     ap.add_argument("--record", action="store_true")
     ap.add_argument("--cmd", help="the runtime program (RUNNER 5)")
     ap.add_argument("--classpath-file", help="a file holding the class path of Drishti's reference jars: runs tools/reference-bridge/RefBridge.java")
+    ap.add_argument("--jvm", action="store_true", help="run Rachana's own JVM runtime (java/rachana-conformance, built by ./mvnw package)")
     a = ap.parse_args(argv)
-    if a.classpath_file:
+    if a.jvm:
+        target = ROOT / "java" / "rachana-conformance" / "target"
+        cp_file = target / "runtime-classpath.txt"
+        if not cp_file.is_file():
+            ap.error(f"{cp_file} is missing: build first (cd java && ./mvnw clean package -DskipTests)")
+        jars = sorted(str(j) for j in target.glob("rachana-conformance-*.jar") if not j.name.endswith(("-sources.jar", "-tests.jar")))
+        mp = os.pathsep.join(jars + [cp_file.read_text().strip()])
+        a.cmd = (f"java -p {shlex.quote(mp)} -m com.ash.rachana.conformance/com.ash.rachana.conformance.JvmRuntime --profiles core,drishti "
+                 f"{ROOT / 'spec' / '1' / 'formats.yaml'} {os.environ.get('RACHANA_DRISHTI_FORMATS', DRISHTI_FORMATS)}")
+    elif a.classpath_file:
         cp = Path(a.classpath_file).read_text().strip()
         a.cmd = f"java -cp {shlex.quote(cp)} {ROOT / 'tools' / 'reference-bridge' / 'RefBridge.java'} {ROOT / 'spec' / '1' / 'formats.yaml'} {os.environ.get('RACHANA_DRISHTI_FORMATS', DRISHTI_FORMATS)}"
     if not a.cmd:

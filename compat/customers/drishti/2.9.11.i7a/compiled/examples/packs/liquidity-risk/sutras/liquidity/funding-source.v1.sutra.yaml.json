@@ -1,0 +1,7 @@
+{
+  "file": "examples/packs/liquidity-risk/sutras/liquidity/funding-source.v1.sutra.yaml",
+  "group": "examples/packs/liquidity-risk",
+  "problems": [],
+  "model": "rachana: 1\nsutra: funding-source\nversion: 1\ndescription: \nmatch: { kind: funding-source, priority: 10 }\ntitle: { pill: \"Liquidity · Funding source\", id: \"$.fundingId\" }\nstrip:\n  - { label: \"Provider\", bind: \"$.counterpartyName\" }\n  - { label: \"Type\", bind: \"$.type\" }\n  - { label: \"Amount\", bind: \"$.amount\", fmt: \"amount0\", emphasis: true }\n  - { label: \"Currency\", bind: \"$.currency\" }\n  - { label: \"Maturity\", bind: \"$.maturity\", fmt: \"date\" }\n  - { label: \"Run-off\", bind: \"$.runOffRate\", fmt: \"pct0\" }\npanels:\n  - id: terms\n    kind: kv\n    title: \"Terms\"\n    key: \"F2\"\n    rows: \"$.terms\"\n  - id: built\n    kind: provenance\n    title: \"How this view was built\"\n  - id: refs\n    kind: links\n    title: \"Linked entities\"\n    code: \"REFS\"\n    area: right\nkeys: { F7: \"link($.counterparty, 'counterparty')\", F8: \"impact\", F9: \"raw\" }\n",
+  "plan": null
+}

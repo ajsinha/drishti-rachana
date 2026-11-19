@@ -128,3 +128,35 @@ VaR goldens and every test of `compute/drishti-rachana`, `kernel/drishti-engine`
 2. **An editing refusal's message lists choices in `Set.of` order** ("expected one of ..."), which changes between JVM runs: two
    `edit` cases match with `messageStart`. A1/A-steps: sort the list.
 3. **`ctl` lists**: the host hands a multi-valued control over as a document list; a runner must too (now in the bridge).
+
+## 8. The split's Drishti half (M1, held: the compiler moved first, owner rule 2026-11-19)
+
+The compiler moved to this repository **before** Drishti was untangled ([SPLIT_PLAN](../design/SPLIT_PLAN.md) section 0). Rachana
+`v0.9.0` holds the code of Drishti `main` `c6bc1d1bc` (`compute/drishti-rachana`, less the profile part); the untangling steps run
+here. What Drishti must do when the migration starts, in this order:
+
+- [ ] 8.1 **Consume the pin (A11).** Section 1's pin mechanism, with `drishti.rachana.version` at the Rachana release the migration
+      takes (`v0.10.0` once the binder has moved, else `v0.9.x`). The four jars (`rachana-api`, `rachana-core`, `rachana-tools`,
+      `rachana-data`) held in `packaging/pinned/maven` as section 1 says.
+- [ ] 8.2 **Delete Drishti's copy** of every moved file: the paths of `tools/split/a10-paths.txt` here (main code, the signatures
+      catalogue, the moved unit tests), each test class deleted only where its cases or its Rachana unit test cover it (section 4).
+      Drishti keeps: `about/**`, `SutraMatcher`, `MatchTrace`, `UnderConstruction`, `UiKitDir`, `RachanaConfiguration`,
+      `RachanaProperties`, `SutraRegistry` (the directory registry, on Core's `SutraStore` after A7) and their tests.
+- [ ] 8.3 **The import rewrite**: `com.ash.drishti.rachana` → `com.ash.rachana` across the product (about 184 files), scripted and
+      re-runnable; the other Drishti builders paused on those modules.
+- [ ] 8.4 **The formats reload hook**: `Formats` no longer implements `LiveSettings` (Spring cannot be a Rachana dependency). Drishti
+      adds a small `LiveSettings` adapter in its profile part that reads `drishti.rachana.pack-formats-files`, builds the table with
+      `Formats.load(override, files)` and swaps it into the holder the readers use (the behaviour of the deleted `Formats.prepare`).
+- [ ] 8.5 **The host types**: Rachana's `hostcompat` copies (`DataNode`, `NodeType`, `ListValues`, `PathWalker`, `IdText`,
+      `SafeRegex`, `BusinessCalendar`, `HostException`, `ErrorCode`) are never used by Drishti; Drishti keeps its own and, from A2,
+      adapts `DataNode` to `com.ash.rachana.api.Node`; from A1 maps `RCH-` codes to `DRS-` at its API edge (`ApiExceptionHandler`);
+      from A3 its `SafeRegex` delegates to Core's and its `BusinessCalendar` is registered through the `Calendars` hook.
+- [ ] 8.6 **The tests that stayed** (they read Drishti's files, so they did not move): `SutraParserTest.referenceSutrasParse`,
+      `SutraWiringTest.aUseCarriesItsPanelsWiring`, `SutraLayoutEditorTest` (three methods over the IRS example), `OpApplierTest`
+      (six methods over `docs/guides/examples`), `PackSutrasTest`, `ReferenceSutrasTest`, `DocumentedSutrasTest`,
+      `parse/SutraFragmentsTest`, `parse/UiKitBlocksTest`: keep them in Drishti, running against the pinned jars.
+- [ ] 8.7 **Guards (A12, steps 1 and 12)**: section 3's report-mode guards, then fail mode on both sides (SPLIT_PLAN section 5).
+- [ ] 8.8 **Proof**: ViewModel goldens byte-identical, Core conformance inside Drishti with the Drishti profile loaded, the full
+      targeted set of A1 to A9, then one gate and the release's single drill (PD1); Drishti's tag.
+- [ ] 8.9 **Retire the reference bridge** here (`tools/reference-bridge`) once 8.8 is green: until then it is the reference every
+      Rachana step is compared with.

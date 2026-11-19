@@ -19,6 +19,7 @@
     <module>rachana-cli</module>
     <module>rachana-conformance</module>
     <module>rachana-conformance-cases</module>
+    <module>rachana-compat</module>
     <module>rachana-guards</module>
   </modules>
 
@@ -28,6 +29,8 @@
     <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
     <junit.version>5.11.4</junit.version>
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->
+    <rachana.reference.classpath></rachana.reference.classpath>
+    <rachana.compat.runtime>auto</rachana.compat.runtime>
     <rachana.java.root>${maven.multiModuleProjectDirectory}</rachana.java.root>
     <rachana.repo.root>${maven.multiModuleProjectDirectory}/..</rachana.repo.root>
   </properties>

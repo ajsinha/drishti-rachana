@@ -54,7 +54,7 @@ def main(argv):
     previous = re.search(r"<artifactId>rachana-parent</artifactId>\s*<version>([^<]+)</version>", (JAVA / "pom.xml").read_text()).group(1)
     elements = re.search(r"<drishti.elements.version>([^<]+)</drishti.elements.version>", (JAVA / "pom.xml").read_text()).group(1)
     data = ROOT / "js" / "vendor" / "drishti-elements" / elements / "data"
-    run(mvnw, "-B", "versions:set", f"-DnewVersion={version}", "-DgenerateBackupPoms=false", cwd=JAVA)
+    run(mvnw, "-B", "versions:set", f"-DnewVersion={version}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
     try:
         run(mvnw, "-B", "clean", "verify", cwd=JAVA)
         dist = ROOT / "dist"
@@ -79,7 +79,7 @@ def main(argv):
         if not dry:
             run("git", "tag", f"v{version}")
     finally:
-        run(mvnw, "-B", "versions:set", f"-DnewVersion={previous}", "-DgenerateBackupPoms=false", cwd=JAVA)
+        run(mvnw, "-B", "versions:set", f"-DnewVersion={previous}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
 
 
 if __name__ == "__main__":

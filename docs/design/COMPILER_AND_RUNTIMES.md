@@ -84,6 +84,18 @@ and is hidden with the Java module system (`module-info` exports only the public
 | `java.time` | kept where the cross-compiler supports it; a small civil-date library in Core otherwise (decided by proof T1) | identical dates |
 | SLF4J logging | a `Diagnostics` callback | no dependency |
 
+**Built (A8a, 2026-11-19): Core's YAML and JSON.** `com.ash.rachana.parse.YamlReader` (with `YamlStream`, `YamlScanner`,
+`YamlEvents`, `YamlScalars`; about 2,500 lines, no library, no regular expressions) reads YAML 1.1 exactly as the
+reference did on Jackson and SnakeYAML: the same tree and types (`yes` and `on` are booleans, `1.0` a number, `0x1F` 31,
+dates stay text), the same positions (1-based, columns in code points), the same issues (a repeated key keeps the first,
+a second document, a non-core tag) and the same error texts and places, snippet included. One addition: an anchor or
+alias is an issue (the reference read an alias silently as its name). `com.ash.rachana.parse.Json` is the JSON reader
+(plain values; a whole number outside a `long` refused, as the reference's reader refused it) and the compact writer
+(Jackson's escapes, `"NaN"` for a non-finite double). Proof: `tools/yaml-diff` (168,923 inputs: every Drishti and Rachana
+YAML file, the case texts, edge inputs and mutations; zero differences but the anchor issue) and `YamlReaderTest` on
+1,113 recorded vectors. Comments are skipped, not kept: the Sutra writer keeps its own text edits. Switching the users
+(A8b) follows the move; until then the Jackson reader is the one in use.
+
 The JDK surface Core is allowed to use is a written allow-list (`java.lang`, `java.util`, `java.util.function`,
 `java.math`, selected `java.time`), enforced by a guard test over the compiled classes.
 

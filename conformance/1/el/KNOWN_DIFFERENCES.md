@@ -18,7 +18,6 @@ profile's format names (`pct4`) carry `profile: [core, drishti]`.
 
 ## The hand-written `problem` examples (plan H2)
 
-Five of `problem/examples/problem` fail on the reference and stay `verified: false`: `valid-sutra-has-no-problems` (the example's Sutra
-uses a key the reference refuses), `unknown-top-level-key` and `profile-key-without-the-profile` (the reference reports one more
-problem than the example expects), `problems-in-position-order` and `expression-problem-inside-a-panel` (the reference reports
-`RCH-2010` first). Each is settled with decision N5 before the examples are frozen.
+Five of `problem/examples/problem` fail on the reference and stay `verified: false`: `valid-sutra-has-no-problems` (the reference reports problems),
+`unknown-top-level-key` and `profile-key-without-the-profile` (one problem more than expected), `problems-in-position-order` and
+`expression-problem-inside-a-panel` (a different first code). The causes are not yet analysed; each is settled with decision N5 before the examples are frozen.

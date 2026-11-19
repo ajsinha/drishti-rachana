@@ -21,3 +21,12 @@ profile's format names (`pct4`) carry `profile: [core, drishti]`.
 Five of `problem/examples/problem` fail on the reference and stay `verified: false`: `valid-sutra-has-no-problems` (the reference reports problems),
 `unknown-top-level-key` and `profile-key-without-the-profile` (one problem more than expected), `problems-in-position-order` and
 `expression-problem-inside-a-panel` (a different first code). The causes are not yet analysed; each is settled with decision N5 before the examples are frozen.
+
+## The function examples (plan H5)
+
+`el/functions-*` is generated from the examples of `spec/1/functions.yaml` (one case per example; 10 examples that need a fixture or
+are described in words are not cases). On the reference 273 of 288 pass. The 15 that stay `verified: false`: the list aggregates
+(`sum`, `count`, `avg`, `median`, `variance`, `stddev`, `variance_pop`, `stddev_pop`, `distinct`, `percentile`, `wavg`: SPEC 5.7 puts them in Core,
+the reference computes them only inside the pivot engine and answers empty), and `min` and `max` over a list. They are settled by A6/A-steps
+(the aggregates move into Core). `xnpv`, `cumprinc` and `ln` carry a tolerance of 1e-9 (SPEC 4.10 rule 7).
+`tools/conformance/coverage.py` shows every one of the 207 Core functions has at least one case.

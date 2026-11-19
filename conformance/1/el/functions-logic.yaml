@@ -1,0 +1,243 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Generated from the examples of spec/1/functions.yaml (plan H5); a function's example is its case. Do not edit by hand: edit the example.
+suite: el/functions-logic
+since: "1.0"
+profile: core
+verified: true
+description: "The examples of the logic functions of functions.yaml."
+given: {"today": "2026-10-16"}
+cases:
+
+  - id: "if-2"
+    kind: "expr"
+    source: "functions.yaml#if"
+    expr: "if(false, 1)"
+    expect: {"value": null}
+
+  - id: "ifs-1"
+    kind: "expr"
+    source: "functions.yaml#ifs"
+    expr: "ifs(false, 'a', true, 'b', 'c')"
+    expect: {"value": "b"}
+
+  - id: "ifs-2"
+    kind: "expr"
+    source: "functions.yaml#ifs"
+    expr: "ifs(false, 'a', false, 'b', 'c')"
+    expect: {"value": "c"}
+
+  - id: "switch-1"
+    kind: "expr"
+    source: "functions.yaml#switch"
+    expr: "switch('FLOAT', 'FIXED', 'F', 'FLOAT', 'V', '?')"
+    expect: {"value": "V"}
+
+  - id: "switch-2"
+    kind: "expr"
+    source: "functions.yaml#switch"
+    expr: "switch('X', 'FIXED', 'F')"
+    expect: {"value": null}
+
+  - id: "iferror-2"
+    kind: "expr"
+    source: "functions.yaml#iferror"
+    expr: "iferror(date('soon'), 'n/a')"
+    expect: {"value": "n/a"}
+
+  - id: "is-error-1"
+    kind: "expr"
+    source: "functions.yaml#is_error"
+    expr: "is_error(date('soon'))"
+    expect: {"value": true}
+
+  - id: "is-error-2"
+    kind: "expr"
+    source: "functions.yaml#is_error"
+    expr: "is_error(1)"
+    expect: {"value": false}
+
+  - id: "let-1"
+    kind: "expr"
+    source: "functions.yaml#let"
+    expr: "let(n = 4, n * 2)"
+    expect: {"value": 8}
+
+  - id: "let-2"
+    kind: "expr"
+    source: "functions.yaml#let"
+    expr: "let(a = 2, b = a + 1, a * b)"
+    expect: {"value": 6}
+
+  - id: "choose-1"
+    kind: "expr"
+    source: "functions.yaml#choose"
+    expr: "choose(2, 'a', 'b')"
+    expect: {"value": "b"}
+
+  - id: "choose-2"
+    kind: "expr"
+    source: "functions.yaml#choose"
+    expr: "choose(quarter('2026-11-17'), 'Q1', 'Q2', 'Q3', 'Q4')"
+    expect: {"value": "Q4"}
+
+  - id: "coalesce-2"
+    kind: "expr"
+    source: "functions.yaml#coalesce"
+    expr: "coalesce('', 'x')"
+    expect: {"value": ""}
+
+  - id: "nonblank-1"
+    kind: "expr"
+    source: "functions.yaml#nonblank"
+    expr: "nonblank('  ', 'n/a')"
+    expect: {"value": "n/a"}
+
+  - id: "within-1"
+    kind: "expr"
+    source: "functions.yaml#within"
+    expr: "within(5, '1..10')"
+    expect: {"value": true}
+
+  - id: "within-2"
+    kind: "expr"
+    source: "functions.yaml#within"
+    expr: "within('2026-11-17', '2026-01-01..')"
+    expect: {"value": true}
+
+  - id: "within-3"
+    kind: "expr"
+    source: "functions.yaml#within"
+    expr: "within(5, '')"
+    expect: {"value": true}
+
+  - id: "one-of-1"
+    kind: "expr"
+    source: "functions.yaml#one_of"
+    expr: "one_of('A', ['A', 'B'])"
+    expect: {"value": true}
+
+  - id: "one-of-2"
+    kind: "expr"
+    source: "functions.yaml#one_of"
+    expr: "one_of('C', ['A', 'B'])"
+    expect: {"value": false}
+
+  - id: "one-of-3"
+    kind: "expr"
+    source: "functions.yaml#one_of"
+    expr: "one_of('C', [])"
+    expect: {"value": true}
+
+  - id: "has-1"
+    kind: "expr"
+    source: "functions.yaml#has"
+    expr: "has(['fx', 'rates'], 'fx')"
+    expect: {"value": true}
+
+  - id: "has-2"
+    kind: "expr"
+    source: "functions.yaml#has"
+    expr: "has([], 'fx')"
+    expect: {"value": false}
+
+  - id: "any-of-1"
+    kind: "expr"
+    source: "functions.yaml#any_of"
+    expr: "any_of(['fx', 'rates'], ['rates', 'eq'])"
+    expect: {"value": true}
+
+  - id: "any-of-2"
+    kind: "expr"
+    source: "functions.yaml#any_of"
+    expr: "any_of(['fx'], [])"
+    expect: {"value": true}
+
+  - id: "all-of-1"
+    kind: "expr"
+    source: "functions.yaml#all_of"
+    expr: "all_of(['fx', 'rates'], ['fx', 'rates'])"
+    expect: {"value": true}
+
+  - id: "all-of-2"
+    kind: "expr"
+    source: "functions.yaml#all_of"
+    expr: "all_of(['fx'], ['fx', 'rates'])"
+    expect: {"value": false}
+
+  - id: "link-2"
+    kind: "expr"
+    source: "functions.yaml#link"
+    expr: "link('', 'x')"
+    expect: {"value": null}
+
+  - id: "type-of-1"
+    kind: "expr"
+    source: "functions.yaml#type_of"
+    expr: "type_of([1])"
+    expect: {"value": "list"}
+
+  - id: "type-of-2"
+    kind: "expr"
+    source: "functions.yaml#type_of"
+    expr: "type_of('a')"
+    expect: {"value": "text"}
+
+  - id: "is-number-1"
+    kind: "expr"
+    source: "functions.yaml#is_number"
+    expr: "is_number(1.5)"
+    expect: {"value": true}
+
+  - id: "is-number-2"
+    kind: "expr"
+    source: "functions.yaml#is_number"
+    expr: "is_number('1.5')"
+    expect: {"value": false}
+
+  - id: "is-text-1"
+    kind: "expr"
+    source: "functions.yaml#is_text"
+    expr: "is_text('a')"
+    expect: {"value": true}
+
+  - id: "is-text-2"
+    kind: "expr"
+    source: "functions.yaml#is_text"
+    expr: "is_text(1)"
+    expect: {"value": false}
+
+  - id: "is-date-1"
+    kind: "expr"
+    source: "functions.yaml#is_date"
+    expr: "is_date('2026-11-17')"
+    expect: {"value": true}
+
+  - id: "is-date-2"
+    kind: "expr"
+    source: "functions.yaml#is_date"
+    expr: "is_date('soon')"
+    expect: {"value": false}
+
+  - id: "is-boolean-1"
+    kind: "expr"
+    source: "functions.yaml#is_boolean"
+    expr: "is_boolean(true)"
+    expect: {"value": true}
+
+  - id: "is-boolean-2"
+    kind: "expr"
+    source: "functions.yaml#is_boolean"
+    expr: "is_boolean(1)"
+    expect: {"value": false}
+
+  - id: "is-blank-1"
+    kind: "expr"
+    source: "functions.yaml#is_blank"
+    expr: "is_blank('  ')"
+    expect: {"value": true}
+
+  - id: "is-blank-2"
+    kind: "expr"
+    source: "functions.yaml#is_blank"
+    expr: "is_blank(0)"
+    expect: {"value": false}

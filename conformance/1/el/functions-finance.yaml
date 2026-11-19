@@ -1,0 +1,159 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Generated from the examples of spec/1/functions.yaml (plan H5); a function's example is its case. Do not edit by hand: edit the example.
+suite: el/functions-finance
+since: "1.0"
+profile: core
+verified: true
+description: "The examples of the finance functions of functions.yaml."
+given: {"today": "2026-10-16"}
+cases:
+
+  - id: "npv-1"
+    kind: "expr"
+    source: "functions.yaml#npv"
+    expr: "npv(0.1, [100, 100])"
+    expect: {"value": 173.55371900826447, "tolerance": {"abs": 1e-09}}
+
+  - id: "xnpv-1"
+    kind: "expr"
+    source: "functions.yaml#xnpv"
+    expr: "xnpv(0.1, [0, 110], ['2026-01-01', '2027-01-01'])"
+    expect: {"value": 100, "tolerance": {"abs": 1e-9}}
+
+  - id: "irr-1"
+    kind: "expr"
+    source: "functions.yaml#irr"
+    expr: "irr([-100, 110])"
+    expect: {"value": 0.1, "tolerance": {"abs": 1e-09}}
+
+  - id: "xirr-1"
+    kind: "expr"
+    source: "functions.yaml#xirr"
+    expr: "xirr([-100, 110], ['2026-01-01', '2027-01-01'])"
+    expect: {"value": 0.1, "tolerance": {"abs": 1e-09}}
+
+  - id: "mirr-1"
+    kind: "expr"
+    source: "functions.yaml#mirr"
+    expr: "mirr([-100, 50, 60], 0.1, 0.1)"
+    expect: {"value": 0.07238052947636087, "tolerance": {"abs": 1e-09}}
+
+  - id: "pv-1"
+    kind: "expr"
+    source: "functions.yaml#pv"
+    expr: "pv(0.05, 5, -100)"
+    expect: {"value": 432.9476670630823, "tolerance": {"abs": 1e-09}}
+
+  - id: "fv-1"
+    kind: "expr"
+    source: "functions.yaml#fv"
+    expr: "fv(0.05, 10, -100)"
+    expect: {"value": 1257.789253554884, "tolerance": {"abs": 1e-09}}
+
+  - id: "pmt-1"
+    kind: "expr"
+    source: "functions.yaml#pmt"
+    expr: "pmt(0.01, 12, 1000)"
+    expect: {"value": -88.8487886783416, "tolerance": {"abs": 1e-09}}
+
+  - id: "nper-1"
+    kind: "expr"
+    source: "functions.yaml#nper"
+    expr: "nper(0.01, -100, 1000)"
+    expect: {"value": 10.58864445942323, "tolerance": {"abs": 1e-09}}
+
+  - id: "ipmt-1"
+    kind: "expr"
+    source: "functions.yaml#ipmt"
+    expr: "ipmt(0.01, 1, 12, 1000)"
+    expect: {"value": -10}
+
+  - id: "ppmt-1"
+    kind: "expr"
+    source: "functions.yaml#ppmt"
+    expr: "ppmt(0.01, 1, 12, 1000)"
+    expect: {"value": -78.8487886783416, "tolerance": {"abs": 1e-09}}
+
+  - id: "rate-1"
+    kind: "expr"
+    source: "functions.yaml#rate"
+    expr: "rate(12, -88.8487886783416, 1000)"
+    expect: {"value": 0.01, "tolerance": {"abs": 1e-09}}
+
+  - id: "cumipmt-1"
+    kind: "expr"
+    source: "functions.yaml#cumipmt"
+    expr: "cumipmt(0.01, 12, 1000, 1, 1, 0)"
+    expect: {"value": -10}
+
+  - id: "cumprinc-1"
+    kind: "expr"
+    source: "functions.yaml#cumprinc"
+    expr: "cumprinc(0.01, 12, 1000, 1, 12, 0)"
+    expect: {"value": -1000, "tolerance": {"abs": 1e-9}}
+
+  - id: "effect-1"
+    kind: "expr"
+    source: "functions.yaml#effect"
+    expr: "effect(0.12, 12)"
+    expect: {"value": 0.12682503013196977, "tolerance": {"abs": 1e-09}}
+
+  - id: "nominal-1"
+    kind: "expr"
+    source: "functions.yaml#nominal"
+    expr: "nominal(0.12682503013196977, 12)"
+    expect: {"value": 0.12, "tolerance": {"abs": 1e-09}}
+
+  - id: "fvschedule-1"
+    kind: "expr"
+    source: "functions.yaml#fvschedule"
+    expr: "fvschedule(100, [0.1, 0.2])"
+    expect: {"value": 132}
+
+  - id: "rri-1"
+    kind: "expr"
+    source: "functions.yaml#rri"
+    expr: "rri(10, 100, 200)"
+    expect: {"value": 0.07177346253629313, "tolerance": {"abs": 1e-09}}
+
+  - id: "pduration-1"
+    kind: "expr"
+    source: "functions.yaml#pduration"
+    expr: "pduration(0.1, 100, 200)"
+    expect: {"value": 7.272540897341713, "tolerance": {"abs": 1e-09}}
+
+  - id: "accrued-1"
+    kind: "expr"
+    source: "functions.yaml#accrued"
+    expr: "accrued(0.05, '2026-01-01', '2026-07-01', '30/360', 1000)"
+    expect: {"value": 25}
+
+  - id: "dollarde-1"
+    kind: "expr"
+    source: "functions.yaml#dollarde"
+    expr: "dollarde(1.02, 16)"
+    expect: {"value": 1.125, "tolerance": {"abs": 1e-09}}
+
+  - id: "dollarfr-1"
+    kind: "expr"
+    source: "functions.yaml#dollarfr"
+    expr: "dollarfr(1.125, 16)"
+    expect: {"value": 1.02, "tolerance": {"abs": 1e-09}}
+
+  - id: "macaulay-duration-1"
+    kind: "expr"
+    source: "functions.yaml#macaulay_duration"
+    expr: "macaulay_duration([5, 105], [1, 2], 0.05)"
+    expect: {"value": 1.9523809523809523, "tolerance": {"abs": 1e-09}}
+
+  - id: "modified-duration-1"
+    kind: "expr"
+    source: "functions.yaml#modified_duration"
+    expr: "modified_duration([5, 105], [1, 2], 0.05)"
+    expect: {"value": 1.859410430839002, "tolerance": {"abs": 1e-09}}
+
+  - id: "convexity-1"
+    kind: "expr"
+    source: "functions.yaml#convexity"
+    expr: "convexity([5, 105], [1, 2], 0.05)"
+    expect: {"value": 5.269409351042004, "tolerance": {"abs": 1e-09}}

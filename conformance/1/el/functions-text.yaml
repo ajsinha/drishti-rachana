@@ -1,0 +1,261 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Generated from the examples of spec/1/functions.yaml (plan H5); a function's example is its case. Do not edit by hand: edit the example.
+suite: el/functions-text
+since: "1.0"
+profile: core
+verified: true
+description: "The examples of the text functions of functions.yaml."
+given: {"today": "2026-10-16"}
+cases:
+
+  - id: "upper-1"
+    kind: "expr"
+    source: "functions.yaml#upper"
+    expr: "upper('abc')"
+    expect: {"value": "ABC"}
+
+  - id: "lower-1"
+    kind: "expr"
+    source: "functions.yaml#lower"
+    expr: "lower('ABC')"
+    expect: {"value": "abc"}
+
+  - id: "proper-1"
+    kind: "expr"
+    source: "functions.yaml#proper"
+    expr: "proper('hello wORLD')"
+    expect: {"value": "Hello World"}
+
+  - id: "trim-1"
+    kind: "expr"
+    source: "functions.yaml#trim"
+    expr: "trim('  a b  ')"
+    expect: {"value": "a b"}
+
+  - id: "clean-1"
+    kind: "expr"
+    source: "functions.yaml#clean"
+    expr: "clean('ab')"
+    expect: {"value": "ab"}
+
+  - id: "len-1"
+    kind: "expr"
+    source: "functions.yaml#len"
+    expr: "len('MX-2000')"
+    expect: {"value": 7}
+
+  - id: "char-1"
+    kind: "expr"
+    source: "functions.yaml#char"
+    expr: "char(8364)"
+    expect: {"value": "€"}
+
+  - id: "char-2"
+    kind: "expr"
+    source: "functions.yaml#char"
+    expr: "char(65)"
+    expect: {"value": "A"}
+
+  - id: "code-1"
+    kind: "expr"
+    source: "functions.yaml#code"
+    expr: "code('A')"
+    expect: {"value": 65}
+
+  - id: "reverse-1"
+    kind: "expr"
+    source: "functions.yaml#reverse"
+    expr: "reverse('abc')"
+    expect: {"value": "cba"}
+
+  - id: "left-1"
+    kind: "expr"
+    source: "functions.yaml#left"
+    expr: "left('MX-2000', 3)"
+    expect: {"value": "MX-"}
+
+  - id: "left-2"
+    kind: "expr"
+    source: "functions.yaml#left"
+    expr: "left(20261016, 4)"
+    expect: {"value": "2026"}
+
+  - id: "right-1"
+    kind: "expr"
+    source: "functions.yaml#right"
+    expr: "right('MX-2000', 4)"
+    expect: {"value": "2000"}
+
+  - id: "mid-1"
+    kind: "expr"
+    source: "functions.yaml#mid"
+    expr: "mid('MX-2000', 4, 2)"
+    expect: {"value": "20"}
+
+  - id: "rept-1"
+    kind: "expr"
+    source: "functions.yaml#rept"
+    expr: "rept('*', 3)"
+    expect: {"value": "***"}
+
+  - id: "exact-1"
+    kind: "expr"
+    source: "functions.yaml#exact"
+    expr: "exact('a', 'A')"
+    expect: {"value": false}
+
+  - id: "exact-2"
+    kind: "expr"
+    source: "functions.yaml#exact"
+    expr: "exact('a', 'a')"
+    expect: {"value": true}
+
+  - id: "split-1"
+    kind: "expr"
+    source: "functions.yaml#split"
+    expr: "split('2032-06-25', '-')"
+    expect: {"value": ["2032", "06", "25"]}
+
+  - id: "contains-1"
+    kind: "expr"
+    source: "functions.yaml#contains"
+    expr: "contains('MX-2000', 'x-2')"
+    expect: {"value": true}
+
+  - id: "starts-with-1"
+    kind: "expr"
+    source: "functions.yaml#starts_with"
+    expr: "starts_with('Commodity', 'com')"
+    expect: {"value": true}
+
+  - id: "ends-with-1"
+    kind: "expr"
+    source: "functions.yaml#ends_with"
+    expr: "ends_with('Commodity', 'ITY')"
+    expect: {"value": true}
+
+  - id: "matches-1"
+    kind: "expr"
+    source: "functions.yaml#matches"
+    expr: "matches('USD 2031', 'usd 20[0-9]{2}')"
+    expect: {"value": true}
+
+  - id: "matches-case-1"
+    kind: "expr"
+    source: "functions.yaml#matches_case"
+    expr: "matches_case('USD 2031', 'usd')"
+    expect: {"value": false}
+
+  - id: "fmt-1"
+    kind: "expr"
+    source: "functions.yaml#fmt"
+    expr: "fmt(1234.5, 'amount0')"
+    expect: {"value": "1,235"}
+
+  - id: "text-1"
+    kind: "expr"
+    source: "functions.yaml#text"
+    expr: "text(1234.5, '#,##0.00')"
+    expect: {"value": "1,234.50"}
+
+  - id: "text-2"
+    kind: "expr"
+    source: "functions.yaml#text"
+    expr: "text('2026-11-17', 'dd-mmm-yyyy')"
+    expect: {"value": "17-Nov-2026"}
+
+  - id: "text-3"
+    kind: "expr"
+    source: "functions.yaml#text"
+    expr: "text(0.256, '0.0%')"
+    expect: {"value": "25.6%"}
+
+  - id: "replace-1"
+    kind: "expr"
+    source: "functions.yaml#replace"
+    expr: "replace('a b c', ' ', '-')"
+    expect: {"value": "a-b-c"}
+
+  - id: "regex-replace-1"
+    kind: "expr"
+    source: "functions.yaml#regex_replace"
+    expr: "regex_replace('a1b22', '[0-9]', '#')"
+    expect: {"value": "a#b##"}
+
+  - id: "regex-extract-1"
+    kind: "expr"
+    source: "functions.yaml#regex_extract"
+    expr: "regex_extract('MX-1', '^([A-Z]+)-', 1)"
+    expect: {"value": "MX"}
+
+  - id: "regex-extract-2"
+    kind: "expr"
+    source: "functions.yaml#regex_extract"
+    expr: "regex_extract('abc', '[0-9]+')"
+    expect: {"value": null}
+
+  - id: "find-1"
+    kind: "expr"
+    source: "functions.yaml#find"
+    expr: "find('-', 'MX-2000')"
+    expect: {"value": 3}
+
+  - id: "find-2"
+    kind: "expr"
+    source: "functions.yaml#find"
+    expr: "find('z', 'abc')"
+    expect: {"value": 0}
+
+  - id: "search-1"
+    kind: "expr"
+    source: "functions.yaml#search"
+    expr: "search('SWAP', 'interest swap')"
+    expect: {"value": 10}
+
+  - id: "text-before-1"
+    kind: "expr"
+    source: "functions.yaml#text_before"
+    expr: "text_before('MX-2000-A', '-')"
+    expect: {"value": "MX"}
+
+  - id: "text-before-2"
+    kind: "expr"
+    source: "functions.yaml#text_before"
+    expr: "text_before('MX-2000-A', '-', -1)"
+    expect: {"value": "MX-2000"}
+
+  - id: "text-after-1"
+    kind: "expr"
+    source: "functions.yaml#text_after"
+    expr: "text_after('MX-2000-A', '-')"
+    expect: {"value": "2000-A"}
+
+  - id: "value-1"
+    kind: "expr"
+    source: "functions.yaml#value"
+    expr: "value('(1,250.50)')"
+    expect: {"value": -1250.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "value-2"
+    kind: "expr"
+    source: "functions.yaml#value"
+    expr: "value('12%')"
+    expect: {"value": 0.12, "tolerance": {"abs": 1e-09}}
+
+  - id: "pad-1"
+    kind: "expr"
+    source: "functions.yaml#pad"
+    expr: "pad(7, 3, '0')"
+    expect: {"value": "007"}
+
+  - id: "pad-2"
+    kind: "expr"
+    source: "functions.yaml#pad"
+    expr: "pad('ab', 5, '.', 'right')"
+    expect: {"value": "ab..."}
+
+  - id: "concat-2"
+    kind: "expr"
+    source: "functions.yaml#concat"
+    expr: "concat('a', null, 'b')"
+    expect: {"value": "ab"}

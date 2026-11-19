@@ -1,0 +1,237 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Generated from the examples of spec/1/functions.yaml (plan H5); a function's example is its case. Do not edit by hand: edit the example.
+suite: el/functions-statistics
+since: "1.0"
+profile: core
+verified: true
+description: "The examples of the statistics functions of functions.yaml."
+given: {"today": "2026-10-16"}
+cases:
+
+  - id: "norm-dist-1"
+    kind: "expr"
+    source: "functions.yaml#norm_dist"
+    expr: "norm_dist(0, 0, 1, true)"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "norm-dist-2"
+    kind: "expr"
+    source: "functions.yaml#norm_dist"
+    expr: "norm_dist(0, 0, 1, false)"
+    expect: {"value": 0.3989422804014327, "tolerance": {"abs": 1e-09}}
+
+  - id: "norm-inv-1"
+    kind: "expr"
+    source: "functions.yaml#norm_inv"
+    expr: "norm_inv(0.5, 10, 2)"
+    expect: {"value": 10}
+
+  - id: "norm-s-dist-1"
+    kind: "expr"
+    source: "functions.yaml#norm_s_dist"
+    expr: "norm_s_dist(1.96)"
+    expect: {"value": 0.9750021048517796, "tolerance": {"abs": 1e-09}}
+
+  - id: "norm-s-dist-2"
+    kind: "expr"
+    source: "functions.yaml#norm_s_dist"
+    expr: "norm_s_dist(0, false)"
+    expect: {"value": 0.3989422804014327, "tolerance": {"abs": 1e-09}}
+
+  - id: "norm-s-inv-1"
+    kind: "expr"
+    source: "functions.yaml#norm_s_inv"
+    expr: "norm_s_inv(0.99)"
+    expect: {"value": 2.3263478740408408, "tolerance": {"abs": 1e-09}}
+
+  - id: "lognorm-dist-1"
+    kind: "expr"
+    source: "functions.yaml#lognorm_dist"
+    expr: "lognorm_dist(1, 0, 1, true)"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "lognorm-inv-1"
+    kind: "expr"
+    source: "functions.yaml#lognorm_inv"
+    expr: "lognorm_inv(0.5, 0, 1)"
+    expect: {"value": 1}
+
+  - id: "t-dist-1"
+    kind: "expr"
+    source: "functions.yaml#t_dist"
+    expr: "t_dist(0, 5, true)"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "t-inv-1"
+    kind: "expr"
+    source: "functions.yaml#t_inv"
+    expr: "t_inv(0.975, 10)"
+    expect: {"value": 2.2281388519649385, "tolerance": {"abs": 1e-09}}
+
+  - id: "chisq-dist-1"
+    kind: "expr"
+    source: "functions.yaml#chisq_dist"
+    expr: "chisq_dist(2, 2, true)"
+    expect: {"value": 0.6321205588285577, "tolerance": {"abs": 1e-09}}
+
+  - id: "chisq-inv-1"
+    kind: "expr"
+    source: "functions.yaml#chisq_inv"
+    expr: "chisq_inv(0.95, 1)"
+    expect: {"value": 3.841458820694124, "tolerance": {"abs": 1e-09}}
+
+  - id: "f-dist-1"
+    kind: "expr"
+    source: "functions.yaml#f_dist"
+    expr: "f_dist(1, 5, 5, true)"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "f-inv-1"
+    kind: "expr"
+    source: "functions.yaml#f_inv"
+    expr: "f_inv(0.95, 5, 10)"
+    expect: {"value": 3.325834530413012, "tolerance": {"abs": 1e-09}}
+
+  - id: "binom-dist-1"
+    kind: "expr"
+    source: "functions.yaml#binom_dist"
+    expr: "binom_dist(2, 4, 0.5, false)"
+    expect: {"value": 0.375, "tolerance": {"abs": 1e-09}}
+
+  - id: "binom-dist-2"
+    kind: "expr"
+    source: "functions.yaml#binom_dist"
+    expr: "binom_dist(2, 4, 0.5, true)"
+    expect: {"value": 0.6875, "tolerance": {"abs": 1e-09}}
+
+  - id: "binom-inv-1"
+    kind: "expr"
+    source: "functions.yaml#binom_inv"
+    expr: "binom_inv(4, 0.5, 0.5)"
+    expect: {"value": 2}
+
+  - id: "poisson-dist-1"
+    kind: "expr"
+    source: "functions.yaml#poisson_dist"
+    expr: "poisson_dist(0, 1, false)"
+    expect: {"value": 0.36787944117144233, "tolerance": {"abs": 1e-09}}
+
+  - id: "expon-dist-1"
+    kind: "expr"
+    source: "functions.yaml#expon_dist"
+    expr: "expon_dist(1, 1, true)"
+    expect: {"value": 0.6321205588285577, "tolerance": {"abs": 1e-09}}
+
+  - id: "gamma-dist-1"
+    kind: "expr"
+    source: "functions.yaml#gamma_dist"
+    expr: "gamma_dist(1, 1, 1, true)"
+    expect: {"value": 0.6321205588285577, "tolerance": {"abs": 1e-09}}
+
+  - id: "gamma-inv-1"
+    kind: "expr"
+    source: "functions.yaml#gamma_inv"
+    expr: "gamma_inv(0.5, 1, 1)"
+    expect: {"value": 0.6931471805599453, "tolerance": {"abs": 1e-09}}
+
+  - id: "gamma-1"
+    kind: "expr"
+    source: "functions.yaml#gamma"
+    expr: "gamma(5)"
+    expect: {"value": 24}
+
+  - id: "gamma-2"
+    kind: "expr"
+    source: "functions.yaml#gamma"
+    expr: "gamma(0.5)"
+    expect: {"value": 1.7724538509055159, "tolerance": {"abs": 1e-09}}
+
+  - id: "gamma-ln-1"
+    kind: "expr"
+    source: "functions.yaml#gamma_ln"
+    expr: "gamma_ln(5)"
+    expect: {"value": 3.1780538303479458, "tolerance": {"abs": 1e-09}}
+
+  - id: "beta-dist-1"
+    kind: "expr"
+    source: "functions.yaml#beta_dist"
+    expr: "beta_dist(0.5, 1, 1, true)"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "beta-inv-1"
+    kind: "expr"
+    source: "functions.yaml#beta_inv"
+    expr: "beta_inv(0.5, 1, 1)"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "weibull-dist-1"
+    kind: "expr"
+    source: "functions.yaml#weibull_dist"
+    expr: "weibull_dist(1, 1, 1, true)"
+    expect: {"value": 0.6321205588285577, "tolerance": {"abs": 1e-09}}
+
+  - id: "hypgeom-dist-1"
+    kind: "expr"
+    source: "functions.yaml#hypgeom_dist"
+    expr: "hypgeom_dist(1, 4, 4, 12, false)"
+    expect: {"value": 0.45252525252525255, "tolerance": {"abs": 1e-09}}
+
+  - id: "negbinom-dist-1"
+    kind: "expr"
+    source: "functions.yaml#negbinom_dist"
+    expr: "negbinom_dist(1, 1, 0.5, false)"
+    expect: {"value": 0.25, "tolerance": {"abs": 1e-09}}
+
+  - id: "erf-1"
+    kind: "expr"
+    source: "functions.yaml#erf"
+    expr: "erf(1)"
+    expect: {"value": 0.8427007929497149, "tolerance": {"abs": 1e-09}}
+
+  - id: "erf-2"
+    kind: "expr"
+    source: "functions.yaml#erf"
+    expr: "erf(0)"
+    expect: {"value": 0}
+
+  - id: "erfc-1"
+    kind: "expr"
+    source: "functions.yaml#erfc"
+    expr: "erfc(0)"
+    expect: {"value": 1}
+
+  - id: "erfc-2"
+    kind: "expr"
+    source: "functions.yaml#erfc"
+    expr: "erfc(0.5)"
+    expect: {"value": 0.4795001221869535, "tolerance": {"abs": 1e-09}}
+
+  - id: "standardize-1"
+    kind: "expr"
+    source: "functions.yaml#standardize"
+    expr: "standardize(7, 5, 2)"
+    expect: {"value": 1}
+
+  - id: "confidence-norm-1"
+    kind: "expr"
+    source: "functions.yaml#confidence_norm"
+    expr: "confidence_norm(0.05, 2.5, 50)"
+    expect: {"value": 0.6929519121748389, "tolerance": {"abs": 1e-09}}
+
+  - id: "confidence-t-1"
+    kind: "expr"
+    source: "functions.yaml#confidence_t"
+    expr: "confidence_t(0.05, 2.5, 50)"
+    expect: {"value": 0.7104921387393226, "tolerance": {"abs": 1e-09}}
+
+  - id: "fisher-1"
+    kind: "expr"
+    source: "functions.yaml#fisher"
+    expr: "fisher(0.5)"
+    expect: {"value": 0.5493061443340549, "tolerance": {"abs": 1e-09}}
+
+  - id: "fisher-inv-1"
+    kind: "expr"
+    source: "functions.yaml#fisher_inv"
+    expr: "fisher_inv(0.5)"
+    expect: {"value": 0.46211715726000974, "tolerance": {"abs": 1e-09}}

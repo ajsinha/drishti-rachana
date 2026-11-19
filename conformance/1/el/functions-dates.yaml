@@ -1,0 +1,183 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Generated from the examples of spec/1/functions.yaml (plan H5); a function's example is its case. Do not edit by hand: edit the example.
+suite: el/functions-dates
+since: "1.0"
+profile: core
+verified: true
+description: "The examples of the dates functions of functions.yaml."
+given: {"today": "2026-10-16"}
+cases:
+
+  - id: "date-1"
+    kind: "expr"
+    source: "functions.yaml#date"
+    expr: "date('2026-11-17')"
+    expect: {"value": "2026-11-17"}
+
+  - id: "date-2"
+    kind: "expr"
+    source: "functions.yaml#date"
+    expr: "date(2026, 14, 1)"
+    expect: {"value": "2027-02-01"}
+
+  - id: "timestamp-1"
+    kind: "expr"
+    source: "functions.yaml#timestamp"
+    expr: "timestamp('2026-11-17T09:30')"
+    expect: {"value": "2026-11-17T09:30"}
+
+  - id: "year-1"
+    kind: "expr"
+    source: "functions.yaml#year"
+    expr: "year('2026-11-17')"
+    expect: {"value": 2026}
+
+  - id: "quarter-1"
+    kind: "expr"
+    source: "functions.yaml#quarter"
+    expr: "quarter('2026-11-17')"
+    expect: {"value": 4}
+
+  - id: "month-1"
+    kind: "expr"
+    source: "functions.yaml#month"
+    expr: "month('2026-11-17')"
+    expect: {"value": 11}
+
+  - id: "week-1"
+    kind: "expr"
+    source: "functions.yaml#week"
+    expr: "week('2027-01-01')"
+    expect: {"value": 53}
+
+  - id: "day-1"
+    kind: "expr"
+    source: "functions.yaml#day"
+    expr: "day('2026-11-17')"
+    expect: {"value": 17}
+
+  - id: "hour-1"
+    kind: "expr"
+    source: "functions.yaml#hour"
+    expr: "hour('2026-11-17T09:30:15Z')"
+    expect: {"value": 9}
+
+  - id: "minute-1"
+    kind: "expr"
+    source: "functions.yaml#minute"
+    expr: "minute('2026-11-17T09:30:15Z')"
+    expect: {"value": 30}
+
+  - id: "second-1"
+    kind: "expr"
+    source: "functions.yaml#second"
+    expr: "second('2026-11-17T09:30:15Z')"
+    expect: {"value": 15}
+
+  - id: "weekday-1"
+    kind: "expr"
+    source: "functions.yaml#weekday"
+    expr: "weekday('2026-11-17')"
+    expect: {"value": 3}
+
+  - id: "weekday-2"
+    kind: "expr"
+    source: "functions.yaml#weekday"
+    expr: "weekday('2026-11-17', 2)"
+    expect: {"value": 2}
+
+  - id: "days-between-1"
+    kind: "expr"
+    source: "functions.yaml#days_between"
+    expr: "days_between('2026-11-01', '2026-11-17')"
+    expect: {"value": 16}
+
+  - id: "edate-1"
+    kind: "expr"
+    source: "functions.yaml#edate"
+    expr: "edate('2024-01-31', 1)"
+    expect: {"value": "2024-02-29"}
+
+  - id: "eomonth-1"
+    kind: "expr"
+    source: "functions.yaml#eomonth"
+    expr: "eomonth('2026-11-17')"
+    expect: {"value": "2026-11-30"}
+
+  - id: "eomonth-2"
+    kind: "expr"
+    source: "functions.yaml#eomonth"
+    expr: "eomonth('2026-11-17', 1)"
+    expect: {"value": "2026-12-31"}
+
+  - id: "days360-1"
+    kind: "expr"
+    source: "functions.yaml#days360"
+    expr: "days360('2026-01-31', '2026-03-31')"
+    expect: {"value": 60}
+
+  - id: "datedif-1"
+    kind: "expr"
+    source: "functions.yaml#datedif"
+    expr: "datedif('2020-02-29', '2026-11-17', 'Y')"
+    expect: {"value": 6}
+
+  - id: "datedif-2"
+    kind: "expr"
+    source: "functions.yaml#datedif"
+    expr: "datedif('2026-01-15', '2026-11-17', 'M')"
+    expect: {"value": 10}
+
+  - id: "yearfrac-1"
+    kind: "expr"
+    source: "functions.yaml#yearfrac"
+    expr: "yearfrac('2026-01-01', '2026-07-01', '30/360')"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "yearfrac-2"
+    kind: "expr"
+    source: "functions.yaml#yearfrac"
+    expr: "yearfrac('2026-01-01', '2027-01-01', 'ACT/ACT')"
+    expect: {"value": 1}
+
+  - id: "intck-1"
+    kind: "expr"
+    source: "functions.yaml#intck"
+    expr: "intck('month', '2026-01-31', '2026-02-01')"
+    expect: {"value": 1}
+
+  - id: "intck-2"
+    kind: "expr"
+    source: "functions.yaml#intck"
+    expr: "intck('year', '2025-12-31', '2026-01-01')"
+    expect: {"value": 1}
+
+  - id: "is-business-day-1"
+    kind: "expr"
+    source: "functions.yaml#is_business_day"
+    expr: "is_business_day('2026-11-14')"
+    expect: {"value": false}
+
+  - id: "is-business-day-2"
+    kind: "expr"
+    source: "functions.yaml#is_business_day"
+    expr: "is_business_day('2026-11-16')"
+    expect: {"value": true}
+
+  - id: "business-days-between-1"
+    kind: "expr"
+    source: "functions.yaml#business_days_between"
+    expr: "business_days_between('2026-11-13', '2026-11-17')"
+    expect: {"value": 2}
+
+  - id: "shift-date-1"
+    kind: "expr"
+    source: "functions.yaml#shift_date"
+    expr: "shift_date('2026-11-16', -1)"
+    expect: {"value": "2026-11-13"}
+
+  - id: "shift-date-2"
+    kind: "expr"
+    source: "functions.yaml#shift_date"
+    expr: "shift_date('2026-11-17', 1, 'month')"
+    expect: {"value": "2026-12-17"}

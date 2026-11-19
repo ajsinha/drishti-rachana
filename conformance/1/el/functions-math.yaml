@@ -1,0 +1,449 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Generated from the examples of spec/1/functions.yaml (plan H5); a function's example is its case. Do not edit by hand: edit the example.
+suite: el/functions-math
+since: "1.0"
+profile: core
+verified: true
+description: "The examples of the math functions of functions.yaml."
+given: {"today": "2026-10-16"}
+cases:
+
+  - id: "abs-1"
+    kind: "expr"
+    source: "functions.yaml#abs"
+    expr: "abs(-3.5)"
+    expect: {"value": 3.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "abs-2"
+    kind: "expr"
+    source: "functions.yaml#abs"
+    expr: "abs(7)"
+    expect: {"value": 7}
+
+  - id: "sign-1"
+    kind: "expr"
+    source: "functions.yaml#sign"
+    expr: "sign(-12)"
+    expect: {"value": -1}
+
+  - id: "sign-2"
+    kind: "expr"
+    source: "functions.yaml#sign"
+    expr: "sign(0)"
+    expect: {"value": 0}
+
+  - id: "sqrt-1"
+    kind: "expr"
+    source: "functions.yaml#sqrt"
+    expr: "sqrt(0.0144)"
+    expect: {"value": 0.12, "tolerance": {"abs": 1e-09}}
+
+  - id: "sqrt-2"
+    kind: "expr"
+    source: "functions.yaml#sqrt"
+    expr: "sqrt(16)"
+    expect: {"value": 4}
+
+  - id: "exp-1"
+    kind: "expr"
+    source: "functions.yaml#exp"
+    expr: "exp(0)"
+    expect: {"value": 1}
+
+  - id: "exp-2"
+    kind: "expr"
+    source: "functions.yaml#exp"
+    expr: "exp(1)"
+    expect: {"value": 2.718281828459045, "tolerance": {"abs": 1e-09}}
+
+  - id: "ln-1"
+    kind: "expr"
+    source: "functions.yaml#ln"
+    expr: "ln(1)"
+    expect: {"value": 0}
+
+  - id: "ln-2"
+    kind: "expr"
+    source: "functions.yaml#ln"
+    expr: "ln(2.718281828459045)"
+    expect: {"value": 1, "tolerance": {"abs": 1e-9}}
+
+  - id: "log10-1"
+    kind: "expr"
+    source: "functions.yaml#log10"
+    expr: "log10(1000)"
+    expect: {"value": 3}
+
+  - id: "log10-2"
+    kind: "expr"
+    source: "functions.yaml#log10"
+    expr: "log10(0.01)"
+    expect: {"value": -2}
+
+  - id: "log-1"
+    kind: "expr"
+    source: "functions.yaml#log"
+    expr: "log(8, 2)"
+    expect: {"value": 3}
+
+  - id: "log-2"
+    kind: "expr"
+    source: "functions.yaml#log"
+    expr: "log(100)"
+    expect: {"value": 2}
+
+  - id: "round-1"
+    kind: "expr"
+    source: "functions.yaml#round"
+    expr: "round(2.675, 2)"
+    expect: {"value": 2.68, "tolerance": {"abs": 1e-09}}
+
+  - id: "round-2"
+    kind: "expr"
+    source: "functions.yaml#round"
+    expr: "round(-2.5)"
+    expect: {"value": -3}
+
+  - id: "round-3"
+    kind: "expr"
+    source: "functions.yaml#round"
+    expr: "round(1234, -2)"
+    expect: {"value": 1200}
+
+  - id: "round-up-1"
+    kind: "expr"
+    source: "functions.yaml#round_up"
+    expr: "round_up(2.671, 2)"
+    expect: {"value": 2.68, "tolerance": {"abs": 1e-09}}
+
+  - id: "round-up-2"
+    kind: "expr"
+    source: "functions.yaml#round_up"
+    expr: "round_up(0.1 + 0.2, 1)"
+    expect: {"value": 0.3, "tolerance": {"abs": 1e-09}}
+
+  - id: "round-down-1"
+    kind: "expr"
+    source: "functions.yaml#round_down"
+    expr: "round_down(-2.679, 2)"
+    expect: {"value": -2.67, "tolerance": {"abs": 1e-09}}
+
+  - id: "round-down-2"
+    kind: "expr"
+    source: "functions.yaml#round_down"
+    expr: "round_down(1999, -3)"
+    expect: {"value": 1000}
+
+  - id: "round-sig-1"
+    kind: "expr"
+    source: "functions.yaml#round_sig"
+    expr: "round_sig(123456, 2)"
+    expect: {"value": 120000}
+
+  - id: "round-sig-2"
+    kind: "expr"
+    source: "functions.yaml#round_sig"
+    expr: "round_sig(0.012345, 3)"
+    expect: {"value": 0.0123, "tolerance": {"abs": 1e-09}}
+
+  - id: "mround-1"
+    kind: "expr"
+    source: "functions.yaml#mround"
+    expr: "mround(10, 3)"
+    expect: {"value": 9}
+
+  - id: "mround-2"
+    kind: "expr"
+    source: "functions.yaml#mround"
+    expr: "mround(1.3, 0.2)"
+    expect: {"value": 1.4, "tolerance": {"abs": 1e-09}}
+
+  - id: "ceiling-1"
+    kind: "expr"
+    source: "functions.yaml#ceiling"
+    expr: "ceiling(4.2, 0.5)"
+    expect: {"value": 4.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "ceiling-2"
+    kind: "expr"
+    source: "functions.yaml#ceiling"
+    expr: "ceiling(-4.2)"
+    expect: {"value": -4}
+
+  - id: "floor-1"
+    kind: "expr"
+    source: "functions.yaml#floor"
+    expr: "floor(4.7)"
+    expect: {"value": 4}
+
+  - id: "floor-2"
+    kind: "expr"
+    source: "functions.yaml#floor"
+    expr: "floor(-4.2)"
+    expect: {"value": -5}
+
+  - id: "mod-1"
+    kind: "expr"
+    source: "functions.yaml#mod"
+    expr: "mod(-3, 2)"
+    expect: {"value": 1}
+
+  - id: "mod-2"
+    kind: "expr"
+    source: "functions.yaml#mod"
+    expr: "mod(7, 0)"
+    expect: {"value": null}
+
+  - id: "power-1"
+    kind: "expr"
+    source: "functions.yaml#power"
+    expr: "power(2, -1)"
+    expect: {"value": 0.5, "tolerance": {"abs": 1e-09}}
+
+  - id: "power-2"
+    kind: "expr"
+    source: "functions.yaml#power"
+    expr: "power(0, -1)"
+    expect: {"value": null}
+
+  - id: "power-3"
+    kind: "expr"
+    source: "functions.yaml#power"
+    expr: "power(1.1, 2)"
+    expect: {"value": 1.21, "tolerance": {"abs": 1e-09}}
+
+  - id: "clamp-1"
+    kind: "expr"
+    source: "functions.yaml#clamp"
+    expr: "clamp(15, 0, 10)"
+    expect: {"value": 10}
+
+  - id: "clamp-2"
+    kind: "expr"
+    source: "functions.yaml#clamp"
+    expr: "clamp(-1, 0, 10)"
+    expect: {"value": 0}
+
+  - id: "fact-1"
+    kind: "expr"
+    source: "functions.yaml#fact"
+    expr: "fact(5)"
+    expect: {"value": 120}
+
+  - id: "fact-2"
+    kind: "expr"
+    source: "functions.yaml#fact"
+    expr: "fact(0)"
+    expect: {"value": 1}
+
+  - id: "combin-1"
+    kind: "expr"
+    source: "functions.yaml#combin"
+    expr: "combin(8, 2)"
+    expect: {"value": 28}
+
+  - id: "permut-1"
+    kind: "expr"
+    source: "functions.yaml#permut"
+    expr: "permut(5, 2)"
+    expect: {"value": 20}
+
+  - id: "gcd-1"
+    kind: "expr"
+    source: "functions.yaml#gcd"
+    expr: "gcd(12, 18)"
+    expect: {"value": 6}
+
+  - id: "gcd-2"
+    kind: "expr"
+    source: "functions.yaml#gcd"
+    expr: "gcd(12, 18, 8)"
+    expect: {"value": 2}
+
+  - id: "lcm-1"
+    kind: "expr"
+    source: "functions.yaml#lcm"
+    expr: "lcm(3, 6, 12)"
+    expect: {"value": 12}
+
+  - id: "lcm-2"
+    kind: "expr"
+    source: "functions.yaml#lcm"
+    expr: "lcm(4, 6)"
+    expect: {"value": 12}
+
+  - id: "even-1"
+    kind: "expr"
+    source: "functions.yaml#even"
+    expr: "even(3)"
+    expect: {"value": 4}
+
+  - id: "even-2"
+    kind: "expr"
+    source: "functions.yaml#even"
+    expr: "even(-1)"
+    expect: {"value": -2}
+
+  - id: "odd-1"
+    kind: "expr"
+    source: "functions.yaml#odd"
+    expr: "odd(2)"
+    expect: {"value": 3}
+
+  - id: "odd-2"
+    kind: "expr"
+    source: "functions.yaml#odd"
+    expr: "odd(0)"
+    expect: {"value": 1}
+
+  - id: "pi-1"
+    kind: "expr"
+    source: "functions.yaml#pi"
+    expr: "pi()"
+    expect: {"value": 3.141592653589793, "tolerance": {"abs": 1e-09}}
+
+  - id: "sin-1"
+    kind: "expr"
+    source: "functions.yaml#sin"
+    expr: "sin(0)"
+    expect: {"value": 0}
+
+  - id: "cos-1"
+    kind: "expr"
+    source: "functions.yaml#cos"
+    expr: "cos(0)"
+    expect: {"value": 1}
+
+  - id: "tan-1"
+    kind: "expr"
+    source: "functions.yaml#tan"
+    expr: "tan(0)"
+    expect: {"value": 0}
+
+  - id: "asin-1"
+    kind: "expr"
+    source: "functions.yaml#asin"
+    expr: "asin(1)"
+    expect: {"value": 1.5707963267948966, "tolerance": {"abs": 1e-09}}
+
+  - id: "acos-1"
+    kind: "expr"
+    source: "functions.yaml#acos"
+    expr: "acos(1)"
+    expect: {"value": 0}
+
+  - id: "atan-1"
+    kind: "expr"
+    source: "functions.yaml#atan"
+    expr: "atan(1)"
+    expect: {"value": 0.7853981633974483, "tolerance": {"abs": 1e-09}}
+
+  - id: "sinh-1"
+    kind: "expr"
+    source: "functions.yaml#sinh"
+    expr: "sinh(0)"
+    expect: {"value": 0}
+
+  - id: "cosh-1"
+    kind: "expr"
+    source: "functions.yaml#cosh"
+    expr: "cosh(0)"
+    expect: {"value": 1}
+
+  - id: "tanh-1"
+    kind: "expr"
+    source: "functions.yaml#tanh"
+    expr: "tanh(0)"
+    expect: {"value": 0}
+
+  - id: "radians-1"
+    kind: "expr"
+    source: "functions.yaml#radians"
+    expr: "radians(180)"
+    expect: {"value": 3.141592653589793, "tolerance": {"abs": 1e-09}}
+
+  - id: "degrees-1"
+    kind: "expr"
+    source: "functions.yaml#degrees"
+    expr: "degrees(pi())"
+    expect: {"value": 180}
+
+  - id: "atan2-1"
+    kind: "expr"
+    source: "functions.yaml#atan2"
+    expr: "atan2(1, 1)"
+    expect: {"value": 0.7853981633974483, "tolerance": {"abs": 1e-09}}
+
+  - id: "atan2-2"
+    kind: "expr"
+    source: "functions.yaml#atan2"
+    expr: "degrees(atan2(1, 1))"
+    expect: {"value": 45}
+
+  - id: "base-1"
+    kind: "expr"
+    source: "functions.yaml#base"
+    expr: "base(255, 16)"
+    expect: {"value": "FF"}
+
+  - id: "base-2"
+    kind: "expr"
+    source: "functions.yaml#base"
+    expr: "base(5, 2, 8)"
+    expect: {"value": "00000101"}
+
+  - id: "decimal-1"
+    kind: "expr"
+    source: "functions.yaml#decimal"
+    expr: "decimal('FF', 16)"
+    expect: {"value": 255}
+
+  - id: "decimal-2"
+    kind: "expr"
+    source: "functions.yaml#decimal"
+    expr: "decimal('101', 2)"
+    expect: {"value": 5}
+
+  - id: "least-1"
+    kind: "expr"
+    source: "functions.yaml#least"
+    expr: "least(3, 1, 2)"
+    expect: {"value": 1}
+
+  - id: "greatest-1"
+    kind: "expr"
+    source: "functions.yaml#greatest"
+    expr: "greatest(3, 1, 2)"
+    expect: {"value": 3}
+
+  - id: "greatest-2"
+    kind: "expr"
+    source: "functions.yaml#greatest"
+    expr: "greatest('2026-01-01', '2027-01-01')"
+    expect: {"value": "2027-01-01"}
+
+  - id: "min-1"
+    kind: "expr"
+    verified: false
+    source: "functions.yaml#min"
+    expr: "min([3, 1, 2])"
+    expect: {"value": 1}
+
+  - id: "min-2"
+    kind: "expr"
+    source: "functions.yaml#min"
+    expr: "min(3, 1, 2)"
+    expect: {"value": 1}
+
+  - id: "max-1"
+    kind: "expr"
+    verified: false
+    source: "functions.yaml#max"
+    expr: "max([3, 1, 2])"
+    expect: {"value": 3}
+
+  - id: "max-2"
+    kind: "expr"
+    source: "functions.yaml#max"
+    expr: "max(3, 1, 2)"
+    expect: {"value": 3}

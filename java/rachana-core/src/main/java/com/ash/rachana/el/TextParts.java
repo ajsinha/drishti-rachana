@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * More text (FUNCTION_CATALOGUE.md section 2), beside {@link TextFunctions}: {@code len}, {@code proper}, {@code rept}, {@code exact},
@@ -29,6 +28,7 @@ final class TextParts {
     static final int MAX_REPT = 10_000;
 
     static void register(Functions.Table t) {
+        Regexes rx = t.regexes();
         t.fn("len", 1, 1, (a, c) -> {
             String s = Args.text("len", a.get(0));
             return s == null ? null : (Object) (long) s.codePointCount(0, s.length());   // characters, as the engine's SQL counts them
@@ -78,7 +78,7 @@ final class TextParts {
             String s = Args.text("regex_replace", a.get(0));
             String p = Args.text("regex_replace", a.get(1));
             String r = Args.text("regex_replace", a.get(2));
-            return s == null || p == null || r == null ? null : regex(p).replaceAll(s, r);
+            return s == null || p == null || r == null ? null : rx.pattern(p, false).replaceAll(s, r);
         });
         t.fn("reverse", 1, 1, (a, c) -> {
             String s = Args.text("reverse", a.get(0));
@@ -91,15 +91,6 @@ final class TextParts {
         });
         t.fn("value", 1, 3, (a, c) -> value(a));
         t.fn("text", 2, 2, (a, c) -> text(a));
-    }
-
-    private static final ConcurrentHashMap<String, SafeRegex> PATTERNS = new ConcurrentHashMap<>();
-
-    private static SafeRegex regex(String pattern) {
-        if (PATTERNS.size() > 512) {
-            PATTERNS.clear();
-        }
-        return PATTERNS.computeIfAbsent(pattern, k -> SafeRegex.compile(pattern, false));
     }
 
     /** {@code proper(s)}: each word's first letter upper case, the rest lower (a letter after any non-letter starts a word: Excel's). */

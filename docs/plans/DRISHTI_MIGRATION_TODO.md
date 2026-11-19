@@ -167,6 +167,16 @@ here. What Drishti must do when the migration starts, in this order:
 - [ ] 8.9 **Retire the reference bridge** here (`tools/reference-bridge`) once 8.8 is green: until then it is the reference every
       Rachana step is compared with.
 
+- [ ] 8.3c **Registries per instance (A6)**: Drishti builds its `drishti` profile object in its profile part:
+      `Profile.named("drishti").functions(new EngineFunctions(…)).formats(<pack formats files>).calendars(<its resolver, if any>)`,
+      and one `Rachana.with(options, Profile.core(), drishti, <each started module's profile>)` in a holder that **rebuilds and swaps**
+      the instance when a module starts or stops (`ModuleBridge`/`RachanaFunctions` stop calling the removed `Functions.register`;
+      `META-INF/services/...FunctionProvider` in bicompute is no longer read: the profile hands the provider over). Every
+      `new ElCompiler()` that must see engine functions takes the holder's `rachana.compiler()` (or `rachana.functions()`);
+      `Calendars.use(...)` becomes the profile's `calendars(...)`; `drishti.search.regex.*` reach Core through
+      `RachanaOptions.regexLimits`. Tests: `RachanaAggregatesTest`, `SutraAggregateParityTest`, `OneGrammarRulesTest`,
+      `ModuleHostServerTest`, plus a start-stop-restart test of the holder.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

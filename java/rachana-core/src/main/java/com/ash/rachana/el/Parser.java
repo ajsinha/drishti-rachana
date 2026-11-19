@@ -81,22 +81,39 @@ final class Parser {
         return parseWithSpans(src, limits).expr();
     }
 
+    /** Parses against one instance's function table (split step A6). */
+    static Expr parse(String src, ElLimits limits, FunctionTable table) {
+        return parseWithSpans(src, limits, table).expr();
+    }
+
     /** Parses with extra function names (measure functions) that are later expanded: arguments are parsed, nothing else is checked. */
     static Expr parse(String src, Set<String> macros) {
+        return parse(src, macros, FunctionTable.core());
+    }
+
+    /** {@link #parse(String, Set)} against one instance's function table. */
+    static Expr parse(String src, Set<String> macros, FunctionTable table) {
         Parser parser = new Parser(src, Lexer.tokens(src), ElLimits.DEFAULTS);
         parser.macros = macros;
+        parser.table = table;
         Expr e = parser.expr();
         return e;
     }
 
     private Set<String> macros = Set.of();
+    private FunctionTable table = FunctionTable.core();
 
     static Parsed parseWithSpans(String src, ElLimits limits) {
+        return parseWithSpans(src, limits, FunctionTable.core());
+    }
+
+    static Parsed parseWithSpans(String src, ElLimits limits, FunctionTable table) {
         if (src.length() > limits.maxLength()) {
             throw new ElException("expression is longer than " + limits.maxLength()
                     + " characters (drishti.rachana.max-expression-length)", limits.maxLength());
         }
         Parser parser = new Parser(src, Lexer.tokens(src), limits);
+        parser.table = table;
         Expr e = parser.expr();
         if (parser.peek().type() != Type.EOF) {
             throw new ElException("unexpected '" + parser.peek().text() + "'", parser.peek().pos());
@@ -398,9 +415,9 @@ final class Parser {
         }
         next();
         String name = t.text();
-        int[] arity = macros.contains(name) ? new int[] {0, 64} : Functions.arityOf(name);
+        int[] arity = macros.contains(name) ? new int[] {0, 64} : table.arityOf(name);
         if (arity == null) {
-            throw new ElException("unknown function '" + name + "'; known: " + String.join(", ", new java.util.TreeSet<>(Functions.arity().keySet())),
+            throw new ElException("unknown function '" + name + "'; known: " + String.join(", ", new java.util.TreeSet<>(table.arity().keySet())),
                     t.pos());
         }
         if ("let".equals(name)) {
@@ -447,7 +464,7 @@ final class Parser {
             throw new ElException(name + " takes " + arity[0] + (arity[0] == arity[1] ? "" : "-" + arity[1])
                     + " argument(s), got " + args.size(), t.pos());
         }
-        String problem = Functions.check(name, args);
+        String problem = table.check(name, args);
         if (problem != null) {
             throw new ElException(name + ": " + problem, t.pos());
         }
@@ -468,14 +485,14 @@ final class Parser {
             default:
                 break;
         }
-        ElForm form = Functions.form(name);
+        ElForm form = table.form(name);
         if (form != null) {
             if (!named.isEmpty()) {
                 throw new ElException(name + " takes no named arguments", t.pos());
             }
             return at(node(new Expr.Form(name, form, List.copyOf(args)), parts), s);
         }
-        return at(node(new Expr.Call(name, Functions.get(name), List.copyOf(args), named), parts), s);
+        return at(node(new Expr.Call(name, table.get(name), List.copyOf(args), named), parts), s);
     }
 
     /**

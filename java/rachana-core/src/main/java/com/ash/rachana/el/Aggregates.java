@@ -8,11 +8,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
- * The functions Rachana's table holds from {@link FunctionProvider}s (docs/architecture/ARCHITECTURE.md parts 1 and 2): found once, by
- * {@link ServiceLoader}, when the table is built. Rachana implements no aggregate: these names are the ones it asks a provider for,
+ * The functions one function table holds from {@link FunctionProvider}s (docs/architecture/ARCHITECTURE.md parts 1 and 2): the
+ * providers a {@link com.ash.rachana.profile.Profile} hands over, per {@link com.ash.rachana.Rachana} instance; nothing is discovered by
+ * scanning the class path. Rachana implements no aggregate: these names are the ones it asks a provider for,
  * so that an expression using one compiles whether or not the provider is on the class path; without it, evaluating one is refused
  * with the reason ({@code RCH-2102}), never computed another way.
  */
@@ -35,58 +35,68 @@ final class Aggregates {
     /** Names whose one-list form a provider computes while Rachana keeps their several-argument form (old least/greatest). */
     static final List<String> SHARED = List.of("min", "max");
 
-    private static final Map<String, FunctionProvider.Provided> PROVIDED;
-    private static final Map<String, String> SOURCE;
-    private static final FunctionProvider.Grouping GROUPING;
-    private static final String GROUPING_SOURCE;
+    private final Map<String, FunctionProvider.Provided> provided;
+    private final Map<String, String> source;
+    private final FunctionProvider.Grouping grouping;
+    private final String groupingSource;
 
-    static {
-        Map<String, FunctionProvider.Provided> provided = new LinkedHashMap<>();
-        Map<String, String> source = new LinkedHashMap<>();
-        FunctionProvider.Grouping grouping = null;
-        String groupingSource = null;
-        for (FunctionProvider p : ServiceLoader.load(FunctionProvider.class, Aggregates.class.getClassLoader())) {
+    /** No provider: every aggregate and figure of another engine refused with the reason. */
+    static final Aggregates NONE = new Aggregates(List.of());
+
+    /**
+     * The functions of {@code providers}, in order; a name two providers give is refused (nothing is built). The first provider that
+     * groups gives {@code group(...)}.
+     */
+    Aggregates(List<FunctionProvider> providers) {
+        Map<String, FunctionProvider.Provided> byName = new LinkedHashMap<>();
+        Map<String, String> from = new LinkedHashMap<>();
+        FunctionProvider.Grouping g = null;
+        String gFrom = null;
+        for (FunctionProvider p : providers) {
             for (FunctionProvider.Provided f : p.functions()) {
-                if (provided.putIfAbsent(f.name(), f) != null) {
-                    throw new IllegalStateException("Rachana-EL function " + f.name() + " is provided twice (" + source.get(f.name())
+                if (byName.putIfAbsent(f.name(), f) != null) {
+                    throw new IllegalStateException("Rachana-EL function " + f.name() + " is provided twice (" + from.get(f.name())
                             + ", " + p.source() + ")");
                 }
-                source.put(f.name(), p.source());
+                from.put(f.name(), p.source());
             }
-            if (grouping == null && p.grouping() != null) {
-                grouping = p.grouping();
-                groupingSource = p.source();
+            if (g == null && p.grouping() != null) {
+                g = p.grouping();
+                gFrom = p.source();
             }
         }
-        PROVIDED = Collections.unmodifiableMap(provided);
-        SOURCE = Collections.unmodifiableMap(source);
-        GROUPING = grouping;
-        GROUPING_SOURCE = groupingSource;
+        this.provided = Collections.unmodifiableMap(byName);
+        this.source = Collections.unmodifiableMap(from);
+        this.grouping = g;
+        this.groupingSource = gFrom;
     }
-
-    private Aggregates() {}
 
     /**
      * Registers the provided functions into the table, and every expected name no provider gives as a refusal; {@code min} and
-     * {@code max} stay Rachana's entries ({@link MathFunctions}), which hand their one-list form to {@link #call}.
+     * {@code max} stay Rachana's entries ({@link MathFunctions}), which hand their one-list form to {@link #call}. A provided name that
+     * Rachana's own families already hold is refused by the table ({@code registered twice}): a profile never redefines a Core name.
      */
-    static void install(Functions.Table t) {
+    void install(Functions.Table t) {
         t.family("provided");
-        for (FunctionProvider.Provided f : PROVIDED.values()) {
+        for (FunctionProvider.Provided f : provided.values()) {
             if (SHARED.contains(f.name())) {
                 continue;
+            }
+            if (t.arity.containsKey(f.name())) {
+                throw new IllegalStateException("Rachana-EL function " + f.name() + " is Core's: a profile cannot redefine it ("
+                        + source.get(f.name()) + ")");
             }
             t.fn(f.name(), f.minArgs(), f.maxArgs(), f.function());
         }
         for (String name : EXPECTED) {
-            if (!PROVIDED.containsKey(name) && !SHARED.contains(name)) {
+            if (!provided.containsKey(name) && !SHARED.contains(name)) {
                 t.fn(name, 0, 64, (a, c) -> {
                     throw refused(name);
                 });
             }
         }
         for (String name : MEASURE_LEVEL) {
-            if (!PROVIDED.containsKey(name)) {
+            if (!provided.containsKey(name)) {
                 t.fn(name, 0, 64, (a, c) -> {
                     throw refused(name);
                 });
@@ -95,8 +105,8 @@ final class Aggregates {
     }
 
     /** A provided function, evaluated; refused with the reason when no provider gives it. */
-    static Object call(String name, List<Object> args, EvalContext c) {
-        FunctionProvider.Provided f = PROVIDED.get(name);
+    Object call(String name, List<Object> args, EvalContext c) {
+        FunctionProvider.Provided f = provided.get(name);
         if (f == null) {
             throw refused(name);
         }
@@ -104,26 +114,26 @@ final class Aggregates {
     }
 
     /** The grouping behind {@code group(...)}; refused with the reason when no provider groups. */
-    static FunctionProvider.Grouping grouping() {
-        if (GROUPING == null) {
+    FunctionProvider.Grouping grouping() {
+        if (grouping == null) {
             throw refused("group");
         }
-        return GROUPING;
+        return grouping;
     }
 
     /** True when {@code name} is a provided aggregate (one {@code group(list, key, aggregate(@...))} may name). */
-    static boolean provided(String name) {
-        return PROVIDED.containsKey(name);
+    boolean provided(String name) {
+        return provided.containsKey(name);
     }
 
     /** The provided functions, by name, with who provides them. */
-    static Map<String, FunctionProvider.Provided> all() {
-        return PROVIDED;
+    Map<String, FunctionProvider.Provided> all() {
+        return provided;
     }
 
     /** Who provides {@code name} ({@code group}: the grouping's provider); null when none does. */
-    static String source(String name) {
-        return "group".equals(name) ? GROUPING_SOURCE : SOURCE.get(name);
+    String source(String name) {
+        return "group".equals(name) ? groupingSource : source.get(name);
     }
 
     private static ElException refused(String name) {

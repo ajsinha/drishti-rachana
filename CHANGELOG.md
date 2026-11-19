@@ -5,6 +5,14 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (toward v0.10.0, the untangling)
 
+- **A6, registries per instance**: `Rachana.with(options, profiles…)` builds one instance (its own `FunctionTable`, compiler and
+  cache, format table); `Profile.core()` and `Profile.named(name).functions(…).formats(…).calendars(…).build()`. Nothing is
+  process-wide: `Functions.register` and `Calendars.use` are gone, providers are no longer found by `ServiceLoader` (a profile hands
+  them over), and two instances in one JVM never see each other's functions, calendars or patterns. A profile cannot redefine a Core
+  name (refused when the instance is built), nor can two providers give one name. `RachanaOptions.regexLimits` now reaches the text
+  functions, per instance. A host whose functions come and go rebuilds and swaps its instance. The static `Functions` methods read
+  the Core table (`FunctionTable.core()`). Conformance results byte-identical to before A6 (2,110 of 2,112 identical to the reference,
+  the 2 known; 0 verified failing); 840 unit tests (`RachanaInstanceTest` new).
 - **A1, errors**: `RachanaException` (code, words; message is the code and the words) and `RachanaCode` replace the host's exception
   and error codes; every code is `RCH-` with the number it always had (problems, editing refusals, evaluation and syntax errors,
   checked-mode refusals). A host maps them to its own by the number at its edge. The accepted options in an editing refusal are

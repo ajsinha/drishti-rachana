@@ -27,42 +27,47 @@ public final class MeasureFunctions {
 
     /** The expression with every call of a function of {@code defs} expanded; {@code IllegalArgumentException} says what is wrong. */
     public static String expand(String expr, Map<String, Def> defs) {
+        return expand(expr, defs, FunctionTable.core());
+    }
+
+    /** {@link #expand(String, Map)} against one instance's function table (a profile's functions known). */
+    public static String expand(String expr, Map<String, Def> defs, FunctionTable table) {
         if (expr == null || defs.isEmpty()) {
             return expr;
         }
-        return Printer.print(rewrite(Parser.parse(expr, defs.keySet()), Map.of(), defs, new LinkedHashSet<>(), 0));
+        return Printer.print(rewrite(Parser.parse(expr, defs.keySet(), table), Map.of(), defs, new LinkedHashSet<>(), 0, table));
     }
 
-    private static Expr rewrite(Expr e, Map<String, Expr> bind, Map<String, Def> defs, Set<String> trail, int depth) {
+    private static Expr rewrite(Expr e, Map<String, Expr> bind, Map<String, Def> defs, Set<String> trail, int depth, FunctionTable table) {
         return switch (e) {
             case Expr.Field f when f.target() instanceof Expr.RowOrRoot && bind.containsKey(f.name()) -> bind.get(f.name());
-            case Expr.Field f -> new Expr.Field(rewrite(f.target(), bind, defs, trail, depth), f.name(), f.rootPath());
+            case Expr.Field f -> new Expr.Field(rewrite(f.target(), bind, defs, trail, depth, table), f.name(), f.rootPath());
             case Expr.Local l when bind.containsKey(l.name()) -> bind.get(l.name());
-            case Expr.Call c when defs.containsKey(c.name()) -> call(c, bind, defs, trail, depth);
+            case Expr.Call c when defs.containsKey(c.name()) -> call(c, bind, defs, trail, depth, table);
             case Expr.Call c -> {
                 Map<String, Expr> named = new LinkedHashMap<>();
-                c.named().forEach((k, v) -> named.put(k, rewrite(v, bind, defs, trail, depth)));
-                yield new Expr.Call(c.name(), c.fn(), all(c.args(), bind, defs, trail, depth), named);
+                c.named().forEach((k, v) -> named.put(k, rewrite(v, bind, defs, trail, depth, table)));
+                yield new Expr.Call(c.name(), c.fn(), all(c.args(), bind, defs, trail, depth, table), named);
             }
-            case Expr.Binary b -> new Expr.Binary(b.op(), rewrite(b.l(), bind, defs, trail, depth), rewrite(b.r(), bind, defs, trail, depth));
-            case Expr.And a -> new Expr.And(rewrite(a.l(), bind, defs, trail, depth), rewrite(a.r(), bind, defs, trail, depth));
-            case Expr.Or o -> new Expr.Or(rewrite(o.l(), bind, defs, trail, depth), rewrite(o.r(), bind, defs, trail, depth));
-            case Expr.Not n -> new Expr.Not(rewrite(n.e(), bind, defs, trail, depth));
-            case Expr.Neg n -> new Expr.Neg(rewrite(n.e(), bind, defs, trail, depth));
-            case Expr.Ternary t -> new Expr.Ternary(rewrite(t.cond(), bind, defs, trail, depth), rewrite(t.then(), bind, defs, trail, depth), rewrite(t.otherwise(), bind, defs, trail, depth));
-            case Expr.ListLit l -> new Expr.ListLit(all(l.items(), bind, defs, trail, depth));
-            case Expr.In i -> new Expr.In(rewrite(i.value(), bind, defs, trail, depth), rewrite(i.list(), bind, defs, trail, depth), i.negated());
+            case Expr.Binary b -> new Expr.Binary(b.op(), rewrite(b.l(), bind, defs, trail, depth, table), rewrite(b.r(), bind, defs, trail, depth, table));
+            case Expr.And a -> new Expr.And(rewrite(a.l(), bind, defs, trail, depth, table), rewrite(a.r(), bind, defs, trail, depth, table));
+            case Expr.Or o -> new Expr.Or(rewrite(o.l(), bind, defs, trail, depth, table), rewrite(o.r(), bind, defs, trail, depth, table));
+            case Expr.Not n -> new Expr.Not(rewrite(n.e(), bind, defs, trail, depth, table));
+            case Expr.Neg n -> new Expr.Neg(rewrite(n.e(), bind, defs, trail, depth, table));
+            case Expr.Ternary t -> new Expr.Ternary(rewrite(t.cond(), bind, defs, trail, depth, table), rewrite(t.then(), bind, defs, trail, depth, table), rewrite(t.otherwise(), bind, defs, trail, depth, table));
+            case Expr.ListLit l -> new Expr.ListLit(all(l.items(), bind, defs, trail, depth, table));
+            case Expr.In i -> new Expr.In(rewrite(i.value(), bind, defs, trail, depth, table), rewrite(i.list(), bind, defs, trail, depth, table), i.negated());
             default -> e;
         };
     }
 
-    private static List<Expr> all(List<Expr> list, Map<String, Expr> bind, Map<String, Def> defs, Set<String> trail, int depth) {
+    private static List<Expr> all(List<Expr> list, Map<String, Expr> bind, Map<String, Def> defs, Set<String> trail, int depth, FunctionTable table) {
         List<Expr> out = new ArrayList<>();
-        list.forEach(x -> out.add(rewrite(x, bind, defs, trail, depth)));
+        list.forEach(x -> out.add(rewrite(x, bind, defs, trail, depth, table)));
         return out;
     }
 
-    private static Expr call(Expr.Call c, Map<String, Expr> bind, Map<String, Def> defs, Set<String> trail, int depth) {
+    private static Expr call(Expr.Call c, Map<String, Expr> bind, Map<String, Def> defs, Set<String> trail, int depth, FunctionTable table) {
         Def d = defs.get(c.name());
         if (depth >= MAX_DEPTH || trail.contains(c.name())) {
             throw new IllegalArgumentException("measure function '" + c.name() + "' calls itself (" + String.join(" -> ", trail) + " -> " + c.name() + ")");
@@ -73,16 +78,16 @@ public final class MeasureFunctions {
         }
         Map<String, Expr> inner = new LinkedHashMap<>();
         for (int i = 0; i < d.params().size(); i++) {
-            inner.put(d.params().get(i), rewrite(c.args().get(i), bind, defs, trail, depth));
+            inner.put(d.params().get(i), rewrite(c.args().get(i), bind, defs, trail, depth, table));
         }
         Set<String> deeper = new LinkedHashSet<>(trail);
         deeper.add(c.name());
         Expr body;
         try {
-            body = Parser.parse(d.expr(), defs.keySet());
+            body = Parser.parse(d.expr(), defs.keySet(), table);
         } catch (RuntimeException x) {
             throw new IllegalArgumentException("measure function '" + c.name() + "': " + x.getMessage());
         }
-        return rewrite(body, inner, defs, deeper, depth + 1);
+        return rewrite(body, inner, defs, deeper, depth + 1, table);
     }
 }

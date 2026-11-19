@@ -34,8 +34,8 @@ migration's proof (step 11).
 | 3 value interface | A2 | here | **done** | 2,110 identical, the 2 known; `ForeignNodeTest` (a host's own `Node` gives the same answers); `HotPathBenchmark` held for the migration (it runs in Drishti) |
 | 4 small dependencies | A3 | here | **done** | 2,110 identical, the 2 known; `CalendarsTest`, `ElCompilerCacheTest`; Caffeine gone; no host type left |
 | 5 Spring out | A4 | here | **done** (Spring never moved: `Formats` lost its reload hook at A10, the configuration classes stayed in Drishti; `RachanaOptions` added; Core reads no system property) | 2,110 identical, the 2 known; `RachanaOptionsTest` |
-| 6 registries per instance | A6 | here | **next** (also wires `RachanaOptions.regexLimits` into the text functions) | |
-| 7 model and parser split, FormExpr into Rachana-EL | A7, A7b | here | planned | |
+| 6 registries per instance | A6 | here | **done** (`Rachana.with`, `Profile`, `FunctionTable` per instance; `regexLimits` and `Calendars` per instance; no `ServiceLoader`, no static registration) | 2,110 identical, the 2 known; results byte-identical to A4/A8b; `RachanaInstanceTest` (two instances, Core names refused, start-stop-restart as rebuild and swap), `CalendarsTest` |
+| 7 model and parser split, FormExpr into Rachana-EL | A7, A7b | here | **next** | |
 | 8 own YAML and JSON | A8a, A8b | here, the other Opus lane | **done** | `tools/yaml-diff`: 168,923 inputs identical to the reference's reader (but the new anchor issue); conformance results byte-identical before and after A8b; Jackson and SnakeYAML gone |
 | 9 aggregate kernel | A9 | here, the other Opus lane | planned | |
 | 13, 14 binder | A13, A14 | here | planned; `v0.10.0` | |

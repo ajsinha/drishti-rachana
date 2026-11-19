@@ -28,10 +28,11 @@ public final class DatePartFunctions {
     static final int MAX_BUSINESS_SHIFT = 100_000;
 
     static void register(Functions.Table t) {
+        Calendars cals = t.calendars();
         t.fn("timestamp", 1, 1, (a, c) -> timestamp(a.get(0)));
-        t.fn("business_days_between", 2, 3, (a, c) -> businessDays(a)).check("business_days_between",
-                args -> DateFunctions.calendarProblem(Functions.literal(args, 2)));
-        t.fn("shift_date", 2, 4, (a, c) -> shift(a)).check("shift_date", DatePartFunctions::checkShift);
+        t.fn("business_days_between", 2, 3, (a, c) -> businessDays(cals, a)).check("business_days_between",
+                args -> DateFunctions.calendarProblem(cals, Functions.literal(args, 2)));
+        t.fn("shift_date", 2, 4, (a, c) -> shift(cals, a)).check("shift_date", args -> checkShift(cals, args));
     }
 
     /**
@@ -55,19 +56,19 @@ public final class DatePartFunctions {
     }
 
     /** The calendar of argument {@code i}: the one named, or the default when none is (null or left out). */
-    private static Calendars.Calendar calendar(String fn, List<Object> a, int i) {
+    private static Calendars.Calendar calendar(Calendars cals, String fn, List<Object> a, int i) {
         List<Object> given = a.size() > i && !Values.isNull(a.get(i)) ? a : List.of();
-        return DateFunctions.calendar(fn, given.isEmpty() ? List.of() : given, i);
+        return DateFunctions.calendar(cals, fn, given.isEmpty() ? List.of() : given, i);
     }
 
     /**
      * {@code business_days_between(a, b, [calendar])}: the business days after a up to and including b (negative when b is before a),
      * as DEL counted them: weekdays less the calendar's holidays.
      */
-    private static Object businessDays(List<Object> a) {
+    private static Object businessDays(Calendars cals, List<Object> a) {
         LocalDate x = Args.date("business_days_between", a.get(0));
         LocalDate y = Args.date("business_days_between", a.get(1));
-        Calendars.Calendar cal = calendar("business_days_between", a, 2);
+        Calendars.Calendar cal = calendar(cals, "business_days_between", a, 2);
         if (x == null || y == null) {
             return null;
         }
@@ -84,7 +85,7 @@ public final class DatePartFunctions {
     }
 
     /** {@code shift_date(d, n, [unit], [calendar])}: d moved by n units; business days skip weekends and the calendar's holidays. */
-    private static Object shift(List<Object> a) {
+    private static Object shift(Calendars cals, List<Object> a) {
         LocalDate d = Args.date("shift_date", a.get(0));
         Integer n = Args.whole("shift_date", a.get(1));
         String unit = a.size() > 2 && !Values.isNull(a.get(2)) ? unit(Args.text("shift_date", a.get(2))) : "business-day";
@@ -101,7 +102,7 @@ public final class DatePartFunctions {
             throw Args.error("shift_date", "moves at most " + MAX_BUSINESS_SHIFT + " business days");
         }
         try {
-            return Args.out(shift(d, n, unit, "business-day".equals(unit) ? calendar("shift_date", a, 3) : null));
+            return Args.out(shift(d, n, unit, "business-day".equals(unit) ? calendar(cals, "shift_date", a, 3) : null));
         } catch (java.time.DateTimeException e) {
             throw Args.error("shift_date", "the date falls outside the calendar's years");
         }
@@ -125,12 +126,12 @@ public final class DatePartFunctions {
         };
     }
 
-    private static String checkShift(List<Expr> args) {
+    private static String checkShift(Calendars cals, List<Expr> args) {
         List<String> problems = new ArrayList<>();
         if (Functions.literal(args, 2) instanceof String u && !UNITS.contains(unit(u))) {
             problems.add("unit is one of " + new java.util.TreeSet<>(UNITS) + ", not '" + u + "'");
         }
-        String cal = DateFunctions.calendarProblem(Functions.literal(args, 3));
+        String cal = DateFunctions.calendarProblem(cals, Functions.literal(args, 3));
         if (cal != null) {
             problems.add(cal);
         }

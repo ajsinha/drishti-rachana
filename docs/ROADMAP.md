@@ -34,6 +34,22 @@ flowchart LR
   R2c --> R3
 ```
 
+## Sutra libraries (planning)
+
+Owner direction (2026-11-19): Rachana ships **prebuilt Sutra libraries** of fragments that an author references,
+parametrises and uses in an executable Sutra, arranged as distinct libraries. Design:
+[LIBRARIES](design/LIBRARIES.md) (the framework) and [LIBRARY_CATALOGUE](design/LIBRARY_CATALOGUE.md) (seven
+libraries, 209 fragments); open decisions L-1 to L-20 in [DECISIONS](design/DECISIONS.md). Nothing is built.
+
+| Phase | What | Needs |
+|---|---|---|
+| **LB0: the framework** | Typed fragments in libraries: the manifest, `LibraryResolver`, table contracts and column mapping, the lock file, the `.rlib` archive and signing, `rachana lib` (new, add, verify, test, doc, pack), the gallery generator, the gates LG1 to LG5 and LG8 | C1 and X42 pulled forward to follow the split; T1, X8, X13 |
+| **LB1: `core`, baseline** | 31 fragments that need only today's panel kinds: figures, records, tables, basic charts, forms, timeline, comparison | LB0 |
+| **LB2: `finance`, `genomics`, `economy`, `geo`, `ops`, `ai`, baseline** | 105 fragments; fragment cards and `with` schemas in the AI kit, the two MCP tools; Studio's palette | LB1 |
+| **LB3: structure** | 35 fragments: master-detail, tab set, drawers, filter bars, the order ticket, cross-filters | R2's containers, overlays, state, effects, selections, grid depth |
+| **LB4: chart grammar and scale** | 38 fragments: layered and stacked charts, windowed blotters, treemap, sankey, map layers, the genome plots and tracks | V1, D2, V4, V5, the later function libraries; kinds K3 to K5 |
+| **LB5: distribution** | npm, PyPI and Maven wrappers, public registries, the library licences in force | R3 |
+
 ## Gates between phases
 
 | Before | Must be true |
@@ -52,3 +68,4 @@ flowchart LR
 - Open specification, proprietary runtime.
 - UI speed is a feature: every release carries performance budgets.
 - The language only grows within a major version; a break needs a new major and a migration tool.
+- A library is data, not code; a released fragment major never changes what it draws; libraries are pinned by exact version and hash.

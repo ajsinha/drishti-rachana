@@ -29,6 +29,7 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | **Views** | `<rachana-view>`: compiles and binds a Sutra, then paints the ViewModel with Drishti Elements' painter (`<elements-view>`). |
 | **Rachana Data Protocol** | Tables as JSON rows or Apache Arrow; live changes as keyed patches over SSE or WebSocket. |
 | **SDKs** | Java, JavaScript and **Python** (Flask and FastAPI adapters: serve Sutras and data endpoints, stream live changes, lint Sutras in CI). |
+| **Sutra libraries** (planning) | Prebuilt fragments to reference, parametrise and use in a Sutra: `core`, `finance`, `genomics`, `economy`, `geo`, `ops`, `ai`. Typed parameters, table contracts, slots, events; versioned, pinned, signed. |
 | **Tooling** | `rachana new / dev / build / lint / preview`, editor support from the compiler, a playground and gallery built with Rachana itself. |
 
 ## Ways to use it
@@ -61,6 +62,8 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | [Data Protocol](docs/design/DATA_PROTOCOL.md) | Rachana Data Protocol v1: schema and types, JSON and Arrow, paging and push-down, live keyed patches, errors, limits, the in-process bridge |
 | [Compiler and runtimes](docs/design/COMPILER_AND_RUNTIMES.md) | Repository layout, the Java reference, the JavaScript and WebAssembly builds, the conformance suite, performance budgets, the CLI, desktop hosts, the standalone server |
 | [Split plan](docs/design/SPLIT_PLAN.md) | The step-by-step separation from Drishti, guards, tests that move, risks |
+| [Sutra libraries](docs/design/LIBRARIES.md) | **Planning.** The fragment-library framework: one mechanism (fragments, typed), `use: library/fragment@major`, table contracts, events, versions and the lock file, resolution, the `.rlib` archive, signing, licensing, generated documents and gallery, tests and gates, the AI kit, the Studio palette, a bank's private library, Drishti's migration with no screen change |
+| [Library catalogue](docs/design/LIBRARY_CATALOGUE.md) | **Planning.** Seven libraries and 209 fragments, each with its purpose, parameters, data, slots, events, what it needs and an example |
 | [Generative UI](docs/design/AI_GENUI.md) | Prompt kit, validate-and-fix loop, MCP tool schemas, safety, evaluation |
 | [Decisions](docs/design/DECISIONS.md) | Numbered questions for the owner, each with a recommendation |
 

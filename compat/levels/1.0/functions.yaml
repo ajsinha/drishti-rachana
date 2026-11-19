@@ -1,0 +1,4067 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force).
+#
+# functions.yaml - the function catalogue of `rachana: 1`.
+#
+# STATUS: draft, completed with the coverage gate in R0 step H5. Drafted by reading Drishti's signatures.yaml and the
+# implementations of its `rachana.el` package (the reference); nothing here was run. Examples are conformance cases once
+# H5 verifies them against the reference. Where this file and SPEC.md disagree, SPEC.md wins until H5 settles it.
+#
+# SCHEMA (formal: functions.schema.json in this folder)
+#
+#   functions_version  integer   the shape of this file (1)
+#   language           text      the language version the catalogue describes ("1.0")
+#   status             text      "draft" until H5 closes
+#   core               list      every Core function (SPEC 5): 207 entries, grouped by family
+#   deprecated         list      spellings read for old Sutras, never offered (SPEC 5.10)
+#   drishti_profile    list      functions of the Drishti profile (SPEC 5.11): need a model or a platform
+#   engine_list_functions list   functions Drishti's pivot engine supplies today; each is `classify: pending (H5)`
+#
+# A Core entry:
+#   name         text      the one name
+#   family       text      logic | math | text | dates | lists | aggregates | statistics | finance
+#   signature    text      human form; `?` after a name = optional, `...` before = repeatable
+#   eval         text      eager (arguments evaluated; masked in -> masked out) | form (arguments unevaluated: lazy,
+#                          or evaluated per element with `@`) | syntax (built by the parser)
+#   params       list      in call order: {name, type, optional, default, variadic, enum}
+#                          types: number integer text boolean date timestamp list any expression link
+#                          `enum` = the closed set a literal argument is checked against at compile time (SPEC 4.10 rule 2)
+#                          every parameter may also be given by name (SPEC 4.10 rule 3); none is keyword-only in Core
+#   returns      text      the result type; "same" = the type of the arguments; "decimal" = exact decimal where the
+#                          reference computes in decimal (SPEC 4.10 rule 7)
+#   nulls        mapping   empty: what an empty argument gives; masked: what a masked argument gives (SPEC 4.9, 5.1)
+#   errors       list      {code, when}: the problem raised. Every Core function also gives RCH-2101 at compile time for
+#                          an argument count out of range; RCH-2101 appears here only for a literal-argument check
+#   tolerance    number    present for real-number results (binary floating point): the relative tolerance a case allows
+#   description  text      the behaviour in a few sentences
+#   deprecated_spellings   list  {name, note}: old spellings of this function (also listed under `deprecated`)
+#   examples     list      1-3 of {expr, result | error, says}. `result` is typed: number, text, true/false, null (empty),
+#                          or a list. `error` is the RCH- code expected. When `result` is "see says" the answer depends
+#                          on data not in the case and `says` states it (the case then needs a fixture, H5).
+#                          `needs_fixture: true` marks an example that reads `$` (a record): H5 supplies the record.
+#   since        text      the minor version that added it ("1.0")
+#
+# A profile entry carries the profile's own fields (runs: R scalar | E engine; scopes; edge_cases), as Drishti's
+# signatures.yaml has them; its codes are the profile's (DRS-), not Core's. `classify: profile`.
+#
+# Rules every Core entry inherits (SPEC 5.1): empty in, empty out unless `nulls` says otherwise; tests answer true or
+# false, never empty; masked in, masked out (SPEC 4.9); wrong type -> RCH-2102 naming the function and the value.
+
+functions_version: 1
+language: "1.0"
+status: draft
+
+core:
+# ---- logic (21)
+- name: if
+  family: logic
+  signature: "if(cond, then, else?)"
+  eval: syntax
+  params:
+  - {name: "cond", type: "any"}
+  - {name: "then", type: "any"}
+  - {name: "else", type: "any", optional: true, default: "empty"}
+  returns: "any"
+  nulls: {empty: "a condition that is empty or false takes the else branch; no else gives empty", masked: "the condition decides; a masked condition gives masked"}
+  errors: []
+  description: "Built by the parser as the conditional `c ? a : b`; only the branch taken is evaluated."
+  examples:
+  - {expr: "if($.qty > 0, 'long', 'short')", result: "see says", says: "long when $.qty is 5"}
+  - {expr: "if(false, 1)", result: null}
+  since: "1.0"
+- name: ifs
+  family: logic
+  signature: "ifs(...pairs)"
+  eval: syntax
+  params:
+  - {name: "pairs", type: "any", variadic: true}
+  returns: "any"
+  nulls: {empty: "an empty condition is not truthy; no match and no else gives empty", masked: "masked"}
+  errors: []
+  description: "Condition and answer in turn; an odd argument count makes the last argument the else. Arity 2 to 64. Built by the parser; lazy."
+  examples:
+  - {expr: "ifs(false, 'a', true, 'b', 'c')", result: "b"}
+  - {expr: "ifs(false, 'a', false, 'b', 'c')", result: "c"}
+  since: "1.0"
+- name: switch
+  family: logic
+  signature: "switch(x, ...cases)"
+  eval: form
+  params:
+  - {name: "x", type: "any"}
+  - {name: "cases", type: "any", variadic: true}
+  returns: "any"
+  nulls: {empty: "an empty x equals an empty case value (== rules); no match and no else gives empty", masked: "a masked x, or a masked case reached before the match, gives masked"}
+  errors: []
+  description: "Value and answer in turn, `x` compared as `==` (numbers numerically, otherwise as text); an even argument count makes the last argument the else. Arity 3 to 64. Lazy: only the answer chosen is evaluated."
+  examples:
+  - {expr: "switch('FLOAT', 'FIXED', 'F', 'FLOAT', 'V', '?')", result: "V"}
+  - {expr: "switch('X', 'FIXED', 'F')", result: null}
+  since: "1.0"
+- name: iferror
+  family: logic
+  signature: "iferror(x, fallback)"
+  eval: form
+  params:
+  - {name: "x", type: "any"}
+  - {name: "fallback", type: "any"}
+  returns: "any"
+  nulls: {empty: "an empty x (or NaN, or a failed evaluation) gives the fallback", masked: "a masked x stays masked"}
+  errors: []
+  description: "`x`, or `fallback` when `x` raises RCH-2102, is empty or is NaN; `fallback` is evaluated only when needed. A division by zero is empty, so it is caught too."
+  examples:
+  - {expr: "iferror($.a / $.b, 0)", result: "see says", says: "0 when $.b is 0 or empty"}
+  - {expr: "iferror(date('soon'), 'n/a')", result: "n/a"}
+  since: "1.0"
+- name: is_error
+  family: logic
+  signature: "is_error(x)"
+  eval: form
+  params:
+  - {name: "x", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty x is not an error: false", masked: "a masked x gives masked"}
+  errors: []
+  description: "True when `x` raises RCH-2102 (wrong type, bad date, argument out of domain, refused pattern). A division by zero is empty, not an error; use `is_blank` for it."
+  examples:
+  - {expr: "is_error(date('soon'))", result: true}
+  - {expr: "is_error(1)", result: false}
+  since: "1.0"
+- name: let
+  family: logic
+  signature: "let(...bindings)"
+  eval: syntax
+  params:
+  - {name: "bindings", type: "any", variadic: true}
+  returns: "any"
+  nulls: {empty: "a bound empty value stays empty; the result is the last expression's", masked: "masked"}
+  errors: []
+  description: "Names bound in turn (each may use the earlier ones), then the result expression. Arity 2 to 64; at most 63 names (RCH-2101)."
+  examples:
+  - {expr: "let(n = 4, n * 2)", result: 8}
+  - {expr: "let(a = 2, b = a + 1, a * b)", result: 6}
+  since: "1.0"
+- name: choose
+  family: logic
+  signature: "choose(i, ...values)"
+  eval: form
+  params:
+  - {name: "i", type: "integer"}
+  - {name: "values", type: "any", variadic: true}
+  returns: "any"
+  nulls: {empty: "an empty i gives empty", masked: "a masked i gives masked"}
+  errors:
+  - {code: "RCH-2102", when: "i outside 1..number of values, or not a whole number"}
+  description: "The i-th value, 1-based; only that one is evaluated. A fraction in i is cut."
+  examples:
+  - {expr: "choose(2, 'a', 'b')", result: "b"}
+  - {expr: "choose(quarter('2026-11-17'), 'Q1', 'Q2', 'Q3', 'Q4')", result: "Q4"}
+  since: "1.0"
+- name: coalesce
+  family: logic
+  signature: "coalesce(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "any", variadic: true}
+  returns: "any"
+  nulls: {empty: "empty arguments are skipped; the empty string counts as a value; all empty gives empty", masked: "passes a masked argument as a value (the host decides)"}
+  errors: []
+  description: "The first argument that is not empty. Arity 1 to 8."
+  examples:
+  - {expr: "coalesce($.book, 'UNBOOKED')", result: "see says", says: "UNBOOKED when $.book is empty"}
+  - {expr: "coalesce('', 'x')", result: ""}
+  since: "1.0"
+- name: nonblank
+  family: logic
+  signature: "nonblank(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "any", variadic: true}
+  returns: "any"
+  nulls: {empty: "empty and blank-text arguments are skipped; all skipped gives empty", masked: "passes a masked argument as a value"}
+  errors: []
+  description: "The first argument that is neither empty nor blank text. Arity 1 to 8."
+  examples:
+  - {expr: "nonblank('  ', 'n/a')", result: "n/a"}
+  - {expr: "nonblank($.pkg, 'n/a')", result: "see says", says: "n/a when $.pkg is empty"}
+  since: "1.0"
+- name: within
+  family: logic
+  signature: "within(v, range)"
+  eval: eager
+  params:
+  - {name: "v", type: "any"}
+  - {name: "range", type: "text"}
+  returns: "boolean"
+  nulls: {empty: "an empty v is false (outside any range) unless the range is empty, which holds all", masked: "masked"}
+  errors: []
+  description: "`range` is `from..to`; either end may be empty; an empty range holds everything. Numbers compare as numbers when value and ends are numbers, otherwise as text (ISO dates order); a timestamp is compared by its date."
+  examples:
+  - {expr: "within(5, '1..10')", result: true}
+  - {expr: "within('2026-11-17', '2026-01-01..')", result: true}
+  - {expr: "within(5, '')", result: true}
+  since: "1.0"
+- name: one_of
+  family: logic
+  signature: "one_of(v, choices)"
+  eval: eager
+  params:
+  - {name: "v", type: "any"}
+  - {name: "choices", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty choice (empty list, empty text, empty) holds everything", masked: "masked"}
+  errors: []
+  description: "Equality as `==`. A single non-list value is a list of one. The empty choice holds everything: a multi-select control with nothing chosen filters nothing."
+  deprecated_spellings:
+  - {name: "oneOf", note: "same results"}
+  examples:
+  - {expr: "one_of('A', ['A', 'B'])", result: true}
+  - {expr: "one_of('C', ['A', 'B'])", result: false}
+  - {expr: "one_of('C', [])", result: true}
+  since: "1.0"
+- name: has
+  family: logic
+  signature: "has(list, v)"
+  eval: eager
+  params:
+  - {name: "list", type: "any"}
+  - {name: "v", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty list holds nothing: false; a list attribute may be a JSON-text list", masked: "a masked list gives masked"}
+  errors: []
+  description: "The list attribute holds the value (equality as `==`). A single value counts as a list of one."
+  examples:
+  - {expr: "has(['fx', 'rates'], 'fx')", result: true}
+  - {expr: "has([], 'fx')", result: false}
+  since: "1.0"
+- name: any_of
+  family: logic
+  signature: "any_of(list, values)"
+  eval: eager
+  params:
+  - {name: "list", type: "any"}
+  - {name: "values", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "no value chosen (empty `values`) holds everything: true", masked: "masked"}
+  errors: []
+  description: "The list holds at least one of the values."
+  examples:
+  - {expr: "any_of(['fx', 'rates'], ['rates', 'eq'])", result: true}
+  - {expr: "any_of(['fx'], [])", result: true}
+  since: "1.0"
+- name: all_of
+  family: logic
+  signature: "all_of(list, values)"
+  eval: eager
+  params:
+  - {name: "list", type: "any"}
+  - {name: "values", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "no value chosen (empty `values`) holds everything: true", masked: "masked"}
+  errors: []
+  description: "The list holds every one of the values."
+  examples:
+  - {expr: "all_of(['fx', 'rates'], ['fx', 'rates'])", result: true}
+  - {expr: "all_of(['fx'], ['fx', 'rates'])", result: false}
+  since: "1.0"
+- name: link
+  family: logic
+  signature: "link(id, kind?, label?)"
+  eval: eager
+  params:
+  - {name: "id", type: "text"}
+  - {name: "kind", type: "text", optional: true, default: "empty"}
+  - {name: "label", type: "text", optional: true, default: "empty"}
+  returns: "link"
+  nulls: {empty: "an empty id gives empty; an empty kind or label is left out", masked: "masked"}
+  errors: []
+  description: "A link value; its text form is the label (or the id when there is none)."
+  examples:
+  - {expr: "link($.cpty, 'counterparty')", result: "see says", says: "a link to $.cpty of kind counterparty"}
+  - {expr: "link('', 'x')", result: null}
+  since: "1.0"
+- name: type_of
+  family: logic
+  signature: "type_of(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  returns: "text"
+  nulls: {empty: "an empty x gives 'empty'; the answer is always text", masked: "a masked x gives masked"}
+  errors: []
+  description: "One of 'empty', 'number', 'text', 'boolean', 'link', 'list', 'object'. An ISO date is 'text' (dates are text in Rachana). Never raises. The answers are an open set (SPEC 4.15 rule 3): a later minor may add words, and a caller MUST accept a word it does not know; in 1.0 an integer or a decimal is 'number'."
+  examples:
+  - {expr: "type_of([1])", result: "list"}
+  - {expr: "type_of('a')", result: "text"}
+  - {expr: "type_of($.missing)", result: "empty", needs_fixture: true}
+  since: "1.0"
+- name: is_number
+  family: logic
+  signature: "is_number(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty x answers false", masked: "a masked x gives masked"}
+  errors: []
+  description: "Type test: true for a number as the data holds it, not for number-like text (Excel's ISNUMBER; arithmetic still reads '12.5' as a number); NaN is not a number. Answers true or false, never empty; never raises."
+  examples:
+  - {expr: "is_number(1.5)", result: true}
+  - {expr: "is_number('1.5')", result: false}
+  since: "1.0"
+- name: is_text
+  family: logic
+  signature: "is_text(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty x answers false", masked: "a masked x gives masked"}
+  errors: []
+  description: "Type test: true for any text, an ISO date's included. Answers true or false, never empty; never raises."
+  examples:
+  - {expr: "is_text('a')", result: true}
+  - {expr: "is_text(1)", result: false}
+  since: "1.0"
+- name: is_date
+  family: logic
+  signature: "is_date(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty x answers false", masked: "a masked x gives masked"}
+  errors: []
+  description: "Type test: true for text that is an ISO date or timestamp. Answers true or false, never empty; never raises."
+  examples:
+  - {expr: "is_date('2026-11-17')", result: true}
+  - {expr: "is_date('soon')", result: false}
+  since: "1.0"
+- name: is_boolean
+  family: logic
+  signature: "is_boolean(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty x answers false", masked: "a masked x gives masked"}
+  errors: []
+  description: "Type test: true for true or false. Answers true or false, never empty; never raises."
+  examples:
+  - {expr: "is_boolean(true)", result: true}
+  - {expr: "is_boolean(1)", result: false}
+  since: "1.0"
+- name: is_blank
+  family: logic
+  signature: "is_blank(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  returns: "boolean"
+  nulls: {empty: "an empty x answers true (the one test that does)", masked: "a masked x gives masked"}
+  errors: []
+  description: "Type test: true for empty, NaN or blank text. Answers true or false, never empty; never raises."
+  examples:
+  - {expr: "is_blank('  ')", result: true}
+  - {expr: "is_blank(0)", result: false}
+  since: "1.0"
+# ---- math (43)
+- name: abs
+  family: math
+  signature: "abs(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "same as x"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  description: "Absolute value."
+  examples:
+  - {expr: "abs(-3.5)", result: 3.5}
+  - {expr: "abs(7)", result: 7}
+  since: "1.0"
+- name: sign
+  family: math
+  signature: "sign(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  description: "-1, 0 or 1."
+  examples:
+  - {expr: "sign(-12)", result: -1}
+  - {expr: "sign(0)", result: 0}
+  since: "1.0"
+- name: sqrt
+  family: math
+  signature: "sqrt(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is negative"}
+  description: "Square root in decimal (16 significant digits; exact for exact squares)."
+  examples:
+  - {expr: "sqrt(0.0144)", result: 0.12}
+  - {expr: "sqrt(16)", result: 4}
+  since: "1.0"
+- name: exp
+  family: math
+  signature: "exp(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "e to the power x. Real-number function (binary floating point)."
+  examples:
+  - {expr: "exp(0)", result: 1}
+  - {expr: "exp(1)", result: 2.718281828459045}
+  since: "1.0"
+- name: ln
+  family: math
+  signature: "ln(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not above zero"}
+  tolerance: 1.0e-12
+  description: "Natural logarithm. Real-number function."
+  examples:
+  - {expr: "ln(1)", result: 0}
+  - {expr: "ln(2.718281828459045)", result: 1}
+  since: "1.0"
+- name: log10
+  family: math
+  signature: "log10(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not above zero"}
+  tolerance: 1.0e-12
+  description: "Base-10 logarithm. Real-number function."
+  examples:
+  - {expr: "log10(1000)", result: 3}
+  - {expr: "log10(0.01)", result: -2}
+  since: "1.0"
+- name: log
+  family: math
+  signature: "log(x, base?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "base", type: "number", optional: true, default: 10}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not above zero, or base is not above zero or is 1"}
+  tolerance: 1.0e-12
+  description: "Logarithm in a base (10 by default), Excel's LOG. Real-number function."
+  examples:
+  - {expr: "log(8, 2)", result: 3}
+  - {expr: "log(100)", result: 2}
+  since: "1.0"
+- name: round
+  family: math
+  signature: "round(x, n?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "n", type: "integer", optional: true, default: 0}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "|n| is beyond 100"}
+  description: "Half away from zero to n places (negative n: tens, hundreds), in decimal, Excel's ROUND."
+  examples:
+  - {expr: "round(2.675, 2)", result: 2.68}
+  - {expr: "round(-2.5)", result: -3}
+  - {expr: "round(1234, -2)", result: 1200}
+  since: "1.0"
+- name: round_up
+  family: math
+  signature: "round_up(x, n?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "n", type: "integer", optional: true, default: 0}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "|n| is beyond 100"}
+  description: "Away from zero to n places, in decimal."
+  examples:
+  - {expr: "round_up(2.671, 2)", result: 2.68}
+  - {expr: "round_up(0.1 + 0.2, 1)", result: 0.3}
+  since: "1.0"
+- name: round_down
+  family: math
+  signature: "round_down(x, n?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "n", type: "integer", optional: true, default: 0}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "|n| is beyond 100"}
+  description: "Towards zero to n places, in decimal."
+  examples:
+  - {expr: "round_down(-2.679, 2)", result: -2.67}
+  - {expr: "round_down(1999, -3)", result: 1000}
+  since: "1.0"
+- name: round_sig
+  family: math
+  signature: "round_sig(x, digits)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "digits", type: "integer"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "digits is not from 1 to 100"}
+  description: "Half away from zero to a number of significant digits."
+  examples:
+  - {expr: "round_sig(123456, 2)", result: 120000}
+  - {expr: "round_sig(0.012345, 3)", result: 0.0123}
+  since: "1.0"
+- name: mround
+  family: math
+  signature: "mround(x, m)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "m", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x and m are of different signs"}
+  description: "The nearest multiple of m, a half away from zero (Excel's MROUND); m of 0 gives 0."
+  examples:
+  - {expr: "mround(10, 3)", result: 9}
+  - {expr: "mround(1.3, 0.2)", result: 1.4}
+  since: "1.0"
+- name: ceiling
+  family: math
+  signature: "ceiling(x, m?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "m", type: "number", optional: true, default: 1}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  description: "Up (towards +infinity) to a multiple of |m| (1 by default); m of 0 gives 0."
+  examples:
+  - {expr: "ceiling(4.2, 0.5)", result: 4.5}
+  - {expr: "ceiling(-4.2)", result: -4}
+  since: "1.0"
+- name: floor
+  family: math
+  signature: "floor(x, m?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "m", type: "number", optional: true, default: 1}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  description: "Down (towards -infinity) to a multiple of |m| (1 by default); m of 0 gives 0."
+  examples:
+  - {expr: "floor(4.7)", result: 4}
+  - {expr: "floor(-4.2)", result: -5}
+  since: "1.0"
+- name: mod
+  family: math
+  signature: "mod(x, y)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "y", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out; y of 0 gives empty (a division by zero)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  description: "Remainder with the sign of the divisor (Excel's MOD)."
+  examples:
+  - {expr: "mod(-3, 2)", result: 1}
+  - {expr: "mod(7, 0)", result: null}
+  since: "1.0"
+- name: power
+  family: math
+  signature: "power(x, y)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "y", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out; 0 to a negative power gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "no real result (a negative base to a fractional power)"}
+  description: "x to the power y; a whole y up to +-64 in decimal (34 significant digits), any other in binary floating point."
+  examples:
+  - {expr: "power(2, -1)", result: 0.5}
+  - {expr: "power(0, -1)", result: null}
+  - {expr: "power(1.1, 2)", result: 1.21}
+  since: "1.0"
+- name: clamp
+  family: math
+  signature: "clamp(x, lo, hi)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "lo", type: "number"}
+  - {name: "hi", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "lo is above hi"}
+  description: "x held between lo and hi."
+  examples:
+  - {expr: "clamp(15, 0, 10)", result: 10}
+  - {expr: "clamp(-1, 0, 10)", result: 0}
+  since: "1.0"
+- name: fact
+  family: math
+  signature: "fact(n)"
+  eval: eager
+  params:
+  - {name: "n", type: "number"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "n is not from 0 to 1,000"}
+  description: "Factorial, exact; n from 0 to 1,000, a fraction cut."
+  examples:
+  - {expr: "fact(5)", result: 120}
+  - {expr: "fact(0)", result: 1}
+  since: "1.0"
+- name: combin
+  family: math
+  signature: "combin(n, k)"
+  eval: eager
+  params:
+  - {name: "n", type: "number"}
+  - {name: "k", type: "number"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "n or k is not from 0 to 1,000, or k is more than n"}
+  description: "n choose k, exact (Excel's COMBIN)."
+  examples:
+  - {expr: "combin(8, 2)", result: 28}
+  since: "1.0"
+- name: permut
+  family: math
+  signature: "permut(n, k)"
+  eval: eager
+  params:
+  - {name: "n", type: "number"}
+  - {name: "k", type: "number"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "n or k is not from 0 to 1,000, or k is more than n"}
+  description: "n!/(n-k)!, exact (Excel's PERMUT)."
+  examples:
+  - {expr: "permut(5, 2)", result: 20}
+  since: "1.0"
+- name: gcd
+  family: math
+  signature: "gcd(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "number", variadic: true}
+  returns: "integer"
+  nulls: {empty: "empty arguments are skipped; all empty gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "an argument is negative"}
+  description: "Greatest common divisor of whole numbers >= 0 (fractions cut); empty arguments are skipped."
+  examples:
+  - {expr: "gcd(12, 18)", result: 6}
+  - {expr: "gcd(12, 18, 8)", result: 2}
+  since: "1.0"
+- name: lcm
+  family: math
+  signature: "lcm(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "number", variadic: true}
+  returns: "integer"
+  nulls: {empty: "empty arguments are skipped; all empty gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "an argument is negative"}
+  description: "Least common multiple of whole numbers >= 0 (fractions cut); empty arguments are skipped; a 0 gives 0."
+  examples:
+  - {expr: "lcm(3, 6, 12)", result: 12}
+  - {expr: "lcm(4, 6)", result: 12}
+  since: "1.0"
+- name: even
+  family: math
+  signature: "even(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  description: "Up, away from zero, to the next even whole number (Excel's EVEN)."
+  examples:
+  - {expr: "even(3)", result: 4}
+  - {expr: "even(-1)", result: -2}
+  since: "1.0"
+- name: odd
+  family: math
+  signature: "odd(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  description: "Up, away from zero, to the next odd whole number (Excel's ODD); odd(0) is 1."
+  examples:
+  - {expr: "odd(2)", result: 3}
+  - {expr: "odd(0)", result: 1}
+  since: "1.0"
+- name: pi
+  family: math
+  signature: "pi()"
+  eval: eager
+  params: []
+  returns: "number"
+  nulls: {empty: "no arguments", masked: "never masked"}
+  errors: []
+  description: "The constant pi."
+  examples:
+  - {expr: "pi()", result: 3.141592653589793}
+  since: "1.0"
+- name: sin
+  family: math
+  signature: "sin(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Sine of an angle in radians. Real-number function."
+  examples:
+  - {expr: "sin(0)", result: 0}
+  since: "1.0"
+- name: cos
+  family: math
+  signature: "cos(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Cosine of an angle in radians. Real-number function."
+  examples:
+  - {expr: "cos(0)", result: 1}
+  since: "1.0"
+- name: tan
+  family: math
+  signature: "tan(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Tangent of an angle in radians. Real-number function."
+  examples:
+  - {expr: "tan(0)", result: 0}
+  since: "1.0"
+- name: asin
+  family: math
+  signature: "asin(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not from -1 to 1"}
+  tolerance: 1.0e-12
+  description: "Arc sine, in radians. Real-number function."
+  examples:
+  - {expr: "asin(1)", result: 1.5707963267948966}
+  since: "1.0"
+- name: acos
+  family: math
+  signature: "acos(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not from -1 to 1"}
+  tolerance: 1.0e-12
+  description: "Arc cosine, in radians. Real-number function."
+  examples:
+  - {expr: "acos(1)", result: 0}
+  since: "1.0"
+- name: atan
+  family: math
+  signature: "atan(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Arc tangent, in radians. Real-number function."
+  examples:
+  - {expr: "atan(1)", result: 0.7853981633974483}
+  since: "1.0"
+- name: sinh
+  family: math
+  signature: "sinh(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Hyperbolic sine. Real-number function."
+  examples:
+  - {expr: "sinh(0)", result: 0}
+  since: "1.0"
+- name: cosh
+  family: math
+  signature: "cosh(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Hyperbolic cosine. Real-number function."
+  examples:
+  - {expr: "cosh(0)", result: 1}
+  since: "1.0"
+- name: tanh
+  family: math
+  signature: "tanh(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Hyperbolic tangent. Real-number function."
+  examples:
+  - {expr: "tanh(0)", result: 0}
+  since: "1.0"
+- name: radians
+  family: math
+  signature: "radians(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Degrees to radians. Real-number function."
+  examples:
+  - {expr: "radians(180)", result: 3.141592653589793}
+  since: "1.0"
+- name: degrees
+  family: math
+  signature: "degrees(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-12
+  description: "Radians to degrees. Real-number function."
+  examples:
+  - {expr: "degrees(pi())", result: 180}
+  since: "1.0"
+- name: atan2
+  family: math
+  signature: "atan2(x, y)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "y", type: "number"}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x and y are both 0"}
+  tolerance: 1.0e-12
+  description: "Arc tangent of the point (x, y), in radians; Excel's argument order, x first."
+  examples:
+  - {expr: "atan2(1, 1)", result: 0.7853981633974483}
+  - {expr: "degrees(atan2(1, 1))", result: 45}
+  since: "1.0"
+- name: base
+  family: math
+  signature: "base(n, radix, min_len?)"
+  eval: eager
+  params:
+  - {name: "n", type: "number"}
+  - {name: "radix", type: "integer"}
+  - {name: "min_len", type: "integer", optional: true, default: 0}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "n is negative, radix is not from 2 to 36, or min_len is not from 0 to 255"}
+  description: "A whole number >= 0 written in radix 2 to 36, upper case, padded with zeros to min_len (Excel's BASE)."
+  examples:
+  - {expr: "base(255, 16)", result: "FF"}
+  - {expr: "base(5, 2, 8)", result: "00000101"}
+  since: "1.0"
+- name: decimal
+  family: math
+  signature: "decimal(text, radix)"
+  eval: eager
+  params:
+  - {name: "text", type: "text"}
+  - {name: "radix", type: "integer"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "a digit outside the radix, an empty text, more than 255 digits, or a radix outside 2 to 36"}
+  description: "Text in radix 2 to 36 read as a whole number (Excel's DECIMAL)."
+  examples:
+  - {expr: "decimal('FF', 16)", result: 255}
+  - {expr: "decimal('101', 2)", result: 5}
+  since: "1.0"
+- name: least
+  family: math
+  signature: "least(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "any", variadic: true}
+  returns: "same"
+  nulls: {empty: "empty arguments are skipped; all empty gives empty", masked: "masked in, masked out"}
+  errors:
+  - {code: "RCH-2102", when: "a mix of numbers and other text; a list or a boolean"}
+  description: "Smallest argument. Numbers (and number-like text) compare as numbers; when no argument is a number they compare as text, so ISO dates order. Arity 1 to 64."
+  deprecated_spellings:
+  - {name: "min", note: "with several arguments (a call with one list is the live list aggregate `min`); the old form skips non-numbers"}
+  examples:
+  - {expr: "least(3, 1, 2)", result: 1}
+  - {expr: "least($.maturity, '2030-12-31')", result: "see says", says: "the earlier ISO date (no numbers: compared as text)"}
+  since: "1.0"
+- name: greatest
+  family: math
+  signature: "greatest(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "any", variadic: true}
+  returns: "same"
+  nulls: {empty: "empty arguments are skipped; all empty gives empty", masked: "masked in, masked out"}
+  errors:
+  - {code: "RCH-2102", when: "a mix of numbers and other text; a list or a boolean"}
+  description: "Largest argument; the rules of `least`. Arity 1 to 64."
+  deprecated_spellings:
+  - {name: "max", note: "with several arguments (a call with one list is the live list aggregate `max`); the old form skips non-numbers"}
+  examples:
+  - {expr: "greatest(3, 1, 2)", result: 3}
+  - {expr: "greatest('2026-01-01', '2027-01-01')", result: "2027-01-01"}
+  since: "1.0"
+- name: min
+  family: math
+  signature: "min(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "any", variadic: true}
+  returns: "number"
+  nulls: {empty: "over several arguments: non-numbers are skipped, none gives empty; over one list: the list aggregate's rule", masked: "a masked element or argument masks the result"}
+  errors: []
+  description: "Arity 1 to 8. Over **one list** it is the list aggregate (5.7): numbers (and number-like text) of the list; empty list gives empty. With **several arguments** it is the deprecated spelling of `least` (see `deprecated`) and skips non-numbers."
+  examples:
+  - {expr: "min([3, 1, 2])", result: 1}
+  - {expr: "min(3, 1, 2)", result: 1}
+  since: "1.0"
+- name: max
+  family: math
+  signature: "max(...values)"
+  eval: eager
+  params:
+  - {name: "values", type: "any", variadic: true}
+  returns: "number"
+  nulls: {empty: "over several arguments: non-numbers are skipped, none gives empty; over one list: the list aggregate's rule", masked: "a masked element or argument masks the result"}
+  errors: []
+  description: "Arity 1 to 8. Over **one list** it is the list aggregate (5.7): numbers (and number-like text) of the list; empty list gives empty. With **several arguments** it is the deprecated spelling of `greatest` (see `deprecated`) and skips non-numbers."
+  examples:
+  - {expr: "max([3, 1, 2])", result: 3}
+  - {expr: "max(3, 1, 2)", result: 3}
+  since: "1.0"
+# ---- text (32)
+- name: upper
+  family: text
+  signature: "upper(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "Upper case (root locale). An empty text gives empty; a number reads as the text it prints."
+  examples:
+  - {expr: "upper('abc')", result: "ABC"}
+  since: "1.0"
+- name: lower
+  family: text
+  signature: "lower(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "Lower case (root locale). An empty text gives empty; a number reads as the text it prints."
+  examples:
+  - {expr: "lower('ABC')", result: "abc"}
+  since: "1.0"
+- name: proper
+  family: text
+  signature: "proper(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "Each word's first letter upper case, the rest lower; a letter after any non-letter starts a word (Excel's PROPER)."
+  examples:
+  - {expr: "proper('hello wORLD')", result: "Hello World"}
+  since: "1.0"
+- name: trim
+  family: text
+  signature: "trim(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "Spaces at both ends removed. An empty text gives empty; a number reads as the text it prints."
+  examples:
+  - {expr: "trim('  a b  ')", result: "a b"}
+  since: "1.0"
+- name: clean
+  family: text
+  signature: "clean(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "Control characters removed (Excel's CLEAN)."
+  examples:
+  - {expr: "clean('ab')", result: "ab"}
+  since: "1.0"
+- name: len
+  family: text
+  signature: "len(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "Length in code points (SPEC 4.13); the length of a number is that of the text it prints. `len(empty)` is empty (`size` counts a list)."
+  examples:
+  - {expr: "len('MX-2000')", result: 7}
+  since: "1.0"
+- name: char
+  family: text
+  signature: "char(n)"
+  eval: eager
+  params:
+  - {name: "n", type: "integer"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "n is not a Unicode character (below 1, above 0x10FFFF, or a surrogate)"}
+  description: "The Unicode character of a code point (Excel's UNICHAR)."
+  examples:
+  - {expr: "char(8364)", result: "€"}
+  - {expr: "char(65)", result: "A"}
+  since: "1.0"
+- name: code
+  family: text
+  signature: "code(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "the text is empty (non-null)"}
+  description: "The code point of the first character (Excel's UNICODE)."
+  examples:
+  - {expr: "code('A')", result: 65}
+  since: "1.0"
+- name: reverse
+  family: text
+  signature: "reverse(s)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "The characters in reverse order."
+  examples:
+  - {expr: "reverse('abc')", result: "cba"}
+  since: "1.0"
+- name: left
+  family: text
+  signature: "left(s, n)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "n", type: "integer"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "n is negative"}
+  description: "The first n characters (the whole text when shorter)."
+  examples:
+  - {expr: "left('MX-2000', 3)", result: "MX-"}
+  - {expr: "left(20261016, 4)", result: "2026"}
+  since: "1.0"
+- name: right
+  family: text
+  signature: "right(s, n)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "n", type: "integer"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "n is negative"}
+  description: "The last n characters (the whole text when shorter)."
+  examples:
+  - {expr: "right('MX-2000', 4)", result: "2000"}
+  since: "1.0"
+- name: mid
+  family: text
+  signature: "mid(s, start, n)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "start", type: "integer"}
+  - {name: "n", type: "integer"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "start is below 1, or n is negative"}
+  description: "n characters from position start (1 the first)."
+  examples:
+  - {expr: "mid('MX-2000', 4, 2)", result: "20"}
+  since: "1.0"
+- name: rept
+  family: text
+  signature: "rept(s, n)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "n", type: "integer"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "n is negative or the result is longer than 10,000 characters"}
+  description: "The text n times (at most 10,000 characters)."
+  examples:
+  - {expr: "rept('*', 3)", result: "***"}
+  since: "1.0"
+- name: exact
+  family: text
+  signature: "exact(a, b)"
+  eval: eager
+  params:
+  - {name: "a", type: "text"}
+  - {name: "b", type: "text"}
+  returns: "boolean"
+  nulls: {empty: "two empty values are equal (true); empty against text is false", masked: "masked"}
+  errors: []
+  description: "Equal as written, case counts; two empty values are equal."
+  examples:
+  - {expr: "exact('a', 'A')", result: false}
+  - {expr: "exact('a', 'a')", result: true}
+  since: "1.0"
+- name: split
+  family: text
+  signature: "split(s, sep)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "sep", type: "text"}
+  returns: "list"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "the separator is empty"}
+  description: "The parts between each separator (as written, case counts), empty parts kept, as a list of text."
+  examples:
+  - {expr: "split('2032-06-25', '-')", result: ["2032", "06", "25"]}
+  since: "1.0"
+- name: contains
+  family: text
+  signature: "contains(where, part)"
+  eval: eager
+  params:
+  - {name: "where", type: "any"}
+  - {name: "part", type: "text"}
+  returns: "boolean"
+  nulls: {empty: "an empty text answers false (never empty)", masked: "masked"}
+  errors: []
+  description: "Case-insensitive containment; over a list, true when an element contains the part. A condition on a missing field is never true."
+  examples:
+  - {expr: "contains('MX-2000', 'x-2')", result: true}
+  - {expr: "contains($.missing, 'a')", result: false, needs_fixture: true}
+  since: "1.0"
+- name: starts_with
+  family: text
+  signature: "starts_with(s, prefix)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "prefix", type: "text"}
+  returns: "boolean"
+  nulls: {empty: "an empty text answers false (never empty)", masked: "masked"}
+  errors: []
+  description: "Case-insensitive prefix test."
+  deprecated_spellings:
+  - {name: "startsWith", note: "same results"}
+  examples:
+  - {expr: "starts_with('Commodity', 'com')", result: true}
+  since: "1.0"
+- name: ends_with
+  family: text
+  signature: "ends_with(s, suffix)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "suffix", type: "text"}
+  returns: "boolean"
+  nulls: {empty: "an empty text answers false (never empty)", masked: "masked"}
+  errors: []
+  description: "Case-insensitive suffix test."
+  examples:
+  - {expr: "ends_with('Commodity', 'ITY')", result: true}
+  since: "1.0"
+- name: matches
+  family: text
+  signature: "matches(s, re)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "re", type: "text"}
+  returns: "boolean"
+  nulls: {empty: "an empty text never matches: false (never empty)", masked: "masked"}
+  errors:
+  - {code: "RCH-2101", when: "a literal pattern the linear-time engine refuses (back-references, look-around, atomic groups, possessive quantifiers, `\\b`; over 200 characters) - at compile time"}
+  - {code: "RCH-2102", when: "a pattern refused at evaluation, or one that runs past the time budget"}
+  description: "Regular-expression search, case-insensitive, matches anywhere (SPEC 5.4: linear-time engine, input cut at 8,192 characters)."
+  examples:
+  - {expr: "matches('USD 2031', 'usd 20[0-9]{2}')", result: true}
+  since: "1.0"
+- name: matches_case
+  family: text
+  signature: "matches_case(s, re)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "re", type: "text"}
+  returns: "boolean"
+  nulls: {empty: "an empty text never matches: false (never empty)", masked: "masked"}
+  errors:
+  - {code: "RCH-2101", when: "a literal pattern the linear-time engine refuses (back-references, look-around, atomic groups, possessive quantifiers, `\\b`; over 200 characters) - at compile time"}
+  - {code: "RCH-2102", when: "a pattern refused at evaluation, or one that runs past the time budget"}
+  description: "As `matches`, case counts (a leading `(?i)` ignores it)."
+  deprecated_spellings:
+  - {name: "matchesCase", note: "same results"}
+  examples:
+  - {expr: "matches_case('USD 2031', 'usd')", result: false}
+  since: "1.0"
+- name: fmt
+  family: text
+  signature: "fmt(v, format)"
+  eval: eager
+  params:
+  - {name: "v", type: "any"}
+  - {name: "format", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an unknown format name"}
+  description: "A named display format applied to a value (`fmt(1234.5, 'amount0')` is '1,235'). The format names come from the host's format registry (Core: the Core formats)."
+  examples:
+  - {expr: "fmt(1234.5, 'amount0')", result: "1,235"}
+  since: "1.0"
+- name: text
+  family: text
+  signature: "text(v, format)"
+  eval: eager
+  params:
+  - {name: "v", type: "any"}
+  - {name: "format", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "a value that is neither a number nor a date for the format, or a format this function does not read"}
+  description: "A number or an ISO date written with an Excel format code: `0 # , .` digits and groups, `%`, `0.00E+00`, quoted literals, up to three sections positive;negative;zero; dates `yyyy yy mmmm mmm mm m dddd ddd dd d hh ss`; `@` the text itself. Rounding half away from zero, in decimal."
+  examples:
+  - {expr: "text(1234.5, '#,##0.00')", result: "1,234.50"}
+  - {expr: "text('2026-11-17', 'dd-mmm-yyyy')", result: "17-Nov-2026"}
+  - {expr: "text(0.256, '0.0%')", result: "25.6%"}
+  since: "1.0"
+- name: replace
+  family: text
+  signature: "replace(s, old, new)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "old", type: "text"}
+  - {name: "new", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors: []
+  description: "Every occurrence of old replaced by new (as written, case counts)."
+  examples:
+  - {expr: "replace('a b c', ' ', '-')", result: "a-b-c"}
+  since: "1.0"
+- name: regex_replace
+  family: text
+  signature: "regex_replace(s, re, by)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "re", type: "text"}
+  - {name: "by", type: "text"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2101", when: "a literal pattern the linear-time engine refuses (back-references, look-around, atomic groups, possessive quantifiers, `\\b`; over 200 characters) - at compile time"}
+  - {code: "RCH-2102", when: "a pattern refused at evaluation, or one that runs past the time budget"}
+  description: "Every match replaced; `$1` .. refer to groups. Linear-time engine."
+  examples:
+  - {expr: "regex_replace('a1b22', '[0-9]', '#')", result: "a#b##"}
+  since: "1.0"
+- name: regex_extract
+  family: text
+  signature: "regex_extract(s, re, group?)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "re", type: "text"}
+  - {name: "group", type: "integer", optional: true, default: 0}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2101", when: "a literal pattern the linear-time engine refuses (back-references, look-around, atomic groups, possessive quantifiers, `\\b`; over 200 characters) - at compile time"}
+  - {code: "RCH-2102", when: "a pattern refused at evaluation, or one that runs past the time budget"}
+  - {code: "RCH-2102", when: "group is above the pattern's number of groups (a literal: compile time, RCH-2101)"}
+  description: "The first match's text, or that of capturing group `group` (1 the first); empty when nothing matches. Case counts."
+  examples:
+  - {expr: "regex_extract('MX-1', '^([A-Z]+)-', 1)", result: "MX"}
+  - {expr: "regex_extract('abc', '[0-9]+')", result: null}
+  since: "1.0"
+- name: find
+  family: text
+  signature: "find(part, s, start?)"
+  eval: eager
+  params:
+  - {name: "part", type: "text"}
+  - {name: "s", type: "text"}
+  - {name: "start", type: "integer", optional: true, default: 1}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "start is not from 1 to the text's length + 1"}
+  description: "1-based position of part in s from start, case counts; 0 when not there (so `find(..) > 0` is a test)."
+  examples:
+  - {expr: "find('-', 'MX-2000')", result: 3}
+  - {expr: "find('z', 'abc')", result: 0}
+  since: "1.0"
+- name: search
+  family: text
+  signature: "search(part, s, start?)"
+  eval: eager
+  params:
+  - {name: "part", type: "text"}
+  - {name: "s", type: "text"}
+  - {name: "start", type: "integer", optional: true, default: 1}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "start is not from 1 to the text's length + 1"}
+  description: "As `find`, case ignored; no wildcards (`matches` for patterns)."
+  examples:
+  - {expr: "search('SWAP', 'interest swap')", result: 10}
+  since: "1.0"
+- name: text_before
+  family: text
+  signature: "text_before(s, delimiter, instance?)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "delimiter", type: "text"}
+  - {name: "instance", type: "integer", optional: true, default: 1}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "the delimiter is empty or the instance is 0"}
+  description: "The text before the n-th delimiter (1 the first; negative counts from the end); empty when the delimiter is not there that often."
+  examples:
+  - {expr: "text_before('MX-2000-A', '-')", result: "MX"}
+  - {expr: "text_before('MX-2000-A', '-', -1)", result: "MX-2000"}
+  since: "1.0"
+- name: text_after
+  family: text
+  signature: "text_after(s, delimiter, instance?)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "delimiter", type: "text"}
+  - {name: "instance", type: "integer", optional: true, default: 1}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "the delimiter is empty or the instance is 0"}
+  description: "The text after the n-th delimiter (1 the first; negative counts from the end); empty when the delimiter is not there that often."
+  examples:
+  - {expr: "text_after('MX-2000-A', '-')", result: "2000-A"}
+  since: "1.0"
+- name: value
+  family: text
+  signature: "value(text, decimal_sep?, group_sep?)"
+  eval: eager
+  params:
+  - {name: "text", type: "text"}
+  - {name: "decimal_sep", type: "text", optional: true, default: "."}
+  - {name: "group_sep", type: "text", optional: true, default: ","}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "text that is not a number (a date among it), or separators that are not one character each and different"}
+  description: "Text read as a number (Excel's VALUE and NUMBERVALUE): spaces around, the group separator (',' by default), one leading currency sign ($ € £ ¥), a trailing % (divides by 100), accounting brackets for a negative; a number is itself."
+  examples:
+  - {expr: "value('(1,250.50)')", result: -1250.5}
+  - {expr: "value('12%')", result: 0.12}
+  since: "1.0"
+- name: pad
+  family: text
+  signature: "pad(s, n, char?, side?)"
+  eval: eager
+  params:
+  - {name: "s", type: "text"}
+  - {name: "n", type: "integer"}
+  - {name: "char", type: "text", optional: true, default: " "}
+  - {name: "side", type: "text", enum: ["left", "right"], optional: true, default: "left"}
+  returns: "text"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2101", when: "a literal `char` of other than one character, or an unknown side - at compile time"}
+  - {code: "RCH-2102", when: "n is outside 0..10,000"}
+  description: "s widened to n characters with `char` (a space by default) on the `side` ('left' by default, for codes and numbers) or 'right'; a text already that wide is kept whole."
+  examples:
+  - {expr: "pad(7, 3, '0')", result: "007"}
+  - {expr: "pad('ab', 5, '.', 'right')", result: "ab..."}
+  since: "1.0"
+- name: concat
+  family: text
+  signature: "concat(...parts)"
+  eval: eager
+  params:
+  - {name: "parts", type: "any", variadic: true}
+  returns: "text"
+  nulls: {empty: "empty arguments add nothing (a running text can start empty); all empty gives empty text", masked: "masked in, masked out"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is a list"}
+  description: "The texts joined; a number adds the text it prints. Arity 1 to 64."
+  examples:
+  - {expr: "concat($.book, ' / ', $.ccy)", result: "BOOK-3 / AUD", needs_fixture: true}
+  - {expr: "concat('a', null, 'b')", result: "ab"}
+  since: "1.0"
+# ---- dates (22)
+- name: asof
+  family: dates
+  signature: "asof()"
+  eval: eager
+  params: []
+  returns: "date"
+  nulls: {empty: "empty when no as-of is set", masked: "masked"}
+  errors: []
+  description: "The as-of date the host sets; empty when the host sets none."
+  deprecated_spellings:
+  - {name: "today", note: "same result; the form with no arguments"}
+  examples:
+  - {expr: "asof()", result: "see says", says: "the host's as-of date, e.g. 2026-11-17"}
+  since: "1.0"
+- name: date
+  family: dates
+  signature: "date(text, month?, day?)"
+  eval: eager
+  params:
+  - {name: "text", type: "any"}
+  - {name: "month", type: "integer", optional: true, default: "empty"}
+  - {name: "day", type: "integer", optional: true, default: "empty"}
+  returns: "date"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "text that is not a date; a year outside 1..9999; the result outside the years 1..9999; one or two arguments other than the text form"}
+  description: "An ISO date from text, or from year, month and day with Excel's carry-over (month 14 is February of the next year)."
+  examples:
+  - {expr: "date('2026-11-17')", result: "2026-11-17"}
+  - {expr: "date(2026, 14, 1)", result: "2027-02-01"}
+  since: "1.0"
+- name: timestamp
+  family: dates
+  signature: "timestamp(text)"
+  eval: eager
+  params:
+  - {name: "text", type: "text"}
+  returns: "timestamp"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "text that is not a timestamp"}
+  description: "A timestamp constant (yyyy-mm-ddThh:mm[:ss])."
+  examples:
+  - {expr: "timestamp('2026-11-17T09:30')", result: "2026-11-17T09:30"}
+  since: "1.0"
+- name: year
+  family: dates
+  signature: "year(d)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "The year."
+  examples:
+  - {expr: "year('2026-11-17')", result: 2026}
+  since: "1.0"
+- name: quarter
+  family: dates
+  signature: "quarter(d)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "The quarter 1..4."
+  examples:
+  - {expr: "quarter('2026-11-17')", result: 4}
+  since: "1.0"
+- name: month
+  family: dates
+  signature: "month(d)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "The month 1..12."
+  examples:
+  - {expr: "month('2026-11-17')", result: 11}
+  since: "1.0"
+- name: week
+  family: dates
+  signature: "week(d)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "The ISO week number."
+  examples:
+  - {expr: "week('2027-01-01')", result: 53}
+  since: "1.0"
+- name: day
+  family: dates
+  signature: "day(d)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "The day of the month."
+  examples:
+  - {expr: "day('2026-11-17')", result: 17}
+  since: "1.0"
+- name: hour
+  family: dates
+  signature: "hour(t)"
+  eval: eager
+  params:
+  - {name: "t", type: "timestamp"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "a value that is not a timestamp or a time (hh:mm[:ss])"}
+  description: "The hour of a timestamp's text or a time (`09:30`); 0 for a plain date."
+  examples:
+  - {expr: "hour('2026-11-17T09:30:15Z')", result: 9}
+  since: "1.0"
+- name: minute
+  family: dates
+  signature: "minute(t)"
+  eval: eager
+  params:
+  - {name: "t", type: "timestamp"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "a value that is not a timestamp or a time (hh:mm[:ss])"}
+  description: "The minute of a timestamp or time; 0 for a plain date."
+  examples:
+  - {expr: "minute('2026-11-17T09:30:15Z')", result: 30}
+  since: "1.0"
+- name: second
+  family: dates
+  signature: "second(t)"
+  eval: eager
+  params:
+  - {name: "t", type: "timestamp"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "a value that is not a timestamp or a time (hh:mm[:ss])"}
+  description: "The second of a timestamp or time; 0 for a plain date."
+  examples:
+  - {expr: "second('2026-11-17T09:30:15Z')", result: 15}
+  since: "1.0"
+- name: weekday
+  family: dates
+  signature: "weekday(d, type?)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  - {name: "type", type: "integer", optional: true, default: 1}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  - {code: "RCH-2102", when: "type is not 1, 2, 3 or 11 to 17"}
+  description: "Day of the week with Excel's return types: 1 (default) Sunday 1 to Saturday 7; 2 Monday 1 to Sunday 7; 3 Monday 0 to Sunday 6; 11..17 week starting Monday..Sunday, numbered 1..7."
+  examples:
+  - {expr: "weekday('2026-11-17')", result: 3}
+  - {expr: "weekday('2026-11-17', 2)", result: 2}
+  since: "1.0"
+- name: days_between
+  family: dates
+  signature: "days_between(a, b)"
+  eval: eager
+  params:
+  - {name: "a", type: "date"}
+  - {name: "b", type: "date"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "Calendar days from a to b (negative when b is before a)."
+  deprecated_spellings:
+  - {name: "days", note: "`days` gives empty, not an error, for a non-date; it reads the first ten characters of the text"}
+  examples:
+  - {expr: "days_between('2026-11-01', '2026-11-17')", result: 16}
+  since: "1.0"
+- name: edate
+  family: dates
+  signature: "edate(d, n)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  - {name: "n", type: "integer"}
+  returns: "date"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "The date n months later (the day clamped to the month's end)."
+  examples:
+  - {expr: "edate('2024-01-31', 1)", result: "2024-02-29"}
+  since: "1.0"
+- name: eomonth
+  family: dates
+  signature: "eomonth(d, n?)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  - {name: "n", type: "integer", optional: true, default: 0}
+  returns: "date"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "The last day of the month n months from d (0 by default)."
+  examples:
+  - {expr: "eomonth('2026-11-17')", result: "2026-11-30"}
+  - {expr: "eomonth('2026-11-17', 1)", result: "2026-12-31"}
+  since: "1.0"
+- name: days360
+  family: dates
+  signature: "days360(a, b, european?)"
+  eval: eager
+  params:
+  - {name: "a", type: "date"}
+  - {name: "b", type: "date"}
+  - {name: "european", type: "boolean", optional: true, default: false}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  description: "Days on a 360-day year: US (NASD) by default, European when `european` is true."
+  examples:
+  - {expr: "days360('2026-01-31', '2026-03-31')", result: 60}
+  since: "1.0"
+- name: datedif
+  family: dates
+  signature: "datedif(a, b, unit)"
+  eval: eager
+  params:
+  - {name: "a", type: "date"}
+  - {name: "b", type: "date"}
+  - {name: "unit", type: "text", enum: ["Y", "M", "D", "MD", "YM", "YD"]}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  - {code: "RCH-2102", when: "the end is before the start"}
+  - {code: "RCH-2101", when: "a literal unit outside the set - at compile time"}
+  description: "Complete units from start to end, Excel's DATEDIF: 'Y' years, 'M' months, 'D' days, 'MD' days ignoring months and years, 'YM' months ignoring years, 'YD' days ignoring years."
+  examples:
+  - {expr: "datedif('2020-02-29', '2026-11-17', 'Y')", result: 6}
+  - {expr: "datedif('2026-01-15', '2026-11-17', 'M')", result: 10}
+  since: "1.0"
+- name: yearfrac
+  family: dates
+  signature: "yearfrac(a, b, basis)"
+  eval: eager
+  params:
+  - {name: "a", type: "date"}
+  - {name: "b", type: "date"}
+  - {name: "basis", type: "text", enum: ["ACT/360", "ACT/365F", "30/360", "30E/360", "ACT/ACT"]}
+  returns: "decimal"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  - {code: "RCH-2101", when: "a literal basis outside the set - at compile time"}
+  - {code: "RCH-2102", when: "a basis outside the set at evaluation"}
+  description: "Fraction of a year from a to b on a day-count basis (dates in either order; never negative): ACT/360, ACT/365F, 30/360 (US NASD), 30E/360, ACT/ACT (ISDA). A decimal to 16 significant digits."
+  examples:
+  - {expr: "yearfrac('2026-01-01', '2026-07-01', '30/360')", result: 0.5}
+  - {expr: "yearfrac('2026-01-01', '2027-01-01', 'ACT/ACT')", result: 1}
+  since: "1.0"
+- name: intck
+  family: dates
+  signature: "intck(interval, a, b, calendar?)"
+  eval: eager
+  params:
+  - {name: "interval", type: "text", enum: ["day", "week", "month", "quarter", "year", "business_day"]}
+  - {name: "a", type: "date"}
+  - {name: "b", type: "date"}
+  - {name: "calendar", type: "text", optional: true, default: "empty"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  - {code: "RCH-2101", when: "a literal interval or calendar outside the sets - at compile time"}
+  - {code: "RCH-2102", when: "a calendar given with an interval other than business_day; business_day spans more than 146,100 days"}
+  description: "How many interval boundaries lie between a and b (negative when b is before a). Intervals: day, week (weeks start on Sunday), month, quarter, year, business_day (the business days after a up to and including b)."
+  examples:
+  - {expr: "intck('month', '2026-01-31', '2026-02-01')", result: 1}
+  - {expr: "intck('year', '2025-12-31', '2026-01-01')", result: 1}
+  since: "1.0"
+- name: is_business_day
+  family: dates
+  signature: "is_business_day(d, calendar?)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  - {name: "calendar", type: "text", optional: true, default: "empty"}
+  returns: "boolean"
+  nulls: {empty: "an empty date gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  - {code: "RCH-2101", when: "a literal calendar the host does not know - at compile time"}
+  description: "Whether d is a business day on the calendar; without a host calendar, weekends are the only non-business days."
+  examples:
+  - {expr: "is_business_day('2026-11-14')", result: false}
+  - {expr: "is_business_day('2026-11-16')", result: true}
+  since: "1.0"
+- name: business_days_between
+  family: dates
+  signature: "business_days_between(a, b, calendar?)"
+  eval: eager
+  params:
+  - {name: "a", type: "date"}
+  - {name: "b", type: "date"}
+  - {name: "calendar", type: "text", optional: true, default: "empty"}
+  returns: "integer"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  - {code: "RCH-2101", when: "a literal calendar the host does not know - at compile time"}
+  description: "The business days after a up to and including b (negative when b is before a)."
+  examples:
+  - {expr: "business_days_between('2026-11-13', '2026-11-17')", result: 2}
+  since: "1.0"
+- name: shift_date
+  family: dates
+  signature: "shift_date(d, n, unit?, calendar?)"
+  eval: eager
+  params:
+  - {name: "d", type: "date"}
+  - {name: "n", type: "integer"}
+  - {name: "unit", type: "text", enum: ["business-day", "business_day", "day", "week", "month", "quarter", "year"], optional: true, default: "business-day"}
+  - {name: "calendar", type: "text", optional: true, default: "empty"}
+  returns: "date"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not an ISO date (yyyy-mm-dd; a timestamp counts by its date)"}
+  - {code: "RCH-2102", when: "an unknown unit; a calendar with a unit other than business-day; more than 100,000 business days; a result outside the calendar's years"}
+  - {code: "RCH-2101", when: "a literal unit or calendar outside the sets - at compile time"}
+  description: "d moved by n units: business-day (default; `business_day` accepted) skips weekends and the calendar's holidays; day, week, month, quarter, year."
+  examples:
+  - {expr: "shift_date('2026-11-16', -1)", result: "2026-11-13"}
+  - {expr: "shift_date('2026-11-17', 1, 'month')", result: "2026-12-17"}
+  since: "1.0"
+# ---- lists (21)
+- name: size
+  family: lists
+  signature: "size(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  returns: "integer"
+  nulls: {empty: "empty gives 0 (never empty)", masked: "masked"}
+  errors: []
+  description: "Number of elements of a list, characters of a text, 0 for empty or a number."
+  examples:
+  - {expr: "size($.legs)", result: 2, needs_fixture: true}
+  - {expr: "size('abc')", result: 3}
+  - {expr: "size(5)", result: 0}
+  since: "1.0"
+- name: first
+  family: lists
+  signature: "first(list)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  returns: "any"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "The first element; empty for an empty or non-list value."
+  examples:
+  - {expr: "first([4, 5])", result: 4}
+  since: "1.0"
+- name: last
+  family: lists
+  signature: "last(list)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  returns: "any"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "The last element; empty for an empty or non-list value."
+  examples:
+  - {expr: "last([4, 5])", result: 5}
+  since: "1.0"
+- name: flatten
+  family: lists
+  signature: "flatten(list)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "A list of lists made one list, one level; elements that are not lists are kept; anything but a list is empty."
+  examples:
+  - {expr: "flatten([[1, 2], [3]])", result: [1, 2, 3]}
+  since: "1.0"
+- name: unique
+  family: lists
+  signature: "unique(list)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "The distinct elements in the order first seen (`1` and `1.0` are one; `'1'` differs; lists and objects by content)."
+  examples:
+  - {expr: "unique([1, 1.0, '1', 2])", result: [1, "1", 2]}
+  since: "1.0"
+- name: take
+  family: lists
+  signature: "take(list, n)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "n", type: "integer"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "The first n elements (the last |n| when n is negative); beyond the length, the whole list."
+  examples:
+  - {expr: "take([1, 2, 3], 2)", result: [1, 2]}
+  - {expr: "take([1, 2, 3], -1)", result: [3]}
+  since: "1.0"
+- name: drop
+  family: lists
+  signature: "drop(list, n)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "n", type: "integer"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "All but the first n elements (all but the last |n| when negative)."
+  examples:
+  - {expr: "drop([1, 2, 3], 1)", result: [2, 3]}
+  since: "1.0"
+- name: sequence
+  family: lists
+  signature: "sequence(n, start?, step?)"
+  eval: eager
+  params:
+  - {name: "n", type: "integer"}
+  - {name: "start", type: "number", optional: true, default: 1}
+  - {name: "step", type: "number", optional: true, default: 1}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "n outside 0..10,000 (a literal: compile time, RCH-2101)"}
+  description: "n numbers from start (1) by step (1), in decimal."
+  examples:
+  - {expr: "sequence(3)", result: [1, 2, 3]}
+  - {expr: "sequence(3, 0.1, 0.1)", result: [0.1, 0.2, 0.3]}
+  since: "1.0"
+- name: map
+  family: lists
+  signature: "map(list, expr)"
+  eval: form
+  params:
+  - {name: "list", type: "list"}
+  - {name: "expr", type: "expression"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "a masked list, or a masked element result, gives masked"}
+  errors: []
+  description: "The expression for each element (`@` the element, `#index` its position, `^` the previous element), as a list."
+  examples:
+  - {expr: "map([1, 2], @ * 10)", result: [10, 20]}
+  - {expr: "map(['a', 'b'], #index)", result: [0, 1]}
+  since: "1.0"
+- name: reduce
+  family: lists
+  signature: "reduce(list, init, expr)"
+  eval: form
+  params:
+  - {name: "list", type: "list"}
+  - {name: "init", type: "any"}
+  - {name: "expr", type: "expression"}
+  returns: "any"
+  nulls: {empty: "an empty list argument gives empty", masked: "a masked list or element masks the result"}
+  errors:
+  - {code: "RCH-2101", when: "an expression that adds or subtracts @acc with + or - (use sum or concat) - at compile time"}
+  description: "The list folded from init: the expression for each element in turn, `@` the element and `@acc` the value so far; the last value. A third argument that adds or subtracts `@acc` with `+`/`-` does not compile."
+  examples:
+  - {expr: "reduce(['FIX', 'FLT'], '', concat(@acc, left(@, 2)))", result: "FIFL"}
+  since: "1.0"
+- name: sort
+  family: lists
+  signature: "sort(list, ...keys)"
+  eval: form
+  params:
+  - {name: "list", type: "list"}
+  - {name: "keys", type: "any", variadic: true}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "a masked key gives masked"}
+  errors: []
+  description: "Elements ordered by key (an expression over `@`; the element itself by default), ascending unless desc is true; several keys, each with its own direction: `sort(list, key1, desc1, key2, desc2, ...)`. Numbers (and number-like text) as numbers and before text; text by code point (SPEC 4.13); empty keys last either way; stable. Arity 1 to 17."
+  examples:
+  - {expr: "sort([3, 1, 2])", result: [1, 2, 3]}
+  - {expr: "sort($.events, @.date, true)", result: "see says", says: "the events, latest first"}
+  since: "1.0"
+- name: group
+  family: lists
+  signature: "group(list, key, aggregate?, by?)"
+  eval: form
+  params:
+  - {name: "list", type: "list"}
+  - {name: "key", type: "any"}
+  - {name: "aggregate", type: "any", optional: true, default: "empty"}
+  - {name: "by", type: "text", enum: ["month", "year"], optional: true, default: "empty"}
+  returns: "list"
+  nulls: {empty: "an empty list gives empty", masked: "a masked key or element gives masked"}
+  errors:
+  - {code: "RCH-2102", when: "an aggregate the engine cannot compute; no aggregate kernel available"}
+  description: "One row {label, value, count} per key, in key order, the aggregate over each group; at most 500 groups (further groups left out [CS]). Key: a quoted field (dotted path) or an expression over `@`; aggregate: a quoted field (summed) or an aggregate call over `@`; `by` 'month'/'year' cuts an ISO date key. Arity 2 to 4. The grouping is the aggregate kernel's (decision D3)."
+  examples:
+  - {expr: "group($.sales, 'region', 'revenue')", result: "see says", says: "[{label, value, count}, ...] in key order"}
+  - {expr: "group($.sales, @.region, avg(@.price))", result: "see says", says: "the average price per region"}
+  since: "1.0"
+- name: fillmissing
+  family: lists
+  signature: "fillmissing(list, method, value?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "method", type: "text", enum: ["previous", "next", "linear", "nearest", "constant"]}
+  - {name: "value", type: "number", optional: true, default: "empty"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "a masked element gives masked"}
+  errors:
+  - {code: "RCH-2101", when: "a literal method outside the set - at compile time"}
+  - {code: "RCH-2102", when: "'constant' without a value"}
+  description: "Each missing element (empty, or text that is no number) filled: 'previous', 'next', 'nearest' (the next on a tie), 'linear' (by position; ends extended in a line), 'constant' (value). Present elements are kept."
+  examples:
+  - {expr: "fillmissing([1, null, 3], 'linear')", result: [1, 2, 3]}
+  - {expr: "fillmissing([null, 2], 'constant', 0)", result: [0, 2]}
+  since: "1.0"
+- name: interp1
+  family: lists
+  signature: "interp1(xs, ys, xq, method?)"
+  eval: eager
+  params:
+  - {name: "xs", type: "list"}
+  - {name: "ys", type: "list"}
+  - {name: "xq", type: "any"}
+  - {name: "method", type: "text", enum: ["linear", "previous", "next", "nearest"], optional: true, default: "linear"}
+  returns: "any"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "the lists differ in length; two points share one x; an unknown method"}
+  - {code: "RCH-2101", when: "a literal method outside the set - at compile time"}
+  description: "The value at xq (a number or a list) of the curve through the points (xs, ys), by 'linear' (default), 'previous', 'next' or 'nearest'; empty outside the points' range. Points are taken in x order; pairs with a missing value are left out."
+  examples:
+  - {expr: "interp1([1, 2, 3], [10, 20, 30], 2.5)", result: 25}
+  - {expr: "interp1([1, 2], [10, 20], 5)", result: null}
+  since: "1.0"
+- name: polyval
+  family: lists
+  signature: "polyval(p, x)"
+  eval: eager
+  params:
+  - {name: "p", type: "list"}
+  - {name: "x", type: "any"}
+  returns: "any"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  tolerance: 1.0e-12
+  description: "The polynomial with coefficients p (highest power first) at x, or at each element of a list x. Real-number function."
+  examples:
+  - {expr: "polyval([1, 0, -1], 3)", result: 8}
+  - {expr: "polyval([2, 1], [0, 1])", result: [1, 3]}
+  since: "1.0"
+- name: trapz
+  family: lists
+  signature: "trapz(a, b?)"
+  eval: eager
+  params:
+  - {name: "a", type: "list"}
+  - {name: "b", type: "list", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "xs and ys differ in length"}
+  tolerance: 1.0e-12
+  description: "The area under the points by the trapezoid rule, `trapz(ys)` (unit spacing) or `trapz(xs, ys)`; empty when a value is missing."
+  examples:
+  - {expr: "trapz([1, 2, 3])", result: 4}
+  - {expr: "trapz([0, 2], [1, 3])", result: 4}
+  since: "1.0"
+- name: cumtrapz
+  family: lists
+  signature: "cumtrapz(a, b?)"
+  eval: eager
+  params:
+  - {name: "a", type: "list"}
+  - {name: "b", type: "list", optional: true, default: "empty"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "xs and ys differ in length"}
+  tolerance: 1.0e-12
+  description: "The running area (`cumtrapz(ys)` or `cumtrapz(xs, ys)`), 0 first."
+  examples:
+  - {expr: "cumtrapz([1, 2, 3])", result: [0, 1.5, 4]}
+  since: "1.0"
+- name: union
+  family: lists
+  signature: "union(a, b)"
+  eval: eager
+  params:
+  - {name: "a", type: "list"}
+  - {name: "b", type: "list"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "Values in either list, each once, in `sort` order. Compared as `==` (`1` and `1.0` are one value; text exactly); an empty element is a value like any other."
+  examples:
+  - {expr: "union([1, 2], [2, 3])", result: [1, 2, 3]}
+  since: "1.0"
+- name: intersect
+  family: lists
+  signature: "intersect(a, b)"
+  eval: eager
+  params:
+  - {name: "a", type: "list"}
+  - {name: "b", type: "list"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "Values in both lists, each once, in `sort` order. Compared as `==` (`1` and `1.0` are one value; text exactly); an empty element is a value like any other."
+  examples:
+  - {expr: "intersect([1, 2], [2, 3])", result: [2]}
+  since: "1.0"
+- name: difference
+  family: lists
+  signature: "difference(a, b)"
+  eval: eager
+  params:
+  - {name: "a", type: "list"}
+  - {name: "b", type: "list"}
+  returns: "list"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "Values of a not in b, each once, in `sort` order (MATLAB's setdiff). Compared as `==` (`1` and `1.0` are one value; text exactly); an empty element is a value like any other."
+  examples:
+  - {expr: "difference([1, 2], [2, 3])", result: [1]}
+  since: "1.0"
+- name: is_member
+  family: lists
+  signature: "is_member(x, list)"
+  eval: eager
+  params:
+  - {name: "x", type: "any"}
+  - {name: "list", type: "list"}
+  returns: "any"
+  nulls: {empty: "an empty list argument gives empty", masked: "masked"}
+  errors: []
+  description: "True when x is in the list (as `==` compares); for a list x, a list of true/false, one per element. An empty list holds nothing (`one_of` is the control form where none chosen holds all)."
+  examples:
+  - {expr: "is_member(2, [1, 2])", result: true}
+  - {expr: "is_member([1, 5], [1, 2])", result: [true, false]}
+  since: "1.0"
+# ---- aggregates (11)
+- name: sum
+  family: aggregates
+  signature: "sum(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "sum of nothing is 0", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  description: "Total, by compensated (Neumaier) summation [CS]. Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "sum([1, 2, 3])", result: 6}
+  - {expr: "sum($.legs, 'notional')", result: 484000000, needs_fixture: true}
+  since: "1.0"
+- name: count
+  family: aggregates
+  signature: "count(list?, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "integer"
+  nulls: {empty: "count of nothing is 0", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  description: "Number of values not empty (of the field, when given), of any kind: rows, texts and numbers alike (the reference engine's kernel: 'the elements (or the field's values) that are not empty'); `count()` over no list is 0; a masked element masks the result."
+  examples:
+  - {expr: "count([1, null, 3])", result: 2}
+  since: "1.0"
+- name: avg
+  family: aggregates
+  signature: "avg(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "empty list gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  description: "Arithmetic mean. Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "avg([1, 2, 3, 4])", result: 2.5}
+  since: "1.0"
+- name: median
+  family: aggregates
+  signature: "median(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "empty list gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  description: "Middle value (mean of the two middle values for an even count). Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "median([1, 3, 2])", result: 2}
+  - {expr: "median([1, 2, 3, 4])", result: 2.5}
+  since: "1.0"
+- name: variance
+  family: aggregates
+  signature: "variance(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "fewer than two values gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  tolerance: 1.0e-12
+  description: "Sample variance (n-1). Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "variance([1, 2, 3, 4])", result: 1.6666666666666667}
+  since: "1.0"
+- name: stddev
+  family: aggregates
+  signature: "stddev(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "fewer than two values gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  tolerance: 1.0e-12
+  description: "Sample standard deviation (n-1). Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "stddev([2, 4, 4, 4, 5, 5, 7, 9])", result: 2.138089935299395}
+  since: "1.0"
+- name: variance_pop
+  family: aggregates
+  signature: "variance_pop(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "empty list gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  tolerance: 1.0e-12
+  description: "Population variance (n). Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "variance_pop([2, 4, 4, 4, 5, 5, 7, 9])", result: 4}
+  since: "1.0"
+- name: stddev_pop
+  family: aggregates
+  signature: "stddev_pop(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "empty list gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  tolerance: 1.0e-12
+  description: "Population standard deviation (n). Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "stddev_pop([2, 4, 4, 4, 5, 5, 7, 9])", result: 2}
+  since: "1.0"
+- name: distinct
+  family: aggregates
+  signature: "distinct(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "integer"
+  nulls: {empty: "empty list gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  description: "Number of different values (exact), of any kind: texts count (the reference engine's example is `distinct($.LEGS[*].CURRENCY)`); `1` and `1.0` are one value; empty is not a value; a masked element masks the result."
+  examples:
+  - {expr: "distinct([1, 1.0, 2, 'a'])", result: 3}
+  since: "1.0"
+- name: percentile
+  family: aggregates
+  signature: "percentile(list, field?, p)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "p", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty list gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  tolerance: 1.0e-12
+  description: "Excel's PERCENTILE.INC (linear interpolation); p from 0 to 1. Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "percentile([1, 2, 3, 4, 5], 0.5)", result: 3}
+  - {expr: "percentile([1, 2, 3, 4], 0.25)", result: 1.75}
+  since: "1.0"
+- name: wavg
+  family: aggregates
+  signature: "wavg(a, b, c?)"
+  eval: eager
+  params:
+  - {name: "a", type: "list"}
+  - {name: "b", type: "any"}
+  - {name: "c", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "empty list, or weights summing to 0, gives empty", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  description: "Weighted mean: `wavg(list, 'x', 'w')` over elements, or `wavg(xs, ws)` over two lists. Number-like text counts; other non-numbers are skipped; a masked element masks the result."
+  examples:
+  - {expr: "wavg([1, 3], [1, 3])", result: 2.5}
+  since: "1.0"
+# ---- statistics (32)
+- name: norm_dist
+  family: statistics
+  signature: "norm_dist(x, mean, sd, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "mean", type: "number"}
+  - {name: "sd", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "sd is not above zero"}
+  tolerance: 1.0e-09
+  description: "Excel's NORM.DIST. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "norm_dist(0, 0, 1, true)", result: 0.5}
+  - {expr: "norm_dist(0, 0, 1, false)", result: 0.3989422804014327}
+  since: "1.0"
+- name: norm_inv
+  family: statistics
+  signature: "norm_inv(p, mean, sd)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  - {name: "mean", type: "number"}
+  - {name: "sd", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not between 0 and 1 (exclusive), or sd is not above zero"}
+  tolerance: 1.0e-09
+  description: "Excel's NORM.INV. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "norm_inv(0.5, 10, 2)", result: 10}
+  since: "1.0"
+- name: norm_s_dist
+  family: statistics
+  signature: "norm_s_dist(z, cumulative?)"
+  eval: eager
+  params:
+  - {name: "z", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-09
+  description: "Excel's NORM.S.DIST (standard normal). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "norm_s_dist(1.96)", result: 0.9750021048517796}
+  - {expr: "norm_s_dist(0, false)", result: 0.3989422804014327}
+  since: "1.0"
+- name: norm_s_inv
+  family: statistics
+  signature: "norm_s_inv(p)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not between 0 and 1 (exclusive)"}
+  tolerance: 1.0e-09
+  description: "Excel's NORM.S.INV. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "norm_s_inv(0.99)", result: 2.3263478740408408}
+  since: "1.0"
+- name: lognorm_dist
+  family: statistics
+  signature: "lognorm_dist(x, mean, sd, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "mean", type: "number"}
+  - {name: "sd", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not above zero, or sd is not above zero"}
+  tolerance: 1.0e-09
+  description: "Excel's LOGNORM.DIST: ln x normal with that mean and sd. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "lognorm_dist(1, 0, 1, true)", result: 0.5}
+  since: "1.0"
+- name: lognorm_inv
+  family: statistics
+  signature: "lognorm_inv(p, mean, sd)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  - {name: "mean", type: "number"}
+  - {name: "sd", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not between 0 and 1 (exclusive), or sd is not above zero"}
+  tolerance: 1.0e-09
+  description: "Excel's LOGNORM.INV. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "lognorm_inv(0.5, 0, 1)", result: 1}
+  since: "1.0"
+- name: t_dist
+  family: statistics
+  signature: "t_dist(x, df, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "df", type: "integer"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "df is not from 1 to 1e10"}
+  tolerance: 1.0e-09
+  description: "Excel's T.DIST, left tail (T.DIST.2T is 2*(1 - t_dist(|x|))). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "t_dist(0, 5, true)", result: 0.5}
+  since: "1.0"
+- name: t_inv
+  family: statistics
+  signature: "t_inv(p, df)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  - {name: "df", type: "integer"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not between 0 and 1 (exclusive), or df is not from 1 to 1e10"}
+  tolerance: 1.0e-09
+  description: "Excel's T.INV, left tail. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "t_inv(0.975, 10)", result: 2.2281388519649385}
+  since: "1.0"
+- name: chisq_dist
+  family: statistics
+  signature: "chisq_dist(x, df, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "df", type: "integer"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is negative, or df is not from 1 to 1e10, or the density at 0 is infinite"}
+  tolerance: 1.0e-09
+  description: "Excel's CHISQ.DIST, left tail. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "chisq_dist(2, 2, true)", result: 0.6321205588285577}
+  since: "1.0"
+- name: chisq_inv
+  family: statistics
+  signature: "chisq_inv(p, df)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  - {name: "df", type: "integer"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not from 0 to under 1, or df is not from 1 to 1e10"}
+  tolerance: 1.0e-09
+  description: "Excel's CHISQ.INV, left tail. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "chisq_inv(0.95, 1)", result: 3.841458820694124}
+  since: "1.0"
+- name: f_dist
+  family: statistics
+  signature: "f_dist(x, df1, df2, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "df1", type: "integer"}
+  - {name: "df2", type: "integer"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is negative, or a df is not from 1 to 1e10"}
+  tolerance: 1.0e-09
+  description: "Excel's F.DIST, left tail. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "f_dist(1, 5, 5, true)", result: 0.5}
+  since: "1.0"
+- name: f_inv
+  family: statistics
+  signature: "f_inv(p, df1, df2)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  - {name: "df1", type: "integer"}
+  - {name: "df2", type: "integer"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not from 0 to under 1, or a df is not from 1 to 1e10"}
+  tolerance: 1.0e-09
+  description: "Excel's F.INV, left tail. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "f_inv(0.95, 5, 10)", result: 3.325834530413012}
+  since: "1.0"
+- name: binom_dist
+  family: statistics
+  signature: "binom_dist(k, n, p, cumulative?)"
+  eval: eager
+  params:
+  - {name: "k", type: "integer"}
+  - {name: "n", type: "integer"}
+  - {name: "p", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "k or n is negative, k is more than n, or p is not from 0 to 1"}
+  tolerance: 1.0e-09
+  description: "Excel's BINOM.DIST. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "binom_dist(2, 4, 0.5, false)", result: 0.375}
+  - {expr: "binom_dist(2, 4, 0.5, true)", result: 0.6875}
+  since: "1.0"
+- name: binom_inv
+  family: statistics
+  signature: "binom_inv(n, p, alpha)"
+  eval: eager
+  params:
+  - {name: "n", type: "integer"}
+  - {name: "p", type: "number"}
+  - {name: "alpha", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "n is negative, p or alpha is not from 0 to 1"}
+  tolerance: 1.0e-09
+  description: "Excel's BINOM.INV: the smallest k whose cumulative probability reaches alpha. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "binom_inv(4, 0.5, 0.5)", result: 2}
+  since: "1.0"
+- name: poisson_dist
+  family: statistics
+  signature: "poisson_dist(k, mean, cumulative?)"
+  eval: eager
+  params:
+  - {name: "k", type: "integer"}
+  - {name: "mean", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "k is negative or mean is negative"}
+  tolerance: 1.0e-09
+  description: "Excel's POISSON.DIST. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "poisson_dist(0, 1, false)", result: 0.36787944117144233}
+  since: "1.0"
+- name: expon_dist
+  family: statistics
+  signature: "expon_dist(x, lambda, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "lambda", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is negative, or lambda is not above zero"}
+  tolerance: 1.0e-09
+  description: "Excel's EXPON.DIST. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "expon_dist(1, 1, true)", result: 0.6321205588285577}
+  since: "1.0"
+- name: gamma_dist
+  family: statistics
+  signature: "gamma_dist(x, alpha, beta, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "alpha", type: "number"}
+  - {name: "beta", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is negative, or alpha or beta is not above zero, or the density at 0 is infinite"}
+  tolerance: 1.0e-09
+  description: "Excel's GAMMA.DIST, beta the scale. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "gamma_dist(1, 1, 1, true)", result: 0.6321205588285577}
+  since: "1.0"
+- name: gamma_inv
+  family: statistics
+  signature: "gamma_inv(p, alpha, beta)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  - {name: "alpha", type: "number"}
+  - {name: "beta", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not from 0 to under 1, or alpha or beta is not above zero"}
+  tolerance: 1.0e-09
+  description: "Excel's GAMMA.INV. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "gamma_inv(0.5, 1, 1)", result: 0.6931471805599453}
+  since: "1.0"
+- name: gamma
+  family: statistics
+  signature: "gamma(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is 0 or a negative whole number"}
+  tolerance: 1.0e-09
+  description: "The gamma function (Excel's GAMMA). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "gamma(5)", result: 24}
+  - {expr: "gamma(0.5)", result: 1.7724538509055159}
+  since: "1.0"
+- name: gamma_ln
+  family: statistics
+  signature: "gamma_ln(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not above zero"}
+  tolerance: 1.0e-09
+  description: "ln of the gamma function (Excel's GAMMALN). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "gamma_ln(5)", result: 3.1780538303479458}
+  since: "1.0"
+- name: beta_dist
+  family: statistics
+  signature: "beta_dist(x, alpha, beta, cumulative?, lo?, hi?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "alpha", type: "number"}
+  - {name: "beta", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  - {name: "lo", type: "number", optional: true, default: 0}
+  - {name: "hi", type: "number", optional: true, default: 1}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not within A to B, alpha or beta is not above zero, or A is not below B"}
+  tolerance: 1.0e-09
+  description: "Excel's BETA.DIST on the interval A to B (0 to 1 by default). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "beta_dist(0.5, 1, 1, true)", result: 0.5}
+  since: "1.0"
+- name: beta_inv
+  family: statistics
+  signature: "beta_inv(p, alpha, beta, lo?, hi?)"
+  eval: eager
+  params:
+  - {name: "p", type: "number"}
+  - {name: "alpha", type: "number"}
+  - {name: "beta", type: "number"}
+  - {name: "lo", type: "number", optional: true, default: 0}
+  - {name: "hi", type: "number", optional: true, default: 1}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "p is not from 0 to 1, alpha or beta is not above zero, or A is not below B"}
+  tolerance: 1.0e-09
+  description: "Excel's BETA.INV. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "beta_inv(0.5, 1, 1)", result: 0.5}
+  since: "1.0"
+- name: weibull_dist
+  family: statistics
+  signature: "weibull_dist(x, alpha, beta, cumulative?)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "alpha", type: "number"}
+  - {name: "beta", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is negative, or alpha or beta is not above zero"}
+  tolerance: 1.0e-09
+  description: "Excel's WEIBULL.DIST. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "weibull_dist(1, 1, 1, true)", result: 0.6321205588285577}
+  since: "1.0"
+- name: hypgeom_dist
+  family: statistics
+  signature: "hypgeom_dist(k, n, big_k, big_n, cumulative?)"
+  eval: eager
+  params:
+  - {name: "k", type: "integer"}
+  - {name: "n", type: "integer"}
+  - {name: "big_k", type: "integer"}
+  - {name: "big_n", type: "integer"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "the counts do not fit: 0 <= k <= min(n, K), n - (N - K) <= k, n and K at most N"}
+  tolerance: 1.0e-09
+  description: "Excel's HYPGEOM.DIST: k successes in a sample of n from K successes in a population of N. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "hypgeom_dist(1, 4, 4, 12, false)", result: 0.45252525252525255}
+  since: "1.0"
+- name: negbinom_dist
+  family: statistics
+  signature: "negbinom_dist(failures, successes, p, cumulative?)"
+  eval: eager
+  params:
+  - {name: "failures", type: "integer"}
+  - {name: "successes", type: "integer"}
+  - {name: "p", type: "number"}
+  - {name: "cumulative", type: "boolean", optional: true, default: true}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "failures negative, successes below 1, or p not between 0 and 1 (exclusive)"}
+  tolerance: 1.0e-09
+  description: "Excel's NEGBINOM.DIST: failures before the s-th success. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "negbinom_dist(1, 1, 0.5, false)", result: 0.25}
+  since: "1.0"
+- name: erf
+  family: statistics
+  signature: "erf(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-09
+  description: "The error function (Excel's ERF, one argument). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "erf(1)", result: 0.8427007929497149}
+  - {expr: "erf(0)", result: 0}
+  since: "1.0"
+- name: erfc
+  family: statistics
+  signature: "erfc(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-09
+  description: "The complementary error function (Excel's ERFC). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "erfc(0)", result: 1}
+  - {expr: "erfc(0.5)", result: 0.4795001221869535}
+  since: "1.0"
+- name: standardize
+  family: statistics
+  signature: "standardize(x, mean, sd)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  - {name: "mean", type: "number"}
+  - {name: "sd", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "sd is not above zero"}
+  tolerance: 1.0e-09
+  description: "(x - mean) / sd (Excel's STANDARDIZE). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "standardize(7, 5, 2)", result: 1}
+  since: "1.0"
+- name: confidence_norm
+  family: statistics
+  signature: "confidence_norm(alpha, sd, n)"
+  eval: eager
+  params:
+  - {name: "alpha", type: "number"}
+  - {name: "sd", type: "number"}
+  - {name: "n", type: "integer"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "alpha is not between 0 and 1, sd is not above zero, or n is under 1"}
+  tolerance: 1.0e-09
+  description: "Half-width of the 1 - alpha confidence interval for a mean (normal quantile times sd/sqrt(n)); Excel's CONFIDENCE.NORM. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "confidence_norm(0.05, 2.5, 50)", result: 0.6929519121748389}
+  since: "1.0"
+- name: confidence_t
+  family: statistics
+  signature: "confidence_t(alpha, sd, n)"
+  eval: eager
+  params:
+  - {name: "alpha", type: "number"}
+  - {name: "sd", type: "number"}
+  - {name: "n", type: "integer"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "alpha is not between 0 and 1, sd is not above zero, or n is under 2"}
+  tolerance: 1.0e-09
+  description: "As `confidence_norm` with Student's t of n-1 degrees of freedom; Excel's CONFIDENCE.T. Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "confidence_t(0.05, 2.5, 50)", result: 0.7104921387393226}
+  since: "1.0"
+- name: fisher
+  family: statistics
+  signature: "fisher(x)"
+  eval: eager
+  params:
+  - {name: "x", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  - {code: "RCH-2102", when: "x is not between -1 and 1 (exclusive)"}
+  tolerance: 1.0e-09
+  description: "Fisher transformation, atanh (Excel's FISHER). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "fisher(0.5)", result: 0.5493061443340549}
+  since: "1.0"
+- name: fisher_inv
+  family: statistics
+  signature: "fisher_inv(y)"
+  eval: eager
+  params:
+  - {name: "y", type: "number"}
+  returns: "number"
+  nulls: {empty: "empty in, empty out", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number (number-like text counts)"}
+  tolerance: 1.0e-09
+  description: "Inverse Fisher transformation, tanh (Excel's FISHERINV). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
+  examples:
+  - {expr: "fisher_inv(0.5)", result: 0.46211715726000974}
+  since: "1.0"
+# ---- finance (25)
+- name: npv
+  family: finance
+  signature: "npv(rate, flows)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "flows", type: "list"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "rate is not above -1"}
+  tolerance: 1.0e-09
+  description: "Net present value; the first flow is one period away. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "npv(0.1, [100, 100])", result: 173.55371900826447}
+  since: "1.0"
+- name: xnpv
+  family: finance
+  signature: "xnpv(rate, flows, dates)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "flows", type: "list"}
+  - {name: "dates", type: "list"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "flows and dates differ in number; a date before the first date"}
+  tolerance: 1.0e-09
+  description: "Net present value of dated flows (years = days/365 from the first date). Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "xnpv(0.1, [0, 110], ['2026-01-01', '2027-01-01'])", result: 100}
+  since: "1.0"
+- name: irr
+  family: finance
+  signature: "irr(flows, guess?)"
+  eval: eager
+  params:
+  - {name: "flows", type: "list"}
+  - {name: "guess", type: "number", optional: true, default: 0.1}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the flows never change sign: no rate makes their value 0"}
+  tolerance: 1.0e-09
+  description: "Internal rate of return (first flow now). Newton's method from the guess, then a sign-change scan, to 1e-12. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "irr([-100, 110])", result: 0.1}
+  since: "1.0"
+- name: xirr
+  family: finance
+  signature: "xirr(flows, dates, guess?)"
+  eval: eager
+  params:
+  - {name: "flows", type: "list"}
+  - {name: "dates", type: "list"}
+  - {name: "guess", type: "number", optional: true, default: 0.1}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "no sign change; no root; flows and dates differ in number"}
+  tolerance: 1.0e-09
+  description: "Internal rate of return of dated flows; the root finder of `irr`. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "xirr([-100, 110], ['2026-01-01', '2027-01-01'])", result: 0.1}
+  since: "1.0"
+- name: mirr
+  family: finance
+  signature: "mirr(flows, finance_rate, reinvest_rate)"
+  eval: eager
+  params:
+  - {name: "flows", type: "list"}
+  - {name: "finance_rate", type: "number"}
+  - {name: "reinvest_rate", type: "number"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the flows have no negative or no positive value"}
+  tolerance: 1.0e-09
+  description: "Modified internal rate of return (Excel's MIRR). Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "mirr([-100, 50, 60], 0.1, 0.1)", result: 0.07238052947636087}
+  since: "1.0"
+- name: pv
+  family: finance
+  signature: "pv(rate, nper, pmt, fv?, type?)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "nper", type: "number"}
+  - {name: "pmt", type: "number"}
+  - {name: "fv", type: "number", optional: true, default: 0}
+  - {name: "type", type: "integer", optional: true, default: 0}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "type is not 0 or 1"}
+  tolerance: 1.0e-09
+  description: "Present value of an annuity (rate per period, periods, payment). Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "pv(0.05, 5, -100)", result: 432.9476670630823}
+  since: "1.0"
+- name: fv
+  family: finance
+  signature: "fv(rate, nper, pmt, pv?, type?)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "nper", type: "number"}
+  - {name: "pmt", type: "number"}
+  - {name: "pv", type: "number", optional: true, default: 0}
+  - {name: "type", type: "integer", optional: true, default: 0}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "type is not 0 or 1"}
+  tolerance: 1.0e-09
+  description: "Future value of an annuity. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "fv(0.05, 10, -100)", result: 1257.789253554884}
+  since: "1.0"
+- name: pmt
+  family: finance
+  signature: "pmt(rate, nper, pv, fv?, type?)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "nper", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "fv", type: "number", optional: true, default: 0}
+  - {name: "type", type: "integer", optional: true, default: 0}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the number of periods is 0; type is not 0 or 1"}
+  tolerance: 1.0e-09
+  description: "The payment of an annuity. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "pmt(0.01, 12, 1000)", result: -88.8487886783416}
+  since: "1.0"
+- name: nper
+  family: finance
+  signature: "nper(rate, pmt, pv, fv?, type?)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "pmt", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "fv", type: "number", optional: true, default: 0}
+  - {name: "type", type: "integer", optional: true, default: 0}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "with a rate of 0 the payment cannot be 0; no number of periods reaches the future value"}
+  tolerance: 1.0e-09
+  description: "The number of periods of an annuity. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "nper(0.01, -100, 1000)", result: 10.58864445942323}
+  since: "1.0"
+- name: ipmt
+  family: finance
+  signature: "ipmt(rate, per, nper, pv, fv?, type?)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "per", type: "number"}
+  - {name: "nper", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "fv", type: "number", optional: true, default: 0}
+  - {name: "type", type: "integer", optional: true, default: 0}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "per is not from 1 to nper"}
+  tolerance: 1.0e-09
+  description: "The interest part of payment `per`. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "ipmt(0.01, 1, 12, 1000)", result: -10}
+  since: "1.0"
+- name: ppmt
+  family: finance
+  signature: "ppmt(rate, per, nper, pv, fv?, type?)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "per", type: "number"}
+  - {name: "nper", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "fv", type: "number", optional: true, default: 0}
+  - {name: "type", type: "integer", optional: true, default: 0}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "per is not from 1 to nper"}
+  tolerance: 1.0e-09
+  description: "The principal part of payment `per`. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "ppmt(0.01, 1, 12, 1000)", result: -78.8487886783416}
+  since: "1.0"
+- name: rate
+  family: finance
+  signature: "rate(nper, pmt, pv, fv?, type?, guess?)"
+  eval: eager
+  params:
+  - {name: "nper", type: "number"}
+  - {name: "pmt", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "fv", type: "number", optional: true, default: 0}
+  - {name: "type", type: "integer", optional: true, default: 0}
+  - {name: "guess", type: "number", optional: true, default: 0.1}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "no rate makes the value 0"}
+  tolerance: 1.0e-09
+  description: "The rate per period of an annuity (Excel's RATE), by the root finder. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "rate(12, -88.8487886783416, 1000)", result: 0.01}
+  since: "1.0"
+- name: cumipmt
+  family: finance
+  signature: "cumipmt(rate, nper, pv, start, end, type)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "nper", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "start", type: "integer"}
+  - {name: "end", type: "integer"}
+  - {name: "type", type: "integer"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the periods are not within 1 to nper, start first"}
+  tolerance: 1.0e-09
+  description: "The interest paid from period start to end. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "cumipmt(0.01, 12, 1000, 1, 1, 0)", result: -10}
+  since: "1.0"
+- name: cumprinc
+  family: finance
+  signature: "cumprinc(rate, nper, pv, start, end, type)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "nper", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "start", type: "integer"}
+  - {name: "end", type: "integer"}
+  - {name: "type", type: "integer"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the periods are not within 1 to nper, start first"}
+  tolerance: 1.0e-09
+  description: "The principal paid from period start to end. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "cumprinc(0.01, 12, 1000, 1, 12, 0)", result: -1000}
+  since: "1.0"
+- name: effect
+  family: finance
+  signature: "effect(nominal_rate, periods)"
+  eval: eager
+  params:
+  - {name: "nominal_rate", type: "number"}
+  - {name: "periods", type: "number"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "periods are under 1"}
+  tolerance: 1.0e-09
+  description: "The effective annual rate of a nominal rate compounded m times a year. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "effect(0.12, 12)", result: 0.12682503013196977}
+  since: "1.0"
+- name: nominal
+  family: finance
+  signature: "nominal(effect_rate, periods)"
+  eval: eager
+  params:
+  - {name: "effect_rate", type: "number"}
+  - {name: "periods", type: "number"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "periods are under 1"}
+  tolerance: 1.0e-09
+  description: "The nominal rate of an effective annual rate compounded m times a year. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "nominal(0.12682503013196977, 12)", result: 0.12}
+  since: "1.0"
+- name: fvschedule
+  family: finance
+  signature: "fvschedule(principal, rates)"
+  eval: eager
+  params:
+  - {name: "principal", type: "number"}
+  - {name: "rates", type: "list"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "a rate is not above -1"}
+  tolerance: 1.0e-09
+  description: "Principal grown by a list of rates. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "fvschedule(100, [0.1, 0.2])", result: 132}
+  since: "1.0"
+- name: rri
+  family: finance
+  signature: "rri(nper, pv, fv)"
+  eval: eager
+  params:
+  - {name: "nper", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "fv", type: "number"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the present and future values are not both of one sign, and not 0"}
+  tolerance: 1.0e-09
+  description: "The equivalent rate of growth between a present and a future value over n periods. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "rri(10, 100, 200)", result: 0.07177346253629313}
+  since: "1.0"
+- name: pduration
+  family: finance
+  signature: "pduration(rate, pv, fv)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "pv", type: "number"}
+  - {name: "fv", type: "number"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the rate, pv or fv is not above zero"}
+  tolerance: 1.0e-09
+  description: "Periods for a present value to reach a future value at a rate. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "pduration(0.1, 100, 200)", result: 7.272540897341713}
+  since: "1.0"
+- name: accrued
+  family: finance
+  signature: "accrued(rate, from, to, basis?, par?)"
+  eval: eager
+  params:
+  - {name: "rate", type: "number"}
+  - {name: "from", type: "date"}
+  - {name: "to", type: "date"}
+  - {name: "basis", type: "text", optional: true, default: "30/360"}
+  - {name: "par", type: "number", optional: true, default: 1}
+  returns: "decimal"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the end is before the start; an unknown basis"}
+  description: "Interest accrued from a date to another: rate * yearfrac(from, to, basis) * par; exact in decimal. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "accrued(0.05, '2026-01-01', '2026-07-01', '30/360', 1000)", result: 25}
+  since: "1.0"
+- name: dollarde
+  family: finance
+  signature: "dollarde(price, fraction)"
+  eval: eager
+  params:
+  - {name: "price", type: "number"}
+  - {name: "fraction", type: "integer"}
+  returns: "decimal"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the fraction is under 1"}
+  description: "A price written in fractions as a decimal (1.02 with 16: one and 2/16 is 1.125); exact in decimal. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "dollarde(1.02, 16)", result: 1.125}
+  since: "1.0"
+- name: dollarfr
+  family: finance
+  signature: "dollarfr(price, fraction)"
+  eval: eager
+  params:
+  - {name: "price", type: "number"}
+  - {name: "fraction", type: "integer"}
+  returns: "decimal"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "the fraction is under 1"}
+  description: "A decimal price written in fractions; exact in decimal. Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "dollarfr(1.125, 16)", result: 1.02}
+  since: "1.0"
+- name: macaulay_duration
+  family: finance
+  signature: "macaulay_duration(flows, when, yield, frequency?, settle?)"
+  eval: eager
+  params:
+  - {name: "flows", type: "list"}
+  - {name: "when", type: "list"}
+  - {name: "yield", type: "number"}
+  - {name: "frequency", type: "integer", optional: true, default: 1}
+  - {name: "settle", type: "date", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "frequency negative; yield not above -frequency; the flows' present value is 0; flows and times differ in number; dates without settle; a time before the settlement"}
+  tolerance: 1.0e-09
+  description: "Sum(t*CF*DF)/Sum(CF*DF) on given flows and a given yield; `when` is each flow's time in years or its date (then `settle` is needed; years = days/365); the yield compounds `frequency` times a year (0 continuously). Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "macaulay_duration([5, 105], [1, 2], 0.05)", result: 1.9523809523809523}
+  since: "1.0"
+- name: modified_duration
+  family: finance
+  signature: "modified_duration(flows, when, yield, frequency?, settle?)"
+  eval: eager
+  params:
+  - {name: "flows", type: "list"}
+  - {name: "when", type: "list"}
+  - {name: "yield", type: "number"}
+  - {name: "frequency", type: "integer", optional: true, default: 1}
+  - {name: "settle", type: "date", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "as macaulay_duration"}
+  tolerance: 1.0e-09
+  description: "Macaulay duration / (1 + y/f) (continuous: the same). Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "modified_duration([5, 105], [1, 2], 0.05)", result: 1.859410430839002}
+  since: "1.0"
+- name: convexity
+  family: finance
+  signature: "convexity(flows, when, yield, frequency?, settle?)"
+  eval: eager
+  params:
+  - {name: "flows", type: "list"}
+  - {name: "when", type: "list"}
+  - {name: "yield", type: "number"}
+  - {name: "frequency", type: "integer", optional: true, default: 1}
+  - {name: "settle", type: "date", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "an empty argument, or a list with an empty element, gives empty (a missing flow is never skipped)", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "an argument that is not a number, or a list longer than 100,000 values"}
+  - {code: "RCH-2102", when: "as macaulay_duration"}
+  tolerance: 1.0e-09
+  description: "Sum(CF*DF*t*(t + 1/f)) / (P*(1 + y/f)^2) (continuous: Sum(CF*DF*t^2)/P). Excel's signs (paid out negative) and argument order. Real-number function."
+  examples:
+  - {expr: "convexity([5, 105], [1, 2], 0.05)", result: 5.269409351042004}
+  since: "1.0"
+
+deprecated:
+# Read, never offered; warning RCH-2090 with a fix. The spelling is the same entry as its replacement.
+- {spelling: "startsWith", replace_with: "starts_with", warning: "RCH-2090", note: "same results"}
+- {spelling: "matchesCase", replace_with: "matches_case", warning: "RCH-2090", note: "same results"}
+- {spelling: "oneOf", replace_with: "one_of", warning: "RCH-2090", note: "same results"}
+- {spelling: "today", replace_with: "asof", warning: "RCH-2090", note: "same result; the form with no arguments"}
+- {spelling: "days", replace_with: "days_between", warning: "RCH-2090", note: "`days` gives empty, not an error, for a non-date; it reads the first ten characters of the text"}
+- {spelling: "min", replace_with: "least", warning: "RCH-2090", note: "with several arguments (a call with one list is the live list aggregate `min`); the old form skips non-numbers"}
+- {spelling: "max", replace_with: "greatest", warning: "RCH-2090", note: "with several arguments (a call with one list is the live list aggregate `max`); the old form skips non-numbers"}
+
+drishti_profile:
+# Functions that need a model or a platform. A Core implementation that meets one answers RCH-2060 naming the profile.
+# Drafted from Drishti's signatures.yaml; the profile's own catalogue (and its DRS- codes) is authoritative here.
+- name: measure
+  family: "measure reference"
+  runs: E
+  signature: "measure('name') | measure('VAR', 'DESK:DESK-COMM', [options])"
+  params:
+  - {name: "name", type: "string-literal"}
+  - {name: "scope", type: "string", default: "null"}
+  - {name: "options", type: "any", default: "null"}
+  returns: "number"
+  scopes: ["aggregate", "context"]
+  description: "Another measure of the model, by its name or its stable id (measure('m_mtm')); a rename keeps the binding by id."
+  edge_cases: {"nulls": "As the measure it names.", "types": "Measures that refer to each other in a circle are DRS-9127."}
+  examples:
+  - {expr: "measure('P&L 1d') / measure('Exposure (EE peak)')", says: "P&L per unit of exposure"}
+  - {expr: "measure('MTM') - measure('Open MTM')", says: "MTM of the matured trades"}
+  classify: profile
+- name: cell
+  family: measure reference
+  runs: E
+  signature: "cell(view, field?, member?, ...)"
+  returns: "number"
+  description: "A cell of a saved pivot view the person may open, as the view computes it: cell('ann/desk-pnl', 'DESK', 'DESK-COMM', 'month', '2026-09'); a field left out reads its total; 'value', '<label>' picks one of several values. Arity 1 to 33. No row in signatures.yaml yet (RCH-9129/DRS-9129 in checked mode)."
+  classify: profile
+- name: ratio
+  family: "aggregate"
+  runs: E
+  signature: "ratio(num, den)"
+  params:
+  - {name: "num", type: "aggregate"}
+  - {name: "den", type: "aggregate"}
+  returns: "decimal"
+  scopes: ["aggregate"]
+  description: "num / den as a decimal, None when den is 0. The same as num / den in DEL, kept for readability."
+  edge_cases: {"nulls": "null when either side is null.", "empty": "null over no rows."}
+  examples:
+  - {expr: "ratio(sum(trades.MTM), sum(trades.NOTIONAL))", says: "MTM per unit of notional"}
+  - {expr: "ratio(sum(regions.GDP_USD_BN), sum(regions.POPULATION)) * 1000000000", says: "GDP per head in USD"}
+  classify: profile
+- name: convert
+  family: "conversion"
+  runs: E
+  signature: "convert(agg, to = 'USD', at = 'as-of')"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "to", type: "string-literal", default: "'USD'", keyword_only: true}
+  - {name: "at", type: "string-literal", default: "'as-of'", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate"]
+  description: "An aggregate of amounts in many currencies, converted to one: each amount inside is multiplied by the rate of its own currency (its column's unit: { currency: ... }) at the as-of date (at='as-of'), at each row's trade date (at='trade-date'; the business date when the row has none) or at another date column of the row (at='settleDate')."
+  edge_cases: {"currencies": "Lifts the currency guard: the result has one currency.", "types": "An amount with no currency, or mixing two, is refused (DRS-9020): convert each amount in its own aggregate.", "nulls": "A row whose rate is unknown adds null (it is skipped by the sum)."}
+  examples:
+  - {expr: "convert(sum(trades.NOTIONAL), to = 'USD')", says: "notional in USD at the as-of rate"}
+  - {expr: "convert(sum(trades.MTM), to = 'EUR', at = 'trade-date')", says: "each trade converted at its own trade date"}
+  classify: profile
+- name: fx
+  family: "conversion"
+  runs: R
+  signature: "fx(ccy, to, at = null)"
+  params:
+  - {name: "ccy", type: "string"}
+  - {name: "to", type: "string-literal"}
+  - {name: "at", type: "date", default: "null", keyword_only: true}
+  returns: "decimal"
+  scopes: ["row", "aggregate"]
+  description: "The rate that converts one unit of ccy into the currency to: the latest rate on or before the row's business date (or at=) in the model's FX rates (fx: { rates, from, to, rate, date, base }), a pair as stored, its inverse, or through the base currency; 1 for the same currency. Worked out inside a measure (a dataset's derived column cannot read the rates)."
+  edge_cases: {"nulls": "null when the currency is null or no rate for the pair is on or before the date.", "currencies": "A converted amount has one currency, so summing it lifts the currency guard (DRS-9158).", "masked": "The rates are reference data: the rates table's row rules do not filter a conversion."}
+  examples:
+  - {expr: "sum(trades.NOTIONAL * fx(trades.CURRENCY, 'USD'))", says: "notional in US dollars"}
+  - {expr: "sum(trades.MTM * fx(trades.CURRENCY, 'EUR', at = trades.TRADE_DATE))", says: "MTM in euros at each trade date"}
+  classify: profile
+- name: related
+  family: "lookup"
+  runs: E
+  signature: "related(alias.COLUMN) | related(table.COLUMN, on = key)"
+  params:
+  - {name: "field", type: "field"}
+  - {name: "on", type: "field", default: "null", keyword_only: true}
+  returns: "same"
+  scopes: ["row"]
+  description: "A column of the one row a many-to-one pack reference points at: one hop, in a dataset's derive (for example the desk's name on a trade)."
+  edge_cases: {"nulls": "null when the reference is empty or points at nothing.", "masked": "A masked column of the referenced kind arrives masked.", "types": "Exactly one hop; related(related(...)) is DRS-9127."}
+  examples:
+  - {expr: "related(desk.NAME)", says: "the desk's name next to each trade"}
+  - {expr: "related(counterparty.sector)", says: "the counterparty's sector as a column of the trade dataset"}
+  classify: profile
+- name: related_rows
+  family: "lookup"
+  runs: E
+  signature: "related_rows('alias')"
+  params:
+  - {name: "alias", type: "string-literal"}
+  returns: "boolean"
+  scopes: ["rule"]
+  description: "A row rule that limits a table to the rows related to the rows of another table of the model that the reader sees: the keys both tables share (a dimension both reference, or a reference from one to the other) must appear among the reader's rows of that table. A desk head limited to her desks' trades sees the exposure of the counterparties her desks trade with."
+  edge_cases: {"missing": "Refused when the model has no table of that alias, or the two tables share no key: the question is refused rather than answered without the rule.", "elsewhere": "Outside BI's engine (a table read on its own through the table layer) the rule lets no row through."}
+  examples:
+  - {expr: "related_rows('trades')", says: "the rows that share a key with a trade the reader sees (a rule on another fact of the model)"}
+  - {expr: "related_rows('netting_sets')", says: "the exposure of the netting sets the reader sees"}
+  classify: profile
+- name: calc
+  family: "filter context"
+  runs: E
+  signature: "calc(agg, where = ..., ignore = [...] | ALL | GROUP, keep = [...], via = 'rel_id', filter = 'one_way' | 'both', by = [...], having = ...)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "where", type: "boolean", default: "null", keyword_only: true}
+  - {name: "ignore", type: "fields-or-all", default: "[]", keyword_only: true}
+  - {name: "keep", type: "fields", default: "[]", keyword_only: true}
+  - {name: "via", type: "string-literal", default: "null", keyword_only: true}
+  - {name: "filter", type: "string-literal", default: "null", keyword_only: true}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  - {name: "having", type: "boolean", default: "null", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate", "context"]
+  description: "The aggregate in an edited filter context: add conditions (where=, a row condition ANDed to the aggregate's), drop the query's and the group's filters on some fields or a whole table (ignore=[desks.NAME], ignore=[desks]) or on all (ignore=ALL), the group alone (ignore=GROUP, slicers stay), narrow what ignore drops (with ignore, keep=[...]), drop every filter except those on some fields (keep alone), follow an inactive relationship (via='r_5'), override a relationship's direction for this measure (via='name', filter='one_way'|'both'), or keep only the groups of by that pass a condition (by=[...], having=...). Security is never in scope: ignore=ALL means everything you may see."
+  edge_cases: {"masked": "ignore=ALL means all the rows you may see, never more; a masked field in ignore= or keep= is never a group (it is not grouped on).", "empty": "null (a count: 0) when the edited context has no rows.", "types": "Nesting of calc, share_of, parent_of and as_of is at most three deep (DRS-9127)."}
+  examples:
+  - {expr: "calc(measure('MTM'), ignore = [desks.NAME])", says: "MTM ignoring the desk slicer and the desk of the row"}
+  - {expr: "calc(sum(trades.MTM), where = trades.TRADE_STATUS != 'MATURED')", says: "MTM of the live trades, whatever else is filtered"}
+  - {expr: "calc(measure('MTM'), keep = [desks.REGION])", says: "MTM of the whole region of the row"}
+  - {expr: "calc(measure('MTM'), via = 'r_5')", says: "MTM along the settlement-date relationship"}
+  classify: profile
+- name: share_of
+  family: "filter context"
+  runs: E
+  signature: "share_of(agg, over = [...] | ALL)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "over", type: "fields-or-all", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate", "context"]
+  description: "The aggregate divided by itself with the fields of over ignored (the same as agg / calc(agg, ignore=over)): over=ALL is the share of the grand total you may see, over=[books.NAME] a book's share within the rest of its group."
+  edge_cases: {"nulls": "null when the coarser total is 0 or null.", "masked": "Of what you may see: the total never includes rows your row rules hide."}
+  examples:
+  - {expr: "share_of(measure('MTM'), over = ALL)", says: "MTM as a share of the total you may see"}
+  - {expr: "share_of(measure('MTM'), over = [books.NAME])", says: "a book's share within its desk"}
+  classify: profile
+- name: parent_of
+  family: "filter context"
+  runs: E
+  signature: "parent_of(agg, hierarchy = 'name')"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "hierarchy", type: "string-literal", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate", "context"]
+  description: "The aggregate as a share of its parent level in a hierarchy of the model: the deepest level of the hierarchy in the answer is ignored (with the levels below it), so each row is divided by its parent's total."
+  edge_cases: {"nulls": "null at the top level, and when no level of the hierarchy is a field of the answer; null when the parent's total is 0.", "types": "hierarchy names a hierarchy of the model (DRS-9152 otherwise)."}
+  examples:
+  - {expr: "parent_of(measure('MTM'), hierarchy = 'Desk && book')", says: "a book's share of its desk"}
+  - {expr: "parent_of(measure('Notional'), hierarchy = 'Region')", says: "a country's share of its region"}
+  classify: profile
+- name: as_of
+  family: "time travel"
+  runs: E
+  signature: "as_of(agg, date_expr)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date_expr", type: "date"}
+  returns: "same"
+  scopes: ["aggregate", "context"]
+  description: "The aggregate with every scan bound to another business date (the same fields, filters and security, that day's data), joined on the answer's fields: today against yesterday in one visual. The date is worked out before the query runs: date('...'), asof(), or shift_date(asof(), n, unit=)."
+  edge_cases: {"empty": "null when that date has no data for the group.", "types": "A date that depends on the row (a column) is refused (DRS-9166); a live table has no other dates (DRS-9157)."}
+  examples:
+  - {expr: "measure('MTM') - as_of(measure('MTM'), shift_date(asof(), -1))", says: "MTM day on day"}
+  - {expr: "as_of(measure('Exposure'), date('2026-09-30'))", says: "exposure at the quarter end"}
+  classify: profile
+- name: avg_by
+  family: "aggregate"
+  runs: E
+  signature: "avg_by(agg, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "by", type: "fields", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate", "context"]
+  description: "A two-level aggregate: agg per value of by (within each group of the answer), then the average of those values (the explicit iteration DEL has instead of DAX context transition)."
+  edge_cases: {"nulls": "Groups of by whose aggregate is null are left out of the average.", "empty": "null when no group of by has rows.", "masked": "A masked field in by is refused (DRS-9161): the inner groups would split on hidden values."}
+  examples:
+  - {expr: "avg_by(sum(trades.MTM), by = [trades.TRADE_DATE])", says: "the average daily MTM"}
+  - {expr: "avg_by(count(trades), by = [trades.PORTFOLIO])", says: "trades per book, on average"}
+  classify: profile
+- name: sum_by
+  family: "aggregate"
+  runs: E
+  signature: "sum_by(agg, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "by", type: "fields", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate", "context"]
+  description: "A two-level aggregate: agg per value of by, then the sum of those values. The row-to-filter context transition, with its grain written: per value of by the inner aggregate is evaluated with that value as a filter. A measure that does not add (additive: false, such as VaR) is refused: use max_by, min_by or avg_by."
+  edge_cases: {"nulls": "Groups of by whose aggregate is null are left out.", "empty": "null when no group of by has rows."}
+  examples:
+  - {expr: "sum_by(max(trades.MTM), by = [desks.NAME])", says: "the sum of each desk's largest MTM"}
+  - {expr: "sum_by(count(trades), by = [trades.PORTFOLIO])", says: "trades, counted book by book"}
+  classify: profile
+- name: min_by
+  family: "aggregate"
+  runs: E
+  signature: "min_by(agg, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "by", type: "fields", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate", "context"]
+  description: "A two-level aggregate: agg per value of by, then the smallest of those values."
+  edge_cases: {"nulls": "Groups of by whose aggregate is null are left out.", "empty": "null when no group of by has rows."}
+  examples:
+  - {expr: "min_by(measure('MTM'), by = [desks.NAME])", says: "the smallest desk MTM"}
+  - {expr: "min_by(sum(trades.MTM), by = [trades.TRADE_DATE])", says: "the worst day's MTM"}
+  classify: profile
+- name: max_by
+  family: "aggregate"
+  runs: E
+  signature: "max_by(agg, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "by", type: "fields", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate", "context"]
+  description: "A two-level aggregate: agg per value of by, then the largest of those values. Good for a measure that does not add, such as the largest desk VaR."
+  edge_cases: {"nulls": "Groups of by whose aggregate is null are left out.", "empty": "null when no group of by has rows."}
+  examples:
+  - {expr: "max_by(measure('VaR'), by = [desks.NAME])", says: "the largest desk VaR"}
+  - {expr: "max_by(sum(trades.MTM), by = [trades.TRADE_DATE])", says: "the best day's MTM"}
+  classify: profile
+- name: avg_over
+  family: "balances"
+  runs: E
+  signature: "avg_over(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "decimal"
+  scopes: ["aggregate"]
+  description: "The average over the dates of each group of the aggregate per date (an average daily balance): avg_by(agg, by=[date])."
+  edge_cases: {"empty": "null when the group has no dated row."}
+  examples:
+  - {expr: "avg_over(sum(accounts.balance), accounts.business_date)", says: "the average daily balance"}
+  - {expr: "avg_over(sum(collateral.value), collateral.businessDate)", says: "average collateral held"}
+  classify: profile
+- name: latest
+  family: "balances"
+  runs: E
+  signature: "latest(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the rows of each group dated on the group's latest date (a balance's semi-additive total: the latest day's figure, never the sum of the days)."
+  edge_cases: {"empty": "null when the group has no dated row.", "nulls": "Rows with no date are never the latest."}
+  examples:
+  - {expr: "latest(sum(accounts.balance), accounts.business_date)", says: "the closing balance of the period"}
+  - {expr: "latest(sum(collateral.value), collateral.businessDate)", says: "collateral held at the end"}
+  classify: profile
+- name: earliest
+  family: "balances"
+  runs: E
+  signature: "earliest(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the rows of each group dated on the group's earliest date."
+  edge_cases: {"empty": "null when the group has no dated row."}
+  examples:
+  - {expr: "earliest(sum(accounts.balance), accounts.business_date)", says: "the balance at the start of the period"}
+  - {expr: "latest(sum(accounts.balance), accounts.business_date) - earliest(sum(accounts.balance), accounts.business_date)", says: "the change over the period"}
+  classify: profile
+- name: opening
+  family: "balances"
+  runs: E
+  signature: "opening(agg, date, period = 'month')"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  - {name: "period", type: "string-literal", default: "'month'", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The balance at the close of the business day before the period starts (period: day, week, month, quarter, year): along the answer's date field it is the closing of the row before; without one, the aggregate on the business day before the as-of date's period (read at that business date when date is the snapshot's businessDate)."
+  edge_cases: {"empty": "null when the day before has no rows, and on the first period of the answer when the period before is not in it."}
+  examples:
+  - {expr: "opening(sum(accounts.balance), accounts.business_date)", says: "the opening balance of the month"}
+  - {expr: "opening(sum(accounts.balance), accounts.business_date, period = 'quarter')", says: "the opening balance of the quarter"}
+  classify: profile
+- name: closing
+  family: "balances"
+  runs: E
+  signature: "closing(agg, date, period = 'month')"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  - {name: "period", type: "string-literal", default: "'month'", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the rows dated on the last business day of each period (on the model's calendar: a month ending on a holiday or a weekend closes on the business day before), up to the as-of date (the as-of period closes on the as-of date); per group, so a monthly answer shows each month's close."
+  edge_cases: {"empty": "null when the period's last business day has no rows.", "types": "Without a window the periods of the five years before the as-of date are looked at."}
+  examples:
+  - {expr: "closing(sum(accounts.balance), accounts.business_date)", says: "the month-end balance"}
+  - {expr: "closing(sum(accounts.balance), accounts.business_date, period = 'year')", says: "the year-end balance"}
+  classify: profile
+- name: ytd
+  family: "time intelligence"
+  runs: E
+  signature: "ytd(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the rows whose date falls between the start of the as-of date's year and the as-of date (the end of the query's dates), on the pack's business-day calendar."
+  edge_cases: {"empty": "null (a count: 0) when no row is in the window.", "types": "date is a date or timestamp field of the aggregate's dataset."}
+  examples:
+  - {expr: "ytd(sum(trades.MTM), trades.TRADE_DATE)", says: "MTM of the trades dated this year so far"}
+  - {expr: "ytd(count(trades), trades.TRADE_DATE)", says: "trades done this year"}
+  classify: profile
+- name: mtd
+  family: "time intelligence"
+  runs: E
+  signature: "mtd(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the rows dated from the start of the as-of month to the as-of date."
+  edge_cases: {"empty": "null (a count: 0) when no row is in the window."}
+  examples:
+  - {expr: "mtd(sum(trades.PNL_1D), trades.TRADE_DATE)", says: "month-to-date P&L"}
+  - {expr: "mtd(count(trades), trades.TRADE_DATE)", says: "trades this month"}
+  classify: profile
+- name: qtd
+  family: "time intelligence"
+  runs: E
+  signature: "qtd(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the rows dated from the start of the as-of quarter to the as-of date."
+  edge_cases: {"empty": "null (a count: 0) when no row is in the window."}
+  examples:
+  - {expr: "qtd(sum(trades.PNL_1D), trades.TRADE_DATE)", says: "quarter-to-date P&L"}
+  - {expr: "qtd(sum(trades.NOTIONAL), trades.TRADE_DATE)", says: "notional traded this quarter"}
+  classify: profile
+- name: fiscal_ytd
+  family: "time intelligence"
+  runs: E
+  signature: "fiscal_ytd(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate from the start of the fiscal year that holds the as-of date to the as-of date; the fiscal year starts on the first of the model's calendars.fiscal-year-start month (January when the model names none)."
+  edge_cases: {"empty": "null (a count: 0) when no row is in the window.", "types": "date is a date or timestamp field of the aggregate's dataset."}
+  examples:
+  - {expr: "fiscal_ytd(sum(trades.PNL_1D), trades.TRADE_DATE)", says: "fiscal year-to-date P&L"}
+  - {expr: "fiscal_ytd(count(trades), trades.TRADE_DATE)", says: "trades this fiscal year"}
+  classify: profile
+- name: prior_period
+  family: "time intelligence"
+  runs: E
+  signature: "prior_period(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the period just before the query's dates, of the same number of business days."
+  edge_cases: {"empty": "null (a count: 0) when the prior period has no rows."}
+  examples:
+  - {expr: "prior_period(sum(trades.PNL_1D), trades.TRADE_DATE)", says: "P&L of the period before"}
+  - {expr: "sum(trades.PNL_1D) - prior_period(sum(trades.PNL_1D), trades.TRADE_DATE)", says: "change on the prior period"}
+  classify: profile
+- name: same_period_last_year
+  family: "time intelligence"
+  runs: E
+  signature: "same_period_last_year(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate over the query's dates moved back one year."
+  edge_cases: {"empty": "null (a count: 0) when last year's window has no rows."}
+  examples:
+  - {expr: "same_period_last_year(sum(trades.NOTIONAL), trades.TRADE_DATE)", says: "notional a year ago"}
+  - {expr: "ratio(sum(trades.NOTIONAL), same_period_last_year(sum(trades.NOTIONAL), trades.TRADE_DATE)) - 1", says: "growth on last year"}
+  classify: profile
+- name: running
+  family: "time intelligence"
+  runs: E
+  signature: "running(agg, date)"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "date", type: "date-field"}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "A running total of a sum, count, min or max along the date field of the answer (the date must be a field of the visual)."
+  edge_cases: {"types": "Only sum, count, min, max; the date field must be in the answer (DRS-9020 otherwise).", "masked": "Refused along a masked date (DRS-9021)."}
+  examples:
+  - {expr: "running(sum(trades.NOTIONAL), trades.TRADE_DATE)", says: "cumulative notional by day"}
+  - {expr: "running(count(trades), trades.TRADE_DATE)", says: "trades so far"}
+  classify: profile
+- name: lag
+  family: "windows"
+  runs: E
+  signature: "lag(agg, n, order, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "n", type: "integer-literal"}
+  - {name: "order", type: "field"}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate n rows before, along order (a field of the answer), restarting for each value of by (default: every other field of the answer)."
+  edge_cases: {"nulls": "null on the first n rows of each partition.", "masked": "A masked field is never a partition; ordering along a masked field is DRS-9021."}
+  examples:
+  - {expr: "lag(sum(trades.MTM), 1, trades.TRADE_DATE)", says: "yesterday's MTM on each row"}
+  - {expr: "sum(trades.MTM) - lag(sum(trades.MTM), 1, trades.TRADE_DATE, by = [trades.DESK])", says: "day-on-day change per desk"}
+  classify: profile
+- name: lead
+  family: "windows"
+  runs: E
+  signature: "lead(agg, n, order, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "n", type: "integer-literal"}
+  - {name: "order", type: "field"}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The aggregate n rows after, along order."
+  edge_cases: {"nulls": "null on the last n rows of each partition."}
+  examples:
+  - {expr: "lead(sum(trades.NOTIONAL), 1, trades.MATURITY_DATE)", says: "the next maturity bucket's notional"}
+  - {expr: "lead(count(trades), 2, trades.TRADE_DATE, by = [trades.PORTFOLIO])", says: "two days ahead, per book"}
+  classify: profile
+- name: rank
+  family: "windows"
+  runs: E
+  signature: "rank(agg, desc = true, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "desc", type: "boolean-literal", default: "true", keyword_only: true}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "integer"
+  scopes: ["aggregate"]
+  description: "The position of each row of the answer by the aggregate, 1 for the highest (desc=False: 1 for the lowest); ties share a rank and leave gaps."
+  edge_cases: {"nulls": "null values rank last."}
+  examples:
+  - {expr: "rank(sum(trades.MTM))", says: "MTM rank, best first"}
+  - {expr: "rank(sum(set_exposure.PEAK_EE), by = [counterparties.SECTOR])", says: "exposure rank within each sector"}
+  classify: profile
+- name: dense_rank
+  family: "windows"
+  runs: E
+  signature: "dense_rank(agg, desc = true, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "desc", type: "boolean-literal", default: "true", keyword_only: true}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "integer"
+  scopes: ["aggregate"]
+  description: "Like rank, without gaps after ties."
+  edge_cases: {"nulls": "null values rank last."}
+  examples:
+  - {expr: "dense_rank(sum(trades.NOTIONAL))", says: "1, 2, 2, 3 for tied notionals"}
+  - {expr: "dense_rank(count(trades), desc = false)", says: "the quietest first"}
+  classify: profile
+- name: percent_rank
+  family: "windows"
+  runs: E
+  signature: "percent_rank(agg, desc = true, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "desc", type: "boolean-literal", default: "true", keyword_only: true}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate"]
+  description: "The relative rank from 0 to 1."
+  edge_cases: {"empty": "0 for a single row."}
+  examples:
+  - {expr: "percent_rank(sum(trades.MTM))", says: "0 for the best desk, 1 for the worst"}
+  - {expr: "percent_rank(sum(trades.NOTIONAL), desc = false)", says: "a percentile position by size"}
+  classify: profile
+- name: moving_avg
+  family: "windows"
+  runs: E
+  signature: "moving_avg(agg, n, order, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "n", type: "integer-literal"}
+  - {name: "order", type: "field"}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "decimal"
+  scopes: ["aggregate"]
+  description: "The average of the aggregate over the row and the n - 1 rows before it along order."
+  edge_cases: {"nulls": "The first rows average over what is there."}
+  examples:
+  - {expr: "moving_avg(sum(trades.MTM), 3, trades.TRADE_DATE)", says: "a three-day moving average of MTM"}
+  - {expr: "moving_avg(sum(trades.PNL_1D), 20, trades.TRADE_DATE, by = [trades.DESK])", says: "a 20-day average P&L per desk"}
+  classify: profile
+- name: moving_sum
+  family: "windows"
+  runs: E
+  signature: "moving_sum(agg, n, order, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "n", type: "integer-literal"}
+  - {name: "order", type: "field"}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The sum of the aggregate over the row and the n - 1 rows before it."
+  edge_cases: {"nulls": "null values are skipped."}
+  examples:
+  - {expr: "moving_sum(sum(trades.PNL_1D), 5, trades.TRADE_DATE)", says: "a rolling five-day P&L"}
+  - {expr: "moving_sum(count(trades), 7, trades.TRADE_DATE)", says: "trades over the last seven rows"}
+  classify: profile
+- name: moving_min
+  family: "windows"
+  runs: E
+  signature: "moving_min(agg, n, order, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "n", type: "integer-literal"}
+  - {name: "order", type: "field"}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The smallest value of the aggregate over the row and the n - 1 rows before it."
+  edge_cases: {"nulls": "null values are skipped."}
+  examples:
+  - {expr: "moving_min(sum(trades.MTM), 10, trades.TRADE_DATE)", says: "the worst MTM of the last ten days"}
+  - {expr: "moving_min(min(trades.MTM), 3, trades.TRADE_DATE)", says: "the worst trade over three days"}
+  classify: profile
+- name: moving_max
+  family: "windows"
+  runs: E
+  signature: "moving_max(agg, n, order, by = [fields])"
+  params:
+  - {name: "agg", type: "aggregate"}
+  - {name: "n", type: "integer-literal"}
+  - {name: "order", type: "field"}
+  - {name: "by", type: "fields", default: "[]", keyword_only: true}
+  returns: "same"
+  scopes: ["aggregate"]
+  description: "The largest value of the aggregate over the row and the n - 1 rows before it."
+  edge_cases: {"nulls": "null values are skipped."}
+  examples:
+  - {expr: "moving_max(max(netting_sets.NET_MTM), 5, netting_sets.businessDate)", says: "the largest net MTM over five days"}
+  - {expr: "moving_max(sum(trades.MTM), 20, trades.TRADE_DATE)", says: "the 20-day high of MTM"}
+  classify: profile
+
+engine_list_functions:
+# Supplied today by Drishti's pivot engine as list functions. Core or profile is not yet settled (SPEC 5.11); a Core implementation MAY lack them.
+- {name: "sum_once", signature: "sum_once(x)", form: "mergeable", description: "a coarser figure counted once per parent (a trade's in a per-leg view)", classify: "pending (H5)"}
+- {name: "count_once", signature: "count_once(x)", form: "mergeable", description: "as sum_once, counting", classify: "pending (H5)"}
+- {name: "avg_once", signature: "avg_once(x)", form: "mergeable", description: "as sum_once, the mean", classify: "pending (H5)"}
+- {name: "sumproduct", signature: "sumproduct(a, b)", form: "mergeable", description: "sum of a*b over the rows where both are present; 0 for none", classify: "pending (H5)"}
+- {name: "sumsq", signature: "sumsq(x)", form: "mergeable", description: "sum of x squared", classify: "pending (H5)"}
+- {name: "product", signature: "product(x)", form: "mergeable", description: "product of x, kept as a mantissa and a binary exponent; empty past a number's range", classify: "pending (H5)"}
+- {name: "devsq", signature: "devsq(x)", form: "mergeable", description: "sum of (x - mean) squared", classify: "pending (H5)"}
+- {name: "avedev", signature: "avedev(x)", form: "holistic", description: "mean absolute deviation from the mean", classify: "pending (H5)"}
+- {name: "geomean", signature: "geomean(x)", form: "mergeable", description: "geometric mean; positive values only", classify: "pending (H5)"}
+- {name: "harmean", signature: "harmean(x)", form: "mergeable", description: "harmonic mean; positive values only", classify: "pending (H5)"}
+- {name: "mode", signature: "mode(x)", form: "holistic", description: "most frequent value, ties to the smallest; none when no value repeats", classify: "pending (H5)"}
+- {name: "mode_multi", signature: "mode_multi(x)", form: "holistic", description: "every most frequent value, ascending; at most 10,000 different values", classify: "pending (H5)"}
+- {name: "range", signature: "range(x)", form: "mergeable", description: "max - min", classify: "pending (H5)"}
+- {name: "iqr", signature: "iqr(x)", form: "holistic", description: "p75 - p25, linear interpolation (Excel's QUARTILE.INC)", classify: "pending (H5)"}
+- {name: "cv", signature: "cv(x)", form: "mergeable", description: "coefficient of variation s/mean; none under two values", classify: "pending (H5)"}
+- {name: "stderr", signature: "stderr(x)", form: "mergeable", description: "standard error s/sqrt(n); none under two values", classify: "pending (H5)"}
+- {name: "nmiss", signature: "nmiss(x)", form: "mergeable", description: "the number of empty values", classify: "pending (H5)"}
+- {name: "kurtosis", signature: "kurtosis(x)", form: "mergeable", description: "Excel's sample excess kurtosis; none under four values or without spread", classify: "pending (H5)"}
+- {name: "skewness", signature: "skewness(x)", form: "mergeable", description: "Excel's sample skewness; none under three values or without spread", classify: "pending (H5)"}
+- {name: "skewness_pop", signature: "skewness_pop(x)", form: "mergeable", description: "population skewness", classify: "pending (H5)"}
+- {name: "covar", signature: "covar(x, y)", form: "mergeable", description: "sample covariance over the pairs where both are present", classify: "pending (H5)"}
+- {name: "covar_pop", signature: "covar_pop(x, y)", form: "mergeable", description: "population covariance", classify: "pending (H5)"}
+- {name: "corr", signature: "corr(x, y)", form: "mergeable", description: "correlation over the pairs where both are present", classify: "pending (H5)"}
+- {name: "rsq", signature: "rsq(y, x)", form: "mergeable", description: "r squared of the least-squares line of y on x", classify: "pending (H5)"}
+- {name: "slope", signature: "slope(y, x)", form: "mergeable", description: "slope of the least-squares line (y first, as Excel); none when x does not vary", classify: "pending (H5)"}
+- {name: "intercept", signature: "intercept(y, x)", form: "mergeable", description: "intercept of the least-squares line; none when x does not vary", classify: "pending (H5)"}
+- {name: "steyx", signature: "steyx(y, x)", form: "mergeable", description: "standard error of y predicted from x; none under three pairs", classify: "pending (H5)"}
+- {name: "trimmean", signature: "trimmean(x, pct)", form: "holistic", description: "mean without floor(n*pct/2) values at each end (Excel's rule)", classify: "pending (H5)"}
+- {name: "percentile_exc", signature: "percentile_exc(x, p)", form: "holistic", description: "p-quantile at rank p*(n+1); none outside 1..n (Excel's PERCENTILE.EXC)", classify: "pending (H5)"}
+- {name: "rank_avg", signature: "rank_avg(x, value, ascending?)", form: "holistic", description: "rank of value among the values, ties at their average, largest first unless ascending", classify: "pending (H5)"}
+- {name: "percent_rank_of", signature: "percent_rank_of(x, value, digits?)", form: "holistic", description: "rank of value as a fraction 0..1, interpolated, cut to 3 significant digits", classify: "pending (H5)"}
+- {name: "kth_largest", signature: "kth_largest(x, k)", form: "holistic", description: "the k-th largest value (Excel's LARGE)", classify: "pending (H5)"}
+- {name: "kth_smallest", signature: "kth_smallest(x, k)", form: "holistic", description: "the k-th smallest value (Excel's SMALL)", classify: "pending (H5)"}
+- {name: "string_agg", signature: "string_agg(x, sep, distinct?)", form: "holistic", description: "the texts joined in text order; at most 1,000 values", classify: "pending (H5)"}
+- {name: "cumsum", signature: "cumsum(list)", form: "list", description: "running sum over a list; a missing place stays empty", classify: "pending (H5)"}
+- {name: "cumprod", signature: "cumprod(list)", form: "list", description: "running product over a list", classify: "pending (H5)"}
+- {name: "cummax", signature: "cummax(list)", form: "list", description: "running maximum over a list", classify: "pending (H5)"}
+- {name: "cummin", signature: "cummin(list)", form: "list", description: "running minimum over a list", classify: "pending (H5)"}
+- {name: "movsum", signature: "movsum(list, k)", form: "list", description: "moving sum, centred window of k (or before, after), shrinking at the ends, as MATLAB", classify: "pending (H5)"}
+- {name: "movmean", signature: "movmean(list, k)", form: "list", description: "moving mean, centred window", classify: "pending (H5)"}
+- {name: "movstd", signature: "movstd(list, k)", form: "list", description: "moving standard deviation, centred window", classify: "pending (H5)"}
+- {name: "movmedian", signature: "movmedian(list, k)", form: "list", description: "moving median, centred window", classify: "pending (H5)"}
+- {name: "maxk", signature: "maxk(list, k)", form: "list", description: "the k largest, largest first", classify: "pending (H5)"}
+- {name: "mink", signature: "mink(list, k)", form: "list", description: "the k smallest, smallest first", classify: "pending (H5)"}
+- {name: "bounds", signature: "bounds(list)", form: "list", description: "[min, max]", classify: "pending (H5)"}
+- {name: "zscore", signature: "zscore(list)", form: "list", description: "(x - mean) / s (sample) per element", classify: "pending (H5)"}
+- {name: "rescale", signature: "rescale(list, lo?, hi?)", form: "list", description: "mapped onto lo..hi (0..1)", classify: "pending (H5)"}
+- {name: "isoutlier", signature: "isoutlier(list, threshold?)", form: "list", description: "true more than threshold (3) scaled MADs from the median, MATLAB's default rule", classify: "pending (H5)"}
+- {name: "polyfit", signature: "polyfit(xs, ys, n)", form: "list", description: "least-squares polynomial coefficients, highest power first, degree <= 6; refused in words when the points do not determine it", classify: "pending (H5)"}

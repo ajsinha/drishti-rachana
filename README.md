@@ -101,4 +101,4 @@ The promise that a host changes no byte by moving from one Rachana release to a 
 | CG7 painter forward vectors | the file list for the Elements lane: [compat/forward-vectors/FILES.md](compat/forward-vectors/FILES.md) |
 | CG8 release candidate in Drishti | `tools/gate/drishti_gate.py`: read-only dry run today; `--run` drives a scratch copy at release time |
 
-The tests are in `java/rachana-compat` (tests only, no product code). CG2, CG5 and CG10 are not started.
+The tests are in `java/rachana-compat` (tests only, no product code). CG2 (level replay: `compat/levels/1.0/`, `tools/regime/levels.py`, `LevelReplayTest`) and CG5 (API surface: `java/api-surface.txt`, `ApiSurfaceTest`; update with `-Drachana.api.surface.write=true`) have a skeleton; the JavaScript facade's surface and CG10 are not started.

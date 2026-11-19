@@ -1,0 +1,3662 @@
+{
+  "$comment" : "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). Generated from the reference compiler's tables by tools/reference-bridge/LangDump.java (plan R0 H4, decision D9). Do not edit: tools/conformance/spec_files.py regenerates it and fails when the committed copy is stale. Every entry has its profile and since.",
+  "codes" : [ {
+    "code" : "RCH-2001",
+    "profile" : "core",
+    "raisedBy" : [ "SutraRegistry", "parse.SutraBlocks", "parse.SutraParser" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2004",
+    "profile" : "drishti",
+    "raisedBy" : [ "SutraRegistry" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2009",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2010",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder", "parse.WiringReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2011",
+    "profile" : "core",
+    "raisedBy" : [ "parse.ControlsReader", "parse.SutraBuilder", "parse.WiringReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2012",
+    "profile" : "core",
+    "raisedBy" : [ "parse.ControlsReader", "parse.SutraBuilder", "parse.WiringReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2020",
+    "profile" : "core",
+    "raisedBy" : [ "SutraRegistry", "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2021",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2022",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2023",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2024",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2025",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2026",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2027",
+    "profile" : "core",
+    "raisedBy" : [ "parse.LayoutReader", "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2028",
+    "profile" : "drishti",
+    "raisedBy" : [ "SutraRegistry" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2029",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2030",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2031",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2032",
+    "profile" : "drishti",
+    "raisedBy" : [ "SutraRegistry" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2033",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraParser" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2034",
+    "profile" : "core",
+    "raisedBy" : [ "parse.ControlsReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2035",
+    "profile" : "core",
+    "raisedBy" : [ "parse.ControlsReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2036",
+    "profile" : "core",
+    "raisedBy" : [ "SutraExpressions" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2037",
+    "profile" : "core",
+    "raisedBy" : [ "parse.ControlsReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2038",
+    "profile" : "core",
+    "raisedBy" : [ "parse.ControlsReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2039",
+    "profile" : "core",
+    "raisedBy" : [ "parse.ControlsReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2040",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.AboutCatalog", "about.AboutParser" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2041",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.AboutParser" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2042",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.AboutParser" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2043",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.AboutCatalog", "about.AboutParser", "about.DesignAbout" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2044",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.AboutParser" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2045",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.HelpLint" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2046",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.HelpLint" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2047",
+    "profile" : "drishti",
+    "raisedBy" : [ "about.HelpLint" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2048",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBlocks" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2055",
+    "profile" : "core",
+    "raisedBy" : [ "RachanaSchema", "parse.SutraDocstring" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2056",
+    "profile" : "core",
+    "raisedBy" : [ "SutraWiring", "parse.WiringReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2057",
+    "profile" : "core",
+    "raisedBy" : [ "SutraWiring", "parse.SutraBuilder", "parse.WiringReader" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2058",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2059",
+    "profile" : "core",
+    "raisedBy" : [ "parse.LayoutReader", "parse.PhoneReader", "parse.SutraBuilder" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-2101",
+    "profile" : "core",
+    "raisedBy" : [ "SutraExpressions" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-5020",
+    "profile" : "core",
+    "raisedBy" : [ "design.ops.AddPanel", "design.ops.Bind", "design.ops.Move", "design.ops.OpChecks", "design.ops.OpException", "design.ops.SetControls", "design.ops.SetKeys", "design.ops.SetMatch", "design.ops.SetStrip", "design.ops.SetTitle", "design.ops.Text" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-5021",
+    "profile" : "core",
+    "raisedBy" : [ "design.ops.AddPanel", "design.ops.OpException", "design.ops.SutraDoc" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-5022",
+    "profile" : "core",
+    "raisedBy" : [ "design.ops.Bind", "design.ops.OpChecks", "design.ops.OpException" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-5023",
+    "profile" : "core",
+    "raisedBy" : [ "design.ops.AddPanel", "design.ops.Move", "design.ops.OpChecks", "design.ops.OpException", "design.ops.SetBlock" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-5024",
+    "profile" : "core",
+    "raisedBy" : [ "design.ops.Move", "design.ops.OpApplier", "design.ops.OpException", "design.ops.SutraDoc" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-9127",
+    "profile" : "core",
+    "raisedBy" : [ "el.CheckedMode", "el.check.Checker", "el.check.Problem" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-9129",
+    "profile" : "core",
+    "raisedBy" : [ "el.CheckedMode", "el.check.Checker", "el.check.Problem" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-9152",
+    "profile" : "core",
+    "raisedBy" : [ "el.CheckedMode", "el.check.Checker", "el.check.Problem" ],
+    "since" : "1.0"
+  }, {
+    "code" : "RCH-9161",
+    "profile" : "core",
+    "raisedBy" : [ "el.CheckedMode", "el.check.Checker", "el.check.Problem" ],
+    "since" : "1.0"
+  } ],
+  "controlKinds" : [ {
+    "name" : "cascading",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "date",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "date-range",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "dropdown",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "multi-select",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "number-range",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "search",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "segmented",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "slider",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "toggle",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "top-n",
+    "profile" : "core",
+    "since" : "1.0"
+  } ],
+  "formats" : [ {
+    "name" : "amount0",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "amount2",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "compact",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "date",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "dmy",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "pct0",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "pct2",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "price2",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "signed0",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "signed2",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "text",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "bp1",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "name" : "df4",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "name" : "pct4",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "name" : "pips1",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "name" : "price4",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "name" : "rate5",
+    "profile" : "drishti",
+    "since" : "1.0"
+  } ],
+  "functions" : [ {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "abs",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "accrued",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "acos",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 2,
+    "min" : 2,
+    "name" : "all_of",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 2,
+    "min" : 2,
+    "name" : "any_of",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "as_of",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "asin",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 0,
+    "min" : 0,
+    "name" : "asof",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "atan",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "atan2",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "avedev",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "avg",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "avg_by",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "avg_once",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "avg_over",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 3,
+    "min" : 2,
+    "name" : "base",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 6,
+    "min" : 3,
+    "name" : "beta_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 5,
+    "min" : 3,
+    "name" : "beta_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 4,
+    "min" : 3,
+    "name" : "binom_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "binom_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "bounds",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "business_days_between",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "calc",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 1,
+    "name" : "ceiling",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 33,
+    "min" : 1,
+    "name" : "cell",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "char",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 2,
+    "name" : "chisq_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 2,
+    "min" : 2,
+    "name" : "chisq_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 64,
+    "min" : 2,
+    "name" : "choose",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 3,
+    "min" : 3,
+    "name" : "clamp",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "clean",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "closing",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 8,
+    "min" : 1,
+    "name" : "coalesce",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "code",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "combin",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 64,
+    "min" : 1,
+    "name" : "concat",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "confidence_norm",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "confidence_t",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "contains",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "convert",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "convexity",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "corr",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "cos",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "cosh",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 0,
+    "name" : "count",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "count_once",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "covar",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "covar_pop",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 6,
+    "min" : 6,
+    "name" : "cumipmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "cummax",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "cummin",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 6,
+    "min" : 6,
+    "name" : "cumprinc",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "cumprod",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "cumsum",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 1,
+    "name" : "cumtrapz",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "cv",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 3,
+    "min" : 1,
+    "name" : "date",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 3,
+    "min" : 3,
+    "name" : "datedif",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "day",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 2,
+    "min" : 2,
+    "name" : "days",
+    "oldSpellingOf" : "days_between",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "days360",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 2,
+    "min" : 2,
+    "name" : "days_between",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "decimal",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "degrees",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "dense_rank",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "devsq",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "difference",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "distinct",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 2,
+    "min" : 2,
+    "name" : "dollarde",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 2,
+    "min" : 2,
+    "name" : "dollarfr",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "drop",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "earliest",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 2,
+    "min" : 2,
+    "name" : "edate",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 2,
+    "min" : 2,
+    "name" : "effect",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "ends_with",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "eomonth",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 1,
+    "min" : 1,
+    "name" : "erf",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 1,
+    "min" : 1,
+    "name" : "erfc",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "even",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "exact",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "exp",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 2,
+    "name" : "expon_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 4,
+    "min" : 3,
+    "name" : "f_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "f_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "fact",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 2,
+    "name" : "fillmissing",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 2,
+    "name" : "find",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "first",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "fiscal_ytd",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 1,
+    "min" : 1,
+    "name" : "fisher",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 1,
+    "min" : 1,
+    "name" : "fisher_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "flatten",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 1,
+    "name" : "floor",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "fmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "fv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 2,
+    "min" : 2,
+    "name" : "fvschedule",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 64,
+    "min" : 0,
+    "name" : "fx",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 1,
+    "min" : 1,
+    "name" : "gamma",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 4,
+    "min" : 3,
+    "name" : "gamma_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "gamma_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 1,
+    "min" : 1,
+    "name" : "gamma_ln",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 64,
+    "min" : 1,
+    "name" : "gcd",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "geomean",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 64,
+    "min" : 1,
+    "name" : "greatest",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 4,
+    "min" : 2,
+    "name" : "group",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "harmean",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 2,
+    "min" : 2,
+    "name" : "has",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "hour",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 5,
+    "min" : 4,
+    "name" : "hypgeom_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 3,
+    "min" : 2,
+    "name" : "if",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 2,
+    "min" : 2,
+    "name" : "iferror",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 64,
+    "min" : 2,
+    "name" : "ifs",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 4,
+    "min" : 3,
+    "name" : "intck",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "intercept",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 4,
+    "min" : 3,
+    "name" : "interp1",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "intersect",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 6,
+    "min" : 4,
+    "name" : "ipmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "iqr",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 2,
+    "min" : 1,
+    "name" : "irr",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 1,
+    "min" : 1,
+    "name" : "is_blank",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 1,
+    "min" : 1,
+    "name" : "is_boolean",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "is_business_day",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 1,
+    "min" : 1,
+    "name" : "is_date",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 1,
+    "min" : 1,
+    "name" : "is_error",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "is_member",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 1,
+    "min" : 1,
+    "name" : "is_number",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 1,
+    "min" : 1,
+    "name" : "is_text",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 1,
+    "name" : "isoutlier",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "kth_largest",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "kth_smallest",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "kurtosis",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 3,
+    "min" : 3,
+    "name" : "lag",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "last",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "latest",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 64,
+    "min" : 1,
+    "name" : "lcm",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 3,
+    "min" : 3,
+    "name" : "lead",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 64,
+    "min" : 1,
+    "name" : "least",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "left",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "len",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 64,
+    "min" : 2,
+    "name" : "let",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 3,
+    "min" : 1,
+    "name" : "link",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "ln",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 1,
+    "name" : "log",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "log10",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 4,
+    "min" : 3,
+    "name" : "lognorm_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "lognorm_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "lower",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "macaulay_duration",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "map",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "matches",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "matchesCase",
+    "oldSpellingOf" : "matches_case",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "matches_case",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 8,
+    "min" : 1,
+    "name" : "max",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "max_by",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "maxk",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 1,
+    "name" : "measure",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "median",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 3,
+    "name" : "mid",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 8,
+    "min" : 1,
+    "name" : "min",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "min_by",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "mink",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "minute",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 3,
+    "min" : 3,
+    "name" : "mirr",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "mod",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "mode",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "mode_multi",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "modified_duration",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "month",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 3,
+    "min" : 3,
+    "name" : "moving_avg",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 3,
+    "min" : 3,
+    "name" : "moving_max",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 3,
+    "min" : 3,
+    "name" : "moving_min",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 3,
+    "min" : 3,
+    "name" : "moving_sum",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 2,
+    "name" : "movmean",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 2,
+    "name" : "movmedian",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 2,
+    "name" : "movstd",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 2,
+    "name" : "movsum",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "mround",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "mtd",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 4,
+    "min" : 3,
+    "name" : "negbinom_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "nmiss",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 2,
+    "min" : 2,
+    "name" : "nominal",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 8,
+    "min" : 1,
+    "name" : "nonblank",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 4,
+    "min" : 3,
+    "name" : "norm_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "norm_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 2,
+    "min" : 1,
+    "name" : "norm_s_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 1,
+    "min" : 1,
+    "name" : "norm_s_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "nper",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 2,
+    "min" : 2,
+    "name" : "npv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "odd",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 2,
+    "min" : 2,
+    "name" : "oneOf",
+    "oldSpellingOf" : "one_of",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 2,
+    "min" : 2,
+    "name" : "one_of",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "opening",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 4,
+    "min" : 2,
+    "name" : "pad",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "parent_of",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 3,
+    "min" : 3,
+    "name" : "pduration",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "percent_rank",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 4,
+    "min" : 2,
+    "name" : "percent_rank_of",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "percentile",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "percentile_exc",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "permut",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 0,
+    "min" : 0,
+    "name" : "pi",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "pmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 2,
+    "name" : "poisson_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 3,
+    "name" : "polyfit",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "polyval",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "power",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 6,
+    "min" : 4,
+    "name" : "ppmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "prior_period",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "product",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "proper",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 5,
+    "min" : 3,
+    "name" : "pv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "qtd",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "quarter",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "radians",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "range",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "rank",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 4,
+    "min" : 2,
+    "name" : "rank_avg",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 6,
+    "min" : 3,
+    "name" : "rate",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "ratio",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 3,
+    "name" : "reduce",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 2,
+    "name" : "regex_extract",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 3,
+    "name" : "regex_replace",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 64,
+    "min" : 0,
+    "name" : "related",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 64,
+    "min" : 0,
+    "name" : "related_rows",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 3,
+    "name" : "replace",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "rept",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 1,
+    "name" : "rescale",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "reverse",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "right",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 1,
+    "name" : "round",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 1,
+    "name" : "round_down",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 2,
+    "name" : "round_sig",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 2,
+    "min" : 1,
+    "name" : "round_up",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 3,
+    "min" : 3,
+    "name" : "rri",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "rsq",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "running",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "same_period_last_year",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 2,
+    "name" : "search",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "second",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 3,
+    "min" : 1,
+    "name" : "sequence",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "share_of",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 4,
+    "min" : 2,
+    "name" : "shift_date",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "sign",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "sin",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "sinh",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "size",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "skewness",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "skewness_pop",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "slope",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 17,
+    "min" : 1,
+    "name" : "sort",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "split",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "sqrt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 3,
+    "name" : "standardize",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "startsWith",
+    "oldSpellingOf" : "starts_with",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "starts_with",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "stddev",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "stddev_pop",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "stderr",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "steyx",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 4,
+    "min" : 2,
+    "name" : "string_agg",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "sum",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 1,
+    "min" : 1,
+    "name" : "sum_by",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "sum_once",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "sumproduct",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "sumsq",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 64,
+    "min" : 3,
+    "name" : "switch",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 3,
+    "min" : 2,
+    "name" : "t_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 2,
+    "min" : 2,
+    "name" : "t_inv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "take",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "tan",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "math",
+    "max" : 1,
+    "min" : 1,
+    "name" : "tanh",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 2,
+    "min" : 2,
+    "name" : "text",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 2,
+    "name" : "text_after",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 2,
+    "name" : "text_before",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "timestamp",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 0,
+    "min" : 0,
+    "name" : "today",
+    "oldSpellingOf" : "asof",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 1,
+    "name" : "trapz",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "trim",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "trimmean",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 1,
+    "min" : 1,
+    "name" : "type_of",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 2,
+    "min" : 2,
+    "name" : "union",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "unique",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 1,
+    "min" : 1,
+    "name" : "upper",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "text",
+    "max" : 3,
+    "min" : 1,
+    "name" : "value",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "variance",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "variance_pop",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "aggregates",
+    "max" : 3,
+    "min" : 2,
+    "name" : "wavg",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "week",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 2,
+    "min" : 1,
+    "name" : "weekday",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "statistics",
+    "max" : 4,
+    "min" : 3,
+    "name" : "weibull_dist",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "logic",
+    "max" : 2,
+    "min" : 2,
+    "name" : "within",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 3,
+    "min" : 2,
+    "name" : "xirr",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "finance",
+    "max" : 3,
+    "min" : 3,
+    "name" : "xnpv",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 1,
+    "min" : 1,
+    "name" : "year",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "dates",
+    "max" : 3,
+    "min" : 3,
+    "name" : "yearfrac",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "family" : "measures",
+    "max" : 2,
+    "min" : 2,
+    "name" : "ytd",
+    "profile" : "drishti",
+    "since" : "1.0"
+  }, {
+    "family" : "lists",
+    "max" : 1,
+    "min" : 1,
+    "name" : "zscore",
+    "profile" : "drishti",
+    "since" : "1.0"
+  } ],
+  "keys" : {
+    "children" : [ {
+      "name" : "panels",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "place",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "show",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "source",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "waits",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "column" : [ {
+      "name" : "bind",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "fmt",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "link",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tone",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "total",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "control" : [ {
+      "name" : "default",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "id",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "kind",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "max",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "min",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "options",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "panel",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "parent",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "placement",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "range",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "remember",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "required",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "step",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "emit" : [ {
+      "name" : "name",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "on",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "payload",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "form" : [ {
+      "name" : "edit",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "fields",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "hints",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "key",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "new",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "new-label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "roles",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "rules",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "save",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "steps",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "title",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "form.field" : [ {
+      "name" : "bind",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "currency",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "default",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "editable-by",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "fmt",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "id",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "max",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "max-length",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "min",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "new",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "options",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "pattern",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "placeholder",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "readonly",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "reason",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "required",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "step",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "type",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tz",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "form.hint" : [ {
+      "name" : "fmt",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "of",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "step",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "value",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "form.lookup" : [ {
+      "name" : "carry",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "source",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "value",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "form.lookup.source" : [ {
+      "name" : "kind",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "limit",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "pack",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "search",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "where",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "form.rule" : [ {
+      "name" : "fields",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "message",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "rule",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "severity",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "form.save" : [ {
+      "name" : "approval",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "command",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "connector",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "create",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "kind",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "reason",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "target",
+      "profile" : "drishti",
+      "since" : "1.0"
+    } ],
+    "layout" : [ {
+      "name" : "areas",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "columns",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "phone",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "sections",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "split",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "sticky",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tablet",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tabs",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "user-can-arrange",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "level" : [ {
+      "name" : "columns",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "crumb",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "rows",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "title",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "marker" : [ {
+      "name" : "label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tone",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "value",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "panel" : [ {
+      "name" : "area",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "body",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "code",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "collapsible",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "columns",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "description",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "form",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "height",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "id",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "infer",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "key",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "kind",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "order",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "panels",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "phone",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "refresh",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "section",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "span",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "title",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "panel.phone" : [ {
+      "name" : "columns",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "figures",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "from",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "rows",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "series",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "sort",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tab",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tier",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "phone" : [ {
+      "name" : "default",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "order",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "summary",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "source" : [ {
+      "name" : "as-of",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "id",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "kind",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "limit",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "model",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "pack",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "params",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "search",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "table",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "where",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "strip" : [ {
+      "name" : "bind",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "emphasis",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "fmt",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "label",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "tone",
+      "profile" : "core",
+      "since" : "1.0"
+    } ],
+    "sutra" : [ {
+      "name" : "controls",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "description",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "doc",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "domain",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "keys",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "layout",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "match",
+      "profile" : "drishti",
+      "since" : "1.0"
+    }, {
+      "name" : "notes",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "panels",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "phone",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "rachana",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "refresh",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "strip",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "sutra",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "title",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "version",
+      "profile" : "core",
+      "since" : "1.0"
+    } ]
+  },
+  "language" : "1.0",
+  "limits" : {
+    "controls" : 12,
+    "expressionDepth" : 200,
+    "expressionLength" : 10000,
+    "panelHeight" : 24,
+    "panelSpan" : 12,
+    "refreshSeconds" : 86400,
+    "sourceLimit" : 200
+  },
+  "panelKinds" : [ {
+    "name" : "area",
+    "optional" : [ "limit", "limitLabel", "series", "unit", "x" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "candlestick",
+    "optional" : [ "close", "fmt", "high", "low", "open", "unit", "volume", "x" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "gauge",
+    "optional" : [ "fmt", "label", "max" ],
+    "profile" : "core",
+    "required" : [ "value" ],
+    "since" : "1.0"
+  }, {
+    "name" : "graph",
+    "optional" : [ "edges", "group", "label", "layout" ],
+    "profile" : "core",
+    "required" : [ "nodes" ],
+    "since" : "1.0"
+  }, {
+    "name" : "hbar",
+    "optional" : [ "fmt", "label", "shape", "tone", "value" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "histogram",
+    "optional" : [ "bins", "fmt", "markers", "unit", "value" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "kv",
+    "optional" : [ "columns", "fields", "rows" ],
+    "profile" : "core",
+    "required" : [ ],
+    "since" : "1.0"
+  }, {
+    "name" : "ladder",
+    "optional" : [ "children", "crumb", "empty", "expand", "highlight", "levels", "pivot", "root", "search", "totalLabel" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "line",
+    "optional" : [ "fmt", "footer", "labels", "mark", "rows", "source", "step", "unit", "values", "x", "y" ],
+    "profile" : "core",
+    "required" : [ ],
+    "since" : "1.0"
+  }, {
+    "name" : "links",
+    "optional" : [ ],
+    "profile" : "drishti",
+    "required" : [ ],
+    "since" : "1.0"
+  }, {
+    "name" : "map",
+    "optional" : [ "fmt", "highlight", "link", "region", "shade", "unit" ],
+    "profile" : "core",
+    "required" : [ ],
+    "since" : "1.0"
+  }, {
+    "name" : "markdown",
+    "optional" : [ ],
+    "profile" : "core",
+    "required" : [ "text" ],
+    "since" : "1.0"
+  }, {
+    "name" : "metric",
+    "optional" : [ "caption", "delta", "deltaFmt", "deltaTone", "fmt", "label", "tone", "unit" ],
+    "profile" : "core",
+    "required" : [ "value" ],
+    "since" : "1.0"
+  }, {
+    "name" : "pivot",
+    "optional" : [ "agg", "expand", "fmt", "heat", "tone", "totals", "value" ],
+    "profile" : "core",
+    "required" : [ "across", "by", "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "provenance",
+    "optional" : [ ],
+    "profile" : "drishti",
+    "required" : [ ],
+    "since" : "1.0"
+  }, {
+    "name" : "scatter",
+    "optional" : [ "fmt", "group", "label", "size", "xFmt", "xLabel", "yLabel" ],
+    "profile" : "core",
+    "required" : [ "rows", "x", "y" ],
+    "since" : "1.0"
+  }, {
+    "name" : "status",
+    "optional" : [ "fields" ],
+    "profile" : "core",
+    "required" : [ ],
+    "since" : "1.0"
+  }, {
+    "name" : "surface",
+    "optional" : [ "fmt", "unit", "view" ],
+    "profile" : "core",
+    "required" : [ "rows", "y" ],
+    "since" : "1.0"
+  }, {
+    "name" : "table",
+    "optional" : [ "children", "crumb", "empty", "expand", "highlight", "levels", "limit", "link", "moreLabel", "pivot", "root", "search", "totalLabel" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "tabs",
+    "optional" : [ "layout", "tabTitle" ],
+    "profile" : "core",
+    "required" : [ "each" ],
+    "since" : "1.0"
+  }, {
+    "name" : "timeline",
+    "optional" : [ "date", "detail", "label", "status", "tone" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  }, {
+    "name" : "waterfall",
+    "optional" : [ "colors", "fmt", "label", "sum", "total", "unit", "value" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.0"
+  } ],
+  "panelOptions" : [ {
+    "kinds" : [ "pivot" ],
+    "name" : "across",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "pivot" ],
+    "name" : "agg",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "histogram" ],
+    "name" : "bins",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "pivot" ],
+    "name" : "by",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "metric" ],
+    "name" : "caption",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "children",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "candlestick" ],
+    "name" : "close",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "waterfall" ],
+    "name" : "colors",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "kv" ],
+    "name" : "columns",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "crumb",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "timeline" ],
+    "name" : "date",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "metric" ],
+    "name" : "delta",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "metric" ],
+    "name" : "deltaFmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "metric" ],
+    "name" : "deltaTone",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "timeline" ],
+    "name" : "detail",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "tabs" ],
+    "name" : "each",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "graph" ],
+    "name" : "edges",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "empty",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "pivot", "table" ],
+    "name" : "expand",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "kv", "status" ],
+    "name" : "fields",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "candlestick", "gauge", "hbar", "histogram", "line", "map", "metric", "pivot", "scatter", "surface", "waterfall" ],
+    "name" : "fmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "line" ],
+    "name" : "footer",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "graph", "scatter" ],
+    "name" : "group",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "pivot" ],
+    "name" : "heat",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "candlestick" ],
+    "name" : "high",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "map", "table" ],
+    "name" : "highlight",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "gauge", "graph", "hbar", "metric", "scatter", "timeline", "waterfall" ],
+    "name" : "label",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "line" ],
+    "name" : "labels",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "graph", "tabs" ],
+    "name" : "layout",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "levels",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "table" ],
+    "name" : "limit",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area" ],
+    "name" : "limitLabel",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "map", "table" ],
+    "name" : "link",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "candlestick" ],
+    "name" : "low",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "line" ],
+    "name" : "mark",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "histogram" ],
+    "name" : "markers",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "gauge" ],
+    "name" : "max",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "table" ],
+    "name" : "moreLabel",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "graph" ],
+    "name" : "nodes",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "hbar", "ladder", "table" ],
+    "name" : "on-select",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "candlestick" ],
+    "name" : "open",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "pivot",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "map" ],
+    "name" : "region",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "root",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "hbar", "histogram", "kv", "ladder", "line", "pivot", "scatter", "surface", "table", "timeline", "waterfall" ],
+    "name" : "rows",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "search",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area" ],
+    "name" : "series",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "map" ],
+    "name" : "shade",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "hbar" ],
+    "name" : "shape",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "scatter" ],
+    "name" : "size",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "gauge", "graph", "hbar", "histogram", "kv", "ladder", "line", "map", "markdown", "metric", "pivot", "scatter", "status", "surface", "table", "tabs", "timeline", "waterfall" ],
+    "name" : "source",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "timeline" ],
+    "name" : "status",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "line" ],
+    "name" : "step",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "waterfall" ],
+    "name" : "sum",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "tabs" ],
+    "name" : "tabTitle",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "markdown" ],
+    "name" : "text",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "hbar", "metric", "pivot", "timeline" ],
+    "name" : "tone",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "waterfall" ],
+    "name" : "total",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "ladder", "table" ],
+    "name" : "totalLabel",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "pivot" ],
+    "name" : "totals",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "histogram", "line", "map", "metric", "surface", "waterfall" ],
+    "name" : "unit",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "gauge", "hbar", "histogram", "metric", "pivot", "waterfall" ],
+    "name" : "value",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "line" ],
+    "name" : "values",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "surface" ],
+    "name" : "view",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "candlestick" ],
+    "name" : "volume",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "gauge", "graph", "hbar", "histogram", "kv", "ladder", "line", "links", "map", "markdown", "metric", "pivot", "provenance", "scatter", "status", "surface", "table", "tabs", "timeline", "waterfall" ],
+    "name" : "when",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "hbar", "histogram", "ladder", "line", "pivot", "scatter", "surface", "table", "timeline", "waterfall" ],
+    "name" : "where",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "line", "scatter" ],
+    "name" : "x",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "scatter" ],
+    "name" : "xFmt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "scatter" ],
+    "name" : "xLabel",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "line", "scatter", "surface" ],
+    "name" : "y",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "scatter" ],
+    "name" : "yLabel",
+    "profile" : "core",
+    "since" : "1.0"
+  } ],
+  "rachana" : "1",
+  "reference" : "Drishti 2.9.11.i7a",
+  "tones" : [ {
+    "name" : "sign",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "status",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "pos",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "neg",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "link",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "accent",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "ok",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "warn",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "name" : "bad",
+    "profile" : "core",
+    "since" : "1.0"
+  } ]
+}

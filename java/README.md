@@ -15,7 +15,7 @@ module (`module-info.java`).
 | `rachana-cli` | command line | skeleton |
 | `rachana-conformance` | `JvmRuntime`: the conformance runtime program over `rachana-core` (RUNNER section 5) | built |
 | `rachana-conformance-cases` | the cases and specification as a jar, no code | built |
-| `rachana-compat` | the compatibility regime's tests (CG1, CG3, CG4, CG6) | built by the regime lane |
+| `rachana-compat` | the compatibility regime's tests (CG1 to CG6) | built by the regime lane |
 | `rachana-guards` | the guards: names no host, dependency allow-list, public surface, licence header and line cap | built |
 
 `rachana-core` bundles two data files whose home is Drishti Elements (`formats.yaml`, `world-regions.yaml`), read from the

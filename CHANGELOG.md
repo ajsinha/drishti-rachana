@@ -51,5 +51,8 @@ Entries are written per release; the regime's unreleased work is listed after th
 - The customer-corpus export (`tools/regime/corpus_export.py`, `CorpusCompile.java`) and `compat/customers/drishti/2.9.11.i7a/`.
 - `java/rachana-compat`: `CustomerCorpusTest` (CG3), `RecordedHost`, `FrozenCasesTest` (CG1), `ContractAppendOnlyTest` (CG4),
   `ReservedNamesTest` (CG6).
+- **CG5 and CG2 skeletons**: `java/api-surface.txt` (1,661 lines: the public and protected API of `rachana-api` and `rachana-core`)
+  with `ApiSurfaceTest`; `compat/levels/1.0/` (results of the JVM runtime at level 1.0 and the four generated definition files),
+  `tools/regime/levels.py` (`write` once, `check` replays) and `LevelReplayTest`.
 - `conformance/1/FROZEN.sha384` (pre-release), `compat/reserved-names.yaml`, `compat/promotions.yaml`, `compat/level-switches.yaml`.
 - `tools/gate/drishti_gate.py` (CG8, dry run), `compat/forward-vectors/FILES.md` (CG7).

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.agg;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -70,7 +71,7 @@ public final class Builtins {
     }
 
     static double num(Object o) {
-        return o instanceof Number x ? x.doubleValue() : Double.NaN;
+        return o instanceof Number x ? NumberText.toDouble(x) : Double.NaN;
     }
 
     static long lng(Object o) {

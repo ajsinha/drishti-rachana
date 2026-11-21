@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el.check;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.el.Expr;
 import com.ash.rachana.el.Functions;
@@ -664,7 +665,7 @@ public final class Checker {
                 if ("integer-literal".equals(p.type()) && !integral) {
                     return err(Problem.LANGUAGE, what + " is a whole number written in the expression", null, a);
                 }
-                if ("percentile".equals(f.name()) && (num.doubleValue() < 0 || num.doubleValue() > 1 || lit != a)) {
+                if ("percentile".equals(f.name()) && (NumberText.toDouble(num) < 0 || NumberText.toDouble(num) > 1 || lit != a)) {
                     return err(Problem.LANGUAGE, what + " is between 0 and 1 (0.5 is the median)", null, a);
                 }
                 return integral ? ElType.INTEGER : ElType.DECIMAL;

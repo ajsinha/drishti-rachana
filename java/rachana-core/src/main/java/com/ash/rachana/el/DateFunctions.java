@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreDecimal;
 import com.ash.rachana.internal.CoreText;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -129,7 +130,7 @@ final class DateFunctions {
         if (x == null || y == null || basis == null) {
             return null;
         }
-        return Args.out(yearFraction("yearfrac", x, y, basis).round(MathContext.DECIMAL64));
+        return Args.out(CoreDecimal.round(yearFraction("yearfrac", x, y, basis), MathContext.DECIMAL64));
     }
 
     /** The year fraction from x to y (either order, never negative) on a basis of {@link #BASES}, in decimal (34 digits). */

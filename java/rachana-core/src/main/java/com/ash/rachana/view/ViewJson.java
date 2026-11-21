@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.view;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.parse.Json;
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public final class ViewJson {
             case ALWAYS -> false;
             case NON_NULL -> v == null;
             case NON_EMPTY -> empty(v);
-            case NON_DEFAULT -> empty(v) || Boolean.FALSE.equals(v) || v instanceof Number n && n.doubleValue() == 0 && !(v instanceof Double d && d.isNaN());
+            case NON_DEFAULT -> empty(v) || Boolean.FALSE.equals(v) || v instanceof Number n && NumberText.toDouble(n) == 0 && !(v instanceof Double d && d.isNaN());
         };
     }
 

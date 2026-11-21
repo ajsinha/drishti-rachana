@@ -59,7 +59,7 @@ public final class ListValues {
     /** One element as text: a number in its plain form (an id written as a number reads as the id). */
     public static String text(Object e) {
         if (e instanceof Double || e instanceof Float) {
-            return IdText.of(((Number) e).doubleValue());
+            return IdText.of(NumberText.toDouble((Number) e));
         }
         if (e instanceof byte[] b) {
             return new String(b, java.nio.charset.StandardCharsets.UTF_8);
@@ -79,7 +79,7 @@ public final class ListValues {
             if (e == null) {
                 b.append("null");
             } else if (e instanceof Number n && !(e instanceof Double d && (d.isNaN() || d.isInfinite()))) {
-                b.append(e instanceof Double || e instanceof Float ? IdText.of(n.doubleValue()) : n.toString());
+                b.append(e instanceof Double || e instanceof Float ? IdText.of(NumberText.toDouble(n)) : n.toString());
             } else if (e instanceof Boolean) {
                 b.append(e);
             } else {

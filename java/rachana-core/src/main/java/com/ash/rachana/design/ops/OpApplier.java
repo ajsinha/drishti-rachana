@@ -45,9 +45,7 @@ public final class OpApplier {
                     throw new OpException(OpException.NOT_ACCEPTED, "setMatch sets the 'match' key, which comes with a profile; this grammar has none");
                 }
                 op.applyTo(doc);
-                String next = doc.text();
-                doc.sutra();                                     // the result must be a valid Sutra
-                text = next;
+                text = valid(doc);
                 applied++;
             } catch (OpException e) {
                 problems.add(new OpProblem(i, op.name(), e.code(), e.getMessage(), e.line()));
@@ -61,5 +59,15 @@ public final class OpApplier {
             }
         }
         return new OpResult(text, List.copyOf(problems), applied);
+    }
+
+    /**
+     * The edited text once it reads as a valid Sutra (else the parser's exception). A method of its own, so the caller's text changes only
+     * on return: the JavaScript build (TeaVM 0.16.0) moved the assignment ahead of the check when both sat in the try block (A15).
+     */
+    private static String valid(SutraDoc doc) {
+        String next = doc.text();
+        doc.sutra();
+        return next;
     }
 }

@@ -49,6 +49,14 @@
     </dependencies>
   </dependencyManagement>
 
+  <!-- The JavaScript build (split step A15): TeaVM, only with -Pjs, so the JVM build needs no TeaVM. -->
+  <profiles>
+    <profile>
+      <id>js</id>
+      <modules><module>rachana-js</module></modules>
+    </profile>
+  </profiles>
+
   <!-- Design rule: no Spring, no Jackson, no Caffeine, no logging framework in any module (COMPILER_AND_RUNTIMES 3.2).
        The enforcer below and rachana-guards (DependencyAllowListTest) both say so. -->
   <build>

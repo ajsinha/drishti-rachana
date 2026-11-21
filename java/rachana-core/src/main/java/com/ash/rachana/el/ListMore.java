@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -201,7 +202,7 @@ final class ListMore {
             return out(out);
         }
         BigDecimal x = Args.decimal("interp1", q);
-        double v = at(pts, x.doubleValue(), method);
+        double v = at(pts, NumberText.toDouble(x), method);
         return Double.isNaN(v) ? null : Values.normalise(v);
     }
 
@@ -256,7 +257,7 @@ final class ListMore {
             }
             return out(out);
         }
-        return Args.out("polyval", horner(p, Args.decimal("polyval", x).doubleValue()));
+        return Args.out("polyval", horner(p, NumberText.toDouble(Args.decimal("polyval", x))));
     }
 
     private static double horner(double[] p, double x) {

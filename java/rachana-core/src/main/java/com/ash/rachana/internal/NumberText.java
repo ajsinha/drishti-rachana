@@ -35,6 +35,14 @@ public final class NumberText {
         return Double.parseDouble(s);
     }
 
+    /**
+     * A number as a double, correctly rounded: Core's one {@code doubleValue()} (the JavaScript build's class library rounds a
+     * {@code BigDecimal} wrongly near some values, so the JavaScript {@code NumberText} reads its text instead).
+     */
+    public static double toDouble(Number n) {
+        return n.doubleValue();
+    }
+
     /** The double as a decimal with the digits of its shortest text: {@code decimal(2.675)} is {@code 2.675}. */
     public static BigDecimal decimal(double d) {
         return new BigDecimal(text(d));

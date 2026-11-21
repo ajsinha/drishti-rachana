@@ -20,6 +20,11 @@ class LicenceHeaderAndLineCapTest {
         for (Path f : Sources.nonEmpty(Sources.files(".java"))) {
             String head = Files.readString(f);
             head = head.substring(0, Math.min(head.length(), 400));
+            if (f.toString().replace('\\', '/').contains("/src/build/java/org/teavm/")) {
+                // a TeaVM file the JavaScript build patches: it keeps its Apache-2.0 header and names the change
+                if (!head.contains("Apache License, Version 2.0") || !head.contains("Modified by Ashutosh Sinha")) bad.add(f.toString());
+                continue;
+            }
             if (!head.contains("Copyright (c) 2026 Ashutosh Sinha") || !head.contains("Proprietary")) bad.add(f.toString());
         }
         assertTrue(bad.isEmpty(), "files without the licence header: " + bad);

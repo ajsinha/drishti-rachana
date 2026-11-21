@@ -61,6 +61,14 @@ class CoreMathTest {
         same("expm1", CoreMath::expm1, StrictMath::expm1);
         same("tanh", CoreMath::tanh, StrictMath::tanh);
         same("sin", CoreMath::sin, StrictMath::sin);
+        same("cos", CoreMath::cos, StrictMath::cos);
+        same("tan", CoreMath::tan, StrictMath::tan);
+        same("asin", CoreMath::asin, StrictMath::asin);
+        same("acos", CoreMath::acos, StrictMath::acos);
+        same("sinh", CoreMath::sinh, StrictMath::sinh);
+        same("cosh", CoreMath::cosh, StrictMath::cosh);
+        same("toRadians", CoreMath::toRadians, StrictMath::toRadians);
+        same("toDegrees", CoreMath::toDegrees, StrictMath::toDegrees);
         same("atan", CoreMath::atan, StrictMath::atan);
         same("rint", CoreMath::rint, StrictMath::rint);
     }

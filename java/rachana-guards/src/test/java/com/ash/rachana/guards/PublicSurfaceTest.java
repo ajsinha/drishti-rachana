@@ -30,7 +30,8 @@ class PublicSurfaceTest {
             for (Path dir : s.filter(Files::isDirectory).toList()) {
                 String n = dir.getFileName().toString();
                 boolean hasJava = Files.isDirectory(dir.resolve("src/main/java"));
-                if (hasJava && !Files.exists(dir.resolve("src/main/java/module-info.java"))) missing.add(n);
+                // rachana-js is the JavaScript build: its classes become bundles, never a JVM module, and it replaces Core classes by name
+                if (hasJava && !n.equals("rachana-js") && !Files.exists(dir.resolve("src/main/java/module-info.java"))) missing.add(n);
             }
         }
         assertTrue(missing.isEmpty(), "modules without module-info: " + missing);
@@ -40,7 +41,8 @@ class PublicSurfaceTest {
     void everyPackageHasPackageInfo() throws Exception {
         for (Path f : Sources.nonEmpty(Sources.files(".java"))) {
             String n = f.getFileName().toString();
-            if (n.equals("package-info.java") || n.equals("module-info.java") || f.toString().contains("/src/test/")) continue;
+            if (n.equals("package-info.java") || n.equals("module-info.java") || f.toString().contains("/src/test/")
+                    || f.toString().replace('\\', '/').contains("/src/build/java/org/teavm/")) continue;   // a third-party file the JS build patches
             assertTrue(Files.exists(f.resolveSibling("package-info.java")), "no package-info.java next to " + f);
         }
     }

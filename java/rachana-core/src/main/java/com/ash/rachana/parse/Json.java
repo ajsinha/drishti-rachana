@@ -70,7 +70,7 @@ public final class Json {
         } else if (value instanceof Boolean b) {
             out.append(b.booleanValue());
         } else if (value instanceof Double || value instanceof Float) {
-            double d = ((Number) value).doubleValue();
+            double d = NumberText.toDouble((Number) value);
             if (Double.isNaN(d) || Double.isInfinite(d)) {
                 quote(value instanceof Float f ? NumberText.text(f) : NumberText.text(d), out);
             } else {

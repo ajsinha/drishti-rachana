@@ -15,6 +15,31 @@ import org.junit.jupiter.api.Test;
 class CoreDecimalTest {
 
     @Test
+    void roundIsTheJdksRound() {
+        SplittableRandom r = new SplittableRandom(11);
+        java.math.RoundingMode[] modes = java.math.RoundingMode.values();
+        for (int i = 0; i < 200_000; i++) {
+            BigDecimal x = new BigDecimal(new java.math.BigInteger(r.nextInt(1, 80), new java.util.Random(r.nextLong())), r.nextInt(-20, 40));
+            if (r.nextBoolean()) {
+                x = x.negate();
+            }
+            if (r.nextInt(10) == 0) {
+                x = new BigDecimal("9".repeat(r.nextInt(1, 30)) + "." + "9".repeat(r.nextInt(0, 10)));
+            }
+            java.math.RoundingMode mode = modes[r.nextInt(modes.length)];
+            if (mode == java.math.RoundingMode.UNNECESSARY) {
+                mode = java.math.RoundingMode.HALF_EVEN;
+            }
+            MathContext mc = new MathContext(r.nextInt(0, 40), mode);
+            BigDecimal mine = CoreDecimal.round(x, mc);
+            BigDecimal jdk = x.round(mc);
+            if (!mine.equals(jdk)) {
+                throw new AssertionError(x + " " + mc + ": " + mine + " != " + jdk);
+            }
+        }
+    }
+
+    @Test
     void sameAsBigDecimalSqrt() {
         SplittableRandom r = new SplittableRandom(5);
         MathContext[] mcs = {MathContext.DECIMAL64, MathContext.DECIMAL128, new MathContext(1), new MathContext(3)};

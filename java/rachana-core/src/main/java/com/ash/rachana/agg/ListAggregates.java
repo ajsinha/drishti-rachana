@@ -68,7 +68,7 @@ final class ListAggregates {
             } else if (a instanceof Node arr && arr.isArray()) {
                 parallels.add(arr);
             } else if (a instanceof Number n) {
-                numbers.add(n.doubleValue());
+                numbers.add(NumberText.toDouble(n));
             } else if (a instanceof String s && !s.isBlank()) {
                 if (!numbers.isEmpty()) {
                     throw error(name, "the fields come before the numbers");
@@ -180,7 +180,7 @@ final class ListAggregates {
     static double number(Node x) {
         Object s = Values.simplify(x);
         if (s instanceof Number n) {
-            return n.doubleValue();
+            return NumberText.toDouble(n);
         }
         if (s instanceof String str && !str.isBlank()) {
             try {

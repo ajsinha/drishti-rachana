@@ -19,6 +19,30 @@ public final class CoreDecimal {
     }
 
     /**
+     * {@code x.round(mc)}, by {@code setScale}: the same value and scale as the JDK gives, on every runtime (the JavaScript build's
+     * class library leaves some values unrounded, split step A15). The guard refuses {@code BigDecimal.round} elsewhere in Core.
+     */
+    public static BigDecimal round(BigDecimal x, MathContext mc) {
+        int p = mc.getPrecision();
+        if (p == 0) {
+            return x;
+        }
+        int digits = digits(x);
+        if (digits <= p) {
+            return x;
+        }
+        BigDecimal r = x.setScale(x.scale() - (digits - p), mc.getRoundingMode());
+        if (digits(r) > p) {                                      // 9.99 to 10.0: one digit more, dropped exactly
+            r = r.setScale(r.scale() - 1, mc.getRoundingMode());
+        }
+        return r;
+    }
+
+    private static int digits(BigDecimal x) {
+        return x.signum() == 0 ? 1 : x.unscaledValue().abs().toString().length();
+    }
+
+    /**
      * The square root of a non-negative decimal rounded half to even to {@code mc}'s precision; an exact root is given with
      * the scale nearest half the argument's scale that the precision allows ({@code sqrt(0.0144)} is {@code 0.12}).
      */
@@ -40,8 +64,8 @@ public final class CoreDecimal {
         BigInteger r = isqrt(big);
         int scale = (s + e) / 2;
         BigDecimal result = r.multiply(r).equals(big)
-                ? new BigDecimal(r, scale).round(mc)
-                : new BigDecimal(r.multiply(BigInteger.TEN).add(BigInteger.ONE), scale + 1).round(mc);  // a sticky 1: never a false tie
+                ? round(new BigDecimal(r, scale), mc)
+                : round(new BigDecimal(r.multiply(BigInteger.TEN).add(BigInteger.ONE), scale + 1), mc);  // a sticky 1: never a false tie
         BigDecimal stripped = result.stripTrailingZeros();
         if (stripped.scale() >= preferred) {
             return stripped;

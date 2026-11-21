@@ -393,6 +393,8 @@ def main(argv=None) -> int:
     ap.add_argument("--cmd", help="the runtime program (RUNNER 5)")
     ap.add_argument("--classpath-file", help="a file holding the class path of Drishti's reference jars: runs tools/reference-bridge/RefBridge.java")
     ap.add_argument("--jvm", action="store_true", help="run Rachana's own JVM runtime (java/rachana-conformance, built by ./mvnw package)")
+    ap.add_argument("--node", action="store_true", help="run the JavaScript build in Node (js/packages/rachana/dist, built by tools/js/build_js.py)")
+    ap.add_argument("--bundle", help="with --node: the bundle to run (default js/packages/rachana/dist/rachana.tools.js)")
     a = ap.parse_args(argv)
     if a.jvm:
         target = ROOT / "java" / "rachana-conformance" / "target"
@@ -402,6 +404,13 @@ def main(argv=None) -> int:
         jars = sorted(str(j) for j in target.glob("rachana-conformance-*.jar") if not j.name.endswith(("-sources.jar", "-tests.jar")))
         mp = os.pathsep.join(jars + [cp_file.read_text().strip()])
         a.cmd = (f"java -p {shlex.quote(mp)} -m com.ash.rachana.conformance/com.ash.rachana.conformance.JvmRuntime --profiles core,drishti "
+                 f"{ROOT / 'spec' / '1' / 'formats.yaml'} {os.environ.get('RACHANA_DRISHTI_FORMATS', DRISHTI_FORMATS)}")
+    elif a.node:
+        bundle = Path(a.bundle) if a.bundle else ROOT / "js" / "packages" / "rachana" / "dist" / "rachana.tools.js"
+        if not bundle.is_file():
+            ap.error(f"{bundle} is missing: build first (python3 tools/js/build_js.py)")
+        a.cmd = (f"node {ROOT / 'js' / 'packages' / 'rachana' / 'runners' / 'conformance.mjs'} --bundle {shlex.quote(str(bundle))} "
+                 f"--runtime {a.runtime or 'node'} --profiles core,drishti "
                  f"{ROOT / 'spec' / '1' / 'formats.yaml'} {os.environ.get('RACHANA_DRISHTI_FORMATS', DRISHTI_FORMATS)}")
     elif a.classpath_file:
         cp = Path(a.classpath_file).read_text().strip()

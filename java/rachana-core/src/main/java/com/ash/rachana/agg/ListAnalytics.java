@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.agg;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.el.FunctionProvider.Provided;
@@ -112,7 +113,7 @@ final class ListAnalytics {
     private static double number(String fn, Object v, String what) {
         Object s = Values.simplify(v);
         if (s instanceof Number n) {
-            return n.doubleValue();
+            return NumberText.toDouble(n);
         }
         double d = s instanceof String str ? Values.number(str) : Double.NaN;
         if (Double.isNaN(d)) {

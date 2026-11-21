@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreDecimal;
 import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
@@ -41,9 +42,9 @@ final class MathFunctions {
         t.fn("mod", 2, 2, (a, c) -> mod(a));
         t.fn("power", 2, 2, (a, c) -> power(a));
         t.fn("sqrt", 1, 1, (a, c) -> sqrt(a.get(0)));
-        t.fn("exp", 1, 1, (a, c) -> real("exp", a.get(0), Math::exp, false));
-        t.fn("ln", 1, 1, (a, c) -> real("ln", a.get(0), Math::log, true));
-        t.fn("log10", 1, 1, (a, c) -> real("log10", a.get(0), Math::log10, true));
+        t.fn("exp", 1, 1, (a, c) -> real("exp", a.get(0), CoreMath::exp, false));
+        t.fn("ln", 1, 1, (a, c) -> real("ln", a.get(0), CoreMath::log, true));
+        t.fn("log10", 1, 1, (a, c) -> real("log10", a.get(0), CoreMath::log10, true));
         t.fn("sign", 1, 1, (a, c) -> {
             BigDecimal x = Args.decimal("sign", a.get(0));
             return x == null ? null : (Object) (long) x.signum();
@@ -134,7 +135,7 @@ final class MathFunctions {
         if (x.signum() == 0 && y.signum() < 0) {
             return null;
         }
-        double r = CoreMath.pow(x.doubleValue(), y.doubleValue());
+        double r = CoreMath.pow(NumberText.toDouble(x), NumberText.toDouble(y));
         if (Double.isNaN(r)) {
             throw Args.error("power", Args.describe(a.get(0)) + " to the power " + Args.describe(a.get(1)) + " is not a real number");
         }
@@ -161,7 +162,7 @@ final class MathFunctions {
         if (positive && x.signum() <= 0) {
             throw Args.error(fn, Args.describe(v) + " is not above zero");
         }
-        return Args.out(fn, f.applyAsDouble(x.doubleValue()));
+        return Args.out(fn, f.applyAsDouble(NumberText.toDouble(x)));
     }
 
     /** {@code clamp(x, lo, hi)}: x held between lo and hi ({@code MAX(lo, MIN(hi, x))}); a problem when lo is above hi. */

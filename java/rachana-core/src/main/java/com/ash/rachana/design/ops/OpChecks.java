@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.design.ops;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.model.Area;
 import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.PanelKind;
@@ -82,7 +83,7 @@ final class OpChecks {
             return ((Number) v).longValue();
         }
         if (v instanceof Float) {
-            return ((Number) v).doubleValue();
+            return NumberText.toDouble((Number) v);
         }
         if (v instanceof Map<?, ?> m) {
             Map<String, Object> out = new LinkedHashMap<>();

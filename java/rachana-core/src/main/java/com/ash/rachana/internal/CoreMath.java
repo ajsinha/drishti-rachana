@@ -35,11 +35,11 @@ public final class CoreMath {
     }
 
     private static double withHi(double x, int hi) {
-        return Double.longBitsToDouble(((long) hi << 32) | (Double.doubleToRawLongBits(x) & 0xffffffffL));
+        return fromWords(hi, lo(x));
     }
 
     private static double withLo(double x, int lo) {
-        return Double.longBitsToDouble((Double.doubleToRawLongBits(x) & 0xffffffff00000000L) | (lo & 0xffffffffL));
+        return fromWords(hi(x), lo);
     }
 
     private static double fromWords(int hi, int lo) {
@@ -1079,6 +1079,287 @@ public final class CoreMath {
             default:
                 return -kernelCos(y[0], y[1]);
         }
+    }
+
+    /** The cosine of {@code x} in radians (fdlibm s_cos.c). */
+    public static double cos(double x) {
+        int ix = hi(x) & 0x7fffffff;
+        if (ix <= 0x3fe921fb) {
+            return kernelCos(x, 0.0);
+        }
+        if (ix >= 0x7ff00000) {
+            return x - x;
+        }
+        double[] y = new double[2];
+        int n = remPio2(x, y);
+        switch (n & 3) {
+            case 0:
+                return kernelCos(y[0], y[1]);
+            case 1:
+                return -kernelSin(y[0], y[1], 1);
+            case 2:
+                return -kernelCos(y[0], y[1]);
+            default:
+                return kernelSin(y[0], y[1], 1);
+        }
+    }
+
+    /** The tangent of {@code x} in radians (fdlibm s_tan.c). */
+    public static double tan(double x) {
+        int ix = hi(x) & 0x7fffffff;
+        if (ix <= 0x3fe921fb) {
+            return kernelTan(x, 0.0, 1);
+        }
+        if (ix >= 0x7ff00000) {
+            return x - x;
+        }
+        double[] y = new double[2];
+        int n = remPio2(x, y);
+        return kernelTan(y[0], y[1], 1 - ((n & 1) << 1));
+    }
+
+    private static final double[] T = {3.33333333333334091986e-01, 1.33333333333201242699e-01, 5.39682539762260521377e-02,
+        2.18694882948595424599e-02, 8.86323982359930005737e-03, 3.59207910759131235356e-03, 1.45620945432529025516e-03,
+        5.88041240820264096874e-04, 2.46463134818469906812e-04, 7.81794442939557092300e-05, 7.14072491382608190305e-05,
+        -1.85586374855275456654e-05, 2.59073051863633712884e-05};
+    private static final double PIO4 = 7.85398163397448278999e-01;
+    private static final double PIO4_LO = 3.06161699786838301793e-17;
+
+    /** fdlibm k_tan.c (2004): tan(x + y) for |x| below pi/4, or -1/tan when {@code iy} is -1. */
+    private static double kernelTan(double x, double y, int iy) {
+        double z;
+        double r;
+        double v;
+        double w;
+        double s;
+        int hx = hi(x);
+        int ix = hx & 0x7fffffff;
+        if (ix < 0x3e300000) {
+            if ((int) x == 0) {
+                if (((ix | lo(x)) | (iy + 1)) == 0) {
+                    return ONE / Math.abs(x);
+                }
+                if (iy == 1) {
+                    return x;
+                }
+                w = x + y;
+                z = withLo(w, 0);
+                v = y - (z - x);
+                double a = -ONE / w;
+                double t = withLo(a, 0);
+                s = ONE + t * z;
+                return t + a * (s + t * v);
+            }
+        }
+        if (ix >= 0x3FE59428) {
+            if (hx < 0) {
+                x = -x;
+                y = -y;
+            }
+            z = PIO4 - x;
+            w = PIO4_LO - y;
+            x = z + w;
+            y = 0.0;
+        }
+        z = x * x;
+        w = z * z;
+        r = T[1] + w * (T[3] + w * (T[5] + w * (T[7] + w * (T[9] + w * T[11]))));
+        v = z * (T[2] + w * (T[4] + w * (T[6] + w * (T[8] + w * (T[10] + w * T[12])))));
+        s = z * x;
+        r = y + z * (s * (r + v) + y);
+        r += T[0] * s;
+        w = x + r;
+        if (ix >= 0x3FE59428) {
+            v = iy;
+            return (1 - ((hx >> 30) & 2)) * (v - 2.0 * (x - (w * w / (w + v) - r)));
+        }
+        if (iy == 1) {
+            return w;
+        }
+        z = withLo(w, 0);
+        v = r - (z - x);
+        double a = -1.0 / w;
+        double t = withLo(a, 0);
+        s = 1.0 + t * z;
+        return t + a * (s + t * v);
+    }
+
+    // ------------------------------------------------------------------ asin, acos
+
+    private static final double PI_ASIN = 3.14159265358979311600e+00;
+    private static final double PIO2_HI = 1.57079632679489655800e+00;
+    private static final double PIO2_LO = 6.12323399573676603587e-17;
+    private static final double PIO4_HI = 7.85398163397448278999e-01;
+    private static final double PS0 = 1.66666666666666657415e-01;
+    private static final double PS1 = -3.25565818622400915405e-01;
+    private static final double PS2 = 2.01212532134862925881e-01;
+    private static final double PS3 = -4.00555345006794114027e-02;
+    private static final double PS4 = 7.91534994289814532176e-04;
+    private static final double PS5 = 3.47933107596021167570e-05;
+    private static final double QS1 = -2.40339491173441421878e+00;
+    private static final double QS2 = 2.02094576023350569471e+00;
+    private static final double QS3 = -6.88283971605453293030e-01;
+    private static final double QS4 = 7.70381505559019352791e-02;
+
+    private static double asinP(double t) {
+        return t * (PS0 + t * (PS1 + t * (PS2 + t * (PS3 + t * (PS4 + t * PS5)))));
+    }
+
+    private static double asinQ(double t) {
+        return ONE + t * (QS1 + t * (QS2 + t * (QS3 + t * QS4)));
+    }
+
+    /** The arc sine (fdlibm e_asin.c). */
+    public static double asin(double x) {
+        double t;
+        double w;
+        double p;
+        double q;
+        int hx = hi(x);
+        int ix = hx & 0x7fffffff;
+        if (ix >= 0x3ff00000) {
+            if (((ix - 0x3ff00000) | lo(x)) == 0) {
+                return x * PIO2_HI + x * PIO2_LO;
+            }
+            return (x - x) / (x - x);
+        } else if (ix < 0x3fe00000) {
+            if (ix < 0x3e400000) {
+                if (HUGE + x > ONE) {
+                    return x;
+                }
+            }
+            t = x * x;
+            p = asinP(t);
+            q = asinQ(t);
+            w = p / q;
+            return x + x * w;
+        }
+        w = ONE - Math.abs(x);
+        t = w * 0.5;
+        p = asinP(t);
+        q = asinQ(t);
+        double s = Math.sqrt(t);
+        if (ix >= 0x3FEF3333) {
+            w = p / q;
+            t = PIO2_HI - (2.0 * (s + s * w) - PIO2_LO);
+        } else {
+            w = withLo(s, 0);
+            double c = (t - w * w) / (s + w);
+            double r = p / q;
+            p = 2.0 * s * r - (PIO2_LO - 2.0 * c);
+            q = PIO4_HI - 2.0 * w;
+            t = PIO4_HI - (p - q);
+        }
+        return hx > 0 ? t : -t;
+    }
+
+    /** The arc cosine (fdlibm e_acos.c). */
+    public static double acos(double x) {
+        int hx = hi(x);
+        int ix = hx & 0x7fffffff;
+        if (ix >= 0x3ff00000) {
+            if (((ix - 0x3ff00000) | lo(x)) == 0) {
+                return hx > 0 ? 0.0 : PI_ASIN + 2.0 * PIO2_LO;
+            }
+            return (x - x) / (x - x);
+        }
+        if (ix < 0x3fe00000) {
+            if (ix <= 0x3c600000) {
+                return PIO2_HI + PIO2_LO;
+            }
+            double z = x * x;
+            double r = asinP(z) / asinQ(z);
+            return PIO2_HI - (x - (PIO2_LO - x * r));
+        } else if (hx < 0) {
+            double z = (ONE + x) * 0.5;
+            double p = asinP(z);
+            double q = asinQ(z);
+            double s = Math.sqrt(z);
+            double r = p / q;
+            double w = r * s - PIO2_LO;
+            return PI_ASIN - 2.0 * (s + w);
+        }
+        double z = (ONE - x) * 0.5;
+        double s = Math.sqrt(z);
+        double df = withLo(s, 0);
+        double c = (z - df * df) / (s + df);
+        double r = asinP(z) / asinQ(z);
+        double w = r * s + c;
+        return 2.0 * (df + w);
+    }
+
+    // ------------------------------------------------------------------ sinh, cosh, degrees
+
+    private static final double SHUGE = 1.0e307;
+
+    /** The hyperbolic sine (fdlibm e_sinh.c). */
+    public static double sinh(double x) {
+        int jx = hi(x);
+        int ix = jx & 0x7fffffff;
+        if (ix >= 0x7ff00000) {
+            return x + x;
+        }
+        double h = jx < 0 ? -0.5 : 0.5;
+        if (ix < 0x40360000) {
+            if (ix < 0x3e300000) {
+                if (SHUGE + x > ONE) {
+                    return x;
+                }
+            }
+            double t = expm1(Math.abs(x));
+            if (ix < 0x3ff00000) {
+                return h * (2.0 * t - t * t / (t + ONE));
+            }
+            return h * (t + t / (t + ONE));
+        }
+        if (ix < 0x40862E42) {
+            return h * exp(Math.abs(x));
+        }
+        if (ix < 0x408633CE || (ix == 0x408633ce && Integer.compareUnsigned(lo(x), 0x8fb9f87d) <= 0)) {
+            double w = exp(0.5 * Math.abs(x));
+            double t = h * w;
+            return t * w;
+        }
+        return x * SHUGE;
+    }
+
+    /** The hyperbolic cosine (fdlibm e_cosh.c). */
+    public static double cosh(double x) {
+        int ix = hi(x) & 0x7fffffff;
+        if (ix >= 0x7ff00000) {
+            return x * x;
+        }
+        if (ix < 0x3fd62e43) {
+            double t = expm1(Math.abs(x));
+            double w = ONE + t;
+            if (ix < 0x3c800000) {
+                return w;
+            }
+            return ONE + (t * t) / (w + w);
+        }
+        if (ix < 0x40360000) {
+            double t = exp(Math.abs(x));
+            return 0.5 * t + 0.5 / t;
+        }
+        if (ix < 0x40862E42) {
+            return 0.5 * exp(Math.abs(x));
+        }
+        if (ix < 0x408633CE || (ix == 0x408633ce && Integer.compareUnsigned(lo(x), 0x8fb9f87d) <= 0)) {
+            double w = exp(0.5 * Math.abs(x));
+            double t = 0.5 * w;
+            return t * w;
+        }
+        return HUGE * HUGE;
+    }
+
+    /** Degrees to radians, as the JDK computes it: one multiplication. */
+    public static double toRadians(double degrees) {
+        return degrees * 0.017453292519943295;
+    }
+
+    /** Radians to degrees, as the JDK computes it: one multiplication. */
+    public static double toDegrees(double radians) {
+        return radians * 57.29577951308232;
     }
 
     private static final int[] TWO_OVER_PI = {0xA2F983, 0x6E4E44, 0x1529FC, 0x2757D1, 0xF534DD, 0xC0DB62, 0x95993C, 0x439041,

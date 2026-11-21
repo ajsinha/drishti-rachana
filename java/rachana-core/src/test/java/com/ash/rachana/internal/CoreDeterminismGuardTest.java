@@ -34,9 +34,10 @@ class CoreDeterminismGuardTest {
 
     /** Forbidden everywhere in Core. */
     private static final Pattern EVERYWHERE = Pattern.compile("\\b(?:Math\\.(?:exp|log|log10|log1p|expm1|pow|tanh|sinh|cosh|sin|cos"
-            + "|tan|asin|acos|atan|atan2|cbrt|hypot|rint)\\(|StrictMath\\.|String\\.format\\(|\\.formatted\\(|java\\.text\\."
+            + "|tan|asin|acos|atan|atan2|cbrt|hypot|rint|toRadians|toDegrees)\\(|Math::(?:exp|log|log10|log1p|expm1|pow|tanh|sinh|cosh"
+            + "|sin|cos|tan|asin|acos|atan|atan2|cbrt|hypot|rint|toRadians|toDegrees)\\b|StrictMath\\.|String\\.format\\(|\\.formatted\\(|java\\.text\\."
             + "|java\\.time\\.format\\.(?!DateTimeParseException)|TextStyle|getDisplayName\\(|System\\.nanoTime|System\\.currentTimeMillis|Double\\.toString\\("
-            + "|Double\\.parseDouble\\(|Float\\.toString\\(|Float\\.parseFloat\\(|\\.sqrt\\(MathContext|unmodifiableSortedMap|appendReplacement|appendTail)");
+            + "|Double\\.parseDouble\\(|Float\\.toString\\(|Float\\.parseFloat\\(|\\.sqrt\\(MathContext|\\.doubleValue\\(\\)|(?<!Math)(?<!CoreDecimal)\\.round\\(|unmodifiableSortedMap|appendReplacement|appendTail)");
 
     /** Forbidden in the value code (el/, format/, agg/, and the binder: bind/, control/, view/, wire/): what an expression's result or a formatted value is made of. */
     private static final Pattern VALUE_CODE = Pattern.compile("\\.toUpperCase\\(|\\.toLowerCase\\(|\\.strip\\(\\)|\\.stripLeading\\("

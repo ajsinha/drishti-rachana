@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import java.math.BigDecimal;
 import java.util.List;
@@ -192,14 +193,14 @@ final class Distributions {
     static Double real(String fn, Object v) {
         Object s = Values.simplify(v);
         if ((s instanceof Double || s instanceof Float) && !Args.empty(s)) {
-            double d = ((Number) s).doubleValue();
+            double d = NumberText.toDouble((Number) s);
             if (Double.isInfinite(d)) {
                 throw Args.typeError(fn, s, "a finite number");
             }
             return d;
         }
         BigDecimal d = Args.decimal(fn, s);
-        return d == null ? null : d.doubleValue();
+        return d == null ? null : NumberText.toDouble(d);
     }
 
     /** The {@code cumulative} flag at i: true by default; a true/false, or a number (0 is false), as Excel reads it. */

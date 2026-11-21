@@ -1,2 +1,4 @@
 results/
 dist/
+python/src/drishti_rachana/bundle/*.js
+java/rachana-js/target/

@@ -453,7 +453,7 @@
 {"case":"el/determinism#d-e1-a","kind":"expr","status":"pass","actual":{"error":{"code":"RCH-2102","message":"sqrt: -4 is negative"}}}
 {"case":"el/determinism#d-e1-b","kind":"expr","status":"pass","actual":{"error":{"code":"RCH-2102","message":"eomonth: 'soon' is not a date (yyyy-mm-dd)"}}}
 {"case":"el/determinism#d-e1-c","kind":"expr","status":"pass","actual":{"error":{"code":"RCH-2102","message":"round_up: 'abc' is not a number"}}}
-{"case":"el/determinism#d-m01-a","kind":"expr","status":"pass","actual":{"value":2.718281828459045,"type":"number","text":"2.718281828459045","reads":[]}}
+{"case":"el/determinism#d-m01-a","kind":"expr","status":"fail","actual":{"value":2.7182818284590455,"type":"number","text":"2.7182818284590455","reads":[]}}
 {"case":"el/determinism#d-m01-b","kind":"expr","status":"pass","actual":{"value":5.0E-324,"type":"number","text":"4.9E-324","reads":[]}}
 {"case":"el/determinism#d-m01-c","kind":"expr","status":"pass","actual":{"value":1.7928227943945155E308,"type":"number","text":"1.7928227943945155E308","reads":[]}}
 {"case":"el/determinism#d-m01-d","kind":"expr","status":"pass","actual":{"value":0.6931471805599453,"type":"number","text":"0.6931471805599453","reads":[]}}
@@ -819,7 +819,7 @@
 {"case":"el/functions-math#sqrt-1","kind":"expr","status":"pass","actual":{"value":0.12,"type":"decimal","text":"0.12","reads":[]}}
 {"case":"el/functions-math#sqrt-2","kind":"expr","status":"pass","actual":{"value":4,"type":"number","text":"4","reads":[]}}
 {"case":"el/functions-math#exp-1","kind":"expr","status":"pass","actual":{"value":1,"type":"number","text":"1","reads":[]}}
-{"case":"el/functions-math#exp-2","kind":"expr","status":"pass","actual":{"value":2.718281828459045,"type":"number","text":"2.718281828459045","reads":[]}}
+{"case":"el/functions-math#exp-2","kind":"expr","status":"pass","actual":{"value":2.7182818284590455,"type":"number","text":"2.7182818284590455","reads":[]}}
 {"case":"el/functions-math#ln-1","kind":"expr","status":"pass","actual":{"value":0,"type":"number","text":"0","reads":[]}}
 {"case":"el/functions-math#ln-2","kind":"expr","status":"pass","actual":{"value":0.9999999999999981,"type":"number","text":"0.9999999999999981","reads":[]}}
 {"case":"el/functions-math#log10-1","kind":"expr","status":"pass","actual":{"value":3,"type":"number","text":"3","reads":[]}}
@@ -1288,7 +1288,7 @@
 {"case":"el/math#sqrt-2","kind":"expr","status":"pass","actual":{"value":1.414213562373095,"type":"decimal","text":"1.414213562373095","reads":[]}}
 {"case":"el/math#sqrt-4","kind":"expr","status":"pass","actual":{"error":{"code":"RCH-2102","message":"sqrt: -4 is negative"}}}
 {"case":"el/math#exp-0","kind":"expr","status":"pass","actual":{"value":1,"type":"number","text":"1","reads":[]}}
-{"case":"el/math#exp-1","kind":"expr","status":"pass","actual":{"value":2.718281828459045,"type":"number","text":"2.718281828459045","reads":[]}}
+{"case":"el/math#exp-1","kind":"expr","status":"pass","actual":{"value":2.7182818284590455,"type":"number","text":"2.7182818284590455","reads":[]}}
 {"case":"el/math#ln-1","kind":"expr","status":"pass","actual":{"value":0,"type":"number","text":"0","reads":[]}}
 {"case":"el/math#log10-1000","kind":"expr","status":"pass","actual":{"value":3,"type":"number","text":"3","reads":[]}}
 {"case":"el/math#ln-0","kind":"expr","status":"pass","actual":{"error":{"code":"RCH-2102","message":"ln: 0 is not above zero"}}}

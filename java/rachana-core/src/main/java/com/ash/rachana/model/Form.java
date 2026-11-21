@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import com.ash.rachana.internal.RegexText;
 
 /**
  * A panel's {@code form:} (RACHANA_REFERENCE.md 10): the typed fields people may edit, the rules they must keep (an error stops the
@@ -343,7 +344,7 @@ public record Form(String title, String key, String edit, String create, String 
             try {
                 Pattern.compile(m.get("pattern").toString());
             } catch (PatternSyntaxException e) {
-                out.add("field " + id + ": pattern is not a regular expression (" + e.getDescription() + ")");
+                out.add("field " + id + ": pattern is not a regular expression (" + RegexText.describe(m.get("pattern").toString(), e) + ")");
             }
         }
         if (m.get("max-length") != null && !(m.get("max-length") instanceof Number n && n.intValue() >= 1 && n.intValue() <= MAX_TEXT)) {

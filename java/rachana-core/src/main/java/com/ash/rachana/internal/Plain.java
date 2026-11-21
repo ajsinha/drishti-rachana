@@ -108,7 +108,7 @@ public final class Plain {
 
     public static double asDouble(Object v, double otherwise) {
         if (v instanceof Number n) {
-            return n.doubleValue();
+            return NumberText.toDouble(n);
         }
         if (v instanceof Boolean b) {
             return b ? 1.0 : 0.0;

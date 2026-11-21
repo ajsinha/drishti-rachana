@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.RachanaException;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -273,7 +274,7 @@ public final class FormRules {
             return d;
         }
         if (v instanceof Number n) {
-            return new BigDecimal(n instanceof Double || n instanceof Float ? com.ash.rachana.internal.NumberText.text(n.doubleValue()) : n.toString());
+            return new BigDecimal(n instanceof Double || n instanceof Float ? com.ash.rachana.internal.NumberText.text(NumberText.toDouble(n)) : n.toString());
         }
         if (v instanceof String s && !s.isBlank()) {
             try {

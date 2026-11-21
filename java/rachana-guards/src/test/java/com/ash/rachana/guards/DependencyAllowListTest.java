@@ -42,7 +42,9 @@ class DependencyAllowListTest {
                 for (String b : BANNED_PREFIXES) assertFalse(g.startsWith(b), pom + " depends on banned " + g);
                 boolean rachana = g.equals("com.ash.rachana");
                 boolean junitTest = g.equals("org.junit.jupiter") && body.contains("<scope>test</scope>");
-                assertTrue(rachana || junitTest, pom + " has a dependency outside the allow-list: " + g + ":" + m.group(2));
+                // the JavaScript build's compiler (TeaVM, Apache-2.0): build time only, in rachana-js, never in a JVM artifact
+                boolean teavmBuild = g.equals("org.teavm") && module.equals("rachana-js") && body.contains("<scope>provided</scope>");
+                assertTrue(rachana || junitTest || teavmBuild, pom + " has a dependency outside the allow-list: " + g + ":" + m.group(2));
             }
         }
         Set<String> stale = new LinkedHashSet<>(exempt);

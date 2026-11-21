@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+
+  The JavaScript build (split step A15, P1: TeaVM): Core compiled to two bundles, rachana.runtime.js (compile, evaluate, format,
+  view) and rachana.tools.js (the runtime and the editing operations, the schemas and the conformance harness). Built only with
+  the js profile of the parent (./mvnw -Pjs package -pl rachana-js -am); never installed. tools/js/build_js.py copies the
+  bundles into js/packages/rachana/dist/ and prints their SHA-256 (recorded in the release notes, decision P1-3).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>0.10.0-SNAPSHOT</version></parent>
+  <artifactId>rachana-js</artifactId>
+  <name>rachana-js</name>
+
+  <properties>
+    <teavm.version>0.16.0</teavm.version>
+    <rachana.js.out>${project.build.directory}/js</rachana.js.out>
+    <rachana.js.opt>ADVANCED</rachana.js.opt>
+    <rachana.js.minify>true</rachana.js.minify>
+    <!-- "bench" also builds rachana.bench.js, the measuring entry (tools/js/build_js.py with bench) -->
+    <rachana.js.bench>none</rachana.js.bench>
+    <maven.install.skip>true</maven.install.skip>
+  </properties>
+
+  <dependencies>
+    <!-- Rachana's own modules reach the build as classes unpacked into target/classes (below), not as jars on TeaVM's class path:
+         this module's com.ash.rachana.internal.NumberText then replaces Core's (TeaVM reads jars before the module's classes). -->
+    <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-conformance</artifactId><version>${project.version}</version><scope>test</scope></dependency>
+    <dependency><groupId>org.teavm</groupId><artifactId>teavm-classlib</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.teavm</groupId><artifactId>teavm-jso</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+    <!-- build time only: the resource SPI (BundledResources), the tool API (BuildBundles), the class the build patches -->
+    <dependency><groupId>org.teavm</groupId><artifactId>teavm-tooling</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.8.1</version>
+        <executions>
+          <execution>
+            <id>rachana-classes</id>
+            <phase>generate-sources</phase>
+            <goals><goal>unpack-dependencies</goal></goals>
+            <configuration>
+              <includeGroupIds>com.ash.rachana</includeGroupIds>
+              <includeScope>test</includeScope>
+              <excludes>**/module-info.class,META-INF/**,com/ash/rachana/internal/NumberText.class,com/ash/rachana/internal/RegexText.class</excludes>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- the bundle builder and the one patched TeaVM class (src/build/java), compiled with the module -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>3.6.0</version>
+        <executions><execution><id>build-sources</id><phase>generate-sources</phase><goals><goal>add-source</goal></goals>
+          <configuration><sources><source>${project.basedir}/src/build/java</source></sources></configuration>
+        </execution></executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration><compilerArgs><arg>-nowarn</arg></compilerArgs></configuration>
+      </plugin>
+      <!-- TeaVM through its tool API in a JVM of its own: this module's classes first, so the patched StatementRenderer wins -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.6.3</version>
+        <executions><execution><id>bundles</id><phase>process-classes</phase><goals><goal>exec</goal></goals>
+          <configuration>
+            <executable>${java.home}/bin/java</executable>
+            <classpathScope>compile</classpathScope>
+            <arguments>
+              <argument>-Xmx2g</argument>
+              <argument>-cp</argument><classpath/>
+              <argument>com.ash.rachana.js.build.BuildBundles</argument>
+              <argument>${rachana.js.out}</argument>
+              <argument>${rachana.js.opt}</argument>
+              <argument>${rachana.js.minify}</argument>
+              <argument>${rachana.js.bench}</argument>
+            </arguments>
+          </configuration>
+        </execution></executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

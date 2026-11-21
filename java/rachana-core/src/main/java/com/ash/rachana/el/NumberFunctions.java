@@ -4,6 +4,8 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreDecimal;
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.internal.CoreMath;
 import java.math.BigDecimal;
@@ -45,17 +47,17 @@ final class NumberFunctions {
         t.fn("even", 1, 1, (a, c) -> evenOdd("even", a.get(0), true));
         t.fn("odd", 1, 1, (a, c) -> evenOdd("odd", a.get(0), false));
         t.fn("pi", 0, 0, (a, c) -> Math.PI);
-        trig(t, "sin", Math::sin, false);
-        trig(t, "cos", Math::cos, false);
-        trig(t, "tan", Math::tan, false);
-        trig(t, "asin", Math::asin, true);
-        trig(t, "acos", Math::acos, true);
-        trig(t, "atan", Math::atan, false);
-        trig(t, "sinh", Math::sinh, false);
-        trig(t, "cosh", Math::cosh, false);
-        trig(t, "tanh", Math::tanh, false);
-        trig(t, "radians", Math::toRadians, false);
-        trig(t, "degrees", Math::toDegrees, false);
+        trig(t, "sin", CoreMath::sin, false);
+        trig(t, "cos", CoreMath::cos, false);
+        trig(t, "tan", CoreMath::tan, false);
+        trig(t, "asin", CoreMath::asin, true);
+        trig(t, "acos", CoreMath::acos, true);
+        trig(t, "atan", CoreMath::atan, false);
+        trig(t, "sinh", CoreMath::sinh, false);
+        trig(t, "cosh", CoreMath::cosh, false);
+        trig(t, "tanh", CoreMath::tanh, false);
+        trig(t, "radians", CoreMath::toRadians, false);
+        trig(t, "degrees", CoreMath::toDegrees, false);
         t.fn("atan2", 2, 2, (a, c) -> {
             Double x = Distributions.real("atan2", a.get(0));
             Double y = Distributions.real("atan2", a.get(1));
@@ -94,7 +96,7 @@ final class NumberFunctions {
         if (d < 1 || d > MathFunctions.MAX_PLACES) {
             throw Args.error("round_sig", "significant digits " + d + " are not from 1 to " + MathFunctions.MAX_PLACES);
         }
-        return x.signum() == 0 ? (Object) 0L : Args.out(x.round(new MathContext(d, RoundingMode.HALF_UP)));
+        return x.signum() == 0 ? (Object) 0L : Args.out(CoreDecimal.round(x, new MathContext(d, RoundingMode.HALF_UP)));
     }
 
     /** {@code log(x, [base])}: the logarithm in a base (10 by default, Excel's LOG). */
@@ -110,7 +112,7 @@ final class NumberFunctions {
         if (b.signum() <= 0 || b.compareTo(BigDecimal.ONE) == 0) {
             throw Args.error("log", "the base " + Args.describe(a.size() > 1 ? a.get(1) : 10) + " is not above zero and other than 1");
         }
-        double r = b.compareTo(BigDecimal.TEN) == 0 ? CoreMath.log10(x.doubleValue()) : CoreMath.log(x.doubleValue()) / CoreMath.log(b.doubleValue());
+        double r = b.compareTo(BigDecimal.TEN) == 0 ? CoreMath.log10(NumberText.toDouble(x)) : CoreMath.log(NumberText.toDouble(x)) / CoreMath.log(NumberText.toDouble(b));
         return Args.out("log", r);
     }
 

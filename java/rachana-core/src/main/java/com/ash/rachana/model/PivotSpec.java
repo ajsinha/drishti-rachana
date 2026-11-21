@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.model;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -366,7 +367,7 @@ public record PivotSpec(List<Field> fields, boolean explicit, List<String> rows,
     /** A range end as a whole number (Long), another number (Double) or text, whichever reader produced it. */
     private static Object plain(Object v) {
         if (v instanceof Number n) {
-            double d = n.doubleValue();
+            double d = NumberText.toDouble(n);
             return d == CoreMath.rint(d) && Math.abs(d) < 1e15 ? (Object) n.longValue() : (Object) d;
         }
         return v == null ? null : String.valueOf(v);

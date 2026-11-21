@@ -50,7 +50,7 @@ public final class Values {
     public static double number(Object v) {
         Object s = simplify(v);
         if (s instanceof Number n) {
-            return n.doubleValue();
+            return NumberText.toDouble(n);
         }
         if (s instanceof String str) {
             if (!couldBeNumber(str)) {
@@ -134,7 +134,7 @@ public final class Values {
             return b;
         }
         if (s instanceof Number n) {
-            return n.doubleValue() != 0 && !Double.isNaN(n.doubleValue());
+            return NumberText.toDouble(n) != 0 && !Double.isNaN(NumberText.toDouble(n));
         }
         if (s instanceof String str) {
             return !str.isEmpty();

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreDecimal;
 import com.ash.rachana.internal.NumberText;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -197,7 +198,7 @@ final class NumberCode {
             exponent = 0;
             mantissa = BigDecimal.ZERO;
         } else {
-            BigDecimal r = a.round(new MathContext(minInt + maxFrac, RoundingMode.HALF_UP));
+            BigDecimal r = CoreDecimal.round(a, new MathContext(minInt + maxFrac, RoundingMode.HALF_UP));
             exponent = r.precision() - r.scale() - minInt;
             mantissa = r.movePointLeft(exponent);
         }

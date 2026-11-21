@@ -4,6 +4,8 @@
  */
 package com.ash.rachana.bind;
 
+import com.ash.rachana.internal.CoreDecimal;
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.view.PanelData;
@@ -84,7 +86,7 @@ final class ChartBinder {
     /** {@code v} in format {@code fmt}; with no format, six significant digits (bin edges must not print 0.30000000000000004). */
     private String format(String fmt, double v) {
         if (fmt == null) {
-            return Double.isFinite(v) ? new BigDecimal(v).round(SIGNIFICANT).stripTrailingZeros().toPlainString() : "—";
+            return Double.isFinite(v) ? CoreDecimal.round(new BigDecimal(v), SIGNIFICANT).stripTrailingZeros().toPlainString() : "—";
         }
         return formats.format(fmt, Values.normalise(v));
     }
@@ -551,7 +553,7 @@ final class ChartBinder {
     private static double figure(Map<String, Map<String, Object>> cells, String rowKey, String colKey) {
         Map<String, Object> e = cells.get(rowKey + "|" + colKey);
         Object v = e == null ? null : ((Map<String, Object>) e.get("values")).get("v");
-        return v instanceof Number num ? num.doubleValue() : Double.NaN;
+        return v instanceof Number num ? NumberText.toDouble(num) : Double.NaN;
     }
 
     /** A group's row key as the engine writes it: its levels' coordinates ({@code b0=…|b1=…}). */

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreDecimal;
 import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
@@ -181,7 +182,7 @@ final class FinanceFunctions {
             if (d == null) {
                 return null;
             }
-            out[i] = d.doubleValue();
+            out[i] = NumberText.toDouble(d);
         }
         return out;
     }
@@ -455,7 +456,7 @@ final class FinanceFunctions {
         if (to.isBefore(from)) {
             throw Args.error("accrued", "the end " + to + " is before the start " + from);
         }
-        return Args.out(r.multiply(DateFunctions.yearFraction("accrued", from, to, basis)).multiply(par).round(MathContext.DECIMAL64));
+        return Args.out(CoreDecimal.round(r.multiply(DateFunctions.yearFraction("accrued", from, to, basis)).multiply(par), MathContext.DECIMAL64));
     }
 
     /**
@@ -477,7 +478,7 @@ final class FinanceFunctions {
         BigDecimal fraction = NumberText.decimal(f);
         BigDecimal part = toDecimal ? rest.multiply(scale).divide(fraction, MathContext.DECIMAL128)
                 : rest.multiply(fraction).divide(scale, MathContext.DECIMAL128);
-        return Args.out(whole.add(part).round(MathContext.DECIMAL64));
+        return Args.out(CoreDecimal.round(whole.add(part), MathContext.DECIMAL64));
     }
 
     /**
@@ -550,7 +551,7 @@ final class FinanceFunctions {
                 }
                 t[i] = ChronoUnit.DAYS.between(settle, Args.parseDate(s)) / 365.0;
             } else {
-                t[i] = Args.decimal(fn, v).doubleValue();
+                t[i] = NumberText.toDouble(Args.decimal(fn, v));
             }
             if (t[i] < 0) {
                 throw Args.error(fn, "a flow's time is before the settlement");

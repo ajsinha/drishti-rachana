@@ -16,6 +16,12 @@ Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).
   `expand(3 args)`, `sizes(1 arg)`, `SutraBlocks.Contribution` (now `BlockLibrary.Contribution`), `FragmentResolver.folders()`;
   changed `BlockUses.of(text)` to `of(text, resolver)`; added `BlockLibrary`, `FragmentResolver.none()`, `Entities.addTo(…, blocks)`,
   `Entities.match(kinds, sections)` (DRISHTI_MIGRATION_TODO 8.3i).
+- **F1, the customer corpus on Core (CG3)**: `CustomerCorpusTest` compiles the 478 Sutras of `compat/customers/drishti/2.9.11.i7a`
+  on Core (`CoreRuntime`: one instance with the conformance suite's `drishti` profile, `conformance.Cases.profile`, and its own
+  `BlockLibrary`), by default; every document is byte-identical to the recorded `compiled/`, and the test checks that all 478 were
+  compared. A runtime that cannot run fails the test (it was skipped). The reference bridge runs only with
+  `-Drachana.compat.runtime=bridge`. The Drishti profile's formats are not loaded: no format enters these documents. Not yet: the
+  corpus's recorded ViewModels (`binds/`, F13), before G4.
 
 ## v0.11.0 ready (untagged): the JavaScript build
 

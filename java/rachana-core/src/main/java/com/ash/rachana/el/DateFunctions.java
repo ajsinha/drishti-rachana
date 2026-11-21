@@ -15,6 +15,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Dates, on the bank's calendars (FUNCTION_CATALOGUE.md section 3): {@code today}, {@code days_between}, {@code eomonth},
@@ -35,7 +36,7 @@ final class DateFunctions {
     static final List<String> BASES = List.of("ACT/360", "ACT/365F", "30/360", "30E/360", "ACT/ACT");
 
     /** The intervals of {@code intck}. */
-    static final Set<String> INTERVALS = Set.of("day", "week", "month", "quarter", "year", "business_day");
+    static final Set<String> INTERVALS = Ordered.set("day", "week", "month", "quarter", "year", "business_day");
 
     static void register(Functions.Table t) {
         Calendars cals = t.calendars();

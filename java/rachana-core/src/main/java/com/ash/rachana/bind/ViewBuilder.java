@@ -32,7 +32,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -148,7 +147,7 @@ public final class ViewBuilder {
         LocalDate today = r.asOf().businessDate() != null ? r.asOf().businessDate() : dates.today(r.asOf());
         EvalContext eval = resolved.apply(EvalContext.of(seenData, formats).withState(state)).withToday(today);
         Set<EntityRef> wanted = new LinkedHashSet<>();
-        Set<EntityRef> denied = new HashSet<>();
+        Set<EntityRef> denied = new LinkedHashSet<>();
         for (Panel p : s.panels()) {
             if (p.kind().readsData() && r.values().builds(p.id())) {
                 binder.chartSource(p, eval).ifPresent(src -> {

@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The server's one configuration file ({@code rachana-server.yaml}; every key in {@code rachana-server.example.yaml}), read and checked
@@ -379,12 +380,12 @@ public final class ServerConfig {
         if (journal == null && (!writes.isEmpty() || !r.fileWrites.isEmpty() || !editAccess.isEmpty())) {
             r.problem("edits.journal: tables with write or access entries with edit need the outbox's journal file (\"${config}/data/outbox.jsonl\")");
         }
-        Edits edits = new Edits(journal, List.copyOf(off), Map.copyOf(writes), Map.copyOf(editAccess));
+        Edits edits = new Edits(journal, List.copyOf(off), Ordered.copy(writes), Ordered.copy(editAccess));
         if (!r.problems.isEmpty()) {
             throw new Invalid(r.problems);
         }
         return new ServerConfig(file, http, project, List.copyOf(libraries), runtime, List.copyOf(drivers), tables, auth, access, edits,
-                Map.copyOf(r.fileWrites), new Approvals(List.copyOf(hold), Map.copyOf(approve)));
+                Ordered.copy(r.fileWrites), new Approvals(List.copyOf(hold), Ordered.copy(approve)));
     }
 
     /** Whether an address is a loopback one ({@code 127.0.0.1}, {@code ::1}, {@code localhost}). */

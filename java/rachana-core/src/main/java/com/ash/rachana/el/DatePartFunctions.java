@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The date scalars DEL had that Rachana gains with the fold (docs/architecture/ARCHITECTURE.md §28 2.5, rows 11, 17, 18 and 57): {@code timestamp},
@@ -23,7 +24,7 @@ public final class DatePartFunctions {
     private DatePartFunctions() {}
 
     /** The units of {@code shift_date}. */
-    public static final Set<String> UNITS = Set.of("business-day", "day", "week", "month", "quarter", "year");
+    public static final Set<String> UNITS = Ordered.set("business-day", "day", "week", "month", "quarter", "year");
 
     /** The most business days {@code shift_date} walks: about 400 years, a bound on the work. */
     static final int MAX_BUSINESS_SHIFT = 100_000;

@@ -17,7 +17,6 @@ import com.ash.rachana.model.StripItem;
 import com.ash.rachana.model.Sutra;
 import com.ash.rachana.model.Title;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * Turns a {@link PNode} tree into a {@link Sutra}, collecting every problem with its line and column.
@@ -40,11 +41,11 @@ final class SutraBuilder {
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]{1,63}");
     private static final Pattern FKEY = Pattern.compile("F([1-9]|1[0-2])");
     private static final int LANGUAGE = SutraParser.LANGUAGE;
-    private static final Set<String> PANEL = Set.of("id", "kind", "title", "key", "code", "area", "infer", "columns", "body", "panels", "description",
+    private static final Set<String> PANEL = Ordered.set("id", "kind", "title", "key", "code", "area", "infer", "columns", "body", "panels", "description",
             Panel.SPAN, Panel.HEIGHT, com.ash.rachana.model.Refresh.KEY, Panel.ORDER, Panel.SECTION, Panel.COLLAPSIBLE, com.ash.rachana.model.Form.KEY,
             ScreenPhone.KEY);
-    private static final Set<String> STRIP = Set.of("label", "bind", "fmt", "tone", "emphasis");
-    private static final Set<String> COLUMN = Set.of("label", "bind", "fmt", "tone", "total", "link");
+    private static final Set<String> STRIP = Ordered.set("label", "bind", "fmt", "tone", "emphasis");
+    private static final Set<String> COLUMN = Ordered.set("label", "bind", "fmt", "tone", "total", "link");
 
     private final String file;
     /** Where the text it builds from places a problem (SPEC 6.1); null when it was not read from a text. */
@@ -139,8 +140,8 @@ final class SutraBuilder {
         Title title = title(m.get("title"));
         List<StripItem> strip = strip(m.get("strip"));
         List<Panel> panels = new ArrayList<>();
-        Set<String> ids = new HashSet<>();
-        Set<String> keys = new HashSet<>();
+        Set<String> ids = new LinkedHashSet<>();
+        Set<String> keys = new LinkedHashSet<>();
         List<PNode> own = new ArrayList<>(listOf(m.get("panels"), "panels"));
         if (m.get("panels") != null) {
             written.addAll(m.get("panels").list());
@@ -171,7 +172,7 @@ final class SutraBuilder {
         if (screenRefresh != null) {
             panels.replaceAll(p -> p.options().containsKey(com.ash.rachana.model.Refresh.KEY) ? p : withOption(p, com.ash.rachana.model.Refresh.KEY, screenRefresh));
         }
-        childIds(panels, new HashSet<>(ids));
+        childIds(panels, new LinkedHashSet<>(ids));
         LayoutReader layoutReader = new LayoutReader(file, problems);          // layout: the grid, areas, split, tabs, sections (RACHANA_REFERENCE.md 13)
         com.ash.rachana.model.ScreenLayout layout = layoutReader.read(m.get("layout"));
         layoutReader.check(layout, panels, m.getOrDefault("layout", root));
@@ -203,7 +204,7 @@ final class SutraBuilder {
         List<SutraProblem> declAdvisories = new ArrayList<>();
         Map<String, com.ash.rachana.el.Declarations.Function> fns = new LinkedHashMap<>(libraryFunctions);
         Map<String, String> lets = new LinkedHashMap<>();
-        Set<String> taken = new HashSet<>();
+        Set<String> taken = new LinkedHashSet<>();
         controls.forEach(c -> taken.add(c.id()));
         if (extensions.get(com.ash.rachana.model.DataEntry.KEY) instanceof List<?> entries) {
             entries.forEach(e -> taken.add(((com.ash.rachana.model.DataEntry) e).name()));
@@ -221,7 +222,7 @@ final class SutraBuilder {
         List<com.ash.rachana.model.StateEntry> state = new ArrayList<>();   // level 1.2: S1, the screen's own state, then its fragments' private state
         EffectsReader effects = new EffectsReader(file, problems);
         if (m.containsKey("state") && grammar.hasKey("state")) {
-            Set<String> names = new HashSet<>(taken);
+            Set<String> names = new LinkedHashSet<>(taken);
             names.addAll(lets.keySet());
             state.addAll(effects.state(m.get("state"), names));
         }
@@ -357,7 +358,7 @@ final class SutraBuilder {
             problem("RCH-2012", "'title' must be a mapping (pill, id, with)", n);
             return null;
         }
-        unknownKeys(n.map(), Set.of("pill", "id", "with"), "title");
+        unknownKeys(n.map(), Ordered.set("pill", "id", "with"), "title");
         if (n.map().get("id") == null || n.map().get("id").value() == null) {
             // without 'title' the default is { id: $.id }; a title written out says which expression is the identifier
             problem("RCH-2010", "missing 'id' in title: the expression for the large identifier, such as $.TRADE_ID", n);
@@ -585,7 +586,7 @@ final class SutraBuilder {
                 problem("RCH-2058", "a form panel's form is the panel itself: it takes no '" + e.getKey() + "' (that edits a table's rows)", e.getValue());
             }
         }
-        Set<String> fields = new HashSet<>();
+        Set<String> fields = new LinkedHashSet<>();
         if (f.get("fields") instanceof List<?> l) {
             l.forEach(x -> {
                 if (x instanceof Map<?, ?> fm && fm.get("id") != null) {
@@ -648,13 +649,13 @@ final class SutraBuilder {
      * Panels a tab may hold: those that read a record or a list, and the simple charts of one element (a leg's notional profile and
      * fixings as lines, its flows as bars), so legs side by side each show their own.
      */
-    private static final Set<PanelKind> TAB_PARTS = Set.of(PanelKind.KV, PanelKind.STATUS, PanelKind.TABLE, PanelKind.LADDER,
+    private static final Set<PanelKind> TAB_PARTS = Ordered.set(PanelKind.KV, PanelKind.STATUS, PanelKind.TABLE, PanelKind.LADDER,
             PanelKind.HBAR, PanelKind.MARKDOWN, PanelKind.METRIC, PanelKind.LINE, PanelKind.AREA, PanelKind.TIMELINE);
 
     /** The {@code panels:} of a tabs panel: each needs an id (unique among them) and a kind a tab can hold. */
     private List<Panel> parts(PNode list) {
         List<Panel> out = new ArrayList<>();
-        java.util.Set<String> ids = new java.util.HashSet<>();
+        java.util.Set<String> ids = new LinkedHashSet<>();
         for (PNode n : listOf(list, "panels")) {
             if (n.isMap() && !n.map().containsKey("id")) {
                 problem("RCH-2010", "a panel inside a tab needs an 'id'", n);

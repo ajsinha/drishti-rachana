@@ -11,9 +11,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashMap;
 
 /**
  * The named formats used by {@code fmt:} and {@code fmt(...)}: the bundled {@code formats.yaml}, then each pack's file, then the site's
@@ -35,13 +36,13 @@ public final class Formats {
 
         /** The names a reader at {@code level} sees. */
         Map<String, FormatSpec> at(String level) {
-            Map<String, FormatSpec> at = new HashMap<>(all);
+            Map<String, FormatSpec> at = new LinkedHashMap<>(all);
             since.forEach((name, l) -> {
                 if (com.ash.rachana.model.PanelKind.compareLevels(l, level) > 0) {
                     at.remove(name);
                 }
             });
-            return Map.copyOf(at);
+            return Ordered.copy(at);
         }
     }
 
@@ -147,8 +148,8 @@ public final class Formats {
     }
 
     private static Table read(String overrideFile, java.util.List<String> packFiles) {
-        Map<String, FormatSpec> m = new HashMap<>();
-        Map<String, String> since = new HashMap<>();
+        Map<String, FormatSpec> m = new LinkedHashMap<>();
+        Map<String, String> since = new LinkedHashMap<>();
         try (InputStream in = Formats.class.getClassLoader().getResourceAsStream("formats.yaml")) {
             read(in, m, since, true);
             for (String f : packFiles) {
@@ -164,7 +165,7 @@ public final class Formats {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return new Table(Map.copyOf(m), Map.copyOf(since));
+        return new Table(Ordered.copy(m), Ordered.copy(since));
     }
 
     /** The language level that brought a name: a bundled name's {@code since} ({@code 1.0} when it has none, and for a pack's or the site's name), or null for a name the table does not hold. */

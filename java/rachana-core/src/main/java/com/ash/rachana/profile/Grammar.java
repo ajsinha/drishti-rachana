@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The Sutra grammar of one {@link com.ash.rachana.Rachana} instance (split step A7): Core's, plus what its profiles add — top-level
@@ -32,7 +33,7 @@ public final class Grammar {
      * major, {@code libraries: [finance@1]}, LIBRARIES.md 7.1, level 1.2); {@code let}, {@code functions} (X41, S2) and {@code state}
      * (S1), level 1.2.
      */
-    public static final Map<String, String> LEVEL_KEYS = Map.of(com.ash.rachana.model.DataEntry.KEY, "1.1", "libraries", "1.2",
+    public static final Map<String, String> LEVEL_KEYS = Ordered.map(com.ash.rachana.model.DataEntry.KEY, "1.1", "libraries", "1.2",
             "let", "1.2", "functions", "1.2", "state", "1.2");
 
     /** The panel kinds of the grammar that a profile brings (the rest are Core's). */
@@ -83,7 +84,7 @@ public final class Grammar {
         this.libraries = libraries;
         this.keys = Collections.unmodifiableMap(new LinkedHashMap<>(keys));
         this.profileKinds = profileKinds.isEmpty() ? Set.of() : Collections.unmodifiableSet(EnumSet.copyOf(profileKinds));
-        this.sourceForms = Set.copyOf(sourceForms);
+        this.sourceForms = Ordered.copySet(sourceForms);
         this.formSave = formSave;
         this.fragments = fragments;
     }

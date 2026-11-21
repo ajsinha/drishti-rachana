@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * What a request says about a view's controls: the values the reader set ({@code ctl.leg=L2}, a multi-select's choices joined
@@ -30,8 +31,8 @@ public record ControlValues(Map<String, String> raw, Set<String> only) {
     public static final int MAX_KEY = 40;
 
     public ControlValues {
-        raw = Map.copyOf(raw);
-        only = Set.copyOf(only);
+        raw = Ordered.copy(raw);
+        only = Ordered.copySet(only);
     }
 
     /** Reads {@code ctl.<id>=value} parameters (and a comma-separated {@code panels} list) from a request's parameters. */

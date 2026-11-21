@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Reads a Sutra's {@code data:} block (SPEC 2.4, decision D10; language level 1.1). Codes: {@code RCH-2073} an entry that does not have
@@ -25,8 +26,8 @@ final class DataReader {
     private static final Pattern TABLE = Pattern.compile("[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*");
     private static final List<String> FORMS = List.of("table", "url", "rows", "record");
     private static final List<String> COMMON = List.of("key", "fields", "as", "where", "limit", "refresh", "live", "mode", "format", "path");
-    private static final Set<String> FORMATS = Set.of("json", "csv", "ndjson", "arrow");
-    private static final Set<String> MODES = Set.of("auto", "client", "server");
+    private static final Set<String> FORMATS = Ordered.set("json", "csv", "ndjson", "arrow");
+    private static final Set<String> MODES = Ordered.set("auto", "client", "server");
 
     private final String file;
     private final List<SutraProblem> problems;
@@ -119,7 +120,7 @@ final class DataReader {
             }
         }
         List<String> key = key(m.get("key"), name);
-        String as = choice(m.get("as"), Set.of("rows", "record"), "as", name);
+        String as = choice(m.get("as"), Ordered.set("rows", "record"), "as", name);
         String mode = choice(m.get("mode"), MODES, "mode", name);
         String format = choice(m.get("format"), FORMATS, "format", name);
         String where = text(m.get("where"), "where", name);

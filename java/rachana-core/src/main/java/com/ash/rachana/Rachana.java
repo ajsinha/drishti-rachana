@@ -11,10 +11,10 @@ import com.ash.rachana.el.FunctionTable;
 import com.ash.rachana.format.Formats;
 import com.ash.rachana.profile.Profile;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * One Rachana: settings and profiles in, a compiler, a function table and a format table out (split step A6;
@@ -69,7 +69,7 @@ public final class Rachana {
         RachanaOptions opts = options == null ? RachanaOptions.DEFAULTS : options;
         List<Profile> all = new ArrayList<>();
         all.add(Profile.core());
-        Set<String> names = new HashSet<>(Set.of("core"));
+        Set<String> names = new LinkedHashSet<>(Set.of("core"));
         List<FunctionProvider> providers = new ArrayList<>();
         List<String> formatFiles = new ArrayList<>(opts.formatFiles());
         Calendars.Resolver calendars = null;

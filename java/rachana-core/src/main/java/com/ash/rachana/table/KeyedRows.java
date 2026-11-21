@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
 
 /**
  * The rows of one table held in their JSON form and kept current by keyed patches (Data Protocol section 8.1; ViewModel contract 1.1,
@@ -133,7 +134,7 @@ public final class KeyedRows {
             throw new IllegalArgumentException("rdp.table.no-key: a table without a key takes only reset and add");
         }
         if (!remove.isEmpty()) {
-            java.util.Set<String> gone = new java.util.HashSet<>();
+            java.util.Set<String> gone = new LinkedHashSet<>();
             remove.forEach(k -> gone.add(keyText(k)));
             int before = rows.size();
             rows.removeIf(row -> gone.contains(keyOf(row)));

@@ -5,6 +5,7 @@
 package com.ash.rachana.parse;
 
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The type of an untagged plain scalar, decided from its text by the YAML 1.1 rules the language was defined with:
@@ -15,9 +16,9 @@ import java.util.Set;
  */
 final class YamlScalars {
 
-    private static final Set<String> BOOL = Set.of("yes", "Yes", "YES", "no", "No", "NO", "true", "True", "TRUE", "false", "False",
+    private static final Set<String> BOOL = Ordered.set("yes", "Yes", "YES", "no", "No", "NO", "true", "True", "TRUE", "false", "False",
             "FALSE", "on", "On", "ON", "off", "Off", "OFF");
-    private static final Set<String> NULL = Set.of("~", "null", "Null", "NULL");
+    private static final Set<String> NULL = Ordered.set("~", "null", "Null", "NULL");
     private static final int NUMBER_LIMIT = 1024;
 
     private YamlScalars() {}

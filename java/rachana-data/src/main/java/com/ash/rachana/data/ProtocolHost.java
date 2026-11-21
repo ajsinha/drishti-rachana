@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The Data Protocol's routes and bridge (spec/1/data-protocol sections 4 and 12) over any number of {@link TableProvider}s, transport-free:
@@ -209,7 +210,7 @@ public final class ProtocolHost {
             List<Object> sort = new ArrayList<>();
             for (String s : q.get("sort").split(",")) {
                 if (!s.isBlank()) {
-                    sort.add(Map.of("col", s.startsWith("-") ? s.substring(1) : s, "dir", s.startsWith("-") ? "desc" : "asc"));
+                    sort.add(Ordered.map("col", s.startsWith("-") ? s.substring(1) : s, "dir", s.startsWith("-") ? "desc" : "asc"));
                 }
             }
             d.put("sort", sort);

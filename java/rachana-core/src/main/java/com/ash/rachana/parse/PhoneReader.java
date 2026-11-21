@@ -9,11 +9,12 @@ import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.ScreenPhone;
 import com.ash.rachana.model.SourceLocation;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * Reads the phone display's grammar (docs/guides/BUILD_GUIDE.md section 5): a panel's {@code phone:} (a tier, or a tier with its compact options),
@@ -23,8 +24,8 @@ import java.util.Set;
  */
 final class PhoneReader {
 
-    private static final Set<String> PANEL_KEYS = Set.of("tier", "rows", "columns", "sort", "series", "figures", "tab", "from");
-    private static final Set<String> SCREEN_KEYS = Set.of("order", "default", "summary");
+    private static final Set<String> PANEL_KEYS = Ordered.set("tier", "rows", "columns", "sort", "series", "figures", "tab", "from");
+    private static final Set<String> SCREEN_KEYS = Ordered.set("order", "default", "summary");
 
     private final String file;
     private final List<SutraProblem> problems;
@@ -147,7 +148,7 @@ final class PhoneReader {
         if (phone == null) {
             return;
         }
-        Set<String> ids = new HashSet<>();
+        Set<String> ids = new LinkedHashSet<>();
         Map<String, String> tiers = new LinkedHashMap<>();
         for (Panel p : panels) {
             ids.add(p.id());
@@ -160,7 +161,7 @@ final class PhoneReader {
         for (String id : phone.order()) {
             if (!ids.contains(id)) {
                 problem("phone.order names '" + id + "', which is not a panel of this screen", at);
-            } else if (tiers.containsKey(id) && !Set.of("must", "glance").contains(tiers.get(id))) {
+            } else if (tiers.containsKey(id) && !Ordered.set("must", "glance").contains(tiers.get(id))) {
                 problem("phone.order names '" + id + "', a " + tiers.get(id) + " panel; the order arranges only must and glance panels", at);
             }
         }

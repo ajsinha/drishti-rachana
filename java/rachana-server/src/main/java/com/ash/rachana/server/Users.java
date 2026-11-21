@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The users file of {@code auth.mode: users}: each user's salted password hash and roles.
@@ -40,7 +41,7 @@ final class Users {
     /** A signed-in caller: the opaque object the Data Protocol hands to the authoriser. */
     record Principal(String name, Set<String> roles) {
         Principal {
-            roles = Set.copyOf(roles);
+            roles = Ordered.copySet(roles);
         }
 
         /** The caller of {@code auth.mode: none}: no name, no roles. */
@@ -152,7 +153,7 @@ final class Users {
         if (!problems.isEmpty()) {
             throw new ServerConfig.Invalid(problems);
         }
-        users = Map.copyOf(out);
+        users = Ordered.copy(out);
         read = t;
     }
 }

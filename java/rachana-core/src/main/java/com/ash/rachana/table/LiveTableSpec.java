@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * A live table's declaration (docs/design/LIVE_TABLES.md section 2): one {@code <name>.live.yaml}, a Sutra-family document
@@ -53,9 +54,9 @@ public final class LiveTableSpec {
             "stream", "where", "key", "version", "changed-by", "changed-at", "columns", "sort", "group-by", "subtotals", "narrow", "retention",
             "tray", "edit")));
     /** The keys a host's profile may add, at the top and in {@code edit}; without that profile each is a problem. */
-    public static final Set<String> PROFILE_KEYS = Set.of("kind", "query", "links", "edit.roles", "edit.save", "edit.fields.editable-by");
+    public static final Set<String> PROFILE_KEYS = Ordered.set("kind", "query", "links", "edit.roles", "edit.save", "edit.fields.editable-by");
     /** The column fields a declaration may write. */
-    public static final Set<String> COLUMN_KEYS = Set.of("name", "label", "type", "width", "fmt", "heavy", "items", "nullable");
+    public static final Set<String> COLUMN_KEYS = Ordered.set("name", "label", "type", "width", "fmt", "heavy", "items", "nullable");
     /** How a change's reason is asked for. */
     public static final List<String> REASONS = List.of("none", "optional", "required");
 
@@ -525,7 +526,7 @@ public final class LiveTableSpec {
             Map<String, Object> checked = new LinkedHashMap<>(form);       // the record is identified by the table's key, not a field
             if (!checked.containsKey("key") && checked.get("fields") instanceof List<?> fl0) {
                 List<Object> withKey = new ArrayList<>(fl0);
-                withKey.add(Map.of("id", "row_key", "type", "text", "readonly", true));
+                withKey.add(Ordered.map("id", "row_key", "type", "text", "readonly", true));
                 checked.put("fields", withKey);
                 checked.put("key", "row_key");
             }

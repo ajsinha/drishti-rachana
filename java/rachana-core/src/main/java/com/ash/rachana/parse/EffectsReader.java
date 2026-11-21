@@ -14,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * Reads a panel's {@code on:} (SUTRA_EXPANSION I1, level 1.2) and the {@code state:} of a Sutra (S1). Codes: {@code RCH-2012} a wrong
@@ -26,7 +28,7 @@ public final class EffectsReader {
     /** A state's id: an EL name (letters, digits, {@code _}, starting with a letter), as a control's. */
     public static final java.util.regex.Pattern ID = java.util.regex.Pattern.compile(com.ash.rachana.model.ControlRules.ID_PATTERN);
     /** The keys of one state entry. */
-    public static final Set<String> STATE_KEYS = Set.of("type", "default", "url", "remember", "doc");
+    public static final Set<String> STATE_KEYS = Ordered.set("type", "default", "url", "remember", "doc");
 
     private final String file;
     private final List<SutraProblem> problems;
@@ -244,7 +246,7 @@ public final class EffectsReader {
             return null;
         }
         List<Map<String, Object>> out = new ArrayList<>();
-        Set<String> ids = new java.util.HashSet<>();
+        Set<String> ids = new LinkedHashSet<>();
         for (PNode a : n.list()) {
             if (!a.isMap()) {
                 problem("RCH-2012", "an action is { label, do: [ effects ] }", a);

@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The JSON Schema (draft 2020-12) of a Sutra, built from the grammar itself: the panel kinds and the options each
@@ -49,7 +50,7 @@ public final class RachanaSchema {
         s.put("additionalProperties", false);
         Map<String, Object> p = new LinkedHashMap<>();
         if (grammar.level() == null || "1.0".equals(grammar.level())) {
-            p.put("rachana", Map.of("const", SutraParser.LANGUAGE, "description", "The Rachana language version; always " + SutraParser.LANGUAGE));
+            p.put("rachana", Ordered.map("const", SutraParser.LANGUAGE, "description", "The Rachana language version; always " + SutraParser.LANGUAGE));
         } else {                                                  // SPEC 2.1 rule 4: the level the Sutra is written for, at most this one
             List<Object> numbers = new ArrayList<>(List.of(SutraParser.LANGUAGE));
             List<Object> texts = new ArrayList<>();
@@ -59,56 +60,56 @@ public final class RachanaSchema {
                     texts.add(l);
                 }
             }
-            p.put("rachana", Map.of("anyOf", List.of(Map.of("enum", numbers), Map.of("enum", texts)),
+            p.put("rachana", Ordered.map("anyOf", List.of(Map.of("enum", numbers), Map.of("enum", texts)),
                     "description", "The language level the Sutra is written for: 1 is 1.0, 1.N is 1.N (at most " + grammar.level() + ")"));
         }
-        p.put("sutra", Map.of("type", "string", "pattern", "^[a-z][a-z0-9-]{1,63}$", "description", "The Sutra's name: lower-case kebab"));
-        p.put("version", Map.of("type", "integer", "minimum", 1, "description", "The newest version of a name is the one used"));
+        p.put("sutra", Ordered.map("type", "string", "pattern", "^[a-z][a-z0-9-]{1,63}$", "description", "The Sutra's name: lower-case kebab"));
+        p.put("version", Ordered.map("type", "integer", "minimum", 1, "description", "The newest version of a name is the one used"));
         p.put("description", text("One paragraph: what this layout shows and for which entities"));
         p.put("notes", text("Longer notes for authors and reviewers (plain text)"));
-        p.put("doc", Map.of("type", "object", "description", "The docstring a component browser and an AI agent read: summary, description, params, emits, "
+        p.put("doc", Ordered.map("type", "object", "description", "The docstring a component browser and an AI agent read: summary, description, params, emits, "
                 + "expects, examples, since (RACHANA_REFERENCE.md); lint warns when it is missing or incomplete (RCH-2055)"));
-        p.put("title", object(Map.of("pill", text("The pill before the id (may hold ${…})"), "id", text(EL + " for the id shown"),
+        p.put("title", object(Ordered.map("pill", text("The pill before the id (may hold ${…})"), "id", text(EL + " for the id shown"),
                 "with", text(EL + ": the counterparty or other entity named after the id")), List.of("id")));
-        p.put("strip", Map.of("type", "array", "maxItems", 8, "description", "Up to eight fields in the header strip",
-                "items", object(Map.of("label", text("Defaults to the field's name"), "bind", text(EL),
+        p.put("strip", Ordered.map("type", "array", "maxItems", 8, "description", "Up to eight fields in the header strip",
+                "items", object(Ordered.map("label", text("Defaults to the field's name"), "bind", text(EL),
                         "fmt", fmt(formats), "tone", tone(), "emphasis", Map.of("type", "boolean")), List.of("bind"))));
-        p.put("controls", Map.of("type", "array", "maxItems", com.ash.rachana.model.ControlRules.MAX_CONTROLS,
+        p.put("controls", Ordered.map("type", "array", "maxItems", com.ash.rachana.model.ControlRules.MAX_CONTROLS,
                 "description", "Controls the reader sets: dropdowns, date ranges, search. Their values are read as ctl.<id> in expressions",
                 "items", controlSchema()));
         p.put("refresh", refreshSchema("Refresh every top-level panel without its own refresh:"));
-        p.put("panels", Map.of("type", "array", "items", Map.of("$ref", "#/$defs/panel")));
+        p.put("panels", Ordered.map("type", "array", "items", Map.of("$ref", "#/$defs/panel")));
         Map<String, Object> grid = new LinkedHashMap<>();         // RACHANA_REFERENCE.md 13: lint RCH-2059
-        grid.put("areas", Map.of("type", "array", "items", Map.of("type", "string"), "description", "A picture of the screen: one string a row, one area name a cell (. empty)"));
-        grid.put("columns", Map.of("type", List.of("integer", "array"), "description", "12, or the grid columns of each area column (summing to 12)"));
-        grid.put("split", Map.of("type", "object", "description", "{ between: [left, right], resizable: true, remember: user }: a draggable divider between two side-by-side areas"));
-        grid.put("tabs", Map.of("type", "array", "items", Map.of("type", "string"), "description", "Areas whose panels show as tabs"));
-        grid.put("sections", Map.of("type", "array", "description", "Collapsible sections of the flow grid: { id, title, collapsed }"));
+        grid.put("areas", Ordered.map("type", "array", "items", Map.of("type", "string"), "description", "A picture of the screen: one string a row, one area name a cell (. empty)"));
+        grid.put("columns", Ordered.map("type", List.of("integer", "array"), "description", "12, or the grid columns of each area column (summing to 12)"));
+        grid.put("split", Ordered.map("type", "object", "description", "{ between: [left, right], resizable: true, remember: user }: a draggable divider between two side-by-side areas"));
+        grid.put("tabs", Ordered.map("type", "array", "items", Map.of("type", "string"), "description", "Areas whose panels show as tabs"));
+        grid.put("sections", Ordered.map("type", "array", "description", "Collapsible sections of the flow grid: { id, title, collapsed }"));
         grid.put("sticky", text("The area (or panel) that stays at the top while the page scrolls"));
-        grid.put("user-can-arrange", Map.of("type", "boolean", "description", "Readers may move and resize panels within the grid for themselves"));
-        grid.put("phone", Map.of("type", "array", "items", Map.of("type", "string"), "description", "The stacking order on a phone: areas or panel ids"));
-        grid.put("tablet", Map.of("type", "object", "description", "{ areas, columns }: the picture at tablet width"));
-        p.put("layout", Map.of("type", "object", "properties", grid, "additionalProperties", false,
+        grid.put("user-can-arrange", Ordered.map("type", "boolean", "description", "Readers may move and resize panels within the grid for themselves"));
+        grid.put("phone", Ordered.map("type", "array", "items", Map.of("type", "string"), "description", "The stacking order on a phone: areas or panel ids"));
+        grid.put("tablet", Ordered.map("type", "object", "description", "{ areas, columns }: the picture at tablet width"));
+        p.put("layout", Ordered.map("type", "object", "properties", grid, "additionalProperties", false,
                 "description", "Optional placement (RACHANA_REFERENCE.md 13): without it panels flow in the main and right columns"));
         Map<String, Object> phone = new LinkedHashMap<>();
-        phone.put("order", Map.of("type", "array", "items", Map.of("type", "string"), "description", "The must and glance panels in phone order (ids)"));
-        phone.put("default", Map.of("type", "string", "enum", com.ash.rachana.model.ScreenPhone.TIERS, "description", "The tier of panels this Sutra gives none"));
+        phone.put("order", Ordered.map("type", "array", "items", Map.of("type", "string"), "description", "The must and glance panels in phone order (ids)"));
+        phone.put("default", Ordered.map("type", "string", "enum", com.ash.rachana.model.ScreenPhone.TIERS, "description", "The tier of panels this Sutra gives none"));
         phone.put("summary", text("One line at the top of the phone page (may hold {…})"));
-        p.put("phone", Map.of("type", "object", "properties", phone, "additionalProperties", false,
+        p.put("phone", Ordered.map("type", "object", "properties", phone, "additionalProperties", false,
                 "description", "The phone display (docs/guides/BUILD_GUIDE.md 5.2): order, default tier and summary line"));
         Map<String, Object> keys = new LinkedHashMap<>();
         KEYS.forEach(k -> keys.put(k, text(EL + ", or impact or raw")));
-        p.put("keys", Map.of("type", "object", "properties", keys, "additionalProperties", false,
+        p.put("keys", Ordered.map("type", "object", "properties", keys, "additionalProperties", false,
                 "description", "Function keys: link(…) to open an entity, impact (F8), raw (F9)"));
         s.put("properties", withKeys(p, grammar));
         Map<String, Object> panel = panel(formats, grammar);
         panel.put("x-rachana-use", Map.of("$ref", "#/$defs/use"));    // an item with `use:` is a shared block's use, not a panel
-        s.put("$defs", Map.of("panel", panel, "column", column(formats), "use", use()));
+        s.put("$defs", Ordered.map("panel", panel, "column", column(formats), "use", use()));
         Map<String, Object> fns = new LinkedHashMap<>();
         Functions.arity().entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> {
             String now = Functions.oldSpellings().get(e.getKey());          // an old spelling is checked but never offered
-            fns.put(e.getKey(), now == null ? Map.of("min", e.getValue()[0], "max", e.getValue()[1])
-                    : Map.of("min", e.getValue()[0], "max", e.getValue()[1], "oldSpellingOf", now));
+            fns.put(e.getKey(), now == null ? Ordered.map("min", e.getValue()[0], "max", e.getValue()[1])
+                    : Ordered.map("min", e.getValue()[0], "max", e.getValue()[1], "oldSpellingOf", now));
         });
         s.put("x-rachana-functions", fns);
         return s;
@@ -116,68 +117,68 @@ public final class RachanaSchema {
 
     /** {@code refresh: 30} or {@code { every: 30, user-can-pause: true }} (RACHANA_REFERENCE.md 9). */
     private static Map<String, Object> refreshSchema(String what) {
-        Map<String, Object> every = Map.of("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Refresh.MAX, "description", "Seconds between fetches");
+        Map<String, Object> every = Ordered.map("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Refresh.MAX, "description", "Seconds between fetches");
         Map<String, Object> obj = new LinkedHashMap<>();
         obj.put("type", "object");
-        obj.put("properties", Map.of("every", every, "user-can-pause", Map.of("type", "boolean", "description", "Whether the reader may pause it (default true)")));
+        obj.put("properties", Ordered.map("every", every, "user-can-pause", Ordered.map("type", "boolean", "description", "Whether the reader may pause it (default true)")));
         obj.put("required", List.of("every"));
         obj.put("additionalProperties", false);
-        return Map.of("description", what, "oneOf", List.of(every, obj));
+        return Ordered.map("description", what, "oneOf", List.of(every, obj));
     }
 
     /** {@code form:} on a panel (RACHANA_REFERENCE.md 10): typed fields, rules, hints and how it opens; checked as RCH-2058. */
     private static Map<String, Object> formSchema() {
-        Map<String, Object> roles = Map.of("type", "array", "items", Map.of("type", "string"), "description", "Role names");
+        Map<String, Object> roles = Ordered.map("type", "array", "items", Map.of("type", "string"), "description", "Role names");
         Map<String, Object> field = new LinkedHashMap<>();
         Map<String, Object> fp = new LinkedHashMap<>();
-        fp.put("id", Map.of("type", "string", "pattern", "^[a-z][a-z0-9_]{0,39}$", "description", "The field's id, read by rules and hints"));
+        fp.put("id", Ordered.map("type", "string", "pattern", "^[a-z][a-z0-9_]{0,39}$", "description", "The field's id, read by rules and hints"));
         fp.put("label", Map.of("type", "string"));
-        fp.put("type", Map.of("enum", com.ash.rachana.model.Form.TYPES, "description",
+        fp.put("type", Ordered.map("enum", com.ash.rachana.model.Form.TYPES, "description",
                 "text (default), number, date, enum, bool, textarea, lookup, money (an amount and its currency), datetime (a date and a time in a"
                         + " time zone) or entity (a linked record of a kind, picked by search)"));
-        fp.put("bind", Map.of("type", "string", "description", "The record's field it edits (COUNTERPARTY); the id when absent"));
+        fp.put("bind", Ordered.map("type", "string", "description", "The record's field it edits (COUNTERPARTY); the id when absent"));
         fp.put("required", Map.of("type", "boolean"));
         fp.put("min", Map.of("description", "A number, or a date (2026-12-31), a date and time (2026-12-31T17:00) or today"));
         fp.put("max", Map.of("description", "A number, or a date (2026-12-31), a date and time (2026-12-31T17:00) or today"));
-        fp.put("currency", Map.of("type", "string", "description", "money: a currency code (USD) or the id of the field holding it"));
-        fp.put("tz", Map.of("type", "string", "description", "datetime: the time zone it is entered in (Europe/London; UTC when absent)"));
+        fp.put("currency", Ordered.map("type", "string", "description", "money: a currency code (USD) or the id of the field holding it"));
+        fp.put("tz", Ordered.map("type", "string", "description", "datetime: the time zone it is entered in (Europe/London; UTC when absent)"));
         fp.put("default", Map.of("description", "What a new record starts with: a value, or =<expression> over the other fields (=notional * 0.01)"));
-        fp.put("pattern", Map.of("type", "string", "description", "A regular expression the whole text matches"));
-        fp.put("max-length", Map.of("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Form.MAX_TEXT));
+        fp.put("pattern", Ordered.map("type", "string", "description", "A regular expression the whole text matches"));
+        fp.put("max-length", Ordered.map("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Form.MAX_TEXT));
         fp.put("options", Map.of("description", "enum: a list of values or { value, label }; lookup: { source: { pack, kind, where }, value, label, carry };"
                 + " entity: { source: { pack, kind, where or search }, label, carry } (the entity's id is kept unless value names a field)"));
         fp.put("editable-by", roles);
         fp.put("readonly", Map.of("type", "boolean"));
-        fp.put("reason", Map.of("type", "string", "description", "Why it is read-only, shown beside it"));
-        fp.put("step", Map.of("type", "string", "description", "The drawer step that asks for it"));
+        fp.put("reason", Ordered.map("type", "string", "description", "Why it is read-only, shown beside it"));
+        fp.put("step", Ordered.map("type", "string", "description", "The drawer step that asks for it"));
         fp.put("placeholder", Map.of("type", "string"));
         fp.put("fmt", Map.of("type", "string"));
-        fp.put("new", Map.of("type", "boolean", "description", "Whether the New drawer asks for it (default true)"));
+        fp.put("new", Ordered.map("type", "boolean", "description", "Whether the New drawer asks for it (default true)"));
         field.put("type", "object");
         field.put("properties", fp);
         field.put("required", List.of("id"));
         field.put("additionalProperties", false);
-        Map<String, Object> rule = Map.of("type", "object", "required", List.of("rule", "message"), "additionalProperties", false,
-                "properties", Map.of("rule", text("An expression over the fields that must hold"), "message", text("What to do, in plain words"),
-                        "severity", Map.of("enum", List.of("error", "warn")), "fields", Map.of("type", "array", "items", Map.of("type", "string"))));
-        Map<String, Object> hint = Map.of("type", "object", "required", List.of("label", "value"), "additionalProperties", false,
-                "properties", Map.of("label", text("The hint's words"), "value", text("An expression over the fields"), "of", text("What the value is of (a percentage is shown)"),
+        Map<String, Object> rule = Ordered.map("type", "object", "required", List.of("rule", "message"), "additionalProperties", false,
+                "properties", Ordered.map("rule", text("An expression over the fields that must hold"), "message", text("What to do, in plain words"),
+                        "severity", Map.of("enum", List.of("error", "warn")), "fields", Ordered.map("type", "array", "items", Map.of("type", "string"))));
+        Map<String, Object> hint = Ordered.map("type", "object", "required", List.of("label", "value"), "additionalProperties", false,
+                "properties", Ordered.map("label", text("The hint's words"), "value", text("An expression over the fields"), "of", text("What the value is of (a percentage is shown)"),
                         "fmt", text("A format"), "step", text("The drawer step it shows on")));
         Map<String, Object> props = new LinkedHashMap<>();
         props.put("title", Map.of("type", "string"));
-        props.put("key", Map.of("type", "string", "description", "The field that identifies a record"));
-        props.put("edit", Map.of("enum", com.ash.rachana.model.Form.EDIT_MODES, "description", "beside: a form beside the table; cells: edit in the table"));
-        props.put("new", Map.of("enum", com.ash.rachana.model.Form.NEW_MODES, "description", "drawer: a guided drawer in steps"));
+        props.put("key", Ordered.map("type", "string", "description", "The field that identifies a record"));
+        props.put("edit", Ordered.map("enum", com.ash.rachana.model.Form.EDIT_MODES, "description", "beside: a form beside the table; cells: edit in the table"));
+        props.put("new", Ordered.map("enum", com.ash.rachana.model.Form.NEW_MODES, "description", "drawer: a guided drawer in steps"));
         props.put("new-label", Map.of("type", "string"));
         props.put("roles", roles);
-        props.put("steps", Map.of("type", "array", "items", Map.of("type", "object", "required", List.of("id"), "properties",
-                Map.of("id", Map.of("type", "string"), "label", Map.of("type", "string")))));
-        props.put("fields", Map.of("type", "array", "minItems", 1, "maxItems", com.ash.rachana.model.Form.MAX_FIELDS, "items", field));
-        props.put("rules", Map.of("type", "array", "items", rule));
-        props.put("hints", Map.of("type", "array", "items", hint));
-        props.put("save", Map.of("type", "object", "additionalProperties", false, "required", List.of("target"),
+        props.put("steps", Ordered.map("type", "array", "items", Ordered.map("type", "object", "required", List.of("id"), "properties",
+                Ordered.map("id", Map.of("type", "string"), "label", Map.of("type", "string")))));
+        props.put("fields", Ordered.map("type", "array", "minItems", 1, "maxItems", com.ash.rachana.model.Form.MAX_FIELDS, "items", field));
+        props.put("rules", Ordered.map("type", "array", "items", rule));
+        props.put("hints", Ordered.map("type", "array", "items", hint));
+        props.put("save", Ordered.map("type", "object", "additionalProperties", false, "required", List.of("target"),
                 "description", "Where a submitted form goes (2.8.0 write-back): an overlay, an owned record, or a connector's writes: command",
-                "properties", Map.of("kind", text("The kind of the records the form edits (the page's kind when absent)"),
+                "properties", Ordered.map("kind", text("The kind of the records the form edits (the page's kind when absent)"),
                         "target", Map.of("enum", com.ash.rachana.model.Form.Save.TARGETS),
                         "connector", text("The connector whose writes: commands a source target uses (the kind's connector when absent)"),
                         "command", text("The writes: command that amends a record"), "create", text("The writes: command that creates a record"),
@@ -194,9 +195,9 @@ public final class RachanaSchema {
     /** A use of a shared block in a panels list: {@code { use: legs@1, with: { rate-fmt: pct4 } }} (RCH-2048 when it does not resolve). */
     private static Map<String, Object> use() {
         Map<String, Object> props = new LinkedHashMap<>();
-        props.put("use", Map.of("type", "string", "pattern", "^([a-z][a-z0-9-]{0,63}/)?[a-z][a-z0-9-]{1,63}(@[0-9]+)?$",
+        props.put("use", Ordered.map("type", "string", "pattern", "^([a-z][a-z0-9-]{0,63}/)?[a-z][a-z0-9-]{1,63}(@[0-9]+)?$",
                 "description", "A UI kit fragment (name@version) or a pack's own block or fragment (pack/name@version, or its plain name): its panels go here"));
-        props.put("with", Map.of("type", "object", "description", "The block's parameters (its params:), each one value; the block's defaults otherwise"));
+        props.put("with", Ordered.map("type", "object", "description", "The block's parameters (its params:), each one value; the block's defaults otherwise"));
         props.put("refresh", refreshSchema("Fetch every panel the use brings again on an interval"));
         props.put("form", formSchema());
         Map<String, Object> u = new LinkedHashMap<>();
@@ -210,49 +211,49 @@ public final class RachanaSchema {
 
     private static Map<String, Object> controlSchema() {
         Map<String, Object> c = new LinkedHashMap<>();
-        c.put("id", Map.of("type", "string", "pattern", "^" + com.ash.rachana.model.ControlRules.ID_PATTERN + "$",
+        c.put("id", Ordered.map("type", "string", "pattern", "^" + com.ash.rachana.model.ControlRules.ID_PATTERN + "$",
                 "description", "Read as ctl.<id>"));
-        c.put("kind", Map.of("type", "string", "enum", java.util.Arrays.stream(com.ash.rachana.model.ControlKind.values())
+        c.put("kind", Ordered.map("type", "string", "enum", java.util.Arrays.stream(com.ash.rachana.model.ControlKind.values())
                 .map(com.ash.rachana.model.ControlKind::id).toList()));
         c.put("label", text("The text beside the control"));
-        c.put("options", Map.of("description", "A list of values or {value, label}, an expression over the record ($.legs[*].id), or {kind: <entity kind>}",
+        c.put("options", Ordered.map("description", "A list of values or {value, label}, an expression over the record ($.legs[*].id), or {kind: <entity kind>}",
                 "oneOf", List.of(Map.of("type", "array"), Map.of("type", "string"), Map.of("type", "object"))));
         c.put("default", Map.of("description", "A value, first, all, today, or a relative range such as next-90d"));
-        c.put("remember", Map.of("type", "string", "enum", List.of("user", "none")));
+        c.put("remember", Ordered.map("type", "string", "enum", List.of("user", "none")));
         c.put("required", Map.of("type", "boolean"));
-        c.put("placement", Map.of("type", "string", "enum", List.of("strip", "header", "side")));
+        c.put("placement", Ordered.map("type", "string", "enum", List.of("strip", "header", "side")));
         c.put("panel", text("The panel whose header holds the control (placement: header)"));
         c.put("parent", text("The control a cascading control depends on"));
         c.put("min", Map.of("description", "Lower bound of a number-range or slider: a number or an expression over the record"));
         c.put("max", Map.of("description", "Upper bound of a number-range or slider"));
         c.put("step", Map.of("description", "A slider's step: a number or an expression over the record (default 1)"));
-        c.put("range", Map.of("type", "boolean", "description", "A slider with two handles whose value is from..to (slider only)"));
+        c.put("range", Ordered.map("type", "boolean", "description", "A slider with two handles whose value is from..to (slider only)"));
         return object(c, List.of("id", "kind"));
     }
 
     private static Map<String, Object> panel(Collection<String> formats, com.ash.rachana.profile.Grammar grammar) {
         Map<String, Object> common = new LinkedHashMap<>();
-        common.put("id", Map.of("type", "string", "description", "Unique within the Sutra"));
-        common.put("kind", Map.of("type", "string", "enum", grammar.panelKinds().stream().map(PanelKind::id).toList()));
+        common.put("id", Ordered.map("type", "string", "description", "Unique within the Sutra"));
+        common.put("kind", Ordered.map("type", "string", "enum", grammar.panelKinds().stream().map(PanelKind::id).toList()));
         common.put("title", text("The panel's heading (may hold ${…})"));
         common.put("description", text("What the panel answers, for authors and reviewers"));
-        common.put("key", Map.of("type", "string", "enum", KEYS));
+        common.put("key", Ordered.map("type", "string", "enum", KEYS));
         common.put("code", text("A short code at the heading's right (CRV, REFS)"));
-        common.put("area", Map.of("type", "string", "description", "main or right (the flow), or an area named in layout.areas"));
-        common.put("order", Map.of("type", "integer", "minimum", 0, "maximum", 999, "description", "Sort key within the area or the flow (lower first)"));
+        common.put("area", Ordered.map("type", "string", "description", "main or right (the flow), or an area named in layout.areas"));
+        common.put("order", Ordered.map("type", "integer", "minimum", 0, "maximum", 999, "description", "Sort key within the area or the flow (lower first)"));
         common.put("section", text("The id of one of layout.sections this panel sits in"));
-        common.put("phone", Map.of("type", List.of("string", "object"), "description",
+        common.put("phone", Ordered.map("type", List.of("string", "object"), "description",
                 "The panel's phone tier: must, glance, more or desk, or { tier, rows, columns, sort, series, figures, tab } (docs/guides/BUILD_GUIDE.md 5)"));
-        common.put("collapsible", Map.of("type", "boolean", "description", "The reader may fold the panel to its heading (remembered per reader)"));
-        common.put("span", Map.of("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Panel.MAX_SPAN,
+        common.put("collapsible", Ordered.map("type", "boolean", "description", "The reader may fold the panel to its heading (remembered per reader)"));
+        common.put("span", Ordered.map("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Panel.MAX_SPAN,
                 "description", "Width in columns of a 12-column grid (default: the whole column)"));
-        common.put("height", Map.of("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Panel.MAX_HEIGHT,
+        common.put("height", Ordered.map("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Panel.MAX_HEIGHT,
                 "description", "Height in grid rows of 2.5rem (default: as tall as the content)"));
         common.put("form", formSchema());
         common.put("refresh", refreshSchema("Fetch this panel again on an interval; the reader may slow it down or pause it, never speed it up"));
-        common.put("infer", Map.of("type", "boolean", "description", "Let inference fill the columns"));
+        common.put("infer", Ordered.map("type", "boolean", "description", "Let inference fill the columns"));
         common.put("where", text(EL + " that must be true for a row to be shown (it may read ctl.<id>)"));
-        common.put("on-select", Map.of("type", "object", "description", "A click on a row or bar sets a control: {filter: [panel ids], by: <control id>, field: <row field>}"));
+        common.put("on-select", Ordered.map("type", "object", "description", "A click on a row or bar sets a control: {filter: [panel ids], by: <control id>, field: <row field>}"));
         // Sutra Next (RACHANA_REFERENCE.md 6 to 8): sources over any pack, events, waiting words, child panels
         Map<String, Object> source = new LinkedHashMap<>();
         source.put("kind", text("The entity kind read (any enabled pack's)"));
@@ -260,33 +261,33 @@ public final class RachanaSchema {
         source.put("id", text(EL + " for one entity's id: $src is that record"));
         source.put("where", text(EL + " over each entity of the kind (@): $src is the list it keeps"));
         source.put("search", text(EL + " for the text searched in the kind: $src is the list found"));
-        source.put("limit", Map.of("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Wiring.Source.MAX_LIMIT));
+        source.put("limit", Ordered.map("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.Wiring.Source.MAX_LIMIT));
         source.put("as-of", text(EL + " for the business date read"));
         source.put("pack", text("The pack serving the kind"));
-        source.put("params", Map.of("type", "object", "description", "A computed kind's parameters (a reactive connector): name: " + EL
+        source.put("params", Ordered.map("type", "object", "description", "A computed kind's parameters (a reactive connector): name: " + EL
                 + " (a number or true/false is its own literal); only with id", "additionalProperties", Map.of("type", List.of("string", "number", "boolean"))));
-        common.put("source", Map.of("description", "The record the panel reads: " + EL + " naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
-                "oneOf", List.of(Map.of("type", "string"), Map.of("type", "object", "properties", source, "anyOf", List.of(Map.of("required", List.of("kind")),
+        common.put("source", Ordered.map("description", "The record the panel reads: " + EL + " naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
+                "oneOf", List.of(Map.of("type", "string"), Ordered.map("type", "object", "properties", source, "anyOf", List.of(Map.of("required", List.of("kind")),
                 Map.of("required", List.of("table")))))));
         Map<String, Object> emit = new LinkedHashMap<>();
         emit.put("name", text("The event's name: select, open, drill, filter, change"));
-        emit.put("on", Map.of("type", "string", "enum", new TreeSet<>(com.ash.rachana.model.Wiring.TRIGGERS)));
-        emit.put("payload", Map.of("type", "object", "description", "field: " + EL + " over the clicked row (@), or {bind, type: "
+        emit.put("on", Ordered.map("type", "string", "enum", new TreeSet<>(com.ash.rachana.model.Wiring.TRIGGERS)));
+        emit.put("payload", Ordered.map("type", "object", "description", "field: " + EL + " over the clicked row (@), or {bind, type: "
                 + String.join("|", com.ash.rachana.model.Wiring.TYPES) + "}; read elsewhere as @<panel>.<event>.<field>"));
-        common.put("emits", Map.of("type", "array", "items", Map.of("type", "object", "properties", emit, "required", List.of("name", "on")),
+        common.put("emits", Ordered.map("type", "array", "items", Ordered.map("type", "object", "properties", emit, "required", List.of("name", "on")),
                 "description", "Events a click fires (table, ladder: row-click; hbar: bar-click)"));
         common.put("waits", text("What the panel says until an event it reads fires"));
         Map<String, Object> group = new LinkedHashMap<>();
-        group.put("place", Map.of("type", "string", "enum", com.ash.rachana.model.Wiring.PLACES));
-        group.put("show", Map.of("type", "string", "enum", com.ash.rachana.model.Wiring.SHOWS));
-        group.put("source", Map.of("type", "object", "properties", source, "required", List.of("kind")));
+        group.put("place", Ordered.map("type", "string", "enum", com.ash.rachana.model.Wiring.PLACES));
+        group.put("show", Ordered.map("type", "string", "enum", com.ash.rachana.model.Wiring.SHOWS));
+        group.put("source", Ordered.map("type", "object", "properties", source, "required", List.of("kind")));
         group.put("waits", text("What the children say until their parent fires"));
-        group.put("panels", Map.of("type", "array", "items", Map.of("$ref", "#/$defs/panel")));
-        common.put("children", Map.of("description", "A tree table's child rows (" + EL + "), or groups of child panels filled when the panel fires (read @parent; three levels at most)",
-                "oneOf", List.of(Map.of("type", "string"), Map.of("type", "array", "items", Map.of("type", "object", "properties", group, "required", List.of("panels"))))));
-        common.put("columns", Map.of("type", "array", "items", Map.of("$ref", "#/$defs/column")));
+        group.put("panels", Ordered.map("type", "array", "items", Map.of("$ref", "#/$defs/panel")));
+        common.put("children", Ordered.map("description", "A tree table's child rows (" + EL + "), or groups of child panels filled when the panel fires (read @parent; three levels at most)",
+                "oneOf", List.of(Map.of("type", "string"), Ordered.map("type", "array", "items", Ordered.map("type", "object", "properties", group, "required", List.of("panels"))))));
+        common.put("columns", Ordered.map("type", "array", "items", Map.of("$ref", "#/$defs/column")));
         common.put("body", Map.of("$ref", "#/$defs/panel"));
-        common.put("panels", Map.of("type", "array", "items", Map.of("$ref", "#/$defs/panel"),
+        common.put("panels", Ordered.map("type", "array", "items", Map.of("$ref", "#/$defs/panel"),
                 "description", "tabs only: panels shown inside each tab (kv, status, table, ladder, hbar, markdown, metric), read with @ as the tab's element"));
         List<Object> perKind = new ArrayList<>();
         Map<String, Object> allOptions = new LinkedHashMap<>(common);
@@ -314,7 +315,7 @@ public final class RachanaSchema {
             for (String o : opts) {
                 Object schema = List.of("source", "children", "emits", "waits").contains(o) ? common.get(o)
                         : o.equals("fmt") ? fmt(formats) : o.equals("tone") ? tone()
-                        : o.equals("search") ? Map.of("type", "boolean", "description", "false hides the table's filter")
+                        : o.equals("search") ? Ordered.map("type", "boolean", "description", "false hides the table's filter")
                         : expr.contains(o) ? text(EL) : kindOption(k, o);
                 props.put(o, forKind(k, o, schema));
                 allOptions.putIfAbsent(o, schema);
@@ -326,8 +327,8 @@ public final class RachanaSchema {
                 props.put("panels", common.get("panels"));
             }
             // the options as THIS kind takes them (one name can mean different things on two kinds, so the shared definition above stays loose)
-            perKind.add(Map.of("if", Map.of("properties", Map.of("kind", Map.of("const", k.id()))),
-                    "then", Map.of("required", List.copyOf(k.required()), "x-rachana-options", List.copyOf(opts), "properties", props)));
+            perKind.add(Ordered.map("if", Map.of("properties", Map.of("kind", Map.of("const", k.id()))),
+                    "then", Ordered.map("required", List.copyOf(k.required()), "x-rachana-options", List.copyOf(opts), "properties", props)));
         }
         Map<String, Object> panel = new LinkedHashMap<>();
         panel.put("type", "object");
@@ -343,23 +344,23 @@ public final class RachanaSchema {
      */
     private static Map<String, Object> kindOption(PanelKind k, String o) {
         if (k == PanelKind.PIVOT && o.equals("agg")) {
-            return Map.of("type", "string", "enum", com.ash.rachana.model.PanelOptions.AGGREGATIONS,
+            return Ordered.map("type", "string", "enum", com.ash.rachana.model.PanelOptions.AGGREGATIONS,
                     "description", "How the pivot combines the values of a cell (default sum)");
         }
         if (k == PanelKind.PIVOT && (o.equals("heat") || o.equals("totals"))) {
-            return Map.of("type", "boolean", "description", o.equals("heat") ? "Colour each cell by its value" : "false hides the row and column totals");
+            return Ordered.map("type", "boolean", "description", o.equals("heat") ? "Colour each cell by its value" : "false hides the row and column totals");
         }
         if (k == PanelKind.WATERFALL && o.equals("colors")) {
-            return Map.of("type", "string", "enum", com.ash.rachana.model.PanelOptions.WATERFALL_COLORS,
+            return Ordered.map("type", "string", "enum", com.ash.rachana.model.PanelOptions.WATERFALL_COLORS,
                     "description", "gain-loss (default): rises green, falls red; theme: the theme's positive and negative colours "
                             + "(blue and orange, colour-blind friendly). Totals are neutral");
         }
         if (o.equals("expand") && (k == PanelKind.PIVOT || k == PanelKind.TABLE || k == PanelKind.LADDER)) {
-            return Map.of("oneOf", List.of(Map.of("type", "integer", "minimum", 1), Map.of("const", "all")),
+            return Ordered.map("oneOf", List.of(Ordered.map("type", "integer", "minimum", 1), Map.of("const", "all")),
                     "description", "Levels of the tree shown open at first (default 1: only the top level); all opens every level");
         }
         if (k == PanelKind.PIVOT && o.equals("by")) {
-            return Map.of("oneOf", List.of(Map.of("type", "string"), Map.of("type", "array", "minItems", 1,
+            return Ordered.map("oneOf", List.of(Map.of("type", "string"), Ordered.map("type", "array", "minItems", 1,
                     "maxItems", com.ash.rachana.model.PanelOptions.MAX_BY, "items", Map.of("type", "string"))),
                     "description", "The field the rows group by, or a list of fields for nested groups with subtotals (▸/▾)");
         }
@@ -367,21 +368,21 @@ public final class RachanaSchema {
             return pivot();
         }
         if (k == PanelKind.HISTOGRAM && o.equals("bins")) {
-            return Map.of("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.PanelOptions.MAX_BINS,
+            return Ordered.map("type", "integer", "minimum", 1, "maximum", com.ash.rachana.model.PanelOptions.MAX_BINS,
                     "description", "How many bins (default: the square root of the count, 5 to 40)");
         }
         if ((k == PanelKind.TABLE || k == PanelKind.LADDER) && o.equals("levels")) {
-            return Map.of("type", "array", "minItems", 1, "maxItems", com.ash.rachana.model.PanelOptions.MAX_LEVELS,
-                    "items", Map.of("type", "object", "required", List.of("rows"), "properties", Map.of(
+            return Ordered.map("type", "array", "minItems", 1, "maxItems", com.ash.rachana.model.PanelOptions.MAX_LEVELS,
+                    "items", Ordered.map("type", "object", "required", List.of("rows"), "properties", Ordered.map(
                             "rows", text(EL + " giving the rows a row of the level above opens to, read with @ that row (\"@.cashflows\")"),
-                            "title", Map.of("type", "string", "description", "What the rows of this level are (Cash flows)"),
+                            "title", Ordered.map("type", "string", "description", "What the rows of this level are (Cash flows)"),
                             "crumb", text(EL + " naming a row of this level in the breadcrumb ('Flow ' + @.id)"),
-                            "columns", Map.of("type", "array", "items", Map.of("$ref", "#/$defs/column")))),
+                            "columns", Ordered.map("type", "array", "items", Map.of("$ref", "#/$defs/column")))),
                     "description", "Drill down level by level: a row opens to its rows of the next level, with a breadcrumb, the parent row, "
                             + "counts and totals at each level, and an address (#panel=1.6) that can be shared");
         }
         if ((k == PanelKind.TABLE || k == PanelKind.LADDER) && o.equals("empty")) {
-            return Map.of("type", "string", "description", "The words shown when there are no rows (default: No data available)");
+            return Ordered.map("type", "string", "description", "The words shown when there are no rows (default: No data available)");
         }
         if (k == PanelKind.TABLE && o.equals("limit")) {
             // one schema serves every kind that has a "limit": a table's is a count, an area's an expression, so no type here
@@ -389,40 +390,40 @@ public final class RachanaSchema {
             return Map.of("description", TABLE_LIMIT + " Area: a path or expression for the limit line");
         }
         if ((k == PanelKind.KV || k == PanelKind.STATUS) && o.equals("fields") || k == PanelKind.AREA && o.equals("series")) {
-            return Map.of("type", "array", "description", o.equals("series") ? "The series: { label, value, tone }" : "The fields: { label, bind, fmt, tone }");
+            return Ordered.map("type", "array", "description", o.equals("series") ? "The series: { label, value, tone }" : "The fields: { label, bind, fmt, tone }");
         }
         if (k == PanelKind.METRIC && (o.equals("deltaFmt") || o.equals("deltaTone"))) {
-            return Map.of("type", "string", "description", o.equals("deltaFmt") ? "How the change is formatted (default: the format of value)"
+            return Ordered.map("type", "string", "description", o.equals("deltaFmt") ? "How the change is formatted (default: the format of value)"
                     : "The change's tone: sign (default: positive green, negative red), status, or a fixed tone such as neg, warn or accent");
         }
         if (k == PanelKind.METRIC && (o.equals("unit") || o.equals("caption"))) {
-            return Map.of("type", "string", "description", o.equals("unit") ? "A short unit shown small beside the figure (USD, bp)"
+            return Ordered.map("type", "string", "description", o.equals("unit") ? "A short unit shown small beside the figure (USD, bp)"
                     : "Small text under the figure (may hold ${…})");
         }
         if (k == PanelKind.MAP) {
             switch (o) {
                 case "highlight" -> {
-                    return Map.of("type", "string", "description", EL + " for the country to highlight: an ISO alpha-2 or alpha-3 code, or the English name ($.iso3)");
+                    return Ordered.map("type", "string", "description", EL + " for the country to highlight: an ISO alpha-2 or alpha-3 code, or the English name ($.iso3)");
                 }
                 case "region" -> {
-                    return Map.of("type", "string", "description", EL + " for a country: the map then shows that country's regions (ISO 3166-2 codes such as AU-NSW) instead of the world");
+                    return Ordered.map("type", "string", "description", EL + " for a country: the map then shows that country's regions (ISO 3166-2 codes such as AU-NSW) instead of the world");
                 }
                 case "link" -> {
-                    return Map.of("type", "object", "description", "A click on a country opens an entity: { kind: jurisdiction, id: \"JUR-{iso3}\" }. The id template holds {iso3}, {iso2} "
+                    return Ordered.map("type", "object", "description", "A click on a country opens an entity: { kind: jurisdiction, id: \"JUR-{iso3}\" }. The id template holds {iso3}, {iso2} "
                             + "or (for regions) {code}; a country with no such entity is not clickable and says so on hover");
                 }
                 case "shade" -> {
-                    return Map.of("type", "object", "description", "Shade each country by a field of every entity of a kind: { kind: economy, field: $.gdpUsdBn, by: $.iso3, fmt: amount0, label: GDP (USD bn) }. "
+                    return Ordered.map("type", "object", "description", "Shade each country by a field of every entity of a kind: { kind: economy, field: $.gdpUsdBn, by: $.iso3, fmt: amount0, label: GDP (USD bn) }. "
                             + "by defaults to $.iso3; the field is read as the caller may see it (a masked field shades nothing)");
                 }
                 case "unit" -> {
-                    return Map.of("type", "string", "description", "A short unit shown with the shade values in the legend and the tooltip");
+                    return Ordered.map("type", "string", "description", "A short unit shown with the shade values in the legend and the tooltip");
                 }
                 default -> { }
             }
         }
         if (k == PanelKind.HISTOGRAM && o.equals("markers")) {
-            return Map.of("type", "array", "description", "Vertical marker lines: { label, value: <expression>, tone }");
+            return Ordered.map("type", "array", "description", "Vertical marker lines: { label, value: <expression>, tone }");
         }
         return Map.of("description", "option of " + k.id() + " panels");
     }
@@ -430,21 +431,21 @@ public final class RachanaSchema {
     /** The option as {@code k} takes it: its fixed set when it has one, a whole {@code limit} on a table, else the shared definition. */
     private static Object forKind(PanelKind k, String o, Object shared) {
         if (k == PanelKind.TABLE && o.equals("limit")) {
-            return Map.of("type", "integer", "minimum", 1, "description", TABLE_LIMIT);
+            return Ordered.map("type", "integer", "minimum", 1, "description", TABLE_LIMIT);
         }
         List<String> choices = com.ash.rachana.model.PanelOptions.choices(k, o);
         if (choices.isEmpty()) {
             choices = SCHEMA_CHOICES.getOrDefault(k, Map.of()).getOrDefault(o, List.of());
         }
         if (!choices.isEmpty() && !(shared instanceof Map<?, ?> m && m.containsKey("enum"))) {
-            return Map.of("type", "string", "enum", choices, "description", "One of " + String.join(", ", choices) + " (option of " + k.id() + " panels)");
+            return Ordered.map("type", "string", "enum", choices, "description", "One of " + String.join(", ", choices) + " (option of " + k.id() + " panels)");
         }
         return shared;
     }
 
     private static final String TABLE_LIMIT = "Table: rows shown (a whole number from 1; the rest are counted in the more line).";
     /** Options with a fixed set the parser does not police (a different value draws the default): the designer still offers the set. */
-    private static final Map<PanelKind, Map<String, List<String>>> SCHEMA_CHOICES = Map.of(
+    private static final Map<PanelKind, Map<String, List<String>>> SCHEMA_CHOICES = Ordered.map(
             PanelKind.TABS, Map.of("layout", List.of("tabs", "columns")),
             PanelKind.SURFACE, Map.of("view", List.of("heatmap", "3d")));
 
@@ -458,30 +459,30 @@ public final class RachanaSchema {
         field.put("fmt", text("A number or date format"));
         Map<String, Object> value = new LinkedHashMap<>();
         value.put("field", text("A field named in fields"));
-        value.put("agg", Map.of("type", "string", "enum", aggs, "description", "How a cell combines its rows (default sum)"));
-        value.put("show", Map.of("type", "string", "enum", com.ash.rachana.model.PivotSpec.SHOWS,
+        value.put("agg", Ordered.map("type", "string", "enum", aggs, "description", "How a cell combines its rows (default sum)"));
+        value.put("show", Ordered.map("type", "string", "enum", com.ash.rachana.model.PivotSpec.SHOWS,
                 "description", "As the value itself, or as a share of its row, column or the total"));
         Map<String, Object> filter = new LinkedHashMap<>();
         filter.put("field", text("A field named in fields"));
-        filter.put("values", Map.of("type", "array", "description", "The values kept"));
+        filter.put("values", Ordered.map("type", "array", "description", "The values kept"));
         filter.put("min", Map.of("description", "Lowest kept (a number or a date)"));
         filter.put("max", Map.of("description", "Highest kept (a number or a date)"));
         Map<String, Object> props = new LinkedHashMap<>();
-        props.put("fields", Map.of("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_FIELDS,
+        props.put("fields", Ordered.map("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_FIELDS,
                 "description", "The fields a user may pivot by: row paths, or { field, bind, label, fmt } (default: the panel's columns)",
-                "items", Map.of("type", List.of("string", "object"), "properties", field, "additionalProperties", false)));
-        props.put("rows", Map.of("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_LEVELS,
+                "items", Ordered.map("type", List.of("string", "object"), "properties", field, "additionalProperties", false)));
+        props.put("rows", Ordered.map("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_LEVELS,
                 "description", "Fields down the side, outermost first"));
-        props.put("columns", Map.of("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_LEVELS,
+        props.put("columns", Ordered.map("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_LEVELS,
                 "description", "Fields across the top, outermost first"));
-        props.put("values", Map.of("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_VALUES,
+        props.put("values", Ordered.map("type", "array", "maxItems", com.ash.rachana.model.PivotSpec.MAX_VALUES,
                 "description", "The numbers in the cells: { field, agg, show }", "items", object(value, List.of("field"))));
-        props.put("filters", Map.of("type", "array", "description", "Fields to filter by: names, or { field, values } / { field, min, max }",
-                "items", Map.of("type", List.of("string", "object"), "properties", filter, "additionalProperties", false)));
-        props.put("heat", Map.of("type", "boolean", "description", "Shade each cell by its value"));
-        props.put("chart", Map.of("type", "string", "enum", com.ash.rachana.model.PivotSpec.CHARTS,
+        props.put("filters", Ordered.map("type", "array", "description", "Fields to filter by: names, or { field, values } / { field, min, max }",
+                "items", Ordered.map("type", List.of("string", "object"), "properties", filter, "additionalProperties", false)));
+        props.put("heat", Ordered.map("type", "boolean", "description", "Shade each cell by its value"));
+        props.put("chart", Ordered.map("type", "string", "enum", com.ash.rachana.model.PivotSpec.CHARTS,
                 "description", "Open with a chart of the result"));
-        props.put("totals", Map.of("type", "boolean", "description", "false hides subtotals and grand totals"));
+        props.put("totals", Ordered.map("type", "boolean", "description", "false hides subtotals and grand totals"));
         Map<String, Object> o = new LinkedHashMap<>();
         o.put("type", List.of("boolean", "object"));
         o.put("description", "Offer Pivot (the pivot screen): true (by the panel's columns), or { fields, rows, columns, values, filters, heat, chart }");
@@ -491,9 +492,9 @@ public final class RachanaSchema {
     }
 
     private static Map<String, Object> column(Collection<String> formats) {
-        return object(Map.of("label", text("Defaults to the field's name"), "bind", text(EL + " over the row (@)"), "fmt", fmt(formats),
-                "tone", tone(), "total", Map.of("type", "boolean", "description", "Sum it in the total row"),
-                "link", Map.of("type", "boolean", "description", "Open the entity the value names"),
+        return object(Ordered.map("label", text("Defaults to the field's name"), "bind", text(EL + " over the row (@)"), "fmt", fmt(formats),
+                "tone", tone(), "total", Ordered.map("type", "boolean", "description", "Sum it in the total row"),
+                "link", Ordered.map("type", "boolean", "description", "Open the entity the value names"),
                 "description", text("What the column shows")), List.of("bind"));
     }
 
@@ -522,14 +523,14 @@ public final class RachanaSchema {
     }
 
     private static Map<String, Object> text(String description) {
-        return Map.of("type", "string", "description", description);
+        return Ordered.map("type", "string", "description", description);
     }
 
     private static Map<String, Object> fmt(Collection<String> formats) {
-        return Map.of("type", "string", "enum", List.copyOf(new TreeSet<>(formats)), "description", "A number or date format");
+        return Ordered.map("type", "string", "enum", List.copyOf(new TreeSet<>(formats)), "description", "A number or date format");
     }
 
     private static Map<String, Object> tone() {
-        return Map.of("type", "string", "enum", Tones.NAMES, "description", "Colours the value");
+        return Ordered.map("type", "string", "enum", Tones.NAMES, "description", "Colours the value");
     }
 }

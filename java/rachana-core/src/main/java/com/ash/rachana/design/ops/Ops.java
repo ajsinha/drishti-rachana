@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The JSON form of operations: {@code {"op":"addPanel","kind":"table","at":{"area":"main","after":"legs"},"options":{...}}}
@@ -37,20 +38,8 @@ public final class Ops {
         }
     }
 
-    private static final Map<String, Set<String>> FIELDS = Map.ofEntries(
-            Map.entry("addPanel", Set.of("op", "id", "kind", "at", "options")),
-            Map.entry("move", Set.of("op", "panel", "area", "before", "after", "span", "height")),
-            Map.entry("setOption", Set.of("op", "panel", "option", "value")),
-            Map.entry("bind", Set.of("op", "panel", "path", "role")),
-            Map.entry("remove", Set.of("op", "panel")),
-            Map.entry("setTitle", Set.of("op", "title")),
-            Map.entry("setStrip", Set.of("op", "items")),
-            Map.entry("setControls", Set.of("op", "items")),
-            Map.entry("setKeys", Set.of("op", "keys")),
-            Map.entry("setMatch", Set.of("op", "match")),
-            Map.entry("setBlock", Set.of("op", "use", "with", "remove")),
-            Map.entry("text", Set.of("op", "yaml")));
-    private static final Set<String> AT = Set.of("area", "before", "after", "span", "height");
+    private static final Map<String, Set<String>> FIELDS = Ordered.map("addPanel", Ordered.set("op", "id", "kind", "at", "options"), "move", Ordered.set("op", "panel", "area", "before", "after", "span", "height"), "setOption", Ordered.set("op", "panel", "option", "value"), "bind", Ordered.set("op", "panel", "path", "role"), "remove", Ordered.set("op", "panel"), "setTitle", Ordered.set("op", "title"), "setStrip", Ordered.set("op", "items"), "setControls", Ordered.set("op", "items"), "setKeys", Ordered.set("op", "keys"), "setMatch", Ordered.set("op", "match"), "setBlock", Ordered.set("op", "use", "with", "remove"), "text", Ordered.set("op", "yaml"));
+    private static final Set<String> AT = Ordered.set("area", "before", "after", "span", "height");
     private Ops() {}
 
     /** Reads a JSON array of operations. */

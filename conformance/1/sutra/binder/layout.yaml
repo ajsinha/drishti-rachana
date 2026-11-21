@@ -1,0 +1,74 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/layout
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: >-
+  A screen's layout in the ViewModel (G3 gate F1): areas with a split, tabs, a sticky area, the phone and tablet orders, and a flow
+  grid with sections. Every object of the layout is written in the order the ViewModel schema gives its properties, the same bytes on
+  every JVM run, on both bundles and in Python (the lane compares the whole results line, not only the pointers below). Synthetic data.
+given:
+  today: "2026-01-15"
+cases:
+  - id: areas-split-tabs-sticky-phone-tablet
+    kind: sutra
+    given:
+      record: {"BOOK": "B-1", "ID": "T-1", "TRADES": [{"ID": "T-1"}, {"ID": "T-2"}]}
+    sutra: |
+      rachana: 1
+      sutra: book-desk
+      version: 1
+      match: { kind: book }
+      layout:
+        areas:
+          - "header header"
+          - "trades detail"
+          - "trades limits"
+        columns: [7, 5]
+        split: { between: [trades, detail], resizable: true, remember: user }
+        tabs: [detail]
+        sticky: header
+        user-can-arrange: true
+        phone: [header, detail, trades, limits]
+        tablet: { areas: ["header header", "trades trades", "detail limits"], columns: [6, 6] }
+      panels:
+        - { id: summary, kind: kv, area: header, columns: [ { label: Book, bind: $.BOOK } ] }
+        - { id: trades, kind: table, area: trades, rows: $.TRADES, columns: [ { label: Id, bind: "@.ID" } ] }
+        - { id: terms, kind: kv, area: detail, order: 2, columns: [ { label: Id, bind: $.ID } ] }
+        - { id: flows, kind: kv, area: detail, order: 1, columns: [ { label: Id, bind: $.ID } ] }
+        - { id: limits, kind: kv, area: limits, collapsible: true, height: 6, columns: [ { label: Id, bind: $.ID } ] }
+    expect:
+      at:
+        /layout/split/between: [trades, detail]
+        /layout/split/resizable: true
+        /layout/split/remember: user
+        /layout/sticky: header
+        /layout/phone: [header, detail, trades, limits]
+
+  - id: flow-grid-sections
+    kind: sutra
+    given:
+      record: {"A": 1}
+    sutra: |
+      rachana: 1
+      sutra: book-desk
+      version: 1
+      match: { kind: book }
+      layout:
+        columns: 12
+        sections:
+          - { id: overview, title: Overview }
+          - { id: risk, title: Risk, collapsed: true }
+          - { id: notes }
+        user-can-arrange: true
+      panels:
+        - { id: a, kind: kv, section: overview, span: 6, columns: [ { label: A, bind: $.A } ] }
+        - { id: b, kind: kv, section: risk, order: 1, columns: [ { label: A, bind: $.A } ] }
+        - { id: c, kind: kv, section: notes, columns: [ { label: A, bind: $.A } ] }
+    expect:
+      at:
+        /layout/sections/0/id: overview
+        /layout/sections/1/title: Risk
+        /layout/sections/1/collapsed: true
+        /layout/sections/2/title: notes
+        /layout/arrange: true

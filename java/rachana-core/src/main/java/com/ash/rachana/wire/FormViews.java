@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.LinkedHashSet;
 
 /**
  * A panel's {@code form:} as the console draws it (RACHANA_REFERENCE.md 10): the fields with what this viewer may do with each (a masked
@@ -210,7 +211,7 @@ public final class FormViews {
 
     private static List<Map<String, Object>> choices(Form.Lookup l, Function<Wiring.Source, List<Node>> lookup) {
         List<Map<String, Object>> out = new ArrayList<>();
-        java.util.Set<String> seen = new java.util.HashSet<>();
+        java.util.Set<String> seen = new LinkedHashSet<>();
         List<Node> found;
         try {
             found = lookup.apply(l.source());
@@ -244,7 +245,7 @@ public final class FormViews {
     /** An entity field's choices: each record's id (or its {@code value} field) and label, its carried values as the viewer sees them. */
     private static List<Map<String, Object>> records(Form.Lookup l, Function<Wiring.Source, List<Map.Entry<String, Node>>> entities) {
         List<Map<String, Object>> out = new ArrayList<>();
-        java.util.Set<String> seen = new java.util.HashSet<>();
+        java.util.Set<String> seen = new LinkedHashSet<>();
         List<Map.Entry<String, Node>> found;
         try {
             found = entities.apply(l.source());

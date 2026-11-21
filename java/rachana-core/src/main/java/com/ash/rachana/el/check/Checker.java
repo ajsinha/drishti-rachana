@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Rachana's checked mode (docs/architecture/ARCHITECTURE.md §28 2.1 and 2.2; the type checker ported from DEL's {@code DelChecker}, which now calls
@@ -39,7 +40,7 @@ public final class Checker {
         }
     }
 
-    private static final Set<String> COMPARISONS = Set.of("==", "!=", "<", "<=", ">", ">=");
+    private static final Set<String> COMPARISONS = Ordered.set("==", "!=", "<", "<=", ">", ">=");
 
     private final Signatures catalog;
     private final Scope scope;
@@ -95,7 +96,7 @@ public final class Checker {
             c.v11 = v11;
             ElType t = c.visit(tree);
             c.top(tree, t);
-            return new Checked(t, List.copyOf(c.problems), Set.copyOf(c.functions), Set.copyOf(c.usedFields), Set.copyOf(c.usedMeasures));
+            return new Checked(t, List.copyOf(c.problems), Ordered.copySet(c.functions), Ordered.copySet(c.usedFields), Ordered.copySet(c.usedMeasures));
         }, () -> new Checked(ElType.ANY, List.of(new Problem(Problem.LANGUAGE, Problem.ERROR, "the expression is nested too deeply to check", null, 0,
                 text == null ? 0 : Math.min(text.length(), 1))), Set.of(), Set.of(), Set.of()));
     }

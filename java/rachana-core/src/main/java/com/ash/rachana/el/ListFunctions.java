@@ -7,9 +7,9 @@ package com.ash.rachana.el;
 import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * Lists, Excel's dynamic arrays over {@code [*]} (FUNCTION_CATALOGUE.md section 6): {@code size}, {@code first},
@@ -183,7 +183,7 @@ final class ListFunctions {
         if (list == null) {
             return null;
         }
-        Set<Object> seen = new HashSet<>();
+        Set<Object> seen = new LinkedHashSet<>();
         List<Node> out = new ArrayList<>();
         for (Node e : list.elements()) {
             if (e.isMasked()) {

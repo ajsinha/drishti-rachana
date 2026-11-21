@@ -405,6 +405,7 @@
 [experimental] class public final class com.ash.rachana.model.Effects
 [experimental] class public final class com.ash.rachana.model.FormExpr
 [experimental] class public final class com.ash.rachana.model.ModelVersion
+[experimental] class public final class com.ash.rachana.model.Ordered
 [experimental] class public final class com.ash.rachana.model.PanelOptions
 [experimental] class public final class com.ash.rachana.parse.BlockLibrary
 [experimental] class public final class com.ash.rachana.parse.BlockUses
@@ -2920,6 +2921,10 @@
 [experimental] com.ash.rachana.model.Match :: public java.lang.String com.ash.rachana.model.Match.kind()
 [experimental] com.ash.rachana.model.Match :: public java.lang.String com.ash.rachana.model.Match.where()
 [experimental] com.ash.rachana.model.ModelVersion :: public static final int com.ash.rachana.model.ModelVersion.SPEC_MAJOR
+[experimental] com.ash.rachana.model.Ordered :: public static <K,V> java.util.Map<K, V> com.ash.rachana.model.Ordered.copy(java.util.Map<? extends K, ? extends V>)
+[experimental] com.ash.rachana.model.Ordered :: public static <K,V> java.util.Map<K, V> com.ash.rachana.model.Ordered.map(java.lang.Object...)
+[experimental] com.ash.rachana.model.Ordered :: public static <T> java.util.Set<T> com.ash.rachana.model.Ordered.copySet(java.util.Collection<? extends T>)
+[experimental] com.ash.rachana.model.Ordered :: public static <T> java.util.Set<T> com.ash.rachana.model.Ordered.set(T...)
 [experimental] com.ash.rachana.model.Panel :: public boolean com.ash.rachana.model.Panel.infer()
 [experimental] com.ash.rachana.model.Panel :: public com.ash.rachana.model.Area com.ash.rachana.model.Panel.area()
 [experimental] com.ash.rachana.model.Panel :: public com.ash.rachana.model.Panel com.ash.rachana.model.Panel.body()

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The {@code doc:} block every fragment and every Sutra carries, like a Python docstring, so a component browser or an AI agent can
@@ -39,7 +40,7 @@ public final class SutraDocstring {
     /** A missing or incomplete {@code doc:}. */
     public static final String CODE = "RCH-2055";
     /** The kinds of value a parameter may hold. */
-    public static final Set<String> TYPES = Set.of("text", "expression", "field", "format", "key", "area", "id", "number", "boolean", "kind", "columns");
+    public static final Set<String> TYPES = Ordered.set("text", "expression", "field", "format", "key", "area", "id", "number", "boolean", "kind", "columns");
     /** The longest summary line. */
     public static final int SUMMARY_MAX = 120;
 

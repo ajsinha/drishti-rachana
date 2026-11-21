@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Binds a path of the data to a panel, in the role the panel's kind gives it: {@code rows} (the list the panel reads),
@@ -28,7 +29,7 @@ import java.util.Set;
 public record Bind(String panel, String path, String role) implements Op {
 
     /** Options that hold a path or field of the data (the others hold formats, labels and switches). */
-    private static final Set<String> BINDABLE = Set.of("rows", "x", "y", "value", "label", "size", "group", "open", "high", "low", "close",
+    private static final Set<String> BINDABLE = Ordered.set("rows", "x", "y", "value", "label", "size", "group", "open", "high", "low", "close",
             "volume", "date", "detail", "status", "tone", "by", "across", "nodes", "edges", "source", "each", "max", "total", "sum", "delta", "highlight", "region");
 
     @Override

@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * One library of shared blocks and fragments (split step A6, registries per instance): the host's UI kit, the block files of its
@@ -59,7 +61,7 @@ public final class BlockLibrary implements FragmentResolver {
         libraryRef.updateAndGet(m -> {
             Map<String, TreeMap<Integer, Block>> n = new TreeMap<>(m);
             n.computeIfAbsent(named.name(), x -> new TreeMap<>()).put(named.version(), named);
-            return Map.copyOf(n);
+            return Ordered.copy(n);
         });
     }
 
@@ -70,7 +72,7 @@ public final class BlockLibrary implements FragmentResolver {
             libraryRef.updateAndGet(m -> {
                 Map<String, TreeMap<Integer, Block>> n = new TreeMap<>(m);
                 gone.forEach(c -> n.remove(c.block().name()));
-                return Map.copyOf(n);
+                return Ordered.copy(n);
             });
         }
     }
@@ -78,7 +80,7 @@ public final class BlockLibrary implements FragmentResolver {
     /** The {@code use:} nodes of the sections modules contribute to a kind's Sutras, in module order. */
     public List<PNode> contributedUses(String kind) {
         List<PNode> out = new ArrayList<>();
-        contributions.values().stream().flatMap(List::stream).filter(c -> c.kind().equals(kind))
+        new TreeMap<>(contributions).values().stream().flatMap(List::stream).filter(c -> c.kind().equals(kind))
                 .sorted(java.util.Comparator.comparing(c -> c.block().name()))
                 .forEach(c -> out.add(new PNode(Map.of("use", new PNode(c.block().ref(), 1, 1)), 1, 1)));
         return out;
@@ -122,7 +124,7 @@ public final class BlockLibrary implements FragmentResolver {
         List<SutraProblem> problems = new ArrayList<>();
         List<SutraProblem> warnings = new ArrayList<>();
         List<SutraProblem> clashes = new ArrayList<>();
-        java.util.Set<String> kitNames = new java.util.HashSet<>();
+        java.util.Set<String> kitNames = new LinkedHashSet<>();
         Path kit = kitRef.get() == null ? null : kitRef.get().resolve("fragments");
         List<Path> all = new ArrayList<>();
         if (kit != null) {
@@ -172,8 +174,8 @@ public final class BlockLibrary implements FragmentResolver {
                 problems.add(SutraBlocks.problem("cannot scan " + dir + ": " + e.getMessage(), dir.toString(), 1, 1));
             }
         }
-        contributions.values().forEach(l -> l.forEach(c -> next.computeIfAbsent(c.block().name(), k -> new TreeMap<>()).put(c.block().version(), c.block())));
-        libraryRef.set(Map.copyOf(next));
+        new TreeMap<>(contributions).values().forEach(l -> l.forEach(c -> next.computeIfAbsent(c.block().name(), k -> new TreeMap<>()).put(c.block().version(), c.block())));
+        libraryRef.set(Ordered.copy(next));
         java.util.Set<Block> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         for (TreeMap<Integer, Block> versions : next.values()) {
             for (Block b : versions.values()) {

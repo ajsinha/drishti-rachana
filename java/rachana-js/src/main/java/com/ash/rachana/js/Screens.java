@@ -11,7 +11,6 @@ import com.ash.rachana.table.TableSchema;
 import com.ash.rachana.view.Frame;
 import com.ash.rachana.view.ViewJson;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ import java.util.Map;
  */
 final class Screens {
 
-    private static final Map<Integer, LiveScreen> OPEN = new HashMap<>();
+    private static final Map<Integer, LiveScreen> OPEN = new LinkedHashMap<>();
     private static int next = 1;
 
     private Screens() {

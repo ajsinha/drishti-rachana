@@ -45,8 +45,8 @@ public final class PanelOptions {
     public static final int DATASET_ROWS = 10_000;
     /** A field name of the rows (a dataset panel's word options). */
     private static final java.util.regex.Pattern FIELD = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,63}");
-    private static final Set<String> FIELD_OPTIONS = Set.of("node", "parent", "path", "label", "x", "by");
-    private static final Set<String> FIELD_LISTS = Set.of("rowKey", "group", "y", "bars");
+    private static final Set<String> FIELD_OPTIONS = Ordered.set("node", "parent", "path", "label", "x", "by");
+    private static final Set<String> FIELD_LISTS = Ordered.set("rowKey", "group", "y", "bars");
     /** Language 1.2: the rows a live panel reads and follows at a time, and the default. */
     public static final int MAX_WINDOW = 5_000;
     public static final int WINDOW = 200;
@@ -60,27 +60,27 @@ public final class PanelOptions {
     /** The most bins a histogram may ask for. */
     public static final int MAX_BINS = 200;
 
-    private static final Map<PanelKind, Map<String, List<String>>> CHOICES = Map.of(
+    private static final Map<PanelKind, Map<String, List<String>>> CHOICES = Ordered.map(
             PanelKind.PIVOT, Map.of("agg", AGGREGATIONS),
             PanelKind.GRAPH, Map.of("layout", GRAPH_LAYOUTS),
             PanelKind.WATERFALL, Map.of("colors", WATERFALL_COLORS), PanelKind.HBAR, Map.of("shape", BAR_SHAPES),
             PanelKind.TREE, Map.of("mode", TREE_MODES), PanelKind.LIVE, Map.of("edit", LIVE_EDITS),
-            PanelKind.CHART, Map.of("type", CHART_TYPES, "agg", DATASET_AGGREGATIONS, "stack", CHART_STACKS));
-    private static final Map<PanelKind, Set<String>> BOOLEANS = Map.of(PanelKind.PIVOT, Set.of("heat", "totals"),
+            PanelKind.CHART, Ordered.map("type", CHART_TYPES, "agg", DATASET_AGGREGATIONS, "stack", CHART_STACKS));
+    private static final Map<PanelKind, Set<String>> BOOLEANS = Ordered.map(PanelKind.PIVOT, Ordered.set("heat", "totals"),
             PanelKind.TABLE, Set.of("search"), PanelKind.LADDER, Set.of("search"), PanelKind.LINE, Set.of("step"),
-            PanelKind.GRID, Set.of("search"), PanelKind.CHART, Set.of("horizontal"), PanelKind.LIVE, Set.of("search", "top"));
+            PanelKind.GRID, Set.of("search"), PanelKind.CHART, Set.of("horizontal"), PanelKind.LIVE, Ordered.set("search", "top"));
     /** Options that name a list (or one object) by an expression: a number, a truth value or a YAML list never is one. */
-    private static final Set<String> LIST_EXPRESSIONS = Set.of("rows", "each", "nodes", "edges", "source", "children");
+    private static final Set<String> LIST_EXPRESSIONS = Ordered.set("rows", "each", "nodes", "edges", "source", "children");
     /** What {@code expand: all} stands for: levels of a tree shown open (more than any tree is deep). */
     public static final int EXPAND_ALL = 99;
     /** The most fields a pivot panel may group its rows by. */
     public static final int MAX_BY = 6;
     /** Options written as a YAML list of mappings, with the keys each item takes. */
-    private static final Map<PanelKind, Map<String, String>> LISTS = Map.of(
+    private static final Map<PanelKind, Map<String, String>> LISTS = Ordered.map(
             PanelKind.KV, Map.of("fields", "{ label, bind, fmt, tone }"),
             PanelKind.STATUS, Map.of("fields", "{ label, bind, fmt, tone }"),
             PanelKind.AREA, Map.of("series", "{ label, value, tone }"));
-    private static final Set<String> MARKER_KEYS = Set.of("label", "value", "tone");
+    private static final Set<String> MARKER_KEYS = Ordered.set("label", "value", "tone");
 
     /** The keys of a histogram marker (for the generated language files). */
     public static Set<String> markerKeys() {
@@ -148,14 +148,14 @@ public final class PanelOptions {
                 && !(value instanceof Long n && n >= 1 && n <= MAX_BINS)) {
             return Optional.of("option 'bins' of 'histogram' panels must be a whole number from 1 to " + MAX_BINS + ", not '" + value + "'");
         }
-        if (kind == PanelKind.TREEMAP && Set.of("label", "value", "group", "color").contains(option)
+        if (kind == PanelKind.TREEMAP && Ordered.set("label", "value", "group", "color").contains(option)
                 && !(value instanceof String s && FIELD.matcher(s).matches())) {
             return Optional.of(what + " is a field name of the rows (such as exposure), not '" + value + "'");
         }
         if (kind == PanelKind.BULLET && option.equals("warnAt") && !(value instanceof Number && com.ash.rachana.el.Values.number(value) > 0 && com.ash.rachana.el.Values.number(value) <= 1)) {
             return Optional.of(what + " is the share of a bound where its warning zone starts, above 0 and at most 1 (such as 0.8), not '" + value + "'");
         }
-        if (kind == PanelKind.BULLET && Set.of("value", "min", "limit", "lower", "upper").contains(option) && (value instanceof List<?> || value instanceof Map<?, ?>)) {
+        if (kind == PanelKind.BULLET && Ordered.set("value", "min", "limit", "lower", "upper").contains(option) && (value instanceof List<?> || value instanceof Map<?, ?>)) {
             return Optional.of(what + " is one value written as text (an expression), not a list or a mapping");
         }
         if (kind == PanelKind.LINE && option.equals("layers")) {
@@ -170,7 +170,7 @@ public final class PanelOptions {
         if ((kind == PanelKind.TABLE || kind == PanelKind.LADDER) && option.equals("levels")) {
             return levels(what, value);
         }
-        if ((kind == PanelKind.TABLE || kind == PanelKind.LADDER) && Set.of("crumb", "root", "empty").contains(option) && !(value instanceof String)) {
+        if ((kind == PanelKind.TABLE || kind == PanelKind.LADDER) && Ordered.set("crumb", "root", "empty").contains(option) && !(value instanceof String)) {
             return Optional.of(what + " is text" + ("empty".equals(option) ? " (the words shown when there are no rows)" : " (an expression)") + ", not '" + value + "'");
         }
         return Optional.empty();
@@ -203,7 +203,7 @@ public final class PanelOptions {
         if ("open".equals(option) && !(value instanceof Long n && n >= -1 && n <= 99)) {
             return Optional.of(what + " must be a whole number of levels shown open (-1 for all), not '" + value + "'");
         }
-        if (Set.of("xLabel", "yLabel", "fmt", "empty").contains(option) && !(value instanceof String)) {
+        if (Ordered.set("xLabel", "yLabel", "fmt", "empty").contains(option) && !(value instanceof String)) {
             return Optional.of(what + " is text, not '" + value + "'");
         }
         return Optional.empty();
@@ -225,7 +225,7 @@ public final class PanelOptions {
     public static final int MAX_SERIES = 12;
     /** Language 1.2: how a layer of a line panel is drawn. */
     public static final List<String> LAYER_MARKS = List.of("line", "bar", "area", "point");
-    private static final Set<String> LAYER_KEYS = Set.of("y", "label", "mark", "tone", "axis");
+    private static final Set<String> LAYER_KEYS = Ordered.set("y", "label", "mark", "tone", "axis");
 
     /** {@code layers:} of a line panel: 1 to {@link #MAX_SERIES} mappings, each { y (a field), label, mark, tone, axis (left, right) }. */
     private static Optional<String> layers(String what, Object value) {
@@ -249,8 +249,8 @@ public final class PanelOptions {
     /** The most levels a table's rows may drill into. */
     public static final int MAX_LEVELS = 6;
     /** The keys of one level of {@code levels:}. */
-    public static final Set<String> LEVEL_KEYS = Set.of("rows", "title", "crumb", "columns");
-    private static final Set<String> LEVEL_COLUMN_KEYS = Set.of("label", "bind", "fmt", "tone", "total", "link");
+    public static final Set<String> LEVEL_KEYS = Ordered.set("rows", "title", "crumb", "columns");
+    private static final Set<String> LEVEL_COLUMN_KEYS = Ordered.set("label", "bind", "fmt", "tone", "total", "link");
 
     /**
      * {@code levels:} of a table or ladder: 1 to {@link #MAX_LEVELS} mappings, each with {@code rows} (an expression read with {@code @}
@@ -287,7 +287,7 @@ public final class PanelOptions {
 
     /** What a link template may hold: the country's ISO 3166-1 alpha-3 or alpha-2 code, or a region's ISO 3166-2 code. */
     public static final List<String> MAP_TOKENS = List.of("{iso3}", "{iso2}", "{code}");
-    private static final Set<String> SHADE_KEYS = Set.of("kind", "field", "by", "fmt", "label");
+    private static final Set<String> SHADE_KEYS = Ordered.set("kind", "field", "by", "fmt", "label");
 
     private static Optional<String> mapProblem(String what, String option, Object value) {
         switch (option) {

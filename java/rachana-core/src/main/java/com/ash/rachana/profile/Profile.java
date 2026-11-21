@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * A named set of additions a host hands to {@link com.ash.rachana.Rachana#with}: a value built in code; nothing is discovered by
@@ -52,8 +53,8 @@ public final class Profile {
         this.formatFiles = List.copyOf(formatFiles);
         this.calendars = calendars;
         this.keys = List.copyOf(keys);
-        this.panelKinds = Set.copyOf(panelKinds);
-        this.sourceForms = Set.copyOf(sourceForms);
+        this.panelKinds = Ordered.copySet(panelKinds);
+        this.sourceForms = Ordered.copySet(sourceForms);
         this.formSave = formSave;
         this.fragments = fragments;
     }

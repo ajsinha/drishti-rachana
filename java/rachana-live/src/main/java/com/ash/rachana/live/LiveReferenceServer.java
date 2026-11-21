@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The live tables' test adapter (PROTOCOL 15 and 16, LIVE_TABLES 9): the reference server ({@link ReferenceServer}) with a
@@ -102,7 +103,7 @@ public final class LiveReferenceServer implements AutoCloseable {
             this.tier = tier;
             this.schema = schema;
             this.keys = new KeyedRows(schema.key(), List.of(), 0);
-            this.columns = columns == null ? null : Set.copyOf(columns);
+            this.columns = columns == null ? null : Ordered.copySet(columns);
         }
 
         synchronized void put(Map<String, Object> r) {
@@ -250,8 +251,8 @@ public final class LiveReferenceServer implements AutoCloseable {
             spec = LiveTableSpec.read(String.valueOf(b.get("declaration")), "case.live.yaml");
         } catch (com.ash.rachana.SutraException e) {
             List<Object> ps = new ArrayList<>();
-            e.problems().forEach(p -> ps.add(Map.of("code", p.code(), "message", p.message())));
-            return new ProtocolHost.Answer(422, Map.of("error", Map.of("code", "rdp.query.invalid", "message", "the declaration has problems",
+            e.problems().forEach(p -> ps.add(Ordered.map("code", p.code(), "message", p.message())));
+            return new ProtocolHost.Answer(422, Map.of("error", Ordered.map("code", "rdp.query.invalid", "message", "the declaration has problems",
                     "problems", ps)));
         }
         SnapshotSource.Tier tier = SnapshotSource.Tier.valueOf(String.valueOf(b.getOrDefault("tier", "whole")).toUpperCase(java.util.Locale.ROOT));
@@ -340,7 +341,7 @@ public final class LiveReferenceServer implements AutoCloseable {
             lt.declare(spec);
         } catch (IllegalStateException e) {
             lt.close();
-            return new ProtocolHost.Answer(422, Map.of("error", Map.of("code", "rdp.query.invalid", "message", e.getMessage())));
+            return new ProtocolHost.Answer(422, Map.of("error", Ordered.map("code", "rdp.query.invalid", "message", e.getMessage())));
         }
         server.host().protocol().add(lt);
         tables = lt;
@@ -457,8 +458,8 @@ public final class LiveReferenceServer implements AutoCloseable {
         }
         int sent = Boolean.TRUE.equals(b.get("flush")) ? ob.flush() : 0;
         List<Object> entries = new ArrayList<>();
-        ob.pending(name).forEach(e -> entries.add(Map.of("change", e.change().id(), "state", e.state().wire())));
-        return new ProtocolHost.Answer(200, Map.of("sent", (long) sent, "entries", entries));
+        ob.pending(name).forEach(e -> entries.add(Ordered.map("change", e.change().id(), "state", e.state().wire())));
+        return new ProtocolHost.Answer(200, Ordered.map("sent", (long) sent, "entries", entries));
     }
 
     /** The outbox's journal in memory (the case's host has no disk to keep). */

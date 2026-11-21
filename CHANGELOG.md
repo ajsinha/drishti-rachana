@@ -5,6 +5,18 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **The same bytes on every run (G3 gate F1)**: a ViewModel's `layout.split` and `layout.sections` were written from `Map.of`, so
+  their key order changed from one JVM run to the next and differed on Node; the server's home page listed Sutras from `Map.copyOf`
+  (another order at every start), and the pending tables, a table source's column types, the bundle's `levels()` answer, the live
+  reference server's answers and an audit event's fields had the same flaw. Every main source of every module now builds its fixed
+  maps and sets with `com.ash.rachana.model.Ordered` (`map`, `set`, `copy`, `copySet`: in the order written, unmodifiable, no nulls,
+  no duplicate keys), its working ones as `LinkedHashMap`/`LinkedHashSet`, and walks a concurrent map sorted. The guard
+  `OrderedCollectionsGuardTest` (rachana-guards) refuses multi-key `Map.of`, `Map.ofEntries`, multi-item `Set.of`, `Map.copyOf`,
+  `Set.copyOf`, `HashMap`, `HashSet`, the collectors that make them and an unsorted walk over a `ConcurrentHashMap` or
+  `IdentityHashMap` in any main source (it replaces the narrower ViewModel-only guard). New cases `sutra/binder/layout` (areas with a
+  split, tabs, sticky, phone, tablet; a flow grid with sections) and a server test of the home page with several Sutras over three
+  starts; the conformance lane runs the JVM a second time at the newest level and compares the bytes.
+
 - **Duplicate leftovers (i7b audit S10, D6)**: `Signatures.Signature` loses its `legacy` component and `signatures.yaml` its four `del:` lines
   (DEL's names for functions; DEL is folded away and nothing read them; logged in `java/api-removals.txt`). The deprecated function
   spellings (`startsWith`, `oneOf`, `matchesCase`, `days`, `today` ...) are part of the frozen level 1.0 (SPEC 5.10, 7.2 rule 3: read, never

@@ -21,6 +21,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Shared panel blocks and the fragment library: panels written once in a block file ({@code <name>.v<N>.block.yaml} beside the Sutras) and used by many
@@ -186,7 +187,7 @@ public final class SutraBlocks {
                 throw new SutraException(doc);
             }
         }
-        return new Block(name, version, text, Map.copyOf(params), file, path);
+        return new Block(name, version, text, Ordered.copy(params), file, path);
     }
 
     /** The problems placed in the fragment file they were found in (SPEC 6.1: {@code path} and {@code range} of that file's text). */
@@ -596,9 +597,9 @@ public final class SutraBlocks {
     }
 
     /** Keys a use may carry beside use and with (RACHANA_REFERENCE.md 6 to 8): put on every panel it brings. */
-    private static final java.util.Set<String> USE_ON_ALL = java.util.Set.of("source", "when", "waits", "refresh", "section", "collapsible", "order", "phone");
+    private static final java.util.Set<String> USE_ON_ALL = Ordered.set("source", "when", "waits", "refresh", "section", "collapsible", "order", "phone");
     /** Keys a use may carry only when it brings one panel: that panel's events, children and size. */
-    private static final java.util.Set<String> USE_ON_ONE = java.util.Set.of("emits", "children", "span", "height", "area", "form");
+    private static final java.util.Set<String> USE_ON_ONE = Ordered.set("emits", "children", "span", "height", "area", "form");
 
     /**
      * The panels a use brings with the use's own wiring and size on them ({@code { use: series-line@1, with: {...}, source: {...} }}): source,

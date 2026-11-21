@@ -27,7 +27,7 @@ public record Wiring(Source source, List<Emit> emits, String waits, List<Childre
     public static final Wiring NONE = new Wiring(null, List.of(), null, List.of());
 
     /** The triggers built (RACHANA_REFERENCE.md 7): a table's or ladder's row, an hbar's bar. */
-    public static final Set<String> TRIGGERS = Set.of("row-click", "bar-click");
+    public static final Set<String> TRIGGERS = Ordered.set("row-click", "bar-click");
     /**
      * The trigger of the marks beyond rows and bars (level 1.2, SUTRA_EXPANSION I1): a point of a {@code line} or {@code area}, a
      * {@code scatter} point, a {@code waterfall} step, a {@code timeline} event, a {@code candlestick} candle (each a row of the panel's
@@ -35,11 +35,11 @@ public record Wiring(Source source, List<Emit> emits, String waits, List<Childre
      */
     public static final String POINT_CLICK = "point-click";
     /** The panel kinds that fire {@link #POINT_CLICK}, and the level that brings it. */
-    public static final Set<String> POINT_KINDS = Set.of("line", "area", "scatter", "waterfall", "timeline", "candlestick", "metric", "gauge", "kv",
+    public static final Set<String> POINT_KINDS = Ordered.set("line", "area", "scatter", "waterfall", "timeline", "candlestick", "metric", "gauge", "kv",
             "status", "treemap", "pivot", "surface");
     public static final String POINT_SINCE = "1.2";
     /** The kinds whose {@link #POINT_CLICK} is the whole panel, one mark ({@code ev} "0"; a payload reads the panel's context, no row). */
-    public static final Set<String> ONE_MARK = Set.of("metric", "gauge", "kv", "status");
+    public static final Set<String> ONE_MARK = Ordered.set("metric", "gauge", "kv", "status");
     /** Where child panels are placed relative to their parent. */
     public static final List<String> PLACES = List.of("expand-row", "detail-right", "detail-below", "tabs");
     /** When child panels are shown: when the parent fires (the default), with the parent, or when the reader opens them. */

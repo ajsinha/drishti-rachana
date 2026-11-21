@@ -15,6 +15,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * Recursive-descent parser for Rachana-EL. Grammar (EBNF):
@@ -937,7 +939,7 @@ final class Parser {
     /** <code>{ key: value, ...r }</code> (the brace read): a record literal (X6). */
     private Expr record(int s) {
         List<Expr> entries = new ArrayList<>();
-        java.util.Set<String> keys = new java.util.HashSet<>();
+        java.util.Set<String> keys = new LinkedHashSet<>();
         while (peek().type() != Type.RBRACE) {
             if (peek().type() == Type.SPREAD) {
                 int at = next().pos();
@@ -1193,7 +1195,7 @@ final class Parser {
         return e instanceof Expr.Local l && ListFunctions.ACC.equals(l.name());
     }
 
-    private static final java.util.Set<String> RESERVED = java.util.Set.of("true", "false", "null", "ctl", "in", "not");
+    private static final java.util.Set<String> RESERVED = Ordered.set("true", "false", "null", "ctl", "in", "not");
 
     /**
      * {@code let(name = expr, ..., result)}: each {@code name = expr} binds a name the later values and the result read as a

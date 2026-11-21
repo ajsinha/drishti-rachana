@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Reads YAML into a {@link PNode} tree, keeping line and column for every node: Core's own reader, with no library
@@ -40,7 +41,7 @@ public final class PositionalYamlReader {
     public record Issue(String message, int line, int column) {}
 
     /** The tags of the YAML core schema: writing them changes nothing a Sutra cannot express plainly. */
-    private static final Set<String> CORE_TAGS = Set.of("tag:yaml.org,2002:str", "tag:yaml.org,2002:int", "tag:yaml.org,2002:float",
+    private static final Set<String> CORE_TAGS = Ordered.set("tag:yaml.org,2002:str", "tag:yaml.org,2002:int", "tag:yaml.org,2002:float",
             "tag:yaml.org,2002:bool", "tag:yaml.org,2002:null", "tag:yaml.org,2002:map", "tag:yaml.org,2002:seq");
     private static final String YAML_TAG = "tag:yaml.org,2002:";
     private static final int MAX_DEPTH = 1000;

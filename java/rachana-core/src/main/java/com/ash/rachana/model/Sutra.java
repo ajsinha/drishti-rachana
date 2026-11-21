@@ -107,7 +107,7 @@ public record Sutra(
     public Sutra {
         strip = List.copyOf(strip);
         panels = List.copyOf(panels);
-        keys = Map.copyOf(keys);
+        keys = Ordered.copy(keys);
         controls = controls == null ? List.of() : List.copyOf(controls);
         extensions = Extensions.of(extensions);
     }

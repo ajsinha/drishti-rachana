@@ -20,6 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * Reads the {@code controls:} section of a Sutra and checks it: the kinds, the options each takes, defaults, placement, cascading
@@ -30,7 +32,7 @@ import java.util.regex.Pattern;
  */
 final class ControlsReader {
 
-    private static final Set<String> KEYS = Set.of("id", "kind", "label", "options", "default", "remember", "required", "placement", "panel",
+    private static final Set<String> KEYS = Ordered.set("id", "kind", "label", "options", "default", "remember", "required", "placement", "panel",
             "parent", "min", "max", "step", "range");
     private static final Pattern ID = Pattern.compile(ControlRules.ID_PATTERN);
 
@@ -293,9 +295,9 @@ final class ControlsReader {
      * {@code by} names a control (the clicked row or bar sets it).
      */
     void checkSelects(List<Panel> panels, List<Control> controls) {
-        Set<String> ids = new java.util.HashSet<>();
+        Set<String> ids = new LinkedHashSet<>();
         panels.forEach(p -> ids.add(p.id()));
-        Set<String> ctl = new java.util.HashSet<>();
+        Set<String> ctl = new LinkedHashSet<>();
         controls.forEach(c -> ctl.add(c.id()));
         for (Panel p : panels) {
             Object raw = p.options().get(Panel.ON_SELECT);
@@ -307,7 +309,7 @@ final class ControlsReader {
                 continue;
             }
             for (Object k : m.keySet()) {
-                if (!Set.of("filter", "by", "field").contains(String.valueOf(k))) {
+                if (!Ordered.set("filter", "by", "field").contains(String.valueOf(k))) {
                     problems.add(new SutraProblem("RCH-2038", "on-select of panel '" + p.id() + "' has no key '" + k + "'; it takes filter, by and field", p.location()));
                 }
             }

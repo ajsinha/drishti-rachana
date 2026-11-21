@@ -6,11 +6,12 @@ package com.ash.rachana.el;
 
 import com.ash.rachana.el.Token.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 /**
  * The column names a typed fragment writes in its expressions, renamed to the caller's at compile time (decision L-21, "fragments are
@@ -57,12 +58,12 @@ public final class FragmentColumns {
     }
 
     /** The functions whose result is rows of their first argument (a column of it is a column of them); {@code union} when both are one table's. */
-    private static final Set<String> SAME_ROWS = Set.of("sort", "take", "drop", "unique", "difference", "intersect");
+    private static final Set<String> SAME_ROWS = Ordered.set("sort", "take", "drop", "unique", "difference", "intersect");
 
     /** Marks a filter's rows that come from a table the pass cannot follow (the tables it reads between two marks, then the text). */
     private static final String UNKNOWN_ROWS = "?";            // never a table name; not a control character (TeaVM reads \u0001 in a concatenation as an argument)
 
-    private static final Set<String> WORDS = Set.of("true", "false", "null", "and", "or", "not", "in", "if", "else", "lambda", "is");
+    private static final Set<String> WORDS = Ordered.set("true", "false", "null", "and", "or", "not", "in", "if", "else", "lambda", "is");
 
     /** What the pass knows about the fragment's tables. */
     public interface Tables {
@@ -280,7 +281,7 @@ public final class FragmentColumns {
         private final int[] match;
         private final List<int[]> at = new ArrayList<>();
         private final List<String> with = new ArrayList<>();
-        private final Set<String> named = new HashSet<>();
+        private final Set<String> named = new LinkedHashSet<>();
 
         Run(String src, List<Token> toks, Tables tables, boolean bare, List<String> problems) {
             this.src = src;
@@ -593,7 +594,7 @@ public final class FragmentColumns {
 
         /** {@code lambda a, b: body} at {@code i}, ending before {@code e}: the body read with the element's name bound. The end. */
         private int lambda(int i, int e, String table, int place, String row, Map<String, String> elements) {
-            Map<String, String> inner = new HashMap<>(elements);
+            Map<String, String> inner = new LinkedHashMap<>(elements);
             int j = i + 1;
             int k = 0;
             while (j < e && tok(j).type() != Type.COLON) {

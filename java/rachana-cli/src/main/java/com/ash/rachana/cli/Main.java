@@ -14,9 +14,9 @@ import com.ash.rachana.tools.LibraryTool;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * The jar launcher of the {@code rachana} command. The library commands live here once (over {@link LibraryTool}); the npm and PyPI
@@ -54,7 +54,7 @@ public final class Main {
             return 2;
         }
         List<String> pos = new ArrayList<>();
-        Set<String> publishers = new HashSet<>();
+        Set<String> publishers = new LinkedHashSet<>();
         boolean signed = false;
         String out = null;
         String lock = LibraryLock.FILE;

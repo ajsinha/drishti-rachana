@@ -58,7 +58,7 @@ public final class Subscription implements AutoCloseable {
     private boolean newestFirst;
     private int capacity = Integer.MAX_VALUE;
     private volatile LongSupplier total;
-    private final Set<String> pendingKeys = new java.util.HashSet<>();
+    private final Set<String> pendingKeys = new LinkedHashSet<>();
 
     /**
      * A subscription for a provider of another module ({@link TableProvider#subscribe}): the provider calls {@link #start}, then
@@ -87,7 +87,7 @@ public final class Subscription implements AutoCloseable {
      */
     public synchronized Subscription window(java.util.Collection<? extends List<?>> keys, boolean top, boolean newestFirst, int capacity,
             LongSupplier total) {
-        Set<String> w = new java.util.HashSet<>();
+        Set<String> w = new LinkedHashSet<>();
         keys.forEach(k -> w.add(KeyedRows.keyText(k)));
         this.window = w;
         this.top = top;

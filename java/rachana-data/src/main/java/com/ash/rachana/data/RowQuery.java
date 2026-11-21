@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import com.ash.rachana.model.Ordered;
 
 /**
  * A query document (PROTOCOL 6, 7) over rows held in memory: the checks every host runs before a provider sees a document
@@ -37,7 +38,7 @@ public final class RowQuery {
     public static final int PAGE_ROWS = 10_000;
     public static final int FILTER_DEPTH = 32;
 
-    private static final Set<String> FIELDS = Set.of("columns", "filter", "sort", "limit", "cursor", "offset", "group", "asOf", "params");
+    private static final Set<String> FIELDS = Ordered.set("columns", "filter", "sort", "limit", "cursor", "offset", "group", "asOf", "params");
 
     private final ElCompiler el = new ElCompiler(1000);
 
@@ -242,7 +243,7 @@ public final class RowQuery {
         if (g.get("values") instanceof List<?> l) {
             for (Object o : l) {
                 if (!(o instanceof Map<?, ?> m) || !(m.get("name") instanceof String) || !(m.get("agg") instanceof String a)
-                        || !Set.of("sum", "count", "min", "max", "avg", "distinct", "median", "percentile").contains(a)
+                        || !Ordered.set("sum", "count", "min", "max", "avg", "distinct", "median", "percentile").contains(a)
                         || !"count".equals(a) && !(m.get("col") instanceof String)) {
                     throw ProtocolError.of("rdp.query.invalid", 422, "a group value is { name, agg, col?, p? }");
                 }
@@ -275,7 +276,7 @@ public final class RowQuery {
             result.add(row);
         }
         List<Object> sort = doc.get("sort") instanceof List<?> l ? new ArrayList<>(l) : new ArrayList<>();
-        TableSchema grouped = TableSchema.of(Map.of("name", s.name(), "key", by, "columns", groupedColumns(s, by, values)));
+        TableSchema grouped = TableSchema.of(Ordered.map("name", s.name(), "key", by, "columns", groupedColumns(s, by, values)));
         result.sort(order(grouped, sort));
         List<Object> vals = new ArrayList<>();
         for (Map<String, Object> r : result) {

@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The server's rights ({@code access:}), fail-closed: a request without a signed-in principal reads nothing; a table or Sutra with an entry
@@ -31,7 +32,7 @@ final class Access implements Authoriser {
 
     /** Four eyes: the roles that approve each table's held changes ({@code access.tables.<name>.approve}). */
     Access approvers(java.util.Map<String, List<String>> roles) {
-        approve = roles == null ? java.util.Map.of() : java.util.Map.copyOf(roles);
+        approve = roles == null ? java.util.Map.of() : Ordered.copy(roles);
         return this;
     }
 

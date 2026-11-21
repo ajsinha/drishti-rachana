@@ -7,13 +7,13 @@ package com.ash.rachana.model;
 import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.LinkedHashSet;
 
 /**
  * An interactive pivot a table-like panel (or a kind's search results) opts into: the fields a user may pivot by, and the
@@ -123,7 +123,7 @@ public record PivotSpec(List<Field> fields, boolean explicit, List<String> rows,
         }
         boolean explicit = m.containsKey("fields");
         List<Field> fields = explicit ? fields(m.get("fields"), mode, problems) : implicit;
-        Set<String> known = new HashSet<>();
+        Set<String> known = new LinkedHashSet<>();
         fields.forEach(f -> known.add(f.name()));
         PivotSpec spec = arrangement(m, fields, explicit, known, !explicit && implicit.isEmpty(), problems);
         return new Parsed(problems.isEmpty() ? spec : null, problems);
@@ -144,7 +144,7 @@ public record PivotSpec(List<Field> fields, boolean explicit, List<String> rows,
                 problems.add("unknown key '" + k + "' in a pivot arrangement; expected " + String.join(", ", ARRANGEMENT));
             }
         }
-        PivotSpec spec = arrangement(m, offered.fields, offered.explicit, new HashSet<>(offered.names()), false, problems);
+        PivotSpec spec = arrangement(m, offered.fields, offered.explicit, new LinkedHashSet<>(offered.names()), false, problems);
         return new Parsed(problems.isEmpty() ? new PivotSpec(offered.fields, offered.explicit, spec.rows, spec.columns, spec.values,
                 spec.filters, spec.heat, spec.chart, offered.totals, spec.mode) : null, problems);
     }
@@ -192,7 +192,7 @@ public record PivotSpec(List<Field> fields, boolean explicit, List<String> rows,
             problems.add("pivot 'fields' lists at most " + MAX_FIELDS + " fields, found " + list.size());
         }
         List<Field> out = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
+        Set<String> seen = new LinkedHashSet<>();
         for (Object o : list) {
             Field f = field(o, mode, problems);
             if (f == null) {
@@ -386,7 +386,7 @@ public record PivotSpec(List<Field> fields, boolean explicit, List<String> rows,
     /** The fields of {@code pivot: true} on a table: one per column, named after its row path (or its label). */
     public static List<Field> fromColumns(List<Column> columns) {
         List<Field> out = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
+        Set<String> seen = new LinkedHashSet<>();
         for (int i = 0; i < columns.size(); i++) {
             Column c = columns.get(i);
             var m = c.bind() == null ? null : ROW_PATH.matcher(c.bind().strip());

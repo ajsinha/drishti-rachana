@@ -12,6 +12,7 @@ import java.time.temporal.IsoFields;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * More dates (FUNCTION_CATALOGUE.md section 3), beside {@link DateFunctions}: {@code date} (ISO text, or year, month and day with Excel's
@@ -26,7 +27,7 @@ final class DateParts {
     private DateParts() {}
 
     /** The units of {@code datedif}, Excel's. */
-    static final Set<String> DATEDIF_UNITS = Set.of("Y", "M", "D", "MD", "YM", "YD");
+    static final Set<String> DATEDIF_UNITS = Ordered.set("Y", "M", "D", "MD", "YM", "YD");
 
     static void register(Functions.Table t) {
         t.fn("date", 1, 3, (a, c) -> date(a));

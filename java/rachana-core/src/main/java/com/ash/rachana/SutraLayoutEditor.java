@@ -12,7 +12,6 @@ import com.ash.rachana.parse.PositionalYamlReader;
 import com.ash.rachana.parse.YamlSyntaxException;
 import com.ash.rachana.parse.SutraParser;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -94,7 +93,7 @@ public final class SutraLayoutEditor {
                     : new Placement(p.id(), w.area() == null ? p.area() : w.area(), normal(w.span()), w.height(), w.hidden()));
         }
         // edit each block's keys
-        Map<String, List<String>> edited = new HashMap<>();
+        Map<String, List<String>> edited = new LinkedHashMap<>();
         for (int i = 0; i < sutra.panels().size(); i++) {
             Panel p = sutra.panels().get(i);
             Placement t = target.get(p.id());

@@ -30,7 +30,6 @@ import com.ash.rachana.model.Wiring;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -539,7 +538,7 @@ public final class ScreenWire {
 
     /** The events a panel reads: every panel's ({@code @<id>}) and, for a child, its parent's ({@code @parent}). */
     private static EvalContext.Scope scope(Screen s, SutraWiring.Node n, boolean raw) {
-        Map<String, Node> events = new HashMap<>();
+        Map<String, Node> events = new LinkedHashMap<>();
         s.fired().forEach((panel, byEvent) -> events.put(panel, payloads(byEvent, raw)));
         Node parent = n.parent() == null ? null : events.get(n.parent().id());
         return new EvalContext.Scope(events, parent, null);
@@ -725,7 +724,7 @@ public final class ScreenWire {
 
     /** Every panel that waits, directly or through others, on {@code panelId}'s events or is its descendant. */
     public static Set<String> downstream(Screen s, String panelId) {
-        Map<String, Set<String>> dependents = new HashMap<>();
+        Map<String, Set<String>> dependents = new LinkedHashMap<>();
         s.nodes().forEach((id, n) -> {
             for (String r : SutraWiring.reads(n.panel(), n.group())) {
                 String on = "parent".equals(r) ? n.parent() == null ? null : n.parent().id() : r;

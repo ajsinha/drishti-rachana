@@ -9,9 +9,10 @@ import com.ash.rachana.parse.YamlScanner.Problem;
 import com.ash.rachana.parse.YamlScanner.Token;
 import com.ash.rachana.parse.YamlStream.Mark;
 import java.util.ArrayDeque;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashMap;
 
 /**
  * Turns the scanner's tokens into events (document, mapping, sequence, scalar, alias), pulled one at a time. The
@@ -64,12 +65,12 @@ final class YamlEvents {
         Event produce();
     }
 
-    private static final Map<String, String> DEFAULT_TAGS = Map.of("!", "!", "!!", "tag:yaml.org,2002:");
+    private static final Map<String, String> DEFAULT_TAGS = Ordered.map("!", "!", "!!", "tag:yaml.org,2002:");
 
     private final YamlScanner scanner;
     private final ArrayDeque<Production> states = new ArrayDeque<>();
     private final ArrayDeque<Mark> marks = new ArrayDeque<>();
-    private Map<String, String> tagHandles = new HashMap<>(DEFAULT_TAGS);
+    private Map<String, String> tagHandles = new LinkedHashMap<>(DEFAULT_TAGS);
     private boolean versionSeen;
     private Production state;
     private Event current;
@@ -155,7 +156,7 @@ final class YamlEvents {
     }
 
     private void processDirectives() {
-        Map<String, String> handles = new HashMap<>(tagHandles);
+        Map<String, String> handles = new LinkedHashMap<>(tagHandles);
         DEFAULT_TAGS.keySet().forEach(handles::remove);
         versionSeen = false;
         while (scanner.check(Kind.DIRECTIVE)) {

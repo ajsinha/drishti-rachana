@@ -9,14 +9,13 @@ import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.Sutra;
 import com.ash.rachana.model.Wiring;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The lint of a Sutra Next screen's wiring (RACHANA_REFERENCE.md 14): every {@code @panel.event.field} names a panel of the screen that
@@ -91,7 +90,7 @@ public final class SutraWiring {
     public static List<SutraProblem> check(Sutra s) {
         List<SutraProblem> out = new ArrayList<>();
         Map<String, Node> nodes = nodes(s);
-        Map<String, Set<String>> deps = new HashMap<>();
+        Map<String, Set<String>> deps = new LinkedHashMap<>();
         for (Node n : nodes.values()) {
             Panel p = n.panel();
             if ("parent".equals(p.id())) {
@@ -106,7 +105,7 @@ public final class SutraWiring {
                 d.add(n.parent().id());
             }
             boolean sourced = p.wiring().source() != null || n.group() != null && n.group().source() != null;
-            Set<String> idTexts = new HashSet<>();
+            Set<String> idTexts = new LinkedHashSet<>();
             if (p.wiring().source() != null && p.wiring().source().id() != null) {
                 idTexts.add(p.wiring().source().id());
             }
@@ -168,7 +167,7 @@ public final class SutraWiring {
                     + r.event() + " has " + (e.get().payload().isEmpty() ? "no fields" : String.join(", ", e.get().payload().keySet())), p.location()));
         } else if (r.field() != null && inId) {
             String type = e.get().payload().get(r.field()).type();
-            if (Set.of("number", "date", "bool").contains(type)) {
+            if (Ordered.set("number", "date", "bool").contains(type)) {
                 out.add(new SutraProblem(code, "panel '" + p.id() + "': its source's id reads @" + r.panel() + "." + r.event() + "." + r.field()
                         + ", a " + type + "; an id is text (type id or text)", p.location()));
             }
@@ -178,8 +177,8 @@ public final class SutraWiring {
 
     /** A panel that waits, through events or as a child, on a panel that waits on it: the clicks could never settle. */
     private static void cycles(Map<String, Set<String>> deps, Map<String, Node> nodes, List<SutraProblem> out) {
-        Map<String, Integer> state = new HashMap<>();             // 1: on the path being walked, 2: walked
-        Set<String> reported = new HashSet<>();
+        Map<String, Integer> state = new LinkedHashMap<>();             // 1: on the path being walked, 2: walked
+        Set<String> reported = new LinkedHashSet<>();
         for (String start : deps.keySet()) {
             visit(start, deps, new ArrayList<>(), state, reported, nodes, out);
         }

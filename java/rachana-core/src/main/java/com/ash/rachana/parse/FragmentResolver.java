@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Where {@code use: name@version} finds its fragment (docs/design/CORE_AND_PROFILES.md section 3.4): a host hook, given per instance
@@ -44,7 +45,7 @@ public interface FragmentResolver {
 
     /** An in-memory set of blocks and the contracts their table parameters name (name to the contract's JSON text). */
     static FragmentResolver of(Collection<SutraBlocks.Block> blocks, Map<String, String> contracts) {
-        Map<String, String> cs = Map.copyOf(contracts);
+        Map<String, String> cs = Ordered.copy(contracts);
         Map<String, TreeMap<Integer, SutraBlocks.Block>> byName = new TreeMap<>();
         for (SutraBlocks.Block b : blocks) {
             byName.computeIfAbsent(b.name(), n -> new TreeMap<>()).put(b.version(), b);

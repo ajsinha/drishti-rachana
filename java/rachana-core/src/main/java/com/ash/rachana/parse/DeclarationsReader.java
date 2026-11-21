@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Reads a Sutra's {@code let:} and {@code functions:} (level 1.2; EL_EXPANSION X41, SUTRA_EXPANSION S2) and a library's
@@ -34,7 +35,7 @@ public final class DeclarationsReader {
     /** A declared name: letters, digits and {@code _}, starting with a letter (an EL name). */
     public static final Pattern NAME = Pattern.compile("[A-Za-z][A-Za-z0-9_]{0,63}");
     /** The keys of one function. */
-    public static final Set<String> FUNCTION_KEYS = Set.of("doc", "params", "returns", "is", "examples");
+    public static final Set<String> FUNCTION_KEYS = Ordered.set("doc", "params", "returns", "is", "examples");
     /** At most this many functions and lets per Sutra or library. */
     public static final int MAX = 200;
     /** A declared name that a later level reserves (the local one wins): an advisory. */

@@ -18,12 +18,12 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedHashSet;
 
 /**
  * The server's {@link ChangeWriter} over a file table (LIVE_TABLES 10): a change to a live table whose snapshot is a CSV, JSON (an array, or
@@ -322,7 +322,7 @@ final class FileTableWriter implements ChangeWriter {
 
         private String csv() {
             List<String> cols = new ArrayList<>(columns);
-            Set<String> seen = new HashSet<>(cols);
+            Set<String> seen = new LinkedHashSet<>(cols);
             rows.forEach(r -> r.keySet().forEach(k -> {
                 if (seen.add(k)) {
                     cols.add(k);

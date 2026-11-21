@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
+import com.ash.rachana.model.Ordered;
 
 /**
  * One immutable table of Rachana-EL functions: Core's families, then the functions the profiles hand over through their
@@ -64,13 +65,13 @@ public final class FunctionTable {
         FinanceFunctions.register(t.family("finance"));
         aggregates.install(t);
         this.arity = Collections.unmodifiableMap(t.arity);
-        this.functions = Map.copyOf(t.functions);
-        this.forms = Map.copyOf(t.forms);
-        this.syntax = Set.copyOf(t.syntax);
-        this.passMask = Set.copyOf(t.passMask);
-        this.checks = Map.copyOf(t.checks);
+        this.functions = Ordered.copy(t.functions);
+        this.forms = Ordered.copy(t.forms);
+        this.syntax = Ordered.copySet(t.syntax);
+        this.passMask = Ordered.copySet(t.passMask);
+        this.checks = Ordered.copy(t.checks);
         this.oldSpellings = Collections.unmodifiableMap(new TreeMap<>(t.old));
-        this.family = Map.copyOf(t.family);
+        this.family = Ordered.copy(t.family);
     }
 
     /** Core's functions alone: no provider, Core's calendars, the default regular-expression caps. Shared; immutable. */

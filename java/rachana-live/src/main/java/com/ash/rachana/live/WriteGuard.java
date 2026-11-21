@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The guarded edit path of the live tables (LIVE_TABLES 1.6, 5; PROTOCOL 16 Writes). A write is passed to the host's {@link ChangeSink}
@@ -333,7 +334,7 @@ final class WriteGuard {
         Map<String, Object> checked = new LinkedHashMap<>(edit);              // as LiveTableSpec checked it: the row's key is not a field
         if (!checked.containsKey("key") && checked.get("fields") instanceof List<?> fl) {
             List<Object> withKey = new ArrayList<>(fl);
-            withKey.add(Map.of("id", "row_key", "type", "text", "readonly", true));
+            withKey.add(Ordered.map("id", "row_key", "type", "text", "readonly", true));
             checked.put("fields", withKey);
             checked.put("key", "row_key");
         }
@@ -370,7 +371,7 @@ final class WriteGuard {
                 cur.put(c[0], row.get(c[1]));
             }
         }
-        tables.event(caller, spec.name(), "write-conflicted", why, Map.of("change", id, "current", cur));
+        tables.event(caller, spec.name(), "write-conflicted", why, Ordered.map("change", id, "current", cur));
         return ProtocolError.of("rdp.write.conflict", 409, why + ": it is at version " + cur.get("version")
                 + (cur.get("by") == null ? "" : ", changed by " + cur.get("by")) + (cur.get("at") == null ? "" : " at " + cur.get("at")),
                 "table", spec.name(), "current", cur);
@@ -478,7 +479,7 @@ final class WriteGuard {
             cur.put("version", e.state().wire());
             cur.put("by", e.change().by());
             cur.put("at", e.at() == null ? null : e.at().toString());
-            tables.event(caller, tray, "write-conflicted", "the change is " + e.state().wire(), Map.of("change", id, "current", cur));
+            tables.event(caller, tray, "write-conflicted", "the change is " + e.state().wire(), Ordered.map("change", id, "current", cur));
             throw ProtocolError.of("rdp.write.conflict", 409, "the change " + changeId + " is " + e.state().wire() + ", not held", "table", tray,
                     "current", cur);
         }
@@ -546,12 +547,12 @@ final class WriteGuard {
         doc.put("key", "change");
         doc.put("columns", List.of(col("change", "string"), col("state", "string"), col("key", "list"), col("set", "object"),
                 col("by", "string"), col("at", "timestamp"), col("message", "string"), col("op", "string"), col("summary", "string")));
-        doc.put("sort", Map.of("col", "at", "dir", "desc"));
+        doc.put("sort", Ordered.map("col", "at", "dir", "desc"));
         return LiveTableSpec.of(doc, Set.of(), null);
     }
 
     private static Map<String, Object> col(String name, String type) {
-        return Map.of("name", name, "type", type);
+        return Ordered.map("name", name, "type", type);
     }
 
     static Map<String, Object> trayRow(ChangeSink.Entry e) {

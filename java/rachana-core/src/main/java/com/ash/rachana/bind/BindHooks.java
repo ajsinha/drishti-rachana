@@ -9,6 +9,7 @@ import com.ash.rachana.model.PanelKind;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.UnaryOperator;
+import com.ash.rachana.model.Ordered;
 
 /**
  * What a host plugs into the binder (split step A13): links ({@link LinkResolver}), the panel kinds a profile adds
@@ -21,7 +22,7 @@ public record BindHooks(LinkResolver links, Map<PanelKind, PanelBinder> panels, 
 
     public BindHooks {
         links = links == null ? LinkResolver.NONE : links;
-        panels = panels == null ? Map.of() : Map.copyOf(panels);
+        panels = panels == null ? Map.of() : Ordered.copy(panels);
         labels = labels == null ? BindHooks::plainLabel : labels;
         limits = limits == null ? PanelLimits.defaults() : limits;
         pivot = pivot == null ? PivotLimits.defaults() : pivot;

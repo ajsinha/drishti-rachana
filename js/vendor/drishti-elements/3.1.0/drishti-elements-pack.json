@@ -1,0 +1,25 @@
+{
+  "elements": "3.1.0",
+  "libraries": {
+    "drishti-core": "3.1.0",
+    "drishti-views": "3.1.0",
+    "drishti-events": "3.1.0"
+  },
+  "requested": [
+    "core",
+    "views",
+    "events"
+  ],
+  "theme": "all",
+  "engines": [],
+  "files": {
+    "drishti-elements.css": {
+      "bytes": 57482,
+      "integrity": "sha384-FwAGGlT/fEXyHgH3V+zZCUkuQ6Q0D6YVNo0agj4uKhnYETE0dO6Lz4XO3PsWEU58"
+    },
+    "drishti-elements.js": {
+      "bytes": 550178,
+      "integrity": "sha384-2UqV53o/tw+pjb+L/TyXd9h58EUb2s6d44ZgOIQsoDQFtVshHswYO/TDWN6OKTZc"
+    }
+  }
+}

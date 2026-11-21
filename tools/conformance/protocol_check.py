@@ -4,12 +4,15 @@
 """Runs the `protocol` cases (conformance/1/protocol, FORMAT 5.12) against a Data Protocol host with the test adapter of PROTOCOL 15:
 for each case it loads the fixture (POST {base}/_test/fixture with {name, schema, rows}), sends each step's request, reads the minimal
 SSE stream of /changes until it is idle (the step's body is the array of its frames), and compares the status exactly and the body as a
-subset (FORMAT 7). Writes one results line per case and a summary, as rachana_conformance.py does.
+subset (FORMAT 7). Rows in the other forms are compared as the JSON page they stand for: an NDJSON answer (PROTOCOL 5.3) as its header
+with `values` (the lines), an Arrow IPC answer (5.2) and a bridge `res.arrow` buffer decoded with pyarrow (the official Apache Arrow
+library; run with `uv run --with pyarrow`, otherwise those steps are errors) by the rules of 3.1 and 3.2. Writes one results line per case
+and a summary, as rachana_conformance.py does.
 
 Usage: python3 tools/conformance/protocol_check.py --reference          (starts java/rachana-data's ReferenceServer; build it first:
                                                                           cd java && ./mvnw clean package -DskipTests)
        python3 tools/conformance/protocol_check.py --base http://127.0.0.1:8080/rdp/v1   (a host of your own)"""
-import argparse, fnmatch, http.client, json, os, socket, subprocess, sys, time, urllib.parse
+import argparse, base64, fnmatch, http.client, json, os, socket, subprocess, sys, time, urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1].parent
@@ -70,7 +73,72 @@ class Host:
             return r.status, frames
         raw = r.read()
         c.close()
-        return r.status, (json.loads(raw) if raw else None)
+        kind = r.getheader("Content-Type") or ""
+        if r.status == 200 and kind.startswith("application/x-ndjson"):
+            return r.status, ndjson_page(raw.decode())
+        if r.status == 200 and kind.startswith("application/vnd.apache.arrow.stream"):
+            return r.status, arrow_page(raw)
+        body = json.loads(raw) if raw else None
+        if isinstance(body, dict) and body.get("t") == "res.arrow" and isinstance(body.get("buffer"), str):
+            body["buffer"] = arrow_page(base64.b64decode(body["buffer"]))
+        return r.status, body
+
+
+def ndjson_page(text):
+    """NDJSON (PROTOCOL 5.3) as the JSON page: the header's fields, `values` after `columns`."""
+    lines = [json.loads(ln) for ln in text.split("\n") if ln.strip()]
+    page = {}
+    for k, v in (lines[0] if lines else {}).items():
+        page[k] = v
+        if k == "columns":
+            page["values"] = lines[1:]
+    page.setdefault("values", lines[1:])
+    return page
+
+
+def arrow_page(data):
+    """An Arrow IPC stream (PROTOCOL 5.2) as the JSON page, by the cell rules of 3.1 (and 3.2 for <name>$masked columns)."""
+    import datetime
+    import decimal
+    try:
+        import pyarrow.ipc as ipc
+    except ImportError as e:
+        raise ValueError("Arrow answers need pyarrow: uv run --with pyarrow python3 tools/conformance/protocol_check.py") from e
+    t = ipc.open_stream(data).read_all()
+    meta = {k.decode(): v.decode() for k, v in (t.schema.metadata or {}).items()}
+    fields = [f for f in t.schema if b"rachana.masked" not in (f.metadata or {})]
+    masks = {f.metadata[b"rachana.masked"].decode(): t.column(f.name).to_pylist() for f in t.schema if b"rachana.masked" in (f.metadata or {})}
+
+    def cell(f, x):
+        rtype = (f.metadata or {}).get(b"rachana.type", b"").decode()
+        if x is None:
+            return None
+        if isinstance(x, bool) or isinstance(x, float):
+            return x
+        if isinstance(x, int) or rtype == "integer":
+            x = int(x)
+            return x if abs(x) <= 2 ** 53 else str(x)
+        if isinstance(x, decimal.Decimal):
+            return format(x, "f")
+        if isinstance(x, datetime.datetime):
+            return x.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + f"{x.microsecond // 1000:03d}Z"
+        if isinstance(x, datetime.date):
+            return x.isoformat()
+        if isinstance(x, datetime.time):
+            return x.strftime("%H:%M:%S") + (f".{x.microsecond // 1000:03d}" if x.microsecond else "")
+        return json.loads(x) if rtype in ("list", "object") else x
+
+    page = {"table": meta.get("rachana.table", "")}
+    if "rachana.epoch" in meta:
+        page["version"] = {"epoch": meta["rachana.epoch"], "seq": int(meta.get("rachana.seq", "0"))}
+    cols = {f.name: t.column(f.name).to_pylist() for f in fields}
+    page["columns"] = [f.name for f in fields]
+    page["values"] = [[{"$masked": True} if masks.get(f.name, [False] * t.num_rows)[i] else cell(f, cols[f.name][i]) for f in fields]
+                      for i in range(t.num_rows)]
+    for k, conv in (("total", int), ("next", str), ("totals", json.loads), ("schema", json.loads)):
+        if "rachana." + k in meta:
+            page[k] = conv(meta["rachana." + k])
+    return page
 
 
 def fill(v, captured):
@@ -126,7 +194,7 @@ def start_reference():
     if not cp.is_file() or not jars:
         sys.exit(f"{cp} is missing: build first (cd java && ./mvnw clean package -DskipTests)")
     mp = os.pathsep.join(jars + [cp.read_text().strip()])
-    p = subprocess.Popen(["java", "-p", mp, "-m", "com.ash.rachana.data/com.ash.rachana.data.ReferenceServer", "--port", "0"],
+    p = subprocess.Popen(["java", "--add-opens=java.base/java.nio=org.apache.arrow.memory.core", "-p", mp, "-m", "com.ash.rachana.data/com.ash.rachana.data.ReferenceServer", "--port", "0"],
                          stdout=subprocess.PIPE, text=True)
     line = p.stdout.readline()
     if "listening on" not in line:

@@ -30,6 +30,17 @@ import java.util.function.Consumer;
  */
 public final class TableClient {
 
+    /** The row form asked of the host (PROTOCOL 5): JSON, Arrow IPC (a table whose {@code can} has {@code arrow}) or NDJSON. */
+    public enum Form {
+        JSON("application/json"), ARROW(ArrowRows.MEDIA), NDJSON(NdjsonRows.MEDIA);
+
+        final String media;
+
+        Form(String media) {
+            this.media = media;
+        }
+    }
+
     /** A table read whole: its schema, rows in JSON form, and the stream position the rows are a snapshot of. */
     public record Read(TableSchema schema, List<Map<String, Object>> rows, String epoch, long seq) {}
 
@@ -51,15 +62,25 @@ public final class TableClient {
      * Every row a query document selects (the plan's {@code query}; an empty one reads the table), page by page; the position is the
      * first page's (a host without {@code snapshot} may move rows between pages: a live table is reconciled by its stream).
      */
-    @SuppressWarnings("unchecked")
     public Read read(String table, Map<String, Object> query) throws IOException, InterruptedException {
+        return read(table, query, Form.JSON);
+    }
+
+    /**
+     * As {@link #read(String, Map)}, with the rows in the given form; Arrow is asked only of a table that declares it (JSON otherwise).
+     * Every form gives the same rows in their JSON form.
+     */
+    @SuppressWarnings("unchecked")
+    public Read read(String table, Map<String, Object> query, Form form) throws IOException, InterruptedException {
         TableSchema schema = schema(table);
+        Form f = form == Form.ARROW && !schema.can("arrow") ? Form.JSON : form;
         List<Map<String, Object>> rows = new ArrayList<>();
         Map<String, Object> doc = new LinkedHashMap<>(query == null ? Map.of() : query);
         String epoch = null;
         long seq = 0;
         while (true) {
-            Map<String, Object> page = (Map<String, Object>) send("POST", "/tables/" + enc(table) + "/query", doc);
+            Map<String, Object> page = f == Form.JSON ? (Map<String, Object>) send("POST", "/tables/" + enc(table) + "/query", doc)
+                    : sendRows("/tables/" + enc(table) + "/query", doc, f);
             if (epoch == null && page.get("version") instanceof Map<?, ?> v) {
                 epoch = String.valueOf(v.get("epoch"));
                 seq = v.get("seq") instanceof Number n ? n.longValue() : 0;
@@ -183,6 +204,18 @@ public final class TableClient {
             throw error(r.statusCode(), r.body());
         }
         return Json.read(r.body());
+    }
+
+    private Map<String, Object> sendRows(String path, Object body, Form form) throws IOException, InterruptedException {
+        HttpRequest rq = HttpRequest.newBuilder(URI.create(base + path)).header("Accept", form.media).header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(Json.write(body))).build();
+        HttpResponse<java.io.InputStream> r = http.send(rq, HttpResponse.BodyHandlers.ofInputStream());
+        try (java.io.InputStream in = r.body()) {
+            if (r.statusCode() != 200) {
+                throw error(r.statusCode(), new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            }
+            return form == Form.ARROW ? ArrowRows.read(in) : NdjsonRows.read(in);
+        }
     }
 
     @SuppressWarnings("unchecked")

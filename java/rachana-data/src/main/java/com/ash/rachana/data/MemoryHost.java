@@ -167,6 +167,11 @@ public final class MemoryHost {
         return out;
     }
 
+    /** The schema of a table ({@code rdp.table.unknown} when there is none). */
+    public synchronized TableSchema schemaOf(String name) {
+        return table(name).schema;
+    }
+
     private Table table(String name) {
         Table t = tables.get(name);
         if (t == null) {
@@ -689,7 +694,15 @@ public final class MemoryHost {
                     case "rows" -> handle("GET", "/tables/" + name + "/rows", params(m.get("body")), null);
                     default -> handle("POST", "/tables/" + name + "/query", Map.of(), m.get("body"));
                 };
-                if (a.status() == 200) {
+                boolean arrow = String.valueOf(m.get("accept")).contains("arrow") && (t.equals("rows") || t.equals("query"));
+                if (a.status() == 200 && arrow && schemaOf(name).can("arrow")) {
+                    out.put("t", "res.arrow");                       // section 12: the Arrow IPC bytes, base64 in JSON
+                    out.put("buffer", Base64.getEncoder().encodeToString(ArrowRows.write((Map<String, Object>) a.body(), schemaOf(name),
+                            ArrowRows.BATCH_ROWS)));
+                } else if (a.status() == 200 && arrow) {
+                    out.put("error", ProtocolError.of("rdp.query.unsupported", 406, name + " is not offered as Arrow", "table", name,
+                            "operation", "arrow").error());
+                } else if (a.status() == 200) {
                     out.put("body", a.body());
                 } else {
                     out.put("error", ((Map<String, Object>) a.body()).get("error"));

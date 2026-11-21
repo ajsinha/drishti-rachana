@@ -30,7 +30,7 @@ import java.util.function.Consumer;
  * patch, {@code POST /_test/bridge} answers a bridge message). Optionally serves a folder of static files outside the base (same origin
  * for a page that embeds a view). Not a production server: no authentication, everything in memory, loopback only.
  *
- * <p>Usage: {@code java -m com.ash.rachana.data/com.ash.rachana.data.ReferenceServer [--port 0] [--base /rdp/v1] [--static <dir>]
+ * <p>Usage: {@code java --add-opens=java.base/java.nio=org.apache.arrow.memory.core -m com.ash.rachana.data/com.ash.rachana.data.ReferenceServer [--port 0] [--base /rdp/v1] [--static <dir>]
  * [--table <{schema, rows}.json>]...}; prints {@code rdp-reference-server listening on http://127.0.0.1:<port><base>} when ready.
  */
 public final class ReferenceServer implements AutoCloseable {
@@ -94,9 +94,9 @@ public final class ReferenceServer implements AutoCloseable {
                 test(x, rel, body);
             } else if (rel.equals("/changes") && (m.equals("GET") || m.equals("POST"))) {
                 stream(x, q);
-            } else if (rel.startsWith("/tables/") && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
-                String form = x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson";
-                json(x, 406, ProtocolError.of("rdp.query.unsupported", 406, "this host answers JSON only", "operation", form).body());
+            } else if (rel.startsWith("/tables/") && (rel.endsWith("/rows") || rel.endsWith("/query"))
+                    && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
+                binary(x, m, rel, q, body, x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson");
             } else {
                 MemoryHost.Answer a = host.handle(m, rel, q, body);
                 json(x, a.status(), a.body());
@@ -178,7 +178,46 @@ public final class ReferenceServer implements AutoCloseable {
         }
     }
 
-    /** Whether the reader asks only for Arrow or NDJSON (sections 5.2, 5.3), which this host does not offer. */
+    /**
+     * Rows as Arrow IPC (section 5.2: only for a table whose {@code can} has {@code arrow}, else {@code 406}) or NDJSON (section 5.3: one
+     * header object, then one array of cells per line, written as they are produced). The answer is the JSON page's, in the other form.
+     */
+    @SuppressWarnings("unchecked")
+    private void binary(HttpExchange x, String m, String rel, Map<String, String> q, Object body, String form) throws IOException {
+        String name = rel.substring("/tables/".length(), rel.lastIndexOf('/'));
+        com.ash.rachana.table.TableSchema schema;
+        try {
+            schema = host.schemaOf(name);
+        } catch (ProtocolError e) {
+            json(x, e.status(), e.body());
+            return;
+        }
+        if (form.equals("arrow") && !schema.can("arrow")) {
+            json(x, 406, ProtocolError.of("rdp.query.unsupported", 406, name + " is not offered as Arrow", "table", name, "operation", "arrow").body());
+            return;
+        }
+        MemoryHost.Answer a = host.handle(m, rel, q, body);
+        if (a.status() != 200) {
+            json(x, a.status(), a.body());
+            return;
+        }
+        Map<String, Object> page = (Map<String, Object>) a.body();
+        x.getResponseHeaders().set("Cache-Control", "no-store");
+        if (form.equals("arrow")) {
+            byte[] bytes = ArrowRows.write(page, schema, ArrowRows.BATCH_ROWS);
+            x.getResponseHeaders().set("Content-Type", ArrowRows.MEDIA);
+            x.sendResponseHeaders(200, bytes.length);
+            x.getResponseBody().write(bytes);
+            return;
+        }
+        x.getResponseHeaders().set("Content-Type", NdjsonRows.MEDIA);
+        x.sendResponseHeaders(200, 0);
+        OutputStream out = x.getResponseBody();
+        NdjsonRows.write(page, out);
+        out.flush();
+    }
+
+    /** Whether the reader asks only for Arrow or NDJSON (sections 5.2, 5.3). */
     private static boolean binaryAccept(String accept) {
         return accept != null && (accept.contains("application/vnd.apache.arrow.stream") || accept.contains("application/x-ndjson"))
                 && !accept.contains("application/json") && !accept.contains("*/*");

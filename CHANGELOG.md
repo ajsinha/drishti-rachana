@@ -33,8 +33,20 @@ Entries are written per release; the regime's unreleased work is listed after th
   on all 2,160 cases at levels 1.0 and 1.1; budgets: runtime 379 KB, tools 399 KB Brotli. Tests: Core `TablesTest`, `MemoryHostTest`,
   `TableClientTest` (JVM end to end), `js/packages/rachana/test/data_client.test.mjs` (Node end to end),
   `runners/view_browser.py` (`<rachana-view>` live in Chromium).
-- Not yet: Arrow IPC and NDJSON, bridge subscriptions, conflation, filtered subscriptions, checked mode over table schemas, exact
-  decimal arithmetic in aggregates (the decimals item, X2).
+- Not yet (lane C2 below builds the protocol's rest): checked mode over table schemas, exact decimal arithmetic in aggregates (the
+  decimals item, X2).
+
+### The Data Protocol completed: row forms, bridge subscriptions, conflation, filters (lane C2)
+
+- **Arrow IPC and NDJSON** (PROTOCOL 5.2, 5.3, 12). `java/rachana-data`: `ArrowRows` writes a page as an Arrow IPC stream and reads one
+  back with the official Apache Arrow Java library (19.0.0, `arrow-vector` with the `arrow-memory-unsafe` allocator; allowed in this
+  module only, Core stays free of it; a JVM that runs it opens `java.nio` to `org.apache.arrow.memory.core`), types by PROTOCOL 3.1,
+  masked cells as `<name>$masked`, the protocol facts as schema metadata (`rachana.totals` and `rachana.schema` added); `NdjsonRows`
+  (header, then one line per row). The reference server answers both (Arrow only for tables declaring `arrow`, else `406`); the bridge
+  answers `accept: arrow` with `res.arrow` (base64). `TableClient.read(table, query, Form)`. JavaScript: `arrowPage` (the vendored
+  Apache Arrow JS 21.1.0, `js/vendor/apache-arrow`, the same file Drishti Elements vendors), `ndjsonPage`, `DataClient({form, arrow})`,
+  `<rachana-view form="arrow|ndjson">`. Every form gives the same rows (`RowFormsTest`, `data_client.test.mjs`). Cases
+  `protocol/forms` (7); `protocol_check.py` compares Arrow and NDJSON answers as the JSON page they stand for (Arrow with pyarrow).
 
 ### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
 

@@ -31,7 +31,7 @@ def main(argv):
     target = ROOT / "java" / "rachana-data" / "target"
     jar = next(j for j in target.glob("rachana-data-*.jar") if not j.name.endswith(("-sources.jar", "-tests.jar")))
     mp = os.pathsep.join([str(jar), (target / "runtime-classpath.txt").read_text().strip()])
-    server = subprocess.Popen(["java", "-p", mp, "-m", "com.ash.rachana.data/com.ash.rachana.data.ReferenceServer", "--port", "0",
+    server = subprocess.Popen(["java", "--add-opens=java.base/java.nio=org.apache.arrow.memory.core", "-p", mp, "-m", "com.ash.rachana.data/com.ash.rachana.data.ReferenceServer", "--port", "0",
                                "--static", str(ROOT)], stdout=subprocess.PIPE, text=True)
     base = server.stdout.readline().split("listening on", 1)[1].strip()
     origin = base[: base.index("/rdp/v1")]

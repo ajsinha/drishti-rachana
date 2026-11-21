@@ -84,6 +84,9 @@ panels:
 - **What it asks.** The Sutra's plan (`rachana explain`'s document; `DataPlan`) says what each table is asked: a row condition in the
   push-down subset of the protocol travels as a filter tree with the controls' values in it, never as text; anything else is applied
   in the page. The rows are read page by page (`next` cursors).
+- **Row forms.** `form="arrow"` asks for Arrow IPC from the tables that declare `arrow` (JSON from the others) and needs the vendored
+  Apache Arrow JS loaded first (`<script src="/vendor/apache-arrow/21.1.0/Arrow.es2015.min.js">`, from `js/vendor/apache-arrow`);
+  `form="ndjson"` asks for NDJSON. Every form gives the same rows; the default is JSON.
 - **Live.** With `live`, each live table follows its change stream (the minimal SSE form, or a host's drishti-events client through
   the `DataClient`'s `subscribe` hook); every keyed patch is applied by Core and only the parts of the view that changed are repainted
   (ViewModel frames). A gap or a new epoch reads the table again.

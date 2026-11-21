@@ -55,7 +55,7 @@ export class Screen {
     this.plan = call(this.rt, 'plan', { id: this.id, schemas: this.client ? schemas : undefined, ctl: this.ctl });
     for (const t of this.plan.tables) {
       if (!schemas[t.name] || this.reads.has(t.name)) continue;
-      const { rows, version } = await this.client.read(t.name, t.query);
+      const { rows, version } = await this.client.read(t.name, t.query, schemas[t.name]);
       call(this.rt, 'table', { id: this.id, name: t.name, schema: schemas[t.name], rows });
       this.reads.set(t.name, { version, live: !!t.live });
     }
@@ -96,8 +96,9 @@ export class Screen {
 
   async resync(table) {
     const t = this.plan.tables.find((x) => x.name === table);
-    const { rows, version } = await this.client.read(table, t.query);
-    call(this.rt, 'table', { id: this.id, name: table, schema: await this.client.schema(table), rows });
+    const schema = await this.client.schema(table);
+    const { rows, version } = await this.client.read(table, t.query, schema);
+    call(this.rt, 'table', { id: this.id, name: table, schema, rows });
     return version;
   }
 

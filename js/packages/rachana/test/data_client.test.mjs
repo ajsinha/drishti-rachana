@@ -10,6 +10,7 @@ import { spawn } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve, delimiter } from 'node:path';
+import { createRequire } from 'node:module';
 import { DataClient, Screen, loadRuntime } from '../src/index.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -19,7 +20,7 @@ const BUNDLE = resolve(ROOT, 'js/packages/rachana/dist/rachana.runtime.js');
 function startServer() {
   const jar = readdirSync(TARGET).find((f) => /^rachana-data-.*\.jar$/.test(f) && !/-(sources|tests)\.jar$/.test(f));
   const mp = [resolve(TARGET, jar), readFileSync(resolve(TARGET, 'runtime-classpath.txt'), 'utf8').trim()].join(delimiter);
-  const p = spawn('java', ['-p', mp, '-m', 'com.ash.rachana.data/com.ash.rachana.data.ReferenceServer', '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
+  const p = spawn('java', ['--add-opens=java.base/java.nio=org.apache.arrow.memory.core', '-p', mp, '-m', 'com.ash.rachana.data/com.ash.rachana.data.ReferenceServer', '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
   return new Promise((ok, fail) => {
     p.stdout.once('data', (b) => { const m = /listening on (\S+)/.exec(String(b)); m ? ok({ p, base: m[1] }) : fail(new Error(String(b))); });
     p.once('exit', (c) => fail(new Error(`server exited ${c}`)));
@@ -39,6 +40,34 @@ panels:
 `;
 
 const ready = existsSync(BUNDLE) && existsSync(TARGET);
+const Arrow = createRequire(import.meta.url)(resolve(ROOT, 'js/vendor/apache-arrow/21.1.0/Arrow.es2015.min.js'));
+const post = (base, path, body) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+// every type of PROTOCOL 3.1, a masked cell, an integer beyond 2^53 (the JVM's RowFormsTest uses the same table)
+const ALL = { schema: { name: 'all', key: ['id'], can: ['page', 'sort', 'filter', 'arrow', 'count'], columns: [
+  { name: 'id', type: 'string' }, { name: 'n', type: 'integer' }, { name: 'amt', type: 'decimal', scale: 2 }, { name: 'x', type: 'number' },
+  { name: 'ok', type: 'boolean' }, { name: 'd', type: 'date' }, { name: 'ts', type: 'timestamp' }, { name: 'tm', type: 'time' },
+  { name: 'tags', type: 'list', items: 'string' }, { name: 'o', type: 'object' }, { name: 'sal', type: 'decimal', fmt: 'amount0' }] },
+rows: [{ id: 'a', n: 1, amt: '-1250.05', x: 0.25, ok: true, d: '2026-11-17', ts: '2026-11-17T09:30:00.000Z', tm: '09:30:00', tags: ['p', 'q'],
+  o: { k: 1 }, sal: { $masked: true } },
+{ id: 'b', n: '9007199254740993', amt: null, x: null, ok: false, d: null, ts: null, tm: '23:59:59.250', tags: null, o: null, sal: '3.5' }] };
+
+test('JSON, Arrow and NDJSON give the same rows', { skip: !existsSync(TARGET) && 'build java/rachana-data first' }, async () => {
+  const { p, base } = await startServer();
+  try {
+    await post(base, '/_test/fixture', ALL);
+    const origin = new URL(base).origin, schema = ALL.schema, q = { sort: [{ col: 'id' }] };
+    const json = await new DataClient({ base, origin }).read('all', q, schema);
+    assert.deepEqual(json.rows, ALL.rows);
+    for (const form of ['arrow', 'ndjson']) {
+      const r = await new DataClient({ base, origin, form, arrow: Arrow }).read('all', Object.assign({ limit: 1 }, q), schema);
+      assert.deepEqual(r.rows, ALL.rows, form);
+      assert.deepEqual(r.version, json.version, form);
+    }
+  } finally {
+    p.kill();
+  }
+});
 
 test('a screen reads its tables through the plan and follows their changes', { skip: !ready && 'build the bundle and java/rachana-data first' }, async () => {
   const { p, base } = await startServer();

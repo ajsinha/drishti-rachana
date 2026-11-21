@@ -3,7 +3,9 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
-## Unreleased: ViewModel contract 1.1 and language level 1.1 (datasets; grid, tree, chart)
+## v0.11.0 (2026-11-21): the JavaScript build, ViewModel contract 1.1 and the G1 gate
+
+### ViewModel contract 1.1 and language level 1.1 (datasets; grid, tree, chart)
 
 - **Contract 1.1**, appended to 1.0 (SUTRA_EXPANSION 6.3; VIEWMODEL "Contract 1.1"): `datasets` (`Dataset`, `DataField`,
   `ArrowRef`, `PagesRef`, `ServerRef`: inline `values` or `rows`, `name`, Arrow, REST pages, a server-side row model; raw values
@@ -24,7 +26,7 @@ Entries are written per release; the regime's unreleased work is listed after th
   1.1; 0 verified failing; `levels.py check`: level 1.0 identical. API baseline: additions only (view records, `Grammar` levels,
   `PanelKind.since/at`, `BindContext.datasets`, `Rachana.language`). `DatasetPanelsTest`. The generated `rachana.lang.json` and
   `sutra.schema.json` still describe level 1.0 (generated from the reference's tables); SPEC lists the 1.1 names.
-## Unreleased (G1 re-check, R1: the runtime bundle)
+### G1 re-check, R1: the runtime bundle
 
 - **R1, the runtime bundle built at `52e112f` was broken** (named formats not applied, `round`, `shift_date`, `b.ni is not a
   function`; Node stopped on a null read). Root cause in TeaVM 0.16.0, not in the merge: the precise dependency analysis merges
@@ -42,7 +44,7 @@ Entries are written per release; the regime's unreleased work is listed after th
   bytes; Brotli 366,858), `rachana.tools.js` `e25dfc97e2b1dbbcc8d756097691fb25ad40b402420078fed0fc33f55c4cfb9e` (1,511,248
   bytes; Brotli 387,940).
 
-## Unreleased (G1 gate fixes)
+### G1 gate fixes
 
 Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).
 
@@ -73,7 +75,7 @@ Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).
   Level 1.0 re-recorded for this case and `problem/forms#pattern-not-a-regex` only (DECISIONS G1-2, for the owner); conformance
   `--jvm`: 2,123 cases, pass 1,938, fail 58 (all unverified, F8), 0 verified failing.
 
-## v0.11.0 ready (untagged): the JavaScript build
+### The JavaScript build
 
 Step A15. Not tagged: the tag waits for the owner (G1 gate).
 
@@ -93,7 +95,7 @@ Step A15. Not tagged: the tag waits for the owner (G1 gate).
 - One TeaVM file patched (`StatementRenderer`, Apache-2.0): its printer dropped the parentheses of `a * (b / c)` (D15-2).
 - Re-measure (P1_RESULTS section 11): T1, T5 to T10 pass; T2 and T4 miss, for the owner (D15-5, D15-6).
 
-## v0.10.0 ready (untagged): the untangling
+## v0.10.0 (2026-11-21): the untangling
 
 Steps A1 to A8b, A13, A14 and A7b are in (the binder moved and behind hooks, its API, Core's canonical writer, form expressions in
 Rachana-EL). Not tagged: the tag waits for the owner (G1 gate). Proof: `./mvnw clean verify` green on JDK 21; conformance

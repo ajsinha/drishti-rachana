@@ -45,7 +45,10 @@ public record Problem(String code, String level, String message, String fix, int
         m.put("level", level);
         m.put("message", message);
         m.put("fix", fix);
-        m.put("at", Map.of("start", start, "end", end));
+        Map<String, Object> at = new LinkedHashMap<>();                  // never Map.of: its order changes from run to run
+        at.put("start", start);
+        at.put("end", end);
+        m.put("at", at);
         return m;
     }
 }

@@ -77,7 +77,8 @@ public final class FormViews {
             sv.put("reason", f.save().reason());
             out.put("save", sv);
         }
-        out.put("steps", f.steps().stream().map(s -> Map.of("id", s.id(), "label", s.label() == null ? s.id() : s.label())).toList());
+        // declaration order, never Map.of's (its order changes from one JVM run to the next): the ViewModel's bytes are the same on every run
+        out.put("steps", f.steps().stream().map(s -> ordered("id", s.id(), "label", s.label() == null ? s.id() : s.label())).toList());
         List<Map<String, Object>> fields = new ArrayList<>();
         List<String> masked = new ArrayList<>();
         for (Form.Field fd : f.fields()) {
@@ -123,14 +124,14 @@ public final class FormViews {
                 m.put("col", col);
             }
             if (!fd.options().isEmpty()) {
-                m.put("options", fd.options().stream().map(o -> Map.of("value", o.value(), "label", o.label())).toList());
+                m.put("options", fd.options().stream().map(o -> ordered("value", o.value(), "label", o.label())).toList());
             } else if (fd.lookup() != null && !hidden) {
                 m.put("options", fd.type().equals("entity") ? records(fd.lookup(), entities) : choices(fd.lookup(), lookup));
             }
             fields.add(m);
         }
         out.put("fields", fields);
-        out.put("rules", f.rules().stream().map(r -> Map.of("rule", r.rule().text(), "message", r.message(), "severity", r.severity(), "fields", r.fields())).toList());
+        out.put("rules", f.rules().stream().map(r -> ordered("rule", r.rule().text(), "message", r.message(), "severity", r.severity(), "fields", r.fields())).toList());
         out.put("hints", f.hints().stream().map(h -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("label", h.label());
@@ -301,5 +302,14 @@ public final class FormViews {
         if (v != null) {
             m.put(k, v);
         }
+    }
+
+    /** An object in the order its keys are given (key, value, key, value...): never Map.of, whose order changes from run to run. */
+    private static Map<String, Object> ordered(Object... kv) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        for (int i = 0; i < kv.length; i += 2) {
+            m.put((String) kv[i], kv[i + 1]);
+        }
+        return java.util.Collections.unmodifiableMap(m);
     }
 }

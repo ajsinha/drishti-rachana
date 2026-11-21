@@ -111,6 +111,12 @@ final class CoreBinds {
         if (want.equals(got)) {
             return null;
         }
+        String w = Json.ordered(unscrambled(Json.parse(want))), c = Json.ordered(unscrambled(Json.parse(got)));
+        if (w.equals(c)) {
+            return null;                                                 // the same document but for the reference's scrambled objects
+        }
+        want = w;
+        got = c;
         int i = 0;
         while (i < Math.min(want.length(), got.length()) && want.charAt(i) == got.charAt(i)) {
             i++;
@@ -118,6 +124,46 @@ final class CoreBinds {
         int from = Math.max(0, i - 120);
         return "differs at " + i + "\n  reference: " + want.substring(from, Math.min(want.length(), i + 160)) + "\n  core:      "
                 + got.substring(from, Math.min(got.length(), i + 160));
+    }
+
+    /**
+     * The document with the objects the reference wrote from {@code Map.of} in one canonical key order, sorted by name, and every
+     * other object as it is. The reference (the i7a binder) built these objects with {@code Map.of}, whose key order is chosen afresh
+     * in every JVM run, so the order recorded in {@code binds/} is a draw and carries no meaning; Core writes them in declaration
+     * order. Comparing them in a fixed order makes the outcome the same in every run: identical when the keys and values are, never
+     * flipping between "differs" and "identical". The objects: a wire's {@code emits[]} and {@code children[]}, a form's
+     * {@code rules[]} and {@code steps[]}, a form field's {@code options[]} (DRISHTI_MIGRATION_TODO 7.2). Everything else keeps its
+     * order and is compared byte for byte.
+     */
+    static Object unscrambled(Object v) {
+        if (v instanceof Map<?, ?> m) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> e : m.entrySet()) {
+                String k = (String) e.getKey();
+                Object x = unscrambled(e.getValue());
+                if (k.equals("wire") && x instanceof Map<?, ?> wire) {
+                    x = sortedIn(wire, "emits", "children");
+                } else if (k.equals("form") && x instanceof Map<?, ?> form) {
+                    x = sortedIn(form, "rules", "steps");
+                } else if (k.equals("fields") && x instanceof List<?> fields) {
+                    x = fields.stream().map(f -> f instanceof Map<?, ?> fm ? sortedIn(fm, "options") : f).toList();
+                }
+                out.put(k, x);
+            }
+            return out;
+        }
+        if (v instanceof List<?> l) {
+            return l.stream().map(CoreBinds::unscrambled).toList();
+        }
+        return v;
+    }
+
+    /** The object with each named list's objects in sorted key order. */
+    private static Map<String, Object> sortedIn(Map<?, ?> m, String... lists) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        m.forEach((k, x) -> out.put((String) k, List.of(lists).contains(k) && x instanceof List<?> l
+                ? l.stream().map(o -> o instanceof Map<?, ?> om ? (Object) new java.util.TreeMap<>(om) : o).toList() : x));
+        return out;
     }
 
     /**

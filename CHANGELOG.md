@@ -5,6 +5,12 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Corpus binds no longer flaky**: `CustomerCorpusTest.recordedBindsReplay…` flipped between "differs" and "listed but identical now"
+  because both the reference (i7a) and Core wrote some objects from `Map.of`, whose key order is drawn afresh in every JVM run. Core now
+  writes a form's `rules`, `steps` and a field's `options` (and a problem's `at`, a grouped query's columns) in declaration order, and a
+  guard (`ScreenWireOrderTest`) refuses a multi-key `Map.of` in the ViewModel writers. The replay compares the objects the reference
+  scrambled (a wire's `emits`/`children`, a form's `rules`/`steps`/`options`) in sorted key order (`CoreBinds.unscrambled`), so the nine
+  Sutras listed only for key order are now compared, not listed; 20 runs in a row identical.
 - **Node tests in the build**: the Node suite (`js/packages/*/test`, 33 tests) now runs in the Maven reactor: `rachana-guards` runs
   `node tools/js/node_tests.mjs js/packages/*/test` in its `test` phase (exec-maven-plugin; `-Dnode=<path>` names Node, `-Drachana.node.skip=true`
   leaves it out), so `./mvnw verify` fails when they do. Fixed: the CLI tests named an old Elements pack folder (they use `ELEMENTS_VERSION`

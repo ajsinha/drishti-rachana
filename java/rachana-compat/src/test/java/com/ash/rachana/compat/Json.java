@@ -36,27 +36,39 @@ final class Json {
         return b.toString();
     }
 
+    /** Text in the objects' own key order (no white space): for comparing two documents where key order matters. */
+    static String ordered(Object v) {
+        StringBuilder b = new StringBuilder();
+        write(v, b, false);
+        return b.toString();
+    }
+
     private static void write(Object v, StringBuilder b) {
+        write(v, b, true);
+    }
+
+    private static void write(Object v, StringBuilder b, boolean sorted) {
         if (v == null) b.append("null");
         else if (v instanceof Map<?, ?> m) {
             b.append('{');
             boolean first = true;
-            for (Object k : new TreeSet<>(m.keySet().stream().map(String::valueOf).toList())) {
+            for (Object k : sorted ? new TreeSet<>(m.keySet().stream().map(String::valueOf).toList()) : m.keySet()) {
                 if (!first) b.append(',');
                 first = false;
                 quote(k.toString(), b);
                 b.append(':');
-                write(m.get(k), b);
+                write(m.get(k), b, sorted);
             }
             b.append('}');
         } else if (v instanceof List<?> l) {
             b.append('[');
             for (int n = 0; n < l.size(); n++) {
                 if (n > 0) b.append(',');
-                write(l.get(n), b);
+                write(l.get(n), b, sorted);
             }
             b.append(']');
         } else if (v instanceof String str) quote(str, b);
+        else if (v instanceof BigDecimal d && !sorted) b.append(d);   // as written: 1.0 stays 1.0
         else if (v instanceof BigDecimal d) b.append(d.stripTrailingZeros().scale() <= 0 ? d.toBigInteger().toString() : d.toPlainString());
         else b.append(v);
     }

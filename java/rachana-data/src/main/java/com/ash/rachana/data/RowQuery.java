@@ -293,10 +293,17 @@ public final class RowQuery {
         return out;
     }
 
+    private static Map<String, Object> column(Object name, Object type) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("name", name);
+        m.put("type", type);
+        return m;
+    }
+
     private static List<Object> groupedColumns(TableSchema s, List<String> by, List<Map<?, ?>> values) {
         List<Object> cols = new ArrayList<>();
-        by.forEach(c -> cols.add(Map.of("name", c, "type", s.column(c).type())));
-        values.forEach(v -> cols.add(Map.of("name", v.get("name"), "type", "count".equals(v.get("agg")) || "distinct".equals(v.get("agg"))
+        by.forEach(c -> cols.add(column(c, s.column(c).type())));          // name then type, never Map.of's run-to-run order
+        values.forEach(v -> cols.add(column(v.get("name"), "count".equals(v.get("agg")) || "distinct".equals(v.get("agg"))
                 ? "integer" : v.get("col") instanceof String c ? s.column(c).type() : "number")));
         return cols;
     }

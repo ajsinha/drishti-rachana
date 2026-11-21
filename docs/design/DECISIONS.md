@@ -286,3 +286,7 @@ Alternatives stay recorded in the table above; the owner may override any of the
 The owner approved live tables ("design and do it", 2026-11-21): Drishti's live result set engine becomes a Rachana feature.
 The placement verdict, the design and the decisions **LT-1 to LT-19** with their recommendations are in
 [LIVE_TABLES.md](LIVE_TABLES.md) (sections 0 and 13); the lead decides them under the owner's delegation.
+
+### Live tables (lead, under the owner's delegation, 2026-11-21)
+
+The placement verdict of LIVE_TABLES.md section 0 is accepted: **(a) Rachana, as the JVM module `rachana-live`**, never in Core or the JavaScript bundles; rights only through the host's `Authoriser` (no authoriser: writes refused); not a G4 dependency. **LT-1 to LT-19 are accepted as recommended**, including LT-8 (Drishti's write-back service stays in Drishti and is bound as the `ChangeSink`). LT-16 (the snapshot adapter lives in the host) is consistent with Drishti Lake's design (drishti `wip/i7b-products` docs/plans/DRISHTI_LAKE_DESIGN.md, host-supplied rows). Build: L1–L6 (read side) in G2, L7–L10 in G3; Drishti switches over in i8.

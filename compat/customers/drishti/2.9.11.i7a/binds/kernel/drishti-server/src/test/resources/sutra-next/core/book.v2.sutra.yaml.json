@@ -11,31 +11,31 @@
       "TRADE_ID": "TRADE_ID-P1",
       "PRODUCT": "PRODUCT-R1",
       "NOTIONAL": 155,
-      "MATURITY": "2026-02-20",
+      "MATURITY": "2026-01-07",
       "MTM": 728.03
      },
      {
       "TRADE_ID": "TRADE_ID-Q2",
       "PRODUCT": "PRODUCT-S2",
       "NOTIONAL": 255,
-      "MATURITY": "2026-03-23",
+      "MATURITY": "2026-02-13",
       "MTM": 578.03
      },
      {
       "TRADE_ID": "TRADE_ID-R3",
       "PRODUCT": "PRODUCT-T3",
       "NOTIONAL": 105,
-      "MATURITY": "2026-04-26",
+      "MATURITY": "2026-03-22",
       "MTM": 928.03
      }
     ],
-    "BOOK_ID": "BOOK_ID-D1",
+    "DESK": "DESK-G1",
     "NAME": "NAME-X1",
     "DESK_NAME": "DESK_NAME-A1",
     "TRADE_COUNT": 622.07,
     "MTM": 728.03,
     "DV01": 112,
-    "DESK": "DESK-G1"
+    "BOOK_ID": "BOOK_ID-D1"
    }
   },
   {
@@ -73,7 +73,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Desk",
+      "text": "DESK-G1",
+      "link": {
+       "kind": "desk",
+       "id": "DESK-G1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

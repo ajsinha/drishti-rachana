@@ -31,22 +31,25 @@
     ],
     "delinquency": [
      {
-      "VALUE": 855.53
+      "month": 395.93,
+      "rate": 593.99
      },
      {
-      "VALUE": 705.53
+      "month": 745.93,
+      "rate": 443.99
      },
      {
-      "VALUE": 1055.53
+      "month": 845.93,
+      "rate": 793.99
      }
     ],
-    "portfolioId": "PORTFOLIOID-K1",
+    "legalEntity": "LEGALENTITY-L1",
     "name": "NAME-D1",
     "exposure": 73,
     "ecl": -124,
     "coverage": 412.57,
     "dpd30": 8.11,
-    "legalEntity": "LEGALENTITY-L1"
+    "portfolioId": "PORTFOLIOID-K1"
    }
   },
   {
@@ -84,7 +87,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

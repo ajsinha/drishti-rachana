@@ -23,12 +23,12 @@
       "YOY": 101.15
      }
     ],
-    "INDEX_ID": "INDEX_ID-O1",
+    "INFLATION_CURVE": 786,
     "NAME": "NAME-X1",
     "LATEST": 449.41,
     "YOY": 151.15,
     "LAG": 832,
-    "INFLATION_CURVE": 786
+    "INDEX_ID": "INDEX_ID-O1"
    }
   },
   {
@@ -66,7 +66,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Inflation curve",
+      "text": "786",
+      "link": {
+       "kind": "inflation-curve",
+       "id": "786",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

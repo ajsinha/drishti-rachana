@@ -8,21 +8,24 @@
    "answer": {
     "objectives": [
      {
-      "VALUE": 855.53
+      "objective": 303,
+      "aligned": 576
      },
      {
-      "VALUE": 705.53
+      "objective": 653,
+      "aligned": 426
      },
      {
-      "VALUE": 1055.53
+      "objective": 753,
+      "aligned": 776
      }
     ],
-    "reportId": "REPORTID-U1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "gar": 40.91,
     "eligible": 844.33,
     "covered": 846,
-    "legalEntity": "LEGALENTITY-L1"
+    "reportId": "REPORTID-U1"
    }
   },
   {
@@ -60,7 +63,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

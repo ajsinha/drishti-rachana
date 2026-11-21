@@ -8,11 +8,23 @@
    "answer": {
     "legs": [
      {
+      "leg": 181,
+      "label": "LABEL-W1",
+      "currency": 257.71,
+      "notional": 144,
+      "type": "TYPE-Q1",
+      "rate": 593.99,
+      "index": -63.01,
+      "dayCount": 441.79,
+      "frequency": 566.57,
+      "businessDay": "2026-01-10",
+      "calendar": "2026-01-14",
+      "paymentLag": 265.81,
       "cashflows": [
        {
         "n": 652.81,
-        "accrualStart": "2026-05-23",
-        "accrualEnd": "2026-04-22",
+        "accrualStart": "2026-04-10",
+        "accrualEnd": "2025-12-22",
         "payDate": "2026-03-21",
         "notional": 144,
         "rate": 593.99,
@@ -22,9 +34,9 @@
        },
        {
         "n": 752.81,
-        "accrualStart": "2026-06-26",
-        "accrualEnd": "2026-05-25",
-        "payDate": "2026-04-24",
+        "accrualStart": "2025-12-18",
+        "accrualEnd": "2026-01-28",
+        "payDate": "2026-04-27",
         "notional": 494,
         "rate": 443.99,
         "amount": 905.05,
@@ -33,9 +45,9 @@
        },
        {
         "n": 602.81,
-        "accrualStart": "2026-07-11",
-        "accrualEnd": "2026-06-10",
-        "payDate": "2026-05-27",
+        "accrualStart": "2026-01-24",
+        "accrualEnd": "2026-03-06",
+        "payDate": "2026-01-04",
         "notional": 594,
         "rate": 793.99,
         "amount": 1005.05,
@@ -43,18 +55,29 @@
         "pv": 346.43
        }
       ],
-      "label": "LABEL-W1",
       "projectedFlows": 709.91,
       "spread": 260,
       "nextReset": 393,
       "pv": -103.57
      },
      {
+      "leg": 531,
+      "label": "LABEL-X2",
+      "currency": 357.71,
+      "notional": 494,
+      "type": "TYPE-R2",
+      "rate": 443.99,
+      "index": 286.99,
+      "dayCount": 541.79,
+      "frequency": 916.57,
+      "businessDay": "2026-02-16",
+      "calendar": "2026-02-20",
+      "paymentLag": 365.81,
       "cashflows": [
        {
         "n": 652.81,
-        "accrualStart": "2026-05-23",
-        "accrualEnd": "2026-04-22",
+        "accrualStart": "2026-04-10",
+        "accrualEnd": "2025-12-22",
         "payDate": "2026-03-21",
         "notional": 144,
         "rate": 593.99,
@@ -64,9 +87,9 @@
        },
        {
         "n": 752.81,
-        "accrualStart": "2026-06-26",
-        "accrualEnd": "2026-05-25",
-        "payDate": "2026-04-24",
+        "accrualStart": "2025-12-18",
+        "accrualEnd": "2026-01-28",
+        "payDate": "2026-04-27",
         "notional": 494,
         "rate": 443.99,
         "amount": 905.05,
@@ -75,9 +98,9 @@
        },
        {
         "n": 602.81,
-        "accrualStart": "2026-07-11",
-        "accrualEnd": "2026-06-10",
-        "payDate": "2026-05-27",
+        "accrualStart": "2026-01-24",
+        "accrualEnd": "2026-03-06",
+        "payDate": "2026-01-04",
         "notional": 594,
         "rate": 793.99,
         "amount": 1005.05,
@@ -85,18 +108,29 @@
         "pv": 346.43
        }
       ],
-      "label": "LABEL-X2",
       "projectedFlows": 559.91,
       "spread": 360,
       "nextReset": 493,
       "pv": 246.43
      },
      {
+      "leg": 631,
+      "label": "LABEL-Y3",
+      "currency": 207.71,
+      "notional": 594,
+      "type": "TYPE-S3",
+      "rate": 793.99,
+      "index": 386.99,
+      "dayCount": 391.79,
+      "frequency": 1016.57,
+      "businessDay": "2026-03-25",
+      "calendar": "2026-03-29",
+      "paymentLag": 215.81,
       "cashflows": [
        {
         "n": 652.81,
-        "accrualStart": "2026-05-23",
-        "accrualEnd": "2026-04-22",
+        "accrualStart": "2026-04-10",
+        "accrualEnd": "2025-12-22",
         "payDate": "2026-03-21",
         "notional": 144,
         "rate": 593.99,
@@ -106,9 +140,9 @@
        },
        {
         "n": 752.81,
-        "accrualStart": "2026-06-26",
-        "accrualEnd": "2026-05-25",
-        "payDate": "2026-04-24",
+        "accrualStart": "2025-12-18",
+        "accrualEnd": "2026-01-28",
+        "payDate": "2026-04-27",
         "notional": 494,
         "rate": 443.99,
         "amount": 905.05,
@@ -117,9 +151,9 @@
        },
        {
         "n": 602.81,
-        "accrualStart": "2026-07-11",
-        "accrualEnd": "2026-06-10",
-        "payDate": "2026-05-27",
+        "accrualStart": "2026-01-24",
+        "accrualEnd": "2026-03-06",
+        "payDate": "2026-01-04",
         "notional": 594,
         "rate": 793.99,
         "amount": 1005.05,
@@ -127,7 +161,6 @@
         "pv": 346.43
        }
       ],
-      "label": "LABEL-Y3",
       "projectedFlows": 909.91,
       "spread": 210,
       "nextReset": 343,
@@ -136,38 +169,70 @@
     ],
     "dv01ByTenor": [
      {
-      "VALUE": 855.53
+      "tenor": 45,
+      "dv01": 236.63
      },
      {
-      "VALUE": 705.53
+      "tenor": 145,
+      "dv01": 86.63
      },
      {
-      "VALUE": 1055.53
+      "tenor": -4,
+      "dv01": 436.63
      }
     ],
+    "nettingSet": 535.01,
     "productType": "PRODUCTTYPE-C1",
+    "notional": 144,
+    "direction": 541.39,
+    "effectiveDate": "2026-03-04",
+    "maturityDate": "2025-12-17",
+    "fixedRate": 888,
+    "mtm": 499.01,
+    "dv01": 236.63,
+    "book": 573.43,
     "tradeId": "TRADEID-Q1",
     "counterparty": {
      "id": "ID-H1",
      "name": "NAME-D1"
     },
-    "notional": 144,
-    "direction": 541.39,
-    "effectiveDate": "2026-07-16",
-    "maturityDate": "2026-02-11",
-    "fixedRate": 888,
-    "mtm": 499.01,
-    "dv01": 236.63,
-    "book": 573.43,
     "discountCurve": 68.27,
-    "maturityTenor": "2026-04-13",
-    "nettingSet": 535.01
+    "maturityTenor": "2026-03-31"
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "curve",
+    "68.27"
+   ],
+   "answer": {
+    "data": {
+     "points": [
+      {
+       "tenor": 45,
+       "rate": 593.99
+      },
+      {
+       "tenor": 145,
+       "rate": 443.99
+      },
+      {
+       "tenor": -4,
+       "rate": 793.99
+      }
+     ],
+     "maturityTenor": "2026-03-31",
+     "discountCurve": 68.27
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
   },
   {
    "hook": "panel",
@@ -199,7 +264,41 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Netting set",
+      "text": "535.01",
+      "link": {
+       "kind": "netting-set",
+       "id": "535.01",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Book",
+      "text": "573.43",
+      "link": {
+       "kind": "book",
+       "id": "573.43",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Discount curve",
+      "text": "68.27",
+      "link": {
+       "kind": "curve",
+       "id": "68.27",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

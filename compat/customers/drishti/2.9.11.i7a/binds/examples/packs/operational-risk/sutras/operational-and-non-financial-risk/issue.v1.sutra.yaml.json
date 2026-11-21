@@ -23,14 +23,14 @@
       "status": "STATUS-A3"
      }
     ],
-    "issueId": "ISSUEID-P1",
+    "desk": 628.33,
     "title": 181,
     "source": 579.35,
     "severity": 694,
     "owner": 348.73,
     "due": 573.83,
     "status": "STATUS-Y1",
-    "desk": 628.33
+    "issueId": "ISSUEID-P1"
    }
   },
   {
@@ -68,7 +68,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Desk",
+      "text": "628.33",
+      "link": {
+       "kind": "desk",
+       "id": "628.33",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

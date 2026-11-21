@@ -9,33 +9,33 @@
     "PROFILE": [
      {
       "TENOR": "TENOR-M1",
-      "DATE": "2026-04-22",
       "EE": 736,
-      "ENE": 259.37,
-      "EEE": 787,
       "PFE": 784.01,
       "PFE_99": 366.23,
-      "EE_UNCOLL": 586.19
+      "EE_UNCOLL": 586.19,
+      "DATE": "2026-04-27",
+      "ENE": 259.37,
+      "EEE": 787
      },
      {
       "TENOR": "TENOR-N2",
-      "DATE": "2026-05-25",
       "EE": 836,
-      "ENE": 109.37,
-      "EEE": 887,
       "PFE": 634.01,
       "PFE_99": 716.23,
-      "EE_UNCOLL": 936.19
+      "EE_UNCOLL": 936.19,
+      "DATE": "2026-01-04",
+      "ENE": 109.37,
+      "EEE": 887
      },
      {
       "TENOR": "TENOR-O3",
-      "DATE": "2026-06-10",
       "EE": 686,
-      "ENE": 459.37,
-      "EEE": 737,
       "PFE": 984.01,
       "PFE_99": 816.23,
-      "EE_UNCOLL": 1036.19
+      "EE_UNCOLL": 1036.19,
+      "DATE": "2026-02-10",
+      "ENE": 459.37,
+      "EEE": 737
      }
     ],
     "BY_NETTING_SET": [
@@ -61,16 +61,16 @@
       "PFE_CONTRIBUTION": 430.19
      }
     ],
-    "CANONICAL": 10,
     "EPE": 810,
     "EEPE": 332.59,
     "PEAK_PFE": 459.61,
-    "PEAK_PFE_DATE": "2026-05-23",
+    "PEAK_PFE_DATE": "2026-01-04",
     "CE": 198,
     "RUN_ID": "RUN_ID-A1",
     "STATUS": "STATUS-Y1",
+    "CANONICAL": 10,
     "SCOPE_KIND": "SCOPE_KIND-K1",
-    "BUSINESS_DATE": "2026-06-24",
+    "BUSINESS_DATE": "2026-03-30",
     "PATHS": 799,
     "CONFIDENCE": 219.55,
     "COLLATERAL_MODEL": "COLLATERAL_M-Q1",

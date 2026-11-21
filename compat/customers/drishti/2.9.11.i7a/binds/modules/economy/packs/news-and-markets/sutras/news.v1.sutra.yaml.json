@@ -6,34 +6,69 @@
    "hook": "record",
    "args": [],
    "answer": {
+    "ITEMS": [
+     {
+      "PUBLISHED": -193.15,
+      "SOURCE": "SOURCE-O1",
+      "TITLE": "TITLE-X1",
+      "LINK": 795.37
+     },
+     {
+      "PUBLISHED": 156.85,
+      "SOURCE": "SOURCE-P2",
+      "TITLE": "TITLE-Y2",
+      "LINK": 895.37
+     },
+     {
+      "PUBLISHED": 256.85,
+      "SOURCE": "SOURCE-Q3",
+      "TITLE": "TITLE-Z3",
+      "LINK": 745.37
+     }
+    ],
     "BY_SOURCE": [
      {
-      "VALUE": 855.53
+      "SOURCE": "SOURCE-O1",
+      "COUNT": 267
      },
      {
-      "VALUE": 705.53
+      "SOURCE": "SOURCE-P2",
+      "COUNT": 117
      },
      {
-      "VALUE": 1055.53
+      "SOURCE": "SOURCE-Q3",
+      "COUNT": 467
      }
     ],
-    "PROVENANCE": [
+    "PIPELINE": [
      {
-      "VALUE": 855.53
+      "STEP": -214,
+      "KEPT": 485.69,
+      "DROPPED": 559.19
      },
      {
-      "VALUE": 705.53
+      "STEP": 135,
+      "KEPT": 335.69,
+      "DROPPED": 409.19
      },
      {
-      "VALUE": 1055.53
+      "STEP": 235,
+      "KEPT": 685.69,
+      "DROPPED": 759.19
      }
     ],
-    "NEWS_ID": "NEWS_ID-F1",
     "ENTITY": "ENTITY-X1",
     "EDITION": -199,
     "RELEVANCE_FILTER": 88,
     "COUNT": 267,
-    "FETCHED_AT": "2026-05-14"
+    "FETCHED_AT": "2026-01-31",
+    "NEWS_ID": "NEWS_ID-F1",
+    "SNAPSHOT": 534.77,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

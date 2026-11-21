@@ -23,10 +23,10 @@
       "RATING": "RATING-P3"
      }
     ],
-    "GROUP_ID": "GROUP_ID-D1",
     "NAME": "NAME-X1",
     "LIMIT": 5,
-    "UTILISATION": 323.03
+    "UTILISATION": 323.03,
+    "GROUP_ID": "GROUP_ID-D1"
    }
   },
   {

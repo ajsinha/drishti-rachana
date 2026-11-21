@@ -8,34 +8,40 @@
    "answer": {
     "components": [
      {
-      "VALUE": 855.53
+      "component": 755,
+      "amount": 555.05
      },
      {
-      "VALUE": 705.53
+      "component": 605,
+      "amount": 905.05
      },
      {
-      "VALUE": 1055.53
+      "component": 955,
+      "amount": 1005.05
      }
     ],
     "annualLosses": [
      {
-      "VALUE": 855.53
+      "year": 770,
+      "loss": 874
      },
      {
-      "VALUE": 705.53
+      "year": 870,
+      "loss": 974
      },
      {
-      "VALUE": 1055.53
+      "year": 720,
+      "loss": 824
      }
     ],
-    "calcId": "CALCID-K1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "bi": 29.41,
     "bic": 656,
     "ilm": 81.65,
     "capital": 583,
     "rwa": -247,
-    "legalEntity": "LEGALENTITY-L1"
+    "calcId": "CALCID-K1"
    }
   },
   {
@@ -73,7 +79,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

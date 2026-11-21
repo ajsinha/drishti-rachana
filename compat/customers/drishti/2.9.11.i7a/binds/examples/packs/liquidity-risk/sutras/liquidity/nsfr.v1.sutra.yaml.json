@@ -46,13 +46,13 @@
       "weighted": 279.43
      }
     ],
-    "nsfrId": "NSFRID-N1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "nsfr": 623,
     "asfTotal": 350.51,
     "rsfTotal": 191,
     "minimum": 531,
-    "legalEntity": "LEGALENTITY-L1"
+    "nsfrId": "NSFRID-N1"
    }
   },
   {
@@ -90,7 +90,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

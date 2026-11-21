@@ -11,30 +11,30 @@
       "TRADE_ID": "TRADE_ID-P1",
       "PRODUCT": "PRODUCT-R1",
       "NOTIONAL": 155,
-      "MATURITY": "2026-02-20",
+      "MATURITY": "2026-01-07",
       "MTM": 728.03
      },
      {
       "TRADE_ID": "TRADE_ID-Q2",
       "PRODUCT": "PRODUCT-S2",
       "NOTIONAL": 255,
-      "MATURITY": "2026-03-23",
+      "MATURITY": "2026-02-13",
       "MTM": 578.03
      },
      {
       "TRADE_ID": "TRADE_ID-R3",
       "PRODUCT": "PRODUCT-T3",
       "NOTIONAL": 105,
-      "MATURITY": "2026-04-26",
+      "MATURITY": "2026-03-22",
       "MTM": 928.03
      }
     ],
-    "ACCOUNT_ID": "ACCOUNT_ID-N1",
+    "CCP": 635,
     "CCP_NAME": "CCP_NAME-B1",
     "IM": 253,
-    "VM_TODAY": "2026-09-18",
+    "VM_TODAY": "2026-01-11",
     "EXCESS": 213.23,
-    "CCP": 635
+    "ACCOUNT_ID": "ACCOUNT_ID-N1"
    }
   },
   {
@@ -72,7 +72,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Ccp",
+      "text": "635",
+      "link": {
+       "kind": "ccp",
+       "id": "635",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

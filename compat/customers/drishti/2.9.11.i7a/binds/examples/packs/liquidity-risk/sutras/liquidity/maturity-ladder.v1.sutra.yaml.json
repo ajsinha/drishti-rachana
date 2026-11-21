@@ -9,32 +9,32 @@
     "buckets": [
      {
       "bucket": 753.07,
+      "net": 811.03,
       "inflows": 113.27,
       "outflows": 498.17,
-      "net": 811.03,
       "cumulative": 440
      },
      {
       "bucket": 853.07,
+      "net": 911.03,
       "inflows": -36.73,
       "outflows": 848.17,
-      "net": 911.03,
       "cumulative": 540
      },
      {
       "bucket": 703.07,
+      "net": 761.03,
       "inflows": 313.27,
       "outflows": 948.17,
-      "net": 761.03,
       "cumulative": 390
      }
     ],
-    "ladderId": "LADDERID-W1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "currency": 257.71,
     "gap1m": 343.01,
     "survivalDays": 454,
-    "legalEntity": "LEGALENTITY-L1"
+    "ladderId": "LADDERID-W1"
    }
   },
   {
@@ -72,7 +72,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

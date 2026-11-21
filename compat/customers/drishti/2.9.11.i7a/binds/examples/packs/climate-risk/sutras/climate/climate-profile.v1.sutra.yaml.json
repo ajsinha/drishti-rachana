@@ -8,38 +8,33 @@
    "answer": {
     "scopes": [
      {
-      "VALUE": 855.53
+      "scope": 215,
+      "tco2e": 142
      },
      {
-      "VALUE": 705.53
+      "scope": 315,
+      "tco2e": -7
      },
      {
-      "VALUE": 1055.53
+      "scope": 165,
+      "tco2e": 342
      }
     ],
     "history": [
      {
-      "VALUE": 855.53
+      "year": 770,
+      "tco2e": 142
      },
      {
-      "VALUE": 705.53
+      "year": 870,
+      "tco2e": -7
      },
      {
-      "VALUE": 1055.53
+      "year": 720,
+      "tco2e": 342
      }
     ],
-    "targets": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "profileId": "PROFILEID-Y1",
+    "counterparty": 745.87,
     "counterpartyName": "COUNTERPARTY-N1",
     "sector": 530.87,
     "scope12": 324,
@@ -47,7 +42,12 @@
     "transitionScore": -129,
     "physicalScore": 304,
     "netZeroTarget": 524,
-    "counterparty": 745.87
+    "profileId": "PROFILEID-Y1",
+    "targets": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -85,7 +85,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Counterparty",
+      "text": "745.87",
+      "link": {
+       "kind": "counterparty",
+       "id": "745.87",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

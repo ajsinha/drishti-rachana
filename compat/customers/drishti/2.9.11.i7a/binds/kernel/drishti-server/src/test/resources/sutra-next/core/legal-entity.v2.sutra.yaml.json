@@ -23,22 +23,34 @@
     "VAR_ENGINE": {
      "BOOKS": [
       {
-       "VALUE": 855.53
+       "BOOK": "BOOK-L1",
+       "VAR": 290,
+       "PNL": 367,
+       "TRADES": -235,
+       "DESK": "DESK-G1"
       },
       {
-       "VALUE": 705.53
+       "BOOK": "BOOK-M2",
+       "VAR": 390,
+       "PNL": 217,
+       "TRADES": 114,
+       "DESK": "DESK-H2"
       },
       {
-       "VALUE": 1055.53
+       "BOOK": "BOOK-N3",
+       "VAR": 240,
+       "PNL": 567,
+       "TRADES": 214,
+       "DESK": "DESK-I3"
       }
      ],
      "VAR": 290
     },
-    "ENTITY_ID": "ENTITY_ID-R1",
     "NAME": "NAME-X1",
     "LEI": "LEI-Z1",
     "JURISDICTION": 584,
-    "REGULATOR": 447
+    "REGULATOR": 447,
+    "ENTITY_ID": "ENTITY_ID-R1"
    }
   },
   {

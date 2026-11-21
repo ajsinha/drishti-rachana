@@ -8,13 +8,16 @@
    "answer": {
     "carbonPath": [
      {
-      "VALUE": 855.53
+      "year": 770,
+      "price": 559.31
      },
      {
-      "VALUE": 705.53
+      "year": 870,
+      "price": 909.31
      },
      {
-      "VALUE": 1055.53
+      "year": 720,
+      "price": 1009.31
      }
     ],
     "shocks": [
@@ -31,12 +34,12 @@
       "shock": -9.13
      }
     ],
-    "scenarioId": "SCENARIOID-N1",
     "name": "NAME-D1",
     "category": 78.05,
     "warming": 684,
     "carbon2030": 863,
-    "carbon2050": 346.27
+    "carbon2050": 346.27,
+    "scenarioId": "SCENARIOID-N1"
    }
   },
   {

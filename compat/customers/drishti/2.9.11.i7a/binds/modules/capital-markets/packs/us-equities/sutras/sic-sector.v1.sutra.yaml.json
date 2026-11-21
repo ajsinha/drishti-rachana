@@ -8,35 +8,39 @@
    "answer": {
     "ROWS": [
      {
-      "VALUE": 855.53
+      "TICKER": "TICKER-K1",
+      "NAME": "NAME-X1",
+      "INDEX_TEXT": "INDEX_TEXT-X1",
+      "REVENUE": 647,
+      "FISCAL_YEAR": -240
      },
      {
-      "VALUE": 705.53
+      "TICKER": "TICKER-L2",
+      "NAME": "NAME-Y2",
+      "INDEX_TEXT": "INDEX_TEXT-Y2",
+      "REVENUE": 497,
+      "FISCAL_YEAR": 109
      },
      {
-      "VALUE": 1055.53
+      "TICKER": "TICKER-M3",
+      "NAME": "NAME-Z3",
+      "INDEX_TEXT": "INDEX_TEXT-Z3",
+      "REVENUE": 847,
+      "FISCAL_YEAR": 209
      }
     ],
     "BY_REVENUE": [
      {
-      "VALUE": 855.53
+      "TICKER": "TICKER-K1",
+      "REVENUE": 647
      },
      {
-      "VALUE": 705.53
+      "TICKER": "TICKER-L2",
+      "REVENUE": 497
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "TICKER": "TICKER-M3",
+      "REVENUE": 847
      }
     ],
     "SIC": 240.37,
@@ -46,7 +50,12 @@
     "REVENUE": 647,
     "NET_INCOME": 111.41,
     "NET_MARGIN": 864,
-    "NON_USD": 192.43
+    "NON_USD": 192.43,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

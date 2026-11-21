@@ -6,25 +6,19 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "details": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "holdingId": "HOLDINGID-H1",
+    "bond": 273,
     "security": 514,
     "level": 331.43,
     "marketValue": 522,
     "haircut": 839.93,
     "liquidityValue": 351,
     "encumbered": -64,
-    "bond": 273
+    "holdingId": "HOLDINGID-H1",
+    "details": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -62,7 +56,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Bond",
+      "text": "273",
+      "link": {
+       "kind": "bond",
+       "id": "273",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

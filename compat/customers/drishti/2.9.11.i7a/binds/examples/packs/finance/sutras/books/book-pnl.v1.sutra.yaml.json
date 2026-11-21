@@ -50,7 +50,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Book",
+      "text": "573.43",
+      "link": {
+       "kind": "book",
+       "id": "573.43",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   },
   {

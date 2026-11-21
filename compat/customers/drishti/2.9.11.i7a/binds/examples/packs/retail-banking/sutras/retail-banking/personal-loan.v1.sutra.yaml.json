@@ -26,14 +26,14 @@
       "balance": 725
      }
     ],
-    "loanId": "LOANID-F1",
+    "customer": 78,
     "borrowerName": "BORROWERNAME-D1",
     "purpose": 143.09,
     "balance": 525,
     "instalment": 863.27,
     "rate": 593.99,
     "daysPastDue": 825.89,
-    "customer": 78
+    "loanId": "LOANID-F1"
    }
   },
   {
@@ -71,7 +71,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Customer",
+      "text": "78",
+      "link": {
+       "kind": "customer",
+       "id": "78",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

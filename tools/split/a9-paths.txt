@@ -1,0 +1,28 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see LICENSE.
+# The reviewed path allow-list of split step A9 (git filter-repo --paths-from-file): the aggregate kernel's state and maths and the
+# list functions over it, over the two paths the module had in the host's history. The AggFunction contract, the sketches, the
+# _once family (OncePerParent), Functions, EngineFunctions and the SQL lowering stay in the host (decision N7).
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Builtins.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Comoments.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Holistics.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Moments.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/MoreAggregates.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/rachana/ListAggregates.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/rachana/ListAnalytics.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/rachana/ListGrouping.java
+compute/drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/LegacyListAggregates.java
+compute/drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaAggregatesTest.java
+compute/drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaListAnalyticsTest.java
+compute/drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaStatisticsTest.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Builtins.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Comoments.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Holistics.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Moments.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/MoreAggregates.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/rachana/ListAggregates.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/rachana/ListAnalytics.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/rachana/ListGrouping.java
+drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/LegacyListAggregates.java
+drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaAggregatesTest.java
+drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaListAnalyticsTest.java
+drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaStatisticsTest.java

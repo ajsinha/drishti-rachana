@@ -1,19 +1,8 @@
 /*
- * Project Drishti · Any data. Any domain. One grammar.
- *
- * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>.
- * All rights reserved.
- *
- * PROPRIETARY AND CONFIDENTIAL.
- *
- * This file is the confidential and proprietary property of Ashutosh Sinha.
- * Unauthorised copying, use, modification, distribution or disclosure of this
- * file, via any medium, is strictly prohibited except with the express prior
- * written permission of the copyright holder.
- *
- * See the LICENSE file in the root of this repository for the full terms.
+ * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+ * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
-package com.ash.drishti.bicompute.rachana;
+package com.ash.rachana.agg;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,12 +10,12 @@ import static org.assertj.core.api.Assertions.within;
 
 import com.ash.drishti.api.DataNode;
 import com.ash.drishti.common.JsonCodec;
-import com.ash.drishti.rachana.el.ElCompiler;
-import com.ash.drishti.rachana.el.ElException;
-import com.ash.drishti.rachana.el.EvalContext;
-import com.ash.drishti.rachana.el.Functions;
-import com.ash.drishti.rachana.el.Values;
-import com.ash.drishti.rachana.format.Formats;
+import com.ash.rachana.el.ElCompiler;
+import com.ash.rachana.el.ElException;
+import com.ash.rachana.el.EvalContext;
+import com.ash.rachana.el.Functions;
+import com.ash.rachana.el.Values;
+import com.ash.rachana.format.Formats;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

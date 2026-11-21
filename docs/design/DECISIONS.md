@@ -294,3 +294,7 @@ The placement verdict of LIVE_TABLES.md section 0 is accepted: **(a) Rachana, as
 ### L-12 amended (owner, 2026-11-21)
 
 `drishti-rachana-libraries` is **public for the time being** (owner: "it is ok"), under the same proprietary licence as this repository (L-11 unchanged: all libraries proprietary). Like this repository, it carries no Drishti-internal data, only synthetic examples.
+
+### AI kit and MCP moved to the AI release (owner, 2026-11-21)
+
+The Rachana AI kit (prompt kit, validate-and-fix loop, evaluation harness) and the MCP tools (the generic Rachana MCP server, the sajhamcpserver tool pack) leave i7b G2 and are built in Drishti's GenAI release (i10 after the renumbering). The Studio's "describe a screen" command bar stays in the Studio design as a placeholder until then.

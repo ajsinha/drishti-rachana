@@ -24,6 +24,10 @@ public final class JvmRuntime {
     public static void main(String[] a) throws Exception {
         List<String> files = new ArrayList<>(List.of(a));
         String profiles = "core";
+        if (!files.isEmpty() && files.get(0).equals("--host-nodes")) {   // the documents as a host's own node type (HostNodes)
+            Cases.documents = HostNodes::of;
+            files = files.subList(1, files.size());
+        }
         if (files.size() >= 2 && files.get(0).equals("--profiles")) {
             profiles = files.get(1);
             files = files.subList(2, files.size());

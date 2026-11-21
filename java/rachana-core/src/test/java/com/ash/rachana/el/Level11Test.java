@@ -40,8 +40,8 @@ class Level11Test {
         "range(2, 10, 2)",
         "map($.legs, lambda l: l.n * 2)",
         "reduce($.legs, 0, lambda acc, l: max(acc, l.n))",
-        "let(bp = lambda x: x * 10000, bp($.spread))",
-        "let(f = lambda x: x, map($.l, f))",
+        "let(bp=lambda x: x * 10000, bp($.spread))",
+        "let(f=lambda x: x, map($.l, f))",
         "$.a ?? $.b ?? 0",
         "($.a ?? 1) + 2",
         "2 ** 3 ** 2",
@@ -52,8 +52,8 @@ class Level11Test {
         "1e-3 * 2",
         "1.5e3",
         "1000000",
-        "c ? a : b",
-        "$.x in range(5) && $.y not in [1, 2]",
+        "a if c else b",
+        "$.x in range(5) and $.y not in [1, 2]",
     })
     void printsWhatItParsesAtLevel11(String text) {
         Expr e = V11.compile(text);

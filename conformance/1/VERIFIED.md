@@ -13,8 +13,9 @@ Totals of the first pass: **246 Class A and 237 Class B flipped; 38 not flipped.
 made the first pass) took those 38 and the 14 cases added since (`protocol/approve` 10, `sutra/binder/live-edit` 4): for each it decided
 the specified behaviour, wrote it into the specification, and then flipped the case, corrected its expectation, or listed a code fix.
 Decisions `SG-1` to `SG-24` and code fixes `CF-1` to `CF-5` are in the section [Spec gaps closed](#spec-gaps-closed-the-second-pass).
-**51 flipped (3 of them after their expectation was corrected); 1 not flipped (it waits for CF-1).** Every case of the suite but that
-one is now verified.
+**51 flipped (3 of them after their expectation was corrected); 1 not flipped (it waits for CF-1).** Of the cases this log covers,
+that one alone is unverified. The 12 cases of `el/aggregates-host-values` arrived with the merge of `g2/integration` at `0bd6013`,
+after this pass was made; their commit leaves them for the independent review lane, and this pass did not flip them.
 
 ## Flipped
 
@@ -792,3 +793,4 @@ Each is behaviour the text now states and the implementation does not have. No f
 | Case id | Reason | Detail |
 |---|---|---|
 | `sutra/data#missing-table-reads-as-no-rows` | code fix CF-1 (SG-16) | the expectation (`0`) is what the implementation does and is wrong against SPEC 2.4, TRANSLATION 10 and PROTOCOL 10.1; the case is replaced when CF-1 is built |
+| `el/aggregates-host-values` (12 cases) | outside this pass | added on `g2/integration` (`230b507`) after this pass; left for the independent review lane (read against SPEC 5.1, 5.7, 4.9) |

@@ -5,6 +5,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Ready for a host's move onto Core (G4 rehearsal, pass 2)**: aggregates over a host's nodes give the figure (the rehearsal's P4: the
+  0 came from the host test's own oracle, which read only its node type) and are never a silent 0: a value Core cannot read is
+  `RCH-2102` at every level, a first argument that is not a list from level 1.1 (level 1.0 as recorded); a host scalar without
+  `value()` is read through its accessors. `NodeFactory` (`Node.nodes()`): lists and records an expression builds come out in the
+  host's node type. `Rachana.formats()` is live (`Formats.live`, `reload`). `Printer.print(e, level)`: 1.0 writes `&&`, `where = `
+  (unchanged); 1.1 and later Python's `and`, `or`, `not`, `a if c else b`, `where=`. A Sutra's record components are its JSON
+  (`domain`, `match` in their places; `extensions` lists only profile data). `Rachana.at(level, options, profiles...)`. A profile
+  function (or grouping) with a Core name is refused with the reason. Conformance: `el/aggregates-host-values`, the host-node fixture
+  (`JvmRuntime --host-nodes`, `HostNodeConformanceTest`).
+
 - **Live tables, the screen and four eyes (L9, L10 file writers; experimental)**: the live panel takes `edit: none | cells | beside`
   (language 1.2; contract 1.2 `LiveRef.edit`); core library fragments `core/live-table@1` and `core/held-changes@1`;
   `LiveTables.screen(name)` gives the Sutra a declaration needs. The approvers' tray: `Authoriser.approves`/`mayDecide`,
@@ -36,6 +46,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **The conformance runner binds pivots**: `CasePivots`, a small pivot engine (sum, count, avg, min, max with subtotals and totals) in
   the runner every runtime shares (JVM, both bundles, Python on V8), handed to `LiveScreen.pivots`; pivot-cell clicks run as `fire`
   cases (`fire/pivot-cells`), not only in JUnit.
+- **Elements pack re-vendored `3.2.0-dev+2f21158`** (Elements g2/integration with g3/one-escape): one `escapeHtml` in drishti-core (& < > " ') replaces six hand-written copies, one of which left out the double quote; references moved.
 - **Elements pack re-vendored `3.2.0-dev+b466b87`** (Elements g2/integration 6972989 with g3/surface-click): the surface heatmap's tooltip no longer asks for ECharts' arrow, whose inline
   style a strict CSP refused (found by Elements' new Chromium test that clicks a surface point, heatmap and 3D); references moved.
 - **Elements pack 3.2.0-dev+6972989** vendored (the painter's `requires` fails closed: a button naming a permission is enabled only when the host's `allowed` answers `true`; G2 gate F10, O8); the server refuses `auth: users` on a non-loopback bind unless `server.behind-tls-proxy: true` (F17); a test run leaves no temporary folder (`tools/gate/tmp_leaks.py`, F16).

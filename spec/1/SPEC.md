@@ -825,7 +825,9 @@ written `min–max`; `?` marks an optional argument; `…` a repeatable one.
   `0`, other aggregates empty.
 - Tests answer `true` or `false`, never empty.
 - Masked in, masked out (4.9).
-- Wrong type → `RCH-2102` naming the function and the value.
+- Wrong type → `RCH-2102` naming the function and the value. An aggregate over a list (5.7) refuses a first argument
+  that is not a list, empty or masked from level 1.1; level 1.0 keeps its recorded answer (empty, `0` for `sum` and
+  `count`). A host value the runtime cannot read is `RCH-2102` at every level: it is never added up as `0`.
 
 ### 5.2 Logic and choice (21)
 

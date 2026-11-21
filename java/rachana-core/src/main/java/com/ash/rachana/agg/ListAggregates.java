@@ -51,8 +51,18 @@ final class ListAggregates {
         if (args.isEmpty()) {
             throw error(name, "count() counts the rows of a pivot cell or of a measure's table; over a list write count(list)");
         }
-        if (!(Values.simplify(args.get(0)) instanceof Node list && list.isArray())) {
-            return empty(name);
+        Object first = Values.simplify(args.get(0));
+        if (first == null) {
+            return empty(name);                                   // of nothing: 0 for a sum and a count, empty for the rest
+        }
+        if (Values.masked(first)) {
+            return Values.mask();
+        }
+        if (!(first instanceof Node list && list.isArray())) {
+            if (first instanceof Node || first instanceof String || first instanceof Number || first instanceof Boolean) {
+                return empty(name);                               // level 1.0 as recorded; from 1.1 refused before the call (requireList)
+            }
+            throw notAList(name, first);                          // a host value Core cannot read: never a silent 0, at any level
         }
         List<String> fields = new ArrayList<>();
         List<Node> parallels = new ArrayList<>();
@@ -190,6 +200,39 @@ final class ListAggregates {
             }
         }
         return Double.NaN;
+    }
+
+    /**
+     * Level 1.1 and later (SPEC 5.1: a wrong type is {@code RCH-2102}): the first argument of an aggregate over a list is a list, empty
+     * or masked; anything else is refused naming the function and the value, never added up as 0.
+     */
+    static void requireList(String name, List<Object> args) {
+        if (args.isEmpty()) {
+            return;
+        }
+        Object first = Values.simplify(args.get(0));
+        if (first != null && !Values.masked(first) && !(first instanceof Node n && n.isArray())) {
+            throw notAList(name, first);
+        }
+    }
+
+    private static ElException notAList(String name, Object first) {
+        return error(name, describe(first) + " is not a list (SPEC 5.1: a wrong type is a problem, never a silent "
+                + (empty(name) == null ? "empty" : "0") + ")");
+    }
+
+    /** A value as a problem names it: text in quotes, a number as itself, a record by its kind, a host's value by its class. */
+    private static String describe(Object v) {
+        if (v instanceof String str) {
+            return "'" + (str.length() > 40 ? str.substring(0, 40) + "…" : str) + "'";
+        }
+        if (v instanceof Node n) {
+            return n.kind() == Node.Kind.OBJECT ? "an object" : "a list";
+        }
+        if (v instanceof Number || v instanceof Boolean) {
+            return Values.text(v);
+        }
+        return "a value of type " + v.getClass().getName();
     }
 
     /** What an aggregate of nothing is: 0 for a sum, a count and nmiss (as Excel's), empty for the rest. */

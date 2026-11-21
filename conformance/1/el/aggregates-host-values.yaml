@@ -1,0 +1,86 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: el/aggregates-host-values
+since: "1.0"
+profile: core
+verified: false
+description: "An aggregate gives the figure over a filtered list of the host's records and 0 for a sum of nothing; from level 1.1 a value that is not a list is a problem, never a silent 0 (SPEC 5.1: a wrong type is RCH-2102), while level 1.0 keeps its recorded answer. The same cases answer alike over a host's own node type (HostNodeConformanceTest)."
+given: {"record": {"HELD": 78104, "TEXT": "abc", "REC": {"a": 1}, "POSITIONS": [{"DIRECTION": "Held", "VALUE": 25815}, {"DIRECTION": "Held", "VALUE": 26079}, {"DIRECTION": "Held", "VALUE": 26210}, {"DIRECTION": "Posted", "VALUE": 1}], "MASKED": {"$masked": true}}}
+cases:
+
+  - id: "sum-of-a-filtered-list"
+    kind: "expr"
+    source: "G4 rehearsal pass 2, P4 (collateral-balance)"
+    expr: "sum($.POSITIONS[?@.DIRECTION == 'Held'], 'VALUE')"
+    expect: {"value": 78104}
+
+  - id: "net-of-two-filtered-lists"
+    kind: "expr"
+    source: "G4 rehearsal pass 2, P4 (collateral-balance)"
+    expr: "sum($.POSITIONS[?@.DIRECTION == 'Held'], 'VALUE') - sum($.POSITIONS[?@.DIRECTION == 'Posted'], 'VALUE')"
+    expect: {"value": 78103}
+
+  - id: "sum-of-nothing-is-0"
+    kind: "expr"
+    source: "SPEC 5.1"
+    expr: "sum($.POSITIONS[?@.DIRECTION == 'none'], 'VALUE')"
+    expect: {"value": 0}
+
+  - id: "sum-of-an-absent-list-is-0"
+    kind: "expr"
+    source: "SPEC 5.1"
+    expr: "sum($.NOTHING)"
+    expect: {"value": 0}
+
+  - id: "avg-of-an-absent-list-is-empty"
+    kind: "expr"
+    source: "SPEC 5.1"
+    expr: "avg($.NOTHING)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "sum-of-a-masked-list-is-masked"
+    kind: "expr"
+    source: "SPEC 4.9"
+    expr: "sum($.MASKED)"
+    expect: {"value": {"$masked": true}, "type": "masked"}
+
+  - id: "sum-of-a-number-is-a-problem"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 5.1"
+    expr: "sum($.HELD)"
+    expect: {"error": {"code": "RCH-2102", "message": "sum: 78104 is not a list (SPEC 5.1: a wrong type is a problem, never a silent 0)"}}
+
+  - id: "sum-of-a-text-is-a-problem"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 5.1"
+    expr: "sum($.TEXT)"
+    expect: {"error": {"code": "RCH-2102", "message": "sum: 'abc' is not a list (SPEC 5.1: a wrong type is a problem, never a silent 0)"}}
+
+  - id: "sum-of-a-record-is-a-problem"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 5.1"
+    expr: "sum($.REC)"
+    expect: {"error": {"code": "RCH-2102", "message": "sum: an object is not a list (SPEC 5.1: a wrong type is a problem, never a silent 0)"}}
+
+  - id: "avg-of-a-text-is-a-problem"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 5.1"
+    expr: "avg($.TEXT)"
+    expect: {"error": {"code": "RCH-2102", "message": "avg: 'abc' is not a list (SPEC 5.1: a wrong type is a problem, never a silent empty)"}}
+
+  - id: "sum-of-a-number-at-1-0-is-0"
+    kind: "expr"
+    until: "1.0"
+    source: "level 1.0 as recorded (DECISIONS N5); refused from 1.1"
+    expr: "sum($.HELD)"
+    expect: {"value": 0}
+
+  - id: "avg-of-a-text-at-1-0-is-empty"
+    kind: "expr"
+    until: "1.0"
+    source: "level 1.0 as recorded (DECISIONS N5); refused from 1.1"
+    expr: "avg($.TEXT)"
+    expect: {"value": null, "type": "empty"}

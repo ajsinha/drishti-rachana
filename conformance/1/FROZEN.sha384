@@ -1,6 +1,7 @@
 # state: pre-release
 # sha384 of every case file below conformance/1/ (tools/regime/freeze.py); a case is added, never edited (CG1)
 d0212ca1d58b9bc68fdaae5e5d2b8153c46cc0b592ba57f7e88557a9278c0a180503a34bf63ca00ef80aee3c6188e9ff  edit/ops.yaml
+5d141041b01925b69cbea8986dc6f0e351d9965facd25988f10dd230e90d4d26e61f326c1295c7dc7e5ab914b2448976  el/aggregates-host-values.yaml
 3aaeee8e604976bfe3bcfb079982b11b6e45eb14f253a6f6423d038c6f9cf112cbf70a6a6d2af77f79201f5be6a62252  el/check.yaml
 619a041d7c6fa2a618ba131893493531434ad05d3a5914421d0b5acb6cf978e93916e83d879d697ec885c3c39c0be8be  el/controls-ctl.yaml
 e2e135edb3f1e69b1a6810c56cb37e6413a505ffa63f32ddf98fd2650e739505ae2cb369be94b04976352645496f8d00  el/coverage-old-spellings.yaml

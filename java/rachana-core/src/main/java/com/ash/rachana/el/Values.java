@@ -22,11 +22,45 @@ public final class Values {
         if (v instanceof Node n) {
             return switch (n.kind()) {
                 case MISSING, NULL -> null;
-                case STRING, NUMBER, BOOLEAN -> n.value();
+                case STRING, NUMBER, BOOLEAN -> {
+                    Object x = n.value();
+                    yield x != null ? x : scalar(n);
+                }
                 default -> n;
             };
         }
         return v;
+    }
+
+    /**
+     * A host's scalar node that does not give its {@link Node#value()} (the interface's default is null): read through the accessor of
+     * its kind, never taken as empty. A number that gives no number at all is a problem ({@code RCH-2102}), never a silent 0 or empty.
+     */
+    private static Object scalar(Node n) {
+        return switch (n.kind()) {
+            case STRING -> n.asText();
+            case BOOLEAN -> n.asBoolean();
+            default -> {
+                double d = n.asDouble();
+                if (Double.isNaN(d)) {
+                    throw new ElException(com.ash.rachana.RachanaCode.EL_EVAL, "a host value (" + n.getClass().getName()
+                            + ") is a number but gives no number: implement value() or asDouble() of com.ash.rachana.api.Node");
+                }
+                yield normalise(d);
+            }
+        };
+    }
+
+    /**
+     * A list or record an expression built, in the type of the document's tree ({@link com.ash.rachana.api.NodeFactory}): as it is for
+     * Rachana's own documents and for a node the host already owns; through the host's factory otherwise.
+     */
+    static Object adopt(Object v, EvalContext c) {
+        if (c == null || !(v instanceof Node n) || !(n.kind() == Node.Kind.ARRAY || n.kind() == Node.Kind.OBJECT)) {
+            return v;
+        }
+        com.ash.rachana.api.NodeFactory f = c.nodes();
+        return f == com.ash.rachana.api.NodeFactory.core() || n.nodes() == f ? v : f.of(n);
     }
 
     /**

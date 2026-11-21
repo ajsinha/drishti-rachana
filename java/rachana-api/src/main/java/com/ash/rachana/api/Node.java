@@ -115,6 +115,14 @@ public interface Node {
     /** The plain Java value: {@code Map}, {@code List}, {@code String}, {@code Number}, {@code Boolean} or null. */
     Object unwrap();
 
+    /**
+     * The factory of this node's tree ({@link NodeFactory}): Rachana's own unless a host's node type returns its own, in which case the
+     * lists and records an expression builds over a document of that type come out as the host's type.
+     */
+    default NodeFactory nodes() {
+        return NodeFactory.core();
+    }
+
     /** Follows a dotted path with optional indexes, {@code legs[0].cashflows}; a leading {@code $.} is ignored. */
     default Node at(String path) {
         return Nodes.at(this, path);

@@ -854,6 +854,41 @@ The JS bundles' `query` (the static-files host, `RowQuery` compiled by TeaVM) gi
 |---|---|
 | `el/aggregates-host-values` (all 12: `sum-of-a-filtered-list`, `net-of-two-filtered-lists`, `sum-of-nothing-is-0`, `sum-of-an-absent-list-is-0`, `avg-of-an-absent-list-is-empty`, `sum-of-a-masked-list-is-masked`, `sum-of-a-number-is-a-problem`, `sum-of-a-text-is-a-problem`, `sum-of-a-record-is-a-problem`, `avg-of-a-text-is-a-problem`, `sum-of-a-number-at-1-0-is-0`, `avg-of-a-text-at-1-0-is-empty`) | read against SPEC 5.1 by an independent reviewer (a Fable review lane that neither built the cases nor this fix), who found every expectation in agreement; jvm, nodet, pyv8t (and noder, pyv8r where they answer) pass with the same bytes at 1.0, 1.1 and 1.2 |
 
+## The expression language's aggregates aligned (L-3)
+
+**Lead decision L-3** (2026-11-21, branch `g2/el-avg` off `g2/integration` at `f7f4cd8`): one rule everywhere. From level 1.1 the
+expression language's `avg` over integers and decimals is L-2's division (the exact sum over the count, decimal128, 34 significant
+digits, half to even, trailing zeros dropped), and `min(list)` / `max(list)` give the exact element, as the host's `min`/`max` do
+(PROTOCOL 3.1). `sum` over no value was already `0` in the expression language at every level (`el/aggregates-host-values`). Level
+1.0 is unchanged (doubles; every 1.0 case answers as before). Written into SPEC 4.16 rule 7 and PROTOCOL 3.1; built in `rachana-core`
+`Level11` (`avg`, `min`, `max` beside `sum`), so both JS bundles and the Python V8 engine.
+
+| Aggregate | Host (PROTOCOL 3.1, 6.3) | Expression language from 1.1 | Why |
+|---|---|---|---|
+| `sum` | exact | exact (already) | aligned |
+| `avg` | exact, 34 digits half to even | **now the same** (was a double) | aligned (L-3) |
+| `min`, `max` | the cell as held | **now the exact element** (was a double) | aligned; printed as a computed decimal (SPEC 4.16 rule 8: no trailing zeros), where the host sends the cell's own text |
+| `median`, `percentile` | a double (the JVM host interpolates in doubles; the Python host does not answer them) | a double | intentionally the same as the host: real-number aggregates (interpolation) |
+| `variance`, `stddev` and the statistics of SPEC 5.8 | not a protocol aggregate | a double | intentionally real-number (square roots, moments; SPEC 4.16 rule 5) |
+
+| Case id | Evidence |
+|---|---|
+| `el/numbers-exact#avg-of-decimals-is-exact` | SPEC 4.16 rules 3, 7; PROTOCOL 3.1's worked example (`"1"`, `"2"`, `"2"`); digits recomputed by hand (5/3 to 34 digits, last digit 6→7 half to even) |
+| `el/numbers-exact#avg-of-decimals-adds-exactly` | SPEC 4.16 rule 7 (0.3 / 2) |
+| `el/numbers-exact#avg-of-decimals-drops-trailing-zeros` | SPEC 4.16 rules 7, 8 |
+| `el/numbers-exact#avg-of-a-field-is-exact` | SPEC 4.16 rule 7, 5.1 (an empty value is not counted: 0.9 / 3) |
+| `el/numbers-exact#avg-with-a-double-is-a-double` | SPEC 4.16 rules 4, 7 (0.30000000000000004 / 2) |
+| `el/numbers-exact#avg-of-decimals-at-1-0-is-a-double` | level 1.0 unchanged (N5) |
+| `el/numbers-exact#min-of-decimals-is-a-decimal` | SPEC 4.16 rules 7, 8 |
+| `el/numbers-exact#max-of-decimals-is-a-decimal` | SPEC 4.16 rule 7 (an element a double cannot hold) |
+| `el/numbers-exact#min-with-a-double-is-a-double` | SPEC 4.16 rules 4, 7 |
+| `el/numbers-exact#avg-of-decimals-is-exact-at-1-2` | SPEC 4.16 rules 3, 7 at 1.2 (6.5 / 3) |
+| `el/numbers-exact#max-of-decimals-is-a-decimal-at-1-2` | SPEC 4.16 rule 7 at 1.2 |
+| `el/numbers-exact#median-of-decimals-is-a-number` | SPEC 4.16 rule 7, PROTOCOL 6.3 (the intended difference above) |
+
+Each passes on the JVM, both Node bundles and the Python V8 engine (both bundles) with the same results line at 1.0, 1.1 and 1.2; every
+case that existed before answers as before (`build_js.py`: 0 errors, 0 verified failing, runtime = tools at every level).
+
 ## Not flipped
 
 None: every case below `conformance/1/` is verified.

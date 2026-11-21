@@ -35,10 +35,11 @@ public enum UpgradeRule {
     EXACT(Action.FLAG, "review", "Arithmetic that 1.2 computes exactly",
             "level 1.0 computes every operator in doubles; from 1.1 integers and decimals (literals, whole numbers from the host, number-like "
                     + "text) are exact (SPEC 4.16, EL1-3): / and % of exact operands, and + - * with a fractional literal, may give other "
-                    + "digits (1 / 3, 3 * 0.1). Flagged, not rewritten (decision UP-1): the exact answer is the one 1.1 was made for, and "
+                    + "digits (1 / 3, 3 * 0.1); sum, avg, min and max over a list of exact values are exact too (avg([1, 2, 2])). Flagged, not rewritten (decision UP-1): the exact answer is the one 1.1 was made for, and "
                     + "writing * 1e0 on an operand keeps the double where it matters",
             List.of("decision:EL1-3", "decision:UP-1", "spec4.16", "spec4.17:exact numbers", "known:`el/numbers-exact` (34)",
                     "known:22 cases tagged `changes-with-xd3` in `el/examples/arithmetic` and `el/paths-operators`", "level11:sum",
+                    "level11:min", "level11:max",
                     "case:el/numbers-exact#*")),
 
     NUMBER_TEXT(Action.FLAG, "review", "Number-like text that 1.2 does not read as a number",

@@ -5,6 +5,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **The expression language's aggregates follow the host's on decimals** (lead decision L-3; SPEC 4.16 rule 7, PROTOCOL 3.1;
+  conformance/1/VERIFIED.md). From level 1.1 `avg` over integers and decimals is the exact sum divided as `/` divides (decimal128, 34
+  digits half to even, no trailing zeros: `avg([1, 2, 2])` → `1.666666666666666666666666666666667`), the digits a host gives for a
+  decimal column; `min(list)` and `max(list)` give the exact element. A double among the elements keeps the double aggregate; `median`,
+  `percentile` and the statistics stay real-number aggregates (as the host's `median` and `percentile`); `sum` of nothing was already
+  `0`. Level 1.0 unchanged. 12 cases added (`el/numbers-exact`), the same bytes on the JVM, both JS bundles and the Python V8 engine.
+
 - **The spec-gap code fixes CF-1 to CF-5 and the host aggregates decided** (conformance/1/VERIFIED.md, the third pass). A `table`
   entry whose table the host does not have is a failed entry: each panel that reads it is `error: "RCH-2070 the host has no table
   '<t>' (data '<e>')"` with `empty: true`, never read as no rows (`LiveScreen.missing`, called by `TableClient.load` and the JS `Screen` on `rdp.table.unknown`; the JS bundles' screen

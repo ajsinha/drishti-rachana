@@ -13,8 +13,9 @@ import { build } from "./build.js";
 import { preview } from "./serve.js";
 import { lib } from "./lib.js";
 import { studio } from "./studio.js";
+import { serve } from "./server.js";
 
-export const STATUS = "lint, new, build, painter included, preview, studio, lib";
+export const STATUS = "lint, new, build, painter included, preview, studio, lib, serve";
 
 const HELP = `rachana <command>
   new <dir> [--template <name>]                 a starter folder: a Sutra, sample data, rachana.yaml
@@ -23,10 +24,11 @@ const HELP = `rachana <command>
   preview <file> [--data <dir>] [--port <n>]    one screen in the browser (dev <dir> serves a folder)
   studio [folder] [--libs <path>,...] [--data <dir>] [--port <n>]   Rachana Studio: edit the folder's Sutras with a live preview and a fragment palette
   lib build|sign|keygen|pack|verify|lock|contracts|check-host ...   libraries (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)
+  serve --config <rachana-server.yaml> [--port <n>] [--jar <file>] [--check]   the standalone server (needs a JVM: --jar or RACHANA_SERVER_JAR)
 `;
 
 /** Splits argv into positional arguments and --flags (a flag takes a value unless it is a known switch). */
-export function parseArgs(argv, switches = ["strict", "help", "test-once"]) {
+export function parseArgs(argv, switches = ["strict", "help", "test-once", "check"]) {
   const pos = [], flags = {};
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -55,6 +57,7 @@ export async function main(argv, io = { out: (s) => process.stdout.write(s + "\n
       case "lint": return await lint(pos.length ? pos : ["."], flags, io);
       case "build": return await build(flags.src ?? pos[0] ?? ".", flags.out ?? "site", io, flags);
       case "studio": return await studio(pos[0] ?? ".", flags, io);
+      case "serve": return await serve(flags, io);
       case "preview": case "dev": return await preview(pos[0] ?? ".", flags, io);
       default: io.err(`rachana: unknown command '${cmd}'\n${HELP}`); return 2;
     }

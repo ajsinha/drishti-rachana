@@ -396,6 +396,13 @@ is planned and none will be maintained here.
 
 ## 10. The standalone server (outline; phase R2)
 
+**Status: step 1 built (G3, `java/rachana-server`).** As built, the configuration differs from the outline below: `tables.<t>` takes
+`file`, `jdbc: {url, user, password-env | password-file, read-only}` with `query` and named `params`, or `rest: {url, path, headers,
+header-env}`, plus `key`, `refresh`, `columns`, `where`, `max-rows`, `timeout`; `auth.mode` is `none`, `users` or `header` (OpenID Connect
+is not built); `access` has `tables.<t>: {read, unmask}`, `sutras` and `default`. Every key is in
+`java/rachana-server/rachana-server.example.yaml`. Every table is a live table of `rachana-live` (whole-tier source, polling diff);
+JDBC push-down, request-time parameters, Parquet, Arrow pages of live tables and OpenID Connect are not built.
+
 One Java process (`rachana-server`, plain JDK 21 with virtual threads and a small HTTP library; no application
 framework), configured by one file.
 

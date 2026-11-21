@@ -3,6 +3,27 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased (G3, front-loaded)
+
+- **The standalone server, step 1** (`java/rachana-server`; COMPILER_AND_RUNTIMES 10, MODES 4): one JVM process (the JDK's HTTP
+  server on virtual threads, no framework) serving a project folder: its Sutras as pages (`/v/<sutra>`, `<rachana-view>` live over the
+  Data Protocol; checked at load and on change, `/problems`), the libraries of `rachana_libs/`, `libraries:` and the jar, the page assets
+  from the jar (the element, the runtime, the vendored Elements pack). Tables come from files (CSV, JSON, JSON lines, Arrow), a JDBC
+  query (one `select`, `:name` parameters bound through a prepared statement, a read-only connection rolled back after each read, the
+  operator's driver jars) or a REST JSON address (`path`, secret headers from the environment), and are kept live by `rachana-live`
+  (a polling diff per `refresh`) behind a fail-closed `Authoriser` (roles per table and per Sutra, masked columns, a refused table answered
+  as unknown). Sign-in by a users file (PBKDF2-SHA-256 salted hashes, `hash-password`) or a trusted reverse proxy's header; sessions
+  (HttpOnly, SameSite=Lax), CSRF tokens on sign-in and sign-out and an origin check on every `POST`, a sign-in throttle, a strict
+  Content-Security-Policy, loopback by default (`auth.mode: none` only there). One checked configuration file
+  (`rachana-server.example.yaml` shows every key): every problem at once, explicit paths only (absolute, `${config}`, `${project}`), no secret
+  in the file or the logs (structured JSON lines). `java -jar rachana-server-<version>-all.jar serve|check|hash-password`, and
+  `rachana serve` in the Node CLI. Tests over HTTP and in Chromium (sign in, the view paints, a changed file arrives live).
+- **One HTTP binding of the Data Protocol on the JVM**: `ProtocolHttp` (rows as JSON, Arrow or NDJSON, the minimal SSE stream, windowed
+  streams) taken out of `ReferenceServer`, which serves through it as the standalone server does.
+- Guards: nothing depends on `rachana-server`, which depends on `rachana-live` alone; Core requires no HTTP server, HTTP client or JDBC;
+  the bundled libraries and the Elements pack are the repository's. The dependency allow-list admits a JDBC driver (H2) in the server's
+  tests only.
+
 ## Unreleased (G2)
 
 - **Library quality gates and gallery**: `rachana lib gate <lib> [--strict]` (one implementation, `LibraryGates` over `LibraryTool`, run by `LibrariesCheckTest` on every bundled library and by `tools/libraries/build.py`) reports LG1 valid, LG2 frozen goldens, LG3 definition of done, LG4 level replay (`RCH-2008` one level below), LG5 interface append-only and LG8 budgets; `rachana lib freeze <lib>` records the released baseline (`FROZEN.sha384`, `released/*.interface.json`). Notes, not failures: a second example per fragment (`--strict` fails it), edge tests, live/window cases, accessibility summaries and table samples are not built; LG6, LG7 and LG9 run in release. `lib build` writes each fragment's full interface (doc, parameters, contract, slots, events, budget, needs) into `exports`, checked for staleness. `tools/libraries/build.py --gallery` builds the library gallery with Rachana itself (`gallery.py`: a Sutra per fragment over the manifest, the live example and its source; `gallery_check.py`: Chromium paint test). `rachana preview` resolves libraries as `build` does. The tools bundle checks expressions at the Sutra's language level.

@@ -12,6 +12,7 @@ module (`module-info.java`).
 | `rachana-core` | **the compiler, moved from its first host with its history** (split step A10): `com.ash.rachana` (Sutra writer, text, expressions, wiring, schema, layout and pivot editors, problems), `el` and `el.check` (Rachana-EL and its checker), `format` (formats, tones, world regions), `model`, `parse` (the positional YAML reader and the section readers), `design.ops` (editing operations); `profile` (profiles, grammar); `bind`, `view`, `control`, `wire` (the binder, the ViewModel and its canonical writer, controls, event wiring; moved at A13, the host behind hooks) | built; 823 unit tests |
 | `rachana-tools` | editing tools, writer, generators | skeleton (the editing code is still in `rachana-core`) |
 | `rachana-data` | Data Protocol | skeleton |
+| `rachana-server` | the standalone server (COMPILER_AND_RUNTIMES 10): a project folder of Sutras as pages, the Data Protocol over tables from files, JDBC and REST kept live by `rachana-live`, sign-in; `java -jar rachana-server-<version>-all.jar serve --config <file>`; every key in [rachana-server.example.yaml](rachana-server/rachana-server.example.yaml) | built (G3 step 1) |
 | `rachana-cli` | command line: `rachana lib build, sign, keygen, pack, verify, lock, contracts, check-host` over `LibraryTool` | built |
 | `rachana-conformance` | `JvmRuntime`: the conformance runtime program over `rachana-core` (RUNNER section 5) | built |
 | `rachana-conformance-cases` | the cases and specification as a jar, no code | built |

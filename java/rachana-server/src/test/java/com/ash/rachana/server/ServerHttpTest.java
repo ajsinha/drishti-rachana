@@ -222,4 +222,37 @@ class ServerHttpTest {
         assertTrue(body.contains("broken.sutra.yaml"), body);
         assertTrue(body.contains("RCH-"), body);
     }
+
+    @Test
+    void aLiveTableAnswersArrowPages() throws Exception {
+        String alice = signIn("alice", Fixture.PASSWORD);
+        HttpRequest req = HttpRequest.newBuilder(URI.create(server.url() + RachanaServer.DATA + "/tables/sales/rows")).header("Cookie", alice)
+                .header("Accept", "application/vnd.apache.arrow.stream").GET().build();
+        HttpResponse<byte[]> r = http.send(req, HttpResponse.BodyHandlers.ofByteArray());
+        assertEquals(200, r.statusCode(), new String(r.body(), StandardCharsets.UTF_8));
+        assertEquals("application/vnd.apache.arrow.stream", r.headers().firstValue("Content-Type").orElse(""));
+        Map<String, Object> page = com.ash.rachana.data.ArrowRows.read(new java.io.ByteArrayInputStream(r.body()));
+        assertEquals(2, ((List<?>) page.get("values")).size());
+    }
+
+    @Test
+    void liveYamlDeclarationsOfTheProjectAreServed() throws Exception {
+        Files.writeString(fx.dir.resolve("project/sales.live.yaml"), """
+                rachana: 1
+                live-table: sales
+                snapshot: sales
+                key: [region, month]
+                where: "@.region == 'North'"
+                columns: [ { name: region }, { name: month, type: date }, { name: revenue, type: decimal }, { name: email } ]
+                """);
+        Files.writeString(fx.dir.resolve("project/orphan.live.yaml"), "rachana: 1\nlive-table: orphan\nsnapshot: nowhere\nkey: id\ncolumns: [ { name: id } ]\n");
+        server.close();
+        server = RachanaServer.start(ServerConfig.read(fx.config), fx.log);
+        String alice = signIn("alice", Fixture.PASSWORD);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> rows = (Map<String, Object>) Json.read(get(RachanaServer.DATA + "/tables/sales/rows?shape=objects", alice).body());
+        assertEquals(1, ((List<?>) rows.get("rows")).size(), "the declaration's own condition applies");
+        assertTrue(get("/problems", alice).body().contains("orphan.live.yaml"), "a declaration naming no configured table is listed");
+        assertEquals(404, get(RachanaServer.DATA + "/tables/orphan/rows", alice).statusCode());
+    }
 }

@@ -15,10 +15,7 @@ from rachana_conformance import load_files, merged  # noqa: E402
 from drishti_rachana.testhost import TestHost  # noqa: E402
 
 
-# The frozen example that sorts a table without `can: sort` (PROTOCOL 4 refuses it): it fails on the JVM reference too;
-# protocol/host#bridge-rows-of-a-sortable-table is the corrected case.
 HAS_ARROW = importlib.util.find_spec("pyarrow") is not None
-KNOWN = {"protocol/examples/bridge#bridge-rows-request-answered-once"}
 
 
 def _cases():
@@ -28,7 +25,7 @@ def _cases():
             c = merged(doc, c)
             cid = f"{suite}#{c['id']}"
             if c["kind"] == "protocol":
-                marks = [pytest.mark.xfail(strict=True, reason="PROTOCOL 4")] if cid in KNOWN else []
+                marks = []
                 if pc.is_live(c):
                     marks.append(pytest.mark.skip(reason="a live table's case: the Python host serves no live tables (LIVE_TABLES LT-14)"))
                 if not HAS_ARROW and "arrow" in json.dumps(c, default=str).lower():

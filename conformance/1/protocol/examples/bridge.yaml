@@ -26,20 +26,6 @@ cases:
           status: 200
           body: { rdp: 1, t: welcome, v: 1 }
 
-  - id: bridge-rows-request-answered-once
-    kind: protocol
-    source: PROTOCOL 12, 5.1
-    fixture: *pair
-    steps:
-      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: rows, id: r1, table: rdp-pair, body: { sort: k } } }
-        expect:
-          status: 200
-          body:
-            rdp: 1
-            t: res
-            re: r1
-            body: { table: rdp-pair, columns: [k, v], values: [ [a, 1], [b, 2] ] }
-
   - id: bridge-unknown-table-is-an-error-res
     kind: protocol
     source: PROTOCOL 12, 10.1

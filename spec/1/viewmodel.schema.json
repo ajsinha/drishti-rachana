@@ -3,8 +3,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json",
   "title": "ViewModel",
-  "description": "The JSON a Rachana runtime returns for every screen (contract 1.x, now 1.1: datasets and the kinds grid, tree and chart, map points and the rows patch, appended to 1.0; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
-  "x-contract": "1.1",
+  "description": "The JSON a Rachana runtime returns for every screen (contract 1.x, now 1.2: 1.1 appended datasets, the kinds grid, tree and chart, map points and the rows patch to 1.0; 1.2 appended state, events and effects, the form panel and action buttons; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
+  "x-contract": "1.2",
   "x-status": "draft: transcribed by reading; replaced by the generated schema in R0 step H4",
   "$ref": "#/$defs/ViewModel",
   "$defs": {

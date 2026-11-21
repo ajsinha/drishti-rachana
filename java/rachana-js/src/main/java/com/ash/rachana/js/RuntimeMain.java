@@ -52,4 +52,20 @@ public final class RuntimeMain {
     public static String view(String request) {
         return Facade.view(request);
     }
+
+    @JSExport
+    public static String patch(String request) {
+        return Facade.patch(request);
+    }
+
+    @JSExport
+    public static String plan(String request) {
+        return Facade.plan(request);
+    }
+
+    /** An open screen (B3, {@code <rachana-view>}): {@code op} is open, plan, table, view, patch or close (see {@code Screens}). */
+    @JSExport
+    public static String screen(String op, String request) {
+        return Screens.call(op, request);
+    }
 }

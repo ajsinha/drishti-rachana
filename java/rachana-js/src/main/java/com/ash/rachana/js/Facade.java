@@ -68,4 +68,14 @@ final class Facade {
     static String view(String json) {
         return Cases.run(Cases::sutra, json);
     }
+
+    /** A view, then the ViewModel frames of each keyed table patch (FORMAT 5.9): {@code {viewModel, steps: [{frames, viewModel}]}}. */
+    static String patch(String json) {
+        return Cases.run(Cases::patch, json);
+    }
+
+    /** What the runtime asks of each table of {@code data:} (FORMAT 5.10): {@code {plan: {tables, problems}}}. */
+    static String plan(String json) {
+        return Cases.run(Cases::plan, json);
+    }
 }

@@ -103,6 +103,9 @@ final class SutraBuilder {
                 extensions.put(keyName, value);
             }
         });
+        if (m.containsKey(com.ash.rachana.model.DataEntry.KEY) && grammar.hasKey(com.ash.rachana.model.DataEntry.KEY)) {   // level 1.1 (D10)
+            extensions.put(com.ash.rachana.model.DataEntry.KEY, new DataReader(file, problems).read(m.get(com.ash.rachana.model.DataEntry.KEY)));
+        }
         Title title = title(m.get("title"));
         List<StripItem> strip = strip(m.get("strip"));
         List<Panel> panels = new ArrayList<>();

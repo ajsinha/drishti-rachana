@@ -28,7 +28,7 @@ cases:
       sutra: plan-demo
       version: 1
       controls:
-        - { id: region, kind: select, options: [North, South] }
+        - { id: region, kind: dropdown, options: [North, South] }
       data:
         sales: { table: sales, key: [region, month] }
       panels:

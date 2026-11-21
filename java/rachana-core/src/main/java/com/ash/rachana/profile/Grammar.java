@@ -26,6 +26,9 @@ public final class Grammar {
     public static final Set<String> CORE_KEYS = Collections.unmodifiableSet(new LinkedHashSet<>(List.of("rachana", "sutra", "version", "title",
             "strip", "panels", "keys", "description", "notes", "controls", "doc", "refresh", "layout", "phone")));
 
+    /** The top-level keys a later language level brings, with that level ({@code data}: SPEC 2.4, decision D10, level 1.1). */
+    public static final Map<String, String> LEVEL_KEYS = Map.of(com.ash.rachana.model.DataEntry.KEY, "1.1");
+
     /** The panel kinds of the grammar that a profile brings (the rest are Core's). */
     public static final Set<PanelKind> PROFILE_KINDS = Collections.unmodifiableSet(EnumSet.of(PanelKind.LINKS, PanelKind.PROVENANCE));
 
@@ -131,7 +134,7 @@ public final class Grammar {
 
     /** Whether a Sutra may write this top-level key (Core's or a profile's). */
     public boolean hasKey(String name) {
-        return CORE_KEYS.contains(name) || keys.containsKey(name);
+        return CORE_KEYS.contains(name) || keys.containsKey(name) || LEVEL_KEYS.containsKey(name) && !LEVEL_1_0.equals(level);
     }
 
     /** Whether a panel may be of this kind: every Core kind, and a profile's kind when a profile brings it. */

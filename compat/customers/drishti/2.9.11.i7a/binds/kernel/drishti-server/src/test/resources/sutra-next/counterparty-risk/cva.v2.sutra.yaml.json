@@ -37,13 +37,13 @@
       "DELTA": 926.95
      }
     ],
-    "RESULT_ID": "RESULT_ID-X1",
+    "NETTING_SET": 67,
     "CVA": -240.19,
     "DVA": 757,
     "FVA": -217,
     "KVA": -68,
     "CS01": -136.93,
-    "NETTING_SET": 67
+    "RESULT_ID": "RESULT_ID-X1"
    }
   },
   {

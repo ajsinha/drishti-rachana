@@ -26,11 +26,11 @@
       "RATE_PCT": 482
      }
     ],
-    "INDEX_ID": "INDEX_ID-O1",
     "NAME": "NAME-X1",
     "LATEST": 449.41,
     "ADMINISTRATOR": 483.67,
-    "TENOR": "TENOR-M1"
+    "TENOR": "TENOR-M1",
+    "INDEX_ID": "INDEX_ID-O1"
    }
   },
   {

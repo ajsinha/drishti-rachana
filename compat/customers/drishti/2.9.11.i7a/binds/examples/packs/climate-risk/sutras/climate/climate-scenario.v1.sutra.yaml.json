@@ -34,12 +34,12 @@
       "shock": -9.13
      }
     ],
-    "scenarioId": "SCENARIOID-N1",
     "name": "NAME-D1",
     "category": 78.05,
     "warming": 684,
     "carbon2030": 863,
-    "carbon2050": 346.27
+    "carbon2050": 346.27,
+    "scenarioId": "SCENARIOID-N1"
    }
   },
   {

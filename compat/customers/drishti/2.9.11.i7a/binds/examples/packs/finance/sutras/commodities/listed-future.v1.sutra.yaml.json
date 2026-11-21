@@ -32,12 +32,8 @@
       "cumulative": 390
      }
     ],
+    "clearingAccount": 507.73,
     "productType": "PRODUCTTYPE-C1",
-    "tradeId": "TRADEID-Q1",
-    "counterparty": {
-     "id": "ID-H1",
-     "name": "NAME-D1"
-    },
     "contract": 829.13,
     "direction": 541.39,
     "lots": 58.97,
@@ -46,7 +42,11 @@
     "mtm": 499.01,
     "lastTrade": 61,
     "book": 573.43,
-    "clearingAccount": 507.73,
+    "tradeId": "TRADEID-Q1",
+    "counterparty": {
+     "id": "ID-H1",
+     "name": "NAME-D1"
+    },
     "contractTerms": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",
@@ -126,22 +126,22 @@
    "answer": {
     "links": [
      {
-      "label": "Book",
-      "text": "573.43",
+      "label": "Clearing account",
+      "text": "507.73",
       "link": {
-       "kind": "book",
-       "id": "573.43",
+       "kind": "clearing-account",
+       "id": "507.73",
        "mnemonic": null
       },
       "badge": "",
       "status": "resolved"
      },
      {
-      "label": "Clearing account",
-      "text": "507.73",
+      "label": "Book",
+      "text": "573.43",
       "link": {
-       "kind": "clearing-account",
-       "id": "507.73",
+       "kind": "book",
+       "id": "573.43",
        "mnemonic": null
       },
       "badge": "",

@@ -43,13 +43,13 @@
       "rate": 793.99
      }
     ],
-    "portfolioId": "PORTFOLIOID-K1",
+    "legalEntity": "LEGALENTITY-L1",
     "name": "NAME-D1",
     "exposure": 73,
     "ecl": -124,
     "coverage": 412.57,
     "dpd30": 8.11,
-    "legalEntity": "LEGALENTITY-L1"
+    "portfolioId": "PORTFOLIOID-K1"
    }
   },
   {

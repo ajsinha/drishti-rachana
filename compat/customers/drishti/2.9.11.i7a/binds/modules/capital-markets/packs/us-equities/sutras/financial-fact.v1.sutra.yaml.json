@@ -32,13 +32,13 @@
       "ACCESSION": 573
      }
     ],
-    "FACT_ID": "FACT_ID-P1",
     "COMPANY": -37.51,
-    "COMPANY_NAME": "COMPANY_NAME-L1",
     "LABEL": "LABEL-I1",
     "LATEST": 449.41,
     "LATEST_YEAR": 542,
     "UNIT": 271,
+    "FACT_ID": "FACT_ID-P1",
+    "COMPANY_NAME": "COMPANY_NAME-L1",
     "CONCEPT": 125,
     "XBRL_TAG": 895,
     "YEARS": 12.83

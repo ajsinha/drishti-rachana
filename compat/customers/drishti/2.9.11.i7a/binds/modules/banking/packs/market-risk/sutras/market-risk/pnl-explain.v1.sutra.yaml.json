@@ -37,12 +37,12 @@
       "Actual": 616
      }
     ],
-    "RESULT_ID": "RESULT_ID-X1",
+    "BOOK": "BOOK-L1",
     "DATE": "2026-04-27",
     "ACTUAL": -51.67,
     "EXPLAINED": 640,
     "UNEXPLAINED": 283.79,
-    "BOOK": "BOOK-L1"
+    "RESULT_ID": "RESULT_ID-X1"
    }
   },
   {

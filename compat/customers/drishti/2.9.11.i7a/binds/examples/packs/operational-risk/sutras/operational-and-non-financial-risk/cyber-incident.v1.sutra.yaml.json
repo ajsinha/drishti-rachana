@@ -20,14 +20,14 @@
       "step": 590
      }
     ],
-    "incidentId": "INCIDENTID-L1",
+    "legalEntity": "LEGALENTITY-L1",
     "title": 181,
     "severity": 694,
     "detectHours": 456.01,
     "containHours": -8.77,
     "recordsAffected": 897.65,
     "status": "STATUS-Y1",
-    "legalEntity": "LEGALENTITY-L1",
+    "incidentId": "INCIDENTID-L1",
     "systems": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

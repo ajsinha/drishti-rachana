@@ -20,10 +20,10 @@
       "SHOCK": 507.13
      }
     ],
-    "SCENARIO_ID": "SCENARIO_ID-Y1",
     "NAME": "NAME-X1",
     "TYPE": "TYPE-X1",
-    "SEVERITY": 49.45
+    "SEVERITY": 49.45,
+    "SCENARIO_ID": "SCENARIO_ID-Y1"
    }
   },
   {

@@ -34,13 +34,13 @@
       "outflow": 891
      }
     ],
-    "resultId": "RESULTID-N1",
+    "legalEntity": "LEGALENTITY-L1",
     "scenarioName": "SCENARIONAME-R1",
     "legalEntityName": "LEGALENTITYN-P1",
     "survivalDays": 454,
     "minimumPosition": 760.01,
     "appetiteDays": 858,
-    "legalEntity": "LEGALENTITY-L1"
+    "resultId": "RESULTID-N1"
    }
   },
   {

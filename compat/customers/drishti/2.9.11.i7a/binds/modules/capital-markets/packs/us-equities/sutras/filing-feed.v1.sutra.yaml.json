@@ -46,12 +46,12 @@
       "VALUE": 1055.53
      }
     ],
-    "FEED": 164.99,
     "NAME": "NAME-X1",
     "FILINGS": 1.37,
     "COMPANIES": 829.79,
     "LATEST": 449.41,
     "EARLIEST": -247,
+    "FEED": 164.99,
     "PROVENANCE": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

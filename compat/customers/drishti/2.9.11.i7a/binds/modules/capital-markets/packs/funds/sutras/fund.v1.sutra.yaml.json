@@ -313,24 +313,24 @@
      "MEMBERS_NOT_WEIGHTED": 680.77,
      "AS_OF": "2026-02-05"
     },
+    "MOST_HELD_COMPANY": 455,
+    "MOST_HELD_NAME": "MOST_HELD_NA-Z1",
+    "INDEX_ID": "INDEX_ID-O1",
     "TICKER": "TICKER-K1",
-    "NAME": "NAME-X1",
     "TYPE": "TYPE-X1",
     "IS_INDEX": "IS_INDEX-S1",
     "REPORT_DATE": "2026-05-08",
     "SERIES_ID": "SERIES_ID-G1",
     "CIK": 630.53,
-    "INDEX_ID": "INDEX_ID-O1",
-    "MOST_HELD_COMPANY": 455,
-    "MOST_HELD_NAME": "MOST_HELD_NA-Z1",
+    "NAME": "NAME-X1",
     "NET_ASSETS": -76.81,
-    "EXPENSE_RATIO": 414,
     "PROSPECTUS_FILED": 280,
-    "HOLDING_COUNT": 388,
+    "EXPENSE_RATIO": 414,
     "EQUITY_PCT": 142.19,
+    "HOLDING_COUNT": 388,
     "TOP10_PCT": 136,
-    "RETURN_LAST_YEAR": 359,
     "RETURN_YEAR": 468.83,
+    "RETURN_LAST_YEAR": 359,
     "TURNOVER": 630.25,
     "ADVISER_LEI": "ADVISER_LEI-P1",
     "ADVISER": 399.95,
@@ -403,22 +403,22 @@
    "answer": {
     "links": [
      {
-      "label": "Index id",
-      "text": "INDEX_ID-O1",
+      "label": "Most held company",
+      "text": "455",
       "link": {
-       "kind": "index-funds",
-       "id": "INDEX_ID-O1",
+       "kind": "fund-holder",
+       "id": "455",
        "mnemonic": null
       },
       "badge": "",
       "status": "resolved"
      },
      {
-      "label": "Most held company",
-      "text": "455",
+      "label": "Index id",
+      "text": "INDEX_ID-O1",
       "link": {
-       "kind": "fund-holder",
-       "id": "455",
+       "kind": "index-funds",
+       "id": "INDEX_ID-O1",
        "mnemonic": null
       },
       "badge": "",

@@ -20,15 +20,15 @@
       "VALUE": 1055.53
      }
     ],
-    "SERIES_ID": "SERIES_ID-G1",
-    "NAME": "NAME-X1",
+    "WDI_PROFILE": 212,
     "INDICATOR": 555,
     "LATEST": 449.41,
     "UNIT": 271,
     "LATEST_YEAR": 542,
     "PREVIOUS": 148,
     "CHANGE": 436.25,
-    "WDI_PROFILE": 212,
+    "SERIES_ID": "SERIES_ID-G1",
+    "NAME": "NAME-X1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "INDICATOR_CODE": "INDICATOR_CO-F1",
     "DEFINITION": -66.43,

@@ -20,12 +20,12 @@
       "aligned": 776
      }
     ],
-    "reportId": "REPORTID-U1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "gar": 40.91,
     "eligible": 844.33,
     "covered": 846,
-    "legalEntity": "LEGALENTITY-L1"
+    "reportId": "REPORTID-U1"
    }
   },
   {

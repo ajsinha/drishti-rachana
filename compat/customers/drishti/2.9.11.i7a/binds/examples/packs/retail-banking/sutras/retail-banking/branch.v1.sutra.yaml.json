@@ -34,14 +34,14 @@
       "nps": 714.11
      }
     ],
-    "branchId": "BRANCHID-J1",
+    "legalEntity": "LEGALENTITY-L1",
     "name": "NAME-D1",
     "city": 766,
     "customers": 628.81,
     "deposits": 217.49,
     "lending": "2026-05-08",
     "nps": 764.11,
-    "legalEntity": "LEGALENTITY-L1"
+    "branchId": "BRANCHID-J1"
    }
   },
   {

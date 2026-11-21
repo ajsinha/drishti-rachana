@@ -40,14 +40,14 @@
       "date": "2026-01-22"
      }
     ],
-    "variantId": "VARIANTID-C1",
+    "gene": 87,
     "geneSymbol": 237,
     "proteinChange": 761,
     "hgvsC": 598.49,
     "consequence": 586,
     "significance": -240.13,
     "rsid": 526.13,
-    "gene": 87,
+    "variantId": "VARIANTID-C1",
     "annotation": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

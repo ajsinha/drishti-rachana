@@ -32,13 +32,13 @@
       "VOLUME": 946.81
      }
     ],
-    "COMMODITY_ID": "COMMODITY_ID-D1",
+    "COMMODITY_CURVE": 267.59,
     "NAME": "NAME-X1",
     "FRONT": 520.49,
     "UNIT": 271,
     "EXCHANGE": 20.17,
     "SECTOR": "SECTOR-T1",
-    "COMMODITY_CURVE": 267.59,
+    "COMMODITY_ID": "COMMODITY_ID-D1",
     "SPEC": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

@@ -49,15 +49,15 @@
       "PCT": 525.47
      }
     ],
-    "TICKER": "TICKER-K1",
-    "NAME": "NAME-X1",
     "COMPANY": -37.51,
+    "NAME": "NAME-X1",
     "FUNDS": 422.05,
     "ETFS": 623.39,
     "TOTAL_VALUE": 529,
     "PCT_OF_SHARES": -175.33,
     "AVG_WEIGHT": 370.07,
-    "MAX_WEIGHT": -109
+    "MAX_WEIGHT": -109,
+    "TICKER": "TICKER-K1"
    }
   },
   {

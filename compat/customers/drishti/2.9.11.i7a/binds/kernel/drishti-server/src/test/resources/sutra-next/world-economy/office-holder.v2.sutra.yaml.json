@@ -6,13 +6,13 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "OFFICE_ID": "OFFICE_ID-Y1",
+    "JURISDICTION": 584,
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "ROLE": "ROLE-H1",
     "HOLDER": 512,
     "SINCE": 444,
     "GOVERNMENT_TYPE": "GOVERNMENT_T-M1",
-    "JURISDICTION": 584,
+    "OFFICE_ID": "OFFICE_ID-Y1",
     "MANDATE": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

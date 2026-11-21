@@ -20,13 +20,13 @@
       "loss": 824
      }
     ],
-    "scenarioId": "SCENARIOID-N1",
+    "legalEntity": "LEGALENTITY-L1",
     "name": "NAME-D1",
     "eventType": "EVENTTYPE-Z1",
     "returnPeriod": 356.15,
     "p50": 494,
     "p999": 15,
-    "legalEntity": "LEGALENTITY-L1",
+    "scenarioId": "SCENARIOID-N1",
     "context": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

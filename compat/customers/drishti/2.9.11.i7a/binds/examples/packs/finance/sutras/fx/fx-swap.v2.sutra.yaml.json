@@ -93,12 +93,8 @@
       "usd": 737.33
      }
     ],
+    "nettingSet": 535.01,
     "productType": "PRODUCTTYPE-C1",
-    "tradeId": "TRADEID-Q1",
-    "counterparty": {
-     "id": "ID-H1",
-     "name": "NAME-D1"
-    },
     "pair": 285.41,
     "nearValue": 497,
     "farValue": 746,
@@ -107,7 +103,11 @@
     "swapPoints": 636.19,
     "mtm": 499.01,
     "book": 573.43,
-    "nettingSet": 535.01,
+    "tradeId": "TRADEID-Q1",
+    "counterparty": {
+     "id": "ID-H1",
+     "name": "NAME-D1"
+    },
     "confirmation": {
      "status": "STATUS-Y1",
      "matched": -231,
@@ -182,22 +182,22 @@
    "answer": {
     "links": [
      {
-      "label": "Book",
-      "text": "573.43",
+      "label": "Netting set",
+      "text": "535.01",
       "link": {
-       "kind": "book",
-       "id": "573.43",
+       "kind": "netting-set",
+       "id": "535.01",
        "mnemonic": null
       },
       "badge": "",
       "status": "resolved"
      },
      {
-      "label": "Netting set",
-      "text": "535.01",
+      "label": "Book",
+      "text": "573.43",
       "link": {
-       "kind": "netting-set",
-       "id": "535.01",
+       "kind": "book",
+       "id": "573.43",
        "mnemonic": null
       },
       "badge": "",

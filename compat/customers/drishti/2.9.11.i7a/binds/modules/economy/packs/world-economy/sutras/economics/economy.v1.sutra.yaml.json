@@ -48,7 +48,7 @@
       "GDP": 658.45
      }
     ],
-    "ECONOMY_ID": "ECONOMY_ID-U1",
+    "REGION_GROUP": "REGION_GROUP-Y1",
     "NAME": "NAME-X1",
     "REGION_NAME": "REGION_NAME-P1",
     "GDP_USD_BN": 22,
@@ -57,7 +57,7 @@
     "INFLATION": 291.11,
     "UNEMPLOYMENT": 461,
     "DEBT_TO_GDP": 754,
-    "REGION_GROUP": "REGION_GROUP-Y1",
+    "ECONOMY_ID": "ECONOMY_ID-U1",
     "ISO3": "USA",
     "PROVENANCE": {
      "NAME": "NAME-X1",

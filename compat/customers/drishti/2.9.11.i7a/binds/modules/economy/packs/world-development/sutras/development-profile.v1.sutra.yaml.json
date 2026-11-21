@@ -29,13 +29,13 @@
       "YEAR": 928
      }
     ],
-    "PROFILE_ID": "PROFILE_ID-C1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "REGION": "REGION-I1",
     "INCOME_GROUP": "INCOME_GROUP-M1",
     "CAPITAL": 412.75,
     "POPULATION": 866.23,
     "GDP_PER_CAPITA": -4,
+    "PROFILE_ID": "PROFILE_ID-C1",
     "ISO3": "USA",
     "PROVENANCE": {
      "NAME": "NAME-X1",

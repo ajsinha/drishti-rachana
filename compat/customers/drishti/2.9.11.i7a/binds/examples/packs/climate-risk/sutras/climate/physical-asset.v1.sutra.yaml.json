@@ -20,14 +20,14 @@
       "score": 635.75
      }
     ],
-    "assetId": "ASSETID-W1",
+    "counterparty": 745.87,
     "name": "NAME-D1",
     "counterpartyName": "COUNTERPARTY-N1",
     "country": 118,
     "value": 418,
     "worstHazard": 440.03,
     "insured": 240,
-    "counterparty": 745.87,
+    "assetId": "ASSETID-W1",
     "location": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

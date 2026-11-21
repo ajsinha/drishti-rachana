@@ -23,14 +23,14 @@
       "BY": 330.83
      }
     ],
-    "CALL_ID": "CALL_ID-X1",
+    "NETTING_SET": 67,
     "CALL_DATE": "2025-12-24",
     "MARGIN_TYPE": "MARGIN_TYPE-J1",
     "DIRECTION": 200.57,
     "AMOUNT": 146,
     "STATUS": "STATUS-Y1",
     "DISPUTE_AMOUNT": -220.45,
-    "NETTING_SET": 67
+    "CALL_ID": "CALL_ID-X1"
    }
   },
   {

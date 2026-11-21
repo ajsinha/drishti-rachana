@@ -29,13 +29,13 @@
       "MTM": 928.03
      }
     ],
-    "BOOK_ID": "BOOK_ID-D1",
+    "DESK": "DESK-G1",
     "NAME": "NAME-X1",
     "DESK_NAME": "DESK_NAME-A1",
     "TRADE_COUNT": 622.07,
     "MTM": 728.03,
     "DV01": 112,
-    "DESK": "DESK-G1"
+    "BOOK_ID": "BOOK_ID-D1"
    }
   },
   {

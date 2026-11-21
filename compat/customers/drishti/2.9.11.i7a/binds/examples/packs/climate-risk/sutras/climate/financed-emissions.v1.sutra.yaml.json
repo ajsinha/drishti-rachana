@@ -43,12 +43,12 @@
       "financed": 280.55
      }
     ],
-    "resultId": "RESULTID-N1",
     "book": 573.43,
     "financed": -169.45,
     "exposure": 73,
     "intensity": 756,
-    "dataQuality": 60.13
+    "dataQuality": 60.13,
+    "resultId": "RESULTID-N1"
    }
   },
   {

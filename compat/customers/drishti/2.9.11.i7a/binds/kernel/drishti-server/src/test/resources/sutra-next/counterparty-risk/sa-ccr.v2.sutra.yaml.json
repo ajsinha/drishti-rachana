@@ -40,13 +40,13 @@
       "SF": 493.37
      }
     ],
-    "CALC_ID": "CALC_ID-A1",
+    "NETTING_SET": 67,
     "REPLACEMENT_COST": 625.91,
     "ADD_ON": 570,
     "MULTIPLIER": 736,
     "EAD": -219,
     "RWA": 538,
-    "NETTING_SET": 67,
+    "CALC_ID": "CALC_ID-A1",
     "ALPHA": 205
    }
   },

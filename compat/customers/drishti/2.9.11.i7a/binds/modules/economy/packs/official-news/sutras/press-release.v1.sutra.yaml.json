@@ -6,14 +6,14 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "RELEASE_ID": "RELEASE_ID-W1",
-    "TITLE": "TITLE-X1",
+    "RELEASE_SOURCE": "RELEASE_SOUR-K1",
     "PUBLISHER_NAME": "PUBLISHER_NA-G1",
     "PUBLISHED": -193.15,
     "CATEGORY": "CATEGORY-A1",
     "COUNTRY": "COUNTRY-I1",
     "INTERNAL_ONLY": 384,
-    "RELEASE_SOURCE": "RELEASE_SOUR-K1",
+    "RELEASE_ID": "RELEASE_ID-W1",
+    "TITLE": "TITLE-X1",
     "SUMMARY": 801,
     "URL": "URL-T1",
     "PROVENANCE": {

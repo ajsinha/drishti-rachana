@@ -37,14 +37,14 @@
       "significance": 209.87
      }
     ],
-    "geneId": "GENEID-G1",
+    "protein": 210,
     "symbol": 503,
     "name": "NAME-D1",
     "location": 134,
     "length": 264,
     "strand": 893.89,
     "transcripts": 218.15,
-    "protein": 210,
+    "geneId": "GENEID-G1",
     "identifiers": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

@@ -29,9 +29,9 @@
       "MONTH": 896.05
      }
     ],
-    "SURFACE_ID": "SURFACE_ID-V1",
     "COMMODITY": 42.95,
-    "ATM_FRONT": 115.39
+    "ATM_FRONT": 115.39,
+    "SURFACE_ID": "SURFACE_ID-V1"
    }
   },
   {

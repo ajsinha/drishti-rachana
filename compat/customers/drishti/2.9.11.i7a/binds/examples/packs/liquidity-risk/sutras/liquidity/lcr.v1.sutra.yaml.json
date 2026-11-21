@@ -54,7 +54,7 @@
       "lcr": 535.37
      }
     ],
-    "lcrId": "LCRID-U1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "lcr": 585.37,
     "hqla": 780,
@@ -62,7 +62,7 @@
     "minimum": 531,
     "buffer": 33,
     "asOf": "2026-01-21",
-    "legalEntity": "LEGALENTITY-L1"
+    "lcrId": "LCRID-U1"
    }
   },
   {

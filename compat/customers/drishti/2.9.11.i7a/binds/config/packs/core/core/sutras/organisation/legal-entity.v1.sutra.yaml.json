@@ -46,11 +46,11 @@
      ],
      "VAR": 290
     },
-    "ENTITY_ID": "ENTITY_ID-R1",
     "NAME": "NAME-X1",
     "LEI": "LEI-Z1",
     "JURISDICTION": 584,
-    "REGULATOR": 447
+    "REGULATOR": 447,
+    "ENTITY_ID": "ENTITY_ID-R1"
    }
   },
   {

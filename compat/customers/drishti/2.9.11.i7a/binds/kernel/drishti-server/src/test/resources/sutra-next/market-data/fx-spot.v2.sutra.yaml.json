@@ -20,13 +20,13 @@
       "MID": "MID-A3"
      }
     ],
+    "FX_FORWARD_CURVE": 807,
     "PAIR": 36,
     "MID": "MID-Y1",
     "BID": "BID-J1",
     "ASK": 332.93,
     "CHANGE_1D": 468.91,
     "SPOT_DATE": "2026-03-16",
-    "FX_FORWARD_CURVE": 807,
     "CONVENTIONS": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

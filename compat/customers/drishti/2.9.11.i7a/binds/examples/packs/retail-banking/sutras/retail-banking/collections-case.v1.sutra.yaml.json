@@ -23,14 +23,14 @@
       "outcome": 323
      }
     ],
-    "caseId": "CASEID-S1",
+    "customer": 78,
     "customerName": "CUSTOMERNAME-H1",
     "arrears": 512,
     "daysPastDue": 825.89,
     "stage": 570.53,
     "strategy": 89.75,
     "status": "STATUS-Y1",
-    "customer": 78
+    "caseId": "CASEID-S1"
    }
   },
   {

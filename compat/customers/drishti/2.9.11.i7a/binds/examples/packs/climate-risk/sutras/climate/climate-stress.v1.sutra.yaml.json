@@ -34,13 +34,13 @@
       "loss": 824
      }
     ],
-    "resultId": "RESULTID-N1",
+    "climateScenario": 230.41,
     "scenarioName": "SCENARIONAME-R1",
     "deskName": "DESKNAME-S1",
     "loss2030": 889,
     "loss2050": 145,
     "capitalShare": 89.33,
-    "climateScenario": 230.41
+    "resultId": "RESULTID-N1"
    }
   },
   {

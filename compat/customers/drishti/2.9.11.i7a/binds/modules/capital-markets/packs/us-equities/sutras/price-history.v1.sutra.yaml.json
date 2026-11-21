@@ -20,14 +20,14 @@
       "CLOSE": 790
      }
     ],
-    "SYMBOL": "SYMBOL-L1",
-    "NAME": "NAME-X1",
     "PRICE": 757,
     "CURRENCY": "CURRENCY-Z1",
     "CHANGE": 436.25,
     "CHANGE_PCT": 702,
     "EXCHANGE": 20.17,
     "AS_OF": "2026-02-05",
+    "SYMBOL": "SYMBOL-L1",
+    "NAME": "NAME-X1",
     "ANALYTICS": {
      "RETURN_1M": -114,
      "RETURN_3M": 888,

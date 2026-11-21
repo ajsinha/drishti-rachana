@@ -37,13 +37,13 @@
       "amount": 1005.05
      }
     ],
-    "reportId": "REPORTID-U1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "currency": 257.71,
     "peakUsage": 236.99,
     "available": 241.37,
     "usagePct": -93,
-    "legalEntity": "LEGALENTITY-L1"
+    "reportId": "REPORTID-U1"
    }
   },
   {

@@ -29,12 +29,12 @@
       "cumulative": 390
      }
     ],
-    "ladderId": "LADDERID-W1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "currency": 257.71,
     "gap1m": 343.01,
     "survivalDays": 454,
-    "legalEntity": "LEGALENTITY-L1"
+    "ladderId": "LADDERID-W1"
    }
   },
   {

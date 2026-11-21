@@ -63,9 +63,12 @@
       "MEANING": 454
      }
     ],
-    "LEI": "LEI-Z1",
-    "NAME": "NAME-X1",
+    "LEI_GROUP": "LEI_GROUP-Q1",
     "LEI_COUNTRY": "LEI_COUNTRY-L1",
+    "DIRECT_PARENT": 699.61,
+    "LEI": "LEI-Z1",
+    "ULTIMATE_PARENT": -39,
+    "US_COMPANY": 236.27,
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "LEGAL_FORM": 601,
     "ENTITY_STATUS": "ENTITY_STATU-A1",
@@ -74,10 +77,7 @@
     "NEXT_RENEWAL": -84,
     "RENEWAL": 635,
     "CHILD_COUNT": 626,
-    "LEI_GROUP": "LEI_GROUP-Q1",
-    "US_COMPANY": 236.27,
-    "DIRECT_PARENT": 699.61,
-    "ULTIMATE_PARENT": -39,
+    "NAME": "NAME-X1",
     "CATEGORY": "CATEGORY-A1",
     "JURISDICTION": 584,
     "LEGAL_CITY": 462.85,
@@ -112,11 +112,11 @@
    "answer": {
     "links": [
      {
-      "label": "Lei",
-      "text": "LEI-Z1",
+      "label": "Lei group",
+      "text": "LEI_GROUP-Q1",
       "link": {
-       "kind": "lei-entity",
-       "id": "LEI-Z1",
+       "kind": "lei-group",
+       "id": "LEI_GROUP-Q1",
        "mnemonic": null
       },
       "badge": "",
@@ -134,11 +134,22 @@
       "status": "resolved"
      },
      {
-      "label": "Lei group",
-      "text": "LEI_GROUP-Q1",
+      "label": "Direct parent",
+      "text": "699.61",
       "link": {
-       "kind": "lei-group",
-       "id": "LEI_GROUP-Q1",
+       "kind": "lei-entity",
+       "id": "699.61",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Lei",
+      "text": "LEI-Z1",
+      "link": {
+       "kind": "lei-entity",
+       "id": "LEI-Z1",
        "mnemonic": null
       },
       "badge": "",
@@ -150,17 +161,6 @@
       "link": {
        "kind": "us-company",
        "id": "236.27",
-       "mnemonic": null
-      },
-      "badge": "",
-      "status": "resolved"
-     },
-     {
-      "label": "Direct parent",
-      "text": "699.61",
-      "link": {
-       "kind": "lei-entity",
-       "id": "699.61",
        "mnemonic": null
       },
       "badge": "",

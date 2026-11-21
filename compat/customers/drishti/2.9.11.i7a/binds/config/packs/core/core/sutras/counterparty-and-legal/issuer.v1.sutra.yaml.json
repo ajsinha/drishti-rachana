@@ -23,12 +23,12 @@
       "MATURITY": "2026-03-22"
      }
     ],
-    "ISSUER_ID": "ISSUER_ID-O1",
+    "CREDIT_CURVE": 188,
     "NAME": "NAME-X1",
     "RATING": "RATING-N1",
     "SECTOR": "SECTOR-T1",
     "COUNTRY": "COUNTRY-I1",
-    "CREDIT_CURVE": 188
+    "ISSUER_ID": "ISSUER_ID-O1"
    }
   },
   {

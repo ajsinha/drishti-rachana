@@ -23,13 +23,13 @@
       "end": "2026-01-05"
      }
     ],
-    "proteinId": "PROTEINID-R1",
+    "gene": 87,
     "name": "NAME-D1",
     "accession": 542,
     "length": 264,
     "massKda": 345,
     "subcellular": 556,
-    "gene": 87,
+    "proteinId": "PROTEINID-R1",
     "function": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

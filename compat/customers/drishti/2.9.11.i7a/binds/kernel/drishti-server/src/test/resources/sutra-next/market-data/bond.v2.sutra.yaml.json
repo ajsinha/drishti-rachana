@@ -34,7 +34,7 @@
       "PRICE": 707
      }
     ],
-    "ISIN": "ISIN-H1",
+    "ISSUER": 116,
     "ISSUER_NAME": "ISSUER_NAME-B1",
     "COUPON": 305.93,
     "MATURITY": "2026-01-07",
@@ -43,7 +43,7 @@
     "Z_SPREAD": 566.53,
     "MOD_DURATION": 535.85,
     "RATING": "RATING-N1",
-    "ISSUER": 116,
+    "ISIN": "ISIN-H1",
     "TERMS": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

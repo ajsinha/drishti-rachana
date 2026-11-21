@@ -40,7 +40,7 @@
       "paid": 9.11
      }
     ],
-    "cardId": "CARDID-O1",
+    "customer": 78,
     "holderName": "HOLDERNAME-A1",
     "product": 610.57,
     "balance": 525,
@@ -48,7 +48,7 @@
     "utilisation": 805.37,
     "apr": 871,
     "status": "STATUS-Y1",
-    "customer": 78
+    "cardId": "CARDID-O1"
    }
   },
   {

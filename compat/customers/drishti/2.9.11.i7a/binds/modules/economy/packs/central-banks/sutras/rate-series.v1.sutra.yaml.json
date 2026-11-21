@@ -20,8 +20,7 @@
       "VALUE": 1055.53
      }
     ],
-    "SERIES_ID": "SERIES_ID-G1",
-    "TITLE": "TITLE-X1",
+    "CENTRAL_BANK": 376,
     "LATEST": 449.41,
     "UNIT": 271,
     "LATEST_DATE": "2026-01-25",
@@ -29,7 +28,8 @@
     "CHANGE_1Y": 592.81,
     "HIGH": 224,
     "LOW": 645,
-    "CENTRAL_BANK": 376,
+    "SERIES_ID": "SERIES_ID-G1",
+    "TITLE": "TITLE-X1",
     "SOURCE": "SOURCE-O1",
     "CODE": "CODE-P1",
     "FREQUENCY": 236.99,

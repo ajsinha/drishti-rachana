@@ -37,13 +37,13 @@
       "coverage": 362.57
      }
     ],
-    "runId": "RUNID-T1",
     "instrument": 265.27,
     "flowcell": -212.65,
     "yieldGb": -144.97,
     "q30": 364.19,
     "clustersPf": 319.85,
-    "status": "STATUS-Y1"
+    "status": "STATUS-Y1",
+    "runId": "RUNID-T1"
    }
   },
   {

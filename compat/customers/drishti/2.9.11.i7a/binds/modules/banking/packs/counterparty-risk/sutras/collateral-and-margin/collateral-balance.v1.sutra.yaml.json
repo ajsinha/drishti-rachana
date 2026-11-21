@@ -29,12 +29,12 @@
       "VALUE": 1055.53
      }
     ],
-    "BALANCE_ID": "BALANCE_ID-M1",
+    "CSA": -204.55,
     "HELD": 15.95,
     "POSTED": 896,
     "NET": 15,
     "AS_OF": "2026-02-05",
-    "CSA": -204.55
+    "BALANCE_ID": "BALANCE_ID-M1"
    }
   },
   {

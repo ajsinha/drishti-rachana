@@ -26,12 +26,12 @@
       "OBSERVED": 627.11
      }
     ],
-    "CALENDAR_ID": "2026-01-06",
     "NAME": "NAME-X1",
     "HOLIDAYS_2026": 159,
     "HOLIDAYS_2027": 896.27,
     "NEXT_HOLIDAY": "2026-03-13",
-    "NEXT_HOLIDAY_DATE": "2026-02-12"
+    "NEXT_HOLIDAY_DATE": "2026-02-12",
+    "CALENDAR_ID": "2026-01-06"
    }
   },
   {

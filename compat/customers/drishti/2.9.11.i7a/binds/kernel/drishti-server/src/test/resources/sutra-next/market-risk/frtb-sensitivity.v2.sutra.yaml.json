@@ -40,12 +40,12 @@
       "CHARGE": 38
      }
     ],
-    "RESULT_ID": "RESULT_ID-X1",
     "BOOK": "BOOK-L1",
     "DELTA_CHARGE": 560,
     "VEGA_CHARGE": 28,
     "CURVATURE_CHARGE": 555,
-    "TOTAL": 570
+    "TOTAL": 570,
+    "RESULT_ID": "RESULT_ID-X1"
    }
   },
   {

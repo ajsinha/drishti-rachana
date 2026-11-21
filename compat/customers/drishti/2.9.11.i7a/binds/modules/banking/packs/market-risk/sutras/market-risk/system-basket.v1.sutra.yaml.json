@@ -126,8 +126,8 @@
      "LIMIT": 5,
      "NOTE": "NOTE-M1"
     },
-    "TYPE": "TYPE-X1",
     "PORTFOLIO_ID": "PORTFOLIO_ID-V1",
+    "TYPE": "TYPE-X1",
     "NAME": "NAME-X1",
     "OWNER": 556,
     "DEFINITION": {

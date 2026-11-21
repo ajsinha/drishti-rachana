@@ -6,14 +6,14 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "REGION_ID": "REGION_ID-K1",
+    "ECONOMY": 141.49,
     "NAME": "NAME-X1",
     "REGION_CODE": "REGION_CODE-W1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "POPULATION_M": 318,
     "GDP_USD_BN": 22,
     "GDP_PER_CAPITA": -4,
-    "ECONOMY": 141.49,
+    "REGION_ID": "REGION_ID-K1",
     "FACTS": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

@@ -61,7 +61,6 @@
       "PFE_CONTRIBUTION": 430.19
      }
     ],
-    "CANONICAL": 10,
     "EPE": 810,
     "EEPE": 332.59,
     "PEAK_PFE": 459.61,
@@ -69,6 +68,7 @@
     "CE": 198,
     "RUN_ID": "RUN_ID-A1",
     "STATUS": "STATUS-Y1",
+    "CANONICAL": 10,
     "SCOPE_KIND": "SCOPE_KIND-K1",
     "BUSINESS_DATE": "2026-03-30",
     "PATHS": 799,

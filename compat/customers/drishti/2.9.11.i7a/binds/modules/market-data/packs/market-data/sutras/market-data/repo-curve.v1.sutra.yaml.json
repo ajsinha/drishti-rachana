@@ -20,11 +20,11 @@
       "RATE": 358.87
      }
     ],
-    "CURVE_ID": "CURVE_ID-Z1",
     "CURRENCY": "CURRENCY-Z1",
     "COLLATERAL": 460,
     "OVERNIGHT": 331.03,
-    "AS_OF": "2026-02-05"
+    "AS_OF": "2026-02-05",
+    "CURVE_ID": "CURVE_ID-Z1"
    }
   },
   {

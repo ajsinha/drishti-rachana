@@ -69,12 +69,12 @@
      }
     ],
     "COUNTRY": "COUNTRY-I1",
-    "NAME": "NAME-X1",
     "ENTITIES": 620.71,
     "GROUPS_PRESENT": "GROUPS_PRESE-B1",
     "GROUPS_HEADQUARTERED": "GROUPS_HEADQ-K1",
     "LAPSED": 139.13,
     "LATE_RENEWALS": 592.93,
+    "NAME": "NAME-X1",
     "PROVENANCE": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

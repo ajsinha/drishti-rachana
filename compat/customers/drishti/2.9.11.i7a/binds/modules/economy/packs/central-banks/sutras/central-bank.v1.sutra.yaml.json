@@ -46,14 +46,14 @@
       "CHANGE": 886.25
      }
     ],
-    "BANK_ID": "BANK_ID-V1",
+    "PRESS": 159.41,
     "NAME": "NAME-X1",
     "POLICY_RATE": 688,
     "POLICY_RATE_DATE": "2026-04-08",
     "LAST_MOVE_DATE": "2026-01-02",
     "LAST_MOVE_BP": -57.61,
     "CURRENCY": "CURRENCY-Z1",
-    "PRESS": 159.41,
+    "BANK_ID": "BANK_ID-V1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "WEBSITE": 496.27,
     "PROVENANCE": {

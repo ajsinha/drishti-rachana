@@ -26,14 +26,14 @@
       "SURVIVAL": 291.65
      }
     ],
-    "CURVE_ID": "CURVE_ID-Z1",
+    "ISSUER": 116,
     "ISSUER_NAME": "ISSUER_NAME-B1",
     "SPREAD_5Y": 579.61,
     "RECOVERY": 212.75,
     "SENIORITY": 479,
     "DOC_CLAUSE": 237,
     "PD_1Y": 115.49,
-    "ISSUER": 116
+    "CURVE_ID": "CURVE_ID-Z1"
    }
   },
   {

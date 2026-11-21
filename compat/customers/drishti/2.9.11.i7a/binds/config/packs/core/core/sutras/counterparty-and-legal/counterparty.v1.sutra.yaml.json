@@ -62,16 +62,16 @@
       }
      ]
     },
-    "COUNTERPARTY_ID": "COUNTERPARTY-G1",
+    "GROUP": "GROUP-O1",
     "NAME": "NAME-X1",
-    "LEI": "LEI-Z1",
     "RATING": "RATING-N1",
+    "NET_MTM": 454.13,
+    "LEI": "LEI-Z1",
     "SECTOR": "SECTOR-T1",
     "COUNTRY_OF_RISK": "COUNTRY_OF_R-C1",
     "UEN": 460,
     "TYPE": "TYPE-X1",
-    "NET_MTM": 454.13,
-    "GROUP": "GROUP-O1",
+    "COUNTERPARTY_ID": "COUNTERPARTY-G1",
     "KYC": {
      "STATUS": "STATUS-Y1",
      "RISK_RATING": "RISK_RATING-N1",

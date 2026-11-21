@@ -34,13 +34,13 @@
       "CLOSE": 790
      }
     ],
-    "INDEX_ID": "INDEX_ID-O1",
+    "EQUITY_VOL_SURFACE": 610.69,
     "NAME": "NAME-X1",
     "LEVEL": "LEVEL-A1",
     "CHANGE_1D": 468.91,
     "CONSTITUENT_COUNT": 632.27,
     "CURRENCY": "CURRENCY-Z1",
-    "EQUITY_VOL_SURFACE": 610.69
+    "INDEX_ID": "INDEX_ID-O1"
    }
   },
   {

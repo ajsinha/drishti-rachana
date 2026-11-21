@@ -40,14 +40,14 @@
       "status": "STATUS-A3"
      }
     ],
-    "loanId": "LOANID-F1",
+    "customer": 78,
     "borrowerName": "BORROWERNAME-D1",
     "balance": 525,
     "rate": 593.99,
     "ltv": 178.07,
     "remainingYears": 104.53,
     "daysPastDue": 825.89,
-    "customer": 78,
+    "loanId": "LOANID-F1",
     "property": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

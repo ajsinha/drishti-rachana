@@ -46,14 +46,14 @@
       "TRADE_ID": "TRADE_ID-R3"
      }
     ],
-    "DESK_ID": "DESK_ID-W1",
+    "LEGAL_ENTITY": "LEGAL_ENTITY-E1",
     "NAME": "NAME-X1",
     "HEAD": 531,
     "VAR_ENGINE": {
      "VAR": 290
     },
     "MTM": 728.03,
-    "LEGAL_ENTITY": "LEGAL_ENTITY-E1"
+    "DESK_ID": "DESK_ID-W1"
    }
   },
   {

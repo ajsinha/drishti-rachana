@@ -21,11 +21,11 @@
      }
     ],
     "SIC": 240.37,
-    "DESCRIPTION": "DESCRIPTION-K1",
     "CODES": "CODES-A1",
     "COMPANIES": 829.79,
     "REVENUE": 647,
     "NET_INCOME": 111.41,
+    "DESCRIPTION": "DESCRIPTION-K1",
     "PROVENANCE": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

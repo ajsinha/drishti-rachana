@@ -6,7 +6,6 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "VALUATION_ID": "VALUATION_ID-V1",
     "TRADE_ID": "TRADE_ID-P1",
     "SOURCE_SYSTEM": "SOURCE_SYSTE-B1",
     "MTM": 728.03,
@@ -14,6 +13,7 @@
     "DV01": 112,
     "NOTIONAL": 155,
     "VALUATION_DATE": "2026-02-03",
+    "VALUATION_ID": "VALUATION_ID-V1",
     "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
     "PRODUCT_GROUP": "PRODUCT_GROU-R1",
     "PORTFOLIO": -233,

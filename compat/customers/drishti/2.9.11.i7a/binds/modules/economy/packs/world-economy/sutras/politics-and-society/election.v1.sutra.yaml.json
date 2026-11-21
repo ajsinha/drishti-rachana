@@ -23,13 +23,13 @@
       "SHARE": 224
      }
     ],
-    "ELECTION_ID": "ELECTION_ID-L1",
+    "JURISDICTION": 584,
     "TITLE": "TITLE-X1",
     "DATE_TEXT": "2026-04-18",
     "SYSTEM": "SYSTEM-B1",
     "WINNER": 705,
     "NEXT_ELECTION": 126,
-    "JURISDICTION": 584,
+    "ELECTION_ID": "ELECTION_ID-L1",
     "SUMMARY": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

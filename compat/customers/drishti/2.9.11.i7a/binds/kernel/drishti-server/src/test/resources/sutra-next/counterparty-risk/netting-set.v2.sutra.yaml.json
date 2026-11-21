@@ -81,13 +81,13 @@
       "MTM": 928.03
      }
     ],
-    "NETTING_SET_ID": "NETTING_SET_-Y1",
+    "COUNTERPARTY": "COUNTERPARTY-N1",
     "TRADE_COUNT": 622.07,
     "NET_MTM": 454.13,
     "COLLATERAL": 460,
     "LIMIT": 5,
     "CVA": -240.19,
-    "COUNTERPARTY": "COUNTERPARTY-N1"
+    "NETTING_SET_ID": "NETTING_SET_-Y1"
    }
   },
   {

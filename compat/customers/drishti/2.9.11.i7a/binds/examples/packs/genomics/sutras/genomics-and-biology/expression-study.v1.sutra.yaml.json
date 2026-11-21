@@ -26,11 +26,11 @@
       "padj": 1030.67
      }
     ],
-    "studyId": "STUDYID-I1",
     "title": 181,
     "comparison": 281,
     "sampleCount": 256,
-    "significant": 508
+    "significant": 508,
+    "studyId": "STUDYID-I1"
    }
   },
   {

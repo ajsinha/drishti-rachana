@@ -628,46 +628,45 @@
     ],
     "EVENTS": [
      {
-      "EVENT_DATE": "2026-04-13",
-      "EVENT_TYPE": "EVENT_TYPE-A1",
-      "LEG_ID": "LEG_ID-R1",
       "PAYMENT_TYPE": "PAYMENT_TYPE-F1",
       "AMOUNT": 146,
       "CURRENCY": "CURRENCY-Z1",
+      "EVENT_TYPE": "EVENT_TYPE-A1",
+      "LEG_ID": "LEG_ID-R1",
+      "EVENT_DATE": "2026-04-13",
       "status": "STATUS-Y1",
       "EVENT_ID": "EVENT_ID-N1",
       "label": "LABEL-W1",
       "value": 418
      },
      {
-      "EVENT_DATE": "2025-12-21",
-      "EVENT_TYPE": "EVENT_TYPE-B2",
-      "LEG_ID": "LEG_ID-S2",
       "PAYMENT_TYPE": "PAYMENT_TYPE-G2",
       "AMOUNT": 496,
       "CURRENCY": "CURRENCY-A2",
+      "EVENT_TYPE": "EVENT_TYPE-B2",
+      "LEG_ID": "LEG_ID-S2",
+      "EVENT_DATE": "2025-12-21",
       "status": "STATUS-Z2",
       "EVENT_ID": "EVENT_ID-O2",
       "label": "LABEL-X2",
       "value": 268
      },
      {
-      "EVENT_DATE": "2026-01-27",
-      "EVENT_TYPE": "EVENT_TYPE-C3",
-      "LEG_ID": "LEG_ID-T3",
       "PAYMENT_TYPE": "PAYMENT_TYPE-H3",
       "AMOUNT": 596,
       "CURRENCY": "CURRENCY-B3",
+      "EVENT_TYPE": "EVENT_TYPE-C3",
+      "LEG_ID": "LEG_ID-T3",
+      "EVENT_DATE": "2026-01-27",
       "status": "STATUS-A3",
       "EVENT_ID": "EVENT_ID-P3",
       "label": "LABEL-Y3",
       "value": 618
      }
     ],
+    "COUNTERPARTY": "COUNTERPARTY-N1",
     "SOURCE_SYSTEM": "SOURCE_SYSTE-B1",
     "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
-    "TRADE_ID": "TRADE_ID-P1",
-    "COUNTERPARTY": "COUNTERPARTY-N1",
     "RISK_LINKS": {
      "TRADE_CURRENCY": "TRADE_CURREN-P1",
      "TRADE_CURRENCY_FROM": "2026-02-20",
@@ -684,6 +683,7 @@
     "TRADE_STATUS": "TRADE_STATUS-U1",
     "TRADE_VERSION": 628,
     "PORTFOLIO": -233,
+    "TRADE_ID": "TRADE_ID-P1",
     "TRANSACTION_ID": "TRANSACTION_-Z1",
     "TRADE_ACTION": 738.77,
     "PACKAGE_ID": "PACKAGE_ID-C1",
@@ -753,7 +753,7 @@
       "label": "Counterparty",
       "text": "COUNTERPARTY-N1",
       "link": {
-       "kind": "counterparty",
+       "kind": "counterparty-trades",
        "id": "COUNTERPARTY-N1",
        "mnemonic": null
       },

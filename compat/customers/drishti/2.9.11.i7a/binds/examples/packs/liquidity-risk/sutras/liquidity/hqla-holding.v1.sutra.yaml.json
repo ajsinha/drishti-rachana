@@ -6,14 +6,14 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "holdingId": "HOLDINGID-H1",
+    "bond": 273,
     "security": 514,
     "level": 331.43,
     "marketValue": 522,
     "haircut": 839.93,
     "liquidityValue": 351,
     "encumbered": -64,
-    "bond": 273,
+    "holdingId": "HOLDINGID-H1",
     "details": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

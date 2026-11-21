@@ -34,14 +34,14 @@
       "loss": 824
      }
     ],
-    "calcId": "CALCID-K1",
+    "legalEntity": "LEGALENTITY-L1",
     "legalEntityName": "LEGALENTITYN-P1",
     "bi": 29.41,
     "bic": 656,
     "ilm": 81.65,
     "capital": 583,
     "rwa": -247,
-    "legalEntity": "LEGALENTITY-L1"
+    "calcId": "CALCID-K1"
    }
   },
   {

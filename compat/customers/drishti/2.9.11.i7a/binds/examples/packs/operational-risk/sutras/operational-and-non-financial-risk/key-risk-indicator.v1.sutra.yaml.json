@@ -20,14 +20,14 @@
       "value": 618
      }
     ],
-    "kriId": "KRIID-W1",
+    "desk": 628.33,
     "name": "NAME-D1",
     "deskName": "DESKNAME-S1",
     "value": 418,
     "amber": 144.79,
     "red": 526,
     "status": "STATUS-Y1",
-    "desk": 628.33,
+    "kriId": "KRIID-W1",
     "definition": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

@@ -23,12 +23,12 @@
       "OPEN_INTEREST": 769
      }
     ],
-    "CURVE_ID": "CURVE_ID-Z1",
+    "COMMODITY_REF": 636.95,
     "COMMODITY": 42.95,
     "FRONT": 520.49,
     "SHAPE": -33.85,
     "ROLL": 224.69,
-    "COMMODITY_REF": 636.95
+    "CURVE_ID": "CURVE_ID-Z1"
    }
   },
   {

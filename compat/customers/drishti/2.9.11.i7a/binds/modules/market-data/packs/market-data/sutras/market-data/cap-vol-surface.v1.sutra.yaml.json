@@ -35,9 +35,9 @@
       "MATURITY": "2026-03-22"
      }
     ],
-    "SURFACE_ID": "SURFACE_ID-V1",
     "CURRENCY": "CURRENCY-Z1",
-    "ATM_5Y": 271
+    "ATM_5Y": 271,
+    "SURFACE_ID": "SURFACE_ID-V1"
    }
   },
   {

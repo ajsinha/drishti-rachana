@@ -51,8 +51,6 @@
       "URL": "URL-V3"
      }
     ],
-    "EVENT_COUNTRY_ID": "EVENT_COUNTR-J1",
-    "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "DATE": "2026-04-27",
     "EVENTS": 183.35,
     "MENTIONS": 273.13,
@@ -60,6 +58,8 @@
     "TONE_CHANGE": 185,
     "AVG_GOLDSTEIN": 736,
     "CONFLICT_SHARE": 108,
+    "EVENT_COUNTRY_ID": "EVENT_COUNTR-J1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "ISO3": "USA",
     "PROVENANCE": {
      "NAME": "NAME-X1",

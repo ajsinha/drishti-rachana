@@ -52,11 +52,8 @@
       "location": 334
      }
     ],
+    "vessel": 419.53,
     "status": "STATUS-Y1",
-    "shipmentId": "SHIPMENTID-O1",
-    "customer": {
-     "name": "NAME-D1"
-    },
     "origin": 260.21,
     "destination": 80.45,
     "eta": 218.81,
@@ -65,7 +62,10 @@
     "currency": 257.71,
     "declaredValue": 369,
     "incoterm": 203,
-    "vessel": 419.53,
+    "shipmentId": "SHIPMENTID-O1",
+    "customer": {
+     "name": "NAME-D1"
+    },
     "commodity": -218,
     "departed": 390,
     "container": 495.05
@@ -136,6 +136,17 @@
    "answer": {
     "links": [
      {
+      "label": "Vessel",
+      "text": "419.53",
+      "link": {
+       "kind": "vessel",
+       "id": "419.53",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
       "label": "Origin",
       "text": "260.21",
       "link": {
@@ -152,17 +163,6 @@
       "link": {
        "kind": "port",
        "id": "80.45",
-       "mnemonic": null
-      },
-      "badge": "",
-      "status": "resolved"
-     },
-     {
-      "label": "Vessel",
-      "text": "419.53",
-      "link": {
-       "kind": "vessel",
-       "id": "419.53",
        "mnemonic": null
       },
       "badge": "",

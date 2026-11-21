@@ -20,14 +20,14 @@
       "SEATS": 518
      }
     ],
-    "PARTY_ID": "PARTY_ID-L1",
+    "ELECTION": -5,
     "NAME": "NAME-X1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "SEATS": 318,
     "SEAT_SHARE": 426.29,
     "CHAMBER": 789,
     "ELECTION_DATE": "2026-01-07",
-    "ELECTION": -5,
+    "PARTY_ID": "PARTY_ID-L1",
     "PROVENANCE": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

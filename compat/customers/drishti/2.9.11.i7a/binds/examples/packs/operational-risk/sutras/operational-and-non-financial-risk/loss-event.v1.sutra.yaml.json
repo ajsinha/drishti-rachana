@@ -23,7 +23,7 @@
       "by": 425
      }
     ],
-    "eventId": "EVENTID-N1",
+    "desk": 628.33,
     "eventType": "EVENTTYPE-Z1",
     "deskName": "DESKNAME-S1",
     "grossLoss": 301.31,
@@ -31,7 +31,7 @@
     "netLoss": 458.81,
     "status": "STATUS-Y1",
     "occurred": 773,
-    "desk": 628.33,
+    "eventId": "EVENTID-N1",
     "details": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

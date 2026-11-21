@@ -49,7 +49,6 @@
       "mtm": 949.01
      }
     ],
-    "nettingSetId": "NETTINGSETID-K1",
     "counterparty": {
      "id": "ID-H1",
      "name": "NAME-D1"
@@ -62,6 +61,7 @@
     "limit": 504.73,
     "utilisation": 805.37,
     "asOf": "2026-01-21",
+    "nettingSetId": "NETTINGSETID-K1",
     "csaTerms": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

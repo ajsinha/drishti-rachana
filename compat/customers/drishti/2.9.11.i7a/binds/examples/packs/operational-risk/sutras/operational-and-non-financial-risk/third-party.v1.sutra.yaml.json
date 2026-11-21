@@ -40,13 +40,13 @@
       "impact": 295
      }
     ],
-    "vendorId": "2025-12-18",
     "name": "NAME-D1",
     "criticality": 426,
     "serviceCount": 723.07,
     "annualSpend": "2026-03-31",
     "lastAssessed": 671.41,
-    "slaBreaches": 268.99
+    "slaBreaches": 268.99,
+    "vendorId": "2025-12-18"
    }
   },
   {

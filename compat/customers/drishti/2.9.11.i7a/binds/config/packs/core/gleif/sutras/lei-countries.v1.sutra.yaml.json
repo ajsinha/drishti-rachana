@@ -35,11 +35,11 @@
      }
     ],
     "COUNTRY": "COUNTRY-I1",
-    "NAME": "NAME-X1",
     "COUNTRIES": 429,
     "ENTITIES": 620.71,
     "GROUPS_HEADQUARTERED": "GROUPS_HEADQ-K1",
     "LAPSED": 139.13,
+    "NAME": "NAME-X1",
     "PROVENANCE": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

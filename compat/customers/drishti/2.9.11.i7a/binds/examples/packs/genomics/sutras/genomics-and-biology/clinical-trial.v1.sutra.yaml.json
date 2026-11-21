@@ -40,14 +40,14 @@
       "orr": 43.61
      }
     ],
-    "trialId": "TRIALID-V1",
+    "gene": 87,
     "title": 181,
     "phase": 475.63,
     "status": "STATUS-Y1",
     "enrolled": 213,
     "target": 38,
     "biomarkerName": "BIOMARKERNAM-B1",
-    "gene": 87
+    "trialId": "TRIALID-V1"
    }
   },
   {

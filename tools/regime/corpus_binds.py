@@ -222,10 +222,11 @@ class Needs:
 
 
 def strings(node, out, skip=("parts", "children", "location", "body")):
+    """The texts of a parsed Sutra's node, mappings in key order (the reference parses some from Map.of: their order is a draw)."""
     if isinstance(node, str):
         out.append(node)
     elif isinstance(node, dict):
-        for k, v in node.items():
+        for k, v in sorted(node.items()):
             if k not in skip:
                 strings(v, out, skip)
     elif isinstance(node, list):

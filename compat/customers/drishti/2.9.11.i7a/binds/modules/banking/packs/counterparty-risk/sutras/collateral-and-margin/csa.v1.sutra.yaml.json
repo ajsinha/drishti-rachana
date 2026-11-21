@@ -20,7 +20,7 @@
       "HAIRCUT": 897
      }
     ],
-    "CSA_ID": "CSA_ID-V1",
+    "AGREEMENT": 679,
     "MARGIN_TYPE": "MARGIN_TYPE-J1",
     "THRESHOLD_US": 329.09,
     "THRESHOLD_THEM": 47.87,
@@ -29,7 +29,7 @@
     "CSA_CURRENCY": "CSA_CURRENCY-X1",
     "FREQUENCY": 236.99,
     "MPOR_DAYS": 6,
-    "AGREEMENT": 679
+    "CSA_ID": "CSA_ID-V1"
    }
   },
   {

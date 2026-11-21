@@ -34,11 +34,11 @@
       "FACTOR": 590.27
      }
     ],
-    "CURVE_ID": "CURVE_ID-Z1",
+    "INFLATION_INDEX": "INFLATION_IN-T1",
     "INDEX": "INDEX-Q1",
     "BE_5Y": 38,
     "BE_10Y": 229.79,
-    "INFLATION_INDEX": "INFLATION_IN-T1"
+    "CURVE_ID": "CURVE_ID-Z1"
    }
   },
   {

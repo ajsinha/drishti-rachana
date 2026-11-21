@@ -40,14 +40,14 @@
       "balance": 725
      }
     ],
-    "accountId": "ACCOUNTID-K1",
+    "customer": 78,
     "type": "TYPE-Q1",
     "holderName": "HOLDERNAME-A1",
     "balance": 525,
     "currency": 257.71,
     "rate": 593.99,
     "status": "STATUS-Y1",
-    "customer": 78
+    "accountId": "ACCOUNTID-K1"
    }
   },
   {

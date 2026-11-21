@@ -29,11 +29,11 @@
       "MATURITY_DATE": "2026-04-07"
      }
     ],
-    "PORTFOLIO": -233,
     "TRADE_COUNT": 622.07,
     "NOTIONAL": 155,
     "PRODUCT_TYPES": "PRODUCT_TYPE-X1",
-    "LAST_MATURITY": "2026-01-16"
+    "LAST_MATURITY": "2026-01-16",
+    "PORTFOLIO": -233
    }
   },
   {

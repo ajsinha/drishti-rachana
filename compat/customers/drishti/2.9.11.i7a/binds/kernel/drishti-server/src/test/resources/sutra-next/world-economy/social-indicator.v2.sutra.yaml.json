@@ -34,14 +34,14 @@
       "VALUE": 1055.53
      }
     ],
-    "INDICATOR_ID": "INDICATOR_ID-U1",
+    "JURISDICTION": 584,
     "NAME": "NAME-X1",
     "LATEST": 449.41,
     "UNIT": 271,
     "LATEST_YEAR": 542,
     "CHANGE_5Y": 375,
     "SOURCE_NAME": "SOURCE_NAME-E1",
-    "JURISDICTION": 584,
+    "INDICATOR_ID": "INDICATOR_ID-U1",
     "MEANING": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

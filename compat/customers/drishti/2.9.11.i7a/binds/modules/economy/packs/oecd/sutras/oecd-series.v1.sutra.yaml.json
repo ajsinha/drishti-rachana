@@ -20,14 +20,14 @@
       "VALUE": 1055.53
      }
     ],
-    "SERIES_ID": "SERIES_ID-G1",
-    "NAME": "NAME-X1",
+    "OECD_COUNTRY": "OECD_COUNTRY-U1",
     "TITLE": "TITLE-X1",
     "LATEST": 449.41,
     "UNIT": 271,
     "LATEST_PERIOD": 261.91,
     "CHANGE": 436.25,
-    "OECD_COUNTRY": "OECD_COUNTRY-U1",
+    "SERIES_ID": "SERIES_ID-G1",
+    "NAME": "NAME-X1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "FREQUENCY": 236.99,
     "DATAFLOW": 249.41,

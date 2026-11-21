@@ -78,16 +78,16 @@
       "SINCE": 894
      }
     ],
+    "LEI": "LEI-Z1",
+    "PRICE_HISTORY": 868,
+    "SIC_SECTOR": "SIC_SECTOR-T1",
     "TICKER": "TICKER-K1",
-    "NAME": "NAME-X1",
     "SIC_DESCRIPTION": "SIC_DESCRIPT-W1",
     "FISCAL_YEAR": -240,
     "REVENUE": 647,
     "NET_INCOME": 111.41,
     "EPS_DILUTED": 300,
-    "SIC_SECTOR": "SIC_SECTOR-T1",
-    "PRICE_HISTORY": 868,
-    "LEI": "LEI-Z1",
+    "NAME": "NAME-X1",
     "EXCHANGE": 20.17,
     "LISTING": 634,
     "SIC": 240.37,
@@ -195,22 +195,11 @@
    "answer": {
     "links": [
      {
-      "label": "Ticker",
-      "text": "TICKER-K1",
+      "label": "Lei",
+      "text": "LEI-Z1",
       "link": {
-       "kind": "us-company",
-       "id": "TICKER-K1",
-       "mnemonic": null
-      },
-      "badge": "",
-      "status": "resolved"
-     },
-     {
-      "label": "Sic sector",
-      "text": "SIC_SECTOR-T1",
-      "link": {
-       "kind": "sic-sector",
-       "id": "SIC_SECTOR-T1",
+       "kind": "lei-entity",
+       "id": "LEI-Z1",
        "mnemonic": null
       },
       "badge": "",
@@ -228,11 +217,22 @@
       "status": "resolved"
      },
      {
-      "label": "Lei",
-      "text": "LEI-Z1",
+      "label": "Sic sector",
+      "text": "SIC_SECTOR-T1",
       "link": {
-       "kind": "lei-entity",
-       "id": "LEI-Z1",
+       "kind": "sic-sector",
+       "id": "SIC_SECTOR-T1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Ticker",
+      "text": "TICKER-K1",
+      "link": {
+       "kind": "us-company",
+       "id": "TICKER-K1",
        "mnemonic": null
       },
       "badge": "",

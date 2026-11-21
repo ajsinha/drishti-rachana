@@ -58,12 +58,12 @@
      }
     ],
     "GROUP_ID": "GROUP_ID-D1",
-    "NAME": "NAME-X1",
     "MEMBERS": 567.35,
     "GROUPS": "GROUPS-X1",
     "COUNTRIES": 429,
     "LAPSED": 139.13,
     "LATE_RENEWALS": 592.93,
+    "NAME": "NAME-X1",
     "PROVENANCE": {
      "NAME": "NAME-X1",
      "CODE": "CODE-P1",

@@ -7,18 +7,15 @@ package com.ash.rachana.el;
 import java.util.List;
 
 /**
- * A module that adds functions to Rachana's one function table (docs/architecture/ARCHITECTURE.md parts 1 and 2), found once when the table is first
- * used, by {@link java.util.ServiceLoader} ({@code META-INF/services/com.ash.rachana.el.FunctionProvider}), the same pattern as
- * the lake's storage providers. The pivot engine ({@code drishti-bicompute}) is the provider of every aggregate: {@code sum},
- * {@code count}, {@code avg}, {@code min} and {@code max} over a list, {@code median}, {@code percentile}, {@code distinct},
- * {@code wavg}, {@code variance}, {@code stddev}, the {@code _once} forms, the grouping behind {@code group(...)}, and
- * {@code measure(...)} and {@code cell(...)}. Rachana implements no aggregate itself: where no provider is on the class path, an
- * aggregate in an expression compiles (a Sutra still loads) and is refused with the reason when it is evaluated.
+ * A host's addition to Rachana's one function table, handed to a profile ({@code Profile.functions(...)}): the table of one
+ * {@code Rachana} instance is built from Core's own families and the profile's providers, so two instances never share functions.
+ * Nothing is found by class-path scanning. A host that supplies aggregates over its own engine (a pivot engine, a database) does it
+ * here; where no provider supplies an aggregate Core does not have, the expression compiles and is refused with the reason when it
+ * is evaluated.
  *
- * <p>Rachana depends on no provider; a provider depends on Rachana. A provider's functions are pure and thread-safe, keep Rachana's
+ * <p>Core depends on no provider; a provider depends on Core. A provider's functions are pure and thread-safe, keep Rachana's
  * rules (an empty argument gives an empty result unless the function says otherwise; a masked value makes the result masked) and
- * never take a name Rachana's own families have, except {@code min} and {@code max}, whose one-list form Rachana hands to the
- * provider (with several arguments they are the old spelling of {@code least} and {@code greatest}).
+ * never take a name Rachana's own families have.
  */
 public interface FunctionProvider {
 

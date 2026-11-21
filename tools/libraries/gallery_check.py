@@ -41,8 +41,7 @@ def main():
                 errs = []
                 pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "404" not in m.text else None)
                 pg.on("pageerror", lambda e: errs.append(str(e)))
-                # the vendored Elements pack carries no grid bundle (a pack limit, not a gallery one): the request for it is the one tolerated 404
-                pg.on("response", lambda r: errs.append(f"HTTP {r.status}: {r.url}") if r.status >= 400 and "drishti_grid.js" not in r.url else None)
+                pg.on("response", lambda r: errs.append(f"HTTP {r.status}: {r.url}") if r.status >= 400 else None)
                 pg.goto(f"http://127.0.0.1:{srv.server_address[1]}/{name}.html")
                 text = ""
                 try:

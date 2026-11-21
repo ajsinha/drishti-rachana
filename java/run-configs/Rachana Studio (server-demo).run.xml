@@ -1,0 +1,36 @@
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see LICENSE.
+
+  Rachana Studio (server-demo): Rachana Studio on the server example (examples/server-demo: its Sutra and tables); open http://localhost:4501.
+  Use it when: you edit the server example's Sutra with the live preview.
+  Maven launcher (js/pom.xml, exec-maven-plugin): no bash, no Node plugin, so it runs in IntelliJ Community on Windows. Node 20+ on the PATH, or add -Dnode=<path to node> to the goals.
+  Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
+-->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Rachana Studio (server-demo)" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana JS">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+      <option name="myRunnerSettings" />
+      <option name="myRunnerParameters">
+        <MavenRunnerParameters>
+          <option name="profiles">
+            <set />
+          </option>
+          <option name="goals">
+            <list>
+              <option value="exec:exec@studio-server-demo" />
+            </list>
+          </option>
+          <option name="pomFileName" value="pom.xml" />
+          <option name="profilesMap">
+            <map />
+          </option>
+          <option name="resolveToWorkspace" value="false" />
+          <option name="workingDirPath" value="$PROJECT_DIR$/../js" />
+        </MavenRunnerParameters>
+      </option>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>

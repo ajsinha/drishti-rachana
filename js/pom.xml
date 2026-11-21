@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+
+  The IDE launchers of the JavaScript side: Node and Python programs started by Maven (exec-maven-plugin), so IntelliJ IDEA Community on
+  Windows runs them with no bash, no Shell Script plugin and no Node plugin. Not part of the Java reactor and builds nothing.
+  Run one:  java/mvnw -f js/pom.xml exec:exec@<id>   (ids below; the IDE launchers are java/run-configs/Rachana JS *.run.xml)
+  Node 20+ and Python 3 on the PATH, or name them:  -Dnode=C:\tools\node\node.exe  -Dpython=C:\Python312\python.exe
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.ash.rachana</groupId>
+  <artifactId>rachana-js-launchers</artifactId>
+  <version>0</version>
+  <packaging>pom</packaging>
+  <name>rachana-js-launchers</name>
+  <properties>
+    <node>node</node>
+    <python>python3</python>
+    <repo>${project.basedir}/..</repo>
+  </properties>
+  <profiles>
+    <profile>
+      <id>windows-python</id>
+      <activation><os><family>windows</family></os></activation>
+      <properties><python>python</python></properties>
+    </profile>
+  </profiles>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.6.3</version>
+        <configuration>
+          <workingDirectory>${repo}</workingDirectory>
+        </configuration>
+        <executions>
+          <!-- the Node tests of the runtime, the command line and the Studio (needs the runtime bundle first: runtime-bundle) -->
+          <execution><id>node-tests</id><goals><goal>exec</goal></goals><configuration>
+            <executable>${node}</executable>
+            <arguments><argument>tools/js/node_tests.mjs</argument><argument>js/packages/*/test</argument></arguments>
+          </configuration></execution>
+          <!-- the runtime bundle: TeaVM through Maven, copied to js/packages/rachana/dist, then the conformance check (about two minutes) -->
+          <execution><id>runtime-bundle</id><goals><goal>exec</goal></goals><configuration>
+            <executable>${python}</executable>
+            <arguments><argument>tools/js/build_js.py</argument></arguments>
+          </configuration></execution>
+          <!-- Rachana Studio on the static-sales example: http://localhost:4500 -->
+          <execution><id>studio</id><goals><goal>exec</goal></goals><configuration>
+            <executable>${node}</executable>
+            <arguments><argument>js/packages/rachana-cli/bin/rachana.js</argument><argument>studio</argument><argument>examples/static-sales</argument><argument>--port</argument><argument>4500</argument></arguments>
+          </configuration></execution>
+          <!-- Rachana Studio on the server example (its Sutras and tables): http://localhost:4501 -->
+          <execution><id>studio-server-demo</id><goals><goal>exec</goal></goals><configuration>
+            <executable>${node}</executable>
+            <arguments><argument>js/packages/rachana-cli/bin/rachana.js</argument><argument>studio</argument><argument>examples/server-demo/project/sutras</argument><argument>--data</argument><argument>examples/server-demo/project/data</argument><argument>--port</argument><argument>4501</argument></arguments>
+          </configuration></execution>
+          <!-- the dev server on the static-sales example: http://localhost:4400 -->
+          <execution><id>dev</id><goals><goal>exec</goal></goals><configuration>
+            <executable>${node}</executable>
+            <arguments><argument>js/packages/rachana-cli/bin/rachana.js</argument><argument>dev</argument><argument>examples/static-sales</argument><argument>--port</argument><argument>4400</argument></arguments>
+          </configuration></execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

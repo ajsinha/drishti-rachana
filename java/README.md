@@ -61,8 +61,8 @@ Java only: no Python, no Python plugin. The same Maven runs in the IDE and in a 
 2. **File → Project Structure → Project → SDK**: **Add SDK → JDK…**, choose the JDK 21 folder; **Language level** *SDK default*.
 3. **Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → JRE**: *Use Project JDK*. Maven in the IDE ignores your
    shell's `JAVA_HOME`. An *invalid target release* or *release version 21 not supported* error means the wrong JDK is set here.
-4. The drop-down at the top right lists the configurations of `java/run-configs/` under the folder **Rachana**: the four Maven launchers
-   and the two Java programs below.
+4. The drop-down at the top right lists the configurations of `java/run-configs/` under the folder **Rachana**: the Maven launchers,
+   the Java programs and the JavaScript launchers below.
 
 ### The Maven launchers
 
@@ -81,9 +81,29 @@ The JavaScript bundles launcher is plain Maven. Copying the bundles to `js/packa
 **From a terminal**, the same commands: `./mvnw clean verify -DskipTests` (Windows `mvnw.cmd …`), `./mvnw clean verify`,
 `./mvnw clean install -DskipTests`, `./mvnw clean package -Pjs -DskipTests -pl :rachana-js -am`.
 
-The two Java programs (Application configurations, run **Rachana build all** first): **Rachana CLI (lib)** (`com.ash.rachana.cli.Main`, edit the
-program arguments: `lib build|sign|pack|verify|lock|contracts|check-host`) and **Rachana reference server** (`ReferenceServer` on
-`http://localhost:8099/rdp/v1`). `rachana serve` (the standalone server) is on the `g3/server` branch and has no launcher here until it merges.
+The Java programs (Application configurations, run **Rachana build all** first): **Rachana CLI (lib)** (`com.ash.rachana.cli.Main`, edit the
+program arguments: `lib build|sign|pack|verify|lock|contracts|check-host`), **Rachana reference server** (`ReferenceServer` on
+`http://localhost:8099/rdp/v1`) and the standalone server `com.ash.rachana.server.Main` on the example `examples/server-demo`:
+**Rachana server serve (server-demo)** (`http://127.0.0.1:8090/`, sign in as `dev`, password `dev-only-pass`: **development only**, written in
+`examples/server-demo/users.yaml`), **Rachana server check (server-demo)** and **Rachana server hash-password** (type a password in the Run window,
+press Enter). The server's page assets are copied into `target/classes` by the Maven build, and the runtime bundle must exist first:
+run **Rachana JS runtime bundle**, then **Rachana build all**, then the server.
+
+### The JavaScript launchers (Maven, no bash)
+
+Under the folder **Rachana JS**; each runs `exec:exec@<id>` of `js/pom.xml` (exec-maven-plugin; the pom builds nothing), so they work in IntelliJ
+Community on Windows with no bash, no Shell Script plugin and no Node plugin. Node 20+ and Python 3 on the PATH, or add `-Dnode=<path to node>` /
+`-Dpython=<path to python>` to the goals.
+
+| Run configuration | id | What it runs |
+|---|---|---|
+| **Rachana JS runtime bundle** | `runtime-bundle` | `tools/js/build_js.py`: the TeaVM bundles into `js/packages/rachana/dist/`, then the conformance check |
+| **Rachana JS Node tests** | `node-tests` | `tools/js/node_tests.mjs`: every `js/packages/*/test/*.test.mjs` through `node --test` (no shell glob) |
+| **Rachana Studio** | `studio` | Studio on `examples/static-sales`, `http://localhost:4500` |
+| **Rachana Studio (server-demo)** | `studio-server-demo` | Studio on the server example's Sutra and tables, `http://localhost:4501` |
+| **Rachana dev server (static-sales)** | `dev` | `rachana dev`, `http://localhost:4400` |
+
+From a terminal: `java/mvnw -f js/pom.xml exec:exec@node-tests` (Windows `java\mvnw.cmd -f js\pom.xml exec:exec@node-tests`).
 
 ### What each IDE runs
 
@@ -91,7 +111,7 @@ program arguments: `lib build|sign|pack|verify|lock|contracts|check-host`) and *
 |---|---|---|---|
 | Java (`java/`) | `java/run-configs/` (Maven, Application) | no | tasks and launch in `drishti-rachana.code-workspace` |
 | Python SDK (`python/`) | no (no Python plugin needed) | `python/run-configs/` (pytest, lint, Flask, FastAPI, protocol check, JS runtime bundle); open the folder `python/` | the same, as tasks and `debugpy` launches |
-| JavaScript (`js/`) | no Node support in Community: `js/run-configs/` are **Shell Script** configurations (Node tests, Studio, dev server; bash, on Windows use Git Bash, a terminal or VS Code) | the same Shell Script configurations | tasks (Node tests, Studio, dev server) and `node` launches |
+| JavaScript (`js/`) | `java/run-configs/` folder **Rachana JS**: Maven launchers of `js/pom.xml` (runtime bundle, Node tests, Studio, dev server); no bash | the same Maven launchers | tasks (Node tests, Studio, dev server) and `node` launches |
 
 Open `java/pom.xml` in IntelliJ and `python/` in PyCharm, never one folder in both (each rewrites the other's `.idea`).
 
@@ -100,7 +120,7 @@ Open `java/pom.xml` in IntelliJ and `python/` in PyCharm, never one folder in bo
 **File, Open Workspace from File**, choose `drishti-rachana.code-workspace` (a visible file at the repository root; no `.vscode` folder). Install the
 recommended extensions (Extension Pack for Java, Python and Pylance, ESLint, YAML). The workspace sets the JDK 21 runtime (edit the path:
 Windows `C:\jdk-21`), a `PYTHONPATH` to `python/src`, and has **Terminal, Run Task** entries mirroring the JetBrains launchers (Maven build, test, install
-release, JS bundles; Node tests; pytest; lint; Studio; dev server) and **Run and Debug** configurations for the Java programs, the Flask and FastAPI
+release, JS bundles; Node tests; pytest; lint; Studio; dev server; the server example: serve, check) and **Run and Debug** configurations for the Java programs, the Flask and FastAPI
 apps, `rachana lint` and the Node commands.
 
 ### Where the artifacts go

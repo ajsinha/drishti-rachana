@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content: fictional products, regions and figures.
+rachana: 1
+sutra: server-overview
+version: 1
+title: { id: "'Sales overview (server example)'" }
+description: Revenue by region and over time, from the server's tables sales (CSV) and regions (JSON).
+data:
+  sales:   { table: sales, key: [region, product, month] }
+  regions: { table: regions, key: code }
+panels:
+  - { id: revenue, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')", fmt: amount0, span: 4,
+      caption: "${size($.sales)} sales rows" }
+  - { id: units, kind: metric, label: Units sold, value: "sum($.sales, 'units')", fmt: amount0, span: 4 }
+  - { id: offices, kind: metric, label: Regions, value: "size($.regions)", fmt: amount0, span: 4 }
+  - { id: by-region, kind: hbar, title: Revenue by region, rows: "group($.sales, 'region', 'revenue')",
+      label: label, value: value, fmt: amount0, span: 6 }
+  - { id: trend, kind: line, title: Revenue by month, rows: "group($.sales, 'month', 'revenue')",
+      x: label, y: value, fmt: amount0, span: 6 }

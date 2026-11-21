@@ -49,7 +49,7 @@ class PointCellsTest {
     };
 
     static final String PIVOT = """
-            rachana: 1
+            rachana: 1.2
             sutra: matrix
             version: 1
             title: { id: "'Scenarios'" }
@@ -110,7 +110,7 @@ class PointCellsTest {
     }
 
     static final String SURFACE = """
-            rachana: 1
+            rachana: 1.2
             sutra: vols
             version: 1
             title: { id: "'Vols'" }

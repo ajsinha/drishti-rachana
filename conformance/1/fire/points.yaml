@@ -11,7 +11,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (point-click, set: { state, to }); VIEWMODEL contract 1.2 (Point.set)"
     note: "The where keeps B and C; C's set is read with #index its place before where (2)."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Risk'" }
@@ -47,7 +47,7 @@ cases:
     kind: fire
     source: "SUTRA_EXPANSION I1; VIEWMODEL contract 1.2 (Chart.set beside x)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Curve'" }
@@ -77,7 +77,7 @@ cases:
     kind: fire
     source: SUTRA_EXPANSION I1 (point-click on steps, events and candles)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Marks'" }
@@ -106,7 +106,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (metric, gauge, kv, status: one mark in the panel's context)"
     note: "A metric's set reads the panel's context (no row); a second click on the gauge flips the boolean back."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Figures'" }

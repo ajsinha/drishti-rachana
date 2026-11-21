@@ -1,0 +1,149 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Written 2026-11-21 (owner decision: the Sutra's rachana: key declares its level, SPEC 2.1).
+suite: problem/level-declaration
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  A Sutra declares its language level in its rachana: key (SPEC 2.1): rachana: 1 is level 1.0, rachana: 1.N is level 1.N. A host reads
+  each Sutra at the level it declares (at most its own), so a name of a later level is refused with words that name the Sutra's level;
+  a level above the host's is RCH-2008, a minor no level has is RCH-2009, any other form keeps the reference's RCH-2009.
+cases:
+  - id: rachana-1-is-level-1-0
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: g, kind: grid, rows: $.trades }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2008, severity: error, message: "'grid' panels need Rachana 1.1; this Sutra is written for 1.0 (declare rachana: 1.1 or later at its top)", path: /panels/0/kind }
+
+  - id: rachana-1-0-is-level-1-0
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: 1.0
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: g, kind: grid, rows: $.trades }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2008, severity: error, message: "'grid' panels need Rachana 1.1; this Sutra is written for 1.0 (declare rachana: 1.1 or later at its top)", path: /panels/0/kind }
+
+  - id: rachana-1-1-key-of-level-1-2
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: 1.1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      state:
+        pick: { type: text }
+      panels:
+        - { id: g, kind: grid, rows: $.trades }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2008, severity: error, message: "'state' needs Rachana 1.2; this Sutra is written for 1.1 (declare rachana: 1.2 or later at its top)", path: /state/pick }
+
+  - id: rachana-1-2-reads-level-1-2
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: 1.2
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      state:
+        pick: { type: text }
+      panels:
+        - { id: g, kind: grid, rows: $.trades }
+    expect:
+      ok: true
+      problems: []
+
+  - id: rachana-quoted-level
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: "1.2"
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: g, kind: grid, rows: $.trades }
+    expect:
+      ok: true
+      problems: []
+
+  - id: a-minor-no-level-has
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: 1.7
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: n, kind: markdown, text: hi }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2009, severity: error, message: "'rachana: 1.7' is a language level this host does not read; the newest it reads is 1.2 (rachana: 1 is 1.0)", path: /rachana }
+
+  - id: a-malformed-minor
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: 1.02
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: n, kind: markdown, text: hi }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2009, severity: error, message: "'rachana: 1.02' is not a language version this server reads (it reads 1)", path: /rachana }
+
+  - id: another-major
+    kind: problem
+    source: SPEC 2.1
+    sutra: |
+      rachana: 2.0
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: n, kind: markdown, text: hi }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2009, severity: error, message: "'rachana: 2.0' is not a language version this server reads (it reads 1)", path: /rachana }
+
+  - id: a-sutra-above-its-host
+    kind: problem
+    source: SPEC 2.1
+    since: "1.1"
+    until: "1.1"
+    sutra: |
+      rachana: 1.2
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: n, kind: markdown, text: hi }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2008, severity: error, message: "this Sutra is written for Rachana 1.2; this host runs 1.1 (raise the host's language level)", path: /rachana }

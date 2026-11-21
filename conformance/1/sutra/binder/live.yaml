@@ -34,7 +34,7 @@ cases:
     kind: sutra
     source: SPEC 2.3; VIEWMODEL contract 1.2
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: blotter
       version: 1
       data:
@@ -59,7 +59,7 @@ cases:
     kind: sutra
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: blotter
       version: 1
       data:
@@ -72,7 +72,7 @@ cases:
     kind: sutra
     source: SPEC 2.3 (grid bars, level 1.2)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: bars
       version: 1
       data:

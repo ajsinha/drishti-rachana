@@ -51,6 +51,8 @@ final class SutraBuilder {
     ProblemPlaces places;
     private final com.ash.rachana.profile.Grammar grammar;
     private final List<SutraProblem> problems = new ArrayList<>();
+    /** The level its {@code rachana:} key declares ({@link SutraParser#declaredLevel}), or null for none or another form. */
+    String declared;
     private FragmentResolver fragments;
     private SutraBlocks.Calls calls = new SutraBlocks.Calls(null);
 
@@ -71,8 +73,8 @@ final class SutraBuilder {
         Map<String, PNode> m = root.map();
         m.forEach((k, v) -> {
             if (!grammar.hasKey(k) && com.ash.rachana.profile.Grammar.keySince(k) != null) {    // a later level's key, used below it
-                problem("RCH-2008", "'" + k + "' needs Rachana " + com.ash.rachana.profile.Grammar.keySince(k) + "; this host runs " + grammar.level()
-                        + " (raise the host's language level)", v);
+                problem("RCH-2008", "'" + k + "' needs Rachana " + com.ash.rachana.profile.Grammar.keySince(k) + "; "
+                        + grammar.levelWords(com.ash.rachana.profile.Grammar.keySince(k)), v);
             } else if (!grammar.hasKey(k) && (k.equals("match") || k.equals("domain")) && SutraBlocks.atLeast(grammar.level(), "1.1")) {
                 problem("RCH-2060", "'" + k + "' belongs to the profile of a data platform; a Core screen reads its data from 'data:'", v);   // SPEC 2.2
             } else if (!grammar.hasKey(k)) {
@@ -90,6 +92,14 @@ final class SutraBuilder {
         PNode lang = m.get("rachana");
         if (lang == null) {
             problem("RCH-2009", "missing 'rachana: " + LANGUAGE + "' (the Rachana language version) at the top", root);
+        } else if (declared != null && com.ash.rachana.profile.Grammar.LEVELS.contains(declared)) {
+            if (!SutraBlocks.atLeast(grammar.level(), declared)) {           // SPEC 2.1: a Sutra of a later level than its host's
+                problem("RCH-2008", "this Sutra is written for Rachana " + declared + "; this host runs " + grammar.level()
+                        + " (raise the host's language level)", lang);
+            }
+        } else if (declared != null) {                                       // a minor this runtime does not know
+            problem("RCH-2009", "'rachana: " + declared + "' is a language level this host does not read; the newest it reads is "
+                    + grammar.level() + " (rachana: 1 is 1.0)", lang);
         } else if (!(lang.value() instanceof Long l) || l != LANGUAGE) {
             problem("RCH-2009", "'rachana: " + lang.value() + "' is not a language version this server reads (it reads " + LANGUAGE + ")", lang);
         }
@@ -125,6 +135,7 @@ final class SutraBuilder {
             extensions.put(com.ash.rachana.model.DataEntry.KEY, new DataReader(file, problems).read(m.get(com.ash.rachana.model.DataEntry.KEY)));
         }
         calls = new SutraBlocks.Calls(callerColumns(extensions.get(com.ash.rachana.model.DataEntry.KEY)));
+        calls.levelWords = grammar::levelWords;
         Title title = title(m.get("title"));
         List<StripItem> strip = strip(m.get("strip"));
         List<Panel> panels = new ArrayList<>();
@@ -231,9 +242,15 @@ final class SutraBuilder {
         state.forEach(e -> stateTypes.put(e.id(), e.type()));
         calls.states = stateTypes;
         calls.checkNested(problems);
-        if (!fns.isEmpty() || !lets.isEmpty() || !stateTypes.isEmpty()) {
-            extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(fns, lets, stateTypes));
+        com.ash.rachana.el.Declarations declarations = !fns.isEmpty() || !lets.isEmpty() || !stateTypes.isEmpty()
+                ? new com.ash.rachana.el.Declarations(fns, lets, stateTypes) : com.ash.rachana.el.Declarations.NONE;
+        if (grammar.declaredBelowHost()) {                                   // SPEC 2.1: its expressions compile at its own level
+            declarations = declarations.atLevel(grammar.level());
         }
+        if (declarations != com.ash.rachana.el.Declarations.NONE) {
+            extensions.put(Sutra.DECLARATIONS, declarations);
+        }
+        extensions.put(Sutra.LEVEL, grammar.level());
         if (!state.isEmpty()) {
             extensions.put(Sutra.STATE, List.copyOf(state));
         }
@@ -377,8 +394,8 @@ final class SutraBuilder {
         PanelKind kind = kindText == null ? null : PanelKind.parse(kindText).filter(grammar::accepts).orElse(null);
         PanelKind later = kindText == null || kind != null ? null : PanelKind.parse(kindText).filter(grammar::known).orElse(null);
         if (later != null) {                                        // SUTRA_EXPANSION 6.2: a later level's name, used below it
-            problem("RCH-2008", "'" + later.id() + "' panels need Rachana " + later.since() + "; this host runs " + grammar.level()
-                    + " (raise the host's language level)", m.get("kind"));
+            problem("RCH-2008", "'" + later.id() + "' panels need Rachana " + later.since() + "; " + grammar.levelWords(later.since()),
+                    m.get("kind"));
             return null;
         }
         if (kindText != null && kind == null) {
@@ -508,8 +525,8 @@ final class SutraBuilder {
                     return;
                 }
                 if (kind.accepts(opt) && !SutraBlocks.atLeast(grammar.level(), kind.since(opt))) {   // a later level's option of an older kind
-                    problem("RCH-2008", "option '" + opt + "' of '" + kind.id() + "' panels needs Rachana " + kind.since(opt) + "; this host runs "
-                            + grammar.level() + " (raise the host's language level)", val);
+                    problem("RCH-2008", "option '" + opt + "' of '" + kind.id() + "' panels needs Rachana " + kind.since(opt) + "; "
+                            + grammar.levelWords(kind.since(opt)), val);
                 } else if (!kind.accepts(opt)) {
                     problem("RCH-2023", "search".equals(opt) || Panel.PIVOT.equals(opt)
                             ? "option '" + opt + "' applies only to panels that show a table (table, ladder), not '" + kind.id() + "'"

@@ -9,11 +9,23 @@ import { spawnSync } from "node:child_process";
  * adds nothing. RACHANA_JAR is a runnable (shaded) jar; RACHANA_CLASSPATH is a class path of the module jars (the target/classes folders
  * or jars). RACHANA_JAVA names the java binary (default: java).
  */
-export function libCommand(args, env = process.env) {
+export function libCommand(args, env = process.env, command = "lib") {
   const java = env.RACHANA_JAVA ?? "java";
-  if (env.RACHANA_JAR) return [java, ["-jar", env.RACHANA_JAR, "lib", ...args]];
-  if (env.RACHANA_CLASSPATH) return [java, ["-cp", env.RACHANA_CLASSPATH, "com.ash.rachana.cli.Main", "lib", ...args]];
+  if (env.RACHANA_JAR) return [java, ["-jar", env.RACHANA_JAR, command, ...args]];
+  if (env.RACHANA_CLASSPATH) return [java, ["-cp", env.RACHANA_CLASSPATH, "com.ash.rachana.cli.Main", command, ...args]];
   return null;
+}
+
+/** rachana upgrade ...: the Java Upgrade (rachana-tools) through com.ash.rachana.cli.Main, as `lib` is; this launcher adds nothing. */
+export async function upgrade(args, io) {
+  const cmd = libCommand(args, process.env, "upgrade");
+  if (!cmd) {
+    io.err("rachana upgrade needs a JVM and the rachana-cli jar: set RACHANA_JAR (a runnable jar) or RACHANA_CLASSPATH (the module jars). One implementation: java/rachana-tools Upgrade.");
+    return 2;
+  }
+  const r = spawnSync(cmd[0], cmd[1], { stdio: "inherit" });
+  if (r.error) { io.err(`rachana upgrade: ${r.error.message}`); return 2; }
+  return r.status ?? 1;
 }
 
 export async function lib(args, io) {

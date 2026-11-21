@@ -30,7 +30,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -72,7 +72,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -114,7 +114,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -156,7 +156,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -198,7 +198,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -240,7 +240,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -264,7 +264,7 @@ cases:
     source: SUTRA_EXPANSION 6.2 (RCH-2008)
     files: {}
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -308,7 +308,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -368,7 +368,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -461,7 +461,7 @@ cases:
         libraries:
           demo: { version: 1.0.0, sha384: "6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -546,7 +546,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -629,7 +629,7 @@ cases:
         lock: 1
         libraries: {}
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -720,7 +720,7 @@ cases:
         libraries:
           demo: { version: 1.0.0, sha384: "6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -804,7 +804,7 @@ cases:
         libraries:
           demo: { version: 1.0.0, sha384: "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -884,7 +884,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -965,7 +965,7 @@ cases:
             fmt: "%{fmt}"
             caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -1050,7 +1050,7 @@ cases:
         libraries:
           demo: { version: 1.0.0, sha384: "6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -1134,7 +1134,7 @@ cases:
         libraries:
           demo: { version: 1.0.0, sha384: "6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }

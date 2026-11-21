@@ -100,8 +100,8 @@ class Rachana:
         return self._call("evaluate", {"template": template, "given": {"record": record or {}, **given}})
 
     def check(self, sutra: str, file: str = "case.sutra.yaml", level: str | None = None, files: dict[str, str] | None = None) -> dict[str, Any]:
-        """Compile and lint a Sutra at a language level (by default the runtime's own default, which Core's
-        ``Grammar.DEFAULT_LEVEL`` writes: see :meth:`levels`): parsed, then its expressions checked; ``{"ok": bool, "problems": [...]}``."""
+        """Compile and lint a Sutra, read at the level its ``rachana:`` key declares (SPEC 2.1), on a host of ``level`` (by default the
+        newest the runtime reads, Core's ``Grammar.DEFAULT_LEVEL``: see :meth:`levels`): ``{"ok": bool, "problems": [...]}``."""
         req: dict[str, Any] = {"sutra": sutra, "file": file, "since": level or self.levels()["default"]}
         if files:
             req["files"] = files                       # the libraries: ``rachana_libs/<library>/<path>`` to text
@@ -115,7 +115,7 @@ class Rachana:
 
     def view(self, sutra: str, record: Any = None, **given: Any) -> dict[str, Any]:
         """The ViewModel of a Sutra over a record, built with Core's hooks."""
-        return self._call("view", {"sutra": sutra, "given": {"record": record or {}, **given}})
+        return self._call("view", {"sutra": sutra, "since": self.levels()["default"], "given": {"record": record or {}, **given}})
 
     def edit(self, sutra: str, operation: dict[str, Any]) -> dict[str, Any]:
         """One editing operation (FORMAT 5.11) on a Sutra's text; tools bundle only."""

@@ -134,6 +134,17 @@ public record Sutra(
         return extension(DECLARATIONS) instanceof com.ash.rachana.el.Declarations d ? d : com.ash.rachana.el.Declarations.NONE;
     }
 
+    /** The compile result's key for {@link #level()}. */
+    public static final String LEVEL = "$level";
+
+    /**
+     * The language level it was read at: the one its {@code rachana:} key declares ({@code rachana: 1} is 1.0, {@code rachana: 1.2} is
+     * 1.2; SPEC 2.1), or its host's when it declares a later one (and was refused); null for a Sutra not built by the parser.
+     */
+    public String level() {
+        return extension(LEVEL) instanceof String l ? l : null;
+    }
+
     /** The compile result's key for {@link #state()}. */
     public static final String STATE = "$state";
 

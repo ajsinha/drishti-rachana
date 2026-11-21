@@ -1,0 +1,234 @@
+# Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
+# The verified cases of rachana upgrade (UpgradeRule; UpgradeCasesTest). Each: a level-1.0 file (before), the text the tool writes
+# (after; omitted when the file is refused or blocked), the rules of its changes and flags, and whether the upgraded Sutra binds to the
+# same ViewModel as the original over the record (same: true), or provably not (same: false: the flag is needed). Both are bound on
+# one host of the newest level, each at the level it declares. verified: checked by hand against SPEC 2.1, 4.10, 4.13, 4.16, 4.17.
+verified: true
+cases:
+  - id: span-keeps-the-aggregate-and-the-comments
+    record: { rows: [ { p: 3 }, { p: 9 }, { p: 4 } ] }
+    before: |
+      # the file's own comment
+      rachana: 1   # the level
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Spread, value: "range($.rows, 'p')" }   # the 1.0 aggregate
+        - id: n
+          kind: metric
+          label: Again
+          value: 'range($.rows, ''p'') + 0'
+    after: |
+      # the file's own comment
+      rachana: 1.2   # the level
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Spread, value: "span($.rows, 'p')" }   # the 1.0 aggregate
+        - id: n
+          kind: metric
+          label: Again
+          value: 'span($.rows, ''p'') + 0'
+    changes: [declare, span, span]
+    flags: []
+    same: true
+
+  - id: span-in-templates-and-a-literal-block
+    record: { rows: [ { p: 3 }, { p: 9 } ] }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - id: t
+          kind: markdown
+          title: "Spread ${range($.rows, 'p')} over ${size($.rows)} rows"
+          text: |
+            Spread: ${range($.rows,
+              'p')}
+    after: |
+      rachana: 1.2
+      sutra: up
+      version: 1
+      panels:
+        - id: t
+          kind: markdown
+          title: "Spread ${span($.rows, 'p')} over ${size($.rows)} rows"
+          text: |
+            Spread: ${span($.rows,
+              'p')}
+    changes: [declare, span, span]
+    flags: []
+    same: true
+
+  - id: a-named-argument-takes-the-catalogues-name
+    record: { nums: [ 1, 2, 6 ] }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Mean, value: "avg(x = $.nums)" }
+    after: |
+      rachana: 1.2
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Mean, value: "avg(list = $.nums)" }
+    changes: [declare, named]
+    flags: []
+    same: true
+
+  - id: exact-arithmetic-is-flagged
+    record: { n: 3 }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Tenth, value: "$.n * 0.1" }
+        - { id: d, kind: metric, label: Third, value: "1 / $.n" }
+    changes: [declare]
+    flags: [exact:review, exact:review]
+    same: false
+
+  - id: whole-and-decimal-shifts-are-not-flagged
+    record: { n: 1234, rows: [ 1, 2 ] }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Hundredths, value: "$.n / 100" }
+        - { id: s, kind: metric, label: Last, value: "size($.rows) - 1" }
+        - { id: e, kind: metric, label: Double, value: "$.n * 1e-1" }
+    changes: [declare]
+    flags: []
+    same: true
+
+  - id: number-like-text-of-javas-grammar-is-flagged
+    record: {}
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Two, value: "'1d' * 2" }
+    changes: [declare]
+    flags: [number-text:review]
+    same: false
+
+  - id: standardize-is-flagged
+    record: {}
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Z, value: "'z=' + standardize(42, 40, 1.5)" }
+    changes: [declare]
+    flags: [standardize:review]
+    # the kind differs (a decimal at 1.0, a number from 1.1); this text prints 15 digits either way
+
+  - id: a-text-beyond-the-basic-plane-is-flagged
+    record: { a: "｡" }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Order, value: "$.a < '😀'" }
+    changes: [declare]
+    flags: [text-code-points:review, text-code-points:info]
+    same: false
+
+  - id: a-pattern-computed-at-run-time-is-noted
+    record: { s: "AB-12", p: "[0-9]+" }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Id, value: "regex_extract($.s, $.p)" }
+    changes: [declare]
+    flags: [regex-code:info]
+    same: true
+
+  - id: an-aggregate-over-a-number-is-flagged
+    record: { n: 5 }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Mean, value: "avg($.n + 1)" }
+    changes: [declare]
+    flags: [aggregate-not-a-list:review]
+
+  - id: a-bare-lambda-blocks-the-file
+    record: { lambda: 7 }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: L, value: "lambda" }
+    changes: [declare]
+    flags: [keyword:blocking]
+    blocked: true
+
+  - id: an-upgraded-file-is-left-as-it-is
+    record: { rows: [ { p: 3 }, { p: 9 } ] }
+    before: |
+      rachana: 1.2
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Spread, value: "span($.rows, 'p')" }
+    after: |
+      rachana: 1.2
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Spread, value: "span($.rows, 'p')" }
+    changes: []
+    flags: []
+    same: true
+
+  - id: a-fragment-is-rewritten-without-a-declaration
+    file: spread.v1.fragment.yaml
+    before: |
+      rachana: 1
+      fragment: spread
+      version: 1
+      params:
+        rows: $.rows
+      panels:
+        - { id: s, kind: metric, label: Spread, value: "range(%{rows}, 'p')" }
+    after: |
+      rachana: 1
+      fragment: spread
+      version: 1
+      params:
+        rows: $.rows
+      panels:
+        - { id: s, kind: metric, label: Spread, value: "span(%{rows}, 'p')" }
+    changes: [span]
+    flags: []
+
+  - id: an-expression-that-does-not-compile-is-refused
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Bad, value: "1 +" }
+    refused: "does not compile at 1.0"
+
+  - id: another-major-is-refused
+    before: |
+      rachana: 2
+      sutra: up
+      version: 1
+      panels: []
+    refused: "names no level"

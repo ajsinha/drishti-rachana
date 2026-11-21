@@ -10,7 +10,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION S1 (text, number, boolean, date, list)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -30,7 +30,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION S1 (a default of the state's type)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -50,7 +50,7 @@ cases:
     kind: problem
     source: decision S1-OPEN d (url and remember wait for S4)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -74,7 +74,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION S1, S2 (a name shadows nothing)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -96,7 +96,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION S1 (state.<id> names a declared state)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -116,7 +116,7 @@ cases:
     kind: problem
     source: EL_EXPANSION X41 (a body reads only its parameters)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -139,7 +139,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION I1 (set names a state the Sutra holds)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -166,7 +166,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION I1 (the closed lists; this level builds row-click, bar-click and set)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -202,7 +202,7 @@ cases:
     since: "1.1"
     source: SUTRA_EXPANSION 6.2 (a later level's key, used below it)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -221,7 +221,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION I1 (point-click, the kinds that fire it)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -242,7 +242,7 @@ cases:
     kind: problem
     source: "SUTRA_EXPANSION I1 (toggle a boolean; notify tones; host action names; the keys of each effect)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }

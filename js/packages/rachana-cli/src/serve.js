@@ -7,7 +7,6 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, join, resolve, sep, dirname } from "node:path";
 import { UsageError } from "./errors.js";
 import { findSutras, libraryFiles } from "./lint.js";
-import { projectLevel } from "./project.js";
 import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, tableFiles, viewPage } from "./site.js";
 
 const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".csv": "text/csv", ".yaml": "application/yaml", ".jsonl": "application/x-ndjson" };
@@ -18,7 +17,7 @@ function within(root, rel) {
 }
 
 /** The handler of the preview server: pure (path to [status, type, body]) so it is testable without a socket. */
-export function handler(sutras, dataDir, level = "", libFiles = {}) {
+export function handler(sutras, dataDir, libFiles = {}) {
   const assets = new Map(siteAssets().map(([p, f]) => ["/" + p, f]));
   const stubs = new Set(elementsStubs().map((p) => "/" + p));
   return (url) => {
@@ -27,7 +26,7 @@ export function handler(sutras, dataDir, level = "", libFiles = {}) {
     let m;
     if ((m = path.match(/^\/page\/([^/]+)$/)) && sutras.has(m[1])) {
       const needed = neededLibraryPaths(readFileSync(sutras.get(m[1]), "utf8"), libFiles);   // the libraries the page uses, as `rachana build` lists them
-      return [200, TYPES[".html"], viewPage(m[1], `/sutras/${m[1]}.sutra.yaml`, "/data", "/", level, needed.length ? `/libraries/${m[1]}.libraries.json` : "")];
+      return [200, TYPES[".html"], viewPage(m[1], `/sutras/${m[1]}.sutra.yaml`, "/data", "/", needed.length ? `/libraries/${m[1]}.libraries.json` : "")];
     }
     if ((m = path.match(/^\/libraries\/([^/]+)\.libraries\.json$/)) && sutras.has(m[1])) {
       return [200, TYPES[".json"], JSON.stringify({ files: neededLibraryPaths(readFileSync(sutras.get(m[1]), "utf8"), libFiles) })];
@@ -52,7 +51,7 @@ export async function preview(target, flags, io) {
   const dataDir = flags.data ?? (existsSync(join(root, "data")) ? join(root, "data") : existsSync(join(root, "..", "data")) ? join(root, "..", "data") : null);
   const lib = libraryFiles(root, flags, (m) => io.err(`rachana: ${m}`));
   if (lib.problems.length) return 1;
-  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, flags.level ?? projectLevel(root) ?? "", lib.files);
+  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, lib.files);
   const server = createServer((req, res) => {
     try { const [s, t, b] = handle(req.url); res.writeHead(s, { "content-type": t, "cache-control": "no-store" }); res.end(b); }
     catch (e) { res.writeHead(500); res.end(String(e.message)); }

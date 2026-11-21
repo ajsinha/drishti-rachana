@@ -2,7 +2,7 @@
 suite: plan/plan
 since: "1.1"
 profile: core
-verified: false
+verified: true
 description: >-
   The plan document (FORMAT 5.10; DataPlan): per table entry, { entry, name, readers, live, query { columns?, filter?, limit? },
   local [ { panel?, where, reason } ] } and the plan's problems. A panel's where is pushed down only when it is the entry's sole reader.
@@ -29,7 +29,7 @@ cases:
     given:
       ctl: { region: South }
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-entry
       version: 1
       controls:
@@ -49,7 +49,7 @@ cases:
     kind: plan
     source: DataPlan (sole reader rule)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-two
       version: 1
       data:
@@ -67,7 +67,7 @@ cases:
     kind: plan
     source: PROTOCOL 7 (fixed subset); FORMAT 5.10
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-regex
       version: 1
       data:
@@ -83,7 +83,7 @@ cases:
     kind: plan
     source: PROTOCOL 2 (can)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-cannot
       version: 1
       data:
@@ -102,7 +102,7 @@ cases:
     given:
       ctl: { regions: [North, East] }
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-in
       version: 1
       controls:
@@ -121,7 +121,7 @@ cases:
     given:
       ctl: { q: Late }
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-fn
       version: 1
       controls:
@@ -139,7 +139,7 @@ cases:
     kind: plan
     source: SPEC 6.2 (RCH-2070); PROTOCOL 10.2
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-unknown
       version: 1
       data:
@@ -155,7 +155,7 @@ cases:
     kind: plan
     source: SPEC 6.2 (RCH-2071); PROTOCOL 10.2
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: plan-column
       version: 1
       data:

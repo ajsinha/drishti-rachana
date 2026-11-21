@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class ScreenWireTest {
 
     static final String TICKET = """
-            rachana: 1
+            rachana: 1.2
             sutra: ticket
             version: 1
             title: { id: "'Ticket'" }
@@ -142,7 +142,7 @@ class ScreenWireTest {
     }
 
     static final String DESK = """
-            rachana: 1
+            rachana: 1.2
             sutra: desk
             version: 1
             title: { id: "'Desk'" }

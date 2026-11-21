@@ -23,7 +23,7 @@ cases:
     kind: sutra
     source: SPEC 2.3; VIEWMODEL contract 1.2
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: concentration
       version: 1
       panels:
@@ -34,7 +34,7 @@ cases:
     kind: sutra
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: band
       version: 1
       panels:
@@ -45,7 +45,7 @@ cases:
     kind: sutra
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: band
       version: 1
       panels:

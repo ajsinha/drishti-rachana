@@ -41,6 +41,14 @@ public final class Grammar {
     /** Language level 1.0: what every grammar reads unless its host raises the level (SUTRA_EXPANSION 6.2). */
     public static final String LEVEL_1_0 = "1.0";
 
+    /**
+     * THE switch of level retirement (owner 2026-11-21): the level of a Sutra whose {@code rachana:} key names the major only
+     * ({@code rachana: 1}). Today 1.0, so every Sutra written before levels keeps its meaning; when levels 1.0 and 1.1 retire (G4), this
+     * becomes the newest level and an older declared level is refused with "run rachana upgrade" (one commit: this line, {@link #LEVELS}
+     * and the refusal in SutraBuilder).
+     */
+    public static final String MAJOR_ONLY = "1.0";
+
     /** The language levels this runtime implements, oldest first. */
     public static final List<String> LEVELS = List.of("1.0", "1.1", "1.2");
 
@@ -66,6 +74,8 @@ public final class Grammar {
     private final FragmentResolver fragments;
     private final String level;
     private final com.ash.rachana.lib.LibrarySet libraries;
+    /** True when the level is the one a Sutra declares ({@code rachana: 1.N}) below its host's: refusals then name the Sutra's level. */
+    private boolean declared;
 
     private Grammar(Map<String, SutraKey> keys, Set<PanelKind> profileKinds, Set<String> sourceForms, boolean formSave, FragmentResolver fragments,
             String level, com.ash.rachana.lib.LibrarySet libraries) {
@@ -134,6 +144,37 @@ public final class Grammar {
             throw new IllegalArgumentException("language level '" + next + "' is not one of " + String.join(", ", LEVELS));
         }
         return next.equals(level) ? this : new Grammar(keys, profileKinds, sourceForms, formSave, fragments, next, libraries);
+    }
+
+    /**
+     * This grammar at the level a Sutra declares ({@code rachana: 1} is 1.0, {@code rachana: 1.N} is 1.N; SPEC 2.1), at most its host's
+     * own: the Sutra is read at that level, and a name of a later level is refused with words that name the Sutra's level, not the
+     * host's.
+     *
+     * @throws IllegalArgumentException for a level this runtime does not implement ({@link #LEVELS})
+     */
+    public Grammar declaredAt(String fileLevel) {
+        if (fileLevel.equals(level)) {
+            return this;
+        }
+        Grammar g = atLevel(fileLevel);
+        Grammar out = new Grammar(g.keys, g.profileKinds, g.sourceForms, g.formSave, g.fragments, g.level, g.libraries);
+        out.declared = true;
+        return out;
+    }
+
+    /**
+     * The words after "needs Rachana {@code needed}; " in a refusal of a later level's name: the host's level ("this host runs 1.0 (raise
+     * the host's language level)"), or, for a Sutra that declares a lower level than its host's, the Sutra's own.
+     */
+    public String levelWords(String needed) {
+        return declared ? "this Sutra is written for " + level + " (declare rachana: " + needed + " or later at its top)"
+                : "this host runs " + level + " (raise the host's language level)";
+    }
+
+    /** Whether its level is a Sutra's declared level below its host's ({@link #declaredAt}). */
+    public boolean declaredBelowHost() {
+        return declared;
     }
 
     /** This grammar with another fragment resolver in place of its profile's (a test, a tool reading a folder of fragments). */

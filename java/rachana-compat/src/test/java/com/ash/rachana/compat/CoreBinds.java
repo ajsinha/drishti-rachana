@@ -49,14 +49,20 @@ final class CoreBinds {
     record Outcome(String file, String difference) {}
 
     static List<Outcome> replay(Corpus corpus) throws Exception {
+        return replay(corpus, "1.0", tree -> { });
+    }
+
+    /** As {@link #replay(Corpus)} on a host of {@code level}, after {@code prepare} has changed the scratch copy (the upgrade proof). */
+    static List<Outcome> replay(Corpus corpus, String level, CoreRuntime.Prepare prepare) throws Exception {
         Path root = Corpus.repoRoot();
         Path scratch = ReferenceBridgeRuntime.scratch(corpus);
         List<Outcome> out = new ArrayList<>();
         try {
+            prepare.accept(scratch);
             BlockLibrary blocks = new BlockLibrary();
             blocks.kit(scratch.resolve("kit"));
             Rachana rachana = Rachana.with(RachanaOptions.DEFAULTS.withFormats(null, List.of(root.resolve("spec/1/formats.yaml").toString())),
-                    Cases.profile("drishti", blocks).formats(root.resolve("tools/conformance/profile/drishti-formats.yaml").toString()).build());
+                    Cases.profile("drishti", blocks).formats(root.resolve("tools/conformance/profile/drishti-formats.yaml").toString()).build()).language(level);
             Map<String, Object> groups = Json.object(Json.parse(Files.readString(scratch.resolve("groups.json"))));
             for (Object go : Json.array(groups.get("groups"))) {
                 Map<String, Object> g = Json.object(go);

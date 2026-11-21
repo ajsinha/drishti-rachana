@@ -2,7 +2,7 @@
 suite: plan/checked
 since: "1.2"
 profile: core
-verified: false
+verified: true
 description: >-
   Checked mode over table schemas (SPEC 4.14; EL_EXPANSION X8; DataPlan at level 1.2): with the host's schemas known, each row
   condition over a table (the entry's where, a reading panel's where) is read against the table's column types and masks. A type
@@ -27,7 +27,7 @@ cases:
     given:
       ctl: { region: South }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: checked-ok
       version: 1
       controls:
@@ -45,7 +45,7 @@ cases:
     kind: plan
     source: SPEC 4.14 (no implicit casts, a date against a text not in ISO form)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: checked-date
       version: 1
       data:
@@ -62,7 +62,7 @@ cases:
     kind: plan
     source: SPEC 4.14 (no implicit casts)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: checked-number
       version: 1
       data:
@@ -78,7 +78,7 @@ cases:
     kind: plan
     source: SPEC 4.14 (RCH-9161); PROTOCOL 11
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: checked-masked
       version: 1
       data:
@@ -95,7 +95,7 @@ cases:
     kind: plan
     source: SPEC 6.2 (RCH-2071 names the column, checked mode adds nothing for it)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: checked-unknown
       version: 1
       data:

@@ -377,6 +377,7 @@
 [experimental] class public final class com.ash.rachana.el.CheckedMode
 [experimental] class public final class com.ash.rachana.el.DatePartFunctions
 [experimental] class public final class com.ash.rachana.el.Declarations
+[experimental] class public final class com.ash.rachana.el.ElSource
 [experimental] class public final class com.ash.rachana.el.FormRules
 [experimental] class public final class com.ash.rachana.el.FragmentColumns
 [experimental] class public final class com.ash.rachana.el.Functions
@@ -417,6 +418,7 @@
 [experimental] class public final class com.ash.rachana.parse.SutraDocstring
 [experimental] class public final class com.ash.rachana.parse.SutraParser
 [experimental] class public final class com.ash.rachana.parse.TypedFragment
+[experimental] class public final class com.ash.rachana.parse.YamlScalarSpans
 [experimental] class public final class com.ash.rachana.parse.YamlSyntaxException
 [experimental] class public final class com.ash.rachana.profile.Entities
 [experimental] class public final class com.ash.rachana.profile.Grammar
@@ -435,6 +437,8 @@
 [experimental] class public final class com.ash.rachana.tools.LibraryGates
 [experimental] class public final class com.ash.rachana.tools.LibraryTool
 [experimental] class public final class com.ash.rachana.tools.Tools
+[experimental] class public final class com.ash.rachana.tools.Upgrade
+[experimental] class public final class com.ash.rachana.tools.UpgradeCommand
 [experimental] class public final class com.ash.rachana.view.Emptiness
 [experimental] class public final class com.ash.rachana.view.MaskCount
 [experimental] class public final class com.ash.rachana.view.PhoneView
@@ -451,6 +455,7 @@
 [experimental] class public final enum com.ash.rachana.model.Area
 [experimental] class public final enum com.ash.rachana.model.ControlKind
 [experimental] class public final enum com.ash.rachana.model.PanelKind
+[experimental] class public final enum com.ash.rachana.tools.UpgradeRule
 [experimental] class public final record com.ash.rachana.agg.Batch
 [experimental] class public final record com.ash.rachana.agg.Final
 [experimental] class public final record com.ash.rachana.bind.AsOf
@@ -552,6 +557,7 @@
 [experimental] class public static final enum com.ash.rachana.model.DataEntry$Form
 [experimental] class public static final enum com.ash.rachana.model.PivotSpec$Mode
 [experimental] class public static final enum com.ash.rachana.server.ServerConfig$AuthMode
+[experimental] class public static final enum com.ash.rachana.tools.UpgradeRule$Action
 [experimental] class public static final enum com.ash.rachana.view.Include$Rule
 [experimental] class public static final record com.ash.rachana.SutraLayoutEditor$Edit
 [experimental] class public static final record com.ash.rachana.SutraLayoutEditor$Placement
@@ -574,6 +580,8 @@
 [experimental] class public static final record com.ash.rachana.design.ops.AddPanel$At
 [experimental] class public static final record com.ash.rachana.el.CheckedMode$Parsed
 [experimental] class public static final record com.ash.rachana.el.Declarations$Function
+[experimental] class public static final record com.ash.rachana.el.ElSource$Parsed
+[experimental] class public static final record com.ash.rachana.el.ElSource$Tok
 [experimental] class public static final record com.ash.rachana.el.EvalContext$Locals
 [experimental] class public static final record com.ash.rachana.el.EvalContext$Scope
 [experimental] class public static final record com.ash.rachana.el.Expr$Absent
@@ -667,6 +675,7 @@
 [experimental] class public static final record com.ash.rachana.parse.TypedFragment$Param
 [experimental] class public static final record com.ash.rachana.parse.TypedFragment$Slot
 [experimental] class public static final record com.ash.rachana.parse.TypedFragment$Stateful
+[experimental] class public static final record com.ash.rachana.parse.YamlScalarSpans$Scalar
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Access
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Approvals
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Auth
@@ -689,6 +698,9 @@
 [experimental] class public static final record com.ash.rachana.tools.LibraryTool$Contract
 [experimental] class public static final record com.ash.rachana.tools.LibraryTool$ContractColumn
 [experimental] class public static final record com.ash.rachana.tools.LibraryTool$Fit
+[experimental] class public static final record com.ash.rachana.tools.Upgrade$Change
+[experimental] class public static final record com.ash.rachana.tools.Upgrade$Flag
+[experimental] class public static final record com.ash.rachana.tools.Upgrade$Result
 [experimental] class public static final record com.ash.rachana.view.MaskCount$Result
 [experimental] class public static final record com.ash.rachana.view.PanelData$Band
 [experimental] class public static final record com.ash.rachana.view.PanelData$Bar
@@ -1766,9 +1778,11 @@
 [experimental] com.ash.rachana.el.DatePartFunctions :: public static java.lang.String com.ash.rachana.el.DatePartFunctions.unit(java.lang.String)
 [experimental] com.ash.rachana.el.DatePartFunctions :: public static java.time.LocalDate com.ash.rachana.el.DatePartFunctions.shift(java.time.LocalDate,int,java.lang.String,com.ash.rachana.el.Calendars$Calendar)
 [experimental] com.ash.rachana.el.Declarations :: public boolean com.ash.rachana.el.Declarations.isEmpty()
+[experimental] com.ash.rachana.el.Declarations :: public com.ash.rachana.el.Declarations com.ash.rachana.el.Declarations.atLevel(java.lang.String)
 [experimental] com.ash.rachana.el.Declarations :: public com.ash.rachana.el.Declarations(java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function>,java.util.Map<java.lang.String, java.lang.String>)
 [experimental] com.ash.rachana.el.Declarations :: public com.ash.rachana.el.Declarations(java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function>,java.util.Map<java.lang.String, java.lang.String>,java.util.Map<java.lang.String, java.lang.String>)
 [experimental] com.ash.rachana.el.Declarations :: public java.lang.String com.ash.rachana.el.Declarations.id()
+[experimental] com.ash.rachana.el.Declarations :: public java.lang.String com.ash.rachana.el.Declarations.level()
 [experimental] com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function> com.ash.rachana.el.Declarations.functions()
 [experimental] com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations.lets()
 [experimental] com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations.states()
@@ -1788,6 +1802,27 @@
 [experimental] com.ash.rachana.el.Declarations$Function :: public java.lang.String com.ash.rachana.el.Declarations$Function.returns()
 [experimental] com.ash.rachana.el.Declarations$Function :: public java.util.List<java.lang.String> com.ash.rachana.el.Declarations$Function.paramNames()
 [experimental] com.ash.rachana.el.Declarations$Function :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations$Function.params()
+[experimental] com.ash.rachana.el.ElSource :: public static boolean com.ash.rachana.el.ElSource.known(com.ash.rachana.el.FunctionTable,java.lang.String)
+[experimental] com.ash.rachana.el.ElSource :: public static boolean com.ash.rachana.el.ElSource.readsAsNumber(java.lang.String,boolean)
+[experimental] com.ash.rachana.el.ElSource :: public static boolean com.ash.rachana.el.ElSource.reserved(java.lang.String)
+[experimental] com.ash.rachana.el.ElSource :: public static com.ash.rachana.el.ElSource$Parsed com.ash.rachana.el.ElSource.parse(java.lang.String,com.ash.rachana.el.FunctionTable,boolean)
+[experimental] com.ash.rachana.el.ElSource :: public static java.lang.String com.ash.rachana.el.ElSource.namedArgumentAtLevel11(java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.el.ElSource :: public static java.util.List<com.ash.rachana.el.ElSource$Tok> com.ash.rachana.el.ElSource.tokens(java.lang.String,boolean)
+[experimental] com.ash.rachana.el.ElSource :: public static java.util.Set<java.lang.String> com.ash.rachana.el.ElSource.changedAtLevel11()
+[experimental] com.ash.rachana.el.ElSource$Parsed :: public com.ash.rachana.el.ElSource$Parsed(com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>)
+[experimental] com.ash.rachana.el.ElSource$Parsed :: public com.ash.rachana.el.Expr com.ash.rachana.el.ElSource$Parsed.expr()
+[experimental] com.ash.rachana.el.ElSource$Parsed :: public final boolean com.ash.rachana.el.ElSource$Parsed.equals(java.lang.Object)
+[experimental] com.ash.rachana.el.ElSource$Parsed :: public final int com.ash.rachana.el.ElSource$Parsed.hashCode()
+[experimental] com.ash.rachana.el.ElSource$Parsed :: public final java.lang.String com.ash.rachana.el.ElSource$Parsed.toString()
+[experimental] com.ash.rachana.el.ElSource$Parsed :: public java.util.Map<com.ash.rachana.el.Expr, int[]> com.ash.rachana.el.ElSource$Parsed.spans()
+[experimental] com.ash.rachana.el.ElSource$Tok :: public com.ash.rachana.el.ElSource$Tok(java.lang.String,java.lang.String,int,int)
+[experimental] com.ash.rachana.el.ElSource$Tok :: public final boolean com.ash.rachana.el.ElSource$Tok.equals(java.lang.Object)
+[experimental] com.ash.rachana.el.ElSource$Tok :: public final int com.ash.rachana.el.ElSource$Tok.hashCode()
+[experimental] com.ash.rachana.el.ElSource$Tok :: public final java.lang.String com.ash.rachana.el.ElSource$Tok.toString()
+[experimental] com.ash.rachana.el.ElSource$Tok :: public int com.ash.rachana.el.ElSource$Tok.end()
+[experimental] com.ash.rachana.el.ElSource$Tok :: public int com.ash.rachana.el.ElSource$Tok.start()
+[experimental] com.ash.rachana.el.ElSource$Tok :: public java.lang.String com.ash.rachana.el.ElSource$Tok.text()
+[experimental] com.ash.rachana.el.ElSource$Tok :: public java.lang.String com.ash.rachana.el.ElSource$Tok.type()
 [experimental] com.ash.rachana.el.EvalContext$Locals :: public com.ash.rachana.el.EvalContext$Locals com.ash.rachana.el.EvalContext$Locals.outer()
 [experimental] com.ash.rachana.el.EvalContext$Locals :: public com.ash.rachana.el.EvalContext$Locals(java.lang.String,java.lang.Object,com.ash.rachana.el.EvalContext$Locals)
 [experimental] com.ash.rachana.el.EvalContext$Locals :: public final boolean com.ash.rachana.el.EvalContext$Locals.equals(java.lang.Object)
@@ -3181,6 +3216,7 @@
 [experimental] com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.description()
 [experimental] com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.domain()
 [experimental] com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.id()
+[experimental] com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.level()
 [experimental] com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.name()
 [experimental] com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.model.Sutra.advisories()
 [experimental] com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.Control> com.ash.rachana.model.Sutra.controls()
@@ -3196,6 +3232,7 @@
 [experimental] com.ash.rachana.model.Sutra :: public static final int com.ash.rachana.model.Sutra.MAX_STRIP
 [experimental] com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.ADVISORIES
 [experimental] com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.DECLARATIONS
+[experimental] com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.LEVEL
 [experimental] com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.LIBRARIES
 [experimental] com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.PLACES
 [experimental] com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.STATE
@@ -3453,6 +3490,7 @@
 [experimental] com.ash.rachana.parse.SutraParser :: public static final int com.ash.rachana.parse.SutraParser.LANGUAGE
 [experimental] com.ash.rachana.parse.SutraParser :: public static final java.lang.String com.ash.rachana.parse.SutraParser.AMBIGUOUS_YAML
 [experimental] com.ash.rachana.parse.SutraParser :: public static final java.lang.String com.ash.rachana.parse.SutraParser.STUDIO
+[experimental] com.ash.rachana.parse.SutraParser :: public static java.lang.String com.ash.rachana.parse.SutraParser.declaredLevel(java.lang.String)
 [experimental] com.ash.rachana.parse.TypedFragment :: public com.ash.rachana.parse.TypedFragment$Bound com.ash.rachana.parse.TypedFragment.bind(com.ash.rachana.parse.SutraBlocks$Block,com.ash.rachana.parse.PNode,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>,com.ash.rachana.parse.TypedFragment$Caller)
 [experimental] com.ash.rachana.parse.TypedFragment :: public java.lang.String com.ash.rachana.parse.TypedFragment.name()
 [experimental] com.ash.rachana.parse.TypedFragment :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.TypedFragment.outsideScope()
@@ -3524,6 +3562,19 @@
 [experimental] com.ash.rachana.parse.TypedFragment$Stateful :: public java.lang.String com.ash.rachana.parse.TypedFragment$Stateful.fragment()
 [experimental] com.ash.rachana.parse.TypedFragment$Stateful :: public java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment$Stateful.names()
 [experimental] com.ash.rachana.parse.TypedFragment$Stateful :: public java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment$Stateful.outputs()
+[experimental] com.ash.rachana.parse.YamlScalarSpans :: public static java.util.List<com.ash.rachana.parse.YamlScalarSpans$Scalar> com.ash.rachana.parse.YamlScalarSpans.of(java.lang.String)
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public boolean com.ash.rachana.parse.YamlScalarSpans$Scalar.key()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public char com.ash.rachana.parse.YamlScalarSpans$Scalar.style()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public com.ash.rachana.parse.YamlScalarSpans$Scalar(java.lang.String,java.lang.String,int,int,char,boolean,int,int)
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public final boolean com.ash.rachana.parse.YamlScalarSpans$Scalar.equals(java.lang.Object)
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public final int com.ash.rachana.parse.YamlScalarSpans$Scalar.hashCode()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public final java.lang.String com.ash.rachana.parse.YamlScalarSpans$Scalar.toString()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public int com.ash.rachana.parse.YamlScalarSpans$Scalar.column()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public int com.ash.rachana.parse.YamlScalarSpans$Scalar.end()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public int com.ash.rachana.parse.YamlScalarSpans$Scalar.line()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public int com.ash.rachana.parse.YamlScalarSpans$Scalar.start()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public java.lang.String com.ash.rachana.parse.YamlScalarSpans$Scalar.path()
+[experimental] com.ash.rachana.parse.YamlScalarSpans$Scalar :: public java.lang.String com.ash.rachana.parse.YamlScalarSpans$Scalar.value()
 [experimental] com.ash.rachana.parse.YamlSyntaxException :: public com.ash.rachana.parse.YamlSyntaxException(java.lang.String,int,int)
 [experimental] com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.column()
 [experimental] com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.line()
@@ -3536,6 +3587,7 @@
 [experimental] com.ash.rachana.profile.Entities :: public static final java.lang.String com.ash.rachana.profile.Entities.DOMAIN
 [experimental] com.ash.rachana.profile.Entities :: public static final java.lang.String com.ash.rachana.profile.Entities.MATCH
 [experimental] com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.accepts(com.ash.rachana.model.PanelKind)
+[experimental] com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.declaredBelowHost()
 [experimental] com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.formSave()
 [experimental] com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.hasKey(java.lang.String)
 [experimental] com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.known(com.ash.rachana.model.PanelKind)
@@ -3543,15 +3595,18 @@
 [experimental] com.ash.rachana.profile.Grammar :: public com.ash.rachana.lib.LibrarySet com.ash.rachana.profile.Grammar.libraries()
 [experimental] com.ash.rachana.profile.Grammar :: public com.ash.rachana.parse.FragmentResolver com.ash.rachana.profile.Grammar.fragments()
 [experimental] com.ash.rachana.profile.Grammar :: public com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.atLevel(java.lang.String)
+[experimental] com.ash.rachana.profile.Grammar :: public com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.declaredAt(java.lang.String)
 [experimental] com.ash.rachana.profile.Grammar :: public com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.withFragments(com.ash.rachana.parse.FragmentResolver)
 [experimental] com.ash.rachana.profile.Grammar :: public com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.withLibraries(com.ash.rachana.lib.LibrarySet)
 [experimental] com.ash.rachana.profile.Grammar :: public java.lang.String com.ash.rachana.profile.Grammar.level()
+[experimental] com.ash.rachana.profile.Grammar :: public java.lang.String com.ash.rachana.profile.Grammar.levelWords(java.lang.String)
 [experimental] com.ash.rachana.profile.Grammar :: public java.util.List<com.ash.rachana.model.PanelKind> com.ash.rachana.profile.Grammar.panelKinds()
 [experimental] com.ash.rachana.profile.Grammar :: public java.util.Map<java.lang.String, com.ash.rachana.profile.SutraKey> com.ash.rachana.profile.Grammar.keys()
 [experimental] com.ash.rachana.profile.Grammar :: public static com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.core()
 [experimental] com.ash.rachana.profile.Grammar :: public static com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.of(java.util.List<com.ash.rachana.profile.Profile>)
 [experimental] com.ash.rachana.profile.Grammar :: public static final java.lang.String com.ash.rachana.profile.Grammar.DEFAULT_LEVEL
 [experimental] com.ash.rachana.profile.Grammar :: public static final java.lang.String com.ash.rachana.profile.Grammar.LEVEL_1_0
+[experimental] com.ash.rachana.profile.Grammar :: public static final java.lang.String com.ash.rachana.profile.Grammar.MAJOR_ONLY
 [experimental] com.ash.rachana.profile.Grammar :: public static final java.util.List<java.lang.String> com.ash.rachana.profile.Grammar.LEVELS
 [experimental] com.ash.rachana.profile.Grammar :: public static final java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.profile.Grammar.LEVEL_KEYS
 [experimental] com.ash.rachana.profile.Grammar :: public static final java.util.Set<com.ash.rachana.model.PanelKind> com.ash.rachana.profile.Grammar.PROFILE_KINDS
@@ -3929,6 +3984,79 @@
 [experimental] com.ash.rachana.tools.LibraryTool$Fit :: public java.lang.String com.ash.rachana.tools.LibraryTool$Fit.status()
 [experimental] com.ash.rachana.tools.LibraryTool$Fit :: public java.lang.String com.ash.rachana.tools.LibraryTool$Fit.table()
 [experimental] com.ash.rachana.tools.Tools :: public static final java.lang.String com.ash.rachana.tools.Tools.AREA
+[experimental] com.ash.rachana.tools.Upgrade :: public static com.ash.rachana.tools.Upgrade$Result com.ash.rachana.tools.Upgrade.upgrade(java.lang.String,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.tools.Upgrade :: public static com.ash.rachana.tools.Upgrade$Result com.ash.rachana.tools.Upgrade.upgrade(java.lang.String,java.lang.String,java.lang.String,java.lang.String,com.ash.rachana.el.FunctionTable)
+[experimental] com.ash.rachana.tools.Upgrade :: public static java.lang.String com.ash.rachana.tools.Upgrade.diff(java.lang.String,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.tools.Upgrade :: public static java.util.List<java.lang.String> com.ash.rachana.tools.Upgrade.rules()
+[experimental] com.ash.rachana.tools.Upgrade :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.tools.Upgrade.report(java.util.List<com.ash.rachana.tools.Upgrade$Result>)
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public com.ash.rachana.tools.Upgrade$Change(java.lang.String,java.lang.String,int,int,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public final boolean com.ash.rachana.tools.Upgrade$Change.equals(java.lang.Object)
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public final int com.ash.rachana.tools.Upgrade$Change.hashCode()
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public final java.lang.String com.ash.rachana.tools.Upgrade$Change.toString()
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public int com.ash.rachana.tools.Upgrade$Change.column()
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public int com.ash.rachana.tools.Upgrade$Change.line()
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public java.lang.String com.ash.rachana.tools.Upgrade$Change.after()
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public java.lang.String com.ash.rachana.tools.Upgrade$Change.before()
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public java.lang.String com.ash.rachana.tools.Upgrade$Change.path()
+[experimental] com.ash.rachana.tools.Upgrade$Change :: public java.lang.String com.ash.rachana.tools.Upgrade$Change.rule()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public com.ash.rachana.tools.Upgrade$Flag(java.lang.String,java.lang.String,java.lang.String,int,int,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public final boolean com.ash.rachana.tools.Upgrade$Flag.equals(java.lang.Object)
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public final int com.ash.rachana.tools.Upgrade$Flag.hashCode()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public final java.lang.String com.ash.rachana.tools.Upgrade$Flag.toString()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public int com.ash.rachana.tools.Upgrade$Flag.column()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public int com.ash.rachana.tools.Upgrade$Flag.line()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public java.lang.String com.ash.rachana.tools.Upgrade$Flag.expression()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public java.lang.String com.ash.rachana.tools.Upgrade$Flag.message()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public java.lang.String com.ash.rachana.tools.Upgrade$Flag.path()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public java.lang.String com.ash.rachana.tools.Upgrade$Flag.rule()
+[experimental] com.ash.rachana.tools.Upgrade$Flag :: public java.lang.String com.ash.rachana.tools.Upgrade$Flag.severity()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public boolean com.ash.rachana.tools.Upgrade$Result.changed()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public boolean com.ash.rachana.tools.Upgrade$Result.writable()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public com.ash.rachana.tools.Upgrade$Result(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,java.util.List<com.ash.rachana.tools.Upgrade$Change>,java.util.List<com.ash.rachana.tools.Upgrade$Flag>,java.lang.String)
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public final boolean com.ash.rachana.tools.Upgrade$Result.equals(java.lang.Object)
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public final int com.ash.rachana.tools.Upgrade$Result.hashCode()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public final java.lang.String com.ash.rachana.tools.Upgrade$Result.toString()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.lang.String com.ash.rachana.tools.Upgrade$Result.file()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.lang.String com.ash.rachana.tools.Upgrade$Result.from()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.lang.String com.ash.rachana.tools.Upgrade$Result.kind()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.lang.String com.ash.rachana.tools.Upgrade$Result.refused()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.lang.String com.ash.rachana.tools.Upgrade$Result.text()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.lang.String com.ash.rachana.tools.Upgrade$Result.to()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.util.List<com.ash.rachana.tools.Upgrade$Change> com.ash.rachana.tools.Upgrade$Result.changes()
+[experimental] com.ash.rachana.tools.Upgrade$Result :: public java.util.List<com.ash.rachana.tools.Upgrade$Flag> com.ash.rachana.tools.Upgrade$Result.flags()
+[experimental] com.ash.rachana.tools.UpgradeCommand :: public static int com.ash.rachana.tools.UpgradeCommand.run(java.lang.String[],java.io.PrintStream,java.io.PrintStream)
+[experimental] com.ash.rachana.tools.UpgradeRule :: public com.ash.rachana.tools.UpgradeRule$Action com.ash.rachana.tools.UpgradeRule.action()
+[experimental] com.ash.rachana.tools.UpgradeRule :: public java.lang.String com.ash.rachana.tools.UpgradeRule.id()
+[experimental] com.ash.rachana.tools.UpgradeRule :: public java.lang.String com.ash.rachana.tools.UpgradeRule.severity()
+[experimental] com.ash.rachana.tools.UpgradeRule :: public java.lang.String com.ash.rachana.tools.UpgradeRule.title()
+[experimental] com.ash.rachana.tools.UpgradeRule :: public java.lang.String com.ash.rachana.tools.UpgradeRule.why()
+[experimental] com.ash.rachana.tools.UpgradeRule :: public java.util.List<java.lang.String> com.ash.rachana.tools.UpgradeRule.covers()
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.valueOf(java.lang.String)
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static com.ash.rachana.tools.UpgradeRule[] com.ash.rachana.tools.UpgradeRule.values()
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.ADDITIONS
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.AGGREGATE_NOT_A_LIST
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.DECLARE
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.EXACT
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.KEYWORD
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.LEVEL_1_0_RECORDINGS
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.NAMED
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.NUMBER_TEXT
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.POWER_SIGN
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.PROBLEM_WORDS
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.PYTHON_WORDS
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.REGEX_CODE
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.RESERVED_NAMES
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.SAME_AT_EVERY_LEVEL
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.SPAN
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.STANDARDIZE
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.SYNTAX_1_1
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.TEXT_CODE_POINTS
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.WITHDRAWN
+[experimental] com.ash.rachana.tools.UpgradeRule$Action :: public static com.ash.rachana.tools.UpgradeRule$Action com.ash.rachana.tools.UpgradeRule$Action.valueOf(java.lang.String)
+[experimental] com.ash.rachana.tools.UpgradeRule$Action :: public static com.ash.rachana.tools.UpgradeRule$Action[] com.ash.rachana.tools.UpgradeRule$Action.values()
+[experimental] com.ash.rachana.tools.UpgradeRule$Action :: public static final com.ash.rachana.tools.UpgradeRule$Action com.ash.rachana.tools.UpgradeRule$Action.FLAG
+[experimental] com.ash.rachana.tools.UpgradeRule$Action :: public static final com.ash.rachana.tools.UpgradeRule$Action com.ash.rachana.tools.UpgradeRule$Action.NONE
+[experimental] com.ash.rachana.tools.UpgradeRule$Action :: public static final com.ash.rachana.tools.UpgradeRule$Action com.ash.rachana.tools.UpgradeRule$Action.REWRITE
 [experimental] com.ash.rachana.view.Emptiness :: public static boolean com.ash.rachana.view.Emptiness.of(com.ash.rachana.view.PanelData)
 [experimental] com.ash.rachana.view.Frame :: public com.ash.rachana.view.Frame(long,long,java.util.List<com.ash.rachana.view.Patch>,double,double)
 [experimental] com.ash.rachana.view.Frame :: public double com.ash.rachana.view.Frame.latencyMs()

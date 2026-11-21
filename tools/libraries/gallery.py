@@ -96,7 +96,7 @@ def page(lib_name, manifest, frag, example_text):
     panels.append({"id": "g-source-head", "kind": "markdown", "text": f"**Example source** (`{lib_name}/examples/{name}.sutra.yaml`)"})
     panels.append(table("Example source", "$.g_source", [("Line", "line"), ("Text", "text")]))
     libs = sorted(set((ex.get("libraries") or []) + ["core@1", f"{lib_name}@{manifest['version'].split('.')[0]}"]))
-    out = {"rachana": 1, "sutra": f"gallery-{name}", "version": 1, "libraries": libs,
+    out = {"rachana": "1.2", "sutra": f"gallery-{name}", "version": 1, "libraries": libs,
            "title": {"id": f"'{lib_name}/{name}'"}, "data": data, "panels": panels}
     for k, v in ex.items():
         if k not in out and k not in ("sutra",):
@@ -120,7 +120,7 @@ def index(lib_name, manifest, frags):
             panels.append({"use": "core/data-table@1", "as": "cat-" + word.replace("_", "-"),
                            "with": {"title": title, "search": False, "rows": "$.g_" + word,
                                     "columns": [{"label": "Fragment", "bind": "@.name"}, {"label": "What it is", "bind": "@.summary"}]}})
-    return {"rachana": 1, "sutra": "library", "version": 1, "libraries": ["core@1"],
+    return {"rachana": "1.2", "sutra": "library", "version": 1, "libraries": ["core@1"],
             "title": {"id": f"'{manifest.get('title', lib_name)} library'"}, "data": data, "panels": panels}
 
 
@@ -160,7 +160,7 @@ def build(lib: Path, out_root: Path):
         shutil.copytree(lib / "examples" / "data", work / "data")
     site = out_root / "site" / lib.name
     shutil.rmtree(site, ignore_errors=True)
-    r = subprocess.run(["node", str(CLI), "build", "--src", str(work), "--out", str(site), "--level", "1.2", "--libs", str(lib.parent)],
+    r = subprocess.run(["node", str(CLI), "build", "--src", str(work), "--out", str(site), "--libs", str(lib.parent)],
                        capture_output=True, text=True)
     if r.returncode != 0:
         print(r.stdout + r.stderr)

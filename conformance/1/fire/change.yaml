@@ -11,7 +11,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (change); SPEC 2.8 item 7"
     note: "Picking EMEA sets the control, writes the region into state and hands a notify and a host action over; the metric reads the state, the title reads the control."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: regions
       version: 1
       title: { id: "'Region ' + ctl.region" }
@@ -59,7 +59,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (when); SPEC 2.8 items 4 and 7"
     note: "The guard is evaluated over the screen when the view is bound: with the strict flag off the clear is left out of the list the control carries."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: strict
       version: 1
       title: { id: "'Strict'" }
@@ -89,7 +89,7 @@ cases:
     kind: fire
     source: "SUTRA_EXPANSION I1 (change); SPEC 2.8 item 7"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: desks
       version: 1
       title: { id: "'Desks'" }
@@ -114,7 +114,7 @@ cases:
     kind: fire
     source: "SPEC 2.8 item 7"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: plain
       version: 1
       title: { id: "'Plain ' + ctl.ccy" }

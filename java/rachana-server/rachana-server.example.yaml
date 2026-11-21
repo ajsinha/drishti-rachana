@@ -22,7 +22,6 @@ server:
 
 project:
   dir: "${config}/project"              # sutras/ (*.sutra.yaml, any depth), rachana_libs/ (libraries), static/ (served at /static/)
-  level: "1.1"                          # the language level the pages compile at
   watch: true                           # Sutras and project libraries are read again when they change
 
 libraries: []                           # more libraries: a library folder, an .rlib, or a folder of them (beside the bundled ones)

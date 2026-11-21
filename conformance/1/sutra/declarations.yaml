@@ -11,7 +11,7 @@ cases:
     source: EL_EXPANSION X41; SUTRA_EXPANSION S2
     note: "fx reads the document; total reads fx (a let reads the ones before it); share is a function; a table's column reads a let and calls a function per row; a template calls one."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       title: { id: "'Desks'" }
@@ -95,7 +95,7 @@ cases:
         panels:
           - { id: carry, kind: metric, label: Carry, value: "fin.carry(arg.notional, arg.rate, 90)" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       title: { id: "'Carry'" }

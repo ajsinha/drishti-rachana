@@ -2,7 +2,7 @@
 suite: protocol/approve
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Four eyes on a live table (PROTOCOL 16 Writes, LIVE_TABLES 1.6 and 5, LT-9): when the host's sink holds changes, an approver (the host's approve right) reads in the tray <name>.changes the held changes of others whose rows are in the approver's scope of the table, masked as the table is for them, and decides one by writing its state: { id, key: [<change>], basedOn: held, set: { state: released | rejected }, reason }. A decision is answered applied; a rejection gives its reason (422); without the right, or on one's own change when the host says so, 403 (audited); a change not listed for the approver 404; a change no longer held 409 naming its state, maker and time; a repeated decision id answers its first answer. Run with protocol_check.py --live."
 cases:
   - id: an-approver-reads-the-held-changes-of-others-in-scope

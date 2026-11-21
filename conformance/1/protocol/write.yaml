@@ -61,7 +61,7 @@ cases:
         expect: { status: 200, body: { values: [ [b, 2, DONE] ] } }
 
   - id: a-repeated-change-id-answers-the-first-answer
-    verified: false
+    verified: true
     kind: protocol
     source: "PROTOCOL 16 (the same id again answers the first answer); LIVE_TABLES 1.6 exactly once"
     fixture: *outbox
@@ -94,7 +94,7 @@ cases:
         expect: { status: 403, body: { error: { code: rdp.write.forbidden } } }
 
   - id: a-held-change-waits-for-the-hosts-decision
-    verified: false
+    verified: true
     kind: protocol
     source: "LIVE_TABLES 1.6, LT-9 (four eyes is the host's: held, release)"
     fixture: &held { name: trades, edit: { sink: outbox, hold: true }, declaration: *decl, rows: *rows, readers: *readers }
@@ -141,7 +141,7 @@ cases:
         expect: { status: 200, body: [ { event: write-conflicted, caller: bob, change: c1 } ] }
 
   - id: an-invalid-change-names-the-column-and-rule
-    verified: false
+    verified: true
     kind: protocol
     source: "PROTOCOL 16, 10.1 rdp.write.invalid (Core's form checker, the code the page ran)"
     fixture: *outbox
@@ -285,7 +285,7 @@ cases:
         expect: { status: 200, body: { t: res, re: r2, error: { code: rdp.write.conflict, current: { version: 2, by: bob } } } }
 
   - id: the-schema-offers-write-to-an-editor-only
-    verified: false
+    verified: true
     kind: protocol
     source: "PROTOCOL 16 schema write { columns, reason }; can: write"
     fixture: *outbox

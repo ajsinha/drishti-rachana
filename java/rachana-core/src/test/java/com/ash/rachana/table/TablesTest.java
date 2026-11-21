@@ -109,7 +109,7 @@ class TablesTest {
     void aPlanIsCheckedAgainstTheSchemasFromLevel12() {
         com.ash.rachana.Rachana r = com.ash.rachana.Rachana.with(com.ash.rachana.RachanaOptions.DEFAULTS).language("1.2");
         com.ash.rachana.model.Sutra sutra = r.parser().parse("""
-                rachana: 1
+                rachana: 1.2
                 sutra: checked
                 version: 1
                 data:

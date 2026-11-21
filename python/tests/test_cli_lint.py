@@ -42,12 +42,29 @@ def test_usage_error_and_discovery(tmp_path):
     assert [f.name for f in find_sutras([str(tmp_path)])] == ["a.sutra.yaml"]
 
 
-def test_level_default_and_examples_lint_clean():
+def test_each_sutra_declares_its_level_and_examples_lint_clean():
     from pathlib import Path
     from drishti_rachana.engine import Rachana
     ex = Path(__file__).resolve().parents[2] / "examples"
-    for lv in ("1.1", "1.2"):
-        assert main(["lint", "--level", lv, str(ex / "static-sales"), str(ex / "live-orders")]) == 0, lv
-    assert main(["lint", str(ex)]) == 0                               # the default is 1.1
-    assert main(["lint", "--level", "9.9", str(ex)]) == 2             # usage error
+    assert main(["lint", str(ex / "static-sales"), str(ex / "live-orders")]) == 0
+    assert main(["lint", str(ex)]) == 0                               # each Sutra at the level its rachana: key declares (SPEC 2.1)
+    assert main(["lint", "--level", "1.2", str(ex)]) == 2             # usage error: no --level
     assert Rachana().check(GOOD)["ok"] and Rachana().check(GOOD, level="1.2")["ok"]
+
+
+def test_upgrade_runs_the_one_java_implementation(tmp_path, monkeypatch):
+    from pathlib import Path
+    from drishti_rachana.cli import java_command
+    assert java_command("upgrade", ["x"], {}) is None
+    assert java_command("upgrade", ["x"], {"RACHANA_JAR": "r.jar"}) == ["java", "-jar", "r.jar", "upgrade", "x"]
+    monkeypatch.delenv("RACHANA_JAR", raising=False)
+    monkeypatch.delenv("RACHANA_CLASSPATH", raising=False)
+    assert main(["upgrade", "x"]) == 2                               # no JVM named
+    java = Path(__file__).resolve().parents[2] / "java"
+    if not (java / "rachana-cli" / "target" / "classes").is_dir():
+        return                                                        # the Java classes are not built here
+    monkeypatch.setenv("RACHANA_CLASSPATH", ":".join(str(java / m / "target" / "classes") for m in ("rachana-cli", "rachana-tools", "rachana-core", "rachana-api")))
+    f = tmp_path / "u.sutra.yaml"
+    f.write_text("rachana: 1\nsutra: u\nversion: 1\npanels:\n  - { id: m, kind: metric, label: S, value: \"range($.r, 'p')\" }\n")
+    assert main(["upgrade", str(f), "--write"]) == 0
+    assert f.read_text().startswith("rachana: 1.2\n") and "span(" in f.read_text()

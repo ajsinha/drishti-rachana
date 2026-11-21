@@ -10,7 +10,7 @@ cases:
     kind: problem
     source: EL_EXPANSION X41 (a body reads only its parameters and other functions)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       match: { kind: demo }
@@ -35,7 +35,7 @@ cases:
     kind: problem
     source: EL_EXPANSION X41 (the call graph has no cycle)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       match: { kind: demo }
@@ -61,7 +61,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION S2 (each reads only the ones before it)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       match: { kind: demo }
@@ -87,7 +87,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION S2 (evaluated once per bind, no row)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       match: { kind: demo }
@@ -108,7 +108,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION S2 (a name shadows nothing)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       match: { kind: demo }
@@ -131,7 +131,7 @@ cases:
     kind: problem
     source: EL_EXPANSION X41, X1 d
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       match: { kind: demo }
@@ -152,7 +152,7 @@ cases:
     kind: problem
     source: EL_EXPANSION X41
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: decl-demo
       version: 1
       match: { kind: demo }

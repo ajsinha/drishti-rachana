@@ -11,7 +11,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (submit, cancel), 3.6 (forms); ScreenWire.submit"
     note: "The first submit breaks a rule, so nothing runs and the state stays; the second passes: the state takes the submitted quantity, the host gets the order with the values filled in. Cancel clears without checks."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: ticket
       version: 1
       title: { id: "'Ticket'" }
@@ -64,7 +64,7 @@ cases:
     kind: fire
     source: "SUTRA_EXPANSION 3.6; Form checks (required, min)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: ticket
       version: 1
       title: { id: "'Ticket'" }
@@ -98,7 +98,7 @@ cases:
     kind: fire
     source: "SUTRA_EXPANSION 3.6 (defaults from state and controls)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: ticket
       version: 1
       title: { id: "'Ticket'" }
@@ -149,7 +149,7 @@ cases:
                 - { id: note, label: Note }
             emits: [ { name: submit, on: submit, payload: { values: event } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: ticket-demo
       version: 1
       title: { id: "'Ticket'" }

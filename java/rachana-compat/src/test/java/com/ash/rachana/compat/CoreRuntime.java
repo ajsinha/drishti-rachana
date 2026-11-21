@@ -32,11 +32,20 @@ final class CoreRuntime implements CorpusRuntime {
     @Override public String name() { return "core"; }
 
     @Override public void compileAll(Corpus corpus, Path out) throws Exception {
+        compileAll(corpus, out, "1.0", tree -> { });
+    }
+
+    /**
+     * As {@link #compileAll(Corpus, Path)} on a host of {@code level}, after {@code prepare} has changed the corpus's scratch copy (its
+     * folder holds {@code tree/} and {@code kit/}): the upgrade proof compiles the upgraded Sutras so.
+     */
+    static void compileAll(Corpus corpus, Path out, String level, Prepare prepare) throws Exception {
         Path scratch = ReferenceBridgeRuntime.scratch(corpus);
         try {
+            prepare.accept(scratch);
             BlockLibrary blocks = new BlockLibrary();
             blocks.kit(scratch.resolve("kit"));
-            Rachana rachana = Rachana.with(RachanaOptions.DEFAULTS, Cases.profile("drishti", blocks).build());
+            Rachana rachana = Rachana.with(RachanaOptions.DEFAULTS, Cases.profile("drishti", blocks).build()).language(level);
             SutraExpressions check = new SutraExpressions(rachana.compiler());
             Map<String, Object> groups = Json.object(Json.parse(Files.readString(scratch.resolve("groups.json"))));
             for (Object go : Json.array(groups.get("groups"))) {
@@ -77,6 +86,11 @@ final class CoreRuntime implements CorpusRuntime {
         } finally {
             ReferenceBridgeRuntime.deleteTree(scratch);
         }
+    }
+
+    /** A change made to a corpus's scratch copy before it is read. */
+    interface Prepare {
+        void accept(Path scratch) throws Exception;
     }
 
     /** A JSON string as CorpusCompile.java writes it. */

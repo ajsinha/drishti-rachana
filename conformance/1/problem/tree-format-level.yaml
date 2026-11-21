@@ -10,7 +10,7 @@ cases:
     source: SPEC 7.2
     until: "1.1"
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: demo
       version: 1
       match: { kind: demo }

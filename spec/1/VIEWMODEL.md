@@ -29,6 +29,10 @@ ignores what a newer minor adds.
   (`error`) or is denied (`denied`).
 - Live: `Frame` (`seq`, `generation`, `patches`, `latencyMs`, `p99Ms`); a `Patch` has `op` (`strip`, `panel`, `provenance`,
   `deleted`, `restored`) and the field that op names (`index` + `cell`, `panel`, `provenance`, `at`).
+  A frame carries a patch only for what differs from the view before it; when nothing differs there is no frame. `seq` counts a
+  view's frames from `1`, by one per frame. `generation` (the source's generation), `latencyMs` and `p99Ms` (the host's measured
+  delay from the change to the frame, the last one and the 99th percentile) are **the host's facts**: a runtime with no host
+  writes `0` for all three (FORMAT 5.9), and a painter never reads them to decide what to draw.
 - Tones: `pos`, `neg`, `link`, `accent`, `ok`, `warn`, `bad`, `muted`, `inactive` (`Tone`). `Series.tone` is the author's
   own word and stays free text.
 

@@ -83,6 +83,11 @@ final class Level11 {
         return "sort".equals(name) ? ListFunctions::sortByCodePoint : null;
     }
 
+    /** The names level 1.1 binds its own function for. */
+    static java.util.Set<String> names() {
+        return FUNCTIONS.keySet();
+    }
+
     /** True when level 1.1 binds its own {@code name}. */
     static boolean has(String name) {
         return FUNCTIONS.containsKey(name);

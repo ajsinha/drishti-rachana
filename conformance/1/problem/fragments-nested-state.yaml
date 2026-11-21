@@ -44,7 +44,7 @@ cases:
             with: { rows: arg.rows }
           - { id: seen, kind: metric, label: Seen, value: "state.p.seen" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: nested-demo
       version: 1
       match: { kind: demo }
@@ -96,7 +96,7 @@ cases:
             as: p
             with: { rows: arg.rows }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: nested-demo
       version: 1
       match: { kind: demo }
@@ -146,7 +146,7 @@ cases:
             as: p
             with: { rows: arg.rows }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: nested-demo
       version: 1
       match: { kind: demo }

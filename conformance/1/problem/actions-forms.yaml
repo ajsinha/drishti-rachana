@@ -10,7 +10,7 @@ cases:
     kind: problem
     source: "SUTRA_EXPANSION 3.6 (form panel)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: form-demo
       version: 1
       match: { kind: order }
@@ -25,7 +25,7 @@ cases:
     kind: problem
     source: "SUTRA_EXPANSION 3.6 (form panel)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: form-demo
       version: 1
       match: { kind: order }
@@ -49,7 +49,7 @@ cases:
     kind: problem
     source: "SUTRA_EXPANSION I1"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: form-demo
       version: 1
       match: { kind: order }
@@ -76,7 +76,7 @@ cases:
     kind: problem
     source: "SUTRA_EXPANSION I1 (actions)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: form-demo
       version: 1
       match: { kind: order }
@@ -108,7 +108,7 @@ cases:
     kind: problem
     source: "SUTRA_EXPANSION I1 (toggle)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: form-demo
       version: 1
       match: { kind: order }
@@ -136,7 +136,7 @@ cases:
         panels:
           - { id: fig, kind: metric, value: "1", actions: [ { label: Go, do: [ { host: order.place } ] } ] }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: form-demo
       version: 1
       match: { kind: order }
@@ -151,7 +151,7 @@ cases:
     kind: problem
     source: "SUTRA_EXPANSION I1 (submit, cancel: form)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: form-demo
       version: 1
       match: { kind: order }

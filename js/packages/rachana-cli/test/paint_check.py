@@ -11,7 +11,7 @@ site = Path(tempfile.mkdtemp(prefix="rachana-site-"))
 proj = Path(tempfile.mkdtemp(prefix="rachana-proj-")) / "sales"
 shutil.copytree(ROOT / "examples/static-sales", proj)
 # a page that uses a core fragment: the built site must carry the library and the page load it
-(proj / "ranked.sutra.yaml").write_text("""rachana: 1
+(proj / "ranked.sutra.yaml").write_text("""rachana: 1.2
 sutra: ranked
 version: 1
 libraries: [core@1]
@@ -24,7 +24,7 @@ panels:
       rows: { from: $.sales, columns: { label: region, value: revenue } }
       title: Revenue by region
 """)
-subprocess.run(["node", str(ROOT / "js/packages/rachana-cli/bin/rachana.js"), "build", "--src", str(proj), "--out", str(site), "--level", "1.2"], check=True)
+subprocess.run(["node", str(ROOT / "js/packages/rachana-cli/bin/rachana.js"), "build", "--src", str(proj), "--out", str(site)], check=True)
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 H = functools.partial(Quiet, directory=str(site))

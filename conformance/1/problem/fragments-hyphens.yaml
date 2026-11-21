@@ -27,7 +27,7 @@ cases:
         panels:
           - { id: t, kind: tree, rows: arg.rows, node: desk, parent: parent }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: tree-demo
       version: 1
       match: { kind: demo }

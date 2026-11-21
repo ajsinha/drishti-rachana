@@ -5,8 +5,8 @@ The `rachana` command for Node (20+). Needs the compiler bundles in `js/packages
 or set `RACHANA_DIST`).
 
     node bin/rachana.js new my-dash            # a Sutra, sample data, rachana.yaml
-    node bin/rachana.js lint [paths] [--format text|json|sarif] [--strict] [--level 1.1|1.2]  # exit 0, 1 on errors, 2 usage
-    node bin/rachana.js build --src my-dash --out site [--level 1.1]               # static site (lints first)
+    node bin/rachana.js lint [paths] [--format text|json|sarif] [--strict]  # exit 0, 1 on errors, 2 usage
+    node bin/rachana.js build --src my-dash --out site               # static site (lints first)
     node bin/rachana.js preview my-dash/sutras/overview.sutra.yaml --data my-dash/data
     RACHANA_CLASSPATH=... node bin/rachana.js lib build|sign|keygen|pack|verify|lock|contracts|check-host ...
     RACHANA_SERVER_JAR=... node bin/rachana.js serve --config rachana-server.yaml [--port 0] [--check]   # the standalone server (JVM)
@@ -32,7 +32,8 @@ inserts a `use:` block (tables and column mapping from the folder's data files),
 `js/packages/rachana-studio`; `uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py` (uses the repository's libraries/
 `RACHANA_LIBS` adds more).
 
-**`--level`** (default: the newest built level, which Core's `Grammar.DEFAULT_LEVEL` names) is the language level of
-`lint` (`since` in the bundle's `check`) and of the pages' `<rachana-view level>`.
+**Language level.** Each Sutra declares its level in its `rachana:` key (SPEC 2.1: `rachana: 1` is 1.0, `rachana: 1.2` is 1.2); `lint`,
+`build`, `preview`, Studio and `<rachana-view>` read every Sutra at its own level, and `rachana new` writes the newest. No command takes
+`--level`. `rachana upgrade` rewrites a level-1.0 Sutra to a later level with the same meaning (needs a JVM, as `lib` does).
 
 **Not done yet:** `dev` is `preview` of a folder without live reload. `fix`, `fmt`, `explain`, `schema`, `migrate` are not written.

@@ -18,7 +18,7 @@ cases:
     kind: sutra
     source: SPEC 2.3a; level 1.2
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: hierarchy
       version: 1
       panels:
@@ -29,7 +29,7 @@ cases:
     kind: sutra
     source: SPEC 2.3a; level 1.2
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: hierarchy
       version: 1
       panels:

@@ -42,7 +42,9 @@ major 1.
   `<name>.v<N>.sutra.yaml`, today's form, still read).
 - YAML is read strictly, as today: a key written twice in one mapping, a second document after `---`, and any tag
   (`!x`) are errors (`RCH-2033`). Anchors and aliases are allowed. Every node keeps its line and column.
-- The first key is `rachana: 1`: the language's **major** version. A missing or unknown value is `RCH-2009`.
+- The first key is `rachana: 1` or `rachana: 1.N`: the language level the Sutra is written for (`1` is 1.0; owner decision
+  2026-11-21, spec/1/SPEC.md 2.1 rule 4). A host reads each Sutra at its declared level. A missing or unknown value is `RCH-2009`;
+  a level above the host's is `RCH-2008`.
 - An unknown key is an error with its position, never ignored (`RCH-2011`, `RCH-2023` for a panel option).
 
 ### 2.2 Top level (Sutra Core)

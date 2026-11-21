@@ -46,8 +46,11 @@ public final class Main {
 
     /** Runs a command line and returns the exit status. */
     public static int run(String[] args) {
+        if (args.length > 0 && args[0].equals("upgrade")) {           // rachana upgrade: Upgrade (rachana-tools), the one implementation
+            return com.ash.rachana.tools.UpgradeCommand.run(java.util.Arrays.copyOfRange(args, 1, args.length), System.out, System.err);
+        }
         if (args.length < 2 || !args[0].equals("lib")) {
-            System.err.println("usage: rachana lib build|sign|keygen|pack|verify|lock|gate|freeze|contracts|check-host ...  (the other commands: npx drishti-rachana-cli, or pip install drishti-rachana)");
+            System.err.println("usage: rachana upgrade [paths] [--to L] [--write] [--diff] [--report f] | rachana lib build|sign|keygen|pack|verify|lock|gate|freeze|contracts|check-host ...  (the other commands: npx drishti-rachana-cli, or pip install drishti-rachana)");
             return 2;
         }
         List<String> pos = new ArrayList<>();

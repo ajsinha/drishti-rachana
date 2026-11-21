@@ -11,7 +11,6 @@ import { main } from "../src/index.js";
 import { handler } from "../src/serve.js";
 import { ELEMENTS_VERSION } from "../src/site.js";
 import { libraryFiles, languageLevels } from "../src/lint.js";
-import { projectLevel } from "../src/project.js";
 import { libCommand } from "../src/lib.js";
 import { serverCommand } from "../src/server.js";
 import { distDir } from "../src/bundle.js";
@@ -36,9 +35,8 @@ test("new scaffolds a project and refuses a non-empty folder", async () => {
   assert.equal(await main(["new", p], io().io), 0);
   for (const f of ["rachana.yaml", "sutras/overview.sutra.yaml", "data/sales.csv"]) assert.ok(existsSync(join(p, f)), f);
   const want = (await languageLevels()).default;
-  assert.match(readFileSync(join(p, "rachana.yaml"), "utf8"), new RegExp(`^level: ${want.replace(".", "\\.")}\\b`, "m"), "rachana new writes the level the tools run at");
-  assert.equal(projectLevel(p), want);
-  assert.equal(projectLevel(d), null, "a folder with no rachana.yaml names no level");
+  assert.doesNotMatch(readFileSync(join(p, "rachana.yaml"), "utf8"), /^level:/m, "no project-level level: the Sutra declares it");
+  assert.ok(readFileSync(join(p, "sutras/overview.sutra.yaml"), "utf8").startsWith(`rachana: ${want}\n`), "rachana new writes the newest level into the Sutra");
   assert.equal(await main(["new", p], io().io), 2);
   assert.equal(await main(["new", join(d, "q"), "--template", "zzz"], io().io), 2);
   rmSync(d, { recursive: true });
@@ -142,10 +140,24 @@ test("lib verify runs the jar's LibraryTool (needs the Java classes built)", { s
   finally { delete process.env.RACHANA_CLASSPATH; rmSync(d, { recursive: true }); }
 });
 
+test("upgrade runs the jar's Upgrade: a dry run, then --write declares 1.2 and spells span (needs the Java classes built)", { skip: !existsSync(join(jv, "rachana-cli", "target", "classes")) && "java not built" }, async () => {
+  assert.deepEqual(libCommand(["x.sutra.yaml"], { RACHANA_JAR: "r.jar" }, "upgrade"), ["java", ["-jar", "r.jar", "upgrade", "x.sutra.yaml"]]);
+  process.env.RACHANA_CLASSPATH = cp;
+  const d = tmp();
+  const f = join(d, "u.sutra.yaml");
+  writeFileSync(f, "rachana: 1\nsutra: u\nversion: 1\npanels:\n  - { id: m, kind: metric, label: S, value: \"range($.r, 'p')\" }\n");
+  try {
+    assert.equal(await main(["upgrade", f], io().io), 0);
+    assert.ok(readFileSync(f, "utf8").startsWith("rachana: 1\n"));
+    assert.equal(await main(["upgrade", f, "--write"], io().io), 0);
+    assert.ok(readFileSync(f, "utf8").startsWith("rachana: 1.2\n") && readFileSync(f, "utf8").includes("span("));
+  } finally { delete process.env.RACHANA_CLASSPATH; rmSync(d, { recursive: true }); }
+});
+
 const examples = resolve(import.meta.dirname, "../../../../examples");
-test("lint takes --level; the examples lint clean at 1.1 and 1.2", { skip: !hasBundle && "bundle not built" }, async () => {
-  for (const lv of ["1.1", "1.2"]) assert.equal(await main(["lint", "--level", lv, join(examples, "static-sales"), join(examples, "live-orders")], io().io), 0, lv);
-  assert.equal(await main(["lint", "--level", "9.9", examples], io().io), 2);
+test("lint reads each Sutra's own level and refuses --level; the examples lint clean", { skip: !hasBundle && "bundle not built" }, async () => {
+  assert.equal(await main(["lint", join(examples, "static-sales"), join(examples, "live-orders")], io().io), 0);
+  assert.equal(await main(["lint", "--level", "1.2", examples], io().io), 2);
 });
 
 test("build static-sales: the real <rachana-view>, Elements pack and runtime are in the site", { skip: !hasBundle && "bundle not built" }, async () => {
@@ -162,9 +174,9 @@ test("build static-sales: the real <rachana-view>, Elements pack and runtime are
 test("build: a page that uses a core fragment gets the library files and a manifest (so the browser can load them)", { skip: !hasBundle && "bundle not built" }, async () => {
   const d = tmp(), src = join(d, "proj"), out = join(d, "site");
   cpSync(join(examples, "static-sales"), src, { recursive: true });
-  writeFileSync(join(src, "ranked.sutra.yaml"), "rachana: 1\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\ndata:\n  sales: { table: sales, key: [region, product, month] }\npanels:\n  - use: core/ranked-bars@1\n    with:\n      rows: { from: $.sales, columns: { label: region, value: revenue } }\n");
+  writeFileSync(join(src, "ranked.sutra.yaml"), "rachana: 1.2\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\ndata:\n  sales: { table: sales, key: [region, product, month] }\npanels:\n  - use: core/ranked-bars@1\n    with:\n      rows: { from: $.sales, columns: { label: region, value: revenue } }\n");
   const { o, io: x } = io();
-  assert.equal(await main(["build", "--src", src, "--out", out, "--level", "1.2"], x), 0, o.err.join("\n"));
+  assert.equal(await main(["build", "--src", src, "--out", out], x), 0, o.err.join("\n"));
   const m = JSON.parse(readFileSync(join(out, "libraries/ranked.libraries.json"), "utf8"));
   assert.ok(m.files.includes("rachana_libs/core/fragments/ranked-bars.v1.fragment.yaml"), m.files.slice(0, 3).join());
   for (const f of m.files) assert.ok(existsSync(join(out, f)), f);
@@ -177,11 +189,11 @@ test("build: a page that uses a core fragment gets the library files and a manif
 test("preview resolves libraries as build does: bundled, --libs and <project>/rachana_libs", { skip: !hasBundle && "bundle not built" }, () => {
   const d = tmp(), src = join(d, "proj");
   cpSync(join(examples, "static-sales"), src, { recursive: true });
-  const sutra = "rachana: 1\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\npanels:\n  - use: core/note@1\n    with: { text: hi }\n";
+  const sutra = "rachana: 1.2\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\npanels:\n  - use: core/note@1\n    with: { text: hi }\n";
   writeFileSync(join(src, "ranked.sutra.yaml"), sutra);
   const lib = libraryFiles(src, {});
   assert.deepEqual(lib.problems, []);
-  const h = handler(new Map([["ranked", join(src, "ranked.sutra.yaml")]]), null, "1.2", lib.files);
+  const h = handler(new Map([["ranked", join(src, "ranked.sutra.yaml")]]), null, lib.files);
   assert.ok(h("/page/ranked")[2].includes('libraries="/libraries/ranked.libraries.json"'));
   const m = JSON.parse(h("/libraries/ranked.libraries.json")[2]);
   assert.ok(m.files.some((f) => f.startsWith("rachana_libs/core/fragments/")));

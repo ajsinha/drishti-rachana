@@ -33,7 +33,7 @@ cases:
             rows: arg.rows
             columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 }, { label: Double, bind: "@.amount * 2", fmt: amount0 } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -72,7 +72,7 @@ cases:
             rows: arg.rows
             columns: [ { label: Price, bind: "@.price", fmt: price2 }, { label: Bid, bind: "@['bid-size']", fmt: amount0 } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: depth-demo
       version: 1
       title: { id: "'Demo'" }

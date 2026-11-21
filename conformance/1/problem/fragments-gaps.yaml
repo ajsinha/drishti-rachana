@@ -27,7 +27,7 @@ cases:
         panels:
           - { id: bars, kind: hbar, rows: "map(arg.rows, @)", label: desk, value: amount }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       match: { kind: demo }
@@ -76,7 +76,7 @@ cases:
         panels:
           - { id: count, kind: metric, label: Count, value: "size(arg.items) + arg.totals.count" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       match: { kind: demo }
@@ -139,7 +139,7 @@ cases:
         panels:
           - { id: one, kind: metric, label: One, value: "1" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       match: { kind: demo }
@@ -188,7 +188,7 @@ cases:
         panels:
           - { id: msg, kind: markdown, text: arg.message }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       match: { kind: demo }
@@ -225,7 +225,7 @@ cases:
         panels:
           - { id: msg, kind: markdown, text: arg.message }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       match: { kind: demo }
@@ -245,7 +245,7 @@ cases:
     kind: problem
     source: SUTRA_EXPANSION I1 (point-click, the kinds that fire it)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       match: { kind: demo }

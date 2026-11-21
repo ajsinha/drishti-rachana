@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 # Synthetic demo content: fictional products, regions and figures.
-rachana: 1
+rachana: 1.2
 sutra: sales-product
 version: 1
 title: { id: "'Product: ' + ctl.product" }

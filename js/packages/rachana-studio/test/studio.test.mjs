@@ -37,7 +37,7 @@ panels: []
 const LIB = { name: "core", version: "1.0.0", files: { "core.rachana-lib.yaml": "library: core\nversion: 1.0.0\n", "fragments/ranked-bars.v1.fragment.yaml": FRAG,
   "fragments/ranked-bars.v2.fragment.yaml": FRAG.replace("Bars.", "Bars two."), "fragments/old.v1.fragment.yaml": "rachana: 1\nfragment: old\nversion: 1\nparams:\n  x: text\n" } };
 const PROJECT = [{ name: "sales", columns: [{ name: "region", type: "text" }, { name: "revenue", type: "number" }, { name: "units", type: "number" }] }];
-const SUTRA = "rachana: 1\nsutra: demo\nversion: 1\ntitle: { id: \"'Demo'\" }\ndata:\n  orders: { rows: [ { A: x, B: 1 } ] }\n  other: { table: sales }\npanels:\n  - { id: a, kind: metric, label: A, value: 1 }\n\n# notes\n";
+const SUTRA = "rachana: 1.2\nsutra: demo\nversion: 1\ntitle: { id: \"'Demo'\" }\ndata:\n  orders: { rows: [ { A: x, B: 1 } ] }\n  other: { table: sales }\npanels:\n  - { id: a, kind: metric, label: A, value: 1 }\n\n# notes\n";
 
 test("fragmentsOf: the highest major, typed form only, with the reason for a skip", () => {
   const { fragments, skipped } = fragmentsOf(LIB, yaml);

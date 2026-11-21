@@ -28,7 +28,7 @@ cases:
             on:
               row-click: [ { set: { state: "%{into}", to: "@.id" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: params-demo
       version: 1
       match: { kind: demo }
@@ -54,7 +54,7 @@ cases:
     source: "LIBRARIES 6.3 ({ type: state, of: text })"
     files: *chooser
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: params-demo
       version: 1
       match: { kind: demo }
@@ -88,7 +88,7 @@ cases:
         panels:
           - { id: m, kind: metric, label: Value, value: "'%{into}'" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: params-demo
       version: 1
       match: { kind: demo }
@@ -123,7 +123,7 @@ cases:
         panels:
           - { id: m, kind: metric, label: Value, value: "1" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: params-demo
       version: 1
       match: { kind: demo }

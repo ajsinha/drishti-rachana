@@ -5,6 +5,23 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **A Sutra declares its language level in its `rachana:` key** (owner, 2026-11-21; SPEC 2.1 rule 4): `rachana: 1` (or `1.0`) is level
+  1.0, `rachana: 1.2` is 1.2. A host reads each Sutra at the level it declares, at most its own (`Grammar.declaredAt`,
+  `Declarations.atLevel`, `SutraParser.declaredLevel`, `Sutra.level()`): a host of 1.2 reads a `rachana: 1` Sutra exactly as a host of
+  1.0. A level above the host's is `RCH-2008`, an unknown minor `RCH-2009` naming the host's newest. The key is the one place: `--level`
+  is gone from `lint`, `build` and `preview` (Node and Python), `<rachana-view level>` is gone, the server refuses `project.level`;
+  `rachana new` writes the newest level. Level-1.1 and 1.2 conformance cases, the libraries' and the examples' Sutras declare their
+  level. One switch (`Grammar.MAJOR_ONLY`) retires levels 1.0 and 1.1 later. Suites `problem/level-declaration`, `sutra/level-declaration`.
+- **`rachana upgrade`** (`java/rachana-tools` `Upgrade`, `UpgradeRule`, `UpgradeCommand`; Node `rachana upgrade`, `python -m
+  drishti_rachana upgrade` and `java ... Main upgrade` run it): a level-1.0 Sutra or fragment rewritten for a later level with the same
+  meaning: `range(list, field)` becomes `span`, a named argument takes the catalogue's name, the Sutra declares `rachana: 1.2`; exact
+  arithmetic, number-like text of Java's grammar, `standardize`, texts beyond U+FFFF and run-time regular expressions are flagged; a
+  bare `lambda` blocks the file. Only rewritten words change (comments, layout, quoting kept; checked by reading the file again);
+  idempotent; dry run by default, `--diff`, `--write`, `--report`, `--rules`. The rule list is complete against the documents
+  (`UpgradeRulesTest`: 373 differences); 14 verified cases (`compat/upgrade/cases.yaml`, each bound at both levels on one host).
+  **Proof** (`UpgradeCorpusTest`, report `compat/upgrade/drishti-compat-corpus-2.9.11.i7a.report.json`): the 478 Sutras and 42
+  fragments of the Drishti corpus upgraded to 1.2 compile to the recorded documents and bind to the recorded ViewModels byte for byte
+  (stamp aside); 0 refused, 0 blocked; 18 review and 6 info flags, none of which changed a recorded view.
 - **Ready for a host's move onto Core (G4 rehearsal, pass 2)**: aggregates over a host's nodes give the figure (the rehearsal's P4: the
   0 came from the host test's own oracle, which read only its node type) and are never a silent 0: a value Core cannot read is
   `RCH-2102` at every level, a first argument that is not a list from level 1.1 (level 1.0 as recorded); a host scalar without
@@ -30,7 +47,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **G2 golden fixes**: a problem inside a fragment file carries `file` and `path` (SPEC 6.1); one program is named `rachana` (the Node
   CLI; Python runs as `python -m drishti_rachana`, no console script); a size guard on both bundles (`tools/js/bundle-size-guard.json`,
   Brotli 11, measured + 5%, changed deliberately with a reason); the vendored Elements pack says the version of its folder; the
-  default-level rule stated (SPEC 7.2) and `rachana new` writes `level:` into `rachana.yaml` (read by lint, build, preview); level 1.0's
+  default-level rule stated (SPEC 7.2) (the project-level `level:` of `rachana.yaml` it added is superseded the same day: the Sutra's `rachana:` key declares the level); level 1.0's
   UTF-16 text order stated (SPEC 4.7, 4.13); `FROZEN.sha384` lists every case file.
 
 - **Live tables, the edit path (L7, L8 client, L10 writes; experimental)**: writes are Data Protocol v1 additions under `can: write`
@@ -197,6 +214,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **The last unverified conformance cases closed (the spec-gap pass)**: 24 decisions (`SG-1` to `SG-24`, `conformance/1/VERIFIED.md`)
+  written into the specification: SPEC 2.2 and 2.4 (`data` is a key of 1.1, a data name is a field name, `as: record` is the first
+  row, a table the host does not have fails its panels), 4.2 and 4.16 (a decimal cell prints the digits the host sent), 4.10 (real-number
+  results and the tolerance), 4.14 "Checked mode in detail" (the join of types, the 36 functions typed, `in`, literal parameters);
+  PROTOCOL 3.1 (the text of a decimal and of its aggregates), 4 and 6.2 (a capability not declared is refused), 7 (what the runtime
+  writes), 8.4 (a conflated `remove` stays), 10.1 (the `fields` of `rdp.write.invalid`), 15 (the adapter's clock, source, writer, audit
+  events), 16 (a live table's `can`, a table paged from its source, a repeated change id answers the change as it stands, the tray,
+  four eyes); FORMAT 5.2, 5.9 (the frames of a step), 5.10 (the plan document); VIEWMODEL (frame header). 51 cases flipped to
+  verified (three `el/determinism` cases first given a tolerance in place of their text); one left (`sutra/data#missing-table-reads-as-no-rows`),
+  with five code fixes listed for a builder lane (`CF-1` to `CF-5`). `FROZEN.sha384` regenerated (pre-release).
 - **F13, the binder comparison over the customer corpus** (lane A10): `compat/customers/drishti/2.9.11.i7a/binds/` holds, per shipped Sutra (478), a recording (`<file>.json`: a synthetic record made from the Sutra's own paths, the business date, and the answers of the host's own panel binders, `provenance` and `links`) and the i7a reference binder's ViewModel (`<file>.view.json`) or why it could not bind (`<file>.error.txt`); written by `tools/regime/corpus_binds.py` with `CorpusBind.java` over Drishti's engine jars at `v2.9.11.i_7a` (a scratch clone, read only). `CustomerCorpusTest` replays every recording through a `RecordedHost` into Core's binder (`CoreBinds`) and compares byte for byte: 445 identical; 33 listed in `tools/split/known-differences.txt` with their reasons (the reference's `Map.of` key order, its null source router, the host's pivot engine); no Core bug found. VERSION.json `binds`, manifest rewritten.
 - **A control's `change` trigger and a Screen test harness** (I1, level 1.2, lane A10): `on: { change: [effects] }` on a control, the one effect model (the effects of a panel's list, evaluated over the screen; `event` the new value read whole; `event.<name>`, `set: <control>` and any other trigger refused, `RCH-2012`/`RCH-2023`; state names checked, `RCH-2020`); carried as `ControlView.on` (contract 1.2 appended; the stamp follows); `ScreenWire.change` runs them for a host; `Fire.change` and the conformance step `{ control, trigger: change, value }` (FORMAT 5.15, case schema); `Binder.controlOn`, `Fire.runEvent`; `ViewBuilder.screen(Request)`, the screen `build` binds, so `ScreenWire`'s paths have JUnit coverage of their own (`ScreenHarness`, `ScreenWireTest`: submit, cancel, change, row-click events, children, downstream). Cases fire/change, problem/control-change; SPEC 2.8 item 7, VIEWMODEL. API additions only.
 - **Form fragments** (lane A9): `core/entry-form` and `core/stepped-form` (fields as `list<record>` placed whole, rules, submit/cancel events carrying `values`), `finance/order-ticket` (side, quantity, type, limit price, time in force; checks before send; `submit {order}`) and `finance/what-if-shocks` (shocks as a form beside the caller's mapped sensitivities; `change {shocks}`; the estimate is the host's); examples, goldens, gallery pages; differences from the catalogue in `libraries/README.md`. A use's `on:` now takes any built effect (`toggle`, `clear`, `notify`, `host`, with `when`), its `event.<name>` reads put in as the payload's expression; a form panel emits on `submit`/`cancel` with payload `event` (the sent values); a fragment's `actions:` never name a host action (`RCH-2117`). The gallery reads examples with YAML 1.2 booleans (`on:` stays a key).

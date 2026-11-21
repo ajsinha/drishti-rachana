@@ -15,7 +15,7 @@ import java.nio.file.Path;
 final class Fixture {
 
     static final String SUTRA = """
-            rachana: 1
+            rachana: 1.2
             sutra: sales
             version: 1
             data:

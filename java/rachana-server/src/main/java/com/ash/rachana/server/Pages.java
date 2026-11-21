@@ -82,7 +82,7 @@ final class Pages {
     }
 
     /** A Sutra's page: the Elements pack, then {@code <rachana-view>} over the Sutra, the protocol base, the runtime and its libraries. */
-    static String view(Project.Sutra s, String elements, String level, boolean libraries, Users.Principal who, String csrf, boolean canSignOut) {
+    static String view(Project.Sutra s, String elements, boolean libraries, Users.Principal who, String csrf, boolean canSignOut) {
         String n = esc(s.name());
         return head(s.name()) + STYLE
                 + "<meta name=\"rachana-csrf\" content=\"" + esc(csrf == null ? "" : csrf) + "\">\n"   // a live table's writes send it (X-Rachana-CSRF)
@@ -91,7 +91,7 @@ final class Pages {
                 + "<script type=module src=\"/assets/rachana/src/rachana_view.js\"></script>\n"
                 + bar(who, csrf, canSignOut) + "<main>"
                 + "<rachana-view src=\"/sutras/" + n + ".sutra.yaml\" data=\"" + RachanaServer.DATA + "\" runtime=\"/assets/rachana/rachana.runtime.js\""
-                + " level=\"" + esc(level) + "\"" + (libraries ? " libraries=\"/libraries/" + n + ".libraries.json\"" : "") + " live></rachana-view>"
+                + (libraries ? " libraries=\"/libraries/" + n + ".libraries.json\"" : "") + " live></rachana-view>"
                 + "</main>\n";
     }
 

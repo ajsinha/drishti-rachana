@@ -24,8 +24,9 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("--format", choices=("text", "json", "sarif"), default="text")
     lint.add_argument("--strict", action="store_true", help="warnings fail too")
     lint.add_argument("--profiles", default="core")
-    lint.add_argument("--level", default=None, help="language level (default: the runtime's, Core's Grammar.DEFAULT_LEVEL)")
     lint.add_argument("--libs", default="", help="more fragment libraries: paths (comma-separated) of an unpacked library, an .rlib or a folder of them; also RACHANA_LIBS; the bundled libraries/ are always offered")
+    up = top.add_parser("upgrade", help="rewrite level-1.0 Sutras and fragments for a later level, keeping their meaning (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)")
+    up.add_argument("args", nargs=argparse.REMAINDER, help="paths, --to, --from, --write, --diff, --report, --rules (rachana upgrade --rules)")
     conf = top.add_parser("conformance", help="conformance suite").add_subparsers(dest="action", required=True)
     r = conf.add_parser("run", help="run the suite through an adapter and write results/<runtime>.jsonl")
     r.add_argument("--cases", default="conformance/1")
@@ -90,20 +91,16 @@ def sarif(results: list[dict]) -> dict:
                                   for r in results for p in r["problems"]]}]}
 
 
-def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, profiles: str = "core", level: Optional[str] = None, libs: str = "") -> int:
+def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, profiles: str = "core", libs: str = "") -> int:
+    """Each Sutra is read at the level its ``rachana:`` key declares (SPEC 2.1: ``rachana: 1`` is 1.0, ``rachana: 1.2`` is 1.2)."""
     import json
     from .libraries import bundle_files, project_libraries
-    from .engine import Rachana
-    known = Rachana(profiles=profiles).levels()
-    if level is not None and level not in known["levels"]:
-        print(f"rachana: --level is {', '.join(known['levels'])}", file=sys.stderr)
-        return EXIT_USAGE
     files = find_sutras(paths)
     root = Path(paths[0]) if paths and Path(paths[0]).is_dir() else Path(".")
     libraries, lib_problems = project_libraries(root, [x for x in libs.split(",") if x])
     for m in lib_problems:
         print(f"rachana: {m}", file=sys.stderr)
-    results = lint_files(files, profiles, level, bundle_files(libraries))
+    results = lint_files(files, profiles, None, bundle_files(libraries))
     bad = len(lib_problems) + sum(1 for r in results for p in r["problems"] if p["severity"] == "error" or (strict and p["severity"] == "warning"))
     if fmt == "json":
         print(json.dumps(results, indent=2, ensure_ascii=False))
@@ -119,14 +116,43 @@ def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, pro
     return 1 if bad else 0
 
 
+def java_command(command: str, args: Sequence[str], env: Optional[dict] = None) -> Optional[list[str]]:
+    """The JVM command line of a command the Java rachana-cli runs (``upgrade``): RACHANA_JAR or RACHANA_CLASSPATH, RACHANA_JAVA."""
+    import os
+    env = os.environ if env is None else env
+    java = env.get("RACHANA_JAVA", "java")
+    if env.get("RACHANA_JAR"):
+        return [java, "-jar", env["RACHANA_JAR"], command, *args]
+    if env.get("RACHANA_CLASSPATH"):
+        return [java, "-cp", env["RACHANA_CLASSPATH"], "com.ash.rachana.cli.Main", command, *args]
+    return None
+
+
+def upgrade_main(args: Sequence[str]) -> int:
+    """``rachana upgrade``: the Java Upgrade of rachana-tools (one implementation), run as the Node command line runs it."""
+    import subprocess
+    cmd = java_command("upgrade", list(args))
+    if cmd is None:
+        print("rachana upgrade needs a JVM and the rachana-cli jar: set RACHANA_JAR (a runnable jar) or RACHANA_CLASSPATH (the module jars)",
+              file=sys.stderr)
+        return EXIT_USAGE
+    try:
+        return subprocess.run(cmd).returncode
+    except OSError as e:
+        print(f"rachana upgrade: {e}", file=sys.stderr)
+        return EXIT_USAGE
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     try:
         a = build_parser().parse_args(argv)
     except SystemExit as e:
         return EXIT_USAGE if e.code else 0
+    if a.group == "upgrade":
+        return upgrade_main(a.args)
     if a.group == "lint":
         try:
-            return lint_main(a.paths, a.format, a.strict, a.profiles, a.level, a.libs)
+            return lint_main(a.paths, a.format, a.strict, a.profiles, a.libs)
         except (ImportError, FileNotFoundError) as e:
             print(f"rachana: {e}", file=sys.stderr)
             return EXIT_USAGE

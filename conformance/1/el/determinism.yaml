@@ -3,6 +3,7 @@
 # reference's actual result (Drishti's compiler, Java 21), recorded by tools/proofs; verified stays false until H1 and a review.
 # d-m04-c and d-m05-a expect Core's own maths (A5, P2-1: fdlibm on every runtime), one unit in the last place from the reference;
 # d-m01-a too (A15: exp through Core's maths; gate finding F9).
+# SG-4 (VERIFIED.md): these three state a tolerance and no text, because Core's digits are not the correctly rounded ones (SPEC 4.10 rule 7).
 # d-n20-b/c, d-n25-a/b/c and d-o02-a/b expect Core's aggregates (A9); the reference had no engine and refused them (RCH-2102).
 suite: el/determinism
 since: "1.0"
@@ -1497,12 +1498,12 @@ cases:
     expect: {"error": {"code": "RCH-2102"}}
 
   - id: "d-m01-a"
-    verified: false
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "exp(1)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 2.7182818284590455, "type": "number", "text": "2.7182818284590455"}
+    expect: {"value": 2.7182818284590455, "type": "number", "tolerance": {"rel": 1e-15}}
 
   - id: "d-m01-b"
     kind: "expr"
@@ -1659,12 +1660,12 @@ cases:
     expect: {"value": 0.27933299665393785, "type": "number", "text": "0.27933299665393785"}
 
   - id: "d-m04-c"
-    verified: false
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "rate(10, -100, 800)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 0.042774978035111426, "type": "number", "text": "0.042774978035111426"}
+    expect: {"value": 0.042774978035111426, "type": "number", "tolerance": {"rel": 1e-15}}
 
   - id: "d-m04-d"
     kind: "expr"
@@ -1681,12 +1682,12 @@ cases:
     expect: {"value": -1073.6432460242725, "type": "number", "text": "-1073.6432460242725"}
 
   - id: "d-m05-a"
-    verified: false
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "fisher(0.5)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 0.5493061443340548, "type": "number", "text": "0.5493061443340548"}
+    expect: {"value": 0.5493061443340548, "type": "number", "tolerance": {"rel": 1e-15}}
 
   - id: "d-m05-b"
     kind: "expr"

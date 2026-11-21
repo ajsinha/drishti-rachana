@@ -21,7 +21,7 @@ cases:
         panels:
           - { id: figure, kind: metric, label: arg.label, value: "$.total" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -66,7 +66,7 @@ cases:
             columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 } ]
             emits: [ { name: pick, on: row-click, payload: { desk: "@.desk" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -89,7 +89,7 @@ cases:
     source: L-21 (5); LIBRARIES 5.1 (RCH-2115)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -112,7 +112,7 @@ cases:
     source: L-21 (5); LIBRARIES 5.1 (RCH-2116)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -135,7 +135,7 @@ cases:
     source: L-21 (5); LIBRARIES 5.1 (RCH-2116)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -160,7 +160,7 @@ cases:
     source: L-21 (5) (RCH-2120)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -184,7 +184,7 @@ cases:
     note: "@mtm.pick.amount is read as @mtm-list.pick.amount: pick returns desk only, so the check names the scoped panel."
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -209,7 +209,7 @@ cases:
     source: L-21 (4); LIBRARIES 7.2 (RCH-2114)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -236,7 +236,7 @@ cases:
     source: L-21 (6); LIBRARIES 7.2 (as)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -261,7 +261,7 @@ cases:
     source: LIBRARIES 7.2 (as)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -343,7 +343,7 @@ cases:
         libraries:
           demo: { version: 1.0.0, sha384: "6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: lib-demo
       version: 1
       match: { kind: demo }
@@ -379,7 +379,7 @@ cases:
         panels:
           - { id: total, kind: metric, label: Total, value: "sum(arg.rows, arg.measure)" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -420,7 +420,7 @@ cases:
         panels:
           - { id: big, kind: metric, label: Large, value: "count(map(arg.rows, @)[?@.amount > 1000])" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -465,7 +465,7 @@ cases:
             where: "amount > 0"
             columns: [ { label: Desk, bind: desk } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -506,7 +506,7 @@ cases:
         panels:
           - { id: total, kind: metric, label: Total, value: "sum(map(arg.rows, @), 'amount')" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -547,7 +547,7 @@ cases:
         panels:
           - { id: total, kind: metric, label: Total, value: "sum(arg.rows, 'qty')" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -588,7 +588,7 @@ cases:
         panels:
           - { id: total, kind: metric, label: Scored, value: "sum(map(arg.rows, arg.score(@.amount)))" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -611,7 +611,7 @@ cases:
     source: LIBRARIES 4.2 (fn); EL_EXPANSION X13 (RCH-2116)
     files: *scored
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -635,7 +635,7 @@ cases:
     note: "Inside the fragment @ would be the fragment's row, not the caller's: a function argument reads its names and the caller's screen only."
     files: *scored
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }
@@ -668,7 +668,7 @@ cases:
         panels:
           - { id: total, kind: metric, label: Total, value: "1" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       match: { kind: demo }

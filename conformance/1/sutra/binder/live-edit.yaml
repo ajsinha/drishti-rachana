@@ -2,7 +2,7 @@
 suite: sutra/binder/live-edit
 since: "1.2"
 profile: core
-verified: false
+verified: true
 description: >-
   Language 1.2 and ViewModel contract 1.2 (SPEC 2.3, VIEWMODEL "Contract 1.2"): a live panel's edit (none, the default, cells or beside)
   offers the host's guarded edit path (PROTOCOL 16 Writes). The view carries it as the live reference's edit; the columns offered are not in
@@ -29,7 +29,7 @@ cases:
     kind: sutra
     source: SPEC 2.3; VIEWMODEL contract 1.2 (LiveRef.edit)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: blotter
       version: 1
       data:
@@ -42,7 +42,7 @@ cases:
     kind: sutra
     source: SPEC 2.3; VIEWMODEL contract 1.2 (LiveRef.edit)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: blotter
       version: 1
       data:
@@ -55,7 +55,7 @@ cases:
     kind: sutra
     source: SPEC 2.3 (edit none, the default)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: blotter
       version: 1
       data:
@@ -68,7 +68,7 @@ cases:
     kind: problem
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { kind: demo }

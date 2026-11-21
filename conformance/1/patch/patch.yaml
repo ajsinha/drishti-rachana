@@ -6,7 +6,7 @@ verified: true
 description: Keyed table patches (PROTOCOL 8.1) -> ViewModel patch frames (FORMAT 5.9; ViewDiff).
 cases:
   - id: compound-key-remove-and-a-panel-frame
-    verified: false
+    verified: true
     given: &pnl
       today: "2026-01-15"
       tables:
@@ -22,7 +22,7 @@ cases:
     kind: patch
     source: PROTOCOL 8.1 (a key is the list of key values)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-live
       version: 1
       data:
@@ -48,7 +48,7 @@ cases:
     kind: patch
     source: PROTOCOL 8.1 (update merges; add of an existing key updates)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-merge
       version: 1
       data:
@@ -71,7 +71,7 @@ cases:
     kind: patch
     source: PROTOCOL 8.1 (reset first)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-reset
       version: 1
       data:
@@ -85,12 +85,12 @@ cases:
         - at: { /panels/0/data/value/text: "2" }
 
   - id: a-strip-figure-is-a-strip-patch
-    verified: false
+    verified: true
     given: *pnl
     kind: patch
     source: VIEWMODEL (op strip)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-strip
       version: 1
       data:
@@ -110,7 +110,7 @@ cases:
     kind: patch
     source: FORMAT 5.9 (frames [])
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-quiet
       version: 1
       data:

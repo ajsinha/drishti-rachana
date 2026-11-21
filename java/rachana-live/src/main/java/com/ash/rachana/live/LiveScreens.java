@@ -28,7 +28,7 @@ final class LiveScreens {
     static String screen(LiveTableSpec spec) {
         String title = spec.title() == null ? spec.name() : spec.title();
         StringBuilder b = new StringBuilder();
-        b.append("rachana: 1\n");
+        b.append("rachana: ").append(com.ash.rachana.profile.Grammar.DEFAULT_LEVEL).append("\n");   // SPEC 2.1: its level
         b.append("sutra: ").append(Json.write(sutraName(spec.name()))).append('\n');
         b.append("version: 1\n");
         b.append("libraries: [core@1]\n");

@@ -334,3 +334,14 @@ document after that, with `url: true`. Estimate: S1 5 bd + I1's state effect 3 b
 ### Libraries split across i7b and i8 (owner, 2026-11-21)
 
 i7b ships **`core` and `finance`** (the two Drishti uses first). `genomics`, `economy`, `geo`, `ops` and `ai` are built in Drishti i8 alongside its screens-from-fragments work (H2), where real screens show what each fragment needs. The library machinery, gates and gallery are complete in i7b.
+
+### Level declaration and `rachana upgrade` (owner and lead, 2026-11-21)
+
+| # | Decision | Why |
+|---|---|---|
+| UP-0 | (owner) The `rachana:` key declares the level: `MAJOR.MINOR`, the minor optional; `rachana: 1` is 1.0 until levels 1.0 and 1.1 retire (G4), then the newest; one switch, `Grammar.MAJOR_ONLY`. No project file, flag or attribute sets a level | One way per job; every Sutra means the same on every host |
+| UP-1 | Exact arithmetic is **flagged, not rewritten**: `/` and `%` of operands that may be exact, and `+ - *` with a fractional literal. The language can keep a double (`* 1e0` on an operand), but writing it into every Sutra would freeze binary artefacts that 1.1 was made to remove; the flag names the fix where a host's figures must not move | The corpus proof shows no recorded view changes (formats round) |
+| UP-2 | Number-like text of Java's grammar, `standardize`, texts beyond U+FFFF and run-time patterns are flags; a bare `lambda` blocks the file (no rewrite keeps a bare name's row-or-record reading) | Never guess |
+| UP-3 | One implementation in Java (`rachana-tools`); the Node and Python commands start the JVM, as `rachana lib` does | The tool reads YAML positions and the compiler's own tables |
+| UP-4 | A fragment declares no level: its expressions are rewritten (`range` to `span`), so after an upgrade it is read by 1.2 Sutras only | Fragments take their user's level |
+

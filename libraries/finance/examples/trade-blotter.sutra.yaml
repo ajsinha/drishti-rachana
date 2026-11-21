@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
 # Synthetic demo content.
-rachana: 1
+rachana: 1.2
 sutra: trade-blotter-example
 version: 1
 libraries: [finance@1]

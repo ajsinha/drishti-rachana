@@ -17,7 +17,7 @@ function within(root, rel) {
 }
 
 /** The handler of the preview server: pure (path to [status, type, body]) so it is testable without a socket. */
-export function handler(sutras, dataDir, level = "1.1", libFiles = {}) {
+export function handler(sutras, dataDir, level = "", libFiles = {}) {
   const assets = new Map(siteAssets().map(([p, f]) => ["/" + p, f]));
   const stubs = new Set(elementsStubs().map((p) => "/" + p));
   return (url) => {
@@ -51,7 +51,7 @@ export async function preview(target, flags, io) {
   const dataDir = flags.data ?? (existsSync(join(root, "data")) ? join(root, "data") : existsSync(join(root, "..", "data")) ? join(root, "..", "data") : null);
   const lib = libraryFiles(root, flags, (m) => io.err(`rachana: ${m}`));
   if (lib.problems.length) return 1;
-  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, flags.level ?? "1.1", lib.files);
+  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, flags.level ?? "", lib.files);
   const server = createServer((req, res) => {
     try { const [s, t, b] = handle(req.url); res.writeHead(s, { "content-type": t, "cache-control": "no-store" }); res.end(b); }
     catch (e) { res.writeHead(500); res.end(String(e.message)); }

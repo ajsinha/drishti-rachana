@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-KINDS = ("expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol", "lib")
+KINDS = ("expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol", "lib", "fire", "live")
 _ID = re.compile(r"[a-z0-9][a-z0-9-]{0,79}\Z")
 _SINCE = re.compile(r"[0-9]+\.[0-9]+\Z")
 

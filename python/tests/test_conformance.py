@@ -60,7 +60,7 @@ def test_adapter_runs_and_exit_codes(tmp_path):
     out, summ = tmp_path / "w.jsonl", tmp_path / "w.summary.json"
     code = run(Wrong(), Options(cases=CASES, out=out, summary=summ, only=("grammar/**",)), stderr=open(tmp_path / "e", "w"))
     s = json.loads(summ.read_text(encoding="utf-8"))
-    assert code in (0, 1, 3) and s["cases"] > 0 and s["pass"] + s["fail"] == s["cases"]
+    assert code in (0, 1, 3) and s["cases"] > 0 and s["pass"] + s["fail"] + s["unsupported"] == s["cases"]
     assert (code == 0) == (s["fail"] == 0)
 
 

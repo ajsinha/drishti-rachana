@@ -15,6 +15,7 @@ server:
   port: 8080                            # 0: any free port (serve --port overrides)
   origins: []                           # more origins allowed to POST (a reverse proxy's public address: https://dash.example.com)
   cookie-secure: false                  # true behind HTTPS: the session cookie is sent over HTTPS only
+  behind-tls-proxy: false               # auth users on a non-loopback bind is refused (plain HTTP) unless this is true: a TLS proxy terminates HTTPS in front
   session-idle: 30m                     # a session unused this long ends
   session-max: 12h                      # a session ends this long after sign-in, used or not
   max-body: 1048576                     # the largest request body, in bytes

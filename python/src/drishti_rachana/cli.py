@@ -24,7 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("--format", choices=("text", "json", "sarif"), default="text")
     lint.add_argument("--strict", action="store_true", help="warnings fail too")
     lint.add_argument("--profiles", default="core")
-    lint.add_argument("--level", default="1.1", choices=("1.0", "1.1", "1.2"), help="language level (default 1.1; 1.2 for typed fragments and libraries)")
+    lint.add_argument("--level", default=None, help="language level (default: the runtime's, Core's Grammar.DEFAULT_LEVEL)")
     lint.add_argument("--libs", default="", help="more fragment libraries: paths (comma-separated) of an unpacked library, an .rlib or a folder of them; also RACHANA_LIBS; the bundled libraries/ are always offered")
     conf = top.add_parser("conformance", help="conformance suite").add_subparsers(dest="action", required=True)
     r = conf.add_parser("run", help="run the suite through an adapter and write results/<runtime>.jsonl")
@@ -68,7 +68,7 @@ def find_sutras(paths: Sequence[str]) -> list[Path]:
     return out
 
 
-def lint_files(files: Sequence[Path], profiles: str = "core", level: str = "1.1", libs: Optional[dict] = None) -> list[dict]:
+def lint_files(files: Sequence[Path], profiles: str = "core", level: Optional[str] = None, libs: Optional[dict] = None) -> list[dict]:
     """``[{"file", "ok", "problems"}]`` per file, from the bundle's ``check``: the same problem objects as the JVM and Node."""
     from .engine import Rachana
     r = Rachana(profiles=profiles)
@@ -90,9 +90,14 @@ def sarif(results: list[dict]) -> dict:
                                   for r in results for p in r["problems"]]}]}
 
 
-def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, profiles: str = "core", level: str = "1.1", libs: str = "") -> int:
+def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, profiles: str = "core", level: Optional[str] = None, libs: str = "") -> int:
     import json
     from .libraries import bundle_files, project_libraries
+    from .engine import Rachana
+    known = Rachana(profiles=profiles).levels()
+    if level is not None and level not in known["levels"]:
+        print(f"rachana: --level is {', '.join(known['levels'])}", file=sys.stderr)
+        return EXIT_USAGE
     files = find_sutras(paths)
     root = Path(paths[0]) if paths and Path(paths[0]).is_dir() else Path(".")
     libraries, lib_problems = project_libraries(root, [x for x in libs.split(",") if x])

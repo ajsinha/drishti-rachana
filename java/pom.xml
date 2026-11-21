@@ -35,13 +35,16 @@
     <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
     <junit.version>5.11.4</junit.version>
     <!-- The pinned Drishti Elements release whose data files (formats, world regions) Core bundles: js/vendor/drishti-elements/<this>/ -->
-    <drishti.elements.version>3.2.0-dev+a638149</drishti.elements.version>
+    <drishti.elements.version>3.2.0-dev+b466b87</drishti.elements.version>
     <!-- SPLIT EXEMPTIONS (SPLIT_EXEMPTIONS.md): versions of the libraries the moved code still uses; each leaves at its step. -->
     <assertj.version>3.27.7</assertj.version>
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->
     <rachana.reference.classpath></rachana.reference.classpath>
     <rachana.compat.runtime>core</rachana.compat.runtime>
     <rachana.compat.binds.out></rachana.compat.binds.out>
+    <!-- Every test's temporary folder (java.io.tmpdir, TMPDIR/TEMP/TMP of the programs the build starts) is this one; tools/gate/tmp_leaks.py checks it is empty at the end (G2 gate F16). -->
+    <rachana.tmp>${maven.multiModuleProjectDirectory}/target/tmp</rachana.tmp>
+    <python3>python3</python3>
     <rachana.java.root>${maven.multiModuleProjectDirectory}</rachana.java.root>
     <rachana.repo.root>${maven.multiModuleProjectDirectory}/..</rachana.repo.root>
   </properties>
@@ -69,13 +72,23 @@
     <pluginManagement>
       <plugins>
         <plugin><artifactId>maven-compiler-plugin</artifactId><version>3.13.0</version></plugin>
-        <plugin><artifactId>maven-surefire-plugin</artifactId><version>3.5.2</version></plugin>
+        <plugin><artifactId>maven-surefire-plugin</artifactId><version>3.5.2</version>
+          <configuration><systemPropertyVariables><java.io.tmpdir>${rachana.tmp}</java.io.tmpdir></systemPropertyVariables></configuration></plugin>
         <plugin><artifactId>maven-jar-plugin</artifactId><version>3.4.2</version></plugin>
         <plugin><artifactId>maven-install-plugin</artifactId><version>3.1.3</version></plugin>
         <plugin><artifactId>maven-enforcer-plugin</artifactId><version>3.5.0</version></plugin>
       </plugins>
     </pluginManagement>
     <plugins>
+      <!-- the reactor's temporary folder: made empty when the build starts (this module is first); rachana-guards checks it at the end -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.6.3</version>
+        <inherited>false</inherited>
+        <executions><execution><id>tmp-create</id><phase>initialize</phase><goals><goal>exec</goal></goals><configuration>
+          <executable>${python3}</executable>
+          <arguments><argument>${rachana.repo.root}/tools/gate/tmp_leaks.py</argument><argument>create</argument><argument>${rachana.tmp}</argument></arguments>
+        </configuration></execution></executions>
+      </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>

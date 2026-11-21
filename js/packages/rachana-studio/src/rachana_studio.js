@@ -50,7 +50,6 @@ export async function startStudio(root) {
   const view = doc.createElement("rachana-view");
   view.setAttribute("data", "/data");
   view.setAttribute("runtime", "/rachana/rachana.runtime.js");
-  view.setAttribute("level", project.level);
   view.setAttribute("complete", "");
   view.files = libFiles;
   const previewNote = h("div", { cls: "rs-note", data: { rs: "preview-note" } });

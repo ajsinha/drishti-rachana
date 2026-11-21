@@ -84,6 +84,18 @@ public final class RuntimeMain {
         return Facade.plan(request);
     }
 
+    /** The language levels and the default of the tools ({@link Facade#levels}). */
+    @JSExport
+    public static String levels() {
+        return Facade.levels();
+    }
+
+    /** A Data Protocol query over rows a page holds ({@link Facade#query}): the static-files host's one evaluator. */
+    @JSExport
+    public static String query(String request) {
+        return Facade.query(request);
+    }
+
     /** An open screen (B3, {@code <rachana-view>}): {@code op} is open, plan, table, view, patch or close (see {@code Screens}). */
     @JSExport
     public static String screen(String op, String request) {

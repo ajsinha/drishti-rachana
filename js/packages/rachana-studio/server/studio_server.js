@@ -28,7 +28,6 @@ import { bundleFiles, projectLibraries } from "./library_files.js";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, "..", "src");
 const YAML_JS = join(HERE, "..", "..", "..", "vendor", "js-yaml", "4.1.0", "js-yaml.min.js");
-export const STUDIO_LEVEL = "1.2";
 export const STUDIO_HEADER = "x-rachana-studio";
 const MAX_BODY = 2 * 1024 * 1024;
 const TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json" };
@@ -64,7 +63,7 @@ const json = (s, v) => [s, TYPES[".json"], JSON.stringify(v)];
 export function createStudio(root, { libs = [], dataDir = null, env = process.env } = {}) {
   root = realpathSync(resolve(root));
   const data = dataDir ?? (existsSync(join(root, "data")) ? join(root, "data") : null);
-  const preview = handler(new Map(), data, STUDIO_LEVEL);
+  const preview = handler(new Map(), data);
   let found = null;
   const libraries = () => (found ??= projectLibraries(root, libs, env));
   const fileOf = (rel) => { const f = within(root, rel); return f && existsSync(f) && statSync(f).isFile() ? f : null; };
@@ -78,7 +77,7 @@ export function createStudio(root, { libs = [], dataDir = null, env = process.en
     if (path === "/vendor/js-yaml/4.1.0/js-yaml.min.js") return [200, TYPES[".js"], readFileSync(YAML_JS)];
     if (path === "/api/project") {
       const { libraries: ls, problems } = libraries();
-      return json(200, { name: root.split(sep).pop(), level: STUDIO_LEVEL, sutras: findSutras([root]).map(relOf).filter((r) => !r.split("/").includes("rachana_libs")), tables: tableInfo(data),
+      return json(200, { name: root.split(sep).pop(), sutras: findSutras([root]).map(relOf).filter((r) => !r.split("/").includes("rachana_libs")), tables: tableInfo(data),
         libraries: ls.map((l) => ({ name: l.name, version: l.version, source: l.source, files: l.files })), problems });
     }
     if (path === "/api/file") {
@@ -95,7 +94,7 @@ export function createStudio(root, { libs = [], dataDir = null, env = process.en
     if (path === "/api/check") {
       if (typeof req.sutra !== "string") return json(400, { error: "sutra is text" });
       const t = await tools();
-      return [200, TYPES[".json"], t.check(JSON.stringify({ sutra: req.sutra, file: String(req.file ?? "case.sutra.yaml"), since: STUDIO_LEVEL, files: bundleFiles(libraries().libraries) }))];
+      return [200, TYPES[".json"], t.check(JSON.stringify({ sutra: req.sutra, file: String(req.file ?? "case.sutra.yaml"), since: JSON.parse(t.levels()).default, files: bundleFiles(libraries().libraries) }))];
     }
     if (path === "/api/save") {
       if (typeof req.path !== "string" || typeof req.text !== "string") return json(400, { error: "path and text are needed" });

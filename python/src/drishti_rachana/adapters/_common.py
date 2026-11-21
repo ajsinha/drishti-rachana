@@ -52,7 +52,7 @@ def index_page(names: list[str], base: str) -> str:
     return f"<!doctype html><meta charset=utf-8><title>Sutras</title><h1>Sutras</h1><ul>{items}</ul>"
 
 
-def view_page(name: str, base: str, level: str = "1.1") -> str:
+def view_page(name: str, base: str, level: str = "") -> str:
     """The page of one Sutra: Drishti Elements, then ``<rachana-view>`` over the Sutra file and the Data Protocol under ``base``, with
     its assets served by the adapter at ``base + STATIC`` (drishti_rachana.assets)."""
     n, b = html.escape(name), html.escape(base)
@@ -61,7 +61,7 @@ def view_page(name: str, base: str, level: str = "1.1") -> str:
             f"<title>{n}</title><link rel=stylesheet href='{el}/drishti-elements.css'><script src='{el}/drishti-elements.js'></script>"
             f"<script type=module>import '{b}{STATIC}/rachana/src/rachana_view.js';</script>"
             f"<rachana-view src='{b}/sutras/{n}{SUFFIX}' data='{b}/data' runtime='{b}{STATIC}/rachana/rachana.runtime.js' "
-            f"level='{html.escape(level)}' live></rachana-view>")
+            f"{f'level={chr(39)}{html.escape(level)}{chr(39)} ' if level else ''}live></rachana-view>")
 
 
 def start_async_live(fn: Callable[[], Any]) -> Callable[[], Iterator]:

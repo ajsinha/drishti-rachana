@@ -50,7 +50,7 @@ public final class LibCheck {
             System.err.println("usage: LibCheck LIBRARIES-DIR [--update] [--only FRAGMENT]");
             System.exit(2);
         }
-        Rachana rachana = Rachana.core().language("1.2").libraries(LibrarySet.of(LibraryResolver.folder(root)));
+        Rachana rachana = Rachana.core().language(com.ash.rachana.profile.Grammar.DEFAULT_LEVEL).libraries(LibrarySet.of(LibraryResolver.folder(root)));
         ElCompiler compiler = rachana.compiler();                // at language level 1.2, like the screens
         int pass = 0, fail = 0;
         Map<Path, String> writes = new java.util.TreeMap<>();

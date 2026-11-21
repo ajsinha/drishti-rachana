@@ -14,6 +14,13 @@ export function loadRuntime(bundleUrl, formatsTexts, profiles) {
   return loaded.get(key);
 }
 
+/** The runtime a <rachana-view> loaded (by its address, else the one loaded): the static-files host answers queries through it. */
+export async function initialisedRuntime(bundleUrl) {
+  const p = bundleUrl ? loaded.get(new URL(bundleUrl, globalThis.document ? globalThis.document.baseURI : undefined).href) || loaded.get(bundleUrl) : loaded.values().next().value;
+  if (!p) throw Object.assign(new Error('no runtime bundle is loaded: a <rachana-view> loads it before it reads a table'), { status: 503, doc: { error: { code: 'rdp.host.unavailable', message: 'the runtime bundle is not loaded' } } });
+  return p;
+}
+
 function call(rt, op, req) {
   const r = JSON.parse(rt.screen(op, JSON.stringify(req)));
   if (r && r.error) {
@@ -27,7 +34,7 @@ function call(rt, op, req) {
 export class Screen {
   /**
    * @param {Object} rt the initialised runtime bundle
-   * @param {Object} o {sutra: text, level: '1.1', today?: 'yyyy-mm-dd', ctl?: {}, record?: {}, client?: DataClient, files?: {path: text}}
+   * @param {Object} o {sutra: text, level?: the language level (default: the runtime's own default), today?: 'yyyy-mm-dd', ctl?: {}, record?: {}, client?: DataClient, files?: {path: text}}
    *   files: the libraries a Sutra uses, as FORMAT 5.7 gives them (`rachana_libs/<library>/<path>` to text, and `rachana.lock`)
    */
   constructor(rt, o) {
@@ -37,7 +44,7 @@ export class Screen {
     const given = { ctl: this.ctl };
     if (o.today) given.today = o.today;
     if (o.record) given.record = o.record;
-    const req = { sutra: o.sutra, since: o.level || '1.1', profile: 'core', given };
+    const req = { sutra: o.sutra, since: o.level || JSON.parse(rt.levels()).default, profile: 'core', given };
     if (o.files) req.files = o.files;
     this.request = req;         // what open was given: a form's rules are asked of the runtime with it (check)
     const opened = call(rt, 'open', req);

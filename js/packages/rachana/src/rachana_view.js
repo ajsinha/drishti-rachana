@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+a638149,
-// vendored under js/vendor/drishti-elements/3.2.0-dev+a638149: load drishti-elements.js before this module). The element holds no meaning of its own:
+// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+b466b87,
+// vendored under js/vendor/drishti-elements/3.2.0-dev+b466b87: load drishti-elements.js before this module). The element holds no meaning of its own:
 // the bundle compiles, plans, binds and diffs; the DataClient fetches; the painter paints.
 //
-//   <script src="/vendor/drishti-elements/3.2.0-dev+a638149/drishti-elements.js"></script>
+//   <script src="/vendor/drishti-elements/3.2.0-dev+b466b87/drishti-elements.js"></script>
 //   <script type="module" src="/rachana/src/rachana_view.js"></script>
 //   <rachana-view src="/sutras/sales.sutra.yaml" data="/rdp/v1" runtime="/rachana/dist/rachana.runtime.js"
 //                 formats="/spec/1/formats.yaml" live></rachana-view>
@@ -76,7 +76,7 @@ export function defineRachanaView(o) {
       if (gen !== this._gen) return;
       const client = this.getAttribute('data') ? new DataClient({ base: this.abs(this.getAttribute('data')), fetch: f, origin: w.location.origin,
         allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null }) : null;
-      const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || '1.1', today: this.getAttribute('today') || undefined,
+      const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || undefined, today: this.getAttribute('today') || undefined,
         ctl: this.controls, record: this.record, client, files });
       this.screen = screen;
       await screen.load();

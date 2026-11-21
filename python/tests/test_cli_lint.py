@@ -42,7 +42,7 @@ def test_usage_error_and_discovery(tmp_path):
     assert [f.name for f in find_sutras([str(tmp_path)])] == ["a.sutra.yaml"]
 
 
-def test_level_default_1_1_and_examples_lint_clean():
+def test_level_default_and_examples_lint_clean():
     from pathlib import Path
     from drishti_rachana.engine import Rachana
     ex = Path(__file__).resolve().parents[2] / "examples"

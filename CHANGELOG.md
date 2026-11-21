@@ -13,14 +13,25 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **The conformance runner binds pivots**: `CasePivots`, a small pivot engine (sum, count, avg, min, max with subtotals and totals) in
   the runner every runtime shares (JVM, both bundles, Python on V8), handed to `LiveScreen.pivots`; pivot-cell clicks run as `fire`
   cases (`fire/pivot-cells`), not only in JUnit.
-- **Elements pack re-vendored `3.2.0-dev+a638149`**: the surface heatmap's tooltip no longer asks for ECharts' arrow, whose inline
+- **Verify lanes clean their temporary files**: each lane of `tools/gate/verify_lanes.py` runs its programs with a temporary folder of
+  its own (`TMPDIR`), removed at its end, so pytest's `pytest-of-<user>` and uv's lock no longer trip the `tmp-check` (F16).
+- **Elements pack re-vendored `3.2.0-dev+b466b87`** (Elements g2/integration with g3/surface-click, so also its fail-closed `requires`): the surface heatmap's tooltip no longer asks for ECharts' arrow, whose inline
   style a strict CSP refused (found by Elements' new Chromium test that clicks a surface point, heatmap and 3D); references moved.
+- **G2 gate fixes (B)**: `./mvnw verify` runs what G2 built (`tools/gate/verify_lanes.py`, four executions of `rachana-guards`, nothing skipped):
+  conformance at every language level on the JVM and on the Node bundle with identical bytes, the protocol cases on the JVM reference, the
+  Python host and the live server, the Python SDK tests (the case reader takes the `fire` and `live` kinds), and a Chromium lane
+  (`<rachana-view>` live, forms, state, a built site, the Studio); `-DskipTests` leaves them out, `rachana-guards` honours it. The two
+  `arrow` expectations of the live declaration cases (F5). The static-files host evaluates through the runtime bundle's `query` (Core's
+  `RowQuery`), with no filter evaluator of its own (F6). The server answers only its own `Host` names (bind address, `localhost`,
+  `server.origins`) in every auth mode, and a link in `static/` cannot leave it (F8). `levels.py` refuses a deleted recorded case that
+  is not a listed withdrawal (F9). One default language level, `Grammar.DEFAULT_LEVEL`, handed out by the bundles' `levels()` (F12;
+  guard `DefaultLevelGuardTest`). One Elements pin (`ElementsPinGuardTest`). The reference server serves a path with a `+`.
 - **finance library on the new formats and events**: rates default to `pct4` (curve-table, curve-overview, term-structure,
   curve-compare, fixing-ladder, leg-table), changes and spreads to `bp1` (fixing-ladder; curve-compare's new `spread-fmt`), discount
   factors to `df4`, prices to `price4` (depth-ladder, fx-scenario-chart, trade-ticket, fills-summary); the two trees take `fmt`
   (risk-hierarchy-tree keeps its share used in `pct0` through a column); correlation-matrix, scenario-matrix, sensitivity-heatmap and
   vol-surface raise `cell` on a click (their catalogue events). Goldens rewritten (22), gate green, gallery pages paint. Elements
-  pack `3.2.0-dev+a638149` (pivot cells and surface points as marks).
+  pack `3.2.0-dev+6b4a3b2` (pivot cells and surface points as marks).
 - **Events on pivot cells and surface points** (level 1.2, contract 1.2 appended): `pivot` and `surface` fire `point-click`. A pivot
   cell with a figure is a mark, `@` the cell `{row, path?, column, value}`; a surface point is `{x, y, z}`; `#index` the place row by
   row. `Cell.ev`, `set`, `on` (a pivot's cells) and `Surface.ev`, `set`, `on` (lists beside `z`); `ev` only on a panel that emits on

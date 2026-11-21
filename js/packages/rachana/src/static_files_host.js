@@ -3,12 +3,16 @@
 //
 // The Data Protocol's static-files mode (docs/MODES.md 1), in the page: a site with no server beside it holds data/index.json and
 // data/<table>.csv|json|jsonl; this module answers the protocol's GET /tables/<t> and POST /tables/<t>/query for the DataClient from
-// those files (filter tree, sort, columns, offset, limit, cursor; no changes stream). It wraps fetch for URLs under the data folder
+// those files (filter tree, sort, columns, offset, limit, cursor; no changes stream). It evaluates nothing itself: the query is answered by the runtime bundle's
+// `query` (Core's RowQuery, the one evaluator of the filter tree and the sort order), so a static site and a server answer alike. It wraps fetch for URLs under the data folder
 // only; everything else passes through. Import it before rachana_view.js:
 //   <script type="module">import '/rachana/src/static_files_host.js'; import '/rachana/src/rachana_view.js';</script>
 // The page's <rachana-view data="data"> then reads the files as a protocol host.
 
+import { initialisedRuntime } from './screen.js';
+
 const PAGE_ROWS = 10000;
+const runtimeFor = async (r) => (r && typeof r.query === 'function' ? r : await initialisedRuntime(r));
 
 /** Rows of CSV text (RFC 4180: quotes, doubled quotes, embedded line breaks); the first line names the columns. */
 export function parseCsv(text) {
@@ -47,33 +51,13 @@ const typeOf = (vals) => {
   return t;
 };
 
-const num = (x) => (x !== null && x !== '' && !isNaN(Number(x)) ? Number(x) : x);
-function evalNode(n, row) {
-  if ('col' in n) { let v = row; for (const p of n.col.split('.')) v = v && typeof v === 'object' ? v[p] : null; return v === undefined ? null : v; }
-  if ('lit' in n) return n.lit;
-  if ('list' in n) return n.list.map((x) => evalNode(x, row));
-  const a = (n.args || []).map((x) => evalNode(x, row));
-  const cmp = (f) => { if (a[0] == null || a[1] == null) return false; const both = typeof a[0] === 'string' && typeof a[1] === 'string'; return f(both ? a[0] : num(a[0]), both ? a[1] : num(a[1])); };
-  const ops = {
-    '==': () => cmp((x, y) => x === y), '!=': () => !cmp((x, y) => x === y), '<': () => cmp((x, y) => x < y), '<=': () => cmp((x, y) => x <= y),
-    '>': () => cmp((x, y) => x > y), '>=': () => cmp((x, y) => x >= y), '&&': () => a.every(Boolean), '||': () => a.some(Boolean), '!': () => !a[0],
-    'in': () => a[1].includes(a[0]), 'not-in': () => !a[1].includes(a[0]), 'is-null': () => a[0] == null,
-    'contains': () => a[0] != null && String(a[0]).toLowerCase().includes(String(a[1]).toLowerCase()),
-    'starts_with': () => String(a[0]).startsWith(String(a[1])), 'ends_with': () => String(a[0]).endsWith(String(a[1])),
-    'lower': () => (a[0] == null ? null : String(a[0]).toLowerCase()), 'upper': () => (a[0] == null ? null : String(a[0]).toUpperCase()),
-  };
-  if (!ops[n.op]) throw perr(422, 'rdp.query.unsupported', `the operation '${n.op}' is not evaluated by this host`);
-  return ops[n.op]();
-}
-
 const perr = (status, code, message, extra) => Object.assign(new Error(message), { status, doc: { error: { code, message, ...extra } } });
-const sortKey = (v) => (v == null ? [1, 0, ''] : typeof v === 'number' ? [0, 0, v] : [0, 1, String(v)]);
-const cmpKey = (x, y) => { for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; };
 
-/** An in-memory protocol host over {name: rows[]}: handle(method, path, bodyText) -> {status, doc}. */
+/** An in-memory protocol host over {name: rows[]}: handle(method, path, bodyText) -> {status, doc}. `runtime` is the initialised runtime bundle (its `query`). */
 export class StaticHost {
-  constructor(tables, keys = {}) {
-    this.tables = tables; this.keys = keys; this.epoch = 'st' + Math.floor(Math.random() * 0xffff).toString(16);
+  constructor(tables, keys = {}, runtime = null) {
+    if (!runtime || typeof runtime.query !== 'function') throw new Error('StaticHost needs the runtime bundle (its query): the host evaluates nothing itself');
+    this.tables = tables; this.keys = keys; this.runtime = runtime; this.epoch = 'st' + Math.floor(Math.random() * 0xffff).toString(16);
   }
   schema(name) {
     const rows = this.tables[name];
@@ -85,29 +69,13 @@ export class StaticHost {
       can: ['page', 'sort', 'filter', 'offset', 'count'], version: { epoch: this.epoch, seq: 0 }, limits: { pageRows: PAGE_ROWS } });
   }
   query(name, q) {
-    const sch = this.schema(name), known = sch.columns.map((c) => c.name);
-    let rows = this.tables[name].slice();
-    for (const c of q.columns || []) if (!known.includes(c)) throw perr(422, 'rdp.column.unknown', `${name} has no column '${c}'`, { table: name, column: c, expected: known });
-    if (q.group) throw perr(422, 'rdp.query.unsupported', 'grouping is not evaluated by this host', { table: name });
-    if (q.filter) rows = rows.filter((r) => evalNode(q.filter, r));
-    for (const s of [...(q.sort || [])].reverse()) {
-      if (!known.includes(s.col)) throw perr(422, 'rdp.column.unknown', `${name} has no column '${s.col}'`, { table: name, column: s.col, expected: known });
-      rows.sort((x, y) => (s.dir === 'desc' ? -1 : 1) * cmpKey(sortKey(x[s.col]), sortKey(y[s.col])));
-    }
-    const sig = JSON.stringify([q.filter, q.sort, q.columns]);
-    let start = Number(q.offset || 0);
-    if (q.cursor) {
-      const [tag, off] = String(q.cursor).split(':');
-      if (tag !== String(sig.length) + '.' + hash(sig) || !/^\d+$/.test(off || '')) throw perr(410, 'rdp.cursor.invalid', 'the cursor is not from this query', { table: name });
-      start = Number(off);
-    }
-    const limit = Math.min(Number(q.limit || PAGE_ROWS), PAGE_ROWS), page = rows.slice(start, start + limit), cols = q.columns || known;
-    const out = { table: name, version: sch.version };
-    if (q.shape === 'objects') out.rows = page.map((r) => Object.fromEntries(cols.map((c) => [c, r[c] ?? null])));
-    else { out.columns = cols; out.values = page.map((r) => cols.map((c) => r[c] ?? null)); }
-    out.total = rows.length;
-    if (start + limit < rows.length) out.next = `${sig.length}.${hash(sig)}:${start + limit}`;
-    if (q.schema) out.schema = sch;
+    const sch = this.schema(name), { shape, schema, ...doc } = q;
+    const r = JSON.parse(this.runtime.query(JSON.stringify({ schema: sch, rows: this.tables[name], query: doc, epoch: this.epoch, version: sch.version })));
+    if (r.error) throw perr(500, 'rdp.host.error', r.error);
+    if (r.status !== 200) throw Object.assign(new Error(r.doc.error.message), { status: r.status, doc: r.doc });
+    const out = r.doc;
+    if (shape === 'objects' && out.values) { out.rows = out.values.map((v) => Object.fromEntries(out.columns.map((c, i) => [c, v[i]]))); delete out.columns; delete out.values; }
+    if (schema) out.schema = sch;
     return out;
   }
   handle(method, path, bodyText) {
@@ -131,11 +99,10 @@ export class StaticHost {
   }
 }
 
-function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
-
 /**
  * Wraps fetch (of `w`, default the page) so the protocol under `base` is answered from <base>/index.json and its table files.
  * @param {string} [base] default: the page's data/ folder.
+ * @param {Object|string} [runtime] the initialised runtime bundle, or the address the page's <rachana-view> loaded it from (default: the one it loaded).
  */
 export function installStaticHost(o) {
   o = o || {};
@@ -146,7 +113,7 @@ export function installStaticHost(o) {
     const idx = await (await orig(base + '/index.json')).json();
     const tables = {}, keys = {};
     for (const t of idx.tables || []) { tables[t.name] = parseRows(t.file, await (await orig(`${base}/${t.file}`)).text()); if (t.key) keys[t.name] = t.key; }
-    return new StaticHost(tables, keys);
+    return new StaticHost(tables, keys, await runtimeFor(o.runtime));
   };
   w.fetch = async (url, init) => {
     const u = typeof url === 'string' ? url : url.url;

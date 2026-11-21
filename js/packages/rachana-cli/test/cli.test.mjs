@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
-import test from "node:test";
+import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import { cpSync, mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -18,7 +18,9 @@ import { distDir } from "../src/bundle.js";
 const GOOD = "rachana: 1\nsutra: ok\nversion: 1\ntitle: { id: \"'Ok'\" }\npanels:\n  - { id: m, kind: metric, label: Revenue, value: 1 }\n";
 const BAD = "rachana: 1\nsutra: bad\nversion: 1\npanels:\n  - { id: m, kind: metric, label: Revenue, value: \"1 +\" }\n";
 const hasBundle = existsSync(join(distDir(), "rachana.tools.js"));
-const tmp = () => mkdtempSync(join(tmpdir(), "rachana-cli-"));
+const made = [];
+const tmp = () => { const d = mkdtempSync(join(tmpdir(), "rachana-cli-")); made.push(d); return d; };
+after(() => { for (const d of made) rmSync(d, { recursive: true, force: true }); });   // a test run leaves no temporary folder (G2 gate F16)
 const io = () => { const o = { out: [], err: [] }; return { o, io: { out: (s) => o.out.push(s), err: (s) => o.err.push(s) } }; };
 
 test("usage: no command and unknown command exit 2", async () => {

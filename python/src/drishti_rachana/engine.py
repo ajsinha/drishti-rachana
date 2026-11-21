@@ -22,7 +22,6 @@ from typing import Any, Iterable
 BUNDLE_DIR = Path(__file__).resolve().parent / "bundle"
 # Limits of the V8 isolate (defence in depth: Core's own budgets already bound an expression). A host may pass its own.
 DEFAULT_MAX_MEMORY = 1024 * 1024 * 1024   # bytes of V8 heap; the isolate stops (MemoryError) beyond it
-DEFAULT_LEVEL = "1.1"                     # language level of check() when none is given
 DEFAULT_TIMEOUT = 30.0                    # seconds per call into the bundle; a longer call is cancelled (JSTimeoutException)
 
 
@@ -89,6 +88,10 @@ class Rachana:
     def version(self) -> str:
         return self._ctx.call("rachana.version", timeout_sec=self._timeout)
 
+    def levels(self) -> dict[str, Any]:
+        """``{"default": "...", "levels": [...]}``: the language levels the bundle reads and the default of the tools (Core's one constant)."""
+        return json.loads(self._ctx.call("rachana.levels", timeout_sec=self._timeout))
+
     def evaluate(self, expr: str, record: Any = None, **given: Any) -> dict[str, Any]:
         """An expression over a record (``given`` may add ``row``, ``ctl``, ``today``, ``parents``, ``index``)."""
         return self._call("evaluate", {"expr": expr, "given": {"record": record or {}, **given}})
@@ -96,10 +99,10 @@ class Rachana:
     def template(self, template: str, record: Any = None, **given: Any) -> dict[str, Any]:
         return self._call("evaluate", {"template": template, "given": {"record": record or {}, **given}})
 
-    def check(self, sutra: str, file: str = "case.sutra.yaml", level: str = DEFAULT_LEVEL, files: dict[str, str] | None = None) -> dict[str, Any]:
-        """Compile and lint a Sutra at a language level (``"1.1"`` by default, the newest built; ``"1.2"`` for typed fragments and
-        libraries): parsed, then its expressions checked; ``{"ok": bool, "problems": [...]}``."""
-        req: dict[str, Any] = {"sutra": sutra, "file": file, "since": level}
+    def check(self, sutra: str, file: str = "case.sutra.yaml", level: str | None = None, files: dict[str, str] | None = None) -> dict[str, Any]:
+        """Compile and lint a Sutra at a language level (by default the runtime's own default, which Core's
+        ``Grammar.DEFAULT_LEVEL`` writes: see :meth:`levels`): parsed, then its expressions checked; ``{"ok": bool, "problems": [...]}``."""
+        req: dict[str, Any] = {"sutra": sutra, "file": file, "since": level or self.levels()["default"]}
         if files:
             req["files"] = files                       # the libraries: ``rachana_libs/<library>/<path>`` to text
         return self._call("check", req)

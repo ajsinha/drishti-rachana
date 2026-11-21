@@ -19,7 +19,7 @@
   </dependencies>
   <properties>
     <!-- The vendored Drishti Elements pack the pages load (js/vendor/drishti-elements/<this>; the CLI's site.js names the same one). -->
-    <rachana.elements.pack>3.2.0-dev+a638149</rachana.elements.pack>
+    <rachana.elements.pack>3.2.0-dev+b466b87</rachana.elements.pack>
     <rachana.arrow.opens>--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED</rachana.arrow.opens>
   </properties>
   <build>

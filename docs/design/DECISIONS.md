@@ -125,3 +125,20 @@ Still open after the owner's acceptance of 2026-11-17 (proofs to run, not decisi
 | # | Decision | Status |
 |---|---|---|
 | N5 | **Accepted (lead, 2026-11-19, from the compatibility regime Q1: byte for byte, including problem wording).** At language level 1.0 the reference (Drishti i7a behaviour) wins wherever it differs from the draft specification: the cases pin the reference and are `verified: true`. The specification's intended behaviour becomes the next level (1.1) and is pinned by cases with `since: "1.1"` and `verified: false` until the reference changes at that level. Applied to: the problem-message prefix, `RCH-4010` for a refused pattern, `standardize` as a decimal, problem paths, the dependent-problem rule. List aggregates, `min`/`max` over a list and the 14 `el/functions-*` aggregate examples are not differences of wording but missing behaviour: they stay unverified until the aggregates move into Core. | Accepted |
+
+### Rachana-EL syntax follows Python (owner, 2026-11-21)
+
+The owner's rule: **keep Rachana-EL's syntax as similar to Python as possible**, with Excel's function names. It amends EL_EXPANSION as follows (accepted 2026-11-21):
+
+| # | Decision |
+|---|---|
+| PY1 | `and`, `or`, `not` are first-class operators everywhere (XD21's "refuse with a fix" is reversed); `&&`, `\|\|`, `!` stay accepted |
+| PY2 | Conditional expression `a if c else b` (Python form); the Excel function `if(c, a, b)` stays |
+| PY3 | Lambdas are written `lambda x: x * 2` (Python form), not `x => x * 2`; `=>` stays reserved |
+| PY4 | Ranges via the function `range(start, stop[, step])` with Python's end-exclusive rule, not `..` syntax; `..` stays reserved |
+| PY5 | Membership `x in [a, b]` and `x not in …` are added (`one_of` stays) |
+| PY6 | Power `**` is accepted; `^` stays for Excel users |
+| PY7 | `??` (first non-empty) and the pipe `\|>` are kept: Python has no equivalent |
+| PY8 | Function names stay Excel's; Python built-ins that already overlap (`len`, `round`, `min`, `max`, `sum`, `abs`) keep their meaning |
+
+A7b (FormExpr into Rachana-EL), owner 2026-11-21: form rules keep `and`/`or`/`not` (now normal syntax); A7b runs after A5's exact decimals, with a small `form` profile for FormExpr's 16-digit division, `+` joining text and undecided-rule-passes at level 1.0, and every changed answer recorded for review.

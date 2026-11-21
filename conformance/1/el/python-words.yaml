@@ -1,0 +1,45 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Written by hand from DECISIONS "Rachana-EL syntax follows Python" PY1 (owner 2026-11-21); verified: false: the reference refuses these words.
+suite: el/python-words
+since: "1.0"
+profile: core
+verified: false
+description: "PY1: and, or and not are Rachana-EL operators beside &&, || and !; not reads as Python's (below the comparisons)."
+given: {"record": {"a": 2, "b": 0, "side": "Buy"}}
+cases:
+
+  - id: "and-is-and"
+    kind: "expr"
+    source: "DECISIONS PY1"
+    expr: "$.a > 1 and $.b > 1"
+    expect: {"value": false}
+
+  - id: "or-is-or"
+    kind: "expr"
+    source: "DECISIONS PY1"
+    expr: "$.a > 1 or $.b > 1"
+    expect: {"value": true}
+
+  - id: "not-reads-below-the-comparison"
+    kind: "expr"
+    source: "DECISIONS PY1"
+    expr: "not $.side == 'Sell'"
+    expect: {"value": true}
+
+  - id: "not-binds-tighter-than-and"
+    kind: "expr"
+    source: "DECISIONS PY1"
+    expr: "not $.a > 1 and $.b == 0"
+    expect: {"value": false}
+
+  - id: "and-binds-tighter-than-or"
+    kind: "expr"
+    source: "DECISIONS PY1"
+    expr: "$.b > 1 and $.a > 5 or $.side == 'Buy'"
+    expect: {"value": true}
+
+  - id: "not-in-is-still-membership"
+    kind: "expr"
+    source: "DECISIONS PY1, PY5"
+    expr: "$.side not in ['Sell', 'Hold'] and not ($.a == 0)"
+    expect: {"value": true}

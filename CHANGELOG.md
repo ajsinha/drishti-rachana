@@ -3,8 +3,22 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
-## Unreleased (toward v0.10.0, the untangling)
+## v0.10.0 ready (untagged): the untangling
 
+Steps A1 to A8b, A13, A14 and A7b are in (the binder moved and behind hooks, its API, Core's canonical writer, form expressions in
+Rachana-EL). Not tagged: the tag waits for the owner (G1 gate). Proof: `./mvnw clean verify` green on JDK 21; conformance
+`--jvm` 2,095 of 2,123 identical to the reference, the 28 differences each listed in `tools/split/known-differences.txt`, 0 verified
+failing. API baseline changes since v0.9.0 to note: the binder packages (`bind`, `view`, `control`, `wire`), `Rachana.binder`/`views`,
+`ViewBuilder`, `el.FormRules`, `RCH-5001`/`RCH-5002`, and the planned removals listed in the entries below.
+
+- **A7b, form expressions in Rachana-EL**: `and`, `or` and `not` are Rachana-EL operators (DECISIONS PY1; `not` reads below the
+  comparisons, as in Python); a form's rules, hints and `=` defaults are read by Rachana-EL's parser and evaluated by the `form`
+  profile (`el/FormRules`): exact decimals with their written scale, `/` to 16 digits, `+` joining a text, empty values, three-valued
+  `and`/`or`, a rule that cannot be told holds. `FormExpr` keeps its API; its own lexer and parser are gone. Every answer equals the old
+  evaluator's (`FormRulesTest`, the old one kept in the tests); changed: the words of a syntax error, Rachana-EL's spellings read too,
+  `_` separators taken out by the profile (DECISIONS A7b-1 to A7b-4, for review). Conformance: `el/python-words` (6 cases, unverified,
+  known: the reference refuses the words); 2,095 of 2,123 identical to the reference, 28 known, 0 verified failing. The reference's
+  `sutra` program is now `RefBridgeSutra.java` (the engine class path changes other kinds' answers). API: `el.FormRules`.
 - **A14, the binder's API, writer and cases**: `rachana.binder(hooks, pivots)` and `rachana.views(hooks, pivots, tables, dates,
   budget)`: `ViewBuilder`, Core's view pipeline (controls, the date, panel sources through the `TableProvider`, map lookups, `when`,
   wired panels, strip, title, keys, controls and selects, screen grid, phone; a host's reference, mnemonic, provenance and timings left

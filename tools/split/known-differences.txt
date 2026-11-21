@@ -60,3 +60,9 @@ el/reserved#reserved-name-zip A9: the refusal's list of known functions (or its 
 el/reserved#reserved-name-money A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
 el/reserved#reserved-name-between A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
 el/reserved#reserved-name-of-a-core-library A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/python-words#and-is-and A7b: PY1 (owner 2026-11-21) makes and, or and not Rachana-EL operators; the reference refuses the words. Unverified until the reference is retired.
+el/python-words#or-is-or A7b: PY1 (owner 2026-11-21) makes and, or and not Rachana-EL operators; the reference refuses the words. Unverified until the reference is retired.
+el/python-words#not-reads-below-the-comparison A7b: PY1 (owner 2026-11-21) makes and, or and not Rachana-EL operators; the reference refuses the words. Unverified until the reference is retired.
+el/python-words#not-binds-tighter-than-and A7b: PY1 (owner 2026-11-21) makes and, or and not Rachana-EL operators; the reference refuses the words. Unverified until the reference is retired.
+el/python-words#and-binds-tighter-than-or A7b: PY1 (owner 2026-11-21) makes and, or and not Rachana-EL operators; the reference refuses the words. Unverified until the reference is retired.
+el/python-words#not-in-is-still-membership A7b: PY1 (owner 2026-11-21) makes and, or and not Rachana-EL operators; the reference refuses the words. Unverified until the reference is retired.

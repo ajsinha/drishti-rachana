@@ -143,6 +143,21 @@ The owner's rule: **keep Rachana-EL's syntax as similar to Python as possible**,
 
 A7b (FormExpr into Rachana-EL), owner 2026-11-21: form rules keep `and`/`or`/`not` (now normal syntax); A7b runs after A5's exact decimals, with a small `form` profile for FormExpr's 16-digit division, `+` joining text and undecided-rule-passes at level 1.0, and every changed answer recorded for review.
 
+**A7b as built (2026-11-21), for the owner's review.** PY1 is in Rachana-EL's parser (`and`, `or`, `not`; `not` below the
+comparisons). A form's expressions are read by Rachana-EL's parser and evaluated by the `form` profile (`el/FormRules`; `FormExpr`
+keeps its API): exact decimals (literals keep their written scale), `/` to 16 digits, `+` joining a text, empty values, three-valued
+`and`/`or`, a rule that cannot be told holds — the answers FormExpr gave (`FormRulesTest`: 39 expressions over 200 drafts each, value,
+type and names equal to the old evaluator's, kept in the tests). A5 did not bring decimal arithmetic to Core's operators (D5-2: that
+waits for level 1.1), so the decimals are the profile's. Changed answers:
+
+| # | Was | Is |
+|---|---|---|
+| A7b-1 | A syntax error said FormExpr's words (`'x' is not expected in '…'`, `a text in '…' is not closed`, `a ')' is missing`, `the expression ends too soon`) | Rachana-EL's words with the expression (`unexpected ')' at 7 (in '…')`); kept as they were: an unknown function (`'f' is not a function here (empty, len, abs, min, max)`), a function's count of values, a path of three names, an empty or too long expression |
+| A7b-2 | Only FormExpr's tokens | Rachana-EL's spellings are read too: `&&`, `\|\|`, `!` (tight, as in Rachana-EL), Java number forms; anything else of the language (lists, `? :`, `in`, `%`, `ctl.x`, other functions) is refused in words when the form is read |
+| A7b-3 | `30_000_000` read by FormExpr's lexer | the form profile takes `_` out between digits before reading (Rachana-EL 1.0 has no separator; X14 brings it) |
+| A7b-4 | `and`, `or`, `not` were FormExpr's only | they are Rachana-EL's (PY1): 6 conformance cases `el/python-words`, unverified (the reference refuses the words) |
+
+
 ### A5: the same bytes on every runtime (2026-11-21)
 
 | # | Decision |

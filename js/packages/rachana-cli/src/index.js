@@ -13,12 +13,12 @@ import { build } from "./build.js";
 import { preview } from "./serve.js";
 import { lib } from "./lib.js";
 
-export const STATUS = "lint, new, build (painter step pending lane C), preview, lib";
+export const STATUS = "lint, new, build, painter included, preview, lib";
 
 const HELP = `rachana <command>
   new <dir> [--template <name>]                 a starter folder: a Sutra, sample data, rachana.yaml
-  lint [paths] [--format text|json|sarif] [--strict]   compile and lint; exit 1 on errors
-  build [--src <dir>] [--out site]              a static site: Sutras, data, runtime bundle, pages
+  lint [paths] [--format text|json|sarif] [--strict] [--level 1.1|1.2]   compile and lint; exit 1 on errors
+  build [--src <dir>] [--out site] [--level 1.1]            a static site: Sutras, data, runtime bundle, pages
   preview <file> [--data <dir>] [--port <n>]    one screen in the browser (dev <dir> serves a folder)
   lib build|sign|keygen|pack|verify|lock ...    libraries (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)
 `;
@@ -51,7 +51,7 @@ export async function main(argv, io = { out: (s) => process.stdout.write(s + "\n
     switch (cmd) {
       case "new": return scaffold(pos[0], flags.template, io);
       case "lint": return await lint(pos.length ? pos : ["."], flags, io);
-      case "build": return await build(flags.src ?? pos[0] ?? ".", flags.out ?? "site", io);
+      case "build": return await build(flags.src ?? pos[0] ?? ".", flags.out ?? "site", io, flags);
       case "preview": case "dev": return await preview(pos[0] ?? ".", flags, io);
       default: io.err(`rachana: unknown command '${cmd}'\n${HELP}`); return 2;
     }

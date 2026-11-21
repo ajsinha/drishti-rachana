@@ -3,17 +3,38 @@
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join, basename, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { distDir } from "./bundle.js";
 
 /** Escapes text for an HTML attribute or element. */
 export const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-/** The painter: <rachana-view> built on branch g2/data (lane C). Looked up in dist; absent until that branch is merged. */
-export function painterFile() {
-  const f = join(distDir(), "rachana-view.js");
-  return existsSync(f) ? f : null;
+const HERE = dirname(fileURLToPath(import.meta.url));
+export const ELEMENTS_VERSION = "3.1.0";
+const ELEMENTS_URL = `vendor/drishti-elements/${ELEMENTS_VERSION}`;
+
+/** The real <rachana-view> and what it loads, as [site path, source file]: the element and its modules (js/packages/rachana/src),
+ * the vendored Elements pack (js/vendor/drishti-elements/3.1.0) and the runtime bundle (dist, built by tools/js/build_js.py). */
+export function siteAssets() {
+  const src = join(HERE, "..", "..", "rachana", "src"), vendor = join(HERE, "..", "..", "..", "vendor", "drishti-elements", ELEMENTS_VERSION);
+  const list = [];
+  for (const n of readdirSync(src).filter((f) => f.endsWith(".js"))) list.push([`rachana/src/${n}`, join(src, n)]);
+  const walk = (dir, rel) => { for (const e of readdirSync(dir, { withFileTypes: true })) e.isDirectory() ? walk(join(dir, e.name), `${rel}/${e.name}`) : list.push([`${rel}/${e.name}`, join(dir, e.name)]); };
+  walk(vendor, ELEMENTS_URL);
+  list.push(["rachana/rachana.runtime.js", join(distDir(), "rachana.runtime.js")]);
+  for (const [, f] of list) if (!existsSync(f)) throw new Error(`${f} is missing` + (f.includes("dist") ? ": build it with python3 tools/js/build_js.py (or set RACHANA_DIST)" : ""));
+  return list;
 }
+
+/** The per-library stylesheets the Elements loader asks for by address (css/drishti_*.css, elements/<library>/*.css) although the pack
+ * carries them inside drishti-elements.css: their paths under the pack's folder, read from the pack's own script. The site holds
+ * each as an empty file naming where its rules are, so a page makes no request that fails. */
+export function elementsStubs() {
+  const js = readFileSync(join(HERE, "..", "..", "..", "vendor", "drishti-elements", ELEMENTS_VERSION, "drishti-elements.js"), "utf8");
+  return [...new Set(js.match(/"(?:css|elements)\/[\w./-]+\.css"/g) ?? [])].map((q) => `${ELEMENTS_URL}/${q.slice(1, -1)}`);
+}
+export const STUB_CSS = "/* the rules of this sheet are in the pack's drishti-elements.css */\n";
 
 /** Row counts of the data files of a folder (csv, json, jsonl), for the manifest and the protocol index. */
 export function tableFiles(dir) {
@@ -26,12 +47,16 @@ export function tableFiles(dir) {
   });
 }
 
-/** The page of one Sutra: <rachana-view> over the Sutra file and the data folder. */
-export function viewPage(name, src, data, script) {
+/** The page of one Sutra: Drishti Elements, then <rachana-view> over the Sutra file and the data folder. `base` is the path prefix
+ * of the site root ("" for a page at the root, "/" for a server). */
+export function viewPage(name, src, data, base = "", level = "1.1") {
+  const u = (p) => esc(base + p);
   return `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
 <title>${esc(name)}</title>
-<script type=module src="${esc(script)}"></script>
-<rachana-view src="${esc(src)}" data="${esc(data)}"></rachana-view>
+<link rel=stylesheet href="${u(`${ELEMENTS_URL}/drishti-elements.css`)}">
+<script src="${u(`${ELEMENTS_URL}/drishti-elements.js`)}"></script>
+<script type=module>import "${esc(base || "./")}rachana/src/static_files_host.js"; import "${esc(base || "./")}rachana/src/rachana_view.js";</script>
+<rachana-view src="${esc(src)}" data="${esc(data)}" runtime="${u("rachana/rachana.runtime.js")}" level="${esc(level)}"></rachana-view>
 `;
 }
 

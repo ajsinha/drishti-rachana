@@ -24,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("--format", choices=("text", "json", "sarif"), default="text")
     lint.add_argument("--strict", action="store_true", help="warnings fail too")
     lint.add_argument("--profiles", default="core")
+    lint.add_argument("--level", default="1.1", choices=("1.0", "1.1", "1.2"), help="language level (default 1.1; 1.2 for typed fragments and libraries)")
     conf = top.add_parser("conformance", help="conformance suite").add_subparsers(dest="action", required=True)
     r = conf.add_parser("run", help="run the suite through an adapter and write results/<runtime>.jsonl")
     r.add_argument("--cases", default="conformance/1")
@@ -66,13 +67,13 @@ def find_sutras(paths: Sequence[str]) -> list[Path]:
     return out
 
 
-def lint_files(files: Sequence[Path], profiles: str = "core") -> list[dict]:
+def lint_files(files: Sequence[Path], profiles: str = "core", level: str = "1.1") -> list[dict]:
     """``[{"file", "ok", "problems"}]`` per file, from the bundle's ``check``: the same problem objects as the JVM and Node."""
     from .engine import Rachana
     r = Rachana(profiles=profiles)
     results = []
     for f in files:
-        res = r.check(f.read_text(encoding="utf-8"), file=str(f))
+        res = r.check(f.read_text(encoding="utf-8"), file=str(f), level=level)
         results.append({"file": str(f), "ok": res["ok"], "problems": res["problems"]})
     return results
 
@@ -88,10 +89,10 @@ def sarif(results: list[dict]) -> dict:
                                   for r in results for p in r["problems"]]}]}
 
 
-def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, profiles: str = "core") -> int:
+def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, profiles: str = "core", level: str = "1.1") -> int:
     import json
     files = find_sutras(paths)
-    results = lint_files(files, profiles)
+    results = lint_files(files, profiles, level)
     bad = sum(1 for r in results for p in r["problems"] if p["severity"] == "error" or (strict and p["severity"] == "warning"))
     if fmt == "json":
         print(json.dumps(results, indent=2, ensure_ascii=False))
@@ -114,7 +115,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return EXIT_USAGE if e.code else 0
     if a.group == "lint":
         try:
-            return lint_main(a.paths, a.format, a.strict, a.profiles)
+            return lint_main(a.paths, a.format, a.strict, a.profiles, a.level)
         except (ImportError, FileNotFoundError) as e:
             print(f"rachana: {e}", file=sys.stderr)
             return EXIT_USAGE

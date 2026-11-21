@@ -8,6 +8,8 @@ subset (FORMAT 7). Writes one results line per case and a summary, as rachana_co
 
 Usage: python3 tools/conformance/protocol_check.py --reference          (starts java/rachana-data's ReferenceServer; build it first:
                                                                           cd java && ./mvnw clean package -DskipTests)
+       python3 tools/conformance/protocol_check.py --python           (starts the Python DataHost with the same test adapter; needs
+                                                                          the python/ package's dependencies, which are the standard library's)
        python3 tools/conformance/protocol_check.py --base http://127.0.0.1:8080/rdp/v1   (a host of your own)"""
 import argparse, fnmatch, http.client, json, os, socket, subprocess, sys, time, urllib.parse
 from pathlib import Path
@@ -51,7 +53,8 @@ class Host:
         c.request(method, url, body=data, headers=h)
         r = c.getresponse()
         if r.status == 200 and (r.getheader("Content-Type") or "").startswith("text/event-stream"):
-            c.sock.settimeout(idle)
+            if c.sock:
+                c.sock.settimeout(idle)
             frames, buf = [], b""
             try:
                 while True:
@@ -135,10 +138,21 @@ def start_reference():
     return p, line.split("listening on", 1)[1].strip()
 
 
+def start_python():
+    p = subprocess.Popen([sys.executable, "-m", "drishti_rachana.testhost", "--port", "0"], stdout=subprocess.PIPE, text=True,
+                         env={**os.environ, "PYTHONPATH": str(ROOT / "python" / "src") + os.pathsep + os.environ.get("PYTHONPATH", "")})
+    line = p.stdout.readline()
+    if "listening on" not in line:
+        p.kill()
+        sys.exit(f"the Python host did not start: {line!r}")
+    return p, line.split("listening on", 1)[1].strip()
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--base")
     ap.add_argument("--reference", action="store_true")
+    ap.add_argument("--python", action="store_true", help="start python/src/drishti_rachana/testhost.py (DataHost) and run the same cases")
     ap.add_argument("--cases", default=str(ROOT / "conformance" / "1"))
     ap.add_argument("--only")
     ap.add_argument("--out", default=str(ROOT / "results" / "protocol.jsonl"))
@@ -146,8 +160,10 @@ def main(argv=None):
     proc = None
     if a.reference:
         proc, a.base = start_reference()
+    elif a.python:
+        proc, a.base = start_python()
     if not a.base:
-        ap.error("give --base or --reference")
+        ap.error("give --base, --reference or --python")
     host = Host(a.base)
     only = [g for g in (a.only or "").split(",") if g]
     counts, failures, lines = {"pass": 0, "fail": 0, "error": 0}, [], []

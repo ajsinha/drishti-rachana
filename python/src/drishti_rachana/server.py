@@ -14,6 +14,7 @@ import threading
 import uuid
 import zlib
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from typing import Any, Callable, Iterable, Iterator, Optional
 
 from .protocol import Column, ProtocolError, TableSchema, Version
@@ -56,9 +57,11 @@ def _type_of(values: Iterable[Any]) -> str:
 
 
 class _Table:
-    def __init__(self, name: str, source: Callable[[], list[dict]] | list[dict], key: Optional[list[str]], title: Optional[str]):
+    def __init__(self, name: str, source: Callable[[], list[dict]] | list[dict], key: Optional[list[str]], title: Optional[str],
+                 declared: Optional[dict] = None, epoch: Optional[str] = None):
         self.name, self.source, self.key, self.title = name, source, key, title
-        self.epoch = uuid.uuid4().hex[:4]
+        self.declared = declared          # the schema document a host declares (columns, can, ...); inferred from the rows when None
+        self.epoch = epoch or uuid.uuid4().hex[:4]
         self.seq = 0
         self.log: list[tuple[int, dict]] = []
         self.live_source: Optional[Callable[[], Iterator]] = None
@@ -102,13 +105,19 @@ class _Table:
 
     def schema(self) -> dict:
         rows = self.rows()
+        if self.declared is not None:
+            d = {**self.declared, "name": self.name, "rows": len(rows), "version": {"epoch": self.epoch, "seq": self.seq}}
+            d.setdefault("limits", {"pageRows": PAGE_ROWS})
+            d.setdefault("can", ["page", "sort", "filter", "offset", "count", "group"])
+            d["columns"] = [c if isinstance(c, dict) else {"name": c, "type": "string"} for c in d.get("columns", [])]
+            return d
         names: list[str] = []
         for r in rows[:200]:
             for k in r:
                 if k not in names:
                     names.append(k)
         cols = [Column(name=n, type=_type_of(r.get(n) for r in rows[:200])).to_json() for n in names]
-        can = ["page", "sort", "filter", "offset", "count"] + (["changes"] if self.key else [])
+        can = ["page", "sort", "filter", "offset", "count", "group"] + (["changes", "replay"] if self.key else [])
         d: dict = {"name": self.name}
         if self.title:
             d["title"] = self.title
@@ -119,7 +128,29 @@ class _Table:
         return d
 
 
-def _eval(node: dict, row: dict) -> Any:
+_NUMERIC = ("integer", "number", "decimal")
+_OPS = {"==", "!=", "<", "<=", ">", ">=", "&&", "||", "!", "in", "not-in", "is-null", "contains", "starts_with", "ends_with", "lower", "upper"}
+
+
+def _refs(node: dict) -> Iterator[str]:
+    """The column names a filter tree reads; an unknown operation is ``rdp.query.invalid`` (DATA_PROTOCOL 7)."""
+    if "col" in node:
+        yield node["col"].split(".")[0]
+    for n in node.get("args", []) + node.get("list", []):
+        yield from _refs(n)
+    if "op" in node and node["op"] not in _OPS:
+        raise ProtocolError("rdp.query.invalid", f"the operation '{node['op']}' is not in the filter language")
+
+
+def _number(x: Any) -> Any:
+    try:
+        return Decimal(str(x)) if not isinstance(x, bool) else x
+    except (InvalidOperation, ValueError):
+        return x
+
+
+def _eval(node: dict, row: dict, types: Optional[dict] = None) -> Any:
+    types = types or {}
     if "col" in node:
         v: Any = row
         for part in node["col"].split("."):
@@ -128,19 +159,15 @@ def _eval(node: dict, row: dict) -> Any:
     if "lit" in node:
         return node["lit"]
     if "list" in node:
-        return [_eval(n, row) for n in node["list"]]
-    op, a = node.get("op"), [_eval(n, row) for n in node.get("args", [])]
-
-    def num(x: Any) -> Any:
-        try:
-            return float(x)
-        except (TypeError, ValueError):
-            return x
+        return [_eval(n, row, types) for n in node["list"]]
+    op, args = node.get("op"), node.get("args", [])
+    a = [_eval(n, row, types) for n in args]
+    numeric = any(("col" in n and types.get(n["col"]) in _NUMERIC) or n.get("type") in _NUMERIC for n in args)
 
     def cmp(f: Callable[[Any, Any], bool]) -> Any:
         if a[0] is None or a[1] is None:
             return False
-        x, y = (num(a[0]), num(a[1])) if not (isinstance(a[0], str) and isinstance(a[1], str)) else (a[0], a[1])
+        x, y = (_number(a[0]), _number(a[1])) if numeric or not (isinstance(a[0], str) and isinstance(a[1], str)) else (a[0], a[1])
         try:
             return f(x, y)
         except TypeError:
@@ -157,12 +184,49 @@ def _eval(node: dict, row: dict) -> Any:
         "lower": lambda: None if a[0] is None else str(a[0]).lower(), "upper": lambda: None if a[0] is None else str(a[0]).upper(),
     }
     if op not in table:
-        raise ProtocolError("rdp.query.unsupported", f"the operation '{op}' is not evaluated by this host")
+        raise ProtocolError("rdp.query.invalid", f"the operation '{op}' is not in the filter language")
     return table[op]()
 
 
-def _sort_key(v: Any) -> tuple:
-    return (v is None, 0, "") if v is None else ((False, 0, v) if isinstance(v, (int, float)) else (False, 1, str(v)))
+def _ordered(rows: list[dict], col: str, desc: bool, nulls_first: bool, ctype: str) -> list[dict]:
+    """Sort by one column, stable; empty values last unless ``nulls_first`` whatever the direction (DATA_PROTOCOL 6.1)."""
+    def key(r: dict) -> Any:
+        v = r.get(col)
+        if ctype in _NUMERIC:
+            n = _number(v)
+            return (0, n) if isinstance(n, Decimal) else (1, str(n))
+        return (0, v if isinstance(v, (int, float)) and not isinstance(v, bool) else str(v))
+    full = [r for r in rows if r.get(col) is not None]
+    empty = [r for r in rows if r.get(col) is None]
+    try:
+        full = sorted(full, key=key, reverse=desc)
+    except TypeError:
+        full = sorted(full, key=lambda r: str(r.get(col)), reverse=desc)
+    return empty + full if nulls_first else full + empty
+
+
+def _decimal_text(d: Decimal, scale: int) -> str:
+    return f"{d:.{scale}f}"
+
+
+def _aggregate(rows: list[dict], v: dict, ctype: str, scale: int) -> Any:
+    agg, col = v["agg"], v.get("col")
+    vals = [r.get(col) for r in rows if r.get(col) is not None] if col else []
+    if agg == "count":
+        return len(rows) if not col else len(vals)
+    if agg == "distinct":
+        return len({json.dumps(x, sort_keys=True) for x in vals})
+    if not vals:
+        return None
+    if ctype in _NUMERIC:
+        nums = [_number(x) for x in vals]
+        r = {"sum": lambda: sum(nums), "min": lambda: min(nums), "max": lambda: max(nums), "avg": lambda: sum(nums) / len(nums)}[agg]()
+        if ctype == "decimal":
+            return _decimal_text(Decimal(r), scale)
+        return int(r) if ctype == "integer" and agg != "avg" else float(r)
+    if agg in ("min", "max"):
+        return (min if agg == "min" else max)(vals, key=str)
+    raise ProtocolError("rdp.query.invalid", f"{agg} needs a numeric column", column=col)
 
 
 class DataHost:
@@ -173,8 +237,8 @@ class DataHost:
         self.tables: dict[str, _Table] = {}
 
     def add_table(self, name: str, source: Callable[[], list[dict]] | list[dict], key: Optional[list[str]] = None,
-                  title: Optional[str] = None) -> _Table:
-        t = self.tables[name] = _Table(name, source, key, title)
+                  title: Optional[str] = None, schema: Optional[dict] = None, epoch: Optional[str] = None) -> _Table:
+        t = self.tables[name] = _Table(name, source, key, title, schema, epoch)
         return t
 
     def publish(self, name: str, patch: dict) -> None:
@@ -216,8 +280,6 @@ class DataHost:
                         q = json.loads(body or b"{}")
                     except ValueError as e:
                         raise ProtocolError("rdp.query.invalid", "the query is not JSON") from e
-                    if q.get("group"):
-                        raise ProtocolError("rdp.query.unsupported", "grouping is not evaluated by this host", table=t.name)
                     return self._json(self._rows(t, q))
             return Response(404, json.dumps(ProtocolError("rdp.table.unknown", "no such resource").to_json()).encode())
         except ProtocolError as e:
@@ -241,22 +303,54 @@ class DataHost:
             out["cursor"] = q["cursor"]
         if q.get("shape"):
             out["shape"] = q["shape"]
-        if q.get("schema") == "true":
+        if str(q.get("schema")).lower() == "true":
             out["schema"] = True
         return out
 
     def _rows(self, t: _Table, q: dict) -> dict:
         rows = t.snapshot()
-        known = [c["name"] for c in t.schema()["columns"]]
+        sch = t.schema()
+        cols_meta = {c["name"]: c for c in sch["columns"]}
+        known = list(cols_meta)
+        can = set(sch.get("can", []))
+        types = {n: c.get("type") for n, c in cols_meta.items()}
+
+        def column(name: str) -> dict:
+            if name not in cols_meta:
+                raise ProtocolError("rdp.column.unknown", f"{t.name} has no column '{name}'", table=t.name, column=name, expected=known)
+            return cols_meta[name]
+
+        def need(op: str) -> None:
+            if op not in can:
+                raise ProtocolError("rdp.query.unsupported", f"{t.name} does not declare '{op}'", table=t.name, operation=op)
+
         for c in q.get("columns") or []:
-            if c not in known:
-                raise ProtocolError("rdp.column.unknown", f"{t.name} has no column '{c}'", table=t.name, column=c, expected=known)
+            column(c)
         if q.get("filter"):
-            rows = [r for r in rows if _eval(q["filter"], r)]
-        for s in reversed(q.get("sort") or []):
-            if s["col"] not in known:
-                raise ProtocolError("rdp.column.unknown", f"{t.name} has no column '{s['col']}'", table=t.name, column=s["col"], expected=known)
-            rows = sorted(rows, key=lambda r, c=s["col"]: _sort_key(r.get(c)), reverse=s.get("dir") == "desc")
+            for c in _refs(q["filter"]):
+                if column(c).get("masked"):
+                    raise ProtocolError("rdp.forbidden", f"{c} is masked and cannot be filtered", table=t.name, column=c)
+            need("filter")
+            rows = [r for r in rows if _eval(q["filter"], r, types)]
+        if q.get("sort"):
+            need("sort")
+        if q.get("offset"):
+            need("offset")
+        grouped = q.get("group")
+        if grouped:
+            need("group")
+            for c in grouped.get("by", []) + [v["col"] for v in grouped.get("values", []) if v.get("col")]:
+                if column(c).get("masked"):
+                    raise ProtocolError("rdp.forbidden", f"{c} is masked and cannot be grouped", table=t.name, column=c)
+            return self._grouped(t, rows, q, grouped, column)
+        for s in q.get("sort") or []:
+            if column(s["col"]).get("masked"):
+                raise ProtocolError("rdp.forbidden", f"{s['col']} is masked and cannot be sorted", table=t.name, column=s["col"])
+        order = list(q.get("sort") or [])
+        for k in reversed([{"col": k} for k in (t.key or []) if k not in [s["col"] for s in order]]):     # the key last: stable pages
+            rows = _ordered(rows, k["col"], False, False, types.get(k["col"], "string"))
+        for s in reversed(order):
+            rows = _ordered(rows, s["col"], s.get("dir") == "desc", s.get("nulls") == "first", types.get(s["col"], "string"))
         sig = json.dumps([q.get("filter"), q.get("sort"), q.get("columns")], sort_keys=True)
         start = int(q.get("offset") or 0)
         if q.get("cursor"):
@@ -276,7 +370,33 @@ class DataHost:
         if start + limit < len(rows):
             out["next"] = f"{zlib.crc32(sig.encode())}:{start + limit}"
         if q.get("schema"):
-            out["schema"] = t.schema()
+            out["schema"] = sch
+        return out
+
+    def _grouped(self, t: _Table, rows: list[dict], q: dict, g: dict, column: Callable[[str], dict]) -> dict:
+        """``group`` (DATA_PROTOCOL 6.3): one row per distinct ``by`` tuple, the aggregates of ``values``, optional ``totals``."""
+        by, values = g.get("by", []), g.get("values", [])
+        groups: dict[str, list[dict]] = {}
+        for r in rows:
+            groups.setdefault(json.dumps([r.get(c) for c in by], default=str), []).append(r)
+
+        def agg(rs: list[dict], v: dict) -> Any:
+            c = column(v["col"]) if v.get("col") else {}
+            scale = c.get("scale")
+            if scale is None:
+                scale = max((len(str(x).partition(".")[2]) for x in (r.get(v.get("col")) for r in rows) if x is not None), default=0)
+            return _aggregate(rs, v, c.get("type", "string"), int(scale))
+
+        out_rows = [[rs[0].get(c) for c in by] + [agg(rs, v) for v in values] for rs in groups.values()]
+        names = by + [v["name"] for v in values]
+        for s in reversed(q.get("sort") or []):
+            if s["col"] not in names:
+                raise ProtocolError("rdp.column.unknown", f"{s['col']} is not in the grouped result", table=t.name, column=s["col"], expected=names)
+            i = names.index(s["col"])
+            out_rows.sort(key=lambda r, i=i: (r[i] is None, _number(r[i]) if isinstance(_number(r[i]), Decimal) else str(r[i])), reverse=s.get("dir") == "desc")
+        out: dict = {"table": t.name, "version": {"epoch": t.epoch, "seq": t.seq}, "columns": names, "values": out_rows, "total": len(out_rows)}
+        if g.get("totals"):
+            out["totals"] = {v["name"]: agg(rows, v) for v in values}
         return out
 
     # -- changes (minimal SSE form, DATA_PROTOCOL 6.2) --------------------------------------------------------------
@@ -308,10 +428,14 @@ class DataHost:
         seq = seq0
         if after:
             epoch, _, n = after.partition(":")
-            if epoch == t.epoch and n.isdigit() and int(n) >= (t.log[0][0] - 1 if t.log else t.seq):
+            replay = "replay" in t.schema().get("can", [])
+            if epoch == t.epoch and n.isdigit() and int(n) == t.seq:
                 seq = int(n)
-            else:
-                yield "event: gap\ndata: " + json.dumps({"table": table, "version": {"epoch": t.epoch, "seq": t.seq}}) + "\n\n"
+            elif replay and epoch == t.epoch and n.isdigit() and int(n) >= (t.log[0][0] - 1 if t.log else t.seq):
+                seq = int(n)
+            else:      # another epoch, a position the log no longer holds, or a host without replay: read the snapshot again
+                yield "event: gap\ndata: " + json.dumps({"t": "gap", "table": table, "recoverable": False,
+                                                          "version": {"epoch": t.epoch, "seq": t.seq}}) + "\n\n"
         while not (stop and stop.is_set()):
             with t.cond:
                 pending = [(s, p) for s, p in t.log if s > seq]
@@ -325,4 +449,4 @@ class DataHost:
                 continue
             for s, p in pending:
                 seq = s
-                yield f"id: {t.epoch}:{s}\nevent: msg\ndata: " + json.dumps({"topic": f"rdp.{table}", "kind": "rows", "seq": s, "data": p}) + "\n\n"
+                yield f"id: {t.epoch}:{s}\nevent: msg\ndata: " + json.dumps({"t": "msg", "topic": f"rdp.{table}", "stream": f"rdp.{table}", "epoch": t.epoch, "kind": "rows", "seq": s, "data": p}) + "\n\n"

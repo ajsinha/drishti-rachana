@@ -56,7 +56,11 @@ public final class Printer {
             throw new IllegalArgumentException("language level '" + level + "' is not one of "
                     + String.join(", ", com.ash.rachana.profile.Grammar.LEVELS));
         }
-        return new Printer.Run(!"1.0".equals(level)).p(e, 0);
+        boolean v11 = !"1.0".equals(level);
+        // the stack guard: a starved host thread prints again on one with the stack the depth bound needs
+        return com.ash.rachana.internal.Deep.call(() -> new Printer.Run(v11).p(e, 0), () -> {
+            throw new ElException("the expression is nested too deeply to print", 0);
+        });
     }
 
     /** One print: {@code v11} is level 1.1 and later (Python's forms, exponent literals). */

@@ -173,6 +173,26 @@ public final class Declarations {
 
     private static final ThreadLocal<Scope> CURRENT = new ThreadLocal<>();
 
+    static {
+        // a walk the stack guard runs again on its own thread reads the same declarations and let values (one bind)
+        com.ash.rachana.internal.Deep.carry(work -> {
+            Scope s = CURRENT.get();
+            return s == null ? work : () -> {
+                Scope outer = CURRENT.get();
+                CURRENT.set(s);
+                try {
+                    return work.get();
+                } finally {
+                    if (outer == null) {
+                        CURRENT.remove();
+                    } else {
+                        CURRENT.set(outer);
+                    }
+                }
+            };
+        });
+    }
+
     /** The scope open on this thread, or null. */
     static Scope current() {
         return CURRENT.get();

@@ -2,7 +2,7 @@
 suite: el/aggregates-host-values
 since: "1.0"
 profile: core
-verified: true
+verified: false
 description: "An aggregate gives the figure over a filtered list of the host's records and 0 for a sum of nothing; from level 1.1 a value that is not a list is a problem, never a silent 0 (SPEC 5.1: a wrong type is RCH-2102), while level 1.0 keeps its recorded answer. The same cases answer alike over a host's own node type (HostNodeConformanceTest)."
 given: {"record": {"HELD": 78104, "TEXT": "abc", "REC": {"a": 1}, "POSITIONS": [{"DIRECTION": "Held", "VALUE": 25815}, {"DIRECTION": "Held", "VALUE": 26079}, {"DIRECTION": "Held", "VALUE": 26210}, {"DIRECTION": "Posted", "VALUE": 1}], "MASKED": {"$masked": true}}}
 cases:

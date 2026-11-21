@@ -8,7 +8,7 @@ from drishti_rachana.protocol import Column, Patch, ProtocolError, Query, RowsPa
 def test_schema_roundtrip_keeps_order_and_drops_absent():
     d = {"name": "sales", "title": "Sales", "key": ["region", "month"],
          "columns": [{"name": "region", "type": "string"},
-                     {"name": "revenue", "type": "decimal", "scale": 2, "unit": "USD", "fmt": "amount0"}],
+                     {"name": "revenue", "type": "decimal", "fmt": "amount0", "unit": "USD", "scale": 2}],
          "rows": 6, "can": ["page", "sort"], "version": {"epoch": "a1", "seq": 4112}}
     s = TableSchema.from_json(d)
     assert s.columns[1].scale == 2

@@ -101,7 +101,7 @@ panels:
 
 ## 3. Python app
 
-`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol's JSON resources; the page that paints loads `<rachana-view>` (`js/packages/rachana/src`; pass its address as `view_script=`). `rachana lint` takes `--level` (default 1.1). Mount Sutras, expose tables, stream changes, and lint in CI.
+`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol (JSON; Arrow IPC for a table whose schema declares `arrow`, with `[arrow]` installed; NDJSON; `GET` or `POST /data/changes` for the SSE stream, filtered by `changes.filter` and conflated by `everyMs`) and the real `<rachana-view>`: the adapter serves the page, the element and its modules (`js/packages/rachana/src`), the vendored Drishti Elements 3.1.0 pack and the runtime bundle under its own mount (`/dash/static/...`, shipped as package data of the wheel), so no address is configured. A table offers Arrow with `@rachana.table("t", key=[...], schema={..., "can": ["page", "arrow"]})`; without pyarrow or the declaration the answer is `406`, as on the JVM reference. `rachana lint` takes `--level` (default 1.1). Mount Sutras, expose tables, stream changes, and lint in CI.
 
 **Flask** (`examples/live-orders/flask_app.py`):
 

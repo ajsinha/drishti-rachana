@@ -233,6 +233,12 @@ final class SutraBuilder {
         Map<String, PNode> m = n.map();
         String kindText = requiredText(m, "kind", n);
         PanelKind kind = kindText == null ? null : PanelKind.parse(kindText).filter(grammar::accepts).orElse(null);
+        PanelKind later = kindText == null || kind != null ? null : PanelKind.parse(kindText).filter(grammar::known).orElse(null);
+        if (later != null) {                                        // SUTRA_EXPANSION 6.2: a later level's name, used below it
+            problem("RCH-2008", "'" + later.id() + "' panels need Rachana " + later.since() + "; this host runs " + grammar.level()
+                    + " (raise the host's language level)", m.get("kind"));
+            return null;
+        }
         if (kindText != null && kind == null) {
             problem("RCH-2021", "unknown panel kind '" + kindText + "'; expected one of " + kinds(), m.get("kind"));
             return null;

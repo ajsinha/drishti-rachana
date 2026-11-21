@@ -29,27 +29,48 @@ public final class ViewModelSchema {
     /** The tones a value may carry ({@code Cell.tone} and the tones of bars, steps, markers, events and candles). */
     public static final List<String> TONES = List.of("pos", "neg", "link", "accent", "ok", "warn", "bad", "muted", "inactive");
 
+    /** How a contract-1.1 figure combines rows (a grid column's group figure, a measure). */
+    public static final List<String> AGGS = List.of("sum", "count", "min", "max", "avg", "first", "last", "distinct");
+
     /** Closed sets of words, by {@code Record.component}. */
-    static final Map<String, List<String>> ENUMS = Map.of(
-            "Patch.op", List.of("strip", "panel", "provenance", "deleted", "restored"),
-            "KeyView.action", List.of("panel", "link", "raw", "impact", "denied"),
-            "LinkItem.status", List.of("resolved", "pending", "missing", "denied", "inactive"),
-            "PanelCompute.state", List.of("ready", "computing", "stale", "failed", "refused"),
-            "Tabs.layout", List.of("tabs", "columns"),
-            "Graph.layout", List.of("tree", "force"),
-            "Surface.view", List.of("heatmap", "3d"),
-            "GeoMap.mode", List.of("world", "region"));
+    static final Map<String, List<String>> ENUMS = Map.ofEntries(
+            Map.entry("Patch.op", List.of("strip", "panel", "provenance", "deleted", "restored", "rows")),
+            Map.entry("KeyView.action", List.of("panel", "link", "raw", "impact", "denied")),
+            Map.entry("LinkItem.status", List.of("resolved", "pending", "missing", "denied", "inactive")),
+            Map.entry("PanelCompute.state", List.of("ready", "computing", "stale", "failed", "refused")),
+            Map.entry("Tabs.layout", List.of("tabs", "columns")),
+            Map.entry("Graph.layout", List.of("tree", "force")),
+            Map.entry("Surface.view", List.of("heatmap", "3d")),
+            Map.entry("GeoMap.mode", List.of("world", "region")),
+            // contract 1.1
+            Map.entry("DataField.type", List.of("string", "number", "boolean", "date", "datetime")),
+            Map.entry("PagesRef.mode", List.of("offset", "cursor")),
+            Map.entry("PagesRef.sort", List.of("client", "server")),
+            Map.entry("PagesRef.filter", List.of("client", "server")),
+            Map.entry("GridColumn.pinned", List.of("left", "right")),
+            Map.entry("GridColumn.agg", AGGS),
+            Map.entry("Measure.agg", AGGS),
+            Map.entry("Tree.mode", List.of("grid", "org", "sunburst", "icicle")),
+            Map.entry("DataChart.type", List.of("bar", "line", "area", "scatter", "pie", "donut", "heatmap", "histogram")),
+            Map.entry("DataChart.stack", List.of("sum", "percent")));
 
     /** Components written as a tone ({@link #TONES}); a Series' tone is the author's own word and stays free text. */
-    static final List<String> TONED = List.of("Cell.tone", "Bar.tone", "Step.tone", "Marker.tone", "Event.tone", "Candles.tone");
+    static final List<String> TONED = List.of("Cell.tone", "Bar.tone", "Step.tone", "Marker.tone", "Event.tone", "Candles.tone", "GeoPoint.tone");
 
     /** Fields the server always sends although the record would let them be left out. */
-    static final Map<String, List<String>> REQUIRED = Map.of(
-            "ViewModel", List.of("ref", "title", "strip", "panels", "keys", "provenance", "timings", "contract"),
-            "PanelView", List.of("id", "kind"),
-            "Ref", List.of("kind", "id"),
-            "LinkView", List.of("kind", "id"),
-            "Patch", List.of("op"));
+    static final Map<String, List<String>> REQUIRED = Map.ofEntries(
+            Map.entry("ViewModel", List.of("ref", "title", "strip", "panels", "keys", "provenance", "timings", "contract")),
+            Map.entry("PanelView", List.of("id", "kind")),
+            Map.entry("Ref", List.of("kind", "id")),
+            Map.entry("LinkView", List.of("kind", "id")),
+            Map.entry("Patch", List.of("op")),
+            Map.entry("DataField", List.of("name")),
+            Map.entry("Grid", List.of("dataset")),
+            Map.entry("GridColumn", List.of("field")),
+            Map.entry("SortKey", List.of("field")),
+            Map.entry("Measure", List.of("field")),
+            Map.entry("Tree", List.of("dataset", "node")),
+            Map.entry("DataChart", List.of("dataset", "type")));
 
     /** One line on each record, carried into the schema as its description. */
     static final Map<String, String> ABOUT = Map.ofEntries(
@@ -78,7 +99,14 @@ public final class ViewModelSchema {
             Map.entry("Timeline", "data of timeline"),
             Map.entry("Pivot", "data of pivot"),
             Map.entry("Metric", "data of metric"),
-            Map.entry("GeoMap", "data of map"));
+            Map.entry("GeoMap", "data of map"),
+            Map.entry("Dataset", "Rows by name that grid, tree and chart panels read (contract 1.1): raw values, formatted by the painter; one source"),
+            Map.entry("DataField", "One field of a dataset: name, type, label and format"),
+            Map.entry("Grid", "data of grid (contract 1.1): a dataset in a grid of typed columns, with groups, an order and a pivot"),
+            Map.entry("Tree", "data of tree (contract 1.1): a hierarchy made of a dataset's rows"),
+            Map.entry("DataChart", "data of chart (contract 1.1): a chart of a dataset"),
+            Map.entry("Measure", "A figure made of a field's values"),
+            Map.entry("GeoPoint", "A place drawn as a bubble over a map (contract 1.1)"));
 
     public static final String ID = "https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json";
 
@@ -108,6 +136,9 @@ public final class ViewModelSchema {
         m.put("pivot", PanelData.Pivot.class);
         m.put("metric", PanelData.Metric.class);
         m.put("map", PanelData.GeoMap.class);
+        m.put("grid", PanelData.Grid.class);                  // contract 1.1
+        m.put("tree", PanelData.Tree.class);
+        m.put("chart", PanelData.DataChart.class);
         return java.util.Collections.unmodifiableMap(m);
     }
 

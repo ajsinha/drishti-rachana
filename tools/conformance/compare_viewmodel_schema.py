@@ -2,14 +2,14 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see LICENSE.
 """Plan H4: spec/1/viewmodel.schema.json against the reference's ViewModelSchema.build() (dumped by tools/reference-bridge/SchemaDump.java).
-Descriptions and x-* annotations are ignored, and {allOf: [x]} (a $ref that can carry a description) is read as x.
+Descriptions and x-* annotations (x-java, x-include, x-since) are ignored, and {allOf: [x]} (a $ref that can carry a description) is read as x.
     python3 tools/conformance/compare_viewmodel_schema.py reference.json     # exit 0: structurally equal, 1: differences listed"""
 import json
 import sys
 from pathlib import Path
 
 SPEC = Path(__file__).resolve().parents[2] / "spec" / "1" / "viewmodel.schema.json"
-NOISE = ("description", "x-include", "x-java", "$comment")
+NOISE = ("description", "x-include", "x-java", "x-since", "$comment")
 
 
 def norm(x):

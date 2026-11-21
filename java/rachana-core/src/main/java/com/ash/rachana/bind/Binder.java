@@ -40,6 +40,7 @@ public final class Binder {
     private final ChartBinder charts;
     private final PivotBinder pivots;
     private final MapBinder maps;
+    private final DatasetBinder datasets;
     private final PanelLimits limits;
 
     /** The limits panels are drawn with. */
@@ -67,6 +68,7 @@ public final class Binder {
         this.charts = new ChartBinder(this, formats, catalog, limits, pivotEngine == null ? PivotEngine.NONE : pivotEngine);
         this.pivots = new PivotBinder(el, catalog, this, this.hooks.pivot(), this.hooks.labels());
         this.maps = new MapBinder(el);
+        this.datasets = new DatasetBinder(this);
     }
 
     /**
@@ -110,9 +112,11 @@ public final class Binder {
                 case PIVOT -> charts.pivot(p, c);
                 case METRIC -> metric(p, c);
                 case MAP -> maps.map(p, c);
+                case GRID, TREE, CHART -> datasets.bind(p, c);                // language 1.1: the rows go into the view's datasets
             };
+            boolean empty = DatasetBinder.reads(p.kind()) ? DatasetBinder.empty(data, c) : com.ash.rachana.view.Emptiness.of(data);
             return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer() || explanation != null,
-                    explanation, data, null, com.ash.rachana.view.Emptiness.of(data), p.span().orElse(null), p.height().orElse(null));
+                    explanation, data, null, empty, p.span().orElse(null), p.height().orElse(null));
         } catch (SourceDeniedException e) {
             return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer(), explanation, null, null, true,
                     p.span().orElse(null), p.height().orElse(null), "no access to " + e.kind());
@@ -620,7 +624,7 @@ public final class Binder {
         // an entity the link names but no source holds (a page per value not built yet, a pack checked before it is deployed): the panel
         // has nothing to show, as a missing branch of the document has; it is not broken
         return new BindContext(c.doc(), c.layout(), EvalContext.of(d == null ? Node.missing() : d.data(), formats), c.linked(), c.pending(),
-                c.denied(), null, c.host());
+                c.denied(), null, c.host(), c.datasets());
     }
 
     /** The linked entity a panel reads its data from, when it names one with {@code source}. */

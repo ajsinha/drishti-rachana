@@ -3,8 +3,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json",
   "title": "ViewModel",
-  "description": "The JSON a Rachana runtime returns for every screen (contract 1.x; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
-  "x-contract": "1.0",
+  "description": "The JSON a Rachana runtime returns for every screen (contract 1.x, now 1.1: datasets and the kinds grid, tree and chart, map points and the rows patch, appended to 1.0; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
+  "x-contract": "1.1",
   "x-status": "draft: transcribed by reading; replaced by the generated schema in R0 step H4",
   "$ref": "#/$defs/ViewModel",
   "$defs": {
@@ -95,11 +95,19 @@
         },
         "contract": {
           "type": "string",
-          "description": "the ViewModel contract this view speaks, major.minor (currently \"1.0\"); a client refuses a major it does not know and ignores what a newer minor adds"
+          "description": "the ViewModel contract this view speaks, major.minor: the smallest minor that describes the document (1.1 when it has datasets or a grid, tree or chart panel or a map with points, else 1.0); a client refuses a major it does not know and ignores what a newer minor adds"
         },
         "phone": {
           "type": "object",
           "description": "what the Sutra says about the phone ({panels: {id: {tier, from, rows, columns, sort, series, figures, tab}}, order, default, summary}); left out when empty"
+        },
+        "datasets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/Dataset"
+          },
+          "description": "rows by name that grid, tree and chart panels read; left out when there are none (contract 1.1)",
+          "x-since": "1.1"
         }
       },
       "required": [
@@ -841,6 +849,14 @@
         "unit": {
           "type": "string",
           "description": "unit"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GeoPoint"
+          },
+          "description": "places drawn as bubbles over the map; left out when there are none (contract 1.1)",
+          "x-since": "1.1"
         }
       },
       "additionalProperties": false,
@@ -1502,6 +1518,15 @@
         },
         {
           "$ref": "#/$defs/Pivot"
+        },
+        {
+          "$ref": "#/$defs/Grid"
+        },
+        {
+          "$ref": "#/$defs/Tree"
+        },
+        {
+          "$ref": "#/$defs/DataChart"
         }
       ]
     },
@@ -1569,7 +1594,10 @@
             "timeline",
             "pivot",
             "metric",
-            "map"
+            "map",
+            "grid",
+            "tree",
+            "chart"
           ],
           "description": "panel kind: one of the grammar's kinds; decides which record data carries"
         },
@@ -2241,6 +2269,84 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "grid"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Grid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "tree"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Tree"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "chart"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DataChart"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
         }
       ]
     },
@@ -2254,9 +2360,10 @@
             "panel",
             "provenance",
             "deleted",
-            "restored"
+            "restored",
+            "rows"
           ],
-          "description": "strip, panel, provenance, deleted or restored"
+          "description": "strip, panel, provenance, deleted or restored; rows (contract 1.1)"
         },
         "index": {
           "type": "integer",
@@ -2290,6 +2397,59 @@
           "type": "string",
           "format": "date-time",
           "description": "when the entity was deleted, for op deleted"
+        },
+        "dataset": {
+          "type": "string",
+          "description": "the dataset a rows patch changes (contract 1.1)"
+        },
+        "reset": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "every row of the dataset, replaced; applied first (contract 1.1)"
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the keys of rows removed; a compound key's fields joined by U+001F (contract 1.1)"
+        },
+        "update": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "rows merged by key, the fields given; an unknown key is added (contract 1.1)"
+        },
+        "add": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "rows appended; an existing key is updated (contract 1.1)"
         }
       },
       "required": [
@@ -3492,6 +3652,600 @@
       "additionalProperties": false,
       "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#Wire",
       "x-include": "NON_EMPTY"
+    },
+    "Dataset": {
+      "description": "Rows by name that grid, tree and chart panels read (contract 1.1). Raw values (numbers, text, booleans, null; a value the reader may not see is {\"$masked\": true}, as in the Data Protocol), formatted by the painter with each field's fmt. Exactly one source: values or rows written in the document, name (rows the page hands the painter), arrow, pages or server (an address the host allows)",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the fields that identify a row (rows patches, selection, links)"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DataField"
+          },
+          "description": "the fields in order"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "the rows as lists in the order of fields"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "the rows as objects"
+        },
+        "more": {
+          "type": "integer",
+          "description": "how many rows the producer left out (its limit); left out when 0"
+        },
+        "name": {
+          "type": "string",
+          "description": "a dataset the page hands the painter by this name"
+        },
+        "arrow": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ArrowRef"
+            }
+          ],
+          "description": "an Arrow IPC stream or file"
+        },
+        "pages": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/PagesRef"
+            }
+          ],
+          "description": "REST pages read as the reader scrolls"
+        },
+        "server": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ServerRef"
+            }
+          ],
+          "description": "a server-side row model"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/ViewModel.java#Dataset",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "DataField": {
+      "description": "One field of a dataset (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "the field's name: a row's property, a column of values"
+        },
+        "type": {
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "date",
+            "datetime"
+          ],
+          "description": "string, number, boolean, date or datetime"
+        },
+        "label": {
+          "type": "string",
+          "description": "the words a heading shows (default: the name)"
+        },
+        "fmt": {
+          "type": "string",
+          "description": "the format its values print with (a format name: amount0, pct2, date)"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/ViewModel.java#DataField",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "ArrowRef": {
+      "description": "An Arrow IPC stream or file (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "its address"
+        },
+        "base64": {
+          "type": "string",
+          "description": "its bytes in the document"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/ViewModel.java#ArrowRef",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "PagesRef": {
+      "description": "REST pages: GET url?limit=&offset= (or &cursor=), answered {rows, total?, next?} (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "the address"
+        },
+        "size": {
+          "type": "integer",
+          "description": "rows per page (left out: the painter's)"
+        },
+        "mode": {
+          "enum": [
+            "offset",
+            "cursor"
+          ],
+          "description": "offset or cursor"
+        },
+        "total": {
+          "type": "integer",
+          "description": "the rows in all, when known"
+        },
+        "sort": {
+          "enum": [
+            "client",
+            "server"
+          ],
+          "description": "server: sorting travels to the server"
+        },
+        "filter": {
+          "enum": [
+            "client",
+            "server"
+          ],
+          "description": "server: filters travel to the server"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/ViewModel.java#PagesRef",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "ServerRef": {
+      "description": "A server-side row model: the painter POSTs {startRow, endRow, sortModel, filterModel, rowGroupCols, groupKeys, valueCols}, the server answers {rows, rowCount} (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "the address"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/ViewModel.java#ServerRef",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "Grid": {
+      "description": "data of grid (contract 1.1): a dataset in a grid of typed columns, with groups, an order and a pivot; formatted by the painter",
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "type": "string",
+          "description": "the dataset it reads (ViewModel.datasets)"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GridColumn"
+          },
+          "description": "the columns in order (left out: every field)"
+        },
+        "group": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the fields the rows are grouped by, outermost first"
+        },
+        "sort": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SortKey"
+          },
+          "description": "the order of the rows"
+        },
+        "pivot": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/GridPivot"
+            }
+          ],
+          "description": "a pivot computed by the painter"
+        },
+        "search": {
+          "type": "boolean",
+          "description": "whether the panel offers a filter box"
+        },
+        "emptyLabel": {
+          "type": "string",
+          "description": "the words shown when the dataset has no rows"
+        }
+      },
+      "required": [
+        "dataset"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#Grid",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "GridColumn": {
+      "description": "A column of a grid (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "the dataset's field"
+        },
+        "label": {
+          "type": "string",
+          "description": "its heading (default: the field's label, else its name)"
+        },
+        "fmt": {
+          "type": "string",
+          "description": "its format (default: the field's)"
+        },
+        "tone": {
+          "type": "string",
+          "description": "sign (positive and negative toned), or a tone word for every value"
+        },
+        "width": {
+          "type": "integer",
+          "description": "its width in pixels"
+        },
+        "pinned": {
+          "enum": [
+            "left",
+            "right"
+          ],
+          "description": "left or right"
+        },
+        "agg": {
+          "enum": [
+            "sum",
+            "count",
+            "min",
+            "max",
+            "avg",
+            "first",
+            "last",
+            "distinct"
+          ],
+          "description": "how a group's figure is made of its rows'"
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "whether it starts hidden"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#GridColumn",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "SortKey": {
+      "description": "One key of an order (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "the field"
+        },
+        "desc": {
+          "type": "boolean",
+          "description": "descending"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#SortKey",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "GridPivot": {
+      "description": "A pivot of a dataset, computed by the painter (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the fields down the side"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the fields across the top"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Measure"
+          },
+          "description": "the figures"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#GridPivot",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "Measure": {
+      "description": "A figure made of a field's values: a pivot's value, a tree's measure, a chart's series (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "the field"
+        },
+        "agg": {
+          "enum": [
+            "sum",
+            "count",
+            "min",
+            "max",
+            "avg",
+            "first",
+            "last",
+            "distinct"
+          ],
+          "description": "how rows are combined (left out: the value as it is)"
+        },
+        "label": {
+          "type": "string",
+          "description": "its name (default: the field's)"
+        },
+        "fmt": {
+          "type": "string",
+          "description": "its format (default: the field's)"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#Measure",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "Tree": {
+      "description": "data of tree (contract 1.1): a hierarchy made of a dataset's rows (each names its node and its parent, or its path)",
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "type": "string",
+          "description": "the dataset it reads"
+        },
+        "node": {
+          "type": "string",
+          "description": "the field that names a row's node"
+        },
+        "parent": {
+          "type": "string",
+          "description": "the field that names its parent (empty at the top)"
+        },
+        "path": {
+          "type": "string",
+          "description": "the field that holds a row's path from the top (a list, or text with / between the steps)"
+        },
+        "label": {
+          "type": "string",
+          "description": "the field shown as a node's name (default: node)"
+        },
+        "measures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Measure"
+          },
+          "description": "the figures on each node"
+        },
+        "mode": {
+          "enum": [
+            "grid",
+            "org",
+            "sunburst",
+            "icicle"
+          ],
+          "description": "grid (default), org, sunburst or icicle"
+        },
+        "open": {
+          "type": "integer",
+          "description": "the depth open at first (-1: all; left out: the painter's)"
+        }
+      },
+      "required": [
+        "dataset",
+        "node"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#Tree",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "DataChart": {
+      "description": "data of chart (contract 1.1): a chart of a dataset; with an agg the rows are combined per x and by",
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "type": "string",
+          "description": "the dataset it reads"
+        },
+        "type": {
+          "enum": [
+            "bar",
+            "line",
+            "area",
+            "scatter",
+            "pie",
+            "donut",
+            "heatmap",
+            "histogram"
+          ],
+          "description": "bar, line, area, scatter, pie, donut, heatmap or histogram"
+        },
+        "x": {
+          "type": "string",
+          "description": "the field along the horizontal axis (a pie's category; a heatmap's columns)"
+        },
+        "y": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Measure"
+          },
+          "description": "the figures, one series each"
+        },
+        "by": {
+          "type": "string",
+          "description": "the field whose values split the series (a heatmap's rows)"
+        },
+        "stack": {
+          "enum": [
+            "sum",
+            "percent"
+          ],
+          "description": "sum or percent"
+        },
+        "horizontal": {
+          "type": "boolean",
+          "description": "bars along the vertical axis"
+        },
+        "xLabel": {
+          "type": "string",
+          "description": "the horizontal axis's title"
+        },
+        "yLabel": {
+          "type": "string",
+          "description": "the vertical axis's title"
+        },
+        "bins": {
+          "type": "integer",
+          "description": "a histogram's number of bins"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "the most categories drawn, largest first"
+        }
+      },
+      "required": [
+        "dataset",
+        "type"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#DataChart",
+      "x-include": "NON_DEFAULT",
+      "x-since": "1.1"
+    },
+    "GeoPoint": {
+      "description": "A place drawn as a bubble over a map (contract 1.1)",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "its name (the bubble's tooltip)"
+        },
+        "lat": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "its latitude in degrees"
+        },
+        "lon": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "its longitude in degrees"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "its figure: sizes the bubble"
+        },
+        "text": {
+          "type": "string",
+          "description": "the figure as the reader reads it"
+        },
+        "tone": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            }
+          ],
+          "description": "its tone"
+        },
+        "link": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinkView"
+            }
+          ],
+          "description": "what a click opens"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "additionalProperties": false,
+      "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#GeoPoint",
+      "x-include": "NON_DEFAULT (lat and lon ALWAYS)",
+      "x-since": "1.1"
     }
   }
 }

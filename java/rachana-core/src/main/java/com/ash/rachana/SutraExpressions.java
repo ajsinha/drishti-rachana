@@ -36,7 +36,9 @@ public final class SutraExpressions {
             Map.entry(PanelKind.SCATTER, Set.of("where", "rows")), Map.entry(PanelKind.CANDLESTICK, Set.of("where", "rows")),
             Map.entry(PanelKind.GRAPH, Set.of("nodes", "edges")), Map.entry(PanelKind.TIMELINE, Set.of("where", "rows")),
             Map.entry(PanelKind.PIVOT, Set.of("where", "rows", "across", "value")), Map.entry(PanelKind.METRIC, Set.of("value", "delta")),
-            Map.entry(PanelKind.MAP, Set.of("highlight", "region")));
+            Map.entry(PanelKind.MAP, Set.of("highlight", "region")),
+            Map.entry(PanelKind.GRID, Set.of("rows", "where")), Map.entry(PanelKind.TREE, Set.of("rows", "where")),
+            Map.entry(PanelKind.CHART, Set.of("rows", "where")));
 
     /** The expression options of a panel kind: its own, and {@code source} for every kind that reads data. */
     static Set<String> expressionOptions(PanelKind kind) {

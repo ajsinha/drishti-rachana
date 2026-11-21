@@ -29,7 +29,7 @@ final class OpChecks {
 
     static PanelKind kind(String text) {
         return PanelKind.parse(text).orElseThrow(() -> new OpException(OpException.NOT_ACCEPTED, "unknown panel kind '" + text
-                + "'; expected one of " + String.join(", ", Arrays.stream(PanelKind.values()).map(PanelKind::id).toList())));
+                + "'; expected one of " + String.join(", ", Arrays.stream(PanelKind.values()).filter(k -> k.at("1.0")).map(PanelKind::id).toList())));
     }
 
     static void option(PanelKind kind, String option, Object value) {

@@ -29,18 +29,27 @@ public final class Grammar {
     /** The panel kinds of the grammar that a profile brings (the rest are Core's). */
     public static final Set<PanelKind> PROFILE_KINDS = Collections.unmodifiableSet(EnumSet.of(PanelKind.LINKS, PanelKind.PROVENANCE));
 
+    /** Language level 1.0: what every grammar reads unless its host raises the level (SUTRA_EXPANSION 6.2). */
+    public static final String LEVEL_1_0 = "1.0";
+
+    /** The language levels this runtime implements, oldest first. */
+    public static final List<String> LEVELS = List.of("1.0", "1.1");
+
     /** The source forms a profile may bring: {@code kind} ({@code source: { kind, id | where | search, pack, params }}). */
     public static final Set<String> SOURCE_FORMS = Set.of("kind");
 
-    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.folders());
+    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.folders(), LEVEL_1_0);
 
     private final Map<String, SutraKey> keys;
     private final Set<PanelKind> profileKinds;
     private final Set<String> sourceForms;
     private final boolean formSave;
     private final FragmentResolver fragments;
+    private final String level;
 
-    private Grammar(Map<String, SutraKey> keys, Set<PanelKind> profileKinds, Set<String> sourceForms, boolean formSave, FragmentResolver fragments) {
+    private Grammar(Map<String, SutraKey> keys, Set<PanelKind> profileKinds, Set<String> sourceForms, boolean formSave, FragmentResolver fragments,
+            String level) {
+        this.level = level;
         this.keys = Collections.unmodifiableMap(new LinkedHashMap<>(keys));
         this.profileKinds = profileKinds.isEmpty() ? Set.of() : Collections.unmodifiableSet(EnumSet.copyOf(profileKinds));
         this.sourceForms = Set.copyOf(sourceForms);
@@ -89,7 +98,30 @@ public final class Grammar {
         if (keys.isEmpty() && kinds.isEmpty() && forms.isEmpty() && !save && fragments == null) {
             return CORE;
         }
-        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.folders() : fragments);
+        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.folders() : fragments, LEVEL_1_0);
+    }
+
+    /**
+     * This grammar at another language level (SUTRA_EXPANSION 6.2): a name brought by a later level is not offered (not in the
+     * lists of a problem, not in the schema) and using it is {@code RCH-2008}. Every grammar starts at {@link #LEVEL_1_0}.
+     *
+     * @throws IllegalArgumentException for a level this runtime does not implement ({@link #LEVELS})
+     */
+    public Grammar atLevel(String next) {
+        if (!LEVELS.contains(next)) {
+            throw new IllegalArgumentException("language level '" + next + "' is not one of " + String.join(", ", LEVELS));
+        }
+        return next.equals(level) ? this : new Grammar(keys, profileKinds, sourceForms, formSave, fragments, next);
+    }
+
+    /** The language level this grammar reads ({@code 1.0} unless raised). */
+    public String level() {
+        return level;
+    }
+
+    /** Whether the kind exists in Core or a profile, at any level (a later level's kind at a lower one is {@code RCH-2008}). */
+    public boolean known(PanelKind kind) {
+        return !PROFILE_KINDS.contains(kind) || profileKinds.contains(kind);
     }
 
     /** The top-level keys the profiles add, in the order added. */
@@ -104,7 +136,7 @@ public final class Grammar {
 
     /** Whether a panel may be of this kind: every Core kind, and a profile's kind when a profile brings it. */
     public boolean accepts(PanelKind kind) {
-        return !PROFILE_KINDS.contains(kind) || profileKinds.contains(kind);
+        return known(kind) && kind.at(level);
     }
 
     /** The panel kinds a Sutra may use, in the grammar's order. */

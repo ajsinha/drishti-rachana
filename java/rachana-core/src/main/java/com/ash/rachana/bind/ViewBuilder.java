@@ -163,7 +163,8 @@ public final class ViewBuilder {
                 .withControls(resolved.views(), selects(s))
                 .withLayout(ScreenGrid.of(s))
                 .withPhone(PhoneView.of(s, s.phone() == null || s.phone().summary() == null ? null
-                        : soft(() -> el.template(s.phone().summary()).render(eval))));
+                        : soft(() -> el.template(s.phone().summary()).render(eval))))
+                .withDatasets(ctx.datasets());                 // contract 1.1: only when a dataset panel was bound (the stamp follows)
         return view;
     }
 

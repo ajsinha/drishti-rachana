@@ -1,0 +1,3497 @@
+{
+  "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). Transcribed by reading; replaced by the generated schema in R0 step H4.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json",
+  "title": "ViewModel",
+  "description": "The JSON a Rachana runtime returns for every screen (contract 1.x; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
+  "x-contract": "1.0",
+  "x-status": "draft: transcribed by reading; replaced by the generated schema in R0 step H4",
+  "$ref": "#/$defs/ViewModel",
+  "$defs": {
+    "ViewModel": {
+      "description": "A bound view: everything a client renders, and nothing it must compute",
+      "type": "object",
+      "properties": {
+        "ref": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Ref"
+            }
+          ],
+          "description": "the entity this view shows"
+        },
+        "mnemonic": {
+          "type": "string",
+          "description": "the command mnemonic for the kind (TRD)"
+        },
+        "title": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/TitleView"
+            }
+          ],
+          "description": "the title line"
+        },
+        "strip": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Cell"
+          },
+          "description": "header key figures"
+        },
+        "panels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PanelView"
+          },
+          "description": "panels in layout order; PanelView.area says which column"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/KeyView"
+          },
+          "description": "function keys"
+        },
+        "provenance": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Provenance"
+            }
+          ],
+          "description": "how the view was built"
+        },
+        "timings": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "stage timings in milliseconds (fetch, layout, bind, links, total)"
+        },
+        "controls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ControlView"
+          },
+          "description": "the Sutra's controls with their options and current values; left out when it declares none"
+        },
+        "selects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SelectView"
+          },
+          "description": "the panels whose rows or bars set a control when clicked; left out when none"
+        },
+        "layout": {
+          "type": "object",
+          "description": "the Sutra's layout: (areas, columns, split, tabs, sections, sticky, arrange, phone) with each top-level panel's place ({place: {id: {area, order, section, collapsible}}}); absent: the panels flow"
+        },
+        "contract": {
+          "type": "string",
+          "description": "the ViewModel contract this view speaks, major.minor (currently \"1.0\"); a client refuses a major it does not know and ignores what a newer minor adds"
+        },
+        "phone": {
+          "type": "object",
+          "description": "what the Sutra says about the phone ({panels: {id: {tier, from, rows, columns, sort, series, figures, tab}}, order, default, summary}); left out when empty"
+        }
+      },
+      "required": [
+        "ref",
+        "title",
+        "strip",
+        "panels",
+        "keys",
+        "provenance",
+        "timings",
+        "contract"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#ViewModel",
+      "x-include": "NON_NULL"
+    },
+    "Frame": {
+      "description": "One live-stream frame event: the patches that turn the client's view into the current one",
+      "type": "object",
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "description": "frame sequence number"
+        },
+        "generation": {
+          "type": "integer",
+          "description": "source generation"
+        },
+        "patches": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Patch"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the patches, in order"
+        },
+        "latencyMs": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "latency of this frame in milliseconds"
+        },
+        "p99Ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "99th percentile latency in milliseconds"
+        }
+      },
+      "required": [
+        "seq",
+        "generation",
+        "patches",
+        "latencyMs",
+        "p99Ms"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/live/Frame.java#Frame",
+      "x-include": "ALWAYS"
+    },
+    "Bar": {
+      "description": "One bar",
+      "type": "object",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "bar label"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the value"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the value formatted"
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "theme tone"
+        },
+        "ev": {
+          "type": "string",
+          "description": "on an hbar that emits on bar-click: the bar's row in the data"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "text",
+        "tone"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Bar",
+      "x-include": "ALWAYS"
+    },
+    "Bars": {
+      "description": "data of hbar: bars scaled to the largest absolute value",
+      "type": "object",
+      "properties": {
+        "bars": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Bar"
+          },
+          "description": "the bars"
+        },
+        "shape": {
+          "type": "string",
+          "description": "drawing shape"
+        },
+        "total": {
+          "type": "string",
+          "description": "total text"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Bars",
+      "x-include": "NON_NULL"
+    },
+    "Bin": {
+      "description": "One bin: [from, to), the last one closed",
+      "type": "object",
+      "properties": {
+        "from": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "lower edge"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "upper edge"
+        },
+        "count": {
+          "type": "integer",
+          "description": "values in the bin"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "its range formatted"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "count",
+        "label"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Bin",
+      "x-include": "ALWAYS"
+    },
+    "Candle": {
+      "description": "One candlestick bar: the four prices and the volume as numbers (for the chart) and as text (for the Data table)",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "string",
+          "description": "the bar's date"
+        },
+        "open": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "open"
+        },
+        "high": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "high"
+        },
+        "low": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "low"
+        },
+        "close": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "close"
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "volume"
+        },
+        "openText": {
+          "type": "string",
+          "description": "open in the panel's fmt"
+        },
+        "highText": {
+          "type": "string",
+          "description": "high formatted"
+        },
+        "lowText": {
+          "type": "string",
+          "description": "low formatted"
+        },
+        "closeText": {
+          "type": "string",
+          "description": "close formatted"
+        },
+        "volumeText": {
+          "type": "string",
+          "description": "the volume as text; absent without a volume"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Candle",
+      "x-include": "NON_NULL"
+    },
+    "Candles": {
+      "description": "data of candlestick: open, high, low and close by date, oldest first",
+      "type": "object",
+      "properties": {
+        "candles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Candle"
+          },
+          "description": "the bars"
+        },
+        "volume": {
+          "type": "boolean",
+          "description": "whether candles carry volume"
+        },
+        "last": {
+          "type": "string",
+          "description": "the last close, formatted"
+        },
+        "change": {
+          "type": "string",
+          "description": "the change over the last bar, formatted"
+        },
+        "tone": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            }
+          ],
+          "description": "the change's tone"
+        },
+        "fmt": {
+          "type": "string",
+          "description": "price format"
+        },
+        "unit": {
+          "type": "string",
+          "description": "unit"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Candles",
+      "x-include": "NON_NULL"
+    },
+    "Cell": {
+      "description": "One formatted value: text, an optional label, tone, link and the document path it came from",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "label (strip, kv) or absent (table cell)"
+        },
+        "text": {
+          "type": "string",
+          "description": "formatted text"
+        },
+        "tone": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            }
+          ],
+          "description": "theme tone, or absent"
+        },
+        "link": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinkView"
+            }
+          ],
+          "description": "when the value opens another entity"
+        },
+        "emphasis": {
+          "type": "boolean",
+          "description": "draw highlighted (written only when true)"
+        },
+        "path": {
+          "type": "string",
+          "description": "document path the value came from, for live patches"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#Cell",
+      "x-include": "NON_DEFAULT"
+    },
+    "Chart": {
+      "description": "data of line and area: numeric series over x labels",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "axis labels"
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Series"
+          },
+          "description": "one or more series"
+        },
+        "mark": {
+          "type": "string",
+          "description": "x label to highlight"
+        },
+        "markText": {
+          "type": "string",
+          "description": "caption for the mark"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "horizontal limit line value"
+        },
+        "limitLabel": {
+          "type": "string",
+          "description": "caption for the limit"
+        },
+        "source": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinkView"
+            }
+          ],
+          "description": "the entity the points came from"
+        },
+        "unit": {
+          "type": "string",
+          "description": "axis unit"
+        },
+        "step": {
+          "type": "boolean",
+          "description": "drawn as steps (a value holds until the next point)"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Chart",
+      "x-include": "NON_NULL"
+    },
+    "ControlView": {
+      "description": "A control as the reader sees it: what it is, the options they may pick (never a masked value), its value now and the panels that read it",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "the control's id (ctl.<id>)"
+        },
+        "kind": {
+          "type": "string",
+          "description": "dropdown, multi-select, cascading, toggle, segmented, date, date-range, number-range, top-n or search"
+        },
+        "label": {
+          "type": "string",
+          "description": "the text beside it"
+        },
+        "placement": {
+          "type": "string",
+          "description": "strip, header or side"
+        },
+        "panel": {
+          "type": "string",
+          "description": "the panel whose header holds it, for header placement"
+        },
+        "parent": {
+          "type": "string",
+          "description": "the control a cascading one depends on"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Opt"
+          },
+          "description": "the choices (a date-range's are its presets, resolved on the calendar)"
+        },
+        "value": {
+          "type": "string",
+          "description": "the current value (a range is from..to; empty when none)"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the current choices of a multi-select"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "whether it cannot be cleared"
+        },
+        "remember": {
+          "type": "boolean",
+          "description": "whether the reader's last choice is kept"
+        },
+        "min": {
+          "type": "string",
+          "description": "a number range's lower bound (from the data or fixed)"
+        },
+        "max": {
+          "type": "string",
+          "description": "a number range's upper bound"
+        },
+        "step": {
+          "type": "string",
+          "description": "a slider's step"
+        },
+        "range": {
+          "type": "boolean",
+          "description": "a slider with two handles (its value is from..to)"
+        },
+        "reads": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "ids of the panels (and strip or title) whose expressions read it"
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "whether the options were cut at the limit"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#ControlView",
+      "x-include": "NON_EMPTY"
+    },
+    "Edge": {
+      "description": "A graph edge",
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "source node id"
+        },
+        "to": {
+          "type": "string",
+          "description": "target node id"
+        },
+        "label": {
+          "type": "string",
+          "description": "edge label"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Edge",
+      "x-include": "NON_NULL"
+    },
+    "Event": {
+      "description": "One timeline event",
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "the date or timestamp as written"
+        },
+        "label": {
+          "type": "string",
+          "description": "e.g. Confirmed"
+        },
+        "detail": {
+          "type": "string",
+          "description": "a short description"
+        },
+        "status": {
+          "type": "string",
+          "description": "the status text"
+        },
+        "tone": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            }
+          ],
+          "description": "the status tone (ok, warn, bad)"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Event",
+      "x-include": "NON_NULL"
+    },
+    "Fields": {
+      "description": "data of kv, status and provenance",
+      "type": "object",
+      "properties": {
+        "fields": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Cell"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "label/value fields"
+        }
+      },
+      "required": [
+        "fields"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Fields",
+      "x-include": "ALWAYS"
+    },
+    "Gauge": {
+      "description": "data of gauge",
+      "type": "object",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the value; null when the document lacks it"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the scale's maximum"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the value formatted"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "label"
+        }
+      },
+      "required": [
+        "value",
+        "max",
+        "text",
+        "label"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Gauge",
+      "x-include": "ALWAYS"
+    },
+    "GeoLink": {
+      "description": "What a click on the map opens",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "the entity kind"
+        },
+        "template": {
+          "type": "string",
+          "description": "the id template (JUR-{iso3})"
+        },
+        "codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the codes for which an entity exists: the others are not clickable"
+        },
+        "note": {
+          "type": "string",
+          "description": "why nothing is clickable"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#GeoLink",
+      "x-include": "NON_NULL"
+    },
+    "GeoMap": {
+      "description": "data of map: the world, or one country's regions, with a place highlighted, shaded by a measure, and clickable",
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "world",
+            "region"
+          ],
+          "description": "world or region"
+        },
+        "highlight": {
+          "type": "string",
+          "description": "the country to highlight as the document names it (an ISO code or a name)"
+        },
+        "region": {
+          "type": "string",
+          "description": "for region mode, the country whose regions are drawn"
+        },
+        "link": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/GeoLink"
+            }
+          ],
+          "description": "what a click opens; absent when the map is only a picture"
+        },
+        "shade": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/GeoShade"
+            }
+          ],
+          "description": "the per-country figures that colour the map"
+        },
+        "unit": {
+          "type": "string",
+          "description": "unit"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#GeoMap",
+      "x-include": "NON_NULL"
+    },
+    "GeoShade": {
+      "description": "The figures that shade a map",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "the legend's title"
+        },
+        "unit": {
+          "type": "string",
+          "description": "unit"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ShadeItem"
+          },
+          "description": "one figure per place that has one"
+        },
+        "note": {
+          "type": "string",
+          "description": "why the map is not shaded (masked, no access, not read in time)"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#GeoShade",
+      "x-include": "NON_NULL"
+    },
+    "Graph": {
+      "description": "data of graph: nodes and the edges between them",
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Node"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the entities"
+        },
+        "edges": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Edge"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the relations; an edge to a node that is not listed is left out"
+        },
+        "layout": {
+          "anyOf": [
+            {
+              "enum": [
+                "tree",
+                "force"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "tree (layered from the roots) or force"
+        },
+        "more": {
+          "type": "integer",
+          "description": "nodes left out beyond the configured maximum"
+        }
+      },
+      "required": [
+        "nodes",
+        "edges",
+        "layout",
+        "more"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Graph",
+      "x-include": "ALWAYS"
+    },
+    "Histogram": {
+      "description": "data of histogram: bins computed on the server",
+      "type": "object",
+      "properties": {
+        "bins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Bin"
+          },
+          "description": "equal-width bins from the smallest value to the largest"
+        },
+        "markers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Marker"
+          },
+          "description": "vertical lines (VaR, expected shortfall, mean)"
+        },
+        "count": {
+          "type": "integer",
+          "description": "how many numbers were binned"
+        },
+        "dropped": {
+          "type": "integer",
+          "description": "values left out (not numbers, or beyond the configured maximum)"
+        },
+        "fmt": {
+          "type": "string",
+          "description": "the format of bin edges and markers"
+        },
+        "unit": {
+          "type": "string",
+          "description": "axis unit"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Histogram",
+      "x-include": "NON_NULL"
+    },
+    "KeyView": {
+      "description": "A function key",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "the key (F2)"
+        },
+        "label": {
+          "type": "string",
+          "description": "what it does (Legs, Netting set, Raw JSON)"
+        },
+        "action": {
+          "enum": [
+            "panel",
+            "link",
+            "raw",
+            "impact",
+            "denied"
+          ],
+          "description": "what it does when pressed"
+        },
+        "panel": {
+          "type": "string",
+          "description": "target panel id for action panel"
+        },
+        "link": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinkView"
+            }
+          ],
+          "description": "target for action link"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#KeyView",
+      "x-include": "NON_NULL"
+    },
+    "Level": {
+      "description": "One level a table's rows drill into (Sutra levels)",
+      "type": "object",
+      "properties": {
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "what the rows of the level are"
+        },
+        "columns": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "header labels of the level"
+        },
+        "numeric": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "per column, whether it is right-aligned"
+        }
+      },
+      "required": [
+        "title",
+        "columns",
+        "numeric"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Level",
+      "x-include": "ALWAYS"
+    },
+    "LinkItem": {
+      "description": "One entry of a links panel",
+      "type": "object",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "e.g. Netting set"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the target id or name"
+        },
+        "link": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LinkView"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the target"
+        },
+        "badge": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "short summary from the target (EE 4.1m)"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "resolved",
+                "pending",
+                "missing",
+                "denied",
+                "inactive"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "resolved, pending, missing, denied or inactive"
+        }
+      },
+      "required": [
+        "label",
+        "text",
+        "link",
+        "badge",
+        "status"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#LinkItem",
+      "x-include": "ALWAYS"
+    },
+    "LinkView": {
+      "description": "A navigable link to another entity",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "target kind"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "target id"
+        },
+        "mnemonic": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "command mnemonic for the target kind, when one exists"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "mnemonic"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#LinkView",
+      "x-include": "ALWAYS"
+    },
+    "Links": {
+      "description": "data of links",
+      "type": "object",
+      "properties": {
+        "links": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/LinkItem"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the links"
+        }
+      },
+      "required": [
+        "links"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Links",
+      "x-include": "ALWAYS"
+    },
+    "Marker": {
+      "description": "A marker line at a value",
+      "type": "object",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "marker label"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "position"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "formatted"
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "its colour"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "text",
+        "tone"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Marker",
+      "x-include": "ALWAYS"
+    },
+    "Metric": {
+      "description": "data of metric: one headline figure",
+      "type": "object",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Cell"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the figure (its label is the panel's label)"
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Cell"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the change against a previous value, or null"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "a short unit, or null"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "small text under the figure, or null"
+        }
+      },
+      "required": [
+        "value",
+        "delta",
+        "unit",
+        "caption"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Metric",
+      "x-include": "ALWAYS"
+    },
+    "Node": {
+      "description": "A graph node",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "the node's identifier (the entity id when it names one)"
+        },
+        "label": {
+          "type": "string",
+          "description": "what the node shows"
+        },
+        "group": {
+          "type": "string",
+          "description": "its category (colour and legend)"
+        },
+        "link": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinkView"
+            }
+          ],
+          "description": "the entity it opens"
+        },
+        "focus": {
+          "type": "boolean",
+          "description": "the node is the entity this view shows"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Node",
+      "x-include": "NON_NULL"
+    },
+    "Opt": {
+      "description": "One option of a control: the value that is set and the text shown",
+      "type": "object",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the value that is set"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the text shown"
+        }
+      },
+      "required": [
+        "value",
+        "label"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#Opt",
+      "x-include": "ALWAYS"
+    },
+    "PanelCompute": {
+      "description": "The state of a panel whose source is a computed kind: never a blank panel",
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "ready",
+            "computing",
+            "stale",
+            "failed",
+            "refused"
+          ],
+          "description": "ready, computing, stale, failed or refused"
+        },
+        "requestId": {
+          "type": "string",
+          "description": "the correlation id of this panel's read (its events go to this viewer only)"
+        },
+        "connector": {
+          "type": "string",
+          "description": "the reactive connector that computes it"
+        },
+        "message": {
+          "type": "string",
+          "description": "why it failed or was refused, or what it waits for; absent when ready"
+        },
+        "progress": {
+          "type": "object",
+          "description": "the latest progress (done, of, a partial estimate)"
+        },
+        "hasResult": {
+          "type": "boolean",
+          "description": "whether a result (current or last good) is shown"
+        },
+        "stamp": {
+          "type": "object",
+          "description": "the result's stamp (pin, computedAt, engine, inputs)"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#PanelCompute",
+      "x-include": "NON_NULL"
+    },
+    "PanelData": {
+      "description": "A panel's kind-specific content; which record depends on the panel's kind (PanelView.allOf pairs them)",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Fields"
+        },
+        {
+          "$ref": "#/$defs/Table"
+        },
+        {
+          "$ref": "#/$defs/Tabs"
+        },
+        {
+          "$ref": "#/$defs/Chart"
+        },
+        {
+          "$ref": "#/$defs/Bars"
+        },
+        {
+          "$ref": "#/$defs/Links"
+        },
+        {
+          "$ref": "#/$defs/Text"
+        },
+        {
+          "$ref": "#/$defs/Surface"
+        },
+        {
+          "$ref": "#/$defs/Metric"
+        },
+        {
+          "$ref": "#/$defs/GeoMap"
+        },
+        {
+          "$ref": "#/$defs/Gauge"
+        },
+        {
+          "$ref": "#/$defs/Waterfall"
+        },
+        {
+          "$ref": "#/$defs/Histogram"
+        },
+        {
+          "$ref": "#/$defs/Scatter"
+        },
+        {
+          "$ref": "#/$defs/Candles"
+        },
+        {
+          "$ref": "#/$defs/Graph"
+        },
+        {
+          "$ref": "#/$defs/Timeline"
+        },
+        {
+          "$ref": "#/$defs/Pivot"
+        }
+      ]
+    },
+    "PanelProvenance": {
+      "description": "How fresh a panel with its own source: is, apart from the page's",
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "the connector that answered, or the source the document names"
+        },
+        "kind": {
+          "type": "string",
+          "description": "the kind the panel's source reads"
+        },
+        "fetchedAt": {
+          "type": "string",
+          "description": "when the source's document was fetched (ISO-8601); absent when it cannot tell"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "when the connector last received new data"
+        },
+        "staleAfter": {
+          "type": "string",
+          "description": "the connector's threshold (ISO-8601 duration)"
+        },
+        "stale": {
+          "type": "boolean",
+          "description": "older than staleAfter"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#PanelProvenance",
+      "x-include": "NON_NULL"
+    },
+    "PanelView": {
+      "description": "One panel: its id, kind and place, and its kind-specific data",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "panel id"
+        },
+        "kind": {
+          "enum": [
+            "kv",
+            "table",
+            "tabs",
+            "line",
+            "area",
+            "hbar",
+            "ladder",
+            "links",
+            "status",
+            "provenance",
+            "markdown",
+            "gauge",
+            "surface",
+            "waterfall",
+            "histogram",
+            "scatter",
+            "candlestick",
+            "graph",
+            "timeline",
+            "pivot",
+            "metric",
+            "map"
+          ],
+          "description": "panel kind: one of the grammar's kinds; decides which record data carries"
+        },
+        "title": {
+          "type": "string",
+          "description": "resolved title"
+        },
+        "code": {
+          "type": "string",
+          "description": "header tag"
+        },
+        "key": {
+          "type": "string",
+          "description": "function key"
+        },
+        "area": {
+          "type": "string",
+          "description": "main or right"
+        },
+        "inferred": {
+          "type": "boolean",
+          "description": "whether inference built or completed it"
+        },
+        "explanation": {
+          "type": "string",
+          "description": "why inference chose it"
+        },
+        "data": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/PanelData"
+            }
+          ],
+          "description": "kind-specific content; null when the panel failed or is denied"
+        },
+        "error": {
+          "type": "string",
+          "description": "set when binding this panel failed; the rest of the view is unaffected"
+        },
+        "empty": {
+          "type": "boolean",
+          "description": "nothing to show (the document lacks what the panel asks for); the console says \"No data available\""
+        },
+        "span": {
+          "type": "integer",
+          "description": "the Sutra's width for the panel in columns of a 12-column grid; absent: the whole column"
+        },
+        "height": {
+          "type": "integer",
+          "description": "the Sutra's height for the panel in grid rows; absent: as tall as its content"
+        },
+        "denied": {
+          "type": "string",
+          "description": "set when the panel's source is an entity the caller may not open (no data, no error)"
+        },
+        "wire": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Wire"
+            }
+          ],
+          "description": "the panel's Sutra wiring"
+        },
+        "refresh": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/RefreshView"
+            }
+          ],
+          "description": "how often the console fetches the panel again"
+        },
+        "form": {
+          "type": "object",
+          "description": "the panel's form: the fields as this viewer may edit them, the rules, the hints, the lookups' choices and, for a table, each row's values"
+        },
+        "provenance": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/PanelProvenance"
+            }
+          ],
+          "description": "freshness of the panel's own source"
+        },
+        "compute": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/PanelCompute"
+            }
+          ],
+          "description": "state of a computed source"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#PanelView",
+      "x-include": "NON_NULL",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "kv"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Fields"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "table"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "tabs"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Tabs"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "line"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Chart"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "area"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Chart"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "hbar"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Bars"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "ladder"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "links"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Links"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "status"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Fields"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "provenance"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Fields"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "markdown"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "gauge"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "surface"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Surface"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "waterfall"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Waterfall"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "histogram"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Histogram"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "scatter"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Scatter"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "candlestick"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Candles"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "graph"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Graph"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "timeline"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Timeline"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "pivot"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Pivot"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "metric"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Metric"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "map"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/GeoMap"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Patch": {
+      "description": "One change to a rendered view",
+      "type": "object",
+      "properties": {
+        "op": {
+          "enum": [
+            "strip",
+            "panel",
+            "provenance",
+            "deleted",
+            "restored"
+          ],
+          "description": "strip, panel, provenance, deleted or restored"
+        },
+        "index": {
+          "type": "integer",
+          "description": "strip index, for op strip"
+        },
+        "cell": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Cell"
+            }
+          ],
+          "description": "the new strip cell, for op strip"
+        },
+        "panel": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/PanelView"
+            }
+          ],
+          "description": "the new panel, for op panel"
+        },
+        "provenance": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Provenance"
+            }
+          ],
+          "description": "the new provenance, for op provenance"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "when the entity was deleted, for op deleted"
+        }
+      },
+      "required": [
+        "op"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/live/Patch.java#Patch",
+      "x-include": "NON_NULL"
+    },
+    "Pivot": {
+      "description": "data of pivot: an aggregate of the rows by one field (down) and across another",
+      "type": "object",
+      "properties": {
+        "by": {
+          "type": "string",
+          "description": "the row field's name (the corner heading)"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the column keys, in first-seen order"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PivotRow"
+          },
+          "description": "one per row key, in first-seen order"
+        },
+        "totals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Cell"
+          },
+          "description": "the column totals and the grand total (last); absent when totals are off"
+        },
+        "agg": {
+          "type": "string",
+          "description": "the aggregation"
+        },
+        "heat": {
+          "type": "boolean",
+          "description": "colour cells by value"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the smallest cell value (heat scale)"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the largest cell value"
+        },
+        "more": {
+          "type": "integer",
+          "description": "row keys left out beyond the configured maximum"
+        },
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the fields the rows group by, outermost first; present only when there is more than one"
+        },
+        "expand": {
+          "type": "integer",
+          "description": "levels shown open at first; present only with levels"
+        },
+        "across": {
+          "type": "string",
+          "description": "the column field's name; present only with levels"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Pivot",
+      "x-include": "NON_NULL"
+    },
+    "PivotRow": {
+      "description": "One pivot row",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "the row key"
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Cell"
+          },
+          "description": "one per column: the aggregate formatted and toned"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "the aggregates (null where no row falls), for the heat scale and export"
+        },
+        "total": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Cell"
+            }
+          ],
+          "description": "the row total; absent when totals are off"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "in a nested pivot, the keys from the outermost level down to this row"
+        },
+        "group": {
+          "type": "boolean",
+          "description": "in a nested pivot, true for a group row (its cells are the subtotals of the rows after it that extend its path)"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#PivotRow",
+      "x-include": "NON_NULL"
+    },
+    "Point": {
+      "description": "A scatter point: its measures and their text, an optional size, label, group and the entity the label names",
+      "type": "object",
+      "properties": {
+        "x": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "x measure"
+        },
+        "y": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "y measure"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "size"
+        },
+        "xText": {
+          "type": "string",
+          "description": "x formatted"
+        },
+        "yText": {
+          "type": "string",
+          "description": "y formatted"
+        },
+        "label": {
+          "type": "string",
+          "description": "label"
+        },
+        "group": {
+          "type": "string",
+          "description": "group"
+        },
+        "link": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinkView"
+            }
+          ],
+          "description": "the entity the label names"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Point",
+      "x-include": "NON_NULL"
+    },
+    "Provenance": {
+      "description": "How the view was built: layout, source, generation, business date, freshness and masks",
+      "type": "object",
+      "properties": {
+        "layout": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "description of the layout, e.g. \"Sutra irs-vanilla v3 + inference\""
+        },
+        "fingerprint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "short shape fingerprint"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "source system"
+        },
+        "generation": {
+          "type": "integer",
+          "description": "source generation"
+        },
+        "fetchedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ISO instant the source's document was fetched"
+        },
+        "live": {
+          "type": "boolean",
+          "description": "whether the source pushes updates"
+        },
+        "businessDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the business date the data is for; null when the source is not dated"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "when the source last received new data; null when it cannot tell"
+        },
+        "staleAfter": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the source's staleness threshold (ISO-8601 duration), or null"
+        },
+        "stale": {
+          "type": "boolean",
+          "description": "older than staleAfter"
+        },
+        "sutra": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the name of the Sutra that laid the view out, or null (inference alone); personal layouts are kept by it"
+        },
+        "masked": {
+          "type": "integer",
+          "description": "how many values the caller's field masks replaced (•••); 0 when none"
+        },
+        "maskedPanels": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ids of the panels that hold masked values"
+        },
+        "partial": {
+          "type": "boolean",
+          "description": "some of what makes the page did not answer (a grouped page gathered across nodes with a node down); written only when true"
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "one line per missing part when partial; left out when empty"
+        }
+      },
+      "required": [
+        "layout",
+        "fingerprint",
+        "source",
+        "generation",
+        "fetchedAt",
+        "live",
+        "businessDate",
+        "updatedAt",
+        "staleAfter",
+        "stale",
+        "sutra",
+        "masked",
+        "maskedPanels"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#Provenance",
+      "x-include": "ALWAYS"
+    },
+    "Ref": {
+      "description": "An entity address as sent to clients",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "entity kind"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "entity id"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#Ref",
+      "x-include": "ALWAYS"
+    },
+    "RefreshView": {
+      "description": "How often the console fetches a panel again (refresh: in the Sutra)",
+      "type": "object",
+      "properties": {
+        "every": {
+          "type": "integer",
+          "description": "seconds between fetches: the fastest the reader may choose"
+        },
+        "userCanPause": {
+          "type": "boolean",
+          "description": "whether the reader may pause it"
+        }
+      },
+      "required": [
+        "every",
+        "userCanPause"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#RefreshView",
+      "x-include": "ALWAYS"
+    },
+    "Row": {
+      "description": "One table row",
+      "type": "object",
+      "properties": {
+        "cells": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Cell"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "one per column"
+        },
+        "highlight": {
+          "type": "boolean",
+          "description": "draw this row highlighted"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "document path of the row, for live patches"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Row"
+          },
+          "description": "the rows nested under this one (Sutra children); absent for a leaf"
+        },
+        "pick": {
+          "type": "string",
+          "description": "the value a click on the row sets in a control (on-select); absent when the panel does not select"
+        },
+        "crumb": {
+          "type": "string",
+          "description": "on a table with levels: the row's name in the breadcrumb"
+        },
+        "kidsTotal": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Row"
+            }
+          ],
+          "description": "on a table with levels: the total row of the rows this one drills into"
+        },
+        "ev": {
+          "type": "string",
+          "description": "on a panel that emits on row-click: the row's place in the data, sent back by a click"
+        }
+      },
+      "required": [
+        "cells",
+        "highlight",
+        "path"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Row",
+      "x-include": "ALWAYS"
+    },
+    "Scatter": {
+      "description": "data of scatter: one point per row",
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Point"
+          },
+          "description": "the points"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the distinct groups, in first-seen order (a colour each)"
+        },
+        "xLabel": {
+          "type": "string",
+          "description": "horizontal axis title"
+        },
+        "yLabel": {
+          "type": "string",
+          "description": "vertical axis title"
+        },
+        "sized": {
+          "type": "boolean",
+          "description": "whether points carry a size"
+        },
+        "more": {
+          "type": "integer",
+          "description": "points left out beyond the configured maximum"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Scatter",
+      "x-include": "NON_NULL"
+    },
+    "SelectView": {
+      "description": "A panel whose click sets a control: a table row sets the control to the value of its field; a bar sets it to its label",
+      "type": "object",
+      "properties": {
+        "panel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the panel clicked"
+        },
+        "by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the control set"
+        },
+        "filter": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the panels the author says it filters (those that read the control are rebuilt)"
+        }
+      },
+      "required": [
+        "panel",
+        "by",
+        "filter"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#SelectView",
+      "x-include": "ALWAYS"
+    },
+    "Series": {
+      "description": "One numeric series",
+      "type": "object",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "series label"
+        },
+        "values": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "one value per x label; null where none"
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the author's own word; free text"
+        }
+      },
+      "required": [
+        "label",
+        "values",
+        "tone"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Series",
+      "x-include": "ALWAYS"
+    },
+    "ShadeItem": {
+      "description": "One place's figure",
+      "type": "object",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the place's code"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the number"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the formatted text"
+        }
+      },
+      "required": [
+        "code",
+        "value",
+        "text"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#ShadeItem",
+      "x-include": "ALWAYS"
+    },
+    "Step": {
+      "description": "One waterfall step",
+      "type": "object",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "e.g. Carry"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the signed contribution, or the level of a total"
+        },
+        "from": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "where the bar starts"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "where the bar ends"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the value formatted"
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "pos (up), neg (down) or link (a total)"
+        },
+        "total": {
+          "type": "boolean",
+          "description": "drawn as a full bar from zero"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "from",
+        "to",
+        "text",
+        "tone",
+        "total"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Step",
+      "x-include": "ALWAYS"
+    },
+    "Surface": {
+      "description": "data of surface: z[row][column] over x and y",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "the columns' labels"
+        },
+        "y": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "one label per row"
+        },
+        "z": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "z[row][column]; null where the document has no number"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "smallest z"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "largest z"
+        },
+        "fmt": {
+          "type": "string",
+          "description": "number format"
+        },
+        "unit": {
+          "type": "string",
+          "description": "unit"
+        },
+        "view": {
+          "enum": [
+            "heatmap",
+            "3d"
+          ],
+          "description": "heatmap (default) or 3d"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Surface",
+      "x-include": "NON_NULL"
+    },
+    "Tab": {
+      "description": "One tab",
+      "type": "object",
+      "properties": {
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the tab's heading"
+        },
+        "fields": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Cell"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the tab's own fields (the tabs panel's body)"
+        },
+        "panels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PanelView"
+          },
+          "description": "the panels inside the tab (panels:), bound with @ the tab's element; absent without any"
+        }
+      },
+      "required": [
+        "title",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Tab",
+      "x-include": "ALWAYS"
+    },
+    "Table": {
+      "description": "data of table and ladder",
+      "type": "object",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "header labels"
+        },
+        "numeric": {
+          "type": "array",
+          "items": {
+            "type": "boolean"
+          },
+          "description": "per column, whether it is right-aligned"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Row"
+          },
+          "description": "the rows"
+        },
+        "total": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Row"
+            }
+          ],
+          "description": "total row"
+        },
+        "more": {
+          "type": "string",
+          "description": "\"N more trades\""
+        },
+        "search": {
+          "type": "boolean",
+          "description": "the panel offers a filter box in its heading (Sutra option search: false turns it off)"
+        },
+        "pivot": {
+          "type": "object",
+          "description": "the pivot the Sutra opts into (pivot:): its fields and the arrangement it opens with"
+        },
+        "expand": {
+          "type": "integer",
+          "description": "levels shown open at first (Sutra expand); present only on a tree"
+        },
+        "levels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Level"
+          },
+          "description": "the deeper levels a row drills into (Sutra levels); absent for a plain table"
+        },
+        "root": {
+          "type": "string",
+          "description": "the first step of the breadcrumb (Sutra root)"
+        },
+        "emptyLabel": {
+          "type": "string",
+          "description": "the words shown when there are no rows (Sutra empty); absent: the usual \"No data available\""
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Table",
+      "x-include": "NON_NULL"
+    },
+    "Tabs": {
+      "description": "data of tabs",
+      "type": "object",
+      "properties": {
+        "layout": {
+          "anyOf": [
+            {
+              "enum": [
+                "tabs",
+                "columns"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "tabs or columns"
+        },
+        "tabs": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Tab"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "one per element"
+        }
+      },
+      "required": [
+        "layout",
+        "tabs"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Tabs",
+      "x-include": "ALWAYS"
+    },
+    "Text": {
+      "description": "data of markdown",
+      "type": "object",
+      "properties": {
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the markdown text"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Text",
+      "x-include": "ALWAYS"
+    },
+    "Timeline": {
+      "description": "data of timeline: dated events, oldest first",
+      "type": "object",
+      "properties": {
+        "events": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Event"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the events"
+        },
+        "more": {
+          "type": "integer",
+          "description": "events left out beyond the configured maximum"
+        }
+      },
+      "required": [
+        "events",
+        "more"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Timeline",
+      "x-include": "ALWAYS"
+    },
+    "TitleView": {
+      "description": "The title line",
+      "type": "object",
+      "properties": {
+        "pill": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "pill text"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the identifier"
+        },
+        "with": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Cell"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "counterparty text and link, or null"
+        }
+      },
+      "required": [
+        "pill",
+        "id",
+        "with"
+      ],
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#TitleView",
+      "x-include": "ALWAYS"
+    },
+    "Tone": {
+      "enum": [
+        "pos",
+        "neg",
+        "link",
+        "accent",
+        "ok",
+        "warn",
+        "bad",
+        "muted",
+        "inactive"
+      ],
+      "description": "A theme tone; the console maps each to a colour token and pairs it with a sign or glyph. Used by Cell.tone, Bar.tone, Step.tone, Marker.tone, Event.tone and Candles.tone; Series.tone is the author's own word and stays free text"
+    },
+    "Waterfall": {
+      "description": "data of waterfall: ordered steps as floating bars",
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "description": "in order; a total step is drawn from zero"
+        },
+        "unit": {
+          "type": "string",
+          "description": "axis unit"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/PanelData.java#Waterfall",
+      "x-include": "NON_NULL"
+    },
+    "Wire": {
+      "description": "What the console needs of a panel's Sutra wiring: the events a click fires, the words shown while it waits on an event, its groups of children and the source it reads",
+      "type": "object",
+      "properties": {
+        "emits": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "the events, each {name, on}"
+        },
+        "waits": {
+          "type": "string",
+          "description": "set while the panel waits on an event not fired: what it says instead of data"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "per group of child panels: {place, show}"
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "the kind (and pack) of the source it reads"
+        },
+        "parent": {
+          "type": "string",
+          "description": "the parent panel's id for a child panel"
+        }
+      },
+      "additionalProperties": false,
+      "x-java": "kernel/drishti-engine/src/main/java/com/ash/drishti/engine/view/ViewModel.java#Wire",
+      "x-include": "NON_EMPTY"
+    }
+  }
+}

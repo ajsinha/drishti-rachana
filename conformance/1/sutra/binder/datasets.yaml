@@ -1,0 +1,139 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/datasets
+since: "1.1"
+profile: core
+verified: true
+description: >-
+  Language 1.1 and ViewModel contract 1.1 (SPEC 2.3a, VIEWMODEL "Contract 1.1"): the panel kinds grid, tree and chart read their rows
+  into the view's datasets (raw values; each field with its type and format), panels naming one dataset share it, and the stamp is the
+  smallest minor that describes the document: 1.1 only when a dataset panel is bound, 1.0 otherwise (the same bytes as level 1.0).
+  Synthetic data only.
+given:
+  today: "2026-01-15"
+  record: {"desk": "Rates",
+    "trades": [
+      {"id": "T-1001", "book": "RATES-EU", "desk": "Rates", "ccy": "EUR", "notional": 25000000, "pv": 18250.5, "traded": "2026-01-12", "live": true},
+      {"id": "T-1002", "book": "RATES-EU", "desk": "Rates", "ccy": "EUR", "notional": 10000000, "pv": -4120.25, "traded": "2026-01-13", "live": true},
+      {"id": "T-1003", "book": "RATES-US", "desk": "Rates", "ccy": "USD", "notional": 40000000, "pv": 30500, "traded": "2026-01-14", "live": false},
+      {"id": "T-1004", "book": "FX-G10", "desk": "FX", "ccy": "GBP", "notional": 7500000, "pv": -820, "traded": "2026-01-14", "live": true},
+      {"id": "T-1005", "book": "FX-G10", "desk": "FX", "ccy": "JPY", "notional": 12000000, "pv": 2210.75, "traded": "2026-01-15", "live": true}],
+    "org": [
+      {"id": "GRP", "parent": "", "name": "Group"},
+      {"id": "RATES", "parent": "GRP", "name": "Rates", "var": 1200000, "limit": 2000000},
+      {"id": "RATES-EU", "parent": "RATES", "name": "Rates EU", "var": 700000, "limit": 900000},
+      {"id": "RATES-US", "parent": "RATES", "name": "Rates US", "var": 600000, "limit": 1000000},
+      {"id": "FX", "parent": "GRP", "name": "FX", "var": 300000, "limit": 500000}]}
+cases:
+  - id: grid-and-chart-share-a-dataset
+    kind: sutra
+    source: SPEC 2.3a, VIEWMODEL contract 1.1
+    sutra: |
+      rachana: 1
+      sutra: blotter
+      version: 1
+      title: { pill: Desk, id: $.desk }
+      panels:
+        - id: trades
+          kind: grid
+          rows: $.trades
+          dataset: trades
+          rowKey: id
+          group: desk
+          sort: notional desc
+          columns:
+            - { label: Trade, bind: "@.id" }
+            - { label: Book, bind: "@.book" }
+            - { label: Desk, bind: "@.desk" }
+            - { label: Notional, bind: "@.notional", fmt: amount0, total: true }
+            - { label: PV, bind: "@.pv", fmt: amount2, tone: sign }
+            - { label: Traded, bind: "@.traded", fmt: date }
+        - { id: by-desk, kind: chart, rows: $.trades, dataset: trades, x: desk, y: notional, agg: sum, title: Notional by desk }
+    expect:
+      viewModel: {"title": {"pill": "Desk", "id": "Rates", "with": null}, "strip": [], "panels": [{"id": "trades", "kind": "grid", "area": "main", "inferred": false, "data": {"dataset": "trades", "columns": [{"field": "id"}, {"field": "book"}, {"field": "desk"}, {"field": "notional", "agg": "sum"}, {"field": "pv", "tone": "sign"}, {"field": "traded"}], "group": ["desk"], "sort": [{"field": "notional", "desc": true}], "search": true}, "empty": false}, {"id": "by-desk", "kind": "chart", "title": "Notional by desk", "area": "main", "inferred": false, "data": {"dataset": "trades", "type": "bar", "x": "desk", "y": [{"field": "notional", "agg": "sum"}]}, "empty": false}], "keys": [], "contract": "1.1", "datasets": {"trades": {"key": ["id"], "fields": [{"name": "id", "type": "string", "label": "Trade"}, {"name": "book", "type": "string", "label": "Book"}, {"name": "desk", "type": "string", "label": "Desk"}, {"name": "notional", "type": "number", "label": "Notional", "fmt": "amount0"}, {"name": "pv", "type": "number", "label": "PV", "fmt": "amount2"}, {"name": "traded", "type": "date", "label": "Traded", "fmt": "date"}], "values": [["T-1001", "RATES-EU", "Rates", 25000000, 18250.5, "2026-01-12"], ["T-1002", "RATES-EU", "Rates", 10000000, -4120.25, "2026-01-13"], ["T-1003", "RATES-US", "Rates", 40000000, 30500, "2026-01-14"], ["T-1004", "FX-G10", "FX", 7500000, -820, "2026-01-14"], ["T-1005", "FX-G10", "FX", 12000000, 2210.75, "2026-01-15"]]}}}
+
+  - id: fields-from-the-rows-and-a-limit
+    kind: sutra
+    source: SPEC 2.3a
+    sutra: |
+      rachana: 1
+      sutra: plain
+      version: 1
+      panels:
+        - { id: all, kind: grid, rows: $.trades, limit: 3, search: false, empty: "No trades" }
+    expect:
+      viewModel: {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "all", "kind": "grid", "area": "main", "inferred": false, "data": {"dataset": "all", "emptyLabel": "No trades"}, "empty": false}], "keys": [], "contract": "1.1", "datasets": {"all": {"fields": [{"name": "id", "type": "string"}, {"name": "book", "type": "string"}, {"name": "desk", "type": "string"}, {"name": "ccy", "type": "string"}, {"name": "notional", "type": "number"}, {"name": "pv", "type": "number"}, {"name": "traded", "type": "date"}, {"name": "live", "type": "boolean"}], "values": [["T-1001", "RATES-EU", "Rates", "EUR", 25000000, 18250.5, "2026-01-12", true], ["T-1002", "RATES-EU", "Rates", "EUR", 10000000, -4120.25, "2026-01-13", true], ["T-1003", "RATES-US", "Rates", "USD", 40000000, 30500, "2026-01-14", false]], "more": 2}}}
+
+  - id: a-tree-of-parents
+    kind: sutra
+    source: SPEC 2.3a
+    sutra: |
+      rachana: 1
+      sutra: hierarchy
+      version: 1
+      panels:
+        - { id: org, kind: tree, rows: $.org, node: id, parent: parent, label: name, mode: grid, open: 2 }
+    expect:
+      viewModel: {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "org", "kind": "tree", "area": "main", "inferred": false, "data": {"dataset": "org", "node": "id", "parent": "parent", "label": "name", "measures": [{"field": "var", "agg": "sum"}, {"field": "limit", "agg": "sum"}], "mode": "grid", "open": 2}, "empty": false}], "keys": [], "contract": "1.1", "datasets": {"org": {"fields": [{"name": "id", "type": "string"}, {"name": "parent", "type": "string"}, {"name": "name", "type": "string"}, {"name": "var", "type": "number"}, {"name": "limit", "type": "number"}], "values": [["GRP", "", "Group", null, null], ["RATES", "GRP", "Rates", 1200000, 2000000], ["RATES-EU", "RATES", "Rates EU", 700000, 900000], ["RATES-US", "RATES", "Rates US", 600000, 1000000], ["FX", "GRP", "FX", 300000, 500000]]}}}
+
+  - id: a-chart-of-series-split-by-a-field
+    kind: sutra
+    source: SPEC 2.3a
+    sutra: |
+      rachana: 1
+      sutra: charts
+      version: 1
+      panels:
+        - id: pv
+          kind: chart
+          type: bar
+          rows: "$.trades[?@.live]"
+          x: book
+          y: [notional, pv]
+          by: ccy
+          agg: sum
+          stack: sum
+          horizontal: true
+          top: 5
+          fmt: compact
+          xLabel: Book
+          yLabel: Amount
+          columns:
+            - { label: Book, bind: "@.book" }
+            - { label: Currency, bind: "@.ccy" }
+            - { label: Notional, bind: "@.notional", fmt: compact }
+            - { label: PV, bind: "@.pv", fmt: amount0 }
+    expect:
+      viewModel: {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "pv", "kind": "chart", "area": "main", "inferred": false, "data": {"dataset": "pv", "type": "bar", "x": "book", "y": [{"field": "notional", "agg": "sum", "fmt": "compact"}, {"field": "pv", "agg": "sum", "fmt": "compact"}], "by": "ccy", "stack": "sum", "horizontal": true, "xLabel": "Book", "yLabel": "Amount", "limit": 5}, "empty": false}], "keys": [], "contract": "1.1", "datasets": {"pv": {"fields": [{"name": "book", "type": "string", "label": "Book"}, {"name": "ccy", "type": "string", "label": "Currency"}, {"name": "notional", "type": "number", "label": "Notional", "fmt": "compact"}, {"name": "pv", "type": "number", "label": "PV", "fmt": "amount0"}], "values": [["RATES-EU", "EUR", 25000000, 18250.5], ["RATES-EU", "EUR", 10000000, -4120.25], ["FX-G10", "GBP", 7500000, -820], ["FX-G10", "JPY", 12000000, 2210.75]]}}}
+
+  - id: no-dataset-panel-stays-contract-1-0
+    kind: sutra
+    source: SUTRA_EXPANSION 6.3 rule 2 (the minimal stamp)
+    sutra: |
+      rachana: 1
+      sutra: words
+      version: 1
+      title: { pill: Desk, id: $.desk }
+      panels:
+        - { id: note, kind: markdown, text: "Desk ${$.desk}" }
+    expect:
+      viewModel: {"title": {"pill": "Desk", "id": "Rates", "with": null}, "strip": [], "panels": [{"id": "note", "kind": "markdown", "area": "main", "inferred": false, "data": {"text": "Desk Rates"}, "empty": false}], "keys": [], "contract": "1.0"}
+
+  - id: dataset-options-are-checked
+    kind: problem
+    source: SPEC 2.3a
+    sutra: |
+      rachana: 1
+      sutra: bad
+      version: 1
+      match: { kind: record }
+      panels:
+        - { id: g, kind: grid, rows: $.trades, limit: 60000, sort: "notional sideways" }
+        - { id: c, kind: chart, rows: $.trades, x: desk, y: notional, type: radar }
+        - { id: t, kind: tree, rows: $.org }
+    expect:
+      ok: false
+      problems:
+        - {"code": "RCH-2029", "severity": "error", "message": "option 'limit' of 'grid' panels must be a whole number of rows from 1 to 50000, not '60000'", "range": {"start": {"line": 6, "column": 49}}}
+        - {"code": "RCH-2029", "severity": "error", "message": "option 'sort' of 'grid' panels is a field name, or a list of field names each optionally followed by ' desc' (such as 'notional desc'), not 'notional sideways'", "range": {"start": {"line": 6, "column": 62}}}
+        - {"code": "RCH-2029", "severity": "error", "message": "option 'type' of 'chart' panels must be one of bar, line, area, scatter, pie, donut, heatmap, histogram, not 'radar'", "range": {"start": {"line": 7, "column": 71}}}
+        - {"code": "RCH-2022", "severity": "error", "message": "'tree' panel 't' needs option 'node'", "range": {"start": {"line": 8, "column": 5}}}

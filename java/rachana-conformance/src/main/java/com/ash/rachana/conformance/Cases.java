@@ -166,12 +166,25 @@ public final class Cases {
         sb.append("{\"text\":").append(str(text)).append(",\"tone\":").append(tone == null ? "null" : str(tone)).append('}');
     }
 
+    /** The language level a case runs at: the minor it was written for ({@code since}; SUTRA_EXPANSION 6.1 rule 2: a case pins its level). */
+    static String level(Map<String, Object> c) {
+        return c.get("since") == null ? "1.0" : text(c.get("since"));
+    }
+
+    private static final Map<String, com.ash.rachana.Rachana> AT = new java.util.HashMap<>();
+
+    /** The instance at the case's language level. */
+    static com.ash.rachana.Rachana at(Map<String, Object> c) {
+        String l = level(c);
+        return "1.0".equals(l) ? rachana : AT.computeIfAbsent(l, rachana::language);
+    }
+
     /** The Sutra is parsed, then its expressions are checked: the problems in the order found. */
     public static void problem(Map<String, Object> c, StringBuilder sb) {
         List<com.ash.rachana.SutraProblem> ps = new ArrayList<>();
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         try {
-            var sutra = rachana.parser().parse(text(c.get("sutra")), file, "conformance");
+            var sutra = at(c).parser().parse(text(c.get("sutra")), file, "conformance");
             ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions())).check(sutra));
         } catch (com.ash.rachana.SutraException e) {
             ps.addAll(e.problems());
@@ -201,7 +214,7 @@ public final class Cases {
         String text = sutra;
         StringBuilder ps = new StringBuilder();
         try {
-            var r = new com.ash.rachana.design.ops.OpApplier(rachana.parser()).apply(sutra, com.ash.rachana.design.ops.Ops.parse((Object) List.of(op)));
+            var r = new com.ash.rachana.design.ops.OpApplier(at(c).parser()).apply(sutra, com.ash.rachana.design.ops.Ops.parse((Object) List.of(op)));
             text = r.yaml();
             for (var p : r.problems()) { editProblem(ps, p.code(), p.message(), p.line()); }
         } catch (com.ash.rachana.design.ops.Ops.FormatException e) {
@@ -227,7 +240,8 @@ public final class Cases {
         Map<String, Object> g = obj(c.get("given"));
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         boolean coreOnly = "core".equals(text(c.get("profile")));          // a Core case is read with Core's grammar alone
-        var sutra = (coreOnly ? new com.ash.rachana.parse.SutraParser() : rachana.parser()).parse(text(c.get("sutra")), file, "conformance");
+        var sutra = (coreOnly ? new com.ash.rachana.parse.SutraParser(com.ash.rachana.profile.Grammar.core().atLevel(level(c)))
+                : at(c).parser()).parse(text(c.get("sutra")), file, "conformance");
         LocalDate today = g.containsKey("today") ? LocalDate.parse(text(g.get("today"))) : LocalDate.of(2026, 1, 15);
         Map<String, String> ctl = new LinkedHashMap<>();
         obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(Cases::text).toList()) : text(v)));

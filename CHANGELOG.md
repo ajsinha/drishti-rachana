@@ -3,6 +3,28 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased: ViewModel contract 1.1 and language level 1.1 (datasets; grid, tree, chart)
+
+- **Contract 1.1**, appended to 1.0 (SUTRA_EXPANSION 6.3; VIEWMODEL "Contract 1.1"): `datasets` (`Dataset`, `DataField`,
+  `ArrowRef`, `PagesRef`, `ServerRef`: inline `values` or `rows`, `name`, Arrow, REST pages, a server-side row model; raw values
+  formatted by the painter, masked as `{"$masked": true}`), the panel kinds `grid` (`Grid`, `GridColumn`, `SortKey`, `GridPivot`),
+  `tree` (`Tree`) and `chart` (`DataChart`, `Measure`), map `points` (`GeoPoint`, bubbles), and the patch op `rows` (reset, remove,
+  update, add by key). Every addition is left out when unused; the **stamp is the smallest minor that describes the document**
+  (`1.1` only with datasets, a dataset kind or map points), so every existing ViewModel keeps its bytes (the level-1.0 replay is
+  identical; Drishti stays at level 1.0). `spec/1/released/viewmodel-1.0.schema.json` written (`freeze.py --contract 1.0`, the contract v0.9.0
+  released): CG4 now checks the current schema contains it. `spec/1/viewmodel.schema.json` gains 13 definitions (`x-since: "1.1"`),
+  structurally equal to the records' generated schema (`compare_viewmodel_schema.py`, which now ignores `x-since`).
+- **Language level 1.1** (SPEC 2.3, 7.2 rule 6): the kinds `grid`, `tree` and `chart` put their rows into the view's datasets
+  (`DatasetBinder`; options `dataset`, `rowKey`, `group`, `sort`, `limit`, `search`, `empty`; `node`, `parent`, `path`, `label`,
+  `mode`, `open`; `x`, `y`, `by`, `agg`, `stack`, `type`, `horizontal`, `xLabel`, `yLabel`, `bins`, `top`, `fmt`). Levels are real
+  in the grammar: `Grammar.atLevel`, `Rachana.language(level)`; every instance starts at 1.0, where the new kinds are not offered
+  (`RCH-2021`'s list unchanged) and using one is `RCH-2008`. A conformance case runs at the level of its `since`.
+- Conformance: `sutra/binder/datasets` (6 cases, since 1.1, verified on the JVM), `problem/levels` (1 case, since 1.0; a known
+  difference from the reference, which has no level 1.1). JVM and the JavaScript build agree on all 2,130 cases at levels 1.0 and
+  1.1; 0 verified failing; `levels.py check`: level 1.0 identical. API baseline: additions only (view records, `Grammar` levels,
+  `PanelKind.since/at`, `BindContext.datasets`, `Rachana.language`). `DatasetPanelsTest`. The generated `rachana.lang.json` and
+  `sutra.schema.json` still describe level 1.0 (generated from the reference's tables); SPEC lists the 1.1 names.
+
 ## v0.11.0 ready (untagged): the JavaScript build
 
 Step A15. Not tagged: the tag waits for the owner (G1 gate).

@@ -56,7 +56,46 @@ public enum PanelKind {
      * ({@code link}), optionally shaded by a field of every entity of a kind ({@code shade}); or, with {@code region}, the regions
      * of one country. Drawn from vendored Natural Earth shapes: nothing is fetched from outside.
      */
-    MAP(Set.of(), Set.of("highlight", "region", "link", "shade", "fmt", "unit"));
+    MAP(Set.of(), Set.of("highlight", "region", "link", "shade", "fmt", "unit")),
+    /**
+     * Language 1.1 (ViewModel contract 1.1): the rows in a grid of typed columns, from a dataset the view carries. {@code columns} say
+     * the fields (each column's {@code bind} read per row, raw; its {@code fmt} printed by the painter); without them every plain field
+     * of the rows. {@code dataset} names it (panels naming one dataset share it), {@code rowKey} the fields that identify a row,
+     * {@code group} and {@code sort} the grouping and order, {@code limit} the most rows sent (10,000; at most 50,000).
+     */
+    GRID(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "limit", "search", "empty")),
+    /** Language 1.1: a hierarchy of the rows ({@code node} names a row's node, {@code parent} its parent or {@code path} its path). */
+    TREE(Set.of("rows", "node"), Set.of("parent", "path", "label", "mode", "open", "dataset", "rowKey", "limit")),
+    /** Language 1.1: a chart of the rows: {@code x}, the figures {@code y} (a field or a list), {@code by}, {@code agg}, {@code type}. */
+    CHART(Set.of("rows", "x", "y"), Set.of("type", "by", "agg", "stack", "horizontal", "xLabel", "yLabel", "bins", "top", "fmt", "dataset",
+            "rowKey", "limit"));
+
+    /** The language level that brought each kind not of level 1.0 (SUTRA_EXPANSION 6.2). */
+    private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1");
+
+    /** The language level that brought this kind: {@code 1.0}, or {@code 1.1} for {@code grid}, {@code tree} and {@code chart}. */
+    public String since() {
+        return SINCE.getOrDefault(this, "1.0");
+    }
+
+    /** Whether the kind exists at this language level ({@code major.minor}). */
+    public boolean at(String level) {
+        return compareLevels(since(), level) <= 0;
+    }
+
+    /** The order of two language levels {@code 1.minor}. */
+    public static int compareLevels(String a, String b) {
+        return Integer.compare(minor(a), minor(b));
+    }
+
+    private static int minor(String level) {
+        int dot = level == null ? -1 : level.indexOf('.');
+        try {
+            return dot < 0 ? 0 : Integer.parseInt(level.substring(dot + 1));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
     private final Set<String> required;
     private final Set<String> optional;

@@ -27,7 +27,11 @@ import java.util.Map;
  *     series, figures, tab}}}, {@code order}, {@code default} and the {@code summary} line read against the document; null when it says
  *     nothing (the console then uses each panel kind's default tier)
  * @param contract the ViewModel contract this view speaks, {@code major.minor} ({@link #CONTRACT}; VIEWMODEL.md section 8): a client
- *     refuses a major it does not know (the renderer's unknown-contract error) and ignores what a newer minor adds
+ *     refuses a major it does not know (the renderer's unknown-contract error) and ignores what a newer minor adds. It is the smallest
+ *     minor that describes this document (SUTRA_EXPANSION 6.3 rule 2): {@code 1.1} only when the view has datasets or a panel of a
+ *     contract-1.1 kind ({@link #KINDS_1_1}) or a map with points, else {@code 1.0}; a stamp given lower than that is raised
+ * @param datasets rows by name that panels of the kinds {@code grid}, {@code tree} and {@code chart} read (contract 1.1); left out
+ *     when there are none
  */
 @Include(Include.Rule.NON_NULL)
 public record ViewModel(
@@ -43,10 +47,24 @@ public record ViewModel(
         @Include(Include.Rule.NON_EMPTY) List<SelectView> selects,
         Map<String, Object> layout,
         String contract,
-        @Include(Include.Rule.NON_EMPTY) Map<String, Object> phone) {
+        @Include(Include.Rule.NON_EMPTY) Map<String, Object> phone,
+        @Include(Include.Rule.NON_EMPTY) Map<String, Dataset> datasets) {
 
-    /** The contract every ViewModel this server builds speaks (VIEWMODEL.md section 8): the minor moves for additions, the major for a break. */
+    /** The contract a ViewModel that uses nothing newer speaks (VIEWMODEL.md section 8): the minor moves for additions, the major for a break. */
     public static final String CONTRACT = "1.0";
+
+    /** The newest contract minor this library writes. */
+    public static final String NEWEST = "1.1";
+
+    /** The panel kinds contract 1.1 adds: panels that read a dataset. */
+    public static final List<String> KINDS_1_1 = List.of("grid", "tree", "chart");
+
+    /** A view with its contract and phone settings, and no datasets. */
+    public ViewModel(Ref ref, String mnemonic, TitleView title, List<Cell> strip, List<PanelView> panels, List<KeyView> keys,
+            Provenance provenance, Map<String, Double> timings, List<ControlView> controls, List<SelectView> selects, Map<String, Object> layout,
+            String contract, Map<String, Object> phone) {
+        this(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, null);
+    }
 
     /** A view with its contract and no phone settings. */
     public ViewModel(Ref ref, String mnemonic, TitleView title, List<Cell> strip, List<PanelView> panels, List<KeyView> keys,
@@ -70,7 +88,45 @@ public record ViewModel(
     public ViewModel {
         controls = controls == null ? List.of() : List.copyOf(controls);
         selects = selects == null ? List.of() : List.copyOf(selects);
-        contract = contract == null || contract.isBlank() ? CONTRACT : contract;
+        datasets = datasets == null || datasets.isEmpty() ? null : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(datasets));
+        contract = stamp(contract == null || contract.isBlank() ? CONTRACT : contract, panels, datasets);
+    }
+
+    /** The stamp: the one given, raised to {@code 1.1} when the document uses what contract 1.1 adds (the smallest minor that describes it). */
+    static String stamp(String given, List<PanelView> panels, Map<String, Dataset> datasets) {
+        boolean newer = datasets != null && !datasets.isEmpty() || uses11(panels);
+        if (!newer || !given.startsWith("1.")) {
+            return given;
+        }
+        int minor;
+        try {
+            minor = Integer.parseInt(given.substring(2));
+        } catch (NumberFormatException e) {
+            return given;
+        }
+        return minor >= 1 ? given : NEWEST;
+    }
+
+    private static boolean uses11(List<PanelView> panels) {
+        if (panels == null) {
+            return false;
+        }
+        for (PanelView p : panels) {
+            if (p == null) {
+                continue;
+            }
+            if (KINDS_1_1.contains(p.kind()) || p.data() instanceof PanelData.GeoMap g && g.points() != null && !g.points().isEmpty()) {
+                return true;
+            }
+            if (p.data() instanceof PanelData.Tabs t && t.tabs() != null) {
+                for (PanelData.Tab tab : t.tabs()) {
+                    if (tab != null && uses11(tab.panels())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /** A view without controls. */
@@ -81,22 +137,27 @@ public record ViewModel(
 
     /** The same view with another provenance. */
     public ViewModel withProvenance(Provenance p) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, p, timings, controls, selects, layout, contract, phone);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, p, timings, controls, selects, layout, contract, phone, datasets);
     }
 
     /** The same view with its controls and selects. */
     public ViewModel withControls(List<ControlView> controls, List<SelectView> selects) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
     }
 
     /** The same view with its screen layout (RACHANA_REFERENCE.md 13). */
     public ViewModel withLayout(Map<String, Object> layout) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
+    }
+
+    /** The same view with its datasets (contract 1.1), or none (null or empty); the stamp follows. */
+    public ViewModel withDatasets(Map<String, Dataset> datasets) {
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
     }
 
     /** The same view with what its Sutra says about the phone (docs/guides/BUILD_GUIDE.md section 5), or none (null). */
     public ViewModel withPhone(Map<String, Object> phone) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
     }
 
     /** One option of a control: the value that is set and the text shown. */
@@ -396,4 +457,74 @@ public record ViewModel(
             this(id, kind, title, code, key, area, inferred, explanation, data, error, empty, null, null);
         }
     }
+
+    /**
+     * Rows by name (contract 1.1): what panels of the kinds {@code grid}, {@code tree} and {@code chart} read, so that two panels can read
+     * one dataset and a {@code rows} patch reaches both. Unlike the rest of the document its values are raw (numbers, text, booleans,
+     * null; a value the reader may not see is {@code {"$masked": true}}, as in the Data Protocol): the painter formats them with each
+     * field's {@code fmt}. Exactly one source: {@code values} (rows in the order of {@code fields}) or {@code rows} (objects) written in
+     * the document, {@code name} (rows the page hands the painter), {@code arrow}, {@code pages} or {@code server} (read from an address
+     * the host allows).
+     *
+     * @param key the fields that identify a row (needed by {@code rows} patches, selection and links), or none
+     * @param fields the fields in order: name, type, label and format
+     * @param values the rows as lists in the order of {@code fields}
+     * @param rows the rows as objects
+     * @param more how many rows the producer left out (the dataset's limit), or 0
+     * @param name a dataset the page hands the painter by this name
+     * @param arrow an Arrow IPC stream or file
+     * @param pages REST pages read as the reader scrolls
+     * @param server a server-side row model (sort, filter, group and pivot answered by the server)
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    public record Dataset(List<String> key, List<DataField> fields, List<List<Object>> values, List<Map<String, Object>> rows, int more,
+            String name, ArrowRef arrow, PagesRef pages, ServerRef server) {
+
+        /** Inline rows in the order of their fields. */
+        public static Dataset of(List<String> key, List<DataField> fields, List<List<Object>> values, int more) {
+            return new Dataset(key, fields, values, null, more, null, null, null, null);
+        }
+    }
+
+    /**
+     * One field of a dataset.
+     *
+     * @param name the field's name (a row's property; the column of {@code values})
+     * @param type {@code string}, {@code number}, {@code boolean}, {@code date} or {@code datetime}
+     * @param label the words a heading shows, or none (the name)
+     * @param fmt the format its values print with (a format name: {@code amount0}, {@code pct2}, {@code date}), or none
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    public record DataField(String name, String type, String label, String fmt) {}
+
+    /**
+     * An Arrow IPC stream or file: read from {@code url}, or carried in the document as {@code base64}.
+     *
+     * @param url its address
+     * @param base64 its bytes
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    public record ArrowRef(String url, String base64) {}
+
+    /**
+     * REST pages ({@code GET <url>?limit=&offset=}, or {@code &cursor=}), answered {@code {rows, total?, next?}}.
+     *
+     * @param url the address
+     * @param size rows per page (0: the painter's)
+     * @param mode {@code offset} or {@code cursor}
+     * @param total the rows in all, when known
+     * @param sort {@code server}: sorting travels to the server; else the pages read are sorted
+     * @param filter {@code server}: filters travel to the server; else the pages read are filtered
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    public record PagesRef(String url, int size, String mode, long total, String sort, String filter) {}
+
+    /**
+     * A server-side row model: the painter POSTs {@code {startRow, endRow, sortModel, filterModel, rowGroupCols, groupKeys, valueCols}}
+     * and the server answers {@code {rows, rowCount}} (CONTRACTS of Drishti Elements).
+     *
+     * @param url the address
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    public record ServerRef(String url) {}
 }

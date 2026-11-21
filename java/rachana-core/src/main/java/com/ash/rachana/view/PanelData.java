@@ -198,9 +198,32 @@ public sealed interface PanelData {
      * @param region for {@code region} mode, the country whose regions are drawn, as the document names it
      * @param link what a click opens, or null when the map is only a picture
      * @param shade the per-country figures that colour the map, or null
+     * @param unit the unit of the figures, or null
+     * @param points places drawn as bubbles over the map (contract 1.1), left out when there are none
      */
     @Include(Include.Rule.NON_NULL)
-    record GeoMap(String mode, String highlight, String region, GeoLink link, GeoShade shade, String unit) implements PanelData {}
+    record GeoMap(String mode, String highlight, String region, GeoLink link, GeoShade shade, String unit,
+            @Include(Include.Rule.NON_EMPTY) List<GeoPoint> points) implements PanelData {
+
+        /** A map without points (contract 1.0). */
+        public GeoMap(String mode, String highlight, String region, GeoLink link, GeoShade shade, String unit) {
+            this(mode, highlight, region, link, shade, unit, null);
+        }
+    }
+
+    /**
+     * A place drawn as a bubble over a map (contract 1.1): where it is, its figure (the bubble's size) and the figure's text.
+     *
+     * @param label its name (the bubble's tooltip)
+     * @param lat its latitude in degrees
+     * @param lon its longitude in degrees
+     * @param value its figure (sizes the bubble), or none
+     * @param text the figure as the reader reads it, or none
+     * @param tone its tone, or none
+     * @param link what a click opens, or none
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record GeoPoint(String label, @Include(Include.Rule.ALWAYS) double lat, @Include(Include.Rule.ALWAYS) double lon, Double value, String text, String tone, LinkView link) {}
 
     /**
      * What a click on the map opens.
@@ -389,4 +412,106 @@ public sealed interface PanelData {
             this(label, cells, values, total, null, null);
         }
     }
+
+    // ---- contract 1.1: panels that read a dataset (ViewModel.datasets) -------------------------------------------------------------
+
+    /**
+     * {@code grid} (contract 1.1): a dataset's rows in a grid of typed columns (virtual rows, sort, filter, row groups, a pivot computed
+     * by the painter, export). Its figures are formatted by the painter with each column's {@code fmt}.
+     *
+     * @param dataset the dataset it reads (ViewModel.datasets)
+     * @param columns the columns, in order; none: every field of the dataset
+     * @param group the fields the rows are grouped by, outermost first
+     * @param sort the order of the rows
+     * @param pivot a pivot of the rows, or none
+     * @param search whether the panel offers a filter box
+     * @param emptyLabel the words shown when the dataset has no rows, or none
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record Grid(String dataset, List<GridColumn> columns, List<String> group, List<SortKey> sort, GridPivot pivot, boolean search,
+            String emptyLabel) implements PanelData {}
+
+    /**
+     * A column of a {@code grid}.
+     *
+     * @param field the dataset's field it shows
+     * @param label its heading, or none (the field's label, else its name)
+     * @param fmt its format, or none (the field's)
+     * @param tone {@code sign} (positive and negative toned) or a tone word for every value, or none
+     * @param width its width in pixels, or 0 (the painter's)
+     * @param pinned {@code left} or {@code right}, or none
+     * @param agg how a group's figure is made of its rows' ({@code sum}, {@code count}, {@code min}, {@code max}, {@code avg},
+     *     {@code first}, {@code last}, {@code distinct}), or none
+     * @param hidden whether it starts hidden
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record GridColumn(String field, String label, String fmt, String tone, int width, String pinned, String agg, boolean hidden) {}
+
+    /**
+     * One key of an order.
+     *
+     * @param field the field
+     * @param desc whether descending
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record SortKey(String field, boolean desc) {}
+
+    /**
+     * A pivot of a dataset, computed by the painter: rows by {@code rows}, columns by {@code columns}, cells the {@code values}.
+     *
+     * @param rows the fields down the side, outermost first
+     * @param columns the fields across the top, outermost first
+     * @param values the figures
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record GridPivot(List<String> rows, List<String> columns, List<Measure> values) {}
+
+    /**
+     * A figure made of a field's values: a pivot's value, a tree's measure, a chart's series.
+     *
+     * @param field the field
+     * @param agg how rows are combined ({@code sum}, {@code count}, {@code min}, {@code max}, {@code avg}, {@code first}, {@code last},
+     *     {@code distinct}), or none: the value as it is
+     * @param label its name, or none (the field's)
+     * @param fmt its format, or none (the field's)
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record Measure(String field, String agg, String label, String fmt) {}
+
+    /**
+     * {@code tree} (contract 1.1): a hierarchy made of a dataset's rows, each naming its node and its parent (or its path), drawn as a
+     * tree grid, an org chart, a sunburst or an icicle. A node's measures are its row's; a node no row names adds up its children's.
+     *
+     * @param dataset the dataset it reads
+     * @param node the field that names a row's node
+     * @param parent the field that names its parent (empty at the top), or none when {@code path} is given
+     * @param path the field that holds a row's path from the top (a list, or text with {@code /} between the steps), or none
+     * @param label the field shown as a node's name, or none ({@code node})
+     * @param measures the figures shown on each node
+     * @param mode {@code grid} (the default), {@code org}, {@code sunburst} or {@code icicle}
+     * @param open the depth open at first (0: the painter's), -1 for all
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record Tree(String dataset, String node, String parent, String path, String label, List<Measure> measures, String mode, int open)
+            implements PanelData {}
+
+    /**
+     * {@code chart} (contract 1.1): a chart of a dataset. {@code x} the category or time down the axis, {@code y} the figures (one series
+     * each), {@code by} a field whose values split the series; with an {@code agg} the rows are combined per {@code x} and {@code by}.
+     *
+     * @param dataset the dataset it reads
+     * @param type {@code bar}, {@code line}, {@code area}, {@code scatter}, {@code pie}, {@code donut}, {@code heatmap} or {@code histogram}
+     * @param x the field along the horizontal axis (a pie's and a donut's category; a heatmap's columns)
+     * @param y the figures (a heatmap's and a histogram's: the first)
+     * @param by the field whose values split the series (a heatmap's rows), or none
+     * @param stack {@code sum} or {@code percent} to stack bars and areas, or none
+     * @param horizontal whether bars lie along the vertical axis
+     * @param xLabel the horizontal axis's title, or none
+     * @param yLabel the vertical axis's title, or none
+     * @param bins a histogram's number of bins, or 0 (the painter's)
+     * @param limit the most categories drawn, largest first (the rest left out), or 0 (all)
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    record DataChart(String dataset, String type, String x, List<Measure> y, String by, String stack, boolean horizontal, String xLabel,
+            String yLabel, int bins, int limit) implements PanelData {}
 }

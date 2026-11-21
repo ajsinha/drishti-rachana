@@ -2,7 +2,7 @@
 # The ViewModel, contract 1.x
 
 **Status: draft 1 (2026-11-17).** The machine form is [viewmodel.schema.json](viewmodel.schema.json) (JSON Schema draft 2020-12,
-55 definitions). **It was transcribed by reading the reference implementation's Java records and is replaced by the generated
+68 definitions; contract 1.1). **It was transcribed by reading the reference implementation's Java records and is replaced by the generated
 schema in R0 step H4**, where it is compared with the reference's own `ViewModelSchema.build()`: equal, or the difference is
 fixed. Until then, where this text and the schema disagree the schema is the one to correct against the records.
 
@@ -44,6 +44,31 @@ Each definition names its Java record (`x-java`) and its Jackson inclusion (`x-i
   producer may write. **A consumer must ignore unknown fields**: a validator for a live runtime of a newer minor should use
   that runtime's own schema, not an older copy.
 
+## Contract 1.1
+
+Appended to 1.0 (SUTRA_EXPANSION 6.3): every addition is optional, comes after the fields of its record, and is **left out
+when unused**, so a document that uses none of it is byte for byte a 1.0 document. `contract` is the **smallest minor that
+describes the document**: `"1.1"` only when it has `datasets`, a panel of kind `grid`, `tree` or `chart` (nested in tabs
+too) or a map with `points`; otherwise `"1.0"`. The released 1.0 schema is kept in
+[released/viewmodel-1.0.schema.json](released/viewmodel-1.0.schema.json) and `ContractAppendOnlyTest` (CG4) proves this
+schema contains it. New definitions carry `x-since: "1.1"`.
+
+| Addition | Where | What |
+|---|---|---|
+| `datasets` | ViewModel, after `phone` | `{name: Dataset}`: rows that `grid`, `tree` and `chart` panels read; two panels may read one dataset and a `rows` patch reaches both |
+| `Dataset` | new | `key` (fields), `fields` (`DataField`: `name`, `type` `string`/`number`/`boolean`/`date`/`datetime`, `label`, `fmt`), and exactly one source: `values` (rows as lists in the order of `fields`, what Rachana writes), `rows` (objects), `name` (rows the page hands the painter), `arrow` (`{url}` or `{base64}`), `pages` (`{url, size, mode offset/cursor, total, sort, filter}`, `sort`/`filter` `server` to push them to the server), `server` (`{url}`, a server-side row model); `more`: rows the producer left out |
+| raw values | Dataset only | Unlike every other part of the document a dataset's values are **raw** (numbers, text, booleans, null) and formatted by the painter with the field's `fmt`; a value the reader may not see is `{"$masked": true}` (Data Protocol 3.2) |
+| kind `grid` | PanelView | data `Grid`: `dataset`, `columns` (`GridColumn`: `field`, `label`, `fmt`, `tone` (`sign` or a tone word), `width`, `pinned` left/right, `agg`, `hidden`), `group`, `sort` (`SortKey`: `field`, `desc`), `pivot` (`GridPivot`: `rows`, `columns`, `values` of `Measure`), `search`, `emptyLabel` |
+| kind `tree` | PanelView | data `Tree`: `dataset`, `node`, `parent` or `path`, `label`, `measures` (`Measure`), `mode` grid/org/sunburst/icicle, `open` |
+| kind `chart` | PanelView | data `DataChart`: `dataset`, `type` bar/line/area/scatter/pie/donut/heatmap/histogram, `x`, `y` (`Measure`: `field`, `agg`, `label`, `fmt`), `by`, `stack` sum/percent, `horizontal`, `xLabel`, `yLabel`, `bins`, `limit` |
+| `Measure.agg`, `GridColumn.agg` | | `sum`, `count`, `min`, `max`, `avg`, `first`, `last`, `distinct`: the painter combines the rows (per `x` and `by` for a chart) |
+| `GeoMap.points` | map data, after `unit` | `GeoPoint`: `label`, `lat`, `lon` (always written), `value` (sizes the bubble), `text`, `tone`, `link`: places drawn as bubbles over the map |
+| op `rows` | Patch | `dataset`, then `reset` (every row), `remove` (keys; a compound key joined by U+001F), `update` (merged by key; an unknown key added), `add` (appended; an existing key updated), applied in that order |
+
+Rachana writes `datasets` only when a Sutra of language level 1.1 has a `grid`, `tree` or `chart` panel (SPEC 2.3); it
+never writes `rows`, `name`, `arrow`, `pages`, `server` or map `points` itself: those are for hosts and other producers.
+Drishti's screens, at level 1.0, stay byte-identical.
+
 ## Differences found (for N3)
 
 Between the Java records (the contract-1.0 truth, now this schema) and the Views design (VIEWS_DESIGN, the `design/views`
@@ -65,7 +90,7 @@ branch of Elements) field names and shapes:
 | streamed `skeleton`, `panel-add`, `panel-replace`, `patch`, `done`, `error` | `view` with pending panels, `panel-add`, `panel`, `done`, `state` | not part of this schema (transport, not document) |
 | Cell `emphasis` written only when `true` | Cell, unchanged | same |
 | `Frame` has no `contract` stamp | `spec` on frames | not stamped in 1 |
-| no `a11y`, `datasets`, `formats`, `live`, `layout.narrow` | present in the design | not in contract 1; additions would come as 1.x minors or contract 2 |
+| no `a11y`, `formats`, `live`, `layout.narrow` | present in the design | not in contract 1; additions would come as 1.x minors or contract 2. `datasets` and the kinds `grid`, `tree`, `chart` came in 1.1 (above), with fields `values` (columnar), `fmt` and `key` as lists, and the design's derived reads (`where`, `groupBy`) left to the producer |
 
 Other things the transcription found:
 

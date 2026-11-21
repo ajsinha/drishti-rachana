@@ -120,7 +120,32 @@ accepted ones in `expected`; a missing required option is `RCH-2022`.
 | `pivot` | `rows`, `by`, `across` | `value`, `agg`, `fmt`, `tone`, `heat`, `totals`, `expand` |
 | `map` | | `highlight`, `region`, `link`, `shade`, `fmt`, `unit` |
 
-`links` and `provenance` are `drishti` profile kinds. Which options hold an expression, a template, a field name or a
+`links` and `provenance` are `drishti` profile kinds.
+
+**Since 1.1: the dataset kinds.** Three kinds of language 1.1 put their rows into the view's `datasets` (ViewModel
+contract 1.1, [VIEWMODEL.md](VIEWMODEL.md)) as raw values, which the painter formats; the panel's data names the dataset.
+
+| Kind | Requires | Accepts |
+|---|---|---|
+| `grid` | `rows` | `dataset`, `rowKey`, `group`, `sort`, `limit`, `search`, `empty` |
+| `tree` | `rows`, `node` | `parent`, `path`, `label`, `mode` (`grid`, `org`, `sunburst`, `icicle`), `open`, `dataset`, `rowKey`, `limit` |
+| `chart` | `rows`, `x`, `y` | `type` (`bar`, `line`, `area`, `scatter`, `pie`, `donut`, `heatmap`, `histogram`), `by`, `agg` (`sum`, `count`, `min`, `max`, `avg`, `first`, `last`, `distinct`), `stack` (`sum`, `percent`), `horizontal`, `xLabel`, `yLabel`, `bins`, `top`, `fmt`, `dataset`, `rowKey`, `limit` |
+
+- The dataset's fields are the panel's `columns` (each column's `bind` read per row, raw; its name the field the bind
+  reads, `@.notional` gives `notional`, else its label in letters and digits, else `c<n>`; its `label` and `fmt` kept), or,
+  without columns, every plain field of the first 50 rows in order of appearance. A field's type is read from its values:
+  `number`, `boolean`, `date` (ISO), `datetime`, else `string`. A link is its id; a masked value is `{"$masked": true}`;
+  NaN and the infinities are null; lists and records are left out.
+- `dataset` names the dataset (default: the panel's id); panels naming one dataset share it, with the rows of the first
+  bound. `rowKey` (a field or a list) identifies a row and is kept only when every field exists. `limit` is the most rows
+  sent (default 10,000, at most 50,000); the rows left out are counted in the dataset's `more`. `where` filters first.
+- `grid`: `group` (fields), `sort` (`field` or `field desc`, a list of up to six), a column's `total: true` is its group
+  figure `sum`, a column's word `tone` (`sign`) is kept. `tree`: `node`, `parent`, `path`, `label` are field names; every
+  number field that is not one of them is a measure, added up by a node no row names. `chart`: `x`, `by` are field names,
+  `y` a field or a list; `agg` and `fmt` apply to every `y`; `top` is the most categories drawn.
+- Field-name options must be names (`[A-Za-z_][A-Za-z0-9_]*`): `RCH-2029` otherwise, as for every wrong option value.
+- At language level 1.0 these kinds are not offered (the `expected` list of `RCH-2021` is the twenty-two of 1.0) and
+  using one is `RCH-2008` (section 7.2). Which options hold an expression, a template, a field name or a
 plain word is fixed per kind in `rachana.lang.json` [CS]; TRANSLATION.md section 3 states each one's effect.
 
 ### 2.4 Data: the `data:` entries [planned, D10]
@@ -795,6 +820,12 @@ less the profile keys. Settled additions ([planned] above: optional `version`, t
 4. A check that would refuse existing files ships as a warning for at least two minors and becomes an error only in the
    next major.
 5. A runtime given something newer than itself says so (`RCH-2008`: "`flash` needs Rachana 1.4; this runtime is 1.2").
+6. **Levels.** A host names the minor it runs (`Rachana.language("1.1")`, `Grammar.atLevel`); every instance starts at
+   1.0. At level L a name with `since` above L is not offered (problem lists, schema) and using it is `RCH-2008`
+   ("'grid' panels need Rachana 1.1; this host runs 1.0 (raise the host's language level)"). A conformance case runs at
+   the level of its `since`, so a case pins the bytes of the level it was written for. Levels implemented: 1.0, 1.1
+   (the dataset kinds of section 2.3). The generated `rachana.lang.json` and `sutra.schema.json` still describe 1.0
+   (they are generated from the reference's tables); the 1.1 names are listed here until the generator reads Rachana's own.
 
 ### 7.3 Majors
 

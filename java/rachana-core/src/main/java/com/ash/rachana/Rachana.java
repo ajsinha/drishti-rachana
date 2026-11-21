@@ -38,7 +38,11 @@ public final class Rachana {
     private final com.ash.rachana.parse.SutraParser parser;
 
     private Rachana(RachanaOptions options, List<Profile> profiles, FunctionTable functions, Formats formats) {
-        this.grammar = com.ash.rachana.profile.Grammar.of(profiles);
+        this(options, profiles, functions, formats, com.ash.rachana.profile.Grammar.of(profiles));
+    }
+
+    private Rachana(RachanaOptions options, List<Profile> profiles, FunctionTable functions, Formats formats, com.ash.rachana.profile.Grammar grammar) {
+        this.grammar = grammar;
         this.parser = new com.ash.rachana.parse.SutraParser(grammar);
         this.options = options;
         this.profiles = profiles;
@@ -131,6 +135,22 @@ public final class Rachana {
     /** Its Sutra grammar: Core's and what its profiles add (split step A7). */
     public com.ash.rachana.profile.Grammar grammar() {
         return grammar;
+    }
+
+    /**
+     * The same instance at another language level (SUTRA_EXPANSION 6.2): its grammar, parser and schema read that level. Every instance
+     * starts at {@code 1.0}; a host raises the level in its own release. Level {@code 1.1} adds the panel kinds {@code grid}, {@code tree}
+     * and {@code chart}, whose views carry datasets (ViewModel contract 1.1).
+     *
+     * @throws IllegalArgumentException for a level this runtime does not implement
+     */
+    public Rachana language(String level) {
+        return level.equals(grammar.level()) ? this : new Rachana(options, profiles, functions, formats, grammar.atLevel(level));
+    }
+
+    /** The language level its grammar reads ({@code 1.0} unless raised with {@link #language(String)}). */
+    public String language() {
+        return grammar.level();
     }
 
     /** Its Sutra parser (of {@link #grammar()}). */

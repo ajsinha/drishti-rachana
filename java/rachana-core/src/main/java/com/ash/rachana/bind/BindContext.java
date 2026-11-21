@@ -12,7 +12,8 @@ import java.util.Set;
  * What one view's panels bind against: the entity viewed ({@code doc}, may be null for a view of no entity), its layout, the
  * evaluation context, the linked entities fetched ({@code linked}), those still being fetched ({@code pending}) and those the viewer may
  * not open ({@code denied}), the map panels' lookups, and {@code host}: what the host's own panel binders read (its links, provenance,
- * fingerprint; Core never reads it).
+ * fingerprint; Core never reads it), and {@code datasets}: where the panels of language 1.1 that read a dataset put theirs (one map per
+ * view, shared by every context derived from it; ViewModel contract 1.1).
  */
 public record BindContext(
         Entity doc,
@@ -22,9 +23,17 @@ public record BindContext(
         Set<EntityRef> pending,
         Set<EntityRef> denied,
         Map<String, MapSupport.Lookup> maps,
-        Object host) {
+        Object host,
+        Map<String, com.ash.rachana.view.ViewModel.Dataset> datasets) {
+
+    /** A binding whose dataset panels gather their datasets in a map of its own. */
+    public BindContext(Entity doc, Layout layout, EvalContext eval, Map<EntityRef, Entity> linked, Set<EntityRef> pending, Set<EntityRef> denied,
+            Map<String, MapSupport.Lookup> maps, Object host) {
+        this(doc, layout, eval, linked, pending, denied, maps, host, null);
+    }
 
     public BindContext {
+        datasets = datasets == null ? new java.util.LinkedHashMap<>() : datasets;
         layout = layout == null ? Layout.written(null) : layout;
         linked = linked == null ? Map.of() : linked;
         pending = pending == null ? Set.of() : pending;
@@ -39,6 +48,6 @@ public record BindContext(
 
     /** The same binding read in another evaluation context (a tab's element is {@code @}). */
     public BindContext withEval(EvalContext next) {
-        return new BindContext(doc, layout, next, linked, pending, denied, maps, host);
+        return new BindContext(doc, layout, next, linked, pending, denied, maps, host, datasets);
     }
 }

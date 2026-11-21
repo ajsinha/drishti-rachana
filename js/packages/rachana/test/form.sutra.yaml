@@ -1,0 +1,29 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+rachana: 1
+sutra: ticket
+version: 1
+title: { id: "'Ticket'" }
+state:
+  qty:  { type: number, default: 0 }
+  sent: { type: boolean, default: false }
+panels:
+  - id: ticket
+    kind: form
+    submitLabel: Send
+    form:
+      fields:
+        - { id: qty, label: Quantity, type: number, required: true, min: 1 }
+      rules:
+        - { rule: "qty <= 1000", message: "At most 1,000", fields: [ qty ] }
+    on:
+      submit:
+        - { set: { state: qty, to: event.qty } }
+        - { toggle: sent }
+        - { host: order.place, with: { qty: event.qty } }
+  - id: shown
+    kind: metric
+    label: Quantity
+    value: state.qty
+    actions:
+      - { id: reset, label: Reset, do: [ { clear: qty }, { clear: sent } ] }
+      - { id: notify, label: Tell, do: [ { notify: "Told", tone: ok } ] }

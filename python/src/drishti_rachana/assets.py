@@ -7,7 +7,7 @@ URL under ``static/``                      source
 =========================================  ==========================================================================================
 ``rachana/src/*.js``                       the element, the data client, the screen (js/packages/rachana/src)
 ``rachana/rachana.runtime.js``             the compiler/runtime bundle (built by tools/js/build_js.py into ``bundle/``)
-``vendor/drishti-elements/3.2.0-dev+f8b8619/**``       the vendored Drishti Elements pack (painter, charts, stylesheet)
+``vendor/drishti-elements/3.2.0-dev+d1db672/**``       the vendored Drishti Elements pack (painter, charts, stylesheet)
 ``vendor/apache-arrow/21.1.0/*.js``        Apache Arrow JS (a page that asks for ``form="arrow"``)
 =========================================  ==========================================================================================
 
@@ -18,7 +18,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
-ELEMENTS_VERSION = "3.2.0-dev+f8b8619"
+ELEMENTS_VERSION = "3.2.0-dev+d1db672"
 ARROW_VERSION = "21.1.0"
 PACKAGE = Path(__file__).resolve().parent
 CHECKOUT = PACKAGE.parents[2]                # python/src/drishti_rachana -> the repository root (a source checkout only)

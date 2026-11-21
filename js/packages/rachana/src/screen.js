@@ -39,6 +39,7 @@ export class Screen {
     if (o.record) given.record = o.record;
     const req = { sutra: o.sutra, since: o.level || '1.1', profile: 'core', given };
     if (o.files) req.files = o.files;
+    this.request = req;         // what open was given: a form's rules are asked of the runtime with it (check)
     const opened = call(rt, 'open', req);
     this.id = opened.id;
     this.tables = opened.tables;
@@ -129,6 +130,17 @@ export class Screen {
     this.reads.clear();
     await this.load();
     return this.view();
+  }
+
+  /**
+   * The problems the runtime finds in the values a form panel is submitted with (the form's rules, required fields and limits: the reference
+   * runtime's own `fire`, so nothing is evaluated in the browser). Answers [{code: 'RCH-5003', message}]; none when the values pass.
+   */
+  check(panel, values) {
+    const r = JSON.parse(this.rt.fire(JSON.stringify(Object.assign({}, this.request, { steps: [{ panel, trigger: 'submit', values }] }))));
+    if (r && r.error) throw new Error(typeof r.error === 'string' ? r.error : r.error.message || 'check failed');
+    const step = (r.steps || [])[0] || {};
+    return (step.problems || []).filter((p) => p.code === 'RCH-5003').map((p) => ({ code: p.code, message: p.message }));
   }
 
   stop() { this.stops.splice(0).forEach((s) => s()); }

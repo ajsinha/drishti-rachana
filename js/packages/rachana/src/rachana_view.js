@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+f8b8619,
-// vendored under js/vendor/drishti-elements/3.2.0-dev+f8b8619: load drishti-elements.js before this module). The element holds no meaning of its own:
+// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+d1db672,
+// vendored under js/vendor/drishti-elements/3.2.0-dev+d1db672: load drishti-elements.js before this module). The element holds no meaning of its own:
 // the bundle compiles, plans, binds and diffs; the DataClient fetches; the painter paints.
 //
-//   <script src="/vendor/drishti-elements/3.2.0-dev+f8b8619/drishti-elements.js"></script>
+//   <script src="/vendor/drishti-elements/3.2.0-dev+d1db672/drishti-elements.js"></script>
 //   <script type="module" src="/rachana/src/rachana_view.js"></script>
 //   <rachana-view src="/sutras/sales.sutra.yaml" data="/rdp/v1" runtime="/rachana/dist/rachana.runtime.js"
 //                 formats="/spec/1/formats.yaml" live></rachana-view>
@@ -87,7 +87,15 @@ export function defineRachanaView(o) {
       const resolver = this.linkResolver;
       // the screen's state (level 1.2): a click that writes state sends it back here; the bundle builds the view again and the painter draws the panels that read it
       const hooks = () => this.host || {};
-      const host = { bind: (req) => (this.screen ? this.screen.setState(req.state) : null),
+      const host = { bind: (req) => {
+          if (!this.screen) return null;
+          if (!req.controls) return this.screen.setState(req.state);
+          Object.assign(this.controls, req.controls);                                  // a control's change (on.change): its new value, the state beside it
+          this.screen.stateDelta = Object.assign({}, req.state);
+          return this.screen.controls(req.controls);
+        },
+        check: (req) => (this.screen ? this.screen.check(req.panel, req.values) : []),      // a form's rules are the runtime's, never the painter's
+        confirm: hooks().confirm ? (text) => hooks().confirm(text) : undefined, allowed: hooks().allowed ? (name) => hooks().allowed(name) : undefined,
         notify: (e, where) => { if (hooks().notify) hooks().notify(e, where); }, run: (e, where) => { if (hooks().run) hooks().run(e, where); } };
       painter.options = { complete: this.hasAttribute('complete'), host, tables: client ? liveTables(client) : undefined, links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
       painter.viewModel = vm;

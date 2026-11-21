@@ -11,6 +11,14 @@ Entries are written per release; the regime's unreleased work is listed after th
   guard (`ScreenWireOrderTest`) refuses a multi-key `Map.of` in the ViewModel writers. The replay compares the objects the reference
   scrambled (a wire's `emits`/`children`, a form's `rules`/`steps`/`options`) in sorted key order (`CoreBinds.unscrambled`), so the nine
   Sutras listed only for key order are now compared, not listed; 20 runs in a row identical.
+- **Painter: forms, actions, control changes**: the vendored Elements pack re-packed from drishti-elements d1db672 (folder `3.2.0-dev+d1db672`): the
+  `form` panel (drishti-inputs' Form), panel `actions:` buttons and a control's `on.change`. `<rachana-view>` answers the painter's `check` hook with the
+  runtime's own `fire` (`Screen.check`: a form's rules run in the bundle, never in the page) and sends a control's change through `Screen.controls`;
+  `runners/form_browser.py` (Chromium): a submit that breaks a rule shows the message and sets no state, one that passes sets state and hands the order to
+  the host, an action button fires. **The Node suite cannot skip quietly any more**: `rachana-js` is a module of every reactor build (before `rachana-guards`;
+  the `js` profile stays, empty) and copies the bundles to `js/packages/rachana/dist`; `tools/js/node_tests.mjs` fails when the bundles are missing or any test
+  was skipped (`-Drachana.node.skip=true` still leaves the run out).
+
 - **Node tests in the build**: the Node suite (`js/packages/*/test`, 33 tests) now runs in the Maven reactor: `rachana-guards` runs
   `node tools/js/node_tests.mjs js/packages/*/test` in its `test` phase (exec-maven-plugin; `-Dnode=<path>` names Node, `-Drachana.node.skip=true`
   leaves it out), so `./mvnw verify` fails when they do. Fixed: the CLI tests named an old Elements pack folder (they use `ELEMENTS_VERSION`

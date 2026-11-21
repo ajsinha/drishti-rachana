@@ -5,6 +5,28 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Rachana-EL level 1.1: the syntax batch and exact numbers (lane B: EL phase 1)
+
+- **Syntax at language level 1.1** (SPEC 4.17, EBNF part D; EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY1 to PY8): record literals
+  `{a: 1, 'k-2': x, ...r}` and list spread `[...a, b]`; Python slices `t[a:b:c]` and `range(start, stop, step)` (end-exclusive; `..` stays
+  reserved; over a list `range` is still Core's aggregate); the pipe `x |> f(a)`; `a ?? b`; `a if c else b`; lambdas `lambda x: …`,
+  second class (map, sort, reduce, group, `let`; no recursion; `=>` stays reserved); `**` and infix `^` (right-associative, `-2 ** 2` is
+  `-4`); comments `/* … */`; digit separators `1_000_000`. Reserved names are refused by name at 1.1.
+- **Numbers built at 1.1** (SPEC 4.16, X2, XD3): literals without an exponent are exact integers and decimals (34 digits), `+ - * %`
+  exact, `/` half-even to 34 digits, a double on either side a double, overflow of the integer part `RCH-2102`; `sum` exact over
+  integers and decimals. **Texts by code point** at 1.1 (SPEC 4.13, XD4): `left`, `right`, `mid`, `find`, `search`, `pad`, ordering,
+  `sort`, `least`, `greatest`. The N5 level-1.1 variants: problem messages `expression '<source>': …` with the token's end,
+  `standardize` a number, a refused pattern at evaluation `RCH-2102`.
+- **Level 1.0 unchanged**: the replay of `compat/levels/1.0` is identical; the level is the compiler's (`ElCompiler(…, level)`,
+  `Rachana.language`). API additions only (`Expr.Op`, `Minus`, `Power`, `Coalesce`, `RecordLit`, `Pair`, `Spread`, `Slice`,
+  `Lambda`, `FnRef`, `LocalCall`; `Printer.print(e, v11)`; level-aware `CheckedMode.check`/`parse` and `Checker.check`;
+  `ElException.end()`). The checker types `??`, `**` and the exact operators (X8, first part). `FilterTree` reads level 1.1 trees.
+- **Conformance**: `el/syntax-1-1` (114 cases) and `el/syntax-at-1-0` (13), verified; `el/numbers-exact`, `el/text-code-points`,
+  `el/reserved` and `el/messages-level-1-1` verified, their cases that failed at 1.0 moved to `since: "1.1"` (9 reserved-token
+  cases withdrawn: 1.1 defines the tokens; two `**` message cases withdrawn: PY6). `tools/regime/levels.py check` reports a case
+  recorded failing that moved to a later level or was withdrawn, and does not count it as a difference. JVM, both JavaScript bundles
+  and the Python V8 engine agree.
+
 ### `data:` and the Data Protocol; `<rachana-view>` (lane C: SPLIT_PLAN steps 15 and 16, B1 to B3)
 
 - **`data:`** at language level 1.1 (SPEC 2.4, D10): entries `{ table }`, `{ url }` (or an address), `{ rows }`, `{ record }`, each a

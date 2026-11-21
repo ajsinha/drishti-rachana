@@ -158,6 +158,20 @@ waits for level 1.1), so the decimals are the profile's. Changed answers:
 | A7b-4 | `and`, `or`, `not` were FormExpr's only | they are Rachana-EL's (PY1): 6 conformance cases `el/python-words`, unverified (the reference refuses the words) |
 
 
+### EL phase 1: level 1.1 as built (G2 lane B, 2026-11-21), for the owner's review
+
+The syntax batch, exact numbers and code points are built at level 1.1 (SPEC 4.16, 4.17; EBNF part D); level 1.0 is unchanged
+(replay identical). Choices made in building, each open to the owner:
+
+| # | Decision as built | Alternative |
+|---|---|---|
+| EL1-1 | **`range` collides**: Core already has the aggregate `range(list, field?)` (max − min, split step A9); PY4 makes `range(start, stop, step)` Python's. At 1.1 the first argument decides: a list (or a field name as second argument) keeps the aggregate, numbers give Python's range. Recommendation: rename the aggregate in a later minor (`spread` or `value_range`) with a `rachana migrate` rule | refuse one of the two at 1.1 |
+| EL1-2 | `**` and infix `^` share Python's precedence: right-associative and tighter than a sign on the left, so `-2 ^ 2` is `-4` (Excel gives `4`) | give `^` Excel's precedence (two rules for one operator), or refuse `-x ^ y` without parentheses with a fix |
+| EL1-3 | A whole JSON number a host hands over as an integer is exact at 1.1 (`$.b * 0.5` with `b: 2` is the decimal `1`); a fractional JSON number is a double, as SPEC 4.16 rule 6 says. Only the kind differs, never the digits. Recommendation: amend rule 6 to say so | every JSON number a double |
+| EL1-4 | The F8 cases that failed at 1.0 (26 `numbers-exact`, 9 `text-code-points`, 11 `reserved`) pin level 1.1 (`since: "1.1"`) and are verified there; 9 reserved-token cases are withdrawn because 1.1 defines the tokens, and two `**` message cases because PY6 made `**` the power. At 1.0 a 1.1 construct is refused with the reference's words (`el/syntax-at-1-0`), not `RCH-2008`: N5 and the byte-identical replay come first. `levels.py check` does not count a case recorded failing that moved to a later level or was withdrawn | re-record level 1.0 with the reserved-token words (the replay would change) |
+| EL1-5 | Number-like text read by an operator at 1.1 follows the literal grammar (P2-2's decimal-only grammar): hexadecimal, `Infinity`, `NaN` and `d`/`f` suffixes are not numbers there; level 1.0 keeps Java's (D5-2) | keep Java's grammar at 1.1 |
+| EL1-6 | Lambdas are taken by `map`, `sort` (each key), `reduce` (two names) and `group` (the key), and by `let`; a filter `[?p]` keeps `@`. The X45 budgets are not built (only the literal, record and `range` caps); the printer does not keep comments; X11's catalogue mark for functions whose first argument is not the subject is not built | build X45 and the comment-keeping printer in the next lane |
+
 ### A5: the same bytes on every runtime (2026-11-21)
 
 | # | Decision |

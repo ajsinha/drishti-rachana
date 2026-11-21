@@ -279,7 +279,7 @@ The syntax is [rachana-el.ebnf](rachana-el.ebnf). This section gives the meaning
 | text | `'a'`, `"a"` | Unicode; `''` is a text, not empty |
 | date, timestamp | `'2026-11-17'`, `'2026-11-17T09:30:00Z'` | carried as ISO-8601 text; typed only in checked mode |
 | list | `[1, 2]`, `$.legs` | ordered |
-| object | `$`, `$.legs[0]` | fields in written order; no object literal |
+| object | `$`, `$.legs[0]`, `{a: 1, ...r}` (level 1.1) | fields in written order; a record literal from level 1.1 (4.17) |
 | link | `link('CP-1', 'counterparty')` | prints its label or id; what it opens is the host's |
 | masked | (from the host) | a value the reader may not see; prints `•••` (4.9) |
 
@@ -456,6 +456,8 @@ TRANSLATION.md says where.
 | `sequence` length | 10,000 | compile error for a literal, `RCH-2102` otherwise |
 | `group` result | 500 groups | further groups left out [CS] |
 | significant digits of a number literal without an exponent | 34 | `RCH-2101` "number '…' has more than 34 significant digits" at the literal (4.16) |
+| fields of a record literal (level 1.1) | 1,000 | `RCH-2101` at the <code>{</code>; through spreads `RCH-2102` |
+| `range` length (level 1.1) | 10,000 | `RCH-2102` "range: gives at most 10000 values" |
 
 A host MAY lower the depth and length bounds (settings `rachana.max-expression-depth`, `rachana.max-expression-length`)
 and MUST report the bound in the message.
@@ -501,6 +503,11 @@ fraction, no exponent) or `number` (with an exponent), as 4.16 says.
 EL_EXPANSION X1). The list is [reserved.yaml](reserved.yaml); everything in it is refused in 1.0 with a message that names it
 as reserved, and leaves the file only when a minor defines it.
 
+**Status (2026-11-21).** Level 1.0 is the reference (decision N5): it refuses these tokens with the reference's words
+(`unexpected character '|'`, `el/syntax-at-1-0`) and calls a reserved name an unknown function. Level 1.1 defines `|>`, `??`,
+`...`, <code>{</code>, <code>}</code>, `/* */` and the digit separator (4.17); `=>`, `..` and a stray `*/` stay refused there, with the
+Python spelling as the fix; the reserved names are refused there with this section's message (`el/reserved`).
+
 1. **Tokens.** `|>`, `??`, `=>`, `...`, `..`, `{`, `}`, `/*`, `*/` are tokens of the grammar (EBNF `reserved-token`) and
    are always `RCH-2101`, with the reason reserved.yaml gives (6.3), at the token's offset: `$.a ?? 0` →
    `expression '$.a ?? 0': '??' is reserved for a later version of Rachana: write coalesce(a, b) at 4`. The lexer reads
@@ -525,7 +532,8 @@ as reserved, and leaves the file only when a minor defines it.
 
 ### 4.16 Numbers: integer, decimal, number
 
-Three kinds of number, as checked mode names them (decision XD3, EL_EXPANSION X2). The arithmetic is Core's own code
+**Built at language level 1.1** (2026-11-21, EL phase 1); level 1.0 keeps the reference's doubles for literals and operators
+(decision N5; KNOWN_DIFFERENCES). Three kinds of number, as checked mode names them (decision XD3, EL_EXPANSION X2). The arithmetic is Core's own code
 (`CoreDecimal`, `CoreMath`) in every runtime, so the same expression gives the same digits everywhere.
 
 | Kind | What it is | Written as |
@@ -561,6 +569,32 @@ Three kinds of number, as checked mode names them (decision XD3, EL_EXPANSION X2
 
 `type_of` answers `'number'` for all three kinds in 1.0 (4.15 rule 3); `expr` cases name the kind in their `type`
 (`number` for a double, `decimal` for an exact result: FORMAT 5.2).
+
+### 4.17 Level 1.1: the syntax batch
+
+Level 1.1 adds, in one grammar revision (EBNF part D; EL_EXPANSION XD5), the constructs below, spelled as Python spells them
+(DECISIONS PY1 to PY8) with Excel's function names. A host at level 1.0 reads none of them: each is refused with the reference's
+words (`el/syntax-at-1-0`). Every one is pinned by `el/syntax-1-1`.
+
+| Construct | Meaning | Example → result |
+|---|---|---|
+| record <code>{k: v, 'k-2': v, ...r}</code> | an object, keys in written order; a key written twice does not compile; a later key or spread replaces an earlier one in its place; spreading empty adds nothing, a masked value masks the record, a non-record is `RCH-2102`; at most 1,000 fields | `{...$.r, b: 9}` → `{b: 9, c: 3}` |
+| list spread `[...a, b]` | the elements of `a` in place; empty adds nothing; a non-list is `RCH-2102` | `[...[1, 2], 3]` → `[1, 2, 3]` |
+| slice `t[a:b]`, `t[a:b:c]` | Python's: end-exclusive, each part optional, a negative end from the end, clamped; a list gives a list, a text a text by code point; step 0 is `RCH-2102`; empty gives empty | `[10, 20, 30, 40][1:3]` → `[20, 30]` |
+| `range(stop)`, `range(start, stop, step?)` | Python's, end-exclusive, whole numbers, at most 10,000; `..` stays reserved (PY4). Over a list it is still Core's aggregate `range(list, field?)`, max − min | `range(10, 0, -3)` → `[10, 7, 4, 1]` |
+| pipe `x \|> f(a)` | `f(x, a)`, rewritten before anything else; the lowest precedence; the right side is a call | `1 + 2 \|> round(0)` → `3` |
+| `a ?? b` | `a` unless it is empty, else `b` (evaluated only then); `''` and `0` are values; a masked `a` is passed on; between the conditional and `\|\|` | `$.missing ?? 'n/a'` → `'n/a'` |
+| `a if c else b` | the conditional in Python's order (PY2); `c ? a : b` and `if(c, a, b)` stay | `'big' if 5 > 3 else 'small'` → `'big'` |
+| `lambda x: body`, `lambda acc, x: body` | a function, **second class** (XD8): an argument of `map`, `sort` (a key), `reduce` (two names) or `group` (the key), or a `let` value called as `f(…)`; never stored, compared or printed; a `let` name is not in scope in its own value, so there is no recursion; inside, `@`, `^`, `#index` keep their outer meaning; `=>` stays reserved (PY3) | `let(bp = lambda x: x * 10000, bp(0.0125))` → `125` |
+| `a ** b`, `a ^ b` | power (PY6), right-associative, tighter than a sign on its left (`-2 ** 2` → `-4`, Python's rule); exact for an exact base and a whole exponent of at most 64, else a double; `^` before an operand is still the parent | `2 ** 3 ** 2` → `512` |
+| comment `/* … */` | white space; not nested; not kept by the printer | `1 /* one */ + 2` → `3` |
+| digit separator `1_000_000` | an underscore only between two digits | `1_000.000_1` → `1000.0001` |
+| exact numbers | 4.16 | `0.1 * 3 == 0.3` → `true` |
+| texts by code point | 4.13: `left`, `right`, `mid`, `find`, `search`, `pad`, ordering, `sort`, `least`, `greatest` | `'｡' < '😀'` → `true` |
+| reserved names | a call of a name of reserved.yaml that no loaded table has is "'<name>' is reserved for a later version of Rachana" (4.15) | `group_by(…)` |
+
+Problem messages at level 1.1 are `expression '<source>': <reason> at <offset>` (6.3), and `expr.end` is the end of the offending
+token where it is known (a reserved token, a number, a reserved name).
 
 ## 5. Function catalogue (Core)
 
@@ -821,6 +855,15 @@ reasons the parser gives (exact words pinned by [CS]):
 | `'_' in a number is reserved for a later version of Rachana: write the digits without it` | `1_000` |
 | `'group_by' is reserved for a later version of Rachana` | `group_by($.t, 'desk')` |
 | `number '12345678901234567890123456789012345' has more than 34 significant digits` | a 35-digit literal |
+| (1.1) `'=>' is reserved for a later version of Rachana: write lambda x: ...` | `map($.l, x => x)` |
+| (1.1) `'..' is reserved for a later version of Rachana: write range(start, stop)` | `$.l[0..1]` |
+| (1.1) `'*/' closes no comment`, `a comment '/*' is not closed` | `1 */ 2`, `1 + /* note` |
+| (1.1) `'_' in a number stands only between two digits: '1__0'` | `1__0` |
+| (1.1) `the record names 'a' twice`, `a record's key is a name or a quoted text, not '1'` | `{a: 1, a: 2}`, `{1: 2}` |
+| (1.1) `the right side of '\|>' is a call, as in x \|> round(2)` | `$.a \|> $.b` |
+| (1.1) `expected 'else' …: write a if c else b` | `1 if true` |
+| (1.1) `a lambda is passed to map, sort, reduce or group, or bound by let(...); …` | `lambda x: x` |
+| (1.1) `map needs a lambda of 1 name (lambda x: ...); this one has 2`, `f takes 1 value(s), got 2`, `'f' is a function: call it, f(...)` | |
 
 ### 6.4 Run-time states are not problems
 

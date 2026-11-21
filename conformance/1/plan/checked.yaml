@@ -2,7 +2,7 @@
 suite: plan/checked
 since: "1.2"
 profile: core
-verified: false
+verified: true
 description: >-
   Checked mode over table schemas (SPEC 4.14; EL_EXPANSION X8; DataPlan at level 1.2): with the host's schemas known, each row
   condition over a table (the entry's where, a reading panel's where) is read against the table's column types and masks. A type

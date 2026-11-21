@@ -2,7 +2,7 @@
 suite: plan/plan
 since: "1.1"
 profile: core
-verified: false
+verified: true
 description: >-
   The plan document (FORMAT 5.10; DataPlan): per table entry, { entry, name, readers, live, query { columns?, filter?, limit? },
   local [ { panel?, where, reason } ] } and the plan's problems. A panel's where is pushed down only when it is the entry's sole reader.

@@ -2,7 +2,7 @@
 suite: sutra/binder/live-edit
 since: "1.2"
 profile: core
-verified: false
+verified: true
 description: >-
   Language 1.2 and ViewModel contract 1.2 (SPEC 2.3, VIEWMODEL "Contract 1.2"): a live panel's edit (none, the default, cells or beside)
   offers the host's guarded edit path (PROTOCOL 16 Writes). The view carries it as the live reference's edit; the columns offered are not in

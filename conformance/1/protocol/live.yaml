@@ -108,7 +108,7 @@ cases:
         expect: { status: 200, body: [ { t: gap, recoverable: false } ] }
 
   - id: a-conflated-stream-merges-by-key
-    verified: false
+    verified: true
     kind: protocol
     source: PROTOCOL 8.4 (conflate everyMs, a later remove cancels an earlier add, the merged message has first and seq)
     fixture: *live

@@ -77,7 +77,7 @@ panels:
 | `title` | | mapping `{pill?, id, with?}`; text (1.1) | the name | heading (TRANSLATION 2.2) | text form planned (D11) |
 | `strip` | | list (≤ 8) of `{label?, bind, fmt?, tone?, emphasis?}` | `[]` | headline figures | today |
 | `controls` | | list (≤ 12) | `[]` | what the reader sets; read as `ctl.<id>` | today |
-| `data` | | mapping name → source | `{}` | the screen's tables and records, each a field of `$` (2.4) | planned (D10) |
+| `data` | | mapping name → source | `{}` | the screen's tables and records, each a field of `$` (2.4) | since 1.1 (D10); below it the key is `RCH-2008` (7.2 rule 6) |
 | `panels` | | list of panels and `{use: …}` entries | `[]` | the body | today |
 | `libraries` | | list of `name@major` | `[]` | the libraries whose fragments the Sutra uses (2.5, LIBRARIES 7.1); the exact version comes from the host's lock | since 1.2 |
 | `let` | | mapping name → expression | `{}` | named values (2.7): read as the bare name in every expression; each may read the ones written before it | since 1.2 |
@@ -174,9 +174,10 @@ contract 1.1, [VIEWMODEL.md](VIEWMODEL.md)) as raw values, which the painter for
   using one is `RCH-2008` (section 7.2). Which options hold an expression, a template, a field name or a
 plain word is fixed per kind in `rachana.lang.json` [CS]; TRANSLATION.md section 3 states each one's effect.
 
-### 2.4 Data: the `data:` entries [planned, D10]
+### 2.4 Data: the `data:` entries [since 1.1, D10]
 
-`data:` names the screen's inputs. **Each entry becomes a field of `$`** (a table is a list of rows, a record an
+`data:` is a key of level 1.1: at level 1.0 the key itself is `RCH-2008` ("'data' needs Rachana 1.1; this host runs 1.0"), as
+every name of a later level is (7.2 rule 6). `data:` names the screen's inputs. **Each entry becomes a field of `$`** (a table is a list of rows, a record an
 object), so every expression form works unchanged:
 
 ```yaml
@@ -203,6 +204,18 @@ Common keys: `key` (field or list of fields identifying a row; required for live
 may read controls), `limit`, `refresh` (seconds), `live: true | false`, `mode: auto | client | server`.
 
 A data name that equals a field of a host's own record is `RCH-2073` in a checked host and a warning otherwise.
+**A data name is a field name**, because it is read as `$.<name>`: a letter or `_`, then letters, digits and `_`
+(`[A-Za-z_][A-Za-z0-9_]*`). Any other name (`2nd-table`) is `RCH-2073` at the name.
+
+**`as`.** A `table`, `url` or `rows` source is a list of rows and a `record` source one object, unless `as` says otherwise.
+`as: record` over rows gives **the first row**, in the order the source gives them and after the entry's `where`; with no row
+it gives a record with no fields (`size` 0; every field of it is empty), never an error. `as: rows` over a record gives a list of
+that one record.
+
+**A table the host does not have.** `RCH-2070` is reported wherever the host's tables are known: by the plan (FORMAT 5.10) and
+by a host's check of the Sutra. When a view is built all the same, the entry has **failed** (PROTOCOL 10.1,
+`rdp.table.unknown`): every panel that reads it is in the state `error` with the words of `RCH-2070` (TRANSLATION 4 and 10), and
+the other panels bind. A missing table is never read as a table with no rows: `count($.t)` over it is an error, not `0`.
 A panel's own `source: { table: <name>, where?, limit? }` [today] gives that panel its rows as `$src`; `<name>` is a
 `data:` entry or a host table. `source: { kind: … }` is a profile form. There is deliberately no source type for a
 function, REST paging or a topic: a host exposes those as named tables.
@@ -439,6 +452,7 @@ are true); list and object true unless they have no elements; link true; masked 
 10¹⁵ → digits (`2`, `-7`); an integer or a decimal → plain digits with no exponent and no trailing zeros after the point
 (`0.1`, never `1E-1`; `1.10 * 3` → `3.3`; `0.0` → `0`); another number → the shortest round-trip decimal of the double as
 the reference prints it (`0.30000000000000004`, `1.0E20`, `NaN`, `Infinity`);
+a `decimal` cell of a Data Protocol table (level 1.1, 4.16 rule 8) → the digits the host sent, its zeros after the point kept (`0.10`);
 boolean → `true`/`false`; link → its label, else its id; list → `[n]`; object → `{n}` (n = size).
 
 ### 4.3 The context: names an expression reads
@@ -580,7 +594,11 @@ A host's `Masker` marks values the reader may not see. A masked value prints `�
    `least`/`greatest`, `sequence`, `yearfrac` compute in decimal arithmetic; an integer or decimal argument is taken as it
    is, a double argument is first read to 15 significant digits (`round_up(1e-1 + 2e-1, 1)` → `0.3`; `power(1.1, 2)` →
    `1.21`). Real-number functions (`exp`, `ln`, trigonometry, distributions, discounting) compute in binary floating point
-   and return a number (4.16) [CS].
+   and return a number (4.16) [CS]. This project's runtimes compute them with one set of algorithms (the fdlibm ones, in Core's
+   own code), so they agree in every bit and RUNNER 7 rule 2 holds byte for byte. That result is not always the correctly
+   rounded one (`exp(1)` is `2.7182818284590455`; the nearest double to e is `2.718281828459045`), and no implementation is
+   held to the last digit: a case whose expected digits are not the correctly rounded result states a `tolerance` and names no
+   `text` (FORMAT 5.2; section 8 item 5), so an implementation that rounds correctly conforms as well.
 8. **Dates** are ISO text in and out; a timestamp counts by its date. `asof()` is the as-of date the host sets.
 
 ### 4.11 Templates
@@ -655,6 +673,37 @@ explain`) reads each row condition over a table (the entry's `where`, a reading 
 columns, with the controls' values in place; an unknown column stays `RCH-2071`. A literal's type is `integer` (whole, no exponent), `decimal` (a
 fraction, no exponent) or `number` (with an exponent), as 4.16 says.
 
+**Checked mode in detail** (what the paragraph above leaves open; `check` cases pin it, FORMAT 5.4).
+
+1. **Two types join** wherever an expression gives one of several values: the two branches of `c ? a : b` (and `if`), the two
+   sides of `??` (level 1.1), the results of `switch` (every answer, and the else), the arguments of `coalesce`, `least` and `greatest`.
+   The types joined MUST fit each other, else `RCH-9127` ("the two values of 'c ? a : b' have different types"). The join
+   does not depend on the order written: equal types give that type; `none` (a `null`) gives the other; two numeric types
+   join as `+` joins them (`integer` only when both are, else `decimal` when either is, else `number`); `date` with
+   `timestamp` gives `timestamp`; `any` with anything gives `any`. So `$.n > 0 ? $.mtm : 0` and `$.n > 0 ? 0 : $.mtm`
+   are both `decimal`, and `switch($.status, 'A', 1, 'B', 2, 0)` is `integer`.
+2. **`switch`** is typed by rule 1 over its answers; `returns: any` in `functions.yaml` is its unchecked word.
+3. **The functions checked mode types.** "Without a signature yet" means: not in this list. Checked mode has a signature for
+   these 36 Core functions: `abs`, `all_of`, `any_of`, `asof`, `avg`, `business_days_between`, `coalesce`, `contains`,
+   `count`, `date`, `day`, `days_between`, `distinct`, `ends_with`, `floor`, `greatest`, `has`, `if`, `least`, `len`, `lower`,
+   `max`, `min`, `month`, `percentile`, `power`, `quarter`, `round`, `shift_date`, `starts_with`, `sum`, `switch`,
+   `timestamp`, `upper`, `week`, `year` (and for a profile's own functions, its catalogue). Every other Core function
+   (`concat`, `left`, `sqrt`, …), `let(...)`, a record literal, a slice and a lambda are `RCH-9129` in checked mode, at the
+   call. A later minor may type more of them (that only refuses less); it never changes the type of one typed here.
+4. **`in` and `not in` take a list written in the expression**: `x in ['A', 'B']`. Each item MUST fit the type of the value
+   (`null` always fits); an item that does not is its own `RCH-9127`, at that item (`$.status in [1, 2]` is two problems). A
+   right side that is not a list literal is `RCH-9127` ("'in' takes a list"), a scalar included: the list of one of 4.8 is
+   an implicit cast, which checked mode has none of. A profile may also allow a list attribute of the reader or a parameter
+   there (`user.<attribute>`, `param.<name>`). The result is `boolean`.
+5. **Parameters that are literals.** Where a value decides the type or the plan, checked mode wants it written in the
+   expression (`RCH-9127` otherwise): `round`'s `n` and `shift_date`'s `n` are whole number literals, a leading `-` allowed
+   (`round($.mtm, $.n)` is refused: "n is a whole number written in the expression"); `percentile`'s `p` is a number
+   literal from 0 to 1; `shift_date`'s `unit` and a `calendar` are text literals.
+6. **`date('…')` and `timestamp('…')` take a text literal in ISO 8601 form**, checked when the expression is checked:
+   `yyyy-mm-dd`, for a timestamp followed by `T` or a space and `hh:mm`, optionally `:ss` and a fraction, optionally `Z` or an
+   offset `±hh:mm`. Anything else is `RCH-9127` ("date('09/10/2026') is not an ISO date"). Unchecked, the same text is
+   refused only when it is evaluated (4.10 rule 6).
+
 ### 4.15 Reservations
 
 `rachana: 1.0` holds back what its later minors need, so that each of them stays an addition (7.2; decision XD2,
@@ -724,6 +773,12 @@ Python spelling as the fix; the reserved names are refused there with this secti
 7. **List aggregates** add as `+` does: exact over integers and decimals (`sum([0.1, 0.2])` → `0.3`); once a double is
    among the elements, the whole sum is the compensated double sum of 5.7.
 8. **Text form**: 4.2. A decimal never prints an exponent, trailing zeros after the point, or a negative zero.
+   **One exception, for a cell as the host sent it.** A `decimal` cell of a Data Protocol table is exact and keeps the digits
+   after the point it arrived with (PROTOCOL 3.1: the column's `scale`): the cell `"0.10"` prints `0.10`, by itself, joined
+   to a text and in a template, so a price shows as the source states it. It is the same value as `0.1` (`$.fees[0].fee ==
+   0.1` is true; it adds and orders exactly). The result of any operator or function is a new decimal and prints by the rule
+   above: `$.fees[0].fee * 1` → `0.1`, `sum($.fees, 'fee')` over `0.10` and `0.20` → `0.3`. A decimal literal has no such
+   scale: `0.10` written in an expression prints `0.1`. A `fmt` decides the digits wherever they matter (2.6).
 
 `type_of` answers `'number'` for all three kinds in 1.0 (4.15 rule 3); `expr` cases name the kind in their `type`
 (`number` for a double, `decimal` for an exact result: FORMAT 5.2).
@@ -982,7 +1037,7 @@ Core keeps the reference's numbers with the prefix `RCH-` (decision D8; Drishti 
 | `RCH-2010`..`2039` | structure | `2010` missing key, `2011` unknown key, `2012` wrong shape, `2020` bad name or value, `2021` unknown kind, `2022` missing option, `2023` invalid option, `2024` duplicate id, `2029` bad option value, `2030` span/height, `2031` pivot, `2033` strict YAML, `2034`..`2039` controls |
 | `RCH-2048`..`2059` | reuse, docstring, wiring, forms, layout | `2048` fragment not found, `2055` docstring, `2056` children depth, `2057` event or source read, `2058` form, `2059` layout |
 | `RCH-2060`..`2069` | profiles | `2060` key, kind or function of a profile not loaded, `2061` profile claimed but unused, `2062` unknown profile |
-| `RCH-2070`..`2079` | data | `2070` unknown table, `2071` unknown column (`expected`), `2072` key missing for a live table, `2073` source shape or name clash, `2074` not push-down-able over a server table |
+| `RCH-2070`..`2079` | data | `2070` unknown table, `2071` unknown column (`expected`), `2072` key missing for a live table, `2073` source shape, a data name that is not a field name, or a name clash, `2074` not push-down-able over a server table |
 | `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling, `2091` a sign before a `**` power without parentheses (level 1.1, checked mode: `-x ** n` is `-(x ** n)`; EL1-2; `-x ^ n` does not compile), `2092` a declared name a later level reserves (the local one wins; 2.7) |
 | `RCH-2110`..`2119` | libraries and typed fragments (since 1.2) | `2110` library not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity, `2114` unknown parameter or slot, `2115` required parameter missing, `2116` wrong type or constraint, `2117` reads outside its scope, `2118` slot content; `2119` reserved (a library needs a profile or level the host lacks); `2120` advisory (warning): a column mapping the fragment never reads (L-21) |
 | `RCH-2080`..`2089` | live table declarations (`<name>.live.yaml`) | `2080` `edit` needs a key and a `version` column, `2081` a column that cannot be edited (the key, the version, `changed-by`, `changed-at`) or an edit field that binds none, `2082` a heavy column where a list needs it (key, order, grouping, narrowing), `2083` retention; `2084`..`2089` reserved |

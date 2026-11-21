@@ -187,7 +187,9 @@ evaluated once with `given`.
   `error` expects no `value`.
 - `tolerance`: only for a `number` result of a real-number function (SPEC 4.10 rule 7, 5.8, 5.9; SPEC 8 item 5):
   `{ abs: 1e-12 }` or `{ rel: 1e-9 }`. The case passes when `|actual − expected|` is within it; the results line still
-  carries the actual text, so the byte gate across this project's runtimes is unaffected (RUNNER 5).
+  carries the actual text, so the byte gate across this project's runtimes is unaffected (RUNNER 5). A case with a `tolerance`
+  names no `text` (the digits are what the tolerance loosens); a case whose expected digits are not the correctly rounded result
+  of the function MUST carry one (SPEC 4.10 rule 7).
 
 ### 5.3 `expr-error`
 
@@ -253,12 +255,54 @@ that step produced and the ViewModel after applying them. `expect.steps[i]` name
 `spec/1/viewmodel.schema.json`) and/or `at` (parts of the ViewModel after that step). A step that changes nothing a
 panel reads produces `frames: []`. No transport, timing or conflation is involved (those are `protocol` cases).
 
+**The frames of a step.** After a step the runtime builds the view again and compares it with the view before the step. A patch
+is made only for what **differs**: a strip figure, a panel, a dataset whose ViewModel is not the same as before. A panel that
+reads the changed table but shows the same as before (a row added with a `0` under a sum) makes no patch. A step with at least
+one patch produces **exactly one frame** holding all of them, in the order strip (by index), panels (in the ViewModel's order),
+datasets; a step with none produces `frames: []` and uses no `seq`. The frame's header is fixed in this kind: `seq` counts the
+frames this view has produced, from `1`, rising by one per frame; `generation` is `0` (the source generation is a host's fact, and
+there is no host); `latencyMs` and `p99Ms` are `0` (no time is measured). A step that changes the screen's shape (the number of
+strip figures or panels, a panel's id, the title, the controls, the state, the datasets' names) has no frames to give: the whole
+ViewModel is sent again, and a case checks it with `at`.
+
 ### 5.10 `plan`
 
 What a runtime would ask of each table (SPEC 2.4, PROTOCOL 6 and 7): the tables read, the columns, the filter as a
 syntax tree with controls replaced by their values, sorting, grouping, and what stays local. `given.schemas` replaces
-rows. The plan document is defined with `rachana explain --format json` (plan B1); until then, cases check it with
-`at`.
+rows. Cases check the plan document with `at`.
+
+**The plan document** (the same document `rachana explain --format json` prints): `{ tables, problems }`.
+
+`tables` has one entry per `table` entry of `data:`, in the order written (`url`, `rows` and `record` entries are not planned):
+
+| Field | Meaning |
+|---|---|
+| `entry` | the `data:` name |
+| `name` | the host table it reads |
+| `readers` | the ids of the panels that read `$.<entry>` anywhere (an option, a column, the title), in the Sutra's order, panels inside tabs and bodies included; a read by the strip or the screen's title adds no id |
+| `live` | the entry's `live` (`false` when not written) |
+| `query` | what is asked of the table, a query document of PROTOCOL 6 with only these fields, each left out when it does not apply: `columns`, `filter`, `limit`. `{}` reads the table whole |
+| `local` | the row conditions the runtime applies itself, in the order met (the entry's `where`, then each reader's): `{ panel?, where, reason }`, `panel` only for a panel's condition, `where` the text as written |
+| `window` | only when every reader is a `live` panel (SPEC 2.3): the largest `window` among them; `query.limit` is then that window, or the entry's `limit` when smaller |
+
+Rules. (1) **The entry's `where`** goes into `query.filter` when the whole of it is in the push-down subset (PROTOCOL 7, written
+as that section's "What the runtime writes" says: controls and every part that reads no column folded to literals, `== null` as
+`is-null`) and the table can `filter` (a table whose schema is not known is taken to); otherwise it is `local`. (2) **A panel's
+`where`** is pushed down by the same test only when that panel is the entry's **sole reader**: the only panel that reads it, reading
+it as its `rows` (`rows: "$.<entry>"`) and nowhere else, with no strip or title reading it; otherwise it is `local`. (3) Several
+conditions pushed down are one `&&` of them in the order met; one alone is itself. (4) `columns` is named only when the table's schema is known and the sole
+reader's columns are all plain fields: those fields and the columns its conditions and the entry's read (pushed down or local), in
+the schema's order; otherwise it is absent and every column is read. (5) `limit` is the entry's.
+
+`reason` is one of these texts, exactly: `the table has other readers` (a panel's condition, rule 2); `outside the push-down subset
+of the Data Protocol v1`; `the table cannot filter`; or `the condition does not compile: ` followed by the compiler's message.
+
+`problems` lists what the plan found against the host's schemas (`given.schemas`), tables in order: `{ code, message, … }` with
+`RCH-2070` for a table the host does not have (the entry is still listed), `RCH-2071` for a column the table
+lacks, with `expected` (the table's columns, nearest first), and, from level 1.2, the checked-mode refusals of each row condition
+read against the table's columns (SPEC 4.14): `RCH-9127`, `RCH-9129`, `RCH-9161`, each with `entry`, `panel` (for a panel's
+condition), `where` (the condition as written) and `fix` when there is one. A condition with a problem is planned as rule 1 or 2
+says all the same: the problems, not the plan, say that the screen is not to be shown. Without known schemas there are no problems.
 
 ### 5.11 `edit`
 

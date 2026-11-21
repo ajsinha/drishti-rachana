@@ -85,7 +85,7 @@ cases:
           body: { error: { code: rdp.cursor.invalid } }
 
   - id: offset-needs-can-offset
-    verified: false
+    verified: true
     kind: protocol
     source: PROTOCOL 6.2 (offset declared as can offset)
     fixture: *ties
@@ -146,7 +146,7 @@ cases:
           body: { error: { code: rdp.query.unsupported } }
 
   - id: group-count-distinct-min-max
-    verified: false
+    verified: true
     kind: protocol
     source: PROTOCOL 6.3
     fixture:

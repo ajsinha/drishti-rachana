@@ -60,7 +60,7 @@ cases:
         /panels/1/data/rows/1/cells/0/text: South
 
   - id: decimal-cells-are-exact
-    verified: false
+    verified: true
     kind: sutra
     source: PROTOCOL 3.1 (decimal as text)
     note: The cell keeps its scale (0.10, not 0.1). Exact decimal arithmetic is the decimals item (X2), not data.
@@ -128,7 +128,7 @@ cases:
         /panels/0/data/value/text: "3"
 
   - id: table-as-record-is-its-first-row
-    verified: false
+    verified: true
     kind: sutra
     source: SPEC 2.4 (as)
     given:
@@ -171,6 +171,7 @@ cases:
     verified: false
     kind: sutra
     source: SPEC 2.4
+    note: SG-16 (VERIFIED.md). This expectation is wrong and stays unverified. A table the host does not have is a failed entry (SPEC 2.4, TRANSLATION 10, PROTOCOL 10.1), its panels are in the state error. Code fix CF-1 replaces this case.
     sutra: |
       rachana: 1
       sutra: data-missing

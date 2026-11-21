@@ -7,7 +7,14 @@ Gate 2 review 9.6 procedure. Verifier: **independent review lane** (did not buil
 
 **Class B** (written by reading, or not recorded by the reference): the expected answer read against the section its `source` names (and the case's own arithmetic recomputed); all runtimes pass (the build proves it). The evidence column names the sections read. Where the spec is silent or ambiguous, or the case contradicts it, the case is not flipped and is listed at the end with the reason.
 
-Totals: **246 Class A and 237 Class B flipped; 38 not flipped.**
+Totals of the first pass: **246 Class A and 237 Class B flipped; 38 not flipped.**
+
+**The spec-gap pass** (2026-11-21, branch `g2/spec-gaps` off `g2/integration` at `05089da`; a second lane, which neither built the cases nor
+made the first pass) took those 38 and the 14 cases added since (`protocol/approve` 10, `sutra/binder/live-edit` 4): for each it decided
+the specified behaviour, wrote it into the specification, and then flipped the case, corrected its expectation, or listed a code fix.
+Decisions `SG-1` to `SG-24` and code fixes `CF-1` to `CF-5` are in the section [Spec gaps closed](#spec-gaps-closed-the-second-pass).
+**51 flipped (3 of them after their expectation was corrected); 1 not flipped (it waits for CF-1).** Every case of the suite but that
+one is now verified.
 
 ## Flipped
 
@@ -669,45 +676,119 @@ Totals: **246 Class A and 237 Class B flipped; 38 not flipped.**
 | `sutra/examples/sutra#falsy-when-leaves-the-panel-out` | B | spec read: TRANSLATION 1 (T4), 2.1, 3.0, 3.8, 3.11, 5 and SPEC 5.4 (amount0); sums and counts recomputed |
 | `sutra/examples/sutra#control-value-reaches-a-template` | B | spec read: TRANSLATION 1 (T4), 2.1, 3.0, 3.8, 3.11, 5 and SPEC 5.4 (amount0); sums and counts recomputed |
 
-## Not flipped (for the lead)
+## Spec gaps closed (the second pass)
+
+How a case was closed: **flip** (the expectation matches the decided text; all runtimes pass), **fix** (the expectation was wrong
+against the decided text and was corrected, then flipped), **code** (the implementation must change; the case is not flipped and
+the fix is listed below). Runs behind every flip: the JVM runtime and the Node tools bundle at 1.0, 1.1 and 1.2 (the runtime bundle equal
+to the tools bundle on every case it answers), `protocol_check.py --live` (143 of 143) and `--python` (the cases the Python host
+implements) with pyarrow. Where the implementation was sound and the same on every runtime, the text says what it does.
+
+### Decisions
+
+| Id | Question | Decision (the normative text) | Where written | Cases | Closed by |
+|---|---|---|---|---|---|
+| SG-1 | Which `can` values does a live table list? | Every live table lists `page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay, arrow`, then `narrow` when declared, then `write` when the table takes writes (the tray: when the host holds changes). `can` is the table's, for every reader; the reader's own right is the schema's `write` object | PROTOCOL 16 "Capabilities" | `live/declaration#blotter-reads-and-gives-its-schema`, `live/declaration#read-only-table-with-a-compound-key`, `protocol/write#the-schema-offers-write-to-an-editor-only`, `protocol/approve#the-trays-schema-offers-state-to-an-approver` | flip; CF-5 for a paged table's `group` |
+| SG-2 | What is the plan document? | `{ tables: [{ entry, name, readers, live, query { columns?, filter?, limit? }, local [{ panel?, where, reason }], window? }], problems }`; the push-down rules (entry's `where`; a panel's only for the sole reader), the four `reason` texts, the problems and their fields (`entry`, `panel`, `where`, `fix`, `expected`). In the filter every part that reads no column is folded to a literal (`lower(ctl.q)`, `date('…')`), `== null` is `is-null`, a chain is one operation | FORMAT 5.10 "The plan document"; PROTOCOL 7 "What the runtime writes" | `plan/plan#entry-where-is-pushed-down`, `#a-panel-where-stays-local-with-two-readers`, `#outside-the-subset-stays-local`, `#a-table-that-cannot-filter-filters-locally`, `#functions-of-the-subset-and-folded-constants`; `plan/checked#a-well-typed-condition-has-no-problem`, `#a-date-against-text-is-rch-9127`, `#a-number-against-text-is-rch-9127`, `#a-filter-on-a-masked-column-is-rch-9161` | flip |
+| SG-3 | What are a frame's header values with no host? | One frame per step that changed something, holding every patch (strip, panels, datasets); `seq` from 1 by one per frame; `generation`, `latencyMs`, `p99Ms` are the host's facts and `0` without a host | FORMAT 5.9 "The frames of a step"; VIEWMODEL "Shape" | `patch/patch#compound-key-remove-and-a-panel-frame`, `patch/patch#a-strip-figure-is-a-strip-patch` | flip |
+| SG-4 | Is the last digit of a real-number function pinned? | No. This project's runtimes agree in every bit (one set of algorithms, fdlibm; RUNNER 7 rule 2), but the specification holds an implementation to a tolerance. A case whose digits are not the correctly rounded result carries `tolerance` and no `text` | SPEC 4.10 rule 7; FORMAT 5.2 `tolerance` | `el/determinism#d-m01-a` (`exp(1)`), `#d-m04-c` (`rate`), `#d-m05-a` (`fisher`) | **fix**: `text` removed, `tolerance: { rel: 1e-15 }` added, the value kept (Core's); then flip |
+| SG-5 | Is `data` a key of 1.0? | No: `since 1.1`; at 1.0 the key is `RCH-2008` | SPEC 2.2 (the row's state), 2.4 (heading and first paragraph) | `problem/data#data-is-not-a-key-of-level-1-0` | flip |
+| SG-6 | What does `as: record` give over rows? | The first row, in the source's order, after the entry's `where`; no row gives a record with no fields; `as: rows` over a record is a list of one | SPEC 2.4 "`as`"; TRANSLATION 10 | `sutra/data#table-as-record-is-its-first-row` | flip |
+| SG-7 | `offset` on a host without `can: offset`? | `422 rdp.query.unsupported`, `operation: offset`; the same for `filter` and `group` as for `sort`: refused, never ignored | PROTOCOL 4, 6.2 | `protocol/host#offset-needs-can-offset` | flip |
+| SG-8 | The `rule` word of a write that is not well formed? | `column: null` and `rule` the part at fault: `shape`, `id`, `op`, `key`, `set`, `basedOn`, `from`, `reason`; for a value: `required`, `value`, `rule` | PROTOCOL 10.1 "The `fields` of `rdp.write.invalid`" | `protocol/write#an-invalid-change-names-the-column-and-rule` | flip |
+| SG-9 | The audit record's fields, who decided? | The adapter's audit events: `{ at, caller, table, event, reason, change?, key?, columns?, from?, to?, current?, decidedBy? }` and the event names; `decidedBy` is the person who released or rejected | PROTOCOL 15 "The audit events" | `protocol/write#a-held-change-waits-for-the-hosts-decision` | flip |
+| SG-10 | Literal parameters in checked mode? | `round`'s and `shift_date`'s `n` are whole number literals, `percentile`'s `p` a number literal 0 to 1, units and calendars text literals; `date('…')` and `timestamp('…')` take an ISO literal, checked when the expression is checked; `RCH-9127` otherwise | SPEC 4.14 "Checked mode in detail" rules 5, 6 | `el/check#check-round-mtm-n`, `el/check#check-date-09-10-2026-tradedate` | flip; CF-3 for a timestamp with a zone |
+| SG-11 | The type of a conditional and of `switch`? | Types **join**, whatever the order written: equal types that type, `none` the other, numeric as `+` joins them, `date` with `timestamp` gives `timestamp`, `any` gives `any`; the types joined must fit each other (`RCH-9127`). `switch` is the join of its answers | SPEC 4.14 "Checked mode in detail" rules 1, 2 | `el/check#check-n-0-mtm-0`, `el/check#check-switch-status-a-1-b-2-0` | flip (both cases agree with the join); CF-2 for the orders the implementation gets wrong |
+| SG-12 | The text of a decimal sum? | Exact, as text: `sum` has as many digits after the point as the longest value it adds (the column's `scale` when the cells carry it); `min` and `max` are the cell as held; an aggregate reads its own group's values, `totals` every row after `filter` | PROTOCOL 3.1 "The text of a decimal" | `protocol/forms#arrow-of-a-grouped-query-with-totals`, `protocol/host#group-count-distinct-min-max` | flip; CF-4 for the Python host outside these cases |
+| SG-13 | `in` against a scalar in checked mode? | Refused: `in` and `not in` take a list written in the expression; each item must fit the value's type, each misfit its own `RCH-9127` at the item. The list of one of SPEC 4.8 is an implicit cast and stays the unchecked meaning | SPEC 4.14 "Checked mode in detail" rule 4 | `el/check#check-status-in-n`, `el/check#check-status-in-1-2` | flip |
+| SG-14 | Which functions have no signature in checked mode? | Checked mode types 36 Core functions (listed by name); every other Core function, `let(...)`, a record literal, a slice and a lambda are `RCH-9129`. `functions.yaml` is the unchecked catalogue; its signatures do not make a function typed | SPEC 4.14 "Checked mode in detail" rule 3 | `el/check#check-concat-status-x`, `el/check#check-let-x-n-x-2` | flip |
+| SG-15 | What is a valid data name? | A field name, `[A-Za-z_][A-Za-z0-9_]*`, because it is read as `$.<name>`; otherwise `RCH-2073` at the name | SPEC 2.4, 6.2 (`2073`) | `problem/data#a-name-that-is-not-a-field-name` | flip |
+| SG-16 | A `table` entry whose table the host does not have? | A **failed entry**: `RCH-2070` wherever the host's tables are known, and in a view built all the same every panel that reads it is `error` with those words. Never a table with no rows. The existing text already said so (TRANSLATION 10 "a failed entry"; PROTOCOL 10.1 `rdp.table.unknown` → panel state `error`); the implementation and the case read it as no rows, which shows `0` for data that is not there | SPEC 2.4 "A table the host does not have"; TRANSLATION 10 | `sutra/data#missing-table-reads-as-no-rows` | **code**: CF-1; not flipped |
+| SG-17 | Does a conflated `remove` survive when it cancels an `add` of the same window? | Yes: the `add` or `update` is dropped, the `remove` stays (the sender cannot know the reader never held the key; a `remove` of an absent key changes nothing) | PROTOCOL 8.4 | `protocol/live#a-conflated-stream-merges-by-key` | flip |
+| SG-18 | A step that changes a row a panel reads, with the same figure? | No frame: a patch is made only for what differs in the ViewModel | FORMAT 5.9 "The frames of a step"; TRANSLATION 10 | `patch/examples/patch#update-remove-and-a-no-op` | flip |
+| SG-19 | A repeated change id after the change moved (the case contradicted PROTOCOL 16)? | **The text changed, not the case.** A repeated id is never taken twice and answers the change as it stands now: the first answer until it has moved, then `sent` (with `version`), `rejected` or `failed`; only to its maker, `403` to anyone else. "The first answer again" would leave a retry after a lost answer saying `queued` for ever. Writes are a `can` addition never released, so no released behaviour changes | PROTOCOL 16 "Writes" | `protocol/write#a-repeated-change-id-answers-the-first-answer` | flip |
+| SG-20 | A decimal cell `"0.10"`: `0.10` or `0.1` (the case contradicted SPEC 4.2)? | **The text changed, not the case.** A `decimal` cell of a Data Protocol table prints the digits the host sent (`0.10`), by itself, joined and in a template; it equals `0.1`; any operator or function result prints by the general rule without trailing zeros; a literal `0.10` prints `0.1`. This is level 1.1 text (tables and decimals are 1.1), so no 1.0 behaviour changes. Same on the JVM and Node | SPEC 4.2 (text form), 4.16 rule 8 | `sutra/data#decimal-cells-are-exact` | flip |
+| SG-21 | Where does the adapter's clock start? | `2026-11-21T12:00:00Z` with each fixture, moved only by `advanceMs`; with it the fixture's `tier` and `sourceColumns`, `/_test/stream`'s `source`, the case's writer and the adapter's refusal words | PROTOCOL 15 "What the live adapter fixes" | (the `live/retention` and write cases already verified rest on it) | text only |
+| SG-22 | Four eyes: the 10 newer cases | Read against PROTOCOL 16 "Four eyes" and "Writes", completed where it was silent: the tray lists pending changes (`queued`, `held`, `failed`), a new one arrives as `update` and a decided one leaves as `remove`; `summary`'s form (`b: qty = 8, status = DONE`, `(masked)`); a rejection without a reason is `422` `{ column: null, rule: reason }`; a refusal is `403` with the host's reason, audited; an unlisted change is `404 rdp.table.unknown`; a change no longer held `409` with its state as `version` and its maker as `by`; a decision's id repeats as a change's; the tray's `write` for an approver | PROTOCOL 16 "Writes", "Four eyes"; 15 (the adapter's refusal words, audit) | `protocol/approve` (all 10) | flip |
+| SG-23 | A live panel's `edit`: the 4 newer cases | Already specified: SPEC 2.3 (`edit`: `none`, `cells`, `beside`; `RCH-2029` for another word) and VIEWMODEL contract 1.2 (`LiveRef.edit`, absent when read only). Read and recomputed (the problem's place: line 8, column 48) | no new text | `sutra/binder/live-edit` (all 4) | flip |
+| SG-24 | The two overlay cases that rested on the design document | Now protocol text: a table paged from its source is read at the source's data version (new rows from the next version on), and an order by a column the host's index cannot give treats it as null for the source's rows (after the live rows that carry it, then by key) | PROTOCOL 16 "A table paged from its source"; 15 (`tier`, `sourceColumns`, `source`) | `live/overlay#a-new-source-version-reads-the-index-again`, `live/overlay#an-order-by-a-column-the-source-does-not-keep` (flipped in the first pass) | text only |
+
+### Code fixes for a builder lane
+
+Each is behaviour the text now states and the implementation does not have. No flipped case depends on one; each names the case to add with it.
+
+| Id | From | Where | Exact behaviour | Case |
+|---|---|---|---|---|
+| CF-1 | SG-16 | `rachana-core` `LiveScreen.record` and `DataRecord` (the JS bundles are the same source); `rachana-data` `TableClient.load`, which swallows `rdp.table.unknown` | A `table` entry whose table the host does not have (not handed, or `rdp.table.unknown`) is failed: every panel that reads `$.<entry>` has `error: "RCH-2070 the host has no table '<table>' (data '<entry>')"`, no `data`, `empty: true`; the other panels bind. Today it is read as no rows (`count($.t)` shows `0`) | replace `sutra/data#missing-table-reads-as-no-rows` by `sutra/data#a-missing-table-fails-its-panels`: the same Sutra, `expect.at` `/panels/0/error: "RCH-2070 the host has no table 'nothing-here' (data 't')"` and `/panels/0/empty: true` |
+| CF-2 | SG-11 | `rachana-core` `el/check/Checker` (`Ternary`, `Coalesce`, `call` for `switch` and the `returns: same` functions over several arguments) and `ElType` | One join (SG-11) wherever a value is chosen among several. Today a conditional and `??` give the first side's type, `switch` its first answer's without checking that the answers fit, `coalesce`, `least` and `greatest` their last argument's | new `el/check` cases over the suite's record types: `$.n > 0 ? 0 : $.mtm` → `decimal` (today `integer`); `$.n > 0 ? $.tradeDate : $.ts` → `timestamp` with `ts: timestamp` (today `date`); `switch($.status, 'A', 1, 'B', 2.5, 0)` → `decimal` (today `integer`); `switch($.status, 'A', 1, 'B', 'x')` → `RCH-9127` (today `integer`); `coalesce($.mtm, $.n)` → `decimal` (today `integer`) |
+| CF-3 | SG-10 | `Checker.isoDate` | `timestamp('2026-11-17T09:30:00Z')` and `timestamp('2026-11-17T09:30:00+05:30')` are accepted in checked mode (SPEC 4.2 writes a timestamp with `Z`; PROTOCOL 3.1 requires `Z` or an offset). Today both are `RCH-9127` "is not an ISO timestamp"; only a timestamp with no zone is accepted | new `el/check` cases: `timestamp('2026-11-17T09:30:00Z') < $.ts` → `boolean`, the same with `+05:30` → `boolean` |
+| CF-4 | SG-12 | Python `drishti_rachana/server.py` `_grouped` / `_aggregate` | For a decimal column: `sum` has the longest count of digits after the point among the values that aggregate adds (its own group; for `totals` the rows after `filter`), `min` and `max` return the cell as held. Today the scale is the column's `scale`, else the longest over every row of the table, and it is applied to `min` and `max` too; the Java hosts already follow the text | new `protocol/host` case: rows `{d: A, px: "1.1"}`, `{d: A, px: "2.25"}`, `{d: B, px: "1.5"}`, group by `d` with `sum`, `min`, `max`: `[A, "3.35", "1.1", "2.25"]`, `[B, "1.5", "1.5", "1.5"]` |
+| CF-5 | SG-1 | `rachana-live` `LiveTables.can` | A table paged from its source (tier `columns` or `query`) leaves `group` out of the `can` it serves. Today it lists `group` and answers a grouped query `422 rdp.query.unsupported` (`operation: group`): a capability declared and refused (PROTOCOL 2) | new `live/overlay` case: `GET /tables/orders` of the paged fixture: `can` without `group`; the grouped query stays `422` |
+
+### Seen while reading, not decided here
+
+- `avg` of a decimal column: the Java hosts answer the quotient to 16 significant digits as text, the Python host rounds to the column's scale; PROTOCOL 6.3 does not say and no case pins it.
+- `sum` over no value (every cell null, or no row): the Java hosts answer `0` (`"0"` for a decimal), the Python host `null`; not specified, no case.
+- The generated `rachana.lang.json` and `sutra.schema.json` still describe 1.0 (SPEC 7.2 rule 6), so `data` carries its `since 1.1` only in SPEC 2.2 until the generator reads Rachana's own tables.
+
+### Flipped in the second pass
+
+| Case id | Decision | Evidence |
+|---|---|---|
+| `el/check#check-n-0-mtm-0` | SG-11 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/check#check-switch-status-a-1-b-2-0` | SG-11 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/check#check-concat-status-x` | SG-14 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/check#check-let-x-n-x-2` | SG-14 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/check#check-status-in-n` | SG-13 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/check#check-status-in-1-2` | SG-13 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/check#check-round-mtm-n` | SG-10 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/check#check-date-09-10-2026-tradedate` | SG-10 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/determinism#d-m01-a` | SG-4 | expectation corrected (tolerance, no text); jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/determinism#d-m04-c` | SG-4 | expectation corrected (tolerance, no text); jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `el/determinism#d-m05-a` | SG-4 | expectation corrected (tolerance, no text); jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `live/declaration#blotter-reads-and-gives-its-schema` | SG-1 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `live/declaration#read-only-table-with-a-compound-key` | SG-1 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `patch/examples/patch#update-remove-and-a-no-op` | SG-18 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `patch/patch#compound-key-remove-and-a-panel-frame` | SG-3 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `patch/patch#a-strip-figure-is-a-strip-patch` | SG-3 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/checked#a-well-typed-condition-has-no-problem` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/checked#a-date-against-text-is-rch-9127` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/checked#a-number-against-text-is-rch-9127` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/checked#a-filter-on-a-masked-column-is-rch-9161` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/plan#entry-where-is-pushed-down` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/plan#a-panel-where-stays-local-with-two-readers` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/plan#outside-the-subset-stays-local` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/plan#a-table-that-cannot-filter-filters-locally` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `plan/plan#functions-of-the-subset-and-folded-constants` | SG-2 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `problem/data#data-is-not-a-key-of-level-1-0` | SG-5 | jvm and nodet pass at 1.0, 1.1 and 1.2 with the same bytes, noder the same wherever it answers |
+| `problem/data#a-name-that-is-not-a-field-name` | SG-15 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `protocol/approve#an-approver-reads-the-held-changes-of-others-in-scope` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#an-approver-releases-a-held-change` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#a-rejection-gives-its-reason` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#a-decision-without-the-approve-right-is-forbidden` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#the-hosts-rule-refuses-a-decision` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#a-change-outside-the-approvers-scope-is-absent` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#a-change-no-longer-held-is-a-conflict` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#a-repeated-decision-id-answers-the-first-answer` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#the-trays-schema-offers-state-to-an-approver` | SG-1 and SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/approve#an-approvers-tray-follows-the-held-changes` | SG-22 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/forms#arrow-of-a-grouped-query-with-totals` | SG-12 | live reference host pass (`protocol_check.py --live`, 143 of 143); Python host pass |
+| `protocol/host#offset-needs-can-offset` | SG-7 | live reference host pass (`protocol_check.py --live`, 143 of 143); Python host pass |
+| `protocol/host#group-count-distinct-min-max` | SG-12 | live reference host pass (`protocol_check.py --live`, 143 of 143); Python host pass |
+| `protocol/live#a-conflated-stream-merges-by-key` | SG-17 | live reference host pass (`protocol_check.py --live`, 143 of 143); Python host pass |
+| `protocol/write#a-repeated-change-id-answers-the-first-answer` | SG-19 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/write#a-held-change-waits-for-the-hosts-decision` | SG-9 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/write#an-invalid-change-names-the-column-and-rule` | SG-8 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `protocol/write#the-schema-offers-write-to-an-editor-only` | SG-1 | live reference host pass (`protocol_check.py --live`, 143 of 143); the Python host has no live tables (unsupported) |
+| `sutra/binder/live-edit#a-live-panel-edits-in-its-cells` | SG-23 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `sutra/binder/live-edit#a-live-panel-edits-beside-its-grid` | SG-23 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `sutra/binder/live-edit#edit-none-is-read-only` | SG-23 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `sutra/binder/live-edit#edit-is-one-of-three-words` | SG-23 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `sutra/data#decimal-cells-are-exact` | SG-20 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+| `sutra/data#table-as-record-is-its-first-row` | SG-6 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
+
+## Not flipped
 
 | Case id | Reason | Detail |
 |---|---|---|
-| `el/determinism#d-m01-a` | spec-gap | exact last digit of a real-number function is the fdlibm port's, SPEC 4.16/5.8 give only a tolerance; case has none (exp(1) expects ...0455, the correctly rounded double is ...045) |
-| `el/determinism#d-m04-c` | spec-gap | exact last digit of a real-number function is the fdlibm port's, SPEC 4.16/5.8 give only a tolerance; case has none (exp(1) expects ...0455, the correctly rounded double is ...045) |
-| `el/determinism#d-m05-a` | spec-gap | exact last digit of a real-number function is the fdlibm port's, SPEC 4.16/5.8 give only a tolerance; case has none (exp(1) expects ...0455, the correctly rounded double is ...045) |
-| `el/check#check-n-0-mtm-0` | spec-gap | SPEC 4.14 does not say how a conditional's two branches join (decimal and integer) |
-| `el/check#check-switch-status-a-1-b-2-0` | spec-gap | functions.yaml gives switch the result type any; the case expects integer (more precise inference than the spec states) |
-| `el/check#check-concat-status-x` | spec-ambiguous | SPEC 4.14 says a function without a signature is RCH-9129, but functions.yaml gives concat/let a signature; which functions lack a checked-mode signature is not stated |
-| `el/check#check-let-x-n-x-2` | spec-ambiguous | SPEC 4.14 says a function without a signature is RCH-9129, but functions.yaml gives concat/let a signature; which functions lack a checked-mode signature is not stated |
-| `el/check#check-status-in-n` | spec-ambiguous | SPEC 4.8 says a scalar on the right of in is a list of one; the case refuses it (and the list with mismatched items) in checked mode; SPEC 4.14 does not list in-type checks |
-| `el/check#check-status-in-1-2` | spec-ambiguous | SPEC 4.8 says a scalar on the right of in is a list of one; the case refuses it (and the list with mismatched items) in checked mode; SPEC 4.14 does not list in-type checks |
-| `el/check#check-round-mtm-n` | spec-gap | SPEC 4.14/4.10 do not say that round's n must be a literal in checked mode (functions.yaml: n is integer) |
-| `el/check#check-date-09-10-2026-tradedate` | spec-gap | SPEC 4.14 does not say a date() literal is validated as ISO in checked mode (4.10 rule 2 lists other literal checks) |
-| `problem/data#data-is-not-a-key-of-level-1-0` | spec-gap | SPEC 2.2 lists data as planned with no since 1.1; nothing says level 1.0 refuses it with RCH-2008 (7.2 rule 6 names the rule, not the key) |
-| `problem/data#a-name-that-is-not-a-field-name` | spec-ambiguous | SPEC 2.4 does not say what makes a data name invalid or which code (6.2: 2073 name clash, 2020 bad name) |
-| `sutra/data#table-as-record-is-its-first-row` | spec-gap | SPEC 2.4 gives as: rows\|record but not which row a table gives as a record (the case takes the first) |
-| `sutra/data#missing-table-reads-as-no-rows` | spec-ambiguous | SPEC 2.4 says an unknown table is RCH-2070 and 6.4 makes absent data a panel state; the case expects count 0 with a value |
-| `sutra/data#decimal-cells-are-exact` | spec-conflict | SPEC 4.2 text form of a decimal has no trailing zeros ('0.1'); the case expects '0.10' (PROTOCOL 3.1 says scale gives the digits after the point but no section gives the cell text of a decimal column) |
-| `live/declaration#blotter-reads-and-gives-its-schema` | spec-gap | the exact can set a declaration implies (arrow, replay, group, count, offset...) is not specified; the case lists it |
-| `live/declaration#read-only-table-with-a-compound-key` | spec-gap | the exact can set a declaration implies (arrow, replay, group, count, offset...) is not specified; the case lists it |
-| `protocol/forms#arrow-of-a-grouped-query-with-totals` | spec-ambiguous | PROTOCOL 3.1/6.3 do not say the text scale of a decimal sum over a column that declares no scale ('3.30' vs '3.3') |
-| `protocol/host#offset-needs-can-offset` | spec-gap | PROTOCOL 6.2 says a host with offset in can accepts offset; it does not say that a host without it refuses with rdp.query.unsupported (only sort is stated, section 4) |
-| `protocol/host#group-count-distinct-min-max` | spec-ambiguous | PROTOCOL 3.1/6.3 do not say the text scale of a decimal sum over a column that declares no scale ('3.30' vs '3.3') |
-| `protocol/write#a-repeated-change-id-answers-the-first-answer` | spec-conflict | PROTOCOL 16 and LIVE_TABLES 1.6/L7 say a repeated change id answers its FIRST answer (queued); the case expects state 'sent' with a version on the third call, and 'sent' is not one of the four states (applied, queued, held, refused) |
-| `protocol/write#a-held-change-waits-for-the-hosts-decision` | spec-gap | LIVE_TABLES 5 lists the audit record's fields (no 'decidedBy'); the deciding person's field name is not specified |
-| `protocol/write#an-invalid-change-names-the-column-and-rule` | spec-gap | error.json leaves the rule word of a shape failure free; the case pins rule 'basedOn' for a missing version |
-| `protocol/write#the-schema-offers-write-to-an-editor-only` | spec-gap | the exact can set of a table (arrow, replay, count, ...) is not specified; the case lists it |
-| `protocol/live#a-conflated-stream-merges-by-key` | spec-ambiguous | PROTOCOL 8.4 says a later remove cancels an earlier add of that key; it does not say whether the remove is kept when the add was in the same merged window (the case keeps it) |
-| `patch/patch#compound-key-remove-and-a-panel-frame` | spec-gap | frame header values (seq 1, generation 0, latencyMs 0, p99Ms 0) are not specified; FORMAT 5.9 says no timing is involved |
-| `patch/patch#a-strip-figure-is-a-strip-patch` | spec-gap | frame header values (seq 1, generation 0, latencyMs 0, p99Ms 0) are not specified; FORMAT 5.9 says no timing is involved |
-| `plan/checked#a-date-against-text-is-rch-9127` | spec-gap | SPEC 4.14 and FORMAT 5.10 do not define the plan document's problem fields (entry, panel, where) or its local list; the checked-mode codes are specified |
-| `plan/checked#a-number-against-text-is-rch-9127` | spec-gap | SPEC 4.14 and FORMAT 5.10 do not define the plan document's problem fields (entry, panel, where) or its local list; the checked-mode codes are specified |
-| `plan/checked#a-filter-on-a-masked-column-is-rch-9161` | spec-gap | SPEC 4.14 and FORMAT 5.10 do not define the plan document's problem fields (entry, panel, where) or its local list; the checked-mode codes are specified |
-| `plan/checked#a-well-typed-condition-has-no-problem` | spec-gap | the plan document's local list and the folding of date('2026-01-01') into a literal are not specified (PROTOCOL 7 does not list date; FORMAT 5.10 defers the document) |
-| `plan/plan#entry-where-is-pushed-down` | spec-gap | the plan document's readers and local lists (and the reason words) are not specified; FORMAT 5.10 defers the document |
-| `plan/plan#a-panel-where-stays-local-with-two-readers` | spec-gap | the plan document's readers and local lists (and the reason words) are not specified; FORMAT 5.10 defers the document |
-| `plan/plan#outside-the-subset-stays-local` | spec-gap | the plan document's readers and local lists (and the reason words) are not specified; FORMAT 5.10 defers the document |
-| `plan/plan#a-table-that-cannot-filter-filters-locally` | spec-gap | the plan document's readers and local lists (and the reason words) are not specified; FORMAT 5.10 defers the document |
-| `plan/plan#functions-of-the-subset-and-folded-constants` | spec-gap | PROTOCOL 7 does not say that a function of a control's value (lower(ctl.q)) is folded to a literal, nor that '== null' becomes is-null |
-| `patch/examples/patch#update-remove-and-a-no-op` | spec-ambiguous | step 3 adds a row the panel reads (TRANSLATION 10: patches for panels whose paths read the changed columns) but expects frames [] because the figure is unchanged; FORMAT 5.9 says frames [] only when nothing a panel reads changes |
+| `sutra/data#missing-table-reads-as-no-rows` | code fix CF-1 (SG-16) | the expectation (`0`) is what the implementation does and is wrong against SPEC 2.4, TRANSLATION 10 and PROTOCOL 10.1; the case is replaced when CF-1 is built |

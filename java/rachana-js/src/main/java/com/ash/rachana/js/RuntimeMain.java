@@ -63,6 +63,12 @@ public final class RuntimeMain {
         return Facade.patch(request);
     }
 
+    /** A view, then each fired trigger's state, effects and refusals (FORMAT 5.15): {@code {viewModel, steps: [{state, effects, problems, viewModel}]}}. */
+    @JSExport
+    public static String fire(String request) {
+        return Facade.fire(request);
+    }
+
     @JSExport
     public static String plan(String request) {
         return Facade.plan(request);

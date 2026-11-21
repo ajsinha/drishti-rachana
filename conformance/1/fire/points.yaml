@@ -1,0 +1,133 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/points
+since: "1.2"
+profile: core
+verified: true
+description: "point-click writes state (SUTRA_EXPANSION I1, level 1.2): each mark of a line, area, scatter, waterfall, timeline or candlestick carries its set, evaluated for its row; a metric, gauge or record is one mark read in the panel's context (contract 1.2, set after ev)."
+cases:
+
+  - id: a-scatter-point-writes-state
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (point-click, set: { state, to }); VIEWMODEL contract 1.2 (Point.set)"
+    note: "The where keeps B and C; C's set is read with #index its place before where (2)."
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Risk'" }
+      data:
+        names: { rows: [ { id: A, x: 1, y: 2 }, { id: B, x: 3, y: 4 }, { id: C, x: 5, y: 6 } ] }
+      state:
+        name: { type: text }
+        at:   { type: number }
+      panels:
+        - id: cloud
+          kind: scatter
+          rows: $.names
+          where: "@.x > 2"
+          x: x
+          y: y
+          on:
+            point-click: [ { set: { state: name, to: "@.id" } }, { set: { state: at, to: "#index" } } ]
+        - { id: chosen, kind: metric, label: Name, value: "state.name ?? 'none'" }
+    steps:
+      - { panel: cloud, trigger: point-click, mark: 1 }
+    expect:
+      at:
+        /contract: "1.2"
+        /panels/0/data/points/0/set: { name: B, at: 1 }
+        /panels/0/data/points/1/set: { name: C, at: 2 }
+      steps:
+        - state: { name: C, at: 2 }
+          effects: [ { do: set, state: name, value: C }, { do: set, state: at, value: 2 } ]
+          at:
+            /panels/1/data/value/text: "C"
+
+  - id: a-line-point-writes-state
+    kind: fire
+    source: "SUTRA_EXPANSION I1; VIEWMODEL contract 1.2 (Chart.set beside x)"
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Curve'" }
+      data:
+        curve: { rows: [ { tenor: 1Y, value: 2.5 }, { tenor: 5Y, value: 3.1 } ] }
+      state:
+        tenor: { type: text, default: 1Y }
+      panels:
+        - id: curve
+          kind: line
+          rows: $.curve
+          on:
+            point-click: [ { set: { state: tenor, to: "@.tenor" } } ]
+        - { id: chosen, kind: metric, label: Tenor, value: "state.tenor" }
+    steps:
+      - { panel: curve, trigger: point-click, mark: 1 }
+    expect:
+      at:
+        /panels/0/data/set: [ { tenor: 1Y }, { tenor: 5Y } ]
+      steps:
+        - state: { tenor: 5Y }
+          effects: [ { do: set, state: tenor, value: 5Y } ]
+          at:
+            /panels/1/data/value/text: "5Y"
+
+  - id: a-waterfall-timeline-and-candlestick-write-state
+    kind: fire
+    source: SUTRA_EXPANSION I1 (point-click on steps, events and candles)
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Marks'" }
+      data:
+        moves: { rows: [ { label: Carry, value: 3 }, { label: Roll, value: -1 } ] }
+        news:  { rows: [ { date: "2026-01-02", event: Fed }, { date: "2026-01-09", event: ECB } ] }
+        px:    { rows: [ { date: "2026-01-02", open: 1, high: 2, low: 0.5, close: 1.5 } ] }
+      state:
+        pick: { type: text }
+      panels:
+        - { id: walk, kind: waterfall, rows: $.moves, label: label, value: value, on: { point-click: [ { set: { state: pick, to: "@.label" } } ] } }
+        - { id: line, kind: timeline, rows: $.news, on: { point-click: [ { set: { state: pick, to: "@.event" } } ] } }
+        - { id: bars, kind: candlestick, rows: $.px, on: { point-click: [ { set: { state: pick, to: "@.date" } } ] } }
+    steps:
+      - { panel: walk, trigger: point-click, mark: 1 }
+      - { panel: line, trigger: point-click, mark: 1 }
+      - { panel: bars, trigger: point-click }
+    expect:
+      steps:
+        - { state: { pick: Roll }, effects: [ { do: set, state: pick, value: Roll } ] }
+        - { state: { pick: ECB }, effects: [ { do: set, state: pick, value: ECB } ] }
+        - { state: { pick: "2026-01-02" }, effects: [ { do: set, state: pick, value: "2026-01-02" } ] }
+
+  - id: a-figure-is-one-mark
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (metric, gauge, kv, status: one mark in the panel's context)"
+    note: "A metric's set reads the panel's context (no row); a second click on the gauge flips the boolean back."
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Figures'" }
+      state:
+        open: { type: boolean, default: false }
+        last: { type: text }
+      panels:
+        - { id: total, kind: metric, label: Total, value: "42", on: { point-click: [ { set: { state: last, to: "'total'" } } ] } }
+        - { id: fill, kind: gauge, value: "0.5", on: { point-click: [ { set: { state: open, to: "!state.open" } } ] } }
+    steps:
+      - { panel: total, trigger: point-click }
+      - { panel: fill, trigger: point-click }
+      - { panel: fill, trigger: point-click }
+      - { panel: fill, trigger: point-click, mark: 1 }
+    expect:
+      at:
+        /panels/0/data/set: { last: total }
+      steps:
+        - { state: { open: false, last: total }, effects: [ { do: set, state: last, value: total } ] }
+        - { state: { open: true, last: total }, effects: [ { do: set, state: open, value: true } ] }
+        - { state: { open: false, last: total }, effects: [ { do: set, state: open, value: false } ] }
+        - state: { open: false, last: total }
+          effects: []
+          problems: [ { code: RCH-5001, message: "panel 'fill' shows no mark 1 (it shows 1)" } ]

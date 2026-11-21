@@ -253,7 +253,7 @@
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,79}$" },
         "kind": {
-          "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol", "lib", "live"]
+          "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "fire", "plan", "edit", "protocol", "lib", "live"]
         },
         "since": { "$ref": "#/$defs/minor" },
         "until": { "$ref": "#/$defs/minor" },
@@ -272,6 +272,7 @@
         { "if": { "properties": { "kind": { "const": "sutra" } } }, "then": { "$ref": "#/$defs/sutraCase" } },
         { "if": { "properties": { "kind": { "const": "problem" } } }, "then": { "$ref": "#/$defs/problemCase" } },
         { "if": { "properties": { "kind": { "const": "patch" } } }, "then": { "$ref": "#/$defs/patchCase" } },
+        { "if": { "properties": { "kind": { "const": "fire" } } }, "then": { "$ref": "#/$defs/fireCase" } },
         { "if": { "properties": { "kind": { "const": "plan" } } }, "then": { "$ref": "#/$defs/planCase" } },
         { "if": { "properties": { "kind": { "const": "edit" } } }, "then": { "$ref": "#/$defs/editCase" } },
         { "if": { "properties": { "kind": { "const": "protocol" } } }, "then": { "$ref": "#/$defs/protocolCase" } },
@@ -486,6 +487,44 @@
                 "type": "object", "additionalProperties": false, "minProperties": 1,
                 "properties": {
                   "frames": { "type": "array" },
+                  "at": { "$ref": "#/$defs/atMap" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "fireCase": {
+      "description": "FORMAT 5.15.",
+      "allOf": [ { "$ref": "#/$defs/sutraInputs" } ],
+      "required": ["steps", "expect"],
+      "properties": {
+        "given": { "$ref": "#/$defs/given" },
+        "steps": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["panel", "trigger"], "additionalProperties": false,
+            "properties": {
+              "panel": { "type": "string" },
+              "trigger": { "type": "string" },
+              "mark": { "type": "integer", "minimum": 0 },
+              "values": { "type": "object" }
+            }
+          }
+        },
+        "expect": {
+          "type": "object", "additionalProperties": false, "required": ["steps"],
+          "properties": {
+            "at": { "$ref": "#/$defs/atMap" },
+            "steps": {
+              "type": "array", "minItems": 1,
+              "items": {
+                "type": "object", "additionalProperties": false, "minProperties": 1,
+                "properties": {
+                  "state": { "type": "object" },
+                  "effects": { "type": "array", "items": { "type": "object" } },
+                  "problems": { "$ref": "#/$defs/problems" },
                   "at": { "$ref": "#/$defs/atMap" }
                 }
               }

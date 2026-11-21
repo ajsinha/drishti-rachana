@@ -216,3 +216,24 @@ cases:
       problems:
       - code: RCH-2008
         messageStart: "'state' needs Rachana 1.2"
+
+  - id: point-click-only-on-its-marks
+    kind: problem
+    source: SUTRA_EXPANSION I1 (point-click, the kinds that fire it)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        desks: { rows: [ { desk: FX, pnl: 1 } ] }
+      state:
+        desk: { type: text }
+      panels:
+        - { id: bars, kind: hbar, rows: $.desks, label: desk, value: pnl, on: { point-click: [ { set: { state: desk, to: "@.desk" } } ] } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2023
+        message: "'hbar' panels do not fire point-click (point-click: area, candlestick, gauge, kv, line, metric, scatter, status, timeline, waterfall)"

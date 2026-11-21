@@ -3,6 +3,26 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## v0.11.0 ready (untagged): the JavaScript build
+
+Step A15. Not tagged: the tag waits for the owner (G1 gate).
+
+- `java/rachana-js` (Maven profile `js`) builds `rachana.runtime.js` and `rachana.tools.js` with TeaVM 0.16.0 through its tool
+  API; `tools/js/build_js.py` copies them into `js/packages/rachana/dist/` and the Python package and prints their sizes and
+  SHA-256. **Rule (P1-3): the release notes of every release record both bundles' SHA-256.** At `28d01bf`: runtime
+  `d0ced04fc29dd911c30aa11c8b8fd75b9952d8f4081e3e28cd01a52c5139d1bb` (361 KB Brotli), tools
+  `b012b4111a5efb11a6c9a14eb6b6cd965a347e1bd1382da27524532d4a23c0cd` (381 KB Brotli); two clean builds give the same bytes.
+- The view package reads no record by reflection: generated writers (`ViewRecords`) and the schema text generated at build time
+  (`ViewModelSchemaText`), checked fresh by a test; ViewModel bytes unchanged (conformance, and 331 corpus Sutras built both ways).
+- Runtimes agree: every conformance case byte-identical to the JVM in Node, Chromium, Firefox, WebKit and Python on V8
+  (`--node`, `runners/run_browsers.py`, `python -m drishti_rachana.engine`); `conformance.Cases` is the one harness, no I/O.
+- Python on V8 (W-1): `drishti_rachana.engine.Rachana` compiles and lints, evaluates, formats, builds views and edits (extra `v8`).
+- Core: `exp`, `ln`, `log10` and the trigonometric functions through `CoreMath` (six fdlibm functions added); `NumberText.toDouble`,
+  `CoreDecimal.round`, `internal.Bits`, `internal.RegexText`; the guard refuses `Math::`, `doubleValue()` and `BigDecimal.round`
+  elsewhere. Three JVM results move by one unit in the last place (level 1.0 re-recorded, D15-4).
+- One TeaVM file patched (`StatementRenderer`, Apache-2.0): its printer dropped the parentheses of `a * (b / c)` (D15-2).
+- Re-measure (P1_RESULTS section 11): T1, T5 to T10 pass; T2 and T4 miss, for the owner (D15-5, D15-6).
+
 ## v0.10.0 ready (untagged): the untangling
 
 Steps A1 to A8b, A13, A14 and A7b are in (the binder moved and behind hooks, its API, Core's canonical writer, form expressions in

@@ -14,6 +14,8 @@ Steps:
       drishti-rachana.json: version, SHA-384 of each jar, the Elements version and the hashes of formats.yaml and
       world-regions.yaml Rachana was built with (read from the pinned tree js/vendor/drishti-elements/<version>/data)
     Drishti unpacks maven/ into packaging/pinned/maven and the manifest into packaging/pinned/ (decision N2);
+ 3b. build the JavaScript bundles (tools/js/build_js.py) and record their SHA-256 in drishti-rachana.json ("bundles") and
+    print them for the release notes (decision P1-3: every release records both hashes); the bundles travel in the zip under js/;
  4. create the tag v<version> locally (pushing and the GitHub release stay a manual step).
 """
 import hashlib, json, re, subprocess, sys, zipfile
@@ -54,12 +56,14 @@ def main(argv):
     previous = re.search(r"<artifactId>rachana-parent</artifactId>\s*<version>([^<]+)</version>", (JAVA / "pom.xml").read_text()).group(1)
     elements = re.search(r"<drishti.elements.version>([^<]+)</drishti.elements.version>", (JAVA / "pom.xml").read_text()).group(1)
     data = ROOT / "js" / "vendor" / "drishti-elements" / elements / "data"
-    run(mvnw, "-B", "versions:set", f"-DnewVersion={version}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
+    run(mvnw, "-B", "-Pjs", "versions:set", f"-DnewVersion={version}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
     try:
         run(mvnw, "-B", "clean", "verify", cwd=JAVA)
         dist = ROOT / "dist"
         dist.mkdir(exist_ok=True)
-        manifest = {"version": version, "jars": {}, "elements": {"version": elements, "formats.yaml": digest(data / "formats.yaml", "sha384"),
+        bundles = dist / "bundles.json"
+        run(sys.executable, str(ROOT / "tools" / "js" / "build_js.py"), "--json", str(bundles))
+        manifest = {"version": version, "jars": {}, "bundles": {k: v["sha256"] for k, v in json.loads(bundles.read_text()).items()}, "elements": {"version": elements, "formats.yaml": digest(data / "formats.yaml", "sha384"),
                                                           "world-regions.yaml": digest(data / "world-regions.yaml", "sha384")}}
         with zipfile.ZipFile(dist / f"rachana-{version}-pinned.zip", "w", zipfile.ZIP_DEFLATED) as z:
             for a in ARTIFACTS:
@@ -75,11 +79,15 @@ def main(argv):
             arc = f"maven/{GROUP_PATH}/rachana-parent/{version}/rachana-parent-{version}.pom"
             z.write(parent, arc)
             z.writestr(arc + ".sha1", digest(parent, "sha1") + "\n")
+            for b in manifest["bundles"]:
+                z.write(ROOT / "js" / "packages" / "rachana" / "dist" / b, f"js/{b}")
             z.writestr("drishti-rachana.json", json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+        for b, h in manifest["bundles"].items():
+            print(f"release notes: {b} sha256 {h}")
         if not dry:
             run("git", "tag", f"v{version}")
     finally:
-        run(mvnw, "-B", "versions:set", f"-DnewVersion={previous}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
+        run(mvnw, "-B", "-Pjs", "versions:set", f"-DnewVersion={previous}", "-DgenerateBackupPoms=false", "-DupdateBuildOutputTimestampPolicy=never", cwd=JAVA)
 
 
 if __name__ == "__main__":

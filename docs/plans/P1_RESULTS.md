@@ -197,3 +197,62 @@ JAVA_HOME=<JDK 21> <venv>/bin/python tools/proofs/proof.py all --drishti <Drisht
 Steps and outputs are listed in `proof.py`'s help; everything is written under `tools/proofs/work/` and `tools/proofs/out/`
 (git-ignored). The heavy steps run one at a time; the WebAssembly step needs about 11 GB of memory for one minute (see
 WASM_RESULTS W3). Nothing is installed (`mvn install` is never run) and Drishti is only read (`git archive`, its jars).
+
+## 11. Re-measured in A15 (2026-11-21, the real build)
+
+The real build of Core (`java/rachana-js`, TeaVM 0.16.0, `ADVANCED`, minified) after A5, A9, A13 and A14; Node 22.22.1 on the
+same machine (load 2 to 3, shared); Playwright 1.63.0 browsers. Reproduce: `python3 tools/js/build_js.py --bench`, then
+`node js/packages/rachana/bench/bench-node.mjs java/rachana-js/target/js/rachana.bench.js <bench> <bench50k>` with
+`tools/proofs/runners/gen_bench.py <dir> 10000` and `50000`.
+
+| Step | P1 | A15 | Verdict |
+|---|---|---|---|
+| **T1** | 4 gaps | none left: the gaps were closed in Core (A3, A5); the build needed only the resource list (TeaVM's resource SPI) | **pass** |
+| **T2** size, Brotli 11 | runtime-shaped entry 247 KB (expressions only), the P1 cut 300 KB | **runtime 361 KB** (with the Sutra parser and checker and the view builder), **tools 381 KB** (raw 1.39 MB and 1.48 MB) | runtime **miss** against 150 KB and against P1-1's accepted 200 KB; tools **miss** against 350 KB by 9%: DECISIONS D15-5 |
+| **T3** start (Node) | module 108 to 204 ms; first compile 54 to 77 ms; typical p95 4.0 ms, large 18.5 ms | module 75 to 102 ms; first compile 50 to 69 ms; **typical p95 1.8 to 3.5 ms, large 8.8 to 15.6 ms** (two runs) | warm budgets **pass**; cold first compile still above 30 ms |
+| **T4** (Node, median of the twenty) | about 19x the hand-written interpreter (7x to 138x) | **14x** (8x to 100x) after fallback 2b | **miss**: DECISIONS D15-6, the owner's choice by P1-2 |
+| **T5** 100 changed rows of 50,000 | 0.26 ms (rows only) | **0.2 ms** (Core's lists are the host's own since A1: no copy exists) | **pass** |
+| **T6** same output | 45 to 64 differences per engine | **0** on 2,123 cases in Node, Python on V8, Chromium, Firefox, WebKit; 0 on 5,600 random maths probes | **pass** |
+| **T7** strict pages | pass | module page under `default-src 'self'` with Trusted Types: no violation in three browsers; no `eval`, no `Function(` in either bundle | **pass** |
+| **T8** errors | 11 engine `RangeError`s, 12 `ReferenceError`s | **none** in any runtime's results | **pass** |
+| **T9** reproducible | three builds, three SHA-256s | **two clean builds, the same SHA-256** (TeaVM run through its tool API in a fresh JVM); runtime `d0ced04f…`, tools `b012b411…` at `28d01bf` | **pass** (Windows not run) |
+| **T10** the tool | pass | unchanged; one TeaVM file patched (D15-2) | **pass** |
+
+**What the build fixed on the way** (each held by conformance and a unit test): TeaVM printed `a * (b / c)` as `a * b / c`
+(one patched file, D15-2); TeaVM's `BigDecimal.doubleValue` and `BigDecimal.round` (Core's doors, D15-3); `exp`, `ln`,
+`log10` and the trigonometric functions were still `java.lang.Math` method references (now `CoreMath`, six more fdlibm
+functions ported); an edit refused by the check kept its edited text in JavaScript (`OpApplier`); a pattern error had no
+words in TeaVM's library (`RegexText`).
+
+**T4 per expression** (ns per evaluation over 10,000 rows, median of 10, Node; "interp." is P1's hand-written tree-walking
+evaluator `tools/proofs/runners/mini-el.mjs`):
+
+| # | Expression | A15 before 2b | A15 with 2b | interp. | x |
+|---|---|---|---|---|---|
+| 1 | `@.amount` | 94 | 200 | 21 | 9.7 |
+| 2 | `@.amount * 2` | 394 | 404 | 33 | 12.3 |
+| 3 | `@.price * @.qty - @.amount` | 1,254 | 1,112 | 126 | 8.8 |
+| 4 | `@.amount > 1000000` | 282 | 296 | 32 | 9.4 |
+| 5 | `@.ccy == 'USD'` | 335 | 315 | 34 | 9.4 |
+| 6 | `@.ccy in ['USD', 'EUR', 'GBP']` | 1,935 | 1,879 | 89 | 21.2 |
+| 7 | `@.amount > 0 && @.status != 'CANCELLED'` | 760 | 592 | 65 | 9.1 |
+| 8 | `@.type == 'FX' ? @.amount : -@.amount` | 819 | 791 | 64 | 12.5 |
+| 9 | `'Leg ' + #index` | 796 | 794 | 31 | 25.5 |
+| 10 | `T:${@.book} / ${@.ccy}` | 1,123 | 1,184 | 54 | 22.1 |
+| 11 | `round(@.price, 2)` | 4,505 | 4,281 | 43 | 100 |
+| 12 | `abs(@.amount) / 1e6` | 648 | 733 | 51 | 14.4 |
+| 13 | `nonblank(@.desk, 'n/a')` | 822 | 693 | 45 | 15.4 |
+| 14 | `upper(left(@.book, 3))` | 1,873 | 1,843 | 74 | 24.9 |
+| 15 | `@.trade_date >= '2026-01-01'` | 538 | 587 | 42 | 13.8 |
+| 16 | `days_between(@.trade_date, '2026-11-17')` | 4,586 | 4,581 | 133 | 34.5 |
+| 17 | `reduce($.legs, 0, greatest(@acc, @.notion...` | 27,986 | 26,813 | 580 | 46.2 |
+| 18 | `size($.legs[?@.type == 'FLOAT'])` | 3,729 | 3,892 | 477 | 8.2 |
+| 19 | `map($.legs, @.notional / 1e6)` | 4,378 | 4,264 | 517 | 8.3 |
+| 20 | `matches(@.book, '^BOOK-[0-9]+$')` | 2,092 | 2,057 | 66 | 31.1 |
+
+**Fallback 2b as taken:** the words of a double through a `DataView` instead of a `long` (`internal.Bits`), so Core's maths and
+`rint` run without `BigInt`; the engine's own number text and number reading (`internal.NumberText`). The profile that remains
+(Node, `--cpu-prof`): the expression tree's field reads and the map lookups under them (about 19%), boxing and type checks
+(about 10%), `BigDecimal` in `round` (`round(@.price, 2)` is the 100x outlier), `java.time.format` in `days_between`'s date
+reading. None is a hot spot an intrinsic behind a Java interface removes without moving the data model to JavaScript objects (B3's
+`Node` over JavaScript objects) or a second evaluator (fallback 3).

@@ -43,11 +43,37 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | `spec/1/` | the specification: SPEC, EBNF, functions, formats, the generated language definition and schemas | written (R0) |
 | `conformance/1/` | 2,112 cases; [driver](tools/conformance/README.md) in Python | harvested (R0) |
 | `java/` | the Maven reactor ([java/README](java/README.md)): `rachana-core` is the compiler, moved with history; the JVM conformance runtime; the guards; the compatibility regime | **built**: `./mvnw clean verify` |
-| `js/`, `python/` | package skeletons; `js/vendor/drishti-elements/2.4.0/data/` holds the two Elements data files Core bundles | skeleton |
+| `java/rachana-js`, `js/packages/rachana` | the JavaScript build (TeaVM): `rachana.runtime.js` and `rachana.tools.js`, the Node and browser runners | **built** (A15): every conformance case byte-identical to the JVM in Node, Chromium, Firefox, WebKit |
+| `python/` | `drishti_rachana.engine` (the JavaScript bundle on V8), the protocol types, the conformance runner; the web adapters are stubs | engine **built** (A15); the rest skeleton |
+| `js/vendor/` | the two Drishti Elements data files Core bundles | vendored |
 | `tools/` | conformance driver, reference bridge (until the migration), split tools, regime and release tools | built |
 
 Build and prove: `cd java && ./mvnw clean verify`, then `python3 tools/conformance/rachana_conformance.py --jvm` (every
 verified case passes; see [java/README](java/README.md)).
+
+## Use from JavaScript or Python
+
+```bash
+python3 tools/js/build_js.py            # TeaVM build (JDK 21): js/packages/rachana/dist/ and the Python package's bundle folder
+```
+
+```js
+import * as rachana from "./js/packages/rachana/dist/rachana.runtime.js";   // an ES module; works under a strict CSP
+rachana.init("core", "[]");
+JSON.parse(rachana.evaluate(JSON.stringify({ expr: "$.a * 2", given: { record: { a: 21 } } })));   // {value: 42, text: "42", ...}
+JSON.parse(rachana.check(JSON.stringify({ sutra: yamlText })));                                     // {ok, problems}: compile and lint
+```
+
+```python
+from drishti_rachana.engine import Rachana    # pip install -e 'python[v8]': the same bundle on V8, no JVM
+r = Rachana()
+r.check(open("trade.sutra.yaml").read())       # {'ok': True, 'problems': []}
+r.evaluate("$.a * 2", record={"a": 21})        # {'value': 42, 'type': 'number', 'text': '42', 'reads': ['$.a']}
+```
+
+Every answer is the document the conformance suite records (FORMAT section 5), byte-identical to the JVM's
+([COMPILER_AND_RUNTIMES](docs/design/COMPILER_AND_RUNTIMES.md) sections 4.1a and 5.3a). The facade is minimal; `<rachana-view>`
+and the data hand-over come with B3.
 
 ## Ways to use it
 

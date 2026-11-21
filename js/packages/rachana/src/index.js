@@ -5,6 +5,7 @@
 /**
  * The browser and Node runtime: the compiler built from the Java reference (TeaVM, no hand-written logic), the facade, <rachana-view>, the Data Protocol client and the desktop bridge
  *
- * Status: planned (A15 JavaScript build, B2 data client, B3 <rachana-view>). This file is a placeholder so the package layout exists; nothing here is built yet.
+ * Status: the compiler bundles are built (A15: dist/rachana.runtime.js and dist/rachana.tools.js by tools/js/build_js.py; import them
+ * directly). The facade over them, the data client and <rachana-view> are planned (B2, B3).
  */
-export const STATUS = "planned";
+export const STATUS = "bundles built; facade planned";

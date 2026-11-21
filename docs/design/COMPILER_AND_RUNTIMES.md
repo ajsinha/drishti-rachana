@@ -119,6 +119,24 @@ directly by JavaScript objects and by Arrow columns (through the vendored Apache
 rows are never copied into Java-shaped structures. Above a row threshold the core runs in a Web Worker and Arrow
 buffers are transferred, not copied.
 
+### 4.1a As built (A15, v0.11.0)
+
+`java/rachana-js` builds both bundles with TeaVM 0.16.0 (`python3 tools/js/build_js.py`, or `./mvnw -Pjs package -pl rachana-js
+-am`; JDK 21, nothing installed). Rachana's own classes reach TeaVM unpacked into the module, so three same-named classes of the
+JavaScript build replace Core's: `internal.NumberText` (the engine's shortest digits, Java's layout and number grammar),
+`internal.RegexText` (the JDK's words for a pattern error) and `internal.Bits` (the words of a double through a `DataView`, no
+`BigInt`). One TeaVM file is patched (`StatementRenderer`: the right operand of `+` and `*` keeps its parentheses; DECISIONS D15-2).
+
+| Bundle | Exports (JSON text in and out; answers are the conformance documents of FORMAT 5) |
+|---|---|
+| `rachana.runtime.js` | `init(profiles, formats)`, `version`, `evaluate`, `evaluateError`, `format`, `check` (parse, then check: compile and lint), `view` |
+| `rachana.tools.js` | the runtime's, plus `edit` (design/ops), `viewModelSchema`, and the conformance harness `hello`, `answer` |
+
+Proof (2026-11-21): every conformance case byte-identical to the JVM in Node 22, Chromium 153, Firefox 155, WebKit 26.6 (strict CSP,
+Trusted Types, no violation) and in Python on V8 (2,123 cases with the tools bundle, 1,953 with the runtime bundle: all but `edit`);
+5,600 random maths probes identical. Runners: `tools/conformance/rachana_conformance.py --node [--bundle ...]`,
+`js/packages/rachana/runners/run_browsers.py`, `python -m drishti_rachana.engine` (section 5.3a). Measurements: P1_RESULTS section 11.
+
 ### 4.2 The proof (one week, before R1 commits to this path)
 
 A throwaway branch: take `el`, `el/check`, `format`, `model` and `parse` as they are, cut dependencies by hand,
@@ -183,6 +201,13 @@ r = Rachana()                                  # loads the WASM module once per 
 res = r.compile(text, file="sales.sutra.yaml")  # res.ok, res.problems (SPEC section 7), res.plan
 vm  = r.bind(res.sutra, tables={"sales": rows_or_arrow}, controls={}, today="2026-11-17")
 ```
+
+### 5.3a As built (A15, decision W-1): the JavaScript bundle on V8
+
+The WebAssembly proof (WASM_RESULTS) chose option C with V8 for now: `drishti_rachana.engine.Rachana` loads `rachana.tools.js`
+(or the runtime bundle) into a V8 isolate through `mini-racer` (extra `v8`) and calls the facade: `check(sutra)` compiles and lints,
+`evaluate`, `template`, `format`, `view`, `edit`. `python -m drishti_rachana.engine` is a conformance runtime program (RUNNER 5):
+2,123 cases byte-identical to the JVM. The wheel carries the bundles built by `tools/js/build_js.py`.
 
 Other languages (.NET, Go, Rust) can load the same `.wasm`; none is planned beyond what the desktop SDK needs
 (section 9 compiles inside the web view, so .NET needs no compiler of its own).

@@ -213,7 +213,14 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   `record{…}`, `T?`): written at the use as an expression in the user's context, read inside as `arg.<name>`; a YAML
   number or `true`/`false` at the use is a literal checked against the type, `min` and `max`; a `text` parameter takes its
   text as written; `arg.x` as a whole value becomes the expression or literal itself, inside a longer expression or
-  template the expression in parentheses or the literal as EL text. A **function** value `fn(T, …) -> U` (one name or
+  template the expression in parentheses or the literal as EL text. A `list<T>` or `record{f: T, …}` (fields `name: type`,
+  `?` optional; `list<record{…}>` a list of them; no record inside a record) may also be written out at the use as YAML, a
+  list of items or a mapping: checked item by item and field by field (a field the type does not declare, a required field
+  missing, a field of the wrong type, more items than `max` or fewer than `min`: `RCH-2116`); as a whole value it is placed
+  as written (`fields: arg.fields`), inside an expression it is the EL list or record literal. A `text` parameter declared
+  `dynamic: true` (only a `text`; else `RCH-2048`) takes a template at the use, read in the caller's context: as a whole
+  value it is the template, inside an expression `concat` of its texts and parts; its parts may not read `@`, `^` or
+  `#index` (`RCH-2116`); text without `${` and a default stay text as written. A **function** value `fn(T, …) -> U` (one name or
   more; X13) is written at the use as a lambda in the user's context, `lambda x: x / 1000`, with the type's count of names
   and a body that reads its names and the user's screen but not `@`, `^` or `#index` (`RCH-2116`); inside, `arg.f(x)`
   calls it (the expression is wrapped in `let(fn_f = <lambda>, …)`) and `arg.f` as a whole argument of `map`, `sort`,

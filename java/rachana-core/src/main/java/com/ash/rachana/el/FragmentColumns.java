@@ -186,6 +186,28 @@ public final class FragmentColumns {
         return out.append(text, copied, text.length()).toString();
     }
 
+    /**
+     * A template split at its parts: the texts at even places (each possibly empty), the expressions of its parts {@code ${...}} at odd
+     * places; an unclosed part stays text.
+     */
+    public static List<String> templateParts(String text) {
+        List<String> out = new ArrayList<>();
+        int copied = 0;
+        int i = text.indexOf("${");
+        while (i >= 0) {
+            int end = close(text, i + 2);
+            if (end < 0) {
+                break;
+            }
+            out.add(text.substring(copied, i));
+            out.add(text.substring(i + 2, end));
+            copied = end + 1;
+            i = text.indexOf("${", copied);
+        }
+        out.add(text.substring(copied));
+        return out;
+    }
+
     /** The index of the brace closing a template part opened before {@code from}, or -1. */
     private static int close(String s, int from) {
         int depth = 0;

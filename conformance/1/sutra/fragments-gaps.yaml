@@ -60,3 +60,116 @@ cases:
         /panels/1/data/rows/1/cells/1/text: "1,200"
         /panels/2/data/bars/2/label: Credit!
         /panels/2/data/bars/2/value: 20
+
+  - id: list-of-records-written-at-the-use
+    kind: sutra
+    source: LIBRARIES 4.2 (list<record{...}>); core library finding (status-badges, entry-form)
+    files: &badges
+      badges.v1.fragment.yaml: |
+        rachana: 1
+        fragment: badges
+        version: 1
+        doc:
+          summary: A row of named figures, and the same as a table.
+        params:
+          items:
+            type: "list<record{label: text, value: number, tone: text?}>"
+            required: true
+            max: 4
+            doc: The figures, each a label and a value
+          fields:
+            type: "list<record{label: text, bind: text}>"
+            default: []
+            doc: Facts of the record shown beside them
+          totals:
+            type: "record{count: integer, sum: number}"
+            default: { count: 0, sum: 0 }
+            doc: Counted and summed elsewhere
+        panels:
+          - id: list
+            kind: table
+            rows: "sort(arg.items, lambda i: -i.value)"
+            columns: [ { label: Name, bind: "@.label" }, { label: Value, bind: "@.value", fmt: amount0 }, { label: Tone, bind: "@.tone ?? '-'" } ]
+          - { id: facts, kind: status, fields: arg.fields }
+          - { id: total, kind: metric, label: Total, value: "arg.totals.sum + sum(map(arg.items, @.value))" }
+          - { id: count, kind: metric, label: Count, value: "size(arg.items) + arg.totals.count" }
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        desk: { rows: [ { state: OPEN, owner: "O'Neil" } ] }
+      panels:
+        - use: badges@1
+          with:
+            items: [ { label: Cash, value: 120 }, { label: "Bonds 'A'", value: 300, tone: ok } ]
+            fields: [ { label: State, bind: "first($.desk).state" }, { label: Owner, bind: "first($.desk).owner" } ]
+            totals: { count: 3, sum: 1000 }
+    expect:
+      at:
+        /panels/0/data/rows/0/cells/0/text: "Bonds 'A'"
+        /panels/0/data/rows/0/cells/2/text: ok
+        /panels/0/data/rows/1/cells/1/text: "120"
+        /panels/0/data/rows/1/cells/2/text: "-"
+        /panels/1/data/fields/1/text: "O'Neil"
+        /panels/2/data/value/text: "1420"
+        /panels/3/data/value/text: "5"
+
+  - id: list-of-records-from-an-expression-and-defaults
+    kind: sutra
+    source: LIBRARIES 4.2 (list<record{...}> as an expression; a literal default)
+    files: *badges
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        figures: { rows: [ { label: Cash, value: 5 } ] }
+      panels:
+        - use: badges@1
+          with: { items: $.figures }
+    expect:
+      at:
+        /panels/0/data/rows/0/cells/0/text: Cash
+        /panels/2/data/value/text: "5"
+        /panels/3/data/value/text: "1"
+
+  - id: dynamic-text-takes-a-template
+    kind: sutra
+    source: "LIBRARIES 4.2 (text, dynamic: true); core library finding (alert-banner, source-note)"
+    files:
+      banner.v1.fragment.yaml: |
+        rachana: 1
+        fragment: banner
+        version: 1
+        doc:
+          summary: A message, with a plain heading.
+        params:
+          message: { type: text, dynamic: true, default: All clear, doc: "The message, which may hold the caller's figures" }
+          heading: { type: text, default: Note, doc: A heading as written }
+        panels:
+          - { id: msg, kind: markdown, text: arg.message }
+          - { id: both, kind: markdown, text: "**${arg.heading}**: ${upper(arg.message)}" }
+          - { id: size, kind: metric, label: Length, value: "len(arg.message)" }
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        limit: { rows: [ { used: 45, size: 60 } ] }
+      panels:
+        - use: banner@1
+          with:
+            message: "Limit used ${fmt(first($.limit).used / first($.limit).size, 'pct0')} of ${first($.limit).size}"
+            heading: "Plain ${not a template}"
+        - { use: banner@1, as: quiet }
+    expect:
+      at:
+        /panels/0/data/text: Limit used 75% of 60
+        /panels/1/data/text: "**Plain ${not a template}**: LIMIT USED 75% OF 60"
+        /panels/2/data/value/text: "20"
+        /panels/3/data/text: All clear
+        /panels/4/data/text: "**Note**: ALL CLEAR"

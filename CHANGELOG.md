@@ -26,6 +26,13 @@ Entries are written per release; the regime's unreleased work is listed after th
   `bind`s renamed to the caller's columns (they were left as written, with the advisory `RCH-2120`); over `map(arg.rows, {k: ...})`
   the panel reads the fixed names; a local column named over rows derived any other way is `RCH-2121`. `FragmentColumns.rowsOf`
   (API addition). Suites `sutra/fragments-gaps`, `problem/fragments-gaps`.
+- **`list<record{...}>` and written-out records**: a `list<T>`, `record{f: T, ...}` or `list<record{...}>` parameter may be written
+  at the use as YAML (a list, a mapping), checked item by item and field by field (`RCH-2116`; `max`/`min` count the items); as a
+  whole value it is placed as written (`fields: arg.fields`), in an expression it is the EL literal. A text literal inside a fragment
+  is now quoted with a backslash escape (was a doubled quote, which Rachana-EL does not read).
+- **Dynamic text parameters**: `type: text, dynamic: true` takes a template at the use (`"Limit used ${fmt(..., 'pct0')}"`), read in
+  the caller's context: the template as a whole value, `concat(...)` of its parts inside an expression; `@`, `^`, `#index` refused.
+  A plain `text` keeps its text as written. `FragmentColumns.templateParts` (API addition).
 
 ### Named arguments by the catalogue; stable wire keys; Sutra let and functions, library functions (G2 lane A4)
 

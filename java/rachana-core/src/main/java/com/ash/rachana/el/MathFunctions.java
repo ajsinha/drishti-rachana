@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -132,7 +133,7 @@ final class MathFunctions {
         if (x.signum() == 0 && y.signum() < 0) {
             return null;
         }
-        double r = Math.pow(x.doubleValue(), y.doubleValue());
+        double r = CoreMath.pow(x.doubleValue(), y.doubleValue());
         if (Double.isNaN(r)) {
             throw Args.error("power", Args.describe(a.get(0)) + " to the power " + Args.describe(a.get(1)) + " is not a real number");
         }

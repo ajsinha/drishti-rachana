@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.format;
 
+import com.ash.rachana.internal.CoreMath;
 import java.util.regex.Pattern;
 
 /**
@@ -31,8 +32,8 @@ public final class IdText {
 
     /** A number as id text: a whole number without a fraction or exponent. */
     public static String of(double d) {
-        if (d == Math.rint(d) && !Double.isInfinite(d) && Math.abs(d) < 1e18) {
-            return Long.toString((long) d);
+        if (d == CoreMath.rint(d) && !Double.isInfinite(d) && Math.abs(d) < 1e18) {
+            return Long.toString(CoreMath.toLong(d));
         }
         return java.math.BigDecimal.valueOf(d).stripTrailingZeros().toPlainString();
     }

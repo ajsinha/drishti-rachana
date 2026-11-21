@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreMath;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
@@ -50,7 +51,7 @@ final class Distributions {
             Double p = num("lognorm_inv", a, 0);
             Double m = num("lognorm_inv", a, 1);
             Double s = num("lognorm_inv", a, 2);
-            return p == null || m == null || s == null ? null : out("lognorm_inv", Math.exp(m + positive("lognorm_inv",
+            return p == null || m == null || s == null ? null : out("lognorm_inv", CoreMath.exp(m + positive("lognorm_inv",
                     "the standard deviation", s) * SpecialFunctions.normalInverse(open("lognorm_inv", p))));
         });
         t.fn("t_dist", 2, 3, (a, c) -> tDist(a));
@@ -92,7 +93,7 @@ final class Distributions {
             }
             nonNegative("expon_dist", "x", x);
             positive("expon_dist", "lambda", l);
-            return out("expon_dist", cum ? -Math.expm1(-l * x) : l * Math.exp(-l * x));
+            return out("expon_dist", cum ? -CoreMath.expm1(-l * x) : l * CoreMath.exp(-l * x));
         });
         t.fn("gamma_dist", 3, 4, (a, c) -> gammaDist(a));
         t.fn("gamma_inv", 3, 3, (a, c) -> {
@@ -112,7 +113,7 @@ final class Distributions {
             if (x == null) {
                 return null;
             }
-            if (x <= 0 && x == Math.rint(x)) {
+            if (x <= 0 && x == CoreMath.rint(x)) {
                 throw Args.error("gamma", "Γ is not defined at 0 or a negative whole number (" + Args.describe(a.get(0)) + ")");
             }
             return out("gamma", SpecialFunctions.gamma(x));
@@ -134,8 +135,8 @@ final class Distributions {
             nonNegative("weibull_dist", "x", x);
             positive("weibull_dist", "alpha", al);
             positive("weibull_dist", "beta", be);
-            double z = Math.pow(x / be, al);
-            return out("weibull_dist", cum ? -Math.expm1(-z) : al / be * Math.pow(x / be, al - 1) * Math.exp(-z));
+            double z = CoreMath.pow(x / be, al);
+            return out("weibull_dist", cum ? -CoreMath.expm1(-z) : al / be * CoreMath.pow(x / be, al - 1) * CoreMath.exp(-z));
         });
         t.fn("hypgeom_dist", 4, 5, (a, c) -> hypgeomDist(a));
         t.fn("negbinom_dist", 3, 4, (a, c) -> negbinomDist(a));
@@ -169,11 +170,11 @@ final class Distributions {
             if (!(x > -1 && x < 1)) {
                 throw Args.error("fisher", Args.describe(a.get(0)) + " is not between −1 and 1 (exclusive)");
             }
-            return out("fisher", 0.5 * Math.log((1 + x) / (1 - x)));
+            return out("fisher", 0.5 * CoreMath.log((1 + x) / (1 - x)));
         });
         t.fn("fisher_inv", 1, 1, (a, c) -> {
             Double y = num("fisher_inv", a, 0);
-            return y == null ? null : out("fisher_inv", Math.tanh(y));
+            return y == null ? null : out("fisher_inv", CoreMath.tanh(y));
         });
     }
 
@@ -310,7 +311,7 @@ final class Distributions {
             return null;
         }
         positive("lognorm_dist", "x", x);
-        double z = (Math.log(x) - m) / positive("lognorm_dist", "the standard deviation", s);
+        double z = (CoreMath.log(x) - m) / positive("lognorm_dist", "the standard deviation", s);
         return out("lognorm_dist", cum ? SpecialFunctions.normalCdf(z) : SpecialFunctions.normalPdf(z) / (x * s));
     }
 
@@ -340,9 +341,9 @@ final class Distributions {
         if (cum) {
             return out("t_dist", tCdf(x, df));
         }
-        double ln = SpecialFunctions.lnGamma((df + 1) / 2) - SpecialFunctions.lnGamma(df / 2) - 0.5 * Math.log(df * Math.PI)
-                - (df + 1) / 2 * Math.log1p(x * x / df);
-        return out("t_dist", Math.exp(ln));
+        double ln = SpecialFunctions.lnGamma((df + 1) / 2) - SpecialFunctions.lnGamma(df / 2) - 0.5 * CoreMath.log(df * Math.PI)
+                - (df + 1) / 2 * CoreMath.log1p(x * x / df);
+        return out("t_dist", CoreMath.exp(ln));
     }
 
     /** {@code chisq_dist(x, df, [cumulative])}: Excel's CHISQ.DIST, the left tail. */
@@ -361,7 +362,7 @@ final class Distributions {
             return out("chisq_dist", df == 2 ? 0.5 : df < 2 ? infinite("chisq_dist") : 0);
         }
         double k = df / 2;
-        return out("chisq_dist", Math.exp((k - 1) * Math.log(x) - x / 2 - k * Math.log(2) - SpecialFunctions.lnGamma(k)));
+        return out("chisq_dist", CoreMath.exp((k - 1) * CoreMath.log(x) - x / 2 - k * CoreMath.log(2) - SpecialFunctions.lnGamma(k)));
     }
 
     static double fCdf(double x, double d1, double d2) {
@@ -384,9 +385,9 @@ final class Distributions {
         if (x == 0) {
             return out("f_dist", d1 == 2 ? 1 : d1 < 2 ? infinite("f_dist") : 0);
         }
-        double ln = 0.5 * (d1 * Math.log(d1 * x) + d2 * Math.log(d2) - (d1 + d2) * Math.log(d1 * x + d2)) - Math.log(x)
+        double ln = 0.5 * (d1 * CoreMath.log(d1 * x) + d2 * CoreMath.log(d2) - (d1 + d2) * CoreMath.log(d1 * x + d2)) - CoreMath.log(x)
                 - (SpecialFunctions.lnGamma(d1 / 2) + SpecialFunctions.lnGamma(d2 / 2) - SpecialFunctions.lnGamma((d1 + d2) / 2));
-        return out("f_dist", Math.exp(ln));
+        return out("f_dist", CoreMath.exp(ln));
     }
 
     /** A count at i: cut to a whole number, not negative. */
@@ -421,7 +422,7 @@ final class Distributions {
         if (p == 1) {
             return k == n ? 1 : 0;
         }
-        return Math.exp(SpecialFunctions.lnChoose(n, k) + k * Math.log(p) + (n - k) * Math.log1p(-p));
+        return CoreMath.exp(SpecialFunctions.lnChoose(n, k) + k * CoreMath.log(p) + (n - k) * CoreMath.log1p(-p));
     }
 
     /** {@code binom_dist(k, n, p, [cumulative])}: Excel's BINOM.DIST. */
@@ -451,7 +452,7 @@ final class Distributions {
         closed("binom_inv", "the probability", p);
         closed("binom_inv", "alpha", alpha);
         long lo = 0;
-        long hi = (long) (double) n;
+        long hi = CoreMath.toLong((double) n);
         while (lo < hi) {
             long mid = lo + (hi - lo) / 2;
             if (binomCdf(mid, n, p) >= alpha) {
@@ -476,7 +477,7 @@ final class Distributions {
             return out("poisson_dist", cum || k == 0 ? 1 : 0);
         }
         return out("poisson_dist", cum ? SpecialFunctions.gammaQ(k + 1, m)
-                : Math.exp(k * Math.log(m) - m - SpecialFunctions.lnFactorial(k)));
+                : CoreMath.exp(k * CoreMath.log(m) - m - SpecialFunctions.lnFactorial(k)));
     }
 
     /** {@code gamma_dist(x, alpha, beta, [cumulative])}: Excel's GAMMA.DIST, beta the scale. */
@@ -497,7 +498,7 @@ final class Distributions {
         if (x == 0) {
             return out("gamma_dist", al == 1 ? 1 / be : al < 1 ? infinite("gamma_dist") : 0);
         }
-        return out("gamma_dist", Math.exp((al - 1) * Math.log(x) - x / be - al * Math.log(be) - SpecialFunctions.lnGamma(al)));
+        return out("gamma_dist", CoreMath.exp((al - 1) * CoreMath.log(x) - x / be - al * CoreMath.log(be) - SpecialFunctions.lnGamma(al)));
     }
 
     /** {@code beta_dist(x, alpha, beta, [cumulative], [A], [B])}: Excel's BETA.DIST on the interval A to B (0 to 1 by default). */
@@ -521,9 +522,9 @@ final class Distributions {
         if (cum) {
             return out("beta_dist", SpecialFunctions.betaI(al, be, u));
         }
-        double ln = (al - 1) * Math.log(u) + (be - 1) * Math.log1p(-u) - (SpecialFunctions.lnGamma(al) + SpecialFunctions.lnGamma(be)
+        double ln = (al - 1) * CoreMath.log(u) + (be - 1) * CoreMath.log1p(-u) - (SpecialFunctions.lnGamma(al) + SpecialFunctions.lnGamma(be)
                 - SpecialFunctions.lnGamma(al + be));
-        return out("beta_dist", Math.exp(ln) / (hi - lo));
+        return out("beta_dist", CoreMath.exp(ln) / (hi - lo));
     }
 
     /** {@code beta_inv(p, alpha, beta, [A], [B])}: Excel's BETA.INV. */
@@ -563,7 +564,7 @@ final class Distributions {
         double from = cum ? Math.max(0, n - (pop - big)) : k;
         double sum = 0;
         for (double i = from; i <= k; i++) {
-            sum += Math.exp(SpecialFunctions.lnChoose(big, i) + SpecialFunctions.lnChoose(pop - big, n - i) - denom);
+            sum += CoreMath.exp(SpecialFunctions.lnChoose(big, i) + SpecialFunctions.lnChoose(pop - big, n - i) - denom);
         }
         return out("hypgeom_dist", Math.min(1, sum));
     }
@@ -586,7 +587,7 @@ final class Distributions {
         if (cum) {
             return out("negbinom_dist", SpecialFunctions.betaI(s, f + 1, p));
         }
-        return out("negbinom_dist", Math.exp(SpecialFunctions.lnChoose(f + s - 1, s - 1) + s * Math.log(p) + f * Math.log1p(-p)));
+        return out("negbinom_dist", CoreMath.exp(SpecialFunctions.lnChoose(f + s - 1, s - 1) + s * CoreMath.log(p) + f * CoreMath.log1p(-p)));
     }
 
     /**

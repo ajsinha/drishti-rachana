@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreMath;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -48,15 +49,15 @@ final class RootFinder {
         if (newton != null) {
             return newton;
         }
-        double lnLo = Math.log(1e-4);                 // 1 + r from 0.0001 (r = −0.9999) …
-        double lnHi = Math.log(1 + MAX_RATE);         // … to 1 + MAX_RATE
+        double lnLo = CoreMath.log(1e-4);                 // 1 + r from 0.0001 (r = −0.9999) …
+        double lnHi = CoreMath.log(1 + MAX_RATE);         // … to 1 + MAX_RATE
         double best = Double.NaN;
         double bestLo = 0;
         double bestHi = 0;
-        double prevR = Math.exp(lnLo) - 1;
+        double prevR = CoreMath.exp(lnLo) - 1;
         double prevF = f.applyAsDouble(prevR);
         for (int i = 1; i <= GRID; i++) {
-            double r = Math.exp(lnLo + (lnHi - lnLo) * i / GRID) - 1;
+            double r = CoreMath.exp(lnLo + (lnHi - lnLo) * i / GRID) - 1;
             double fr = f.applyAsDouble(r);
             if (Double.isFinite(prevF) && Double.isFinite(fr) && (prevF == 0 || Math.signum(prevF) != Math.signum(fr))) {
                 double distance = Math.abs((prevR + r) / 2 - guess);
@@ -70,7 +71,7 @@ final class RootFinder {
             prevF = fr;
         }
         if (Double.isNaN(best)) {
-            throw Args.error(fn, "no rate from −99.99 % to " + (long) (MAX_RATE * 100) + " % makes the value 0");
+            throw Args.error(fn, "no rate from −99.99 % to " + CoreMath.toLong(MAX_RATE * 100) + " % makes the value 0");
         }
         return bisect(f, bestLo, bestHi);
     }

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -95,7 +96,7 @@ final class FinanceFunctions {
             }
             double k = periodsPerYear("effect", m);
             Distributions.positive("effect", "the nominal rate", n);
-            return out("effect", Math.expm1(k * Math.log1p(n / k)));
+            return out("effect", CoreMath.expm1(k * CoreMath.log1p(n / k)));
         });
         fn(t, "nominal", 2, 2, (a, c) -> {
             Double e = Distributions.num("nominal", a, 0);
@@ -105,7 +106,7 @@ final class FinanceFunctions {
             }
             double k = periodsPerYear("nominal", m);
             Distributions.positive("nominal", "the effective rate", e);
-            return out("nominal", k * Math.expm1(Math.log1p(e) / k));
+            return out("nominal", k * CoreMath.expm1(CoreMath.log1p(e) / k));
         });
         fn(t, "fvschedule", 2, 2, (a, c) -> {
             Double p = Distributions.num("fvschedule", a, 0);
@@ -130,7 +131,7 @@ final class FinanceFunctions {
             if (pv == 0 || fv / pv < 0) {
                 throw Args.error("rri", "the present and future values are not both of one sign, and not 0");
             }
-            return out("rri", Math.pow(fv / pv, 1 / n) - 1);
+            return out("rri", CoreMath.pow(fv / pv, 1 / n) - 1);
         });
         fn(t, "pduration", 3, 3, (a, c) -> {
             Double r = Distributions.num("pduration", a, 0);
@@ -142,7 +143,7 @@ final class FinanceFunctions {
             Distributions.positive("pduration", "the rate", r);
             Distributions.positive("pduration", "the present value", pv);
             Distributions.positive("pduration", "the future value", fv);
-            return out("pduration", (Math.log(fv) - Math.log(pv)) / Math.log1p(r));
+            return out("pduration", (CoreMath.log(fv) - CoreMath.log(pv)) / CoreMath.log1p(r));
         });
         fn(t, "accrued", 3, 5, (a, c) -> accrued(a));
         fn(t, "dollarde", 2, 2, (a, c) -> dollar("dollarde", a, true));
@@ -243,7 +244,7 @@ final class FinanceFunctions {
         double v = 0;
         double c = 0;
         for (int i = 0; i < f.length; i++) {
-            double y = f[i] / Math.pow(1 + r, i + first) - c;      // Kahan's compensated sum
+            double y = f[i] / CoreMath.pow(1 + r, i + first) - c;      // Kahan's compensated sum
             double s = v + y;
             c = (s - v) - y;
             v = s;
@@ -254,7 +255,7 @@ final class FinanceFunctions {
     static double xnpv(double r, double[] f, double[] years) {
         double v = 0;
         for (int i = 0; i < f.length; i++) {
-            v += f[i] / Math.pow(1 + r, years[i]);
+            v += f[i] / CoreMath.pow(1 + r, years[i]);
         }
         return v;
     }
@@ -275,12 +276,12 @@ final class FinanceFunctions {
         double fvPos = 0;
         for (int i = 0; i < n; i++) {
             if (f[i] < 0) {
-                pvNeg += f[i] / Math.pow(1 + fr, i);
+                pvNeg += f[i] / CoreMath.pow(1 + fr, i);
             } else {
-                fvPos += f[i] * Math.pow(1 + rr, n - 1 - i);
+                fvPos += f[i] * CoreMath.pow(1 + rr, n - 1 - i);
             }
         }
-        return out("mirr", Math.pow(-fvPos / pvNeg, 1.0 / (n - 1)) - 1);
+        return out("mirr", CoreMath.pow(-fvPos / pvNeg, 1.0 / (n - 1)) - 1);
     }
 
     /** The annuity's type: 0 (payments at the end of each period, the default) or 1 (at the start). */
@@ -301,21 +302,21 @@ final class FinanceFunctions {
 
     /** (1 + r)^n − 1 over r, accurate near r = 0. */
     private static double annuityFactor(double r, double n) {
-        return r == 0 ? n : Math.expm1(n * Math.log1p(r)) / r;
+        return r == 0 ? n : CoreMath.expm1(n * CoreMath.log1p(r)) / r;
     }
 
     static double fv(double r, double n, double pmt, double pv, int type) {
         if (r == 0) {
             return -(pv + pmt * n);
         }
-        return -(pv * Math.pow(1 + r, n) + pmt * (1 + r * type) * annuityFactor(r, n));
+        return -(pv * CoreMath.pow(1 + r, n) + pmt * (1 + r * type) * annuityFactor(r, n));
     }
 
     static double pmt(double r, double n, double pv, double fv, int type) {
         if (r == 0) {
             return -(pv + fv) / n;
         }
-        return -(pv * Math.pow(1 + r, n) + fv) / ((1 + r * type) * annuityFactor(r, n));
+        return -(pv * CoreMath.pow(1 + r, n) + fv) / ((1 + r * type) * annuityFactor(r, n));
     }
 
     /** {@code pv}, {@code fv}, {@code pmt}, {@code nper}: Excel's, from the rate per period and three of the annuity's figures. */
@@ -331,7 +332,7 @@ final class FinanceFunctions {
         rateAbove(fn, r);
         return switch (fn) {
             case "pv" -> {                                          // pv(rate, nper, pmt, [fv], [type])
-                yield out(fn, r == 0 ? -(y * x + z) : -(y * (1 + r * type) * annuityFactor(r, x) + z) / Math.pow(1 + r, x));
+                yield out(fn, r == 0 ? -(y * x + z) : -(y * (1 + r * type) * annuityFactor(r, x) + z) / CoreMath.pow(1 + r, x));
             }
             case "fv" -> out(fn, fv(r, x, y, z, type));               // fv(rate, nper, pmt, [pv], [type])
             case "pmt" -> {                                         // pmt(rate, nper, pv, [fv], [type])
@@ -352,7 +353,7 @@ final class FinanceFunctions {
                 if (!(ratio > 0)) {
                     throw Args.error(fn, "no number of periods reaches the future value with these payments");
                 }
-                yield out(fn, Math.log(ratio) / Math.log1p(r));
+                yield out(fn, CoreMath.log(ratio) / CoreMath.log1p(r));
             }
         };
     }
@@ -471,7 +472,7 @@ final class FinanceFunctions {
         }
         BigDecimal whole = x.setScale(0, RoundingMode.DOWN);
         BigDecimal rest = x.subtract(whole);
-        BigDecimal scale = BigDecimal.TEN.pow((int) Math.ceil(Math.log10(f)));
+        BigDecimal scale = BigDecimal.TEN.pow(CoreMath.toInt(Math.ceil(CoreMath.log10(f))));
         BigDecimal fraction = BigDecimal.valueOf(f);
         BigDecimal part = toDecimal ? rest.multiply(scale).divide(fraction, MathContext.DECIMAL128)
                 : rest.multiply(fraction).divide(scale, MathContext.DECIMAL128);
@@ -510,7 +511,7 @@ final class FinanceFunctions {
         double pt = 0;
         double ptt = 0;
         for (int i = 0; i < f.length; i++) {
-            double df = m == 0 ? Math.exp(-y * t[i]) : Math.pow(1 + y / m, -m * t[i]);
+            double df = m == 0 ? CoreMath.exp(-y * t[i]) : CoreMath.pow(1 + y / m, -m * t[i]);
             p += f[i] * df;
             pt += f[i] * df * t[i];
             ptt += f[i] * df * (m == 0 ? t[i] * t[i] : t[i] * (t[i] + 1 / m));

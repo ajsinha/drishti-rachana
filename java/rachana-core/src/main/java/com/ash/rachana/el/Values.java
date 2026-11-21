@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
 
 /**
@@ -101,7 +102,7 @@ public final class Values {
         if (s == null) {
             return "";
         }
-        if (s instanceof Double d && d == Math.rint(d) && Math.abs(d) < 1e15) {
+        if (s instanceof Double d && d == CoreMath.rint(d) && Math.abs(d) < 1e15) {
             return Long.toString(d.longValue());
         }
         if (s instanceof java.math.BigDecimal b) {
@@ -138,7 +139,7 @@ public final class Values {
 
     /** Numeric results that are whole become {@code Long}, so {@code 1 + 1} prints {@code 2}. */
     public static Number normalise(double d) {
-        return d == Math.rint(d) && Math.abs(d) < 1e15 && !Double.isInfinite(d) ? (Number) (long) d : (Number) d;
+        return d == CoreMath.rint(d) && Math.abs(d) < 1e15 && !Double.isInfinite(d) ? (Number) CoreMath.toLong(d) : (Number) d;
     }
 
     public static boolean equal(Object a, Object b) {

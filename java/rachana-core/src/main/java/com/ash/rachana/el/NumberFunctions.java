@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreMath;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -63,7 +64,7 @@ final class NumberFunctions {
             if (x == 0 && y == 0) {
                 throw Args.error("atan2", "the point (0, 0) has no angle");
             }
-            return Args.out("atan2", Math.atan2(y, x));                    // Excel's order: x first
+            return Args.out("atan2", CoreMath.atan2(y, x));                    // Excel's order: x first
         });
         t.fn("base", 2, 3, (a, c) -> base(a));
         t.fn("decimal", 2, 2, (a, c) -> decimal(a));
@@ -108,7 +109,7 @@ final class NumberFunctions {
         if (b.signum() <= 0 || b.compareTo(BigDecimal.ONE) == 0) {
             throw Args.error("log", "the base " + Args.describe(a.size() > 1 ? a.get(1) : 10) + " is not above zero and other than 1");
         }
-        double r = b.compareTo(BigDecimal.TEN) == 0 ? Math.log10(x.doubleValue()) : Math.log(x.doubleValue()) / Math.log(b.doubleValue());
+        double r = b.compareTo(BigDecimal.TEN) == 0 ? CoreMath.log10(x.doubleValue()) : CoreMath.log(x.doubleValue()) / CoreMath.log(b.doubleValue());
         return Args.out("log", r);
     }
 

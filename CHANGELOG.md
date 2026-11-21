@@ -7,6 +7,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 
+- **L3 to L6, the engine** (new JVM module `rachana-live`, never in Core or the bundles: `LiveModuleGuardTest`): `LiveTables` is a
+  Data Protocol provider over `SnapshotSource` (whole, columns, query tiers) and `LiveStream`; merge by key and record version
+  (`KeyedRows.versionOrder`), new epoch on a gap, paused streams, retention, `PollingDiff`; `StoreOverlay` pages columns-tier sources
+  through kept indexes merged with the live side; `narrow` and heavy columns; `Subscription` gains key windows (`top`, `total`,
+  coalescing, capacity gap), redaction and a lookup-based offer, and the bridge `win`; `Authoriser`/`ReaderView`/`AuditSink` keep every
+  page, total and patch to the reader (fail closed). `LiveTablesTest` ports the liveset scenarios (merge, snapshot race, burst, paged
+  window, newest-first top, retention, merged pages, two audiences).
 - **L1, the declaration** (`rachana-core`): `LiveTableSpec` reads and checks `<name>.live.yaml` (`rachana: 1`, `live-table:`, snapshot,
   stream, `where` pushed down as a filter tree, key, version, `changed-by`, `changed-at`, columns with `width`, `fmt`, `heavy`, order,
   grouping, subtotals, `narrow`, `retention`, `tray`, `edit:` as a Core form with `reason`), every problem at once in position order;

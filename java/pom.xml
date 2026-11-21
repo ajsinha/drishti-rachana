@@ -16,6 +16,7 @@
     <module>rachana-core</module>
     <module>rachana-tools</module>
     <module>rachana-data</module>
+    <module>rachana-live</module>
     <module>rachana-cli</module>
     <module>rachana-conformance</module>
     <module>rachana-conformance-cases</module>

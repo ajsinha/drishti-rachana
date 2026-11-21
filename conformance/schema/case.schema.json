@@ -244,7 +244,7 @@
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,79}$" },
         "kind": {
-          "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol"]
+          "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol", "lib"]
         },
         "since": { "$ref": "#/$defs/minor" },
         "profile": { "$ref": "#/$defs/profile" },
@@ -264,7 +264,8 @@
         { "if": { "properties": { "kind": { "const": "patch" } } }, "then": { "$ref": "#/$defs/patchCase" } },
         { "if": { "properties": { "kind": { "const": "plan" } } }, "then": { "$ref": "#/$defs/planCase" } },
         { "if": { "properties": { "kind": { "const": "edit" } } }, "then": { "$ref": "#/$defs/editCase" } },
-        { "if": { "properties": { "kind": { "const": "protocol" } } }, "then": { "$ref": "#/$defs/protocolCase" } }
+        { "if": { "properties": { "kind": { "const": "protocol" } } }, "then": { "$ref": "#/$defs/protocolCase" } },
+        { "if": { "properties": { "kind": { "const": "lib" } } }, "then": { "$ref": "#/$defs/libCase" } }
       ],
       "unevaluatedProperties": false
     },
@@ -383,6 +384,25 @@
         }
       }
     },
+    "libCase": {
+      "description": "FORMAT 5.13: one library folder read and checked.",
+      "required": ["library", "files", "expect"],
+      "properties": {
+        "library": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,31}$" },
+        "files": { "type": "object", "additionalProperties": { "type": "string" } },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "ok": { "type": "boolean" },
+            "problems": { "type": "array", "items": { "$ref": "#/$defs/problem" } },
+            "version": { "type": ["string", "null"] },
+            "sha384": { "type": ["string", "null"], "pattern": "^[0-9a-f]{96}$" },
+            "fragments": { "type": ["array", "null"], "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+
     "problemCase": {
       "description": "FORMAT 5.8.",
       "required": ["expect"],

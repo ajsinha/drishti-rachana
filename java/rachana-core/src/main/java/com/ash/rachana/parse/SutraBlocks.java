@@ -173,7 +173,12 @@ public final class SutraBlocks {
         if (ps != null) {
             ps.map().forEach((k, v) -> params.put(k, flow(v).replace("pXq{", "%{")));
         }
-        if (fragment) {                                                // a fragment of the library carries a complete doc: (strict)
+        if (fragment && TypedFragment.isTyped(root)) {                 // the typed form (C1, level 1.2): its declarations are its doc
+            List<SutraProblem> typed = new ArrayList<>(TypedFragment.read(name, file, root).problems());
+            if (!typed.isEmpty()) {
+                throw new SutraException(typed);
+            }
+        } else if (fragment) {                                         // a fragment of the library carries a complete doc: (strict)
             List<SutraProblem> doc = new ArrayList<>(SutraDocstring.checkFragment(root, name, params, file));
             doc.addAll(SutraDocstring.checkUses(root, name, inner, file));
             if (!doc.isEmpty()) {
@@ -263,13 +268,32 @@ public final class SutraBlocks {
      * go to {@code problems}. A list without a use comes back as it is.
      */
     public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments) {
-        return expand(panels, file, problems, new ArrayList<>(), fragments);
+        return expand(panels, file, problems, new ArrayList<>(), fragments, null);
+    }
+
+    /**
+     * As {@link #expand(List, String, List, FragmentResolver)} for a Sutra read at a language level: a use of a typed fragment below
+     * level {@value TypedFragment#SINCE} is {@code RCH-2008}. A null level checks no level (the design tools' view of a written list).
+     */
+    public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments, String level) {
+        return expand(panels, file, problems, new ArrayList<>(), fragments, level);
+    }
+
+    /** Whether language level {@code level} is at least {@code since} ({@code 1.10} after {@code 1.9}); a null level is any level. */
+    public static boolean atLeast(String level, String since) {
+        if (level == null) {
+            return true;
+        }
+        String[] a = level.split("\\."), b = since.split("\\.");
+        int major = Integer.parseInt(a[0]) - Integer.parseInt(b[0]);
+        return major != 0 ? major > 0 : Integer.parseInt(a[1]) >= Integer.parseInt(b[1]);
     }
 
     /** The deepest a use may nest: a Sutra's use of a composite fragment that uses fragments that use fragments. */
     public static final int MAX_DEPTH = 3;
 
-    private static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, List<String> chain, FragmentResolver fragments) {
+    private static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, List<String> chain, FragmentResolver fragments,
+            String level) {
         if (panels.stream().noneMatch(p -> p.map().containsKey("use"))) {
             return panels;
         }
@@ -293,6 +317,30 @@ public final class SutraBlocks {
             if (b == null) {
                 problems.add(problem("no block " + ref + (fragments.names().isEmpty() ? " (no block files are loaded)" : " (blocks: "
                         + String.join(", ", fragments.names()) + ")"), file, p.line(), p.column()));
+                continue;
+            }
+            PNode typedRoot = typedRoot(b);
+            if (typedRoot != null) {                                   // the typed form: checked parameters, tokens, slots (C1)
+                if (!atLeast(level, TypedFragment.SINCE)) {
+                    problems.add(new SutraProblem("RCH-2008", "fragment " + b.ref() + " is in the typed form, which needs Rachana " + TypedFragment.SINCE
+                            + "; this host runs " + level + " (raise the host's language level)", new SourceLocation(file, p.line(), p.column())));
+                    continue;
+                }
+                TypedFragment t = TypedFragment.read(b.name(), b.file(), typedRoot);
+                if (!t.problems().isEmpty()) {
+                    problems.addAll(t.problems());
+                    continue;
+                }
+                List<PNode> brought = t.expand(p, file, problems);
+                if (brought == null) {
+                    continue;
+                }
+                List<String> deeper = new ArrayList<>(chain);
+                deeper.add(b.name());
+                Map<String, PNode> wiring = new LinkedHashMap<>(p.map());
+                wiring.remove("slots");
+                out.addAll(wired(new PNode(wiring, p.line(), p.column()), expand(phoned(brought, typedRoot), b.file(), problems, deeper, fragments, level),
+                        file, problems));
                 continue;
             }
             Map<String, String> values = new LinkedHashMap<>(b.params());
@@ -330,12 +378,25 @@ public final class SutraBlocks {
                 List<PNode> brought = phoned(root.map().get("panels").list(), root);
                 List<String> deeper = new ArrayList<>(chain);
                 deeper.add(b.name());
-                out.addAll(wired(p, expand(brought, b.file(), problems, deeper, fragments), file, problems));   // a composite's own uses, one level down
+                out.addAll(wired(p, expand(brought, b.file(), problems, deeper, fragments, level), file, problems));   // a composite's own uses, one level down
             } catch (SutraException e) {
                 problems.addAll(e.problems());
             }
         }
         return out;
+    }
+
+    /** A fragment's root read with {@code %{} masked when it is in the typed form; null for the text form or a file that does not read. */
+    private static PNode typedRoot(Block b) {
+        if (!b.fragment() || !b.text().contains("type")) {
+            return null;
+        }
+        try {
+            PNode root = parse(b.text().replace("%{", "pXq{"), b.file());
+            return TypedFragment.isTyped(root) ? root : null;
+        } catch (SutraException e) {
+            return null;
+        }
     }
 
     /**

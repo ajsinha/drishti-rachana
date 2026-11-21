@@ -33,12 +33,19 @@ public final class Grammar {
     public static final String LEVEL_1_0 = "1.0";
 
     /** The language levels this runtime implements, oldest first. */
-    public static final List<String> LEVELS = List.of("1.0", "1.1");
+    public static final List<String> LEVELS = List.of("1.0", "1.1", "1.2");
+
+    /**
+     * Core keys a later language level brings, with that level: below it they are not offered and using one is {@code RCH-2008}.
+     * {@code libraries} (level 1.2): the libraries a Sutra uses, each with its major ({@code libraries: [finance@1]}, LIBRARIES.md 7.1).
+     */
+    public static final Map<String, String> LATER_KEYS = Map.of("libraries", "1.2");
 
     /** The source forms a profile may bring: {@code kind} ({@code source: { kind, id | where | search, pack, params }}). */
     public static final Set<String> SOURCE_FORMS = Set.of("kind");
 
-    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.none(), LEVEL_1_0);
+    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.none(), LEVEL_1_0,
+            com.ash.rachana.lib.LibrarySet.none());
 
     private final Map<String, SutraKey> keys;
     private final Set<PanelKind> profileKinds;
@@ -46,10 +53,12 @@ public final class Grammar {
     private final boolean formSave;
     private final FragmentResolver fragments;
     private final String level;
+    private final com.ash.rachana.lib.LibrarySet libraries;
 
     private Grammar(Map<String, SutraKey> keys, Set<PanelKind> profileKinds, Set<String> sourceForms, boolean formSave, FragmentResolver fragments,
-            String level) {
+            String level, com.ash.rachana.lib.LibrarySet libraries) {
         this.level = level;
+        this.libraries = libraries;
         this.keys = Collections.unmodifiableMap(new LinkedHashMap<>(keys));
         this.profileKinds = profileKinds.isEmpty() ? Set.of() : Collections.unmodifiableSet(EnumSet.copyOf(profileKinds));
         this.sourceForms = Set.copyOf(sourceForms);
@@ -77,7 +86,7 @@ public final class Grammar {
         String fragmentsFrom = null;
         for (Profile p : profiles) {
             for (SutraKey k : p.keys()) {
-                if (CORE_KEYS.contains(k.name())) {
+                if (CORE_KEYS.contains(k.name()) || LATER_KEYS.containsKey(k.name())) {
                     throw new IllegalArgumentException("the profile '" + p.name() + "' cannot add the key '" + k.name() + "': Core reads it");
                 }
                 if (keys.putIfAbsent(k.name(), k) != null) {
@@ -98,7 +107,8 @@ public final class Grammar {
         if (keys.isEmpty() && kinds.isEmpty() && forms.isEmpty() && !save && fragments == null) {
             return CORE;
         }
-        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.none() : fragments, LEVEL_1_0);
+        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.none() : fragments, LEVEL_1_0,
+                com.ash.rachana.lib.LibrarySet.none());
     }
 
     /**
@@ -111,7 +121,30 @@ public final class Grammar {
         if (!LEVELS.contains(next)) {
             throw new IllegalArgumentException("language level '" + next + "' is not one of " + String.join(", ", LEVELS));
         }
-        return next.equals(level) ? this : new Grammar(keys, profileKinds, sourceForms, formSave, fragments, next);
+        return next.equals(level) ? this : new Grammar(keys, profileKinds, sourceForms, formSave, fragments, next, libraries);
+    }
+
+    /** This grammar with another fragment resolver in place of its profile's (a test, a tool reading a folder of fragments). */
+    public Grammar withFragments(FragmentResolver resolver) {
+        return new Grammar(keys, profileKinds, sourceForms, formSave, resolver == null ? FragmentResolver.none() : resolver, level, libraries);
+    }
+
+    /**
+     * This grammar with the libraries a host offers (LIBRARIES.md 10): where {@code libraries: [name@N]} and {@code use: name/fragment@N}
+     * find their library, the lock that pins it and the signatures it trusts. Read from level 1.2.
+     */
+    public Grammar withLibraries(com.ash.rachana.lib.LibrarySet set) {
+        return new Grammar(keys, profileKinds, sourceForms, formSave, fragments, level, set == null ? com.ash.rachana.lib.LibrarySet.none() : set);
+    }
+
+    /** The libraries it reads from ({@link com.ash.rachana.lib.LibrarySet#none()} unless a host gives some). */
+    public com.ash.rachana.lib.LibrarySet libraries() {
+        return libraries;
+    }
+
+    /** The level a later Core key needs, or null for a key of every level (or none). */
+    public static String keySince(String name) {
+        return LATER_KEYS.get(name);
     }
 
     /** The language level this grammar reads ({@code 1.0} unless raised). */
@@ -131,7 +164,8 @@ public final class Grammar {
 
     /** Whether a Sutra may write this top-level key (Core's or a profile's). */
     public boolean hasKey(String name) {
-        return CORE_KEYS.contains(name) || keys.containsKey(name);
+        return CORE_KEYS.contains(name) || keys.containsKey(name)
+                || LATER_KEYS.containsKey(name) && com.ash.rachana.parse.SutraBlocks.atLeast(level, LATER_KEYS.get(name));
     }
 
     /** Whether a panel may be of this kind: every Core kind, and a profile's kind when a profile brings it. */

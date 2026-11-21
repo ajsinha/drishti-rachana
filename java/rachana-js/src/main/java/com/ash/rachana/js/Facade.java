@@ -65,6 +65,10 @@ final class Facade {
         return Cases.run(Cases::problem, json);
     }
 
+    static String library(String json) {
+        return Cases.run(Cases::lib, json);
+    }
+
     static String view(String json) {
         return Cases.run(Cases::sutra, json);
     }

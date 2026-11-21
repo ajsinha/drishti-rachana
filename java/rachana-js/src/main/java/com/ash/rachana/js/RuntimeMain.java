@@ -52,4 +52,9 @@ public final class RuntimeMain {
     public static String view(String request) {
         return Facade.view(request);
     }
+
+    @JSExport
+    public static String library(String request) {
+        return Facade.library(request);
+    }
 }

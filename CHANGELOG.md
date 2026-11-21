@@ -3,6 +3,35 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased (G2)
+
+### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
+
+- **Typed fragments** (SPEC 2.5, LIBRARIES 4): `TypedFragment`; a fragment whose `params:` are declarations with a `type` is
+  checked at each use: value parameters (an expression in the user's context, read as `arg.<name>`; literals checked against
+  the type and `min`/`max`; `text` taken as written), table parameters (`columns`, `optional`, `when-bound`), name parameters
+  as checked tokens (`%{name}` only for those; `id`, `format`, `tone`, `icon`, `variant`, `area`, `palette`, `key`, `enum`,
+  `columns`), `slots` of panels. Problems `RCH-2114`..`2118`; a typed use below level 1.2 is `RCH-2008`. The text form is
+  untouched: every Drishti fragment expands to the same bytes (CG3, 478 Sutras, byte-identical; level-1.0 replay identical).
+- **Libraries** (SPEC 2.5, LIBRARIES 3, 7, 9 to 12; package `com.ash.rachana.lib`): the top-level key `libraries:` (level 1.2;
+  `RCH-2008` below), `use: <library>/<fragment>@N` and the long form `<library>@M/<fragment>@N`; `LibraryResolver` (memory,
+  folder `rachana_libs/<name>/`, a folder of `.rlib` files, `first` of several, a conflict refused) and `LibrarySet` (resolver +
+  `rachana.lock` + trust; libraries cached by content hash; dependencies loaded, cycles and depth 4 checked); the
+  `FragmentResolver` hook keeps its signature, served through an adapter (`LibrarySet.fragments`). `Library.load` checks the
+  file-type rule, the manifest, `MANIFEST.sha384`, `exports` staleness, the uses inside a library and the scope of a public
+  library's typed fragments (`RCH-2117`). `LibraryLock` reads and writes the lock. `Rlib`: the deterministic `.rlib`
+  (sorted, stored, fixed time) and `Sha384` in plain Java, so the JVM and the JavaScript build compute one identity.
+  `Grammar.withFragments`, `Grammar.withLibraries`, `Rachana.libraries`. Codes `RCH-2110`..`2113`.
+- **Tools** (`rachana-tools`): `LibraryTool` (`build`: exports and hashes; `sign`; `pack`; `verify`; `lockEntry`) and `Ed25519`
+  (the JDK's Ed25519; a `SignatureVerifier` for JVM hosts; keys are plain `ed25519:<hex>`). `LibraryToolTest`.
+- **Conformance**: the new kind `lib` (FORMAT 5.13, schema); `files` now read by the runtimes for `sutra` and `problem` cases
+  (fragment files, `rachana_libs/`, `rachana.lock`); `sutra/fragments-typed` (5), `problem/fragments-typed` (18),
+  `lib/libraries` (7), all verified on the JVM; the JVM and both JavaScript bundles answer every case byte-identically at
+  1.0, 1.1 and 1.2 (`build_js.py` now checks level 1.2; runtime 383,760 B, tools 404,588 B Brotli, within the budgets).
+- API baseline: additions only. Not yet: `as:`, `emits`/`on:`, private state, `let`, outputs, `fn` parameters, column mapping
+  `{from, columns}`, library functions (X41), the classpath and package resolvers, the `rachana lib` commands of the CLI, the
+  generated `rachana.lang.json`/`sutra.schema.json` at level 1.2.
+
 ## v0.11.0 (2026-11-21): the JavaScript build, ViewModel contract 1.1 and the G1 gate
 
 ### ViewModel contract 1.1 and language level 1.1 (datasets; grid, tree, chart)

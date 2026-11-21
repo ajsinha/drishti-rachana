@@ -79,6 +79,7 @@ panels:
 | `controls` | | list (≤ 12) | `[]` | what the reader sets; read as `ctl.<id>` | today |
 | `data` | | mapping name → source | `{}` | the screen's tables and records, each a field of `$` (2.4) | planned (D10) |
 | `panels` | | list of panels and `{use: …}` entries | `[]` | the body | today |
+| `libraries` | | list of `name@major` | `[]` | the libraries whose fragments the Sutra uses (2.5, LIBRARIES 7.1); the exact version comes from the host's lock | since 1.2 |
 | `layout` | | mapping | panels flow | 12-column grid: `areas`, `columns`, `split`, `tabs`, `sections`, `sticky`, `arrange`, `phone`, `tablet` | today |
 | `phone` | | mapping | | phone order, default tier, summary | today |
 | `keys` | | mapping `F1`..`F12` → action | `{}` | function keys (TRANSLATION 2.5) | today |
@@ -197,6 +198,37 @@ function, REST paging or a topic: a host exposes those as named tables.
   `form.save` (targets, connectors, approvals) and `editable-by` are the `drishti` profile's (`RCH-2058` for Core shape).
 - **Fragments** [today]: a `panels` entry `{use: name@version, with?}` is replaced by the fragment's panels before
   checking; where fragments come from is the host's `FragmentResolver` (`RCH-2048` when not found).
+- **Typed fragments** [since 1.2, C1; design [LIBRARIES](../../docs/design/LIBRARIES.md) 4]: a fragment whose every
+  `params:` entry is a mapping with a `type`. The file keeps the header `fragment:`; a file is wholly in the text form
+  (`%{param}` substituted as text, unchanged) or wholly typed (a mixture is `RCH-2048`). Parameters are of three classes:
+  **value** (`text`, `number`, `integer`, `decimal`, `boolean`, `date`, `datetime`, `duration`, `money`, `list<T>`,
+  `record{…}`, `T?`): written at the use as an expression in the user's context, read inside as `arg.<name>`; a YAML
+  number or `true`/`false` at the use is a literal checked against the type, `min` and `max`; a `text` parameter takes its
+  text as written; `arg.x` as a whole value becomes the expression or literal itself, inside a longer expression or
+  template the expression in parentheses or the literal as EL text. **table** (`type: table`, `columns:`, `optional`):
+  an expression giving rows; a panel with `when-bound: <param>` is left out when an optional table is not given.
+  **name** (`id`, `format`, `tone`, `icon`, `variant`, `area`, `palette`, `key`, `enum` with `options`, `columns`):
+  fixed at compile time and put in as a checked token where the fragment writes `%{name}` (only name parameters may be
+  written so). Each parameter says `required: true`, a literal `default`, or `optional: true`, and has a one-line `doc`
+  (`RCH-2055`); `doc.summary` is required (≤ 120 characters). `slots: {name: {accepts: panels, max, doc}}` are filled at
+  the use by `slots: {name: [panels]}` and placed by `{slot: name}` in the fragment. At a use: unknown parameter or slot
+  `RCH-2114`, required parameter missing `RCH-2115`, wrong type or constraint `RCH-2116`, slot content over `max`
+  `RCH-2118`. Below level 1.2 a use of a typed fragment is `RCH-2008`. Not yet at this level: `as:`, `emits`/`on:`,
+  private `state`, `let`, `outputs`, overlays, `fn` parameters, table column mapping `{from, columns}` (they arrive with
+  S1, S2, I1, L2, X13 and the plan rename).
+- **Libraries** [since 1.2, X42; LIBRARIES 3, 7, 9 to 12]: `libraries: [demo@1]` names each library and its major;
+  `use: demo/figure@1` uses a library's fragment (the major is required); `use: demo@1/figure@1` (the long form) is
+  accepted without a `libraries:` key. Unqualified names and `<pack>/<name>@N` of the host's resolver keep their meaning.
+  The host's `LibraryResolver` finds a library (memory, a folder `rachana_libs/<name>/`, a folder of `.rlib` files;
+  never the network); its `rachana.lock` pins the exact version and the SHA-384 of the library's canonical archive.
+  A library is a folder of data files with a manifest `<name>.rachana-lib.yaml` (`rachana: 1`, `library`, `version`
+  semver, `summary`, `licence`, `scope: public|private`, `profiles`, `depends`, generated `exports`) and
+  `MANIFEST.sha384` (a SHA-384 per file); an optional `SIGNATURE` holds Ed25519 signatures of `MANIFEST.sha384`. Inside
+  a library every use is `<library>/<fragment>@N` of itself or a declared dependency; a typed fragment of a public
+  library reads only its parameters (`RCH-2117` for `$`, `ctl.`, `state.`, `sel.`, `source:`, `data:`, `url:`). Codes:
+  `RCH-2110` not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity (hashes, lock,
+  signature). The `.rlib` archive is a ZIP written deterministically (sorted entries, stored, fixed time, no extras), so
+  a folder and its archive have one identity.
 
 ### 2.6 Formats and tones
 
@@ -753,6 +785,7 @@ Core keeps the reference's numbers with the prefix `RCH-` (decision D8; Drishti 
 | `RCH-2060`..`2069` | profiles | `2060` key, kind or function of a profile not loaded, `2061` profile claimed but unused, `2062` unknown profile |
 | `RCH-2070`..`2079` | data | `2070` unknown table, `2071` unknown column (`expected`), `2072` key missing for a live table, `2073` source shape or name clash, `2074` not push-down-able over a server table |
 | `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling |
+| `RCH-2110`..`2119` | libraries and typed fragments (since 1.2) | `2110` library not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity, `2114` unknown parameter or slot, `2115` required parameter missing, `2116` wrong type or constraint, `2117` reads outside its scope, `2118` slot content; `2119` reserved (a library needs a profile or level the host lacks) |
 | `RCH-2101`, `2102` | expressions | `2101` does not compile (syntax, unknown function, arity, literal check, limits); `2102` evaluation error |
 | `RCH-9127`, `9129`, `9152`, `9161` | checked mode | type or scope; not yet available; unknown name; masked field filtered |
 
@@ -824,7 +857,7 @@ less the profile keys. Settled additions ([planned] above: optional `version`, t
    1.0. At level L a name with `since` above L is not offered (problem lists, schema) and using it is `RCH-2008`
    ("'grid' panels need Rachana 1.1; this host runs 1.0 (raise the host's language level)"). A conformance case runs at
    the level of its `since`, so a case pins the bytes of the level it was written for. Levels implemented: 1.0, 1.1
-   (the dataset kinds of section 2.3). The generated `rachana.lang.json` and `sutra.schema.json` still describe 1.0
+   (the dataset kinds of section 2.3), 1.2 (typed fragments, `libraries:`, library uses; section 2.5). The generated `rachana.lang.json` and `sutra.schema.json` still describe 1.0
    (they are generated from the reference's tables); the 1.1 names are listed here until the generator reads Rachana's own.
 
 ### 7.3 Majors

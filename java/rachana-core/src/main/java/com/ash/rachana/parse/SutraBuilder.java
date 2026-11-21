@@ -48,6 +48,7 @@ final class SutraBuilder {
     private final String file;
     private final com.ash.rachana.profile.Grammar grammar;
     private final List<SutraProblem> problems = new ArrayList<>();
+    private FragmentResolver fragments;
 
     SutraBuilder(String file, com.ash.rachana.profile.Grammar grammar) {
         this.file = file;
@@ -65,10 +66,15 @@ final class SutraBuilder {
         }
         Map<String, PNode> m = root.map();
         m.forEach((k, v) -> {
-            if (!grammar.hasKey(k)) {
+            if (!grammar.hasKey(k) && com.ash.rachana.profile.Grammar.keySince(k) != null) {    // a later level's key, used below it
+                problem("RCH-2008", "'" + k + "' needs Rachana " + com.ash.rachana.profile.Grammar.keySince(k) + "; this host runs " + grammar.level()
+                        + " (raise the host's language level)", v);
+            } else if (!grammar.hasKey(k)) {
                 problem("RCH-2011", "unknown key '" + k + "' in top level", v);
             }
         });
+        fragments = SutraBlocks.atLeast(grammar.level(), TypedFragment.SINCE)     // level 1.2: libraries: and library uses (LIBRARIES.md 7)
+                ? grammar.libraries().fragments(grammar.fragments(), root, file, problems) : grammar.fragments();
         PNode lang = m.get("rachana");
         if (lang == null) {
             problem("RCH-2009", "missing 'rachana: " + LANGUAGE + "' (the Rachana language version) at the top", root);
@@ -112,7 +118,7 @@ final class SutraBuilder {
         grammar.keys().forEach((keyName, key) -> {                               // the panels a key brings (match: the sections modules contribute)
             List<PNode> brought = key.panels(extensions.get(keyName));
             if (!brought.isEmpty()) {
-                own.addAll(SutraBlocks.expand(brought, file, problems, grammar.fragments()));
+                own.addAll(SutraBlocks.expand(brought, file, problems, fragments(), grammar.level()));
             }
         });
         for (PNode p : own) {
@@ -519,7 +525,12 @@ final class SutraBuilder {
             problem("RCH-2012", "'" + what + "' must be a list", n);
             return List.of();
         }
-        return "panels".equals(what) ? SutraBlocks.expand(n.list(), file, problems, grammar.fragments()) : n.list();   // { use: <block> } brings a block's panels
+        return "panels".equals(what) ? SutraBlocks.expand(n.list(), file, problems, fragments(), grammar.level()) : n.list();   // { use: <block> } brings a block's panels
+    }
+
+    /** The resolver this Sutra's uses read through (its libraries' adapter from level 1.2, else the host's). */
+    private FragmentResolver fragments() {
+        return fragments == null ? grammar.fragments() : fragments;
     }
 
     private void unknownKeys(Map<String, PNode> m, Set<String> allowed, String where) {

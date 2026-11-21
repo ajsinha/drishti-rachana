@@ -90,6 +90,56 @@ public final class EffectsReader {
         return problems.size() > before ? null : new Read(sets, onSelect);
     }
 
+    /**
+     * A control's {@code on:} (level 1.2): {@code change}, its effects run with the control's new value as {@code event} (the whole value;
+     * {@code event.<name>} is {@code RCH-2012}, a control's value has no fields). A control's change never sets another control
+     * ({@code RCH-2012}). Null when it has a problem (reported).
+     */
+    public Map<String, List<Map<String, Object>>> control(String id, PNode on) {
+        int before = problems.size();
+        if (!on.isMap()) {
+            problem("RCH-2012", "a control's on: maps change to a list of effects ({ change: [ { set: { state: picked, to: event } } ] })", on);
+            return null;
+        }
+        Map<String, List<Map<String, Object>>> out = new LinkedHashMap<>();
+        for (Map.Entry<String, PNode> e : on.map().entrySet()) {
+            String trigger = e.getKey();
+            if (!Effects.CONTROL_TRIGGERS.contains(trigger)) {
+                problem("RCH-2023", Effects.TRIGGERS.contains(trigger)
+                        ? "a control fires " + String.join(", ", Effects.CONTROL_TRIGGERS) + ", not " + trigger + " (control '" + id + "')"
+                        : "unknown trigger '" + trigger + "'; a control fires " + String.join(", ", Effects.CONTROL_TRIGGERS), e.getValue());
+                continue;
+            }
+            if (!e.getValue().isList()) {
+                problem("RCH-2012", "on." + trigger + " is a list of effects, run in order", e.getValue());
+                continue;
+            }
+            List<Map<String, Object>> list = new ArrayList<>();
+            for (PNode x : e.getValue().list()) {
+                if (x.isMap() && x.map().get("set") != null && !x.map().get("set").isMap()) {
+                    problem("RCH-2012", "a control's change writes state, never another control: set: { state: <id>, to: event }", x.map().get("set"));
+                    continue;
+                }
+                Object one = effect(x, false, true);
+                if (one instanceof Map<?, ?> m) {
+                    boolean field = Effects.eventPath(m.get("to")) instanceof String path && !path.isEmpty()
+                            || m.get("with") instanceof Map<?, ?> w && w.values().stream().anyMatch(v -> Effects.eventPath(v) instanceof String path && !path.isEmpty());
+                    if (field) {
+                        problem("RCH-2012", "a control's change event is its new value, read whole as event (it has no fields)", x);
+                        continue;
+                    }
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> ok = (Map<String, Object>) m;
+                    list.add(ok);
+                }
+            }
+            if (!list.isEmpty()) {
+                out.put(trigger, list);
+            }
+        }
+        return problems.size() > before ? null : out;
+    }
+
     /** {@code set: <control>} read: the panel's on-select ({@code {by, field?}}). */
     private record OnSelect(Map<String, Object> value) {}
 
@@ -382,6 +432,26 @@ public final class EffectsReader {
             }
             check(p.parts(), state);
         }
+    }
+
+    /**
+     * Each state effect of the controls' lists ({@code controls}: control id to trigger to effects) names a state the Sutra holds
+     * ({@code RCH-2020} otherwise), and a {@code toggle} a boolean one.
+     */
+    public void checkControls(Map<String, Map<String, List<Map<String, Object>>>> controls, List<StateEntry> state, Map<String, com.ash.rachana.model.SourceLocation> at) {
+        Set<String> ids = new java.util.LinkedHashSet<>();
+        state.forEach(e -> ids.add(e.id()));
+        controls.forEach((id, on) -> on.values().forEach(list -> list.forEach(e -> {
+            if (!(e.get("state") instanceof String s)) {
+                return;
+            }
+            if (!ids.contains(s)) {
+                problems.add(new SutraProblem("RCH-2020", "control '" + id + "' sets state '" + s + "', which the Sutra does not hold"
+                        + (ids.isEmpty() ? " (declare it under state:)" : " (it holds " + String.join(", ", ids) + ")"), at.get(id)));
+            } else if ("toggle".equals(e.get("do")) && state.stream().anyMatch(x -> x.id().equals(s) && !"boolean".equals(x.type()))) {
+                problems.add(new SutraProblem("RCH-2020", "control '" + id + "' toggles state '" + s + "', which is not a boolean", at.get(id)));
+            }
+        })));
     }
 
     /**

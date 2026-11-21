@@ -409,13 +409,19 @@ public final class Cases {
         boolean first = true;
         for (Object o : items(c.get("steps"))) {
             Map<String, Object> step = obj(o);
-            var r = com.ash.rachana.control.Fire.fire(vm, s.sutra(), text(step.get("panel")), text(step.get("trigger")),
+            boolean change = step.containsKey("control");                   // a control's change: the control takes the value, its effects run
+            Object picked = step.get("value") instanceof List<?> l ? l.stream().map(Cases::text).toList() : step.get("value") == null ? "" : text(step.get("value"));
+            var r = change ? com.ash.rachana.control.Fire.change(vm, text(step.get("control")), picked)
+                    : com.ash.rachana.control.Fire.fire(vm, s.sutra(), text(step.get("panel")), text(step.get("trigger")),
                     step.get("mark") == null ? 0 : Integer.parseInt(text(step.get("mark"))), step.get("values") == null ? null : obj(step.get("values")),
                     today(c));
             Map<String, Object> writes = new LinkedHashMap<>();
             r.effects().stream().filter(e -> List.of("set", "toggle", "clear").contains(text(e.get("do"))))
                     .forEach(e -> writes.put(text(e.get("state")), e.get("value")));          // clear: empty, so the default stands
-            if (!writes.isEmpty()) {
+            if (change && r.refusals().isEmpty()) {
+                s.controls(Map.of(text(step.get("control")), picked));
+            }
+            if (!writes.isEmpty() || change && r.refusals().isEmpty()) {
                 s.state(writes);
                 vm = s.view();
             }

@@ -51,7 +51,7 @@ class LibraryToolTest {
             depends: []
             """;
     static final String FIGURE = """
-            rachana: 1
+            rachana: 1.2
             fragment: figure
             version: 1
             doc: { summary: One figure. }

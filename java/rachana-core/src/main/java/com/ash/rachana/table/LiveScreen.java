@@ -66,6 +66,14 @@ public final class LiveScreen {
         return sutra;
     }
 
+    private PivotEngine pivots = PivotEngine.NONE;
+
+    /** The host's pivot engine for the screen's pivot panels (default {@link PivotEngine#NONE}: a pivot panel says it has none). */
+    public LiveScreen pivots(PivotEngine engine) {
+        this.pivots = engine == null ? PivotEngine.NONE : engine;
+        return this;
+    }
+
     /** Sets (or replaces) a host table's rows, in their JSON form; the key is the schema's, else the first entry's that reads it. */
     public void table(String name, TableSchema schema, List<Map<String, Object>> rows) {
         List<String> entryKey = sutra.data().stream().filter(d -> name.equals(d.table())).findFirst().map(DataEntry::key).orElse(List.of());
@@ -115,7 +123,7 @@ public final class LiveScreen {
 
     /** Builds the ViewModel now (and remembers it as the base of the next frames). */
     public ViewModel view() {
-        var views = rachana.views(BindHooks.core(), PivotEngine.NONE, TableProvider.NONE,
+        var views = rachana.views(BindHooks.core(), pivots, TableProvider.NONE,
                 BusinessDays.of(today, BusinessCalendar.of("WEEKENDS")), Duration.ofSeconds(2));
         Map<String, String> texts = new LinkedHashMap<>();
         ctl.forEach((k, v) -> texts.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(String::valueOf).toList()) : v == null ? "" : String.valueOf(v)));

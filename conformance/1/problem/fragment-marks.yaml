@@ -1,0 +1,85 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/fragment-marks
+since: "1.2"
+profile: core
+verified: true
+description: "Where @ is a pivot's clicked cell or a surface's clicked point (the payload and the point-click effects), a fragment's local column read as @.<name> is not a field of the mark and the caller's mapping cannot reach it: RCH-2121, never a silent wrong read; level 1.2."
+cases:
+
+  - id: a-local-column-read-over-a-pivot-cell
+    kind: problem
+    source: L-21 (3), never silent (RCH-2121); SPEC 2.8 (pivot cell as @)
+    files:
+      desk-square.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-square
+        version: 1
+        doc:
+          summary: Figures by desk and scenario.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per figure
+            columns:
+              desk:     { type: text,   doc: The desk }
+              scenario: { type: text,   doc: The scenario }
+              pnl:      { type: number, doc: The figure }
+        emits:
+          - { name: cell, payload: { desk: text }, doc: A cell was chosen }
+        panels:
+          - id: square
+            kind: pivot
+            rows: arg.rows
+            by: desk
+            across: scenario
+            value: pnl
+            emits: [ { name: cell, on: point-click, payload: { desk: "@.desk" } } ]
+    sutra: |
+      rachana: 1
+      sutra: marks-demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - use: desk-square@1
+          with: { rows: { from: $.pnl, columns: { desk: DESK, scenario: SCEN, pnl: PNL } } }
+    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment desk-square reads @.desk where @ is the clicked cell of the pivot panel (row, path, column, value), not a row of table rows: the caller's mapping cannot rename it; read the mark's own fields", "range": {"start": {"line": 24, "column": 62}}}]}
+
+  - id: a-local-column-read-over-a-surface-point
+    kind: problem
+    source: L-21 (3), never silent (RCH-2121); SPEC 2.8 (surface point as @)
+    files:
+      smile.v1.fragment.yaml: |
+        rachana: 1
+        fragment: smile
+        version: 1
+        doc:
+          summary: One strike by expiry.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per expiry
+            columns:
+              expiry: { type: text,   doc: The expiry }
+              k90:    { type: number, doc: The value at strike 90 }
+        state:
+          at: { type: text }
+        panels:
+          - id: surface
+            kind: surface
+            rows: arg.rows
+            y: expiry
+            columns: [ { label: "90", bind: "@.k90" } ]
+            on:
+              point-click: [ { set: { state: at, to: "@['expiry']" } } ]
+    sutra: |
+      rachana: 1
+      sutra: marks-demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - use: smile@1
+          as: sm
+          with: { rows: { from: $.smile, columns: { expiry: EXPIRY, k90: K90 } } }
+    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment smile reads @['expiry'] where @ is the clicked point of the surface panel (x, y, z), not a row of table rows: the caller's mapping cannot rename it; read the mark's own fields", "range": {"start": {"line": 23, "column": 46}}}]}

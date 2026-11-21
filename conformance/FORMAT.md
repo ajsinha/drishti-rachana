@@ -228,7 +228,9 @@ finds (one folder per library); `rachana.lock` is their lock; `contracts/<name>.
 host serves for its fragments (LIBRARIES 5.2) (`problem` and `patch` cases read `files` the same way). With `given`, the ViewModel is built (TRANSLATION). `expect.viewModel` is the
 whole ViewModel; `expect.at` checks parts of it by JSON Pointer (section 7). Always dropped from the actual before
 writing or comparing: `timings`, `provenance.fetchedAt`, `provenance.updatedAt` (TRANSLATION 0). The ViewModel's
-schema is `spec/1/viewmodel.schema.json`; its key order is the order of output (section 8).
+schema is `spec/1/viewmodel.schema.json`; its key order is the order of output (section 8). A `pivot` panel's cells come from the
+runner's own small pivot engine (a host hook in Core): `sum`, `count`, `avg`, `min` or `max` of each cell, subtotal and total
+over its own rows; another aggregate is the host's and not run by a case.
 
 ### 5.8 `problem`
 
@@ -311,7 +313,7 @@ Level 1.2 (SPEC 2.8). The view is built as for `sutra`; then each entry of `step
 `{ panel, trigger, mark?, values? }`. `mark` (default 0) counts the marks the trigger lands on in the order the
 ViewModel lists them: a table's rows, depth first through a tree's or a drill table's children (`row-click`); an
 `hbar`'s bars (`bar-click`); a chart's points, steps, events or candles, a line or area chart's x positions, the one
-mark of a metric, gauge or record (`point-click`); a panel's buttons in order (`action`); the one form of a `form` panel
+mark of a metric, gauge or record, a pivot's cells and a surface's points row by row, an empty one keeping its place (`point-click`); a panel's buttons in order (`action`); the one form of a `form` panel
 (`submit`, `cancel`, with `values` its field values: a `submit` is checked first against the form's fields and rules, each
 failing check a problem `RCH-5003` and nothing runs, a value for no field `RCH-5001`; the effects read `values` where they
 say `event`); or a control's change, `{ control, trigger: change, value }`: the control takes `value` (a text, a list for a

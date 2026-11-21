@@ -33,7 +33,7 @@ artifacts = ["src/drishti_rachana/bundle/*.js"]   # built by tools/js/build_js.p
 # The assets <rachana-view> loads, served by the adapters under their mount (drishti_rachana.assets): copied into the wheel as package data.
 [tool.hatch.build.targets.wheel.force-include]
 "../js/packages/rachana/src" = "drishti_rachana/web/rachana/src"
-"../js/vendor/drishti-elements/3.2.0-dev+6b4a3b2" = "drishti_rachana/web/vendor/drishti-elements/3.2.0-dev+6b4a3b2"
+"../js/vendor/drishti-elements/3.2.0-dev+a638149" = "drishti_rachana/web/vendor/drishti-elements/3.2.0-dev+a638149"
 "../js/vendor/apache-arrow/21.1.0" = "drishti_rachana/web/vendor/apache-arrow/21.1.0"
 
 [tool.pytest.ini_options]

@@ -1,0 +1,47 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/pivot-cells
+since: "1.2"
+profile: core
+verified: true
+description: "point-click on a pivot's cells (I1, level 1.2; contract 1.2 Cell.ev, set): each cell with a figure is a mark, @ the cell {row, path, column, value}, #index its place row by row; an empty cell keeps its place and carries nothing. The cells are computed by the runner's small pivot engine (FORMAT 5.7)."
+cases:
+
+  - id: a-pivot-cell-writes-state
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (point-click, set: { state, to }); VIEWMODEL contract 1.2 (Cell.ev, set)"
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Scenarios'" }
+      data:
+        pnl: { rows: [ { scenario: UP, desk: FX, pnl: 10 }, { scenario: UP, desk: RATES, pnl: -4 }, { scenario: DOWN, desk: FX, pnl: -7 } ] }
+      state:
+        picked: { type: text }
+      panels:
+        - id: m
+          kind: pivot
+          rows: $.pnl
+          by: scenario
+          across: desk
+          value: pnl
+          emits: [ { name: cell, on: point-click, payload: { scenario: "@.row", desk: "@.column", pnl: "@.value" } } ]
+          on:
+            point-click: [ { set: { state: picked, to: "@.row + '/' + @.column + '@' + #index" } } ]
+        - { id: shown, kind: metric, label: Picked, value: "state.picked ?? 'none'" }
+    steps:
+      - { panel: m, trigger: point-click, mark: 2 }
+    expect:
+      at:
+        /contract: "1.2"
+        /panels/0/data/columns: [ FX, RATES ]
+        /panels/0/data/rows/0/cells/1/ev: "1"
+        /panels/0/data/rows/0/cells/1/set: { picked: "UP/RATES@1" }
+        /panels/0/data/rows/1/cells/1: {}
+        /panels/0/data/rows/0/total/text: "6"
+        /panels/0/data/totals: [ { text: "3" }, { text: "-4" }, { text: "-1" } ]
+      steps:
+        - state: { picked: "DOWN/FX@2" }
+          effects: [ { do: set, state: picked, value: "DOWN/FX@2" } ]
+          at:
+            /panels/1/data/value/text: "DOWN/FX@2"

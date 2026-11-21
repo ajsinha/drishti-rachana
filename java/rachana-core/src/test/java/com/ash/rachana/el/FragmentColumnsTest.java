@@ -104,6 +104,84 @@ class FragmentColumnsTest {
         assertThat(refused("sum(@.legs, 'notional')", "rows")).isEmpty();
     }
 
+    /** A table whose local columns share the names of a pivot cell's and a surface point's fields, each mapped to the caller's. */
+    private static final class Marks implements FragmentColumns.Tables {
+        final Map<String, String> map = new LinkedHashMap<>();
+        final Set<String> read = new TreeSet<>();
+
+        Marks() {
+            for (String c : List.of("row", "path", "column", "value", "x", "y", "z", "desk")) {
+                map.put(c, c.toUpperCase() + "_C");
+            }
+        }
+
+        @Override
+        public String table(String afterArg) {
+            return afterArg.equals("rows") ? "rows" : null;
+        }
+
+        @Override
+        public Set<String> columns(String table) {
+            return "rows".equals(table) ? map.keySet() : null;
+        }
+
+        @Override
+        public String rename(String table, String column) {
+            return map.getOrDefault(column, column);
+        }
+
+        @Override
+        public void read(String table, String column) {
+            read.add(column);
+        }
+
+        @Override
+        public List<String> tableNames() {
+            return List.of("rows");
+        }
+    }
+
+    @Test
+    void aClickedMarksFieldsAreNeverRenamedEvenWhenALocalColumnSharesTheName() {
+        String pivot = FragmentColumns.markRow("pivot");
+        String surface = FragmentColumns.markRow("surface");
+        assertThat(FragmentColumns.markRow("table")).isNull();
+        for (String[] c : new String[][] {{pivot, "row"}, {pivot, "path"}, {pivot, "column"}, {pivot, "value"}, {surface, "x"}, {surface, "y"},
+                {surface, "z"}}) {
+            List<String> problems = new ArrayList<>();
+            Marks t = new Marks();
+            assertThat(FragmentColumns.rename("@." + c[1], c[0], true, t, problems)).as(c[1]).isEqualTo("@." + c[1]);
+            assertThat(FragmentColumns.rename("@['" + c[1] + "'] + ''", c[0], true, t, problems)).as(c[1]).isEqualTo("@['" + c[1] + "'] + ''");
+            assertThat(problems).as(c[1]).isEmpty();
+            assertThat(t.read).as("a mark's field reads no column").isEmpty();
+        }
+        List<String> problems = new ArrayList<>();
+        assertThat(FragmentColumns.rename("@.row + '/' + @.column + '@' + #index + ' ' + sum(arg.rows, 'value')", pivot, true, new Marks(), problems))
+                .isEqualTo("@.row + '/' + @.column + '@' + #index + ' ' + sum(arg.rows, 'VALUE_C')");   // the table's own columns still renamed
+        assertThat(problems).isEmpty();
+    }
+
+    @Test
+    void aLocalColumnReadOverAClickedMarkIsRefused() {
+        List<String> problems = new ArrayList<>();
+        FragmentColumns.rename("@.desk", FragmentColumns.markRow("pivot"), true, new Marks(), problems);
+        assertThat(problems).singleElement().asString().contains("@.desk", "clicked cell", "row, path, column, value");
+        problems.clear();
+        FragmentColumns.rename("@['desk']", FragmentColumns.markRow("surface"), true, new Marks(), problems);
+        assertThat(problems).singleElement().asString().contains("clicked point", "x, y, z");
+        problems.clear();
+        FragmentColumns.rename("@.x", FragmentColumns.markRow("pivot"), true, new Marks(), problems);   // x is a surface's field, a column here
+        assertThat(problems).singleElement().asString().contains("@.x");
+    }
+
+    @Test
+    void overARowTheSameNamesAreRenamed() {
+        List<String> problems = new ArrayList<>();
+        assertThat(FragmentColumns.rename("@.row + @.column + @.value + @.x + @.y + @.z + @['path']", "rows", true, new Marks(), problems))
+                .isEqualTo("@.ROW_C + @.COLUMN_C + @.VALUE_C + @.X_C + @.Y_C + @.Z_C + @['PATH_C']");
+        assertThat(problems).isEmpty();
+    }
+
     @Test
     void textsThatAreNoExpressionAreLeftToTheCaller() {
         assertThat(FragmentColumns.rename("Desk's total", "rows", false, new Rows(), new ArrayList<>())).isNull();

@@ -578,6 +578,7 @@ public final class Cases {
         Map<String, Object> ctl = new LinkedHashMap<>();
         obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? l.stream().map(Cases::text).toList() : text(v)));
         var s = new com.ash.rachana.table.LiveScreen(at(c), parse(c), today, g.containsKey("record") ? node(g.get("record")) : null, ctl);
+        s.pivots(CasePivots.ENGINE);                                      // FORMAT 5.7: the runner's own small pivot engine
         if (g.containsKey("state")) {                                       // level 1.2, S1: the state values the bind request carries
             Map<String, Object> state = new LinkedHashMap<>();
             obj(g.get("state")).forEach((k, v) -> state.put(k, v instanceof List<?> l ? l.stream().map(Cases::text).toList() : v == null ? "" : text(v)));

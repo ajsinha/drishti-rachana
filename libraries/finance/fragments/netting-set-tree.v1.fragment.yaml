@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: netting-set-tree
+version: 1
+doc:
+  summary: Group, counterparty, netting set and trade as a tree, with gross value, net value and collateral at each node.
+  description: >-
+    One row per node with its id, its parent's id (empty at the root), its name and its level. The figures of every
+    node are supplied by you; nothing is netted here. Use it to find where a counterparty's exposure comes from.
+  category: counterparty
+  tags: [netting, hierarchy, collateral]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per node
+    columns:
+      id:         { type: text,   doc: The node's id }
+      parent:     { type: text,   doc: The parent node's id; empty at the root }
+      name:       { type: text,   doc: The node's name }
+      level:      { type: text,   doc: The node's level, such as group, counterparty, netting set or trade }
+      gross:      { type: number, optional: true, doc: The gross value }
+      net:        { type: number, optional: true, doc: The net value }
+      collateral: { type: number, optional: true, doc: The collateral held against the node }
+  title: { type: text, default: Netting sets, doc: The panel's title }
+  open:  { type: integer, default: 2, min: 0, max: 8, doc: How many levels start open }
+panels:
+  - id: tree
+    kind: tree
+    title: arg.title
+    rows: "map(arg.rows, {id: @.id, parent: @.parent, name: @.name, level: @.level, gross: @.gross, net: @.net, collateral: @.collateral})"
+    node: id
+    parent: parent
+    label: name
+    mode: grid
+    open: arg.open

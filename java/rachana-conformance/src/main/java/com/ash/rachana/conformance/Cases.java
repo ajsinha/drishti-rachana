@@ -39,7 +39,7 @@ public final class Cases {
     /** The runtime's greeting line (RUNNER 5) for a runtime name ({@code jvm}, {@code node}, {@code chromium}...). */
     public static String hello(String runtime) {
         return "{\"runtime\":" + str(runtime) + ",\"runtimeVersion\":\"rachana-" + VERSION + "\",\"language\":\"1.0\",\"profiles\":" + jsonList(profiles)
-                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"plan\",\"lib\",\"live\"]}";
+                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"fire\",\"plan\",\"lib\",\"live\"]}";
     }
 
     /** One case line answered: its results line (RUNNER 4), without the line end. */
@@ -57,6 +57,7 @@ public final class Cases {
                 case "edit" -> edit(c, sb);
                 case "sutra" -> sutra(c, sb);
                 case "patch" -> patch(c, sb);
+                case "fire" -> fire(c, sb);
                 case "plan" -> plan(c, sb);
                 case "lib" -> lib(c, sb);
                 case "live" -> live(c, sb);
@@ -390,6 +391,38 @@ public final class Cases {
             List<com.ash.rachana.view.Frame> frames = s.patch(text(step.get("table")), obj(step.get("patch")));
             sb.append(first ? "" : ",").append("{\"frames\":").append(frames == null ? "null" : com.ash.rachana.view.ViewJson.write(frames))
                     .append(",\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(s.last())).append('}');
+            first = false;
+        }
+        sb.append("]}");
+    }
+
+    /**
+     * FORMAT 5.15 {@code fire} (level 1.2): the view built as for {@code sutra}; then each step fires a trigger on a mark of a panel as a
+     * painter does ({@code Fire}): the effects the mark carries run in order, the state they write is carried by the next bind request,
+     * and the view is built again. Per step: the screen's state after it, the effects run, the refusals and the ViewModel.
+     */
+    public static void fire(Map<String, Object> c, StringBuilder sb) {
+        var s = screen(c);
+        var vm = s.view();
+        sb.append("{\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(vm)).append(",\"steps\":[");
+        boolean first = true;
+        for (Object o : items(c.get("steps"))) {
+            Map<String, Object> step = obj(o);
+            var r = com.ash.rachana.control.Fire.fire(vm, text(step.get("panel")), text(step.get("trigger")),
+                    step.get("mark") == null ? 0 : Integer.parseInt(text(step.get("mark"))));
+            Map<String, Object> writes = new LinkedHashMap<>();
+            r.effects().stream().filter(e -> "set".equals(e.get("do"))).forEach(e -> writes.put(text(e.get("state")), e.get("value")));
+            if (!writes.isEmpty()) {
+                s.state(writes);
+                vm = s.view();
+            }
+            Map<String, Object> doc = new LinkedHashMap<>();
+            doc.put("state", com.ash.rachana.control.Fire.state(vm));                // the state the new view holds
+            doc.put("effects", r.effects());
+            doc.put("problems", r.refusals().stream().map(p -> { Map<String, Object> m = new LinkedHashMap<>(p); m.put("severity", "error"); return m; }).toList());
+            sb.append(first ? "" : ",").append(Json.write(doc));
+            sb.setLength(sb.length() - 1);
+            sb.append(",\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(vm)).append('}');
             first = false;
         }
         sb.append("]}");

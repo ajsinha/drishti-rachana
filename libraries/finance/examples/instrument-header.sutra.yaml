@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: instrument-header-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Instrument header'" }
+data:
+  inst: { record: { NAME: Alder Ltd ordinary shares } }
+panels:
+  - use: finance/instrument-header@1
+    with: { name: "${$.inst.NAME}" }

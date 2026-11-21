@@ -1,0 +1,41 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: settlement-figures
+version: 1
+doc:
+  summary: Three figures over a set of payments - due today, due in the coming week, overdue.
+  description: >-
+    Each figure adds the amounts of payments that are not paid: due today on the given day, due in the seven days after
+    it, overdue before it. A payment whose status is Paid (any case) is left out. Amounts are added as they are, so give
+    one currency.
+  category: trading
+  tags: [settlement, payments, due]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per payment
+    columns:
+      pay_date: { type: date,   doc: The payment date }
+      amount:   { type: number, doc: The amount }
+      status:   { type: text,   optional: true, doc: Paid, due or late }
+  today: { type: date, required: true, doc: The day the figures are taken on }
+  fmt:   { type: format, default: amount0, doc: How amounts are written }
+panels:
+  - id: today
+    kind: metric
+    label: Due today
+    value: "sum(map(arg.rows, if(days_between(arg.today, @.pay_date) == 0 && lower(coalesce(@.status, '')) != 'paid', @.amount, 0)))"
+    fmt: "%{fmt}"
+  - id: week
+    kind: metric
+    label: Due in 7 days
+    value: "sum(map(arg.rows, if(days_between(arg.today, @.pay_date) > 0 && days_between(arg.today, @.pay_date) <= 7 && lower(coalesce(@.status, '')) != 'paid', @.amount, 0)))"
+    fmt: "%{fmt}"
+  - id: overdue
+    kind: metric
+    label: Overdue
+    value: "sum(map(arg.rows, if(days_between(arg.today, @.pay_date) < 0 && lower(coalesce(@.status, '')) != 'paid', @.amount, 0)))"
+    fmt: "%{fmt}"
+    tone: bad

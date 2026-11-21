@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: limit-gauge-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Limit gauge (full)'" }
+data:
+  lim: { record: { USED_USD: 2150000, LIMIT_USD: 2500000 } }
+  hist:
+    rows:
+      - { DAY: "2026-01-12", USED: 1790000 }
+      - { DAY: "2026-01-13", USED: 1950000 }
+      - { DAY: "2026-01-14", USED: 2150000 }
+panels:
+  - use: finance/limit-gauge@1
+    with:
+      used: "$.lim.USED_USD"
+      limit: "$.lim.LIMIT_USD"
+      warn-at: 0.85
+      label: VaR limit used
+      history: { from: $.hist, columns: { date: DAY, used: USED } }
+    slots:
+      footer:
+        - { id: remark, kind: markdown, text: Reviewed by the risk committee }

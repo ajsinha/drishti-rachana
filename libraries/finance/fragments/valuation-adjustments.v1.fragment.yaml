@@ -1,0 +1,41 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: valuation-adjustments
+version: 1
+doc:
+  summary: Valuation adjustments per counterparty or netting set - credit, debit, funding - with totals and the change on the day.
+  description: >-
+    One row per counterparty or set. The total of a row adds the three adjustments you give; the totals at the foot add
+    the rows. A click on a row names it.
+  category: counterparty
+  tags: [valuation, adjustments, credit]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per counterparty or netting set
+    columns:
+      name:    { type: text,   doc: The counterparty or netting set }
+      credit:  { type: number, optional: true, doc: The credit adjustment }
+      debit:   { type: number, optional: true, doc: The debit adjustment }
+      funding: { type: number, optional: true, doc: The funding adjustment }
+      change:  { type: number, optional: true, doc: The change in the total on the day }
+  title: { type: text, default: Valuation adjustments, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How amounts are written }
+emits:
+  - { name: open, payload: { name: text }, doc: A row was chosen }
+panels:
+  - id: adjustments
+    kind: table
+    title: arg.title
+    rows: "map(arg.rows, {name: @.name, credit: @.credit, debit: @.debit, funding: @.funding, total: coalesce(@.credit, 0) + coalesce(@.debit, 0) + coalesce(@.funding, 0), change: @.change})"
+    search: false
+    columns:
+      - { label: Name, bind: "@.name" }
+      - { label: Credit, bind: "@.credit", fmt: "%{fmt}", total: true }
+      - { label: Debit, bind: "@.debit", fmt: "%{fmt}", total: true }
+      - { label: Funding, bind: "@.funding", fmt: "%{fmt}", total: true }
+      - { label: Total, bind: "@.total", fmt: "%{fmt}", tone: sign, total: true }
+      - { label: Change on the day, bind: "@.change", fmt: "%{fmt}", tone: sign, total: true }
+    emits: [ { name: open, on: row-click, payload: { name: "@.name" } } ]

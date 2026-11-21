@@ -52,6 +52,7 @@ class public final class com.ash.rachana.bind.SourceFailures
 class public final class com.ash.rachana.bind.ViewBuilder
 class public final class com.ash.rachana.control.ControlReads
 class public final class com.ash.rachana.control.ControlResolver
+class public final class com.ash.rachana.control.Fire
 class public final class com.ash.rachana.control.RelativeDates
 class public final class com.ash.rachana.control.ScreenState
 class public final class com.ash.rachana.design.ops.OpApplier
@@ -238,6 +239,7 @@ class public static final record com.ash.rachana.bind.PivotEngine$Field
 class public static final record com.ash.rachana.bind.TableProvider$Freshness
 class public static final record com.ash.rachana.bind.ViewBuilder$Request
 class public static final record com.ash.rachana.control.ControlResolver$Resolved
+class public static final record com.ash.rachana.control.Fire$Result
 class public static final record com.ash.rachana.control.RelativeDates$Range
 class public static final record com.ash.rachana.design.ops.AddPanel$At
 class public static final record com.ash.rachana.el.CheckedMode$Parsed
@@ -1090,6 +1092,16 @@ com.ash.rachana.control.ControlValues :: public static final int com.ash.rachana
 com.ash.rachana.control.ControlValues :: public static final int com.ash.rachana.control.ControlValues.MAX_KEY
 com.ash.rachana.control.ControlValues :: public static final int com.ash.rachana.control.ControlValues.MAX_VALUE
 com.ash.rachana.control.ControlValues :: public static final java.lang.String com.ash.rachana.control.ControlValues.PREFIX
+com.ash.rachana.control.Fire :: public static com.ash.rachana.control.Fire$Result com.ash.rachana.control.Fire.fire(com.ash.rachana.view.ViewModel,java.lang.String,java.lang.String,int)
+com.ash.rachana.control.Fire :: public static final java.lang.String com.ash.rachana.control.Fire.REFUSED
+com.ash.rachana.control.Fire :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.control.Fire.state(com.ash.rachana.view.ViewModel)
+com.ash.rachana.control.Fire$Result :: public com.ash.rachana.control.Fire$Result(java.util.Map<java.lang.String, java.lang.Object>,java.util.List<java.util.Map<java.lang.String, java.lang.Object>>,java.util.List<java.util.Map<java.lang.String, java.lang.Object>>)
+com.ash.rachana.control.Fire$Result :: public final boolean com.ash.rachana.control.Fire$Result.equals(java.lang.Object)
+com.ash.rachana.control.Fire$Result :: public final int com.ash.rachana.control.Fire$Result.hashCode()
+com.ash.rachana.control.Fire$Result :: public final java.lang.String com.ash.rachana.control.Fire$Result.toString()
+com.ash.rachana.control.Fire$Result :: public java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.control.Fire$Result.effects()
+com.ash.rachana.control.Fire$Result :: public java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.control.Fire$Result.refusals()
+com.ash.rachana.control.Fire$Result :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.control.Fire$Result.state()
 com.ash.rachana.control.RelativeDates :: public static java.util.Optional<com.ash.rachana.control.RelativeDates$Range> com.ash.rachana.control.RelativeDates.resolve(java.lang.String,java.time.LocalDate,com.ash.rachana.el.BusinessCalendar)
 com.ash.rachana.control.RelativeDates$Range :: public com.ash.rachana.control.RelativeDates$Range(java.time.LocalDate,java.time.LocalDate)
 com.ash.rachana.control.RelativeDates$Range :: public final boolean com.ash.rachana.control.RelativeDates$Range.equals(java.lang.Object)
@@ -3239,6 +3251,7 @@ com.ash.rachana.view.PanelData$Bin :: public java.lang.String com.ash.rachana.vi
 com.ash.rachana.view.PanelData$Candle :: public com.ash.rachana.view.PanelData$Candle(java.lang.String,double,double,double,double,java.lang.Double)
 com.ash.rachana.view.PanelData$Candle :: public com.ash.rachana.view.PanelData$Candle(java.lang.String,double,double,double,double,java.lang.Double,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Candle :: public com.ash.rachana.view.PanelData$Candle(java.lang.String,double,double,double,double,java.lang.Double,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.view.PanelData$Candle :: public com.ash.rachana.view.PanelData$Candle(java.lang.String,double,double,double,double,java.lang.Double,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Candle :: public double com.ash.rachana.view.PanelData$Candle.close()
 com.ash.rachana.view.PanelData$Candle :: public double com.ash.rachana.view.PanelData$Candle.high()
 com.ash.rachana.view.PanelData$Candle :: public double com.ash.rachana.view.PanelData$Candle.low()
@@ -3254,6 +3267,7 @@ com.ash.rachana.view.PanelData$Candle :: public java.lang.String com.ash.rachana
 com.ash.rachana.view.PanelData$Candle :: public java.lang.String com.ash.rachana.view.PanelData$Candle.openText()
 com.ash.rachana.view.PanelData$Candle :: public java.lang.String com.ash.rachana.view.PanelData$Candle.volumeText()
 com.ash.rachana.view.PanelData$Candle :: public java.lang.String com.ash.rachana.view.PanelData$Candle.x()
+com.ash.rachana.view.PanelData$Candle :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Candle.set()
 com.ash.rachana.view.PanelData$Candles :: public boolean com.ash.rachana.view.PanelData$Candles.volume()
 com.ash.rachana.view.PanelData$Candles :: public com.ash.rachana.view.PanelData$Candles(java.util.List<com.ash.rachana.view.PanelData$Candle>,boolean,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Candles :: public final boolean com.ash.rachana.view.PanelData$Candles.equals(java.lang.Object)
@@ -3268,6 +3282,7 @@ com.ash.rachana.view.PanelData$Candles :: public java.util.List<com.ash.rachana.
 com.ash.rachana.view.PanelData$Chart :: public com.ash.rachana.view.PanelData$Chart(java.util.List<java.lang.String>,java.util.List<com.ash.rachana.view.PanelData$Series>,java.lang.String,java.lang.String,java.lang.Double,java.lang.String,com.ash.rachana.view.ViewModel$LinkView,java.lang.String)
 com.ash.rachana.view.PanelData$Chart :: public com.ash.rachana.view.PanelData$Chart(java.util.List<java.lang.String>,java.util.List<com.ash.rachana.view.PanelData$Series>,java.lang.String,java.lang.String,java.lang.Double,java.lang.String,com.ash.rachana.view.ViewModel$LinkView,java.lang.String,java.lang.Boolean)
 com.ash.rachana.view.PanelData$Chart :: public com.ash.rachana.view.PanelData$Chart(java.util.List<java.lang.String>,java.util.List<com.ash.rachana.view.PanelData$Series>,java.lang.String,java.lang.String,java.lang.Double,java.lang.String,com.ash.rachana.view.ViewModel$LinkView,java.lang.String,java.lang.Boolean,java.util.List<java.lang.String>)
+com.ash.rachana.view.PanelData$Chart :: public com.ash.rachana.view.PanelData$Chart(java.util.List<java.lang.String>,java.util.List<com.ash.rachana.view.PanelData$Series>,java.lang.String,java.lang.String,java.lang.Double,java.lang.String,com.ash.rachana.view.ViewModel$LinkView,java.lang.String,java.lang.Boolean,java.util.List<java.lang.String>,java.util.List<java.util.Map<java.lang.String, java.lang.Object>>)
 com.ash.rachana.view.PanelData$Chart :: public com.ash.rachana.view.ViewModel$LinkView com.ash.rachana.view.PanelData$Chart.source()
 com.ash.rachana.view.PanelData$Chart :: public final boolean com.ash.rachana.view.PanelData$Chart.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$Chart :: public final int com.ash.rachana.view.PanelData$Chart.hashCode()
@@ -3281,6 +3296,7 @@ com.ash.rachana.view.PanelData$Chart :: public java.lang.String com.ash.rachana.
 com.ash.rachana.view.PanelData$Chart :: public java.util.List<com.ash.rachana.view.PanelData$Series> com.ash.rachana.view.PanelData$Chart.series()
 com.ash.rachana.view.PanelData$Chart :: public java.util.List<java.lang.String> com.ash.rachana.view.PanelData$Chart.ev()
 com.ash.rachana.view.PanelData$Chart :: public java.util.List<java.lang.String> com.ash.rachana.view.PanelData$Chart.x()
+com.ash.rachana.view.PanelData$Chart :: public java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.view.PanelData$Chart.set()
 com.ash.rachana.view.PanelData$DataChart :: public boolean com.ash.rachana.view.PanelData$DataChart.horizontal()
 com.ash.rachana.view.PanelData$DataChart :: public com.ash.rachana.view.PanelData$DataChart(java.lang.String,java.lang.String,java.lang.String,java.util.List<com.ash.rachana.view.PanelData$Measure>,java.lang.String,java.lang.String,boolean,java.lang.String,java.lang.String,int,int)
 com.ash.rachana.view.PanelData$DataChart :: public final boolean com.ash.rachana.view.PanelData$DataChart.equals(java.lang.Object)
@@ -3305,6 +3321,7 @@ com.ash.rachana.view.PanelData$Edge :: public java.lang.String com.ash.rachana.v
 com.ash.rachana.view.PanelData$Edge :: public java.lang.String com.ash.rachana.view.PanelData$Edge.to()
 com.ash.rachana.view.PanelData$Event :: public com.ash.rachana.view.PanelData$Event(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Event :: public com.ash.rachana.view.PanelData$Event(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.view.PanelData$Event :: public com.ash.rachana.view.PanelData$Event(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Event :: public final boolean com.ash.rachana.view.PanelData$Event.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$Event :: public final int com.ash.rachana.view.PanelData$Event.hashCode()
 com.ash.rachana.view.PanelData$Event :: public final java.lang.String com.ash.rachana.view.PanelData$Event.toString()
@@ -3314,15 +3331,19 @@ com.ash.rachana.view.PanelData$Event :: public java.lang.String com.ash.rachana.
 com.ash.rachana.view.PanelData$Event :: public java.lang.String com.ash.rachana.view.PanelData$Event.label()
 com.ash.rachana.view.PanelData$Event :: public java.lang.String com.ash.rachana.view.PanelData$Event.status()
 com.ash.rachana.view.PanelData$Event :: public java.lang.String com.ash.rachana.view.PanelData$Event.tone()
+com.ash.rachana.view.PanelData$Event :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Event.set()
 com.ash.rachana.view.PanelData$Fields :: public com.ash.rachana.view.PanelData$Fields(java.util.List<com.ash.rachana.view.ViewModel$Cell>)
 com.ash.rachana.view.PanelData$Fields :: public com.ash.rachana.view.PanelData$Fields(java.util.List<com.ash.rachana.view.ViewModel$Cell>,java.lang.String)
+com.ash.rachana.view.PanelData$Fields :: public com.ash.rachana.view.PanelData$Fields(java.util.List<com.ash.rachana.view.ViewModel$Cell>,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Fields :: public final boolean com.ash.rachana.view.PanelData$Fields.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$Fields :: public final int com.ash.rachana.view.PanelData$Fields.hashCode()
 com.ash.rachana.view.PanelData$Fields :: public final java.lang.String com.ash.rachana.view.PanelData$Fields.toString()
 com.ash.rachana.view.PanelData$Fields :: public java.lang.String com.ash.rachana.view.PanelData$Fields.ev()
 com.ash.rachana.view.PanelData$Fields :: public java.util.List<com.ash.rachana.view.ViewModel$Cell> com.ash.rachana.view.PanelData$Fields.fields()
+com.ash.rachana.view.PanelData$Fields :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Fields.set()
 com.ash.rachana.view.PanelData$Gauge :: public com.ash.rachana.view.PanelData$Gauge(double,double,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Gauge :: public com.ash.rachana.view.PanelData$Gauge(double,double,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.view.PanelData$Gauge :: public com.ash.rachana.view.PanelData$Gauge(double,double,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Gauge :: public double com.ash.rachana.view.PanelData$Gauge.max()
 com.ash.rachana.view.PanelData$Gauge :: public double com.ash.rachana.view.PanelData$Gauge.value()
 com.ash.rachana.view.PanelData$Gauge :: public final boolean com.ash.rachana.view.PanelData$Gauge.equals(java.lang.Object)
@@ -3331,6 +3352,7 @@ com.ash.rachana.view.PanelData$Gauge :: public final java.lang.String com.ash.ra
 com.ash.rachana.view.PanelData$Gauge :: public java.lang.String com.ash.rachana.view.PanelData$Gauge.ev()
 com.ash.rachana.view.PanelData$Gauge :: public java.lang.String com.ash.rachana.view.PanelData$Gauge.label()
 com.ash.rachana.view.PanelData$Gauge :: public java.lang.String com.ash.rachana.view.PanelData$Gauge.text()
+com.ash.rachana.view.PanelData$Gauge :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Gauge.set()
 com.ash.rachana.view.PanelData$GeoLink :: public com.ash.rachana.view.PanelData$GeoLink(java.lang.String,java.lang.String,java.util.List<java.lang.String>,java.lang.String)
 com.ash.rachana.view.PanelData$GeoLink :: public final boolean com.ash.rachana.view.PanelData$GeoLink.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$GeoLink :: public final int com.ash.rachana.view.PanelData$GeoLink.hashCode()
@@ -3457,6 +3479,7 @@ com.ash.rachana.view.PanelData$Measure :: public java.lang.String com.ash.rachan
 com.ash.rachana.view.PanelData$Measure :: public java.lang.String com.ash.rachana.view.PanelData$Measure.label()
 com.ash.rachana.view.PanelData$Metric :: public com.ash.rachana.view.PanelData$Metric(com.ash.rachana.view.ViewModel$Cell,com.ash.rachana.view.ViewModel$Cell,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Metric :: public com.ash.rachana.view.PanelData$Metric(com.ash.rachana.view.ViewModel$Cell,com.ash.rachana.view.ViewModel$Cell,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.view.PanelData$Metric :: public com.ash.rachana.view.PanelData$Metric(com.ash.rachana.view.ViewModel$Cell,com.ash.rachana.view.ViewModel$Cell,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Metric :: public com.ash.rachana.view.ViewModel$Cell com.ash.rachana.view.PanelData$Metric.delta()
 com.ash.rachana.view.PanelData$Metric :: public com.ash.rachana.view.ViewModel$Cell com.ash.rachana.view.PanelData$Metric.value()
 com.ash.rachana.view.PanelData$Metric :: public final boolean com.ash.rachana.view.PanelData$Metric.equals(java.lang.Object)
@@ -3465,6 +3488,7 @@ com.ash.rachana.view.PanelData$Metric :: public final java.lang.String com.ash.r
 com.ash.rachana.view.PanelData$Metric :: public java.lang.String com.ash.rachana.view.PanelData$Metric.caption()
 com.ash.rachana.view.PanelData$Metric :: public java.lang.String com.ash.rachana.view.PanelData$Metric.ev()
 com.ash.rachana.view.PanelData$Metric :: public java.lang.String com.ash.rachana.view.PanelData$Metric.unit()
+com.ash.rachana.view.PanelData$Metric :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Metric.set()
 com.ash.rachana.view.PanelData$Node :: public boolean com.ash.rachana.view.PanelData$Node.focus()
 com.ash.rachana.view.PanelData$Node :: public com.ash.rachana.view.PanelData$Node(java.lang.String,java.lang.String,java.lang.String,com.ash.rachana.view.ViewModel$LinkView,boolean)
 com.ash.rachana.view.PanelData$Node :: public com.ash.rachana.view.ViewModel$LinkView com.ash.rachana.view.PanelData$Node.link()
@@ -3504,6 +3528,7 @@ com.ash.rachana.view.PanelData$PivotRow :: public java.util.List<java.lang.Doubl
 com.ash.rachana.view.PanelData$PivotRow :: public java.util.List<java.lang.String> com.ash.rachana.view.PanelData$PivotRow.path()
 com.ash.rachana.view.PanelData$Point :: public com.ash.rachana.view.PanelData$Point(double,double,java.lang.Double,java.lang.String,java.lang.String,java.lang.String,java.lang.String,com.ash.rachana.view.ViewModel$LinkView)
 com.ash.rachana.view.PanelData$Point :: public com.ash.rachana.view.PanelData$Point(double,double,java.lang.Double,java.lang.String,java.lang.String,java.lang.String,java.lang.String,com.ash.rachana.view.ViewModel$LinkView,java.lang.String)
+com.ash.rachana.view.PanelData$Point :: public com.ash.rachana.view.PanelData$Point(double,double,java.lang.Double,java.lang.String,java.lang.String,java.lang.String,java.lang.String,com.ash.rachana.view.ViewModel$LinkView,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Point :: public com.ash.rachana.view.ViewModel$LinkView com.ash.rachana.view.PanelData$Point.link()
 com.ash.rachana.view.PanelData$Point :: public double com.ash.rachana.view.PanelData$Point.x()
 com.ash.rachana.view.PanelData$Point :: public double com.ash.rachana.view.PanelData$Point.y()
@@ -3516,6 +3541,7 @@ com.ash.rachana.view.PanelData$Point :: public java.lang.String com.ash.rachana.
 com.ash.rachana.view.PanelData$Point :: public java.lang.String com.ash.rachana.view.PanelData$Point.label()
 com.ash.rachana.view.PanelData$Point :: public java.lang.String com.ash.rachana.view.PanelData$Point.xText()
 com.ash.rachana.view.PanelData$Point :: public java.lang.String com.ash.rachana.view.PanelData$Point.yText()
+com.ash.rachana.view.PanelData$Point :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Point.set()
 com.ash.rachana.view.PanelData$Row :: public boolean com.ash.rachana.view.PanelData$Row.highlight()
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row com.ash.rachana.view.PanelData$Row.kidsTotal()
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row com.ash.rachana.view.PanelData$Row.withSet(java.util.Map<java.lang.String, java.lang.Object>)
@@ -3568,6 +3594,7 @@ com.ash.rachana.view.PanelData$SortKey :: public java.lang.String com.ash.rachan
 com.ash.rachana.view.PanelData$Step :: public boolean com.ash.rachana.view.PanelData$Step.total()
 com.ash.rachana.view.PanelData$Step :: public com.ash.rachana.view.PanelData$Step(java.lang.String,double,double,double,java.lang.String,java.lang.String,boolean)
 com.ash.rachana.view.PanelData$Step :: public com.ash.rachana.view.PanelData$Step(java.lang.String,double,double,double,java.lang.String,java.lang.String,boolean,java.lang.String)
+com.ash.rachana.view.PanelData$Step :: public com.ash.rachana.view.PanelData$Step(java.lang.String,double,double,double,java.lang.String,java.lang.String,boolean,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Step :: public double com.ash.rachana.view.PanelData$Step.from()
 com.ash.rachana.view.PanelData$Step :: public double com.ash.rachana.view.PanelData$Step.to()
 com.ash.rachana.view.PanelData$Step :: public double com.ash.rachana.view.PanelData$Step.value()
@@ -3578,6 +3605,7 @@ com.ash.rachana.view.PanelData$Step :: public java.lang.String com.ash.rachana.v
 com.ash.rachana.view.PanelData$Step :: public java.lang.String com.ash.rachana.view.PanelData$Step.label()
 com.ash.rachana.view.PanelData$Step :: public java.lang.String com.ash.rachana.view.PanelData$Step.text()
 com.ash.rachana.view.PanelData$Step :: public java.lang.String com.ash.rachana.view.PanelData$Step.tone()
+com.ash.rachana.view.PanelData$Step :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Step.set()
 com.ash.rachana.view.PanelData$Surface :: public com.ash.rachana.view.PanelData$Surface(java.util.List<java.lang.String>,java.util.List<java.lang.String>,java.util.List<java.util.List<java.lang.Double>>,java.lang.Double,java.lang.Double,java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Surface :: public final boolean com.ash.rachana.view.PanelData$Surface.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$Surface :: public final int com.ash.rachana.view.PanelData$Surface.hashCode()

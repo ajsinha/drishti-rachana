@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: curve-overview-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Curve overview (full)'" }
+data:
+  pts:
+    rows:
+      - { PILLAR: 3M, INSTR: Deposit, MKT_QUOTE: 0.0415, ZERO_RATE: 0.0412, DISC: 0.98980 }
+      - { PILLAR: 1Y, INSTR: Swap, MKT_QUOTE: 0.0401, ZERO_RATE: 0.0398, DISC: 0.96170 }
+      - { PILLAR: 5Y, INSTR: Swap, MKT_QUOTE: 0.0388, ZERO_RATE: 0.0385, DISC: 0.82500 }
+panels:
+  - use: finance/curve-overview@1
+    with:
+      title: Discount curve
+      rows: { from: $.pts, columns: { tenor: PILLAR, zero: ZERO_RATE, instrument: INSTR, quote: MKT_QUOTE, df: DISC } }

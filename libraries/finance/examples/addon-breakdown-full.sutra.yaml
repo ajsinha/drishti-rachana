@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: addon-breakdown-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Addon breakdown (full)'" }
+data:
+  addons:
+    rows:
+      - { CLASS: Interest rate, ADDON_AMT: 640000 }
+      - { CLASS: Foreign exchange, ADDON_AMT: 210000 }
+      - { CLASS: Credit, ADDON_AMT: 95000 }
+  build: { record: { RC: 1200000, MULT: 0.92, EAD: 2400000 } }
+panels:
+  - use: finance/addon-breakdown@1
+    with:
+      replacement-cost: "$.build.RC"
+      multiplier: "$.build.MULT"
+      exposure: "$.build.EAD"
+      rows: { from: $.addons, columns: { asset_class: CLASS, addon: ADDON_AMT } }

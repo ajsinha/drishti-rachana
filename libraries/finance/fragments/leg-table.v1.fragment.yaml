@@ -1,0 +1,46 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: leg-table
+version: 1
+doc:
+  summary: A trade's legs side by side - pay or receive, notional, currency, rate or index, spread, day count and frequency.
+  description: >-
+    One row per leg. Only the leg, its direction, notional and currency are required; the rate, index, spread, day count
+    and frequency are shown when you map them.
+  category: trading
+  tags: [legs, trade, swap]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per leg
+    columns:
+      leg:       { type: text,   doc: The leg's name or number }
+      direction: { type: text,   doc: Pay or receive }
+      notional:  { type: number, doc: The leg's notional }
+      currency:  { type: text,   doc: The leg's currency }
+      rate:      { type: number, optional: true, doc: The fixed rate }
+      index:     { type: text,   optional: true, doc: The floating index }
+      spread:    { type: number, optional: true, doc: The spread over the index }
+      day_count: { type: text,   optional: true, doc: The day_count convention }
+      frequency: { type: text,   optional: true, doc: The payment frequency }
+  title:        { type: text, default: Legs, doc: The panel's title }
+  rate-fmt:     { type: format, default: pct2, doc: How rates and spreads are written }
+  notional-fmt: { type: format, default: amount0, doc: How notionals are written }
+panels:
+  - id: legs
+    kind: table
+    title: arg.title
+    rows: arg.rows
+    search: false
+    columns:
+      - { label: Leg, bind: "@.leg" }
+      - { label: Direction, bind: "@.direction" }
+      - { label: Notional, bind: "@.notional", fmt: "%{notional-fmt}" }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Rate, bind: "@.rate", fmt: "%{rate-fmt}" }
+      - { label: Index, bind: "@.index" }
+      - { label: Spread, bind: "@.spread", fmt: "%{rate-fmt}" }
+      - { label: Day count, bind: "@.day_count" }
+      - { label: Frequency, bind: "@.frequency" }

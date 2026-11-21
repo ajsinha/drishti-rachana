@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: lifecycle-events-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Lifecycle events'" }
+data:
+  ev:
+    rows:
+      - { EV_DATE: "2025-11-03", EV_NAME: Booked }
+      - { EV_DATE: "2026-02-05", EV_NAME: Rate fixed }
+panels:
+  - use: finance/lifecycle-events@1
+    with:
+      rows: { from: $.ev, columns: { date: EV_DATE, event: EV_NAME } }

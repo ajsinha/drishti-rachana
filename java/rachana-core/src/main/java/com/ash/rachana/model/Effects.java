@@ -10,7 +10,8 @@ import java.util.Map;
 
 /**
  * A panel's effect list (SUTRA_EXPANSION I1, level 1.2): {@code on: { <trigger>: [ <effect>, ... ] }}, the effects run in order when the
- * trigger fires. Built so far: the triggers {@code row-click} (table, ladder) and {@code bar-click} (hbar), and the effect {@code set}, in
+ * trigger fires. Built so far: the triggers {@code row-click} (table, ladder), {@code bar-click} (hbar) and {@code point-click} (the marks of
+ * {@link Wiring#POINT_KINDS}: a chart's points, steps, events and candles, a figure or a record as one mark), and the effect {@code set}, in
  * its two forms: {@code set: { state: <id>, to: <expression> }} writes a state value (the expression read with {@code @} the clicked
  * row, evaluated per row when the panel binds), and {@code set: <control>} with an optional {@code field:} sets a control from the
  * clicked row, which is the panel's {@code on-select} (one mechanism, one output). A panel keeps its state effects in its options
@@ -23,12 +24,16 @@ public final class Effects {
     /** The panel key, and the option the state effects are kept under. */
     public static final String KEY = "on";
 
-    /** The triggers of the closed list (I1); the ones not in {@link #BUILT} are refused until their step. */
+    /**
+     * The triggers of the closed list (I1); the ones not in {@link #BUILT} are refused until their step. {@code submit} and {@code cancel}
+     * are the standalone form panel's: its effects run only after the form's own rules pass (a refused form runs none).
+     */
     public static final List<String> TRIGGERS = List.of("row-click", "row-dblclick", "bar-click", "point-click", "cell-click", "change", "open",
-            "close");
+            "close", "submit", "cancel");
 
     /** The triggers built at this level, each with the panel kinds that fire it. */
-    public static final Map<String, List<String>> BUILT = Map.of("row-click", List.of("table", "ladder"), "bar-click", List.of("hbar"));
+    public static final Map<String, List<String>> BUILT = Map.of("row-click", List.of("table", "ladder"), "bar-click", List.of("hbar"),
+            "point-click", Wiring.POINT_KINDS.stream().sorted().toList());
 
     /** The effects of the closed list (SUTRA_EXPANSION 3.4); only {@code set} is built. */
     public static final List<String> EFFECTS = List.of("set", "toggle", "clear", "open", "close", "go", "fire", "submit", "refresh", "export",

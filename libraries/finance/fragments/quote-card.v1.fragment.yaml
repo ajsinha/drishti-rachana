@@ -1,0 +1,53 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: quote-card
+version: 1
+doc:
+  summary: A quote at a glance - last, change, the day's range and the 52-week range with the last price placed in each.
+  description: >-
+    Give the last price and, when you have them, the previous close and the two ranges. Each range is drawn as a gauge
+    showing where the last price sits between its low and high; a range with a missing end is left out. Use it at the
+    head of a market screen; for a history use finance/price-history.
+  category: market-data
+  tags: [quote, price, range]
+params:
+  last:      { type: number, required: true, doc: The last price }
+  previous:  { type: number, optional: true, doc: The previous close, to give the change }
+  day-low:   { type: number, optional: true, doc: The day's low }
+  day-high:  { type: number, optional: true, doc: The day's high }
+  year-low:  { type: number, optional: true, doc: The 52-week low }
+  year-high: { type: number, optional: true, doc: The 52-week high }
+  title:     { type: text, default: Quote, doc: What the quote is }
+  fmt:       { type: format, default: price2, doc: How prices are written }
+  as-of:     { type: text, optional: true, doc: When the quote was taken, as you want it written }
+panels:
+  - id: last
+    kind: metric
+    label: arg.title
+    value: arg.last
+    fmt: "%{fmt}"
+    delta: "if(is_blank(arg.previous), null, arg.last - arg.previous)"
+    deltaFmt: signed2
+    caption: "${coalesce(arg.as-of, '')}"
+  - id: day
+    kind: gauge
+    when: "!is_blank(arg.day-low) && !is_blank(arg.day-high) && arg.day-high > arg.day-low"
+    value: "(arg.last - arg.day-low) / (arg.day-high - arg.day-low)"
+    max: 1
+    label: Day range
+    fmt: pct0
+  - id: year
+    kind: gauge
+    when: "!is_blank(arg.year-low) && !is_blank(arg.year-high) && arg.year-high > arg.year-low"
+    value: "(arg.last - arg.year-low) / (arg.year-high - arg.year-low)"
+    max: 1
+    label: 52-week range
+    fmt: pct0
+  - id: bounds
+    kind: status
+    fields:
+      - { label: Day low, bind: "arg.day-low", fmt: "%{fmt}" }
+      - { label: Day high, bind: "arg.day-high", fmt: "%{fmt}" }
+      - { label: 52-week low, bind: "arg.year-low", fmt: "%{fmt}" }
+      - { label: 52-week high, bind: "arg.year-high", fmt: "%{fmt}" }

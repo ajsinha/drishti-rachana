@@ -1,0 +1,32 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: vol-surface
+version: 1
+doc:
+  summary: A volatility surface by expiry and strike, drawn as a heat map or in three dimensions.
+  description: >-
+    One row per expiry, one column per strike (or tenor): you name the strike columns once, each a label and your own
+    column. Use it for any measure over two axes of a market quote; for a long list of pairs use finance/correlation-matrix.
+  category: market-data
+  tags: [volatility, surface, options]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per expiry
+    columns:
+      expiry: { type: text, doc: The expiry, such as 1M or 1Y }
+  strikes: { type: columns, required: true, doc: "The strike columns: a list of { label, bind: \"@.field\", fmt } over a row" }
+  title:   { type: text, default: Volatility surface, doc: The panel's title }
+  fmt:     { type: format, default: pct2, doc: How the values are written }
+  view:    { type: enum, options: [heatmap, 3d], default: heatmap, doc: How the surface is drawn }
+panels:
+  - id: surface
+    kind: surface
+    title: arg.title
+    rows: arg.rows
+    y: expiry
+    columns: "%{strikes}"
+    fmt: "%{fmt}"
+    view: "%{view}"

@@ -1,0 +1,21 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: price-bars-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Price bars (full)'" }
+data:
+  px:
+    rows:
+      - { DAY: "2026-01-12", OPEN_PX: 99.0, HIGH_PX: 100.5, LOW_PX: 98.2, CLOSE_PX: 100.1, QTY: 1200000 }
+      - { DAY: "2026-01-13", OPEN_PX: 100.1, HIGH_PX: 101.0, LOW_PX: 99.4, CLOSE_PX: 99.9, QTY: 950000 }
+      - { DAY: "2026-01-14", OPEN_PX: 99.9, HIGH_PX: 102.2, LOW_PX: 99.7, CLOSE_PX: 101.8, QTY: 1480000 }
+      - { DAY: "2026-01-15", OPEN_PX: 101.8, HIGH_PX: 102.0, LOW_PX: 100.6, CLOSE_PX: 101.4, QTY: 870000 }
+panels:
+  - use: finance/price-bars@1
+    with:
+      title: Alder Ltd daily
+      fmt: price2
+      rows: { from: $.px, columns: { date: DAY, open: OPEN_PX, high: HIGH_PX, low: LOW_PX, close: CLOSE_PX, volume: QTY } }

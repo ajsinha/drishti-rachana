@@ -255,5 +255,5 @@ cases:
         range: { start: { line: 8, column: 70 } }
       - code: RCH-2057
         severity: error
-        message: "event pick: 'on' is what fires it, one of bar-click, row-click, not 'cell-click' (point-click, select, submit, load and tick come in later phases)"
+        message: "event pick: 'on' is what fires it, one of bar-click, point-click, row-click, not 'cell-click' (select, submit, load and tick come in later phases)"
         range: { start: { line: 9, column: 94 } }

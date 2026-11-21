@@ -1,0 +1,54 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: trade-blotter
+version: 1
+doc:
+  summary: A list of trades with standard columns by default, or the columns you give; a click on a row names the trade.
+  description: >-
+    One row per trade. Without columns, the standard ones are shown: id, product, counterparty, book, notional, currency,
+    maturity and status. Give columns to replace them with your own, each a label and an expression over a row. Use
+    finance/position-table for positions rather than trades.
+  category: trading
+  tags: [trades, blotter, list]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    key: required
+    doc: One row per trade
+    columns:
+      id:           { type: text,   doc: The trade id; the event carries it }
+      product:      { type: text,   optional: true, doc: The product }
+      counterparty: { type: text,   optional: true, doc: The counterparty }
+      book:         { type: text,   optional: true, doc: The book }
+      notional:     { type: number, optional: true, doc: The notional }
+      currency:     { type: text,   optional: true, doc: The currency }
+      maturity:     { type: date,   optional: true, doc: The maturity date }
+      status:       { type: text,   optional: true, doc: The trade's status }
+  columns:
+    type: columns
+    doc: "Your own columns in place of the standard ones: a list of { label, bind: \"@.field\", fmt, total }"
+    default:
+      - { label: Trade, bind: "@.id" }
+      - { label: Product, bind: "@.product" }
+      - { label: Counterparty, bind: "@.counterparty" }
+      - { label: Book, bind: "@.book" }
+      - { label: Notional, bind: "@.notional", fmt: amount0 }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Maturity, bind: "@.maturity", fmt: date }
+      - { label: Status, bind: "@.status", tone: status }
+  title: { type: text, default: Trades, doc: The panel's title }
+  limit: { type: integer, default: 200, min: 1, max: 5000, doc: The most trades drawn }
+emits:
+  - { name: open, payload: { id: text }, doc: A trade was chosen }
+panels:
+  - id: blotter
+    kind: table
+    title: arg.title
+    rows: "map(arg.rows, {id: @.id, product: @.product, counterparty: @.counterparty, book: @.book, notional: @.notional, currency: @.currency, maturity: @.maturity, status: @.status})"
+    columns: "%{columns}"
+    limit: arg.limit
+    search: true
+    emits: [ { name: open, on: row-click, payload: { id: "@.id" } } ]

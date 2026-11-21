@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: stress-table-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Stress table'" }
+data:
+  stress:
+    rows:
+      - { SCEN: Rates up 100bp, TOTAL_PNL: -510000 }
+      - { SCEN: Equity down 10%, TOTAL_PNL: -225000 }
+      - { SCEN: Credit tightens, TOTAL_PNL: 60000 }
+panels:
+  - use: finance/stress-table@1
+    as: stress
+    with:
+      rows: { from: $.stress, columns: { scenario: SCEN, pnl: TOTAL_PNL } }
+  - { id: picked, kind: markdown, text: "Scenario ${@stress.open.scenario}", waits: stress-stress }

@@ -1,0 +1,50 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: addon-breakdown
+version: 1
+doc:
+  summary: A regulatory exposure built up - replacement cost, add-on by asset class, the multiplier, the exposure at default.
+  description: >-
+    Every figure is supplied by you and none is computed here; the fragment lays the build-up out so a reader can follow
+    it. The add-ons are one row per asset class, with their total at the foot.
+  category: counterparty
+  tags: [exposure, addon, capital]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per asset class
+    columns:
+      asset_class: { type: text,   doc: The asset class }
+      addon:       { type: number, doc: The add-on for the asset class }
+  replacement-cost: { type: number, required: true, doc: The replacement cost }
+  multiplier:       { type: number, optional: true, doc: The multiplier applied to the add-ons }
+  exposure:         { type: number, required: true, doc: The exposure at default }
+  title: { type: text, default: Add-on by asset class, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How amounts are written }
+panels:
+  - id: replacement
+    kind: metric
+    label: Replacement cost
+    value: arg.replacement-cost
+    fmt: "%{fmt}"
+  - id: multiplier
+    kind: metric
+    when: "!is_blank(arg.multiplier)"
+    label: Multiplier
+    value: arg.multiplier
+    fmt: amount2
+  - id: exposure
+    kind: metric
+    label: Exposure at default
+    value: arg.exposure
+    fmt: "%{fmt}"
+  - id: addons
+    kind: table
+    title: arg.title
+    rows: "map(arg.rows, {asset_class: @.asset_class, addon: @.addon})"
+    search: false
+    columns:
+      - { label: Asset class, bind: "@.asset_class" }
+      - { label: Add-on, bind: "@.addon", fmt: "%{fmt}", total: true }

@@ -1,0 +1,44 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: fx-scenario-chart
+version: 1
+doc:
+  summary: The path of an exchange rate over scenario dates, with the shock per scenario, as a line and a table.
+  description: >-
+    One row per scenario date with the rate and, optionally, the shock applied. Name the currency pair for the title.
+    Use it beside a value-at-risk screen to show which market moves a scenario set contains.
+  category: market-data
+  tags: [fx, scenarios, shocks]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per scenario date
+    columns:
+      date:  { type: date,   doc: The scenario date }
+      rate:  { type: number, doc: The exchange rate }
+      shock: { type: number, optional: true, doc: The shock applied on that date, as a fraction }
+  pair:      { type: text, required: true, doc: "The currency pair, such as EURUSD" }
+  fmt:       { type: format, default: text, doc: How rates are written }
+  shock-fmt: { type: format, default: pct2, doc: How shocks are written }
+emits:
+  - { name: point, payload: { date: date }, doc: A point of the path was chosen }
+panels:
+  - id: path
+    kind: line
+    title: "${arg.pair} scenario path"
+    rows: arg.rows
+    x: date
+    y: rate
+    fmt: "%{fmt}"
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]
+  - id: shocks
+    kind: table
+    title: Scenarios
+    rows: arg.rows
+    limit: 50
+    columns:
+      - { label: Date, bind: "@.date", fmt: date }
+      - { label: Rate, bind: "@.rate", fmt: "%{fmt}" }
+      - { label: Shock, bind: "@.shock", fmt: "%{shock-fmt}", tone: sign }

@@ -1,0 +1,41 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: curve-table
+version: 1
+doc:
+  summary: A curve's pillars - tenor, instrument, quote, zero rate and discount factor.
+  description: >-
+    One row per pillar, in the order given. Only the tenor and the zero rate are required; the instrument, the quote and
+    the discount factor are shown when you map them. A click on a row raises an event with its tenor.
+  category: market-data
+  tags: [curve, pillars, rates]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per pillar
+    columns:
+      tenor:      { type: text,   doc: The pillar's tenor, such as 3M or 5Y }
+      zero:       { type: number, doc: The zero rate }
+      instrument: { type: text,   optional: true, doc: The instrument that fixes the pillar }
+      quote:      { type: number, optional: true, doc: The market quote }
+      df:         { type: number, optional: true, doc: The discount factor }
+  title:    { type: text, default: Pillars, doc: The panel's title }
+  zero-fmt: { type: format, default: pct2, doc: How rates are written }
+  df-fmt:   { type: format, default: text, doc: How discount factors are written }
+emits:
+  - { name: select, payload: { tenor: text }, doc: A pillar was chosen }
+panels:
+  - id: pillars
+    kind: table
+    title: arg.title
+    rows: arg.rows
+    search: false
+    columns:
+      - { label: Tenor, bind: "@.tenor" }
+      - { label: Instrument, bind: "@.instrument" }
+      - { label: Quote, bind: "@.quote", fmt: "%{zero-fmt}" }
+      - { label: Zero, bind: "@.zero", fmt: "%{zero-fmt}" }
+      - { label: Discount factor, bind: "@.df", fmt: "%{df-fmt}" }
+    emits: [ { name: select, on: row-click, payload: { tenor: "@.tenor" } } ]

@@ -423,6 +423,11 @@
           "type": "string",
           "description": "on a candlestick that emits on point-click: the candle's row in the data, sent back by a click (level 1.2, I1)",
           "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -578,6 +583,21 @@
           },
           "description": "on a line or area over rows that emits on point-click: beside x, each point's row in the data, sent back by a click (level 1.2, I1)",
           "x-since": "1.2"
+        },
+        "set": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "on a line or area over rows whose on: point-click writes state: beside x, what a click on each point writes into the screen's state (state id to value; null when its effects failed for that row) (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -723,6 +743,11 @@
           "type": "string",
           "description": "on a timeline that emits on point-click: the event's row in the data, sent back by a click (level 1.2, I1)",
           "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -750,6 +775,11 @@
         "ev": {
           "type": "string",
           "description": "a figure or record that emits on point-click: \"0\", the panel one mark, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -811,6 +841,11 @@
         "ev": {
           "type": "string",
           "description": "a figure or record that emits on point-click: \"0\", the panel one mark, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -1384,6 +1419,11 @@
         "ev": {
           "type": "string",
           "description": "a figure or record that emits on point-click: \"0\", the panel one mark, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -2706,6 +2746,11 @@
           "type": "string",
           "description": "on a scatter that emits on point-click: the point's row in the data, sent back by a click (level 1.2, I1)",
           "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -3314,6 +3359,11 @@
         "ev": {
           "type": "string",
           "description": "on a waterfall that emits on point-click: the step's row in the data, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
         }
       },

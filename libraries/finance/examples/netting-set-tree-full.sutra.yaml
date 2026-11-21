@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: netting-set-tree-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Netting set tree (full)'" }
+data:
+  nodes:
+    rows:
+      - { NODE: G1, PARENT_NODE: "", NODE_NAME: Birch group, NODE_LEVEL: group, GROSS_V: 9000000, NET_V: 4200000, COLL: 3000000 }
+      - { NODE: CP1, PARENT_NODE: G1, NODE_NAME: Birch Bank, NODE_LEVEL: counterparty, GROSS_V: 9000000, NET_V: 4200000, COLL: 3000000 }
+      - { NODE: NS1, PARENT_NODE: CP1, NODE_NAME: Master agreement A, NODE_LEVEL: netting set, GROSS_V: 6500000, NET_V: 3000000, COLL: 2200000 }
+      - { NODE: NS2, PARENT_NODE: CP1, NODE_NAME: Master agreement B, NODE_LEVEL: netting set, GROSS_V: 2500000, NET_V: 1200000, COLL: 800000 }
+panels:
+  - use: finance/netting-set-tree@1
+    with:
+      open: 3
+      rows: { from: $.nodes, columns: { id: NODE, parent: PARENT_NODE, name: NODE_NAME, level: NODE_LEVEL, gross: GROSS_V, net: NET_V, collateral: COLL } }

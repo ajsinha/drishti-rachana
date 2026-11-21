@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: settlement-figures-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Settlement figures'" }
+data:
+  pay:
+    rows:
+      - { PAYDT: "2026-01-15", AMT: 120000 }
+      - { PAYDT: "2026-01-20", AMT: 80000 }
+      - { PAYDT: "2026-01-10", AMT: 45000 }
+panels:
+  - use: finance/settlement-figures@1
+    with:
+      today: "'2026-01-15'"
+      rows: { from: $.pay, columns: { pay_date: PAYDT, amount: AMT } }

@@ -1,0 +1,32 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: fixing-ladder
+version: 1
+doc:
+  summary: An index's fixings by date, newest first, with the day's change.
+  description: >-
+    One row per fixing. The ladder lists them newest first and shows the change against the previous fixing in basis
+    points. Use it for any dated series read as a list rather than a chart.
+  category: market-data
+  tags: [fixings, index, ladder]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per fixing
+    columns:
+      date:  { type: date,   doc: The fixing date }
+      value: { type: number, doc: The fixed rate }
+  title:      { type: text, default: Fixings, doc: The panel's title }
+  fmt:        { type: format, default: pct2, doc: How the rates are written }
+  change-fmt: { type: format, default: signed2, doc: How the change is written in basis points }
+panels:
+  - id: ladder
+    kind: ladder
+    title: arg.title
+    rows: "map(sort(arg.rows, @.date), {date: @.date, value: @.value, change: if(#index == 0, null, (@.value - ^.value) * 10000)})"
+    columns:
+      - { label: Date, bind: "@.date", fmt: date }
+      - { label: Fixing, bind: "@.value", fmt: "%{fmt}" }
+      - { label: Change (bp), bind: "@.change", fmt: "%{change-fmt}", tone: sign }

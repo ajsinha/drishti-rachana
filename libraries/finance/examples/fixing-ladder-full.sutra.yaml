@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: fixing-ladder-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Fixing ladder (full)'" }
+data:
+  fix:
+    rows:
+      - { FIX_DATE: "2026-01-09", RATE: 0.04101 }
+      - { FIX_DATE: "2026-01-12", RATE: 0.04118 }
+      - { FIX_DATE: "2026-01-13", RATE: 0.04120 }
+      - { FIX_DATE: "2026-01-14", RATE: 0.04135 }
+      - { FIX_DATE: "2026-01-15", RATE: 0.04128 }
+panels:
+  - use: finance/fixing-ladder@1
+    with:
+      title: Overnight fixings
+      fmt: pct2
+      change-fmt: signed2
+      rows: { from: $.fix, columns: { date: FIX_DATE, value: RATE } }

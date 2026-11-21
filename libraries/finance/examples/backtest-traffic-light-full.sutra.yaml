@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: backtest-traffic-light-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Backtest traffic light (full)'" }
+data:
+  days:
+    rows:
+      - { BIZ_DATE: "2026-01-09", PNL_USD: -120000, VAR_USD: 100000 }
+      - { BIZ_DATE: "2026-01-12", PNL_USD: -130000, VAR_USD: 100000 }
+      - { BIZ_DATE: "2026-01-13", PNL_USD: -150000, VAR_USD: 100000 }
+      - { BIZ_DATE: "2026-01-14", PNL_USD: 20000, VAR_USD: 100000 }
+      - { BIZ_DATE: "2026-01-15", PNL_USD: -105000, VAR_USD: 100000 }
+panels:
+  - use: finance/backtest-traffic-light@1
+    with:
+      title: 99% VaR backtest
+      amber-from: 2
+      red-from: 4
+      window: 4
+      rows: { from: $.days, columns: { date: BIZ_DATE, pnl: PNL_USD, var: VAR_USD } }

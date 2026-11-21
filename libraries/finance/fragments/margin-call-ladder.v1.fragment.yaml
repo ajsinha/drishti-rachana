@@ -1,0 +1,42 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: margin-call-ladder
+version: 1
+doc:
+  summary: Margin calls by date - direction, amount, status issued, agreed, disputed or settled - with the open total.
+  description: >-
+    One row per call, listed by date. A call is open until its status is Settled (any case). The open total adds the
+    open amounts as they are, so give one currency.
+  category: counterparty
+  tags: [margin, calls, ladder]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per call
+    columns:
+      date:      { type: date,   doc: The call date }
+      direction: { type: text,   doc: Issued to or received from the counterparty }
+      amount:    { type: number, doc: The amount called }
+      currency:  { type: text,   doc: The currency }
+      status:    { type: text,   doc: Issued, agreed, disputed or settled }
+  title: { type: text, default: Margin calls, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How amounts are written }
+panels:
+  - id: open
+    kind: metric
+    label: Open calls
+    value: "sum(map(arg.rows, if(lower(@.status) != 'settled', @.amount, 0)))"
+    fmt: "%{fmt}"
+  - id: ladder
+    kind: ladder
+    title: arg.title
+    rows: "map(sort(arg.rows, @.date), {date: @.date, direction: @.direction, amount: @.amount, currency: @.currency, status: @.status})"
+    columns:
+      - { label: Date, bind: "@.date", fmt: date }
+      - { label: Direction, bind: "@.direction" }
+      - { label: Amount, bind: "@.amount", fmt: "%{fmt}" }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Status, bind: "@.status", tone: status }

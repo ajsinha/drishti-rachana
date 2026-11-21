@@ -78,6 +78,11 @@ final class Facade {
         return Cases.run(Cases::patch, json);
     }
 
+    /** A view, then each fired trigger (FORMAT 5.15): {@code {viewModel, steps: [{state, effects, problems, viewModel}]}}. */
+    static String fire(String json) {
+        return Cases.run(Cases::fire, json);
+    }
+
     /** What the runtime asks of each table of {@code data:} (FORMAT 5.10): {@code {plan: {tables, problems}}}. */
     static String plan(String json) {
         return Cases.run(Cases::plan, json);

@@ -106,9 +106,10 @@ def index(lib_name, manifest, frags):
     for cid, title in groups:
         mine = [f for f in frags if (f.get("category") if f.get("category") in known else "") == cid]
         if mine:
-            data["g_" + (cid or "other")] = {"rows": [{"name": f["name"], "summary": f.get("summary", "")} for f in mine]}
-            panels.append({"use": "core/data-table@1", "as": "cat-" + (cid or "other"),
-                           "with": {"title": title, "search": False, "rows": "$.g_" + (cid or "other"),
+            word = re.sub(r"[^a-z0-9]+", "_", (cid or "other").lower())     # a data name takes letters, digits and _; an `as:` takes a kebab word
+            data["g_" + word] = {"rows": [{"name": f["name"], "summary": f.get("summary", "")} for f in mine]}
+            panels.append({"use": "core/data-table@1", "as": "cat-" + word.replace("_", "-"),
+                           "with": {"title": title, "search": False, "rows": "$.g_" + word,
                                     "columns": [{"label": "Fragment", "bind": "@.name"}, {"label": "What it is", "bind": "@.summary"}]}})
     return {"rachana": 1, "sutra": "library", "version": 1, "libraries": ["core@1"],
             "title": {"id": f"'{manifest.get('title', lib_name)} library'"}, "data": data, "panels": panels}

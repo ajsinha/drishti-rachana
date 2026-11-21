@@ -1,0 +1,154 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/fragments-nested-state
+since: "1.2"
+profile: core
+verified: true
+description: "Stateful fragments used inside fragments (LIBRARIES 4.4, 7.2; SUTRA_EXPANSION S1), level 1.2: a nested use named x inside a use named a is the instance a-x, its ids a-x-<id>, its state a-x.<name>, so no two instances collide."
+cases:
+
+  - id: two-outer-uses-each-with-two-inner-uses
+    kind: sutra
+    source: "LIBRARIES 7.2 (as: instance-scoped ids <as>-<id>; outputs state.<as>.<name>), 4.4 (use: inside a fragment)"
+    note: "pair uses picker twice (l, r); the screen uses pair twice (a, b): four picker instances a-l, a-r, b-l, b-r. pair reads its inner uses' output as written (state.l.chosen) and publishes its own."
+    files: &nest
+      picker.v1.fragment.yaml: |
+        rachana: 1
+        fragment: picker
+        version: 1
+        doc:
+          summary: A list whose clicked row is remembered.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per item
+            columns:
+              id: { type: text, doc: The item }
+        state:
+          chosen: { type: text, default: none }
+        outputs: { chosen: text }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { set: { state: chosen, to: "@.id" } } ]
+      pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: pair
+        version: 1
+        doc:
+          summary: Two pickers side by side and what they chose.
+        params:
+          left: { type: table, required: true, doc: The left items, columns: { id: { type: text, doc: The item } } }
+          right: { type: table, required: true, doc: The right items, columns: { id: { type: text, doc: The item } } }
+        state:
+          note: { type: text, default: "-" }
+        outputs: { note: text }
+        panels:
+          - use: picker@1
+            as: l
+            with: { rows: arg.left }
+          - use: picker@1
+            as: r
+            with: { rows: arg.right }
+          - { id: both, kind: metric, label: Both, value: "state.l.chosen + '/' + state.r.chosen + state.note" }
+    given:
+      state: { a-l.chosen: X, b-r.chosen: Q }
+    sutra: |
+      rachana: 1
+      sutra: nested-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X }, { id: Y } ] }
+        right: { rows: [ { id: P }, { id: Q } ] }
+      panels:
+        - use: pair@1
+          as: a
+          with: { left: $.left, right: $.right }
+        - use: pair@1
+          as: b
+          with: { left: $.right, right: $.left }
+        - { id: notes, kind: metric, label: Notes, value: "state.a.note + state.b.note" }
+    expect:
+      at:
+        /contract: "1.2"
+        /panels/0/id: a-l-list
+        /panels/0/data/rows/1/set: { a-l.chosen: Y }
+        /panels/1/id: a-r-list
+        /panels/1/data/rows/0/set: { a-r.chosen: P }
+        /panels/2/id: a-both
+        /panels/2/data/value/text: "X/none-"
+        /panels/3/id: b-l-list
+        /panels/3/data/rows/0/set: { b-l.chosen: P }
+        /panels/4/id: b-r-list
+        /panels/5/id: b-both
+        /panels/5/data/value/text: "none/Q-"
+        /panels/6/data/value/text: "--"
+        /state/0: { id: a.note, value: "-", url: false, reads: [ a-both, notes ] }
+        /state/1: { id: a-l.chosen, value: "X", url: false, reads: [ a-both ] }
+        /state/2: { id: a-r.chosen, value: none, url: false, reads: [ a-both ] }
+        /state/3: { id: b.note, value: "-", url: false, reads: [ b-both, notes ] }
+        /state/4: { id: b-l.chosen, value: none, url: false, reads: [ b-both ] }
+        /state/5: { id: b-r.chosen, value: "Q", url: false, reads: [ b-both ] }
+
+  - id: a-stateless-outer-use-names-the-inner-instances
+    kind: sutra
+    source: "LIBRARIES 7.2 (as: on a fragment with no state of its own still scopes what it brings)"
+    note: "An outer fragment that holds no state of its own, used as t: its nested picker is t-p, its state t-p.chosen; the outer reads the output as state.p.chosen."
+    files:
+      picker.v1.fragment.yaml: |
+        rachana: 1
+        fragment: picker
+        version: 1
+        doc:
+          summary: A list whose clicked row is remembered.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per item
+            columns:
+              id: { type: text, doc: The item }
+        state:
+          chosen: { type: text, default: none }
+        outputs: { chosen: text }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { set: { state: chosen, to: "@.id" } } ]
+      titled.v1.fragment.yaml: |
+        rachana: 1
+        fragment: titled
+        version: 1
+        doc:
+          summary: A picker with its choice shown.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+        panels:
+          - use: picker@1
+            as: p
+            with: { rows: arg.rows }
+          - { id: shown, kind: metric, label: Chosen, value: "state.p.chosen" }
+    sutra: |
+      rachana: 1
+      sutra: nested-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      panels:
+        - use: titled@1
+          as: t
+          with: { rows: $.left }
+    expect:
+      at:
+        /panels/0/id: t-p-list
+        /panels/0/data/rows/0/set: { t-p.chosen: X }
+        /panels/1/id: t-shown
+        /state/0: { id: t-p.chosen, value: none, url: false, reads: [ t-shown ] }

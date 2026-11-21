@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: correlation-matrix-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Correlation matrix (full)'" }
+data:
+  corr:
+    rows:
+      - { F1: Equity, F2: Equity, RHO: 1.0 }
+      - { F1: Equity, F2: Rates, RHO: -0.32 }
+      - { F1: Equity, F2: Credit, RHO: 0.61 }
+      - { F1: Rates, F2: Equity, RHO: -0.32 }
+      - { F1: Rates, F2: Rates, RHO: 1.0 }
+      - { F1: Rates, F2: Credit, RHO: -0.18 }
+      - { F1: Credit, F2: Equity, RHO: 0.61 }
+      - { F1: Credit, F2: Rates, RHO: -0.18 }
+      - { F1: Credit, F2: Credit, RHO: 1.0 }
+panels:
+  - use: finance/correlation-matrix@1
+    with:
+      title: Factor correlations
+      fmt: signed2
+      rows: { from: $.corr, columns: { a: F1, b: F2, value: RHO } }

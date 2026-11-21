@@ -33,6 +33,7 @@ conformance/
     sutra/       sutra cases
     problem/     problem cases
     patch/       patch cases
+    fire/        fire cases (a trigger fired on a mark: state, effects, refusals)
     plan/        plan cases
     edit/        edit cases
     protocol/    protocol cases (run against a Data Protocol host, not a compiler)
@@ -88,6 +89,7 @@ cases:
 | `id` | yes | `[a-z0-9][a-z0-9-]{0,79}`, unique in the file |
 | `kind` | yes | one of the kinds of section 5 |
 | `since` | no | a later minor than the file's, when this case pins something added in it |
+| `until` | no | the last minor the case applies to, when a later minor answers it differently (the later answer is its own case with that `since`); a runtime of a later minor does not run it |
 | `profile` | no | overrides the file's `profile` |
 | `verified` | no | `true` once the reference runner (JVM) has produced exactly `expect` and a person has reviewed it; `false` for a case written by hand or by reading, not yet confirmed. Only the reference's record mode (RUNNER section 6) helps turn `false` into `true`; a person flips it |
 | `source` | no | where the case came from: a test method of the reference (`ElTest#nullArithmetic`), a SPEC section (`SPEC 4.5`), a function example (`functions.yaml#round`), a defect number |
@@ -130,7 +132,7 @@ text anyway.
 
 ## 5. The kinds
 
-Thirteen kinds. Every kind is a pure function from the case's inputs to one **actual** document; a runner writes that
+Fourteen kinds. Every kind is a pure function from the case's inputs to one **actual** document; a runner writes that
 document in full on the case's results line (RUNNER section 4) and compares the parts `expect` names (section 7).
 
 | Kind | Area | Input fields | Actual document (all fields always written) | Typical `expect` |
@@ -143,6 +145,7 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 | `sutra` | `sutra/` | `sutra`, `file`, `files`, `given` | `{viewModel}` | `viewModel`, or `at` |
 | `problem` | `problem/` | `sutra`, `file`, `files`, `given.profiles`, `given.limits` | `{ok, problems}` (SPEC 6.1, all problems in order) | `ok`, `problems` |
 | `patch` | `patch/` | `sutra`, `file`, `files`, `given`, `steps` | `{viewModel, steps: [{frames, viewModel}…]}` | `steps` with `frames` or `at` |
+| `fire` | `fire/` | `sutra`, `file`, `files`, `given`, `steps` | `{viewModel, steps: [{state, effects, problems, viewModel}…]}` | `steps` with `state`, `effects`, `problems` or `at` |
 | `plan` | `plan/` | `sutra`, `file`, `files`, `given` (with `schemas`) | `{plan}` | `plan`, or `at` |
 | `edit` | `edit/` | `sutra`, `file`, `operation` | `{text, problems}` | `text`, or `problems` |
 | `protocol` | `protocol/` | `fixture`, `steps` (requests) | `{steps: [{status, body}…]}` | `steps` with `status`, `body` |
@@ -295,6 +298,19 @@ each is a problem). Formats are checked against the runtime's format names. `ok`
 `problem` cases; `schema` is the table's Data Protocol schema document (section 4 of LIVE_TABLES: `rowVersion`, `changedBy`,
 `changedAt`, `narrow`, `view`, column `heavy`), `null` when it is refused. What the engine adds at run time (`live`, `capped`,
 a reader's masks and `write`) is not part of this kind; the `protocol/` suites test it.
+
+### 5.15 `fire`
+
+Level 1.2 (SPEC 2.8). The view is built as for `sutra`; then each entry of `steps` fires a trigger as a painter fires it:
+`{ panel, trigger, mark?, values? }`. `mark` (default 0) counts the marks the trigger lands on in the order the
+ViewModel lists them: a table's rows, depth first through a tree's or a drill table's children (`row-click`); an
+`hbar`'s bars (`bar-click`); a chart's points, steps, events or candles, a line or area chart's x positions, the one
+mark of a metric, gauge or record (`point-click`). `values` are a form's field values (`submit`). The effects the mark
+carries run in order; the state they write goes into the next bind request and the view is built again. The actual,
+per step: `state` (every state value of the screen after the step, id to value), `effects` (the effects run, in order:
+`{do: set, state, value}`, and the ones handed to the host), `problems` (the refusals: a panel, trigger or mark the
+screen does not have is `RCH-5001`, and nothing runs) and the `viewModel` after the step. `expect.steps[i]` names any
+of `state`, `effects` (compared exactly), `problems` (section 6) and `at` (parts of that step's ViewModel).
 
 ## 6. Matching expected problems
 

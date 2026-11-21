@@ -1,0 +1,25 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: price-history-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Price history (full)'" }
+data:
+  hist:
+    rows:
+      - { TRADE_DAY: "2026-01-05", LAST_CLOSE: 96.2 }
+      - { TRADE_DAY: "2026-01-06", LAST_CLOSE: 97.0 }
+      - { TRADE_DAY: "2026-01-07", LAST_CLOSE: 96.4 }
+      - { TRADE_DAY: "2026-01-08", LAST_CLOSE: 98.8 }
+      - { TRADE_DAY: "2026-01-09", LAST_CLOSE: 99.5 }
+      - { TRADE_DAY: "2026-01-12", LAST_CLOSE: 100.1 }
+      - { TRADE_DAY: "2026-01-13", LAST_CLOSE: 99.9 }
+      - { TRADE_DAY: "2026-01-14", LAST_CLOSE: 101.8 }
+panels:
+  - use: finance/price-history@1
+    with:
+      title: Alder Ltd closing price
+      fmt: price2
+      rows: { from: $.hist, columns: { date: TRADE_DAY, close: LAST_CLOSE } }

@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: netting-set-tree-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Netting set tree'" }
+data:
+  nodes:
+    rows:
+      - { NODE: G1, PARENT_NODE: "", NODE_NAME: Birch group, NODE_LEVEL: group }
+      - { NODE: CP1, PARENT_NODE: G1, NODE_NAME: Birch Bank, NODE_LEVEL: counterparty }
+panels:
+  - use: finance/netting-set-tree@1
+    with:
+      rows: { from: $.nodes, columns: { id: NODE, parent: PARENT_NODE, name: NODE_NAME, level: NODE_LEVEL } }

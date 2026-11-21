@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: margin-call-ladder-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Margin call ladder'" }
+data:
+  calls:
+    rows:
+      - { CALL_DT: "2026-01-13", SIDE: Issued, AMT: 800000, CCY: USD, STATE: Settled }
+      - { CALL_DT: "2026-01-15", SIDE: Issued, AMT: 350000, CCY: USD, STATE: Issued }
+panels:
+  - use: finance/margin-call-ladder@1
+    with:
+      rows: { from: $.calls, columns: { date: CALL_DT, direction: SIDE, amount: AMT, currency: CCY, status: STATE } }

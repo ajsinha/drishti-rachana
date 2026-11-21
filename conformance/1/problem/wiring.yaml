@@ -105,9 +105,17 @@ cases:
 
   - id: "emits-on-tick"
     kind: "problem"
+    until: "1.1"
     source: "SutraWiringTest#theParserRefusesWhatIsNotBuilt"
     sutra: "rachana: 1\nsutra: probe\nversion: 1\nmatch: { kind: portfolio-trades }\ntitle: { id: $.PORTFOLIO }\npanels:\n  - { id: a, kind: table, rows: $.A, columns: [ { label: A, bind: $.A } ], emits: [ { name: pick, on: tick } ] }\n"
     expect: {"ok": false, "problems": [{"code": "RCH-2057", "severity": "error", "message": "event pick: 'on' is what fires it, one of bar-click, row-click, not 'tick' (point-click, select, submit, load and tick come in later phases)", "range": {"start": {"line": 7, "column": 103}}}]}
+
+  - id: "emits-on-tick-point-click-built"
+    kind: "problem"
+    since: "1.2"
+    source: "SutraWiringTest#theParserRefusesWhatIsNotBuilt"
+    sutra: "rachana: 1\nsutra: probe\nversion: 1\nmatch: { kind: portfolio-trades }\ntitle: { id: $.PORTFOLIO }\npanels:\n  - { id: a, kind: table, rows: $.A, columns: [ { label: A, bind: $.A } ], emits: [ { name: pick, on: tick } ] }\n"
+    expect: {"ok": false, "problems": [{"code": "RCH-2057", "severity": "error", "message": "event pick: 'on' is what fires it, one of bar-click, point-click, row-click, not 'tick' (select, submit, load and tick come in later phases)", "range": {"start": {"line": 7, "column": 103}}}]}
 
   - id: "source-names-no-id-or-where"
     kind: "problem"

@@ -1,0 +1,41 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: trade-ticket
+version: 1
+doc:
+  summary: The economic summary of one trade, read-only - product, direction, parties, dates, notional, price, status.
+  description: >-
+    Build the trade record from your own fields with a record literal; only the id and the product are needed, the rest
+    are shown when present. Use it at the head of a trade screen; it never edits. Panels of your own can go under it.
+  category: trading
+  tags: [trade, ticket, deal]
+params:
+  trade:
+    type: "record{id: text, product: text, direction: text, counterparty: text, book: text, trade_date: date, maturity: date, notional: number, currency: text, price: number, status: text}"
+    required: true
+    doc: "The trade: id, product, and optionally direction, counterparty, book, trade_date, maturity, notional, currency, price, status"
+  notional-fmt: { type: format, default: amount0, doc: How the notional is written }
+  price-fmt:    { type: format, default: text, doc: How the price is written }
+slots:
+  extra: { accepts: panels, max: 2, doc: Panels under the ticket }
+panels:
+  - id: ticket
+    kind: kv
+    title: "${arg.trade.product} ${arg.trade.id}"
+    description: "${coalesce(arg.trade.counterparty, '')}"
+    rows: arg.trade
+    columns:
+      - { label: Direction, bind: "@.direction" }
+      - { label: Counterparty, bind: "@.counterparty" }
+      - { label: Book, bind: "@.book" }
+      - { label: Trade date, bind: "@.trade_date", fmt: date }
+      - { label: Maturity, bind: "@.maturity", fmt: date }
+      - { label: Notional, bind: "@.notional", fmt: "%{notional-fmt}" }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Price, bind: "@.price", fmt: "%{price-fmt}" }
+  - id: state
+    kind: status
+    when: "!is_blank(arg.trade.status)"
+    fields: [ { label: Status, bind: "arg.trade.status" } ]
+  - { slot: extra }

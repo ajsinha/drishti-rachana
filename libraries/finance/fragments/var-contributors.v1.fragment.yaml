@@ -1,0 +1,41 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: var-contributors
+version: 1
+doc:
+  summary: What makes up a VaR - each position or book with its component, stand-alone and incremental figure, largest first.
+  description: >-
+    One row per contributor, listed by component size, largest first. The share is the component over the total you give,
+    or over the sum of the components when you give none. The figures arrive as data; nothing is allocated here.
+  category: market-risk
+  tags: [var, contributors, decomposition]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per contributor
+    columns:
+      name:        { type: text,   doc: The position or book }
+      component:   { type: number, doc: The contribution to the total }
+      standalone:  { type: number, optional: true, doc: The VaR of the contributor on its own }
+      incremental: { type: number, optional: true, doc: The change in the total if the contributor is removed }
+  total: { type: number, optional: true, doc: The total VaR the components belong to }
+  top:   { type: integer, default: 20, min: 1, max: 500, doc: The most contributors listed }
+  title: { type: text, default: Contributors, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How the figures are written }
+emits:
+  - { name: open, payload: { name: text }, doc: A contributor was chosen }
+panels:
+  - id: contributors
+    kind: table
+    title: arg.title
+    rows: "map(take(sort(arg.rows, @.component, true), arg.top), {name: @.name, component: @.component, standalone: @.standalone, incremental: @.incremental, share: @.component / coalesce(arg.total, sum(arg.rows, 'component'))})"
+    search: false
+    columns:
+      - { label: Name, bind: "@.name" }
+      - { label: Component, bind: "@.component", fmt: "%{fmt}" }
+      - { label: Stand-alone, bind: "@.standalone", fmt: "%{fmt}" }
+      - { label: Incremental, bind: "@.incremental", fmt: "%{fmt}" }
+      - { label: Share, bind: "@.share", fmt: pct2 }
+    emits: [ { name: open, on: row-click, payload: { name: "@.name" } } ]

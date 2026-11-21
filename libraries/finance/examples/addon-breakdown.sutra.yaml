@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: addon-breakdown-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Addon breakdown'" }
+data:
+  addons:
+    rows:
+      - { CLASS: Interest rate, ADDON_AMT: 640000 }
+      - { CLASS: Foreign exchange, ADDON_AMT: 210000 }
+panels:
+  - use: finance/addon-breakdown@1
+    with:
+      replacement-cost: 1200000
+      exposure: 2400000
+      rows: { from: $.addons, columns: { asset_class: CLASS, addon: ADDON_AMT } }

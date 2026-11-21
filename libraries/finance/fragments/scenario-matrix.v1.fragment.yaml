@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: scenario-matrix
+version: 1
+doc:
+  summary: Scenarios down the side, books or factors across, P&L in the cells, shaded by size.
+  description: >-
+    One row per scenario and group. Rows run in the order given, so sort them worst first to put the worst scenario at
+    the top. Use it for stress or scenario results by book, desk or factor.
+  category: market-risk
+  tags: [scenarios, stress, matrix]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per scenario and group
+    columns:
+      scenario: { type: text,   doc: The scenario }
+      group:    { type: text,   doc: The book, desk or factor }
+      pnl:      { type: number, doc: The P&L }
+  title: { type: text, default: Scenarios, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How the P&L is written }
+  heat:  { type: boolean, default: true, doc: Whether cells are shaded by size }
+panels:
+  - id: matrix
+    kind: pivot
+    title: arg.title
+    rows: arg.rows
+    by: scenario
+    across: group
+    value: pnl
+    agg: sum
+    fmt: "%{fmt}"
+    heat: arg.heat

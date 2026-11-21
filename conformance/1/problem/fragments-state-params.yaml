@@ -1,0 +1,137 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/fragments-state-params
+since: "1.2"
+profile: core
+verified: true
+description: "Problems of state name parameters (LIBRARIES 4.2, 6.3), level 1.2."
+given: {}
+cases:
+
+  - id: the-handed-state-must-be-held
+    kind: problem
+    source: "LIBRARIES 4.2 (a name parameter is checked against the user's declared state)"
+    files: &chooser
+      chooser.v1.fragment.yaml: |
+        rachana: 1
+        fragment: chooser
+        version: 1
+        doc:
+          summary: A list whose clicked row is written into the user's state.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+          into: { type: state, of: text, required: true, doc: The state the chosen item is written to }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { set: { state: "%{into}", to: "@.id" } } ]
+    sutra: |
+      rachana: 1
+      sutra: params-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        desks: { rows: [ { id: FX } ] }
+      state:
+        desk: { type: text }
+      panels:
+        - use: chooser@1
+          as: d
+          with: { rows: $.desks, into: book }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2020
+        message: "panel 'd-list' sets state 'book', which the Sutra does not hold (it holds desk)"
+      - code: RCH-2116
+        message: "parameter into of fragment chooser names state 'book', which the Sutra does not hold (it holds desk)"
+
+  - id: the-handed-state-has-the-declared-type
+    kind: problem
+    source: "LIBRARIES 6.3 ({ type: state, of: text })"
+    files: *chooser
+    sutra: |
+      rachana: 1
+      sutra: params-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        desks: { rows: [ { id: FX } ] }
+      state:
+        count: { type: number }
+      panels:
+        - use: chooser@1
+          as: d
+          with: { rows: $.desks, into: count }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2116
+        message: "parameter into of fragment chooser names state 'count', a number; it takes a state of type text"
+
+  - id: a-state-parameter-is-only-a-set-target
+    kind: problem
+    source: "LIBRARIES 6.3 (not two-way binding: the fragment reads the value as an ordinary value parameter)"
+    files:
+      peek.v1.fragment.yaml: |
+        rachana: 1
+        fragment: peek
+        version: 1
+        doc:
+          summary: Shows a state it was handed.
+        params:
+          into: { type: state, required: true, doc: The state }
+        panels:
+          - { id: m, kind: metric, label: Value, value: "'%{into}'" }
+    sutra: |
+      rachana: 1
+      sutra: params-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      state:
+        desk: { type: text }
+      panels:
+        - use: peek@1
+          with: { into: desk }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2048
+        message: "fragment peek writes %{into} outside set: { state: %{into} }: a state parameter names the one state it may write; read a value as a value parameter"
+      - code: RCH-2048
+        message: "no block peek@1 (no block files are loaded)"
+
+  - id: a-selection-parameter-waits-for-selections
+    kind: problem
+    source: "LIBRARIES 4.2 (selection: a name of the user's selections, I2)"
+    files:
+      feeder.v1.fragment.yaml: |
+        rachana: 1
+        fragment: feeder
+        version: 1
+        doc:
+          summary: Feeds a selection.
+        params:
+          feeds: { type: selection, optional: true, doc: The selection a click feeds }
+        panels:
+          - { id: m, kind: metric, label: Value, value: "1" }
+    sutra: |
+      rachana: 1
+      sutra: params-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      panels:
+        - use: feeder@1
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2023
+        message: "parameter feeds of fragment feeder: a selection parameter comes with selections (SUTRA_EXPANSION I2); not at this level"
+      - code: RCH-2048
+        message: "no block feeder@1 (no block files are loaded)"

@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: valuation-adjustments-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Valuation adjustments (full)'" }
+data:
+  adj:
+    rows:
+      - { CP: Birch Bank, CVA_AMT: -42000, DVA_AMT: 9000, FVA_AMT: -15000, CHG: -3000 }
+      - { CP: Cedar Fund, CVA_AMT: -18000, DVA_AMT: 4000, FVA_AMT: -6000, CHG: 1200 }
+panels:
+  - use: finance/valuation-adjustments@1
+    with:
+      rows: { from: $.adj, columns: { name: CP, credit: CVA_AMT, debit: DVA_AMT, funding: FVA_AMT, change: CHG } }

@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: pnl-attribution-bars
+version: 1
+doc:
+  summary: P&L by a grouping - book, desk, strategy - as bars toned by sign.
+  description: >-
+    One row per group with its P&L. Bars are listed by size, the largest first, losses and gains alike; give top to keep
+    only that many. A click on a bar raises an event with its label.
+  category: pnl
+  tags: [pnl, attribution, bars]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per group
+    columns:
+      label: { type: text,   doc: The group's name }
+      pnl:   { type: number, doc: The group's P&L }
+  title: { type: text, default: P&L by group, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How the P&L is written }
+  top:   { type: integer, optional: true, min: 1, max: 500, doc: Keep only this many groups, the largest by size }
+emits:
+  - { name: bar, payload: { label: text }, doc: A bar was chosen }
+panels:
+  - id: bars
+    kind: hbar
+    title: arg.title
+    rows: "map(take(sort(arg.rows, abs(@.pnl), true), coalesce(arg.top, size(arg.rows))), {label: @.label, pnl: @.pnl})"
+    label: label
+    value: pnl
+    fmt: "%{fmt}"
+    tone: sign
+    emits: [ { name: bar, on: bar-click, payload: { label: "@.label" } } ]

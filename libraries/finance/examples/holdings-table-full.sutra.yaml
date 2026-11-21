@@ -1,0 +1,21 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: holdings-table-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Holdings table (full)'" }
+data:
+  hold:
+    rows:
+      - { ISSUER: Alder Ltd, QTY: 41000, MV: 4200000, WT: 0.42, CHG: 1500 }
+      - { ISSUER: Birch Corp, QTY: 30000, MV: 2600000, WT: 0.26, CHG: -2000 }
+      - { ISSUER: Cedar plc, QTY: 12000, MV: 1900000, WT: 0.19, CHG: 0 }
+      - { ISSUER: Dune Inc, QTY: 9000, MV: 1300000, WT: 0.13, CHG: 400 }
+panels:
+  - use: finance/holdings-table@1
+    with:
+      title: Top holdings
+      top: 3
+      rows: { from: $.hold, columns: { name: ISSUER, value: MV, quantity: QTY, weight: WT, change: CHG } }

@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: collateral-ledger-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Collateral ledger'" }
+data:
+  coll:
+    rows:
+      - { ASSET: Government bond A, SIDE: Held, NOMINAL: 5000000, CCY: USD, VAL: 4900000 }
+      - { ASSET: Cash, SIDE: Posted, NOMINAL: 1200000, CCY: USD, VAL: 1200000 }
+panels:
+  - use: finance/collateral-ledger@1
+    as: ledger
+    with:
+      rows: { from: $.coll, columns: { asset: ASSET, direction: SIDE, nominal: NOMINAL, currency: CCY, value: VAL } }
+  - { id: picked, kind: markdown, text: "Asset ${@ledger.open.asset}", waits: ledger-ledger }

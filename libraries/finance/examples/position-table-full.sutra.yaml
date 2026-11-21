@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: position-table-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Position table (full)'" }
+data:
+  pos:
+    rows:
+      - { SYM: ALDR, QTY: 1000, PX: 101.4, MKT_VAL: 101400, DAY_PNL: 1300 }
+      - { SYM: BIRC, QTY: 500, PX: 96.4, MKT_VAL: 48200, DAY_PNL: -250 }
+      - { SYM: CEDR, QTY: 2500, PX: 12.6, MKT_VAL: 31500, DAY_PNL: 90 }
+panels:
+  - use: finance/position-table@1
+    with:
+      title: Equity positions
+      rows: { from: $.pos, columns: { instrument: SYM, quantity: QTY, value: MKT_VAL, price: PX, pnl: DAY_PNL } }

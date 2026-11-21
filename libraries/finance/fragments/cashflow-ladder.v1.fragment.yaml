@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: cashflow-ladder
+version: 1
+doc:
+  summary: Cash flows by date as a ladder - date, type, signed amount, currency, with the running net.
+  description: >-
+    One row per cash flow, listed by date. The running net adds the amounts in date order, so give one currency per
+    ladder; the currency is shown but not converted.
+  category: trading
+  tags: [cashflows, ladder, net]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per cash flow
+    columns:
+      date:     { type: date,   doc: The cash flow date }
+      amount:   { type: number, doc: The signed amount, receipts positive }
+      currency: { type: text,   doc: The currency }
+      type:     { type: text,   optional: true, doc: The kind of flow, such as coupon or principal }
+  title: { type: text, default: Cash flows, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How amounts are written }
+panels:
+  - id: ladder
+    kind: ladder
+    title: arg.title
+    rows: "map(sort(arg.rows, @.date), {date: @.date, type: @.type, amount: @.amount, currency: @.currency, net: sum(take(sort(arg.rows, @.date), #index + 1), 'amount')})"
+    columns:
+      - { label: Date, bind: "@.date", fmt: date }
+      - { label: Type, bind: "@.type" }
+      - { label: Amount, bind: "@.amount", fmt: "%{fmt}", tone: sign }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Running net, bind: "@.net", fmt: "%{fmt}", tone: sign }

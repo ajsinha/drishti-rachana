@@ -1,0 +1,36 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: stress-table
+version: 1
+doc:
+  summary: Stress scenarios with their P&L, toned by sign, the worst first and highlighted, each with its description.
+  description: >-
+    One row per scenario. The rows are listed worst first. A click on a row raises an event with the scenario's name.
+  category: market-risk
+  tags: [stress, scenarios, table]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per scenario
+    columns:
+      scenario:    { type: text,   doc: The scenario }
+      pnl:         { type: number, doc: The scenario's P&L }
+      description: { type: text,   optional: true, doc: What the scenario assumes }
+  title: { type: text, default: Stress results, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How the P&L is written }
+emits:
+  - { name: open, payload: { scenario: text }, doc: A scenario was chosen }
+panels:
+  - id: stress
+    kind: table
+    title: arg.title
+    rows: "map(sort(arg.rows, @.pnl), {scenario: @.scenario, pnl: @.pnl, description: @.description})"
+    search: false
+    highlight: "@.pnl == min(map(arg.rows, @.pnl))"
+    columns:
+      - { label: Scenario, bind: "@.scenario" }
+      - { label: P&L, bind: "@.pnl", fmt: "%{fmt}", tone: sign }
+      - { label: Description, bind: "@.description" }
+    emits: [ { name: open, on: row-click, payload: { scenario: "@.scenario" } } ]

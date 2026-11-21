@@ -1,0 +1,21 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: limit-table-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Limit table (full)'" }
+data:
+  limits:
+    rows:
+      - { LIM_NAME: VaR firm, LIM_AMT: 2500000, USED_AMT: 1850000, OWNER: Head of market risk }
+      - { LIM_NAME: Credit desk, LIM_AMT: 1000000, USED_AMT: 1100000, OWNER: Credit desk head }
+      - { LIM_NAME: FX delta, LIM_AMT: 5000000, USED_AMT: 4300000, OWNER: FX desk head }
+      - { LIM_NAME: Rates DV01, LIM_AMT: 400000, USED_AMT: 120000, OWNER: Rates desk head }
+panels:
+  - use: finance/limit-table@1
+    with:
+      title: Desk limits
+      warn-at: 0.85
+      rows: { from: $.limits, columns: { name: LIM_NAME, limit: LIM_AMT, used: USED_AMT, owner: OWNER } }

@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: pnl-waterfall-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Pnl waterfall (full)'" }
+data:
+  fx:
+    rows:
+      - { EFFECT: Opening value, AMT: 12500000, IS_OPEN: true }
+      - { EFFECT: Rates, AMT: 85000, IS_OPEN: false }
+      - { EFFECT: Spreads, AMT: -32000, IS_OPEN: false }
+      - { EFFECT: FX, AMT: 41000, IS_OPEN: false }
+      - { EFFECT: Carry, AMT: 12000, IS_OPEN: false }
+      - { EFFECT: New trades, AMT: 18000, IS_OPEN: false }
+      - { EFFECT: Unexplained, AMT: -7000, IS_OPEN: false }
+panels:
+  - use: finance/pnl-waterfall@1
+    with:
+      title: Day P&L explain
+      sum-label: Closing value
+      rows: { from: $.fx, columns: { effect: EFFECT, amount: AMT, total: IS_OPEN } }

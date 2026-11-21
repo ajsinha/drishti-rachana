@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: backtest-chart-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Backtest chart'" }
+data:
+  backtest:
+    rows:
+      - { BIZ_DATE: "2026-01-12", PNL_USD: 120000, VAR_USD: 310000 }
+      - { BIZ_DATE: "2026-01-13", PNL_USD: -260000, VAR_USD: 305000 }
+      - { BIZ_DATE: "2026-01-14", PNL_USD: -340000, VAR_USD: 298000 }
+panels:
+  - use: finance/backtest-chart@1
+    with: { rows: { from: $.backtest, columns: { date: BIZ_DATE, pnl: PNL_USD, var: VAR_USD } } }

@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: live-blotter
+version: 1
+doc:
+  summary: A trading blotter over a large live table - read a window at a time, new rows on top, changes ticking in place.
+  description: >-
+    Give a live table of your data (a data entry with table, key and live) and the columns to show, each reading one field. The
+    first rows in the order you name are read, then followed: new rows arrive on top, changed cells tick, the count of all rows
+    stays current. The table is never read whole. Number columns can carry a bar in the cell.
+  category: trading
+  tags: [blotter, live, orders]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    key: required
+    doc: The live table (a data entry with table, key and live), one row per order or trade
+    columns:
+      id:     { type: text, doc: The row's key }
+      status: { type: text, optional: true, doc: The row's status }
+  columns:
+    type: columns
+    required: true
+    doc: "The columns: a list of { label, bind: \"@.field\", fmt, tone }, each reading one field"
+  order: { type: id, default: id, doc: The field the rows are ordered by, newest first (a time or a version) }
+  title: { type: text, default: Blotter, doc: The panel's title }
+panels:
+  - id: blotter
+    kind: live
+    title: arg.title
+    rows: arg.rows
+    columns: "%{columns}"
+    sort: "%{order} desc"
+    top: true

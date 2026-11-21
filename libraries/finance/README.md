@@ -3,7 +3,7 @@
 library: finance
 version: 1.0.0
 summary: Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
-fragments: 50
+fragments: 57
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
 
-50 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+57 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Market data
 
@@ -27,6 +27,21 @@ Correlations between named factors as a shaded square.
 | `fmt` | format | default 'signed2'. How the correlations are written |
 
 Example: `examples/correlation-matrix.sutra.yaml`.
+
+### `finance/curve-compare@1`
+
+Several curves on one tenor axis - today against yesterday, one currency against another - with the spreads underneath.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(curve, tenor, years, value) | required. One row per curve and tenor |
+| `base` | text | default ''. The curve the spreads are taken against (none - no spreads) |
+| `title` | text | default 'Curves'. The panel's title |
+| `fmt` | format | default 'pct2'. How the rates are written |
+
+Events: `point`
+
+Example: `examples/curve-compare.sutra.yaml`.
 
 ### `finance/curve-overview@1`
 
@@ -191,6 +206,20 @@ Cash flows by date as a ladder - date, type, signed amount, currency, with the r
 
 Example: `examples/cashflow-ladder.sutra.yaml`.
 
+### `finance/depth-ladder@1`
+
+An order book as a price ladder - bid sizes on one side, ask sizes on the other, bars for depth, the spread above.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(price, bid_size, ask_size) | required. One row per price level |
+| `levels` | integer | default 10. The levels shown on each side |
+| `title` | text | default 'Depth'. The panel's title |
+| `price-fmt` | format | default 'price2'. How a price is written |
+| `size-fmt` | format | default 'amount0'. How a size is written |
+
+Example: `examples/depth-ladder.sutra.yaml`.
+
 ### `finance/fills-summary@1`
 
 The executions of an order - filled against ordered, average price, slippage, and the fills as a table.
@@ -230,6 +259,19 @@ A trade's life as a timeline - booked, amended, fixed, paid, matured.
 Events: `select`
 
 Example: `examples/lifecycle-events.sutra.yaml`.
+
+### `finance/live-blotter@1`
+
+A trading blotter over a large live table - read a window at a time, new rows on top, changes ticking in place.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(id, status) | required. The live table (a data entry with table, key and live), one row per order or trade |
+| `columns` | columns | required. The columns: a list of { label, bind: "@.field", fmt, tone }, each reading one field |
+| `order` | id | default 'id'. The field the rows are ordered by |
+| `title` | text | default 'Blotter'. The panel's title |
+
+Example: `examples/live-blotter.sutra.yaml`.
 
 ### `finance/order-ticket@1`
 
@@ -382,6 +424,20 @@ Example: `examples/pnl-waterfall.sutra.yaml`.
 
 ## Market risk
 
+### `finance/backtest-chart@1`
+
+Daily P&L as bars against the VaR on the loss side as a line, the exceptions marked.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(date, pnl, var) | required. One row per day |
+| `title` | text | default 'P&L against VaR'. The panel's title |
+| `fmt` | format | default 'signed0'. How the amounts are written |
+
+Events: `point`
+
+Example: `examples/backtest-chart.sutra.yaml`.
+
 ### `finance/backtest-traffic-light@1`
 
 A backtest's verdict - the count of exceptions over the window and the zone it falls in, green, amber or red.
@@ -395,6 +451,20 @@ A backtest's verdict - the count of exceptions over the window and the zone it f
 | `title` | text | default 'Backtest'. The panel's title |
 
 Example: `examples/backtest-traffic-light.sutra.yaml`.
+
+### `finance/concentration-treemap@1`
+
+Where the risk or the exposure sits - rectangles sized by exposure, nested by group, toned by P&L.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(group, name, exposure, pnl) | required. One row per name |
+| `title` | text | default 'Concentration'. The panel's title |
+| `fmt` | format | default 'amount0'. How the exposure is written |
+
+Events: `cell`
+
+Example: `examples/concentration-treemap.sutra.yaml`.
 
 ### `finance/greeks-ladder@1`
 
@@ -543,6 +613,21 @@ Events: `change`
 Example: `examples/what-if-shocks.sutra.yaml`.
 
 ## Limits
+
+### `finance/limit-band@1`
+
+A two-sided limit - the figure on a band between its lower and upper bounds, with the warning zones.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `value` | number | required. The figure |
+| `lower` | number | required. The lower bound (usually negative) |
+| `upper` | number | required. The upper bound |
+| `warn-at` | number | default 0.8. The share of a bound from which the figure is near it |
+| `label` | text | default 'Position'. What the figure is |
+| `fmt` | format | default 'signed0'. How the figure and the bounds are written |
+
+Example: `examples/limit-band.sutra.yaml`.
 
 ### `finance/limit-gauge@1`
 
@@ -748,4 +833,18 @@ Holdings of a portfolio, or holders of a security - name, quantity, value, weigh
 Events: `open`
 
 Example: `examples/holdings-table.sutra.yaml`.
+
+### `finance/performance-chart@1`
+
+A portfolio against its benchmark rebased to 100, the drawdown underneath and the period's return and worst drawdown.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(date, value, benchmark) | required. One row per date, in any order |
+| `title` | text | default 'Performance'. The panel's title |
+| `fmt` | format | default 'amount2'. How the rebased values are written |
+
+Events: `point`
+
+Example: `examples/performance-chart.sutra.yaml`.
 

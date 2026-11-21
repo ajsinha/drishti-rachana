@@ -1,0 +1,47 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: curve-compare
+version: 1
+doc:
+  summary: Several curves on one tenor axis - today against yesterday, one currency against another - with the spreads underneath.
+  description: >-
+    Rows in long form, one per curve and tenor, ordered on the axis by their years. Each curve is a line (at most twelve). With a
+    base curve, each other curve's spread to it is drawn underneath, in basis points, at the tenors both have. A click on a point
+    names its curve and tenor.
+  category: market-data
+  tags: [curves, compare, spread]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per curve and tenor
+    columns:
+      curve: { type: text,   doc: The curve's name }
+      tenor: { type: text,   doc: The tenor (1Y, 5Y) }
+      years: { type: number, doc: The tenor in years, for the order on the axis }
+      value: { type: number, doc: The rate, a fraction (0.0412) }
+  base:  { type: text, default: "", doc: The curve the spreads are taken against (none - no spreads) }
+  title: { type: text, default: Curves, doc: The panel's title }
+  fmt:   { type: format, default: pct2, doc: How the rates are written }
+emits:
+  - { name: point, payload: { curve: text, tenor: text }, doc: A point of a curve was chosen }
+panels:
+  - id: curves
+    kind: line
+    title: arg.title
+    rows: "map(sort(arg.rows, @.years), {curve: @.curve, tenor: @.tenor, value: @.value})"
+    x: tenor
+    y: value
+    by: curve
+    fmt: "%{fmt}"
+    emits: [ { name: point, on: point-click, payload: { curve: "@.curve", tenor: "@.tenor" } } ]
+  - id: spreads
+    kind: line
+    when: "arg.base != ''"
+    title: Spread to the base, bp
+    rows: "map(sort(arg.rows[?@.curve != arg.base && size(arg.rows[?@.curve == arg.base]) > 0], @.years), lambda r: {curve: r.curve, tenor: r.tenor, spread: round(10000 * (r.value - sum(arg.rows[?@.curve == arg.base && @.tenor == r.tenor], 'value')), 2)})"
+    x: tenor
+    y: spread
+    by: curve
+    fmt: amount2

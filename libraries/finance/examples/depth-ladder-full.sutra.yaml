@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: depth-ladder-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Depth ladder (full)'" }
+data:
+  book:
+    rows:
+      - { PX: 101.29, BID_QTY: 0, ASK_QTY: 2500 }
+      - { PX: 101.28, BID_QTY: 0, ASK_QTY: 1500 }
+      - { PX: 101.27, BID_QTY: 0, ASK_QTY: 900 }
+      - { PX: 101.26, BID_QTY: 0, ASK_QTY: 400 }
+      - { PX: 101.25, BID_QTY: 500, ASK_QTY: 0 }
+      - { PX: 101.24, BID_QTY: 1200, ASK_QTY: 0 }
+      - { PX: 101.23, BID_QTY: 800, ASK_QTY: 0 }
+      - { PX: 101.22, BID_QTY: 3000, ASK_QTY: 0 }
+panels:
+  - use: finance/depth-ladder@1
+    with: { title: Bund future, levels: 3, rows: { from: $.book, columns: { price: PX, bid_size: BID_QTY, ask_size: ASK_QTY } } }

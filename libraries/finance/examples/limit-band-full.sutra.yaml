@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: limit-band-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Limit band (full)'" }
+data:
+  desk: { record: { NET_DELTA_USD: 910000, DELTA_LIMIT_USD: 1000000 } }
+panels:
+  - use: finance/limit-band@1
+    with: { label: Net delta, value: "$.desk.NET_DELTA_USD", lower: "0 - $.desk.DELTA_LIMIT_USD", upper: "$.desk.DELTA_LIMIT_USD", warn-at: 0.85, fmt: compact }

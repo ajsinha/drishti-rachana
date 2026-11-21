@@ -307,27 +307,39 @@ export class BridgeChannel {
 /**
  * The live tables of a view for Drishti Elements' painter (its options.tables; contract 1.2, panel kind live): for a dataset's live
  * reference {table, window, top, filter}, page(query) reads one page and follow(after, keys, top, onPatch, onGap) subscribes with that
- * window (PROTOCOL 16), passes each patch on in seq order and calls onGap on a gap, another epoch or a skipped seq (the painter reads
+ * window (PROTOCOL 16; a table whose schema has no changes is not followed, one without changes.window gets every patch), passes each patch on in seq order and calls onGap on a gap, another epoch or a skipped seq (the painter reads
  * its page again). The answer's window(keys, top) moves the window; stop() ends it.
  * @param {DataClient} client
  * @returns {function(Object): {page: function(Object): Promise<Object>, follow: function(*, Array, boolean, function, function): Object}}
  */
 export function liveTables(client) {
-  return (ref) => ({
-    page: (query) => client.page(ref.table, query),
-    follow(after, keys, top, onPatch, onGap) {
-      let sub = null, last = after, ended = false;
-      const gap = (e) => { if (!ended) { ended = true; stop(); onGap(e); } };
-      const stop = client.follow(ref.table, after, (f) => {
-        if (f.t === 'subd') { sub = f.sub; return; }
-        if (f.t === 'msg' && f.epoch === last.epoch && (f.first || f.seq) === last.seq + 1) { last = { epoch: f.epoch, seq: f.seq }; onPatch(f.data); return; }
-        if (f.t === 'msg' && f.epoch === last.epoch && f.seq <= last.seq) return;
-        gap(f);
-      }, gap, { window: { keys, top: !!top } });
-      return {
-        window(k, t) { return sub ? client.window(sub, k, !!t) : Promise.resolve(); },
-        stop() { ended = true; stop(); }
-      };
-    }
-  });
+  return (ref) => {
+    let can = null;                                                  // the table's capabilities: a table without changes is read, never followed
+    const caps = () => can || (can = client.schema(ref.table).then((s) => (s && s.can) || [], () => []));
+    return {
+      page: (query) => client.page(ref.table, query),
+      follow(after, keys, top, onPatch, onGap) {
+        let sub = null, last = after, ended = false, stop = () => {}, opened;
+        const ready = new Promise((r) => { opened = r; });
+        const gap = (e) => { if (!ended) { ended = true; stop(); onGap(e); } };
+        caps().then((c) => {
+          if (ended || !c.includes('changes')) { opened(false); return; }
+          const windowed = c.includes('changes.window');
+          if (!windowed) opened(true);
+          stop = client.follow(ref.table, after, (f) => {
+            if (f.t === 'subd') { sub = f.sub; opened(true); return; }
+            if (f.t === 'msg' && f.epoch === last.epoch && (f.first || f.seq) === last.seq + 1) { last = { epoch: f.epoch, seq: f.seq }; onPatch(f.data); return; }
+            if (f.t === 'msg' && f.epoch === last.epoch && f.seq <= last.seq) return;
+            gap(f);
+          }, gap, windowed ? { window: { keys, top: !!top } } : undefined);
+        });
+        return {
+          /** resolves true once following (a windowed stream: its subd), false when the table is not followed */
+          ready,
+          window(k, t) { return sub ? client.window(sub, k, !!t) : Promise.resolve(); },
+          stop() { ended = true; stop(); }
+        };
+      }
+    };
+  };
 }

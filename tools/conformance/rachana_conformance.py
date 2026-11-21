@@ -257,6 +257,25 @@ def compare(kind, expect, actual, tolerance, why):
                     return False
                 if "at" in e and not match_at(e["at"], g.get("viewModel"), why, f"steps[{i}] "):
                     return False
+        elif field == "steps" and kind == "fire":          # FORMAT 5.15: per step, `state`, `effects` exactly, `problems` as matched, `at`
+            got = act if isinstance(act, list) else []
+            if len(exp) != len(got):
+                why.append(f"steps: expected {len(exp)}, actual {len(got)}")
+                return False
+            for i, (e, g) in enumerate(zip(exp, got)):
+                for f in ("state", "effects"):
+                    if f in e and canon(e[f]) != canon(g.get(f)):
+                        why.append(f"steps[{i}].{f}: expected {canon(e[f])}, actual {canon(g.get(f))}")
+                        return False
+                if "problems" in e:
+                    gp = g.get("problems") or []
+                    if len(e["problems"]) != len(gp):
+                        why.append(f"steps[{i}].problems: expected {len(e['problems'])}, actual {len(gp)}")
+                        return False
+                    if not all(match_problem(x, y, why) for x, y in zip(e["problems"], gp)):
+                        return False
+                if "at" in e and not match_at(e["at"], g.get("viewModel"), why, f"steps[{i}] "):
+                    return False
         elif field == "value" and tolerance and isinstance(exp, (int, float)) and isinstance(act, (int, float)):
             d = abs(float(exp) - float(act))
             if d > tolerance.get("abs", 0) and d > tolerance.get("rel", 0) * abs(float(exp)):

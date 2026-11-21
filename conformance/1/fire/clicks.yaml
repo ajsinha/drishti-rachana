@@ -1,0 +1,130 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/clicks
+since: "1.2"
+profile: core
+verified: true
+description: "Triggers fired on marks as a painter fires them (FORMAT 5.15, SUTRA_EXPANSION I1, level 1.2): the effects a mark carries run in order, the state they write is carried by the next bind request, and the refusals of a panel, trigger or mark the screen does not have."
+cases:
+
+  - id: a-row-click-writes-state-and-the-view-follows
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (row-click, set: { state, to }); SPEC 2.8"
+    note: "Clicking the second row writes both states; the panel that reads order filters by it. A second click on the first row writes them again."
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Orders'" }
+      data:
+        orders: { rows: [ { id: A, qty: 10 }, { id: B, qty: 25 } ] }
+      state:
+        order: { type: text }
+        size:  { type: number }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-click: [ { set: { state: order, to: "@.id" } }, { set: { state: size, to: "@.qty / 10" } } ]
+        - { id: detail, kind: metric, label: Quantity, value: "$.orders[?@.id == state.order][0].qty ?? 0" }
+    steps:
+      - { panel: orders, trigger: row-click, mark: 1 }
+      - { panel: orders, trigger: row-click }
+    expect:
+      steps:
+        - state: { order: B, size: 2.5 }
+          effects: [ { do: set, state: order, value: B }, { do: set, state: size, value: 2.5 } ]
+          problems: []
+          at:
+            /panels/1/data/value/text: "25"
+        - state: { order: A, size: 1 }
+          effects: [ { do: set, state: order, value: A }, { do: set, state: size, value: 1 } ]
+          at:
+            /panels/1/data/value/text: "10"
+
+  - id: a-bar-click-writes-state
+    kind: fire
+    source: SUTRA_EXPANSION I1 (bar-click on an hbar)
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Desks'" }
+      data:
+        desks: { rows: [ { desk: FX, pnl: 3 }, { desk: Rates, pnl: -1 } ] }
+      state:
+        desk: { type: text, default: FX }
+      panels:
+        - id: by-desk
+          kind: hbar
+          rows: $.desks
+          label: desk
+          value: pnl
+          on:
+            bar-click: [ { set: { state: desk, to: "@.desk" } } ]
+        - { id: chosen, kind: metric, label: Desk, value: "state.desk" }
+    steps:
+      - { panel: by-desk, trigger: bar-click, mark: 1 }
+    expect:
+      steps:
+        - state: { desk: Rates }
+          effects: [ { do: set, state: desk, value: Rates } ]
+          at:
+            /panels/1/data/value/text: "Rates"
+
+  - id: a-mark-without-effects-runs-nothing
+    kind: fire
+    source: FORMAT 5.15
+    note: "A table nobody wired: the click lands on a row and runs nothing; the state stays."
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Orders'" }
+      data:
+        orders: { rows: [ { id: A } ] }
+      state:
+        order: { type: text, default: Z }
+      panels:
+        - { id: orders, kind: table, rows: $.orders, columns: [ { label: Id, bind: "@.id" } ] }
+    steps:
+      - { panel: orders, trigger: row-click }
+    expect:
+      steps:
+        - { state: { order: Z }, effects: [], problems: [] }
+
+  - id: refusals-run-nothing
+    kind: fire
+    source: "FORMAT 5.15 (RCH-5001: a panel, trigger or mark the screen does not have)"
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Orders'" }
+      data:
+        orders: { rows: [ { id: A }, { id: B } ] }
+      state:
+        order: { type: text, default: Z }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-click: [ { set: { state: order, to: "@.id" } } ]
+    steps:
+      - { panel: ghost, trigger: row-click }
+      - { panel: orders, trigger: bar-click }
+      - { panel: orders, trigger: row-click, mark: 2 }
+    expect:
+      steps:
+        - state: { order: Z }
+          effects: []
+          problems: [ { code: RCH-5001, message: "no panel 'ghost' on the screen" } ]
+        - state: { order: Z }
+          effects: []
+          problems: [ { code: RCH-5001, message: "panel 'orders' (table) does not fire bar-click" } ]
+        - state: { order: Z }
+          effects: []
+          problems: [ { code: RCH-5001, message: "panel 'orders' shows no mark 2 (it shows 2)" } ]

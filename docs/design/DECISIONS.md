@@ -306,3 +306,25 @@ The desktop hosts (Electron, Java Swing over JCEF or JavaFX WebView, .NET WebVie
 ### L-12 superseded: the libraries live inside Rachana (owner, 2026-11-21)
 
 The owner does not want a separate library dependency: the fragment libraries (`core`, `finance`, `genomics`, `economy`, `geo`, `ops`, `ai`) move **into this repository** under `libraries/<name>/`, organised by domain, built and released **with Rachana on one version train** (each library keeps its own major in its manifest for `use: lib/frag@N`; the `.rlib` packaging and signing stay, for libraries that other teams write). Drishti then has one dependency (the Rachana pin). The `drishti-rachana-libraries` repository is moved here with its history and then **archived** (read-only); deleting it waits for the GitHub cleanup release. L-11 stands: the libraries are proprietary, under this repository's licence. The public synthetic test library stays where it is.
+
+### S1-OPEN: private state of fragments and outputs wait for a writer (G2 lane A4, 2026-11-21; for the lead)
+
+**Question.** Build S1 `state:` (screen state, a fragment's private state, `outputs:`) now, before I1 (the effect list)?
+
+**Why it is blocked.** SUTRA_EXPANSION S1 says "only an action writes it", and LIBRARIES 6.2/6.3 say the same for a
+fragment's private state and for a state handed over by name. Core has one effect today (`set: <control>` from an event,
+L-21 rule 4); no action can write a state value. Built alone, `state:` would be a constant equal to its `default` (a
+`let:` does that already, S2/X41, built). Four points are also not specified precisely enough to build without guessing:
+(a) how a host hands state values back on the next bind (a `StateValues` beside `ControlValues`? the S4 view-state
+document?); (b) the ViewModel shape at which contract (`state[] {id, value, url, reads}`, refuse or ignore-safe for an
+older painter); (c) the namespacing of a fragment's private state (`<as>.<name>` as ids, `state.<as>.<name>` for outputs)
+and whether a use without `as:` may hold state at all; (d) `url: true` and `remember: user` before S4 is specified.
+
+**Recommendation.** Build S1 together with I1 in one lane, in this order: (1) I1's effect `set: { state: <name>, to:
+<expr> }` (and `set: <control>` as today); (2) S1 `state:` with types, defaults, the 40-entry cap, `state.<id>` reads in
+EL (a new `Expr.State`, parsed only at the level that has the key); (3) the bind request carries `StateValues` exactly
+as `ControlValues` (the host keeps them per reader; `remember: user` is the host's), the ViewModel 1.2 lists
+`state[] {id, value, url, reads}` (`reads`: panels to rebuild, as for controls, from the `state.` reads the compiler
+already knows); (4) fragments: private state ids `<as>.<name>` (a stateful fragment requires `as:`, `RCH-2115` otherwise),
+`outputs: {name: type}` readable by the user as `state.<as>.<name>`, never writable (`RCH-2117`); (5) S4's view-state
+document after that, with `url: true`. Estimate: S1 5 bd + I1's state effect 3 bd + fragments' state/outputs 3 bd.

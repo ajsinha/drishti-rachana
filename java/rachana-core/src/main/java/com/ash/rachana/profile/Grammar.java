@@ -29,10 +29,11 @@ public final class Grammar {
     /**
      * The top-level keys a later language level brings, with that level: below it they are not offered and using one is
      * {@code RCH-2008}. {@code data} (SPEC 2.4, decision D10, level 1.1); {@code libraries} (the libraries a Sutra uses, each with its
-     * major, {@code libraries: [finance@1]}, LIBRARIES.md 7.1, level 1.2).
+     * major, {@code libraries: [finance@1]}, LIBRARIES.md 7.1, level 1.2); {@code let}, {@code functions} (X41, S2) and {@code state}
+     * (S1), level 1.2.
      */
     public static final Map<String, String> LEVEL_KEYS = Map.of(com.ash.rachana.model.DataEntry.KEY, "1.1", "libraries", "1.2",
-            "let", "1.2", "functions", "1.2");
+            "let", "1.2", "functions", "1.2", "state", "1.2");
 
     /** The panel kinds of the grammar that a profile brings (the rest are Core's). */
     public static final Set<PanelKind> PROFILE_KINDS = Collections.unmodifiableSet(EnumSet.of(PanelKind.LINKS, PanelKind.PROVENANCE));

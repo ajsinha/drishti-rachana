@@ -158,6 +158,7 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 | `parents` | `^`, `^^`, …: nearest first | `expr` |
 | `index` | `#index` (default `-1`) | `expr` |
 | `ctl` | control values: `{ region: North }` → `ctl.region`; for a `sutra` case these are the request's control values (TRANSLATION 5) | `expr`, `sutra`, `patch`, `plan` |
+| `state` | state values (level 1.2, SUTRA_EXPANSION S1): `{ order: O-7 }` → `state.order`; for a `sutra` case the request's `state.<id>` values (a list as its items) | `sutra`, `patch`, `plan` |
 | `events` | what panels emitted: `{ trades: { select: { id: 7 } } }` → `@trades.select.id` | `expr`, `sutra` |
 | `src` | `$src` | `expr` |
 | `today` | the as-of date the host sets (`asof()`), ISO text; **required whenever the result could depend on it** (a case never reads a clock) | all but `grammar`, `edit`, `protocol` |

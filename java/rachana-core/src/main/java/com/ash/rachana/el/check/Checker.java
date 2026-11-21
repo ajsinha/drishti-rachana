@@ -215,6 +215,8 @@ public final class Checker {
             case Expr.Filter e -> lists(e);
             case Expr.Ctl c -> err(Problem.LANGUAGE, "ctl." + c.name() + " is a Sutra's control: a table or a model holds data, not a screen's "
                     + "choices", "use param." + c.name() + " (a parameter of the model)", c);
+            case Expr.State c -> err(Problem.LANGUAGE, "state." + c.id() + " is a Sutra's state: a table or a model holds data, not a screen's "
+                    + "state", null, c);
             case Expr.Event e -> err(Problem.LANGUAGE, "@" + e.panel() + " is a screen's event: a table or a model holds data", null, e);
             case Expr.Src s -> err(Problem.LANGUAGE, "$src is a panel's source: a table or a model holds data", null, s);
             case Expr.Index i -> err(Problem.LANGUAGE, "#index is a row's place on a screen: a table or a model holds data", null, i);

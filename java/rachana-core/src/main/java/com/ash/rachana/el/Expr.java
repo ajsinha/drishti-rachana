@@ -93,6 +93,16 @@ public interface Expr {
     }
 
     /**
+     * {@code state.<id>}: a state value of the screen (SUTRA_EXPANSION S1, level 1.2), parsed only while a Sutra that declares state
+     * is in force ({@link Declarations#states()}); empty (null) when the bind carries none and it has no default.
+     */
+    record State(String id) implements Expr {
+        public Object eval(EvalContext c) {
+            return c == null ? null : c.state(id);
+        }
+    }
+
+    /**
      * {@code @<panel>}: what a panel of the screen emitted, a mapping of event name to payload ({@code @trades.open.trade});
      * {@code @parent} is the parent panel's. Nothing (missing) until the event fires.
      */

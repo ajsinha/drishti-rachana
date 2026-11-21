@@ -51,6 +51,7 @@ public final class Declarations {
 
     private final Map<String, Function> functions;
     private final Map<String, String> lets;
+    private final Map<String, String> states;
     private final Set<String> libraries;
     private final String id;
 
@@ -59,8 +60,19 @@ public final class Declarations {
      * @param lets the {@code let:} values in written order (each may read the ones before it)
      */
     public Declarations(Map<String, Function> functions, Map<String, String> lets) {
+        this(functions, lets, Map.of());
+    }
+
+    /**
+     * @param functions the functions by name ({@code share}, {@code treasury.carry})
+     * @param lets the {@code let:} values in written order (each may read the ones before it)
+     * @param states the state values a Sutra holds (SUTRA_EXPANSION S1), id to type ({@code order: text}; a fragment's private state as
+     *     {@code <as>.<name>}): with any, {@code state.<id>} reads one ({@link Expr.State}) and an undeclared id does not compile
+     */
+    public Declarations(Map<String, Function> functions, Map<String, String> lets, Map<String, String> states) {
         this.functions = Collections.unmodifiableMap(new LinkedHashMap<>(functions));
         this.lets = Collections.unmodifiableMap(new LinkedHashMap<>(lets));
+        this.states = Collections.unmodifiableMap(new LinkedHashMap<>(states));
         Set<String> libs = new TreeSet<>();
         functions.keySet().forEach(n -> {
             int dot = n.indexOf('.');
@@ -73,6 +85,7 @@ public final class Declarations {
         this.functions.values().forEach(f -> sb.append("f\u001f").append(f.name()).append('\u001f').append(f.params()).append('\u001f')
                 .append(f.body()).append('\u001e'));
         this.lets.forEach((k, v) -> sb.append("l\u001f").append(k).append('\u001f').append(v).append('\u001e'));
+        this.states.forEach((k, v) -> sb.append("s\u001f").append(k).append('\u001f').append(v).append('\u001e'));
         this.id = sb.length() == 0 ? "" : Integer.toHexString(sb.toString().hashCode()) + ":" + sb.length();
     }
 
@@ -84,13 +97,18 @@ public final class Declarations {
         return lets;
     }
 
+    /** The state values a Sutra holds, id to type, in order (empty when it holds none). */
+    public Map<String, String> states() {
+        return states;
+    }
+
     /** The libraries whose functions are declared ({@code treasury} for {@code treasury.carry}). */
     public Set<String> libraries() {
         return libraries;
     }
 
     public boolean isEmpty() {
-        return functions.isEmpty() && lets.isEmpty();
+        return functions.isEmpty() && lets.isEmpty() && states.isEmpty();
     }
 
     /** What the compile cache keys an expression under beside its source (empty for none). */

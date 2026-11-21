@@ -42,6 +42,9 @@ final class DeclChecks {
             case Expr.Ctl c -> {
                 return function ? "reads ctl." + c.name() + ": a function reads only its parameters" : null;
             }
+            case Expr.State st -> {
+                return function ? "reads state." + st.id() + ": a function reads only its parameters" : null;
+            }
             case Expr.Event ev -> {
                 return function ? "reads @" + ev.panel() + ": a function reads only its parameters" : null;
             }

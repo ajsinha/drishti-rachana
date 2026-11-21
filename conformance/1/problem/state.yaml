@@ -1,0 +1,218 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/state
+since: "1.2"
+profile: core
+verified: true
+description: "Problems of a screen's state: (SUTRA_EXPANSION S1) and of a panel's on: (the effect list, I1), level 1.2."
+cases:
+
+  - id: a-state-type-of-its-own
+    kind: problem
+    source: SUTRA_EXPANSION S1 (text, number, boolean, date, list)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      state:
+        order: { type: money }
+      panels:
+        - { id: a, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2023
+        message: "state order: type is one of text, number, boolean, date, list"
+        range: { start: { line: 7, column: 18 } }
+
+  - id: a-default-that-does-not-fit
+    kind: problem
+    source: SUTRA_EXPANSION S1 (a default of the state's type)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      state:
+        limit: { type: number, default: lots }
+      panels:
+        - { id: a, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2020
+        messageStart: "state limit: the default does not fit the type number"
+        range: { start: { line: 7, column: 35 } }
+
+  - id: url-waits-for-the-view-state-document
+    kind: problem
+    source: decision S1-OPEN d (url and remember wait for S4)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      state:
+        order: { type: text, url: true }
+        compare: { type: boolean, remember: user }
+      panels:
+        - { id: a, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2023
+        messageStart: "state order: url: true keeps a state in the view-state document"
+        range: { start: { line: 7, column: 29 } }
+      - code: RCH-2023
+        messageStart: "state compare: remember: user (kept by the host per reader) comes with the view-state document (S4)"
+        range: { start: { line: 8, column: 39 } }
+
+  - id: a-state-named-like-a-control
+    kind: problem
+    source: SUTRA_EXPANSION S1, S2 (a name shadows nothing)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      controls:
+        - { id: desk, kind: dropdown, options: [ FX, Rates ] }
+      state:
+        desk: { type: text }
+      panels:
+        - { id: a, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2024
+        message: "state 'desk' has the name of a control, a let or a data: entry of this Sutra"
+        range: { start: { line: 9, column: 9 } }
+
+  - id: an-undeclared-state-is-read
+    kind: problem
+    source: SUTRA_EXPANSION S1 (state.<id> names a declared state)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      state:
+        order: { type: text }
+      panels:
+        - { id: a, kind: metric, label: A, value: "state.ordr" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2101
+        messageStart: "expression 'state.ordr': unknown state 'ordr': this Sutra holds order"
+        range: { start: { line: 9, column: 5 } }
+
+  - id: a-function-reads-state
+    kind: problem
+    source: EL_EXPANSION X41 (a body reads only its parameters)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      state:
+        order: { type: text }
+      functions:
+        leak: { params: { x: text }, is: "x + state.order" }
+      panels:
+        - { id: a, kind: metric, label: A, value: "leak('a')" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2101
+        messageStart: "expression 'leak('a')': leak reads state.order: a function reads only its parameters"
+      - code: RCH-2101
+        messageStart: "expression 'leak(null)': leak reads state.order: a function reads only its parameters"
+
+  - id: set-an-undeclared-state
+    kind: problem
+    source: SUTRA_EXPANSION I1 (set names a state the Sutra holds)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        orders: { rows: [ { id: A } ] }
+      state:
+        order: { type: text }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-click: [ { set: { state: chosen, to: "@.id" } } ]
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2020
+        message: "panel 'orders' sets state 'chosen', which the Sutra does not hold (it holds order)"
+        range: { start: { line: 11, column: 5 } }
+
+  - id: triggers-and-effects-of-later-steps
+    kind: problem
+    source: SUTRA_EXPANSION I1 (the closed lists; this level builds row-click, bar-click and set)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        orders: { rows: [ { id: A } ] }
+      state:
+        order: { type: text }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-dblclick: [ { set: { state: order, to: "@.id" } } ]
+            row-click: [ { host: order.cancel } ]
+            bar-click: [ { set: { state: order, to: "@.id" } } ]
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2023
+        messageStart: "the trigger 'row-dblclick' comes with a later step of the effect list"
+        range: { start: { line: 16, column: 21 } }
+      - code: RCH-2023
+        message: "the effect 'host' comes with a later step of the effect list; this level has set"
+        range: { start: { line: 17, column: 20 } }
+      - code: RCH-2023
+        message: "'table' panels do not fire bar-click (bar-click: hbar)"
+        range: { start: { line: 18, column: 18 } }
+
+  - id: state-below-level-1-2
+    kind: problem
+    since: "1.1"
+    source: SUTRA_EXPANSION 6.2 (a later level's key, used below it)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      state:
+        order: { type: text }
+      panels:
+        - { id: a, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2008
+        messageStart: "'state' needs Rachana 1.2"

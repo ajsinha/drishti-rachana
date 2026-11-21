@@ -118,6 +118,18 @@ public record Sutra(
         return extension(DECLARATIONS) instanceof com.ash.rachana.el.Declarations d ? d : com.ash.rachana.el.Declarations.NONE;
     }
 
+    /** The compile result's key for {@link #state()}. */
+    public static final String STATE = "$state";
+
+    /**
+     * Its state values (level 1.2, SUTRA_EXPANSION S1): its own {@code state:} in written order, then the private state of each
+     * fragment use ({@code <as>.<name>}); empty when it has none.
+     */
+    @SuppressWarnings("unchecked")
+    public List<StateEntry> state() {
+        return extension(STATE) instanceof List<?> l ? (List<StateEntry>) l : List.of();
+    }
+
     /** The compile result's key for {@link #advisories()}. */
     public static final String ADVISORIES = "$advisories";
 

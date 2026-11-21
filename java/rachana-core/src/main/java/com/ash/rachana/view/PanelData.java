@@ -7,6 +7,7 @@ package com.ash.rachana.view;
 import com.ash.rachana.view.ViewModel.Cell;
 import com.ash.rachana.view.ViewModel.LinkView;
 import java.util.List;
+import java.util.Map;
 
 /** Kind-specific panel content. One record per panel kind (some kinds share one). */
 public sealed interface PanelData {
@@ -60,10 +61,23 @@ public sealed interface PanelData {
      * @param pick the value a click on the row sets in a control ({@code on-select}); absent when the panel does not select
      * @param crumb on a table with {@code levels}: the row's name in the breadcrumb ("Leg 2 · Float"), else absent
      * @param kidsTotal on a table with {@code levels}: the total row of the rows this one drills into, else absent
+     * @param set what a click on the row writes into the screen's state (contract 1.2, I1 {@code set: { state, to }}): state id to the
+     *     value, evaluated for this row; absent when the panel's {@code on: row-click} writes no state
      */
     record Row(List<Cell> cells, boolean highlight, String path, @Include(Include.Rule.NON_EMPTY) List<Row> children,
             @Include(Include.Rule.NON_NULL) String pick, @Include(Include.Rule.NON_NULL) String crumb,
-            @Include(Include.Rule.NON_NULL) Row kidsTotal, @Include(Include.Rule.NON_NULL) String ev) {
+            @Include(Include.Rule.NON_NULL) Row kidsTotal, @Include(Include.Rule.NON_NULL) String ev,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+
+        /** A row that writes no state. */
+        public Row(List<Cell> cells, boolean highlight, String path, List<Row> children, String pick, String crumb, Row kidsTotal, String ev) {
+            this(cells, highlight, path, children, pick, crumb, kidsTotal, ev, null);
+        }
+
+        /** The same row writing {@code next} into the screen's state when clicked (none: null or empty). */
+        public Row withSet(Map<String, Object> next) {
+            return new Row(cells, highlight, path, children, pick, crumb, kidsTotal, ev, next);
+        }
 
         /** A row without an event key ({@code ev}: on a panel that emits on row-click, the row's place in the data, sent back by a click). */
         public Row(List<Cell> cells, boolean highlight, String path, List<Row> children, String pick, String crumb, Row kidsTotal) {
@@ -149,7 +163,18 @@ public sealed interface PanelData {
         }
     }
 
-    record Bar(String label, double value, String text, String tone, @Include(Include.Rule.NON_NULL) String ev) {
+    record Bar(String label, double value, String text, String tone, @Include(Include.Rule.NON_NULL) String ev,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+
+        /** A bar that writes no state ({@code set}: what a click on it writes into the screen's state, contract 1.2, I1). */
+        public Bar(String label, double value, String text, String tone, String ev) {
+            this(label, value, text, tone, ev, null);
+        }
+
+        /** The same bar writing {@code next} into the screen's state when clicked (none: null or empty). */
+        public Bar withSet(Map<String, Object> next) {
+            return new Bar(label, value, text, tone, ev, next);
+        }
 
         /** A bar without an event key ({@code ev}: on an hbar that emits on bar-click, the bar's row in the data). */
         public Bar(String label, double value, String text, String tone) {

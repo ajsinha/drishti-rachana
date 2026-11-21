@@ -1,0 +1,165 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/fragments-state
+since: "1.2"
+profile: core
+verified: true
+description: "Problems of a fragment's private state and outputs (SUTRA_EXPANSION S1; LIBRARIES 4.4, 6.2, 7.2; decision S1-OPEN c), level 1.2."
+given: {}
+cases:
+
+  - id: a-stateful-fragment-needs-as
+    kind: problem
+    source: "decision S1-OPEN c (a stateful fragment requires as:)"
+    files: &picker
+      picker.v1.fragment.yaml: |
+        rachana: 1
+        fragment: picker
+        version: 1
+        doc:
+          summary: A list whose clicked row is remembered.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per item
+            columns:
+              id: { type: text, doc: The item }
+        state:
+          chosen: { type: text }
+          seen: { type: number, default: 0 }
+        outputs: { chosen: text }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { set: { state: chosen, to: "@.id" } } ]
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      panels:
+        - use: picker@1
+          with: { rows: $.left }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2115
+        messageStart: "fragment picker holds private state (chosen, seen): a use of it is named with as:"
+
+  - id: the-screen-reads-only-outputs
+    kind: problem
+    source: "LIBRARIES 7.2 (outputs: readable, never writable; everything else inside is invisible)"
+    files: *picker
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      panels:
+        - use: picker@1
+          as: p
+          with: { rows: $.left }
+        - id: mine
+          kind: table
+          rows: $.left
+          columns: [ { label: Seen, bind: "state.p.seen" } ]
+          on:
+            row-click: [ { set: { state: p.chosen, to: "@.id" } } ]
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2117
+        message: "state.p.seen is private to the use p of fragment picker; the screen reads its outputs: chosen"
+        range: { start: { line: 15, column: 37 } }
+      - code: RCH-2117
+        message: "state 'p.chosen' belongs to the use p of fragment picker: the screen reads its outputs, never writes them"
+        range: { start: { line: 17, column: 36 } }
+
+  - id: a-fragment-writes-only-its-own-state
+    kind: problem
+    source: "LIBRARIES 6.2 (set on its own state only)"
+    files:
+      tagger.v1.fragment.yaml: |
+        rachana: 1
+        fragment: tagger
+        version: 1
+        doc:
+          summary: A list that tries to write the screen's state.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per item
+            columns:
+              id: { type: text, doc: The item }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { set: { state: order, to: "@.id" } } ]
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      state:
+        order: { type: text }
+      panels:
+        - use: tagger@1
+          as: t
+          with: { rows: $.left }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2117
+        messageStart: "fragment tagger sets state 'order', which is not its own"
+
+  - id: an-output-is-one-of-its-state
+    kind: problem
+    source: "LIBRARIES 7.2 (outputs name private state)"
+    files:
+      bad.v1.fragment.yaml: |
+        rachana: 1
+        fragment: bad
+        version: 1
+        doc:
+          summary: Declares an output it does not hold.
+        params:
+          label: { type: text, default: x, doc: A label }
+        state:
+          query: { type: text }
+        outputs: { answer: text, query: number }
+        panels:
+          - { id: m, kind: metric, label: "arg.label", value: "state.query" }
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      panels:
+        - use: bad@1
+          as: b
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2048
+        messageStart: "fragment bad: output answer is not one of its state"
+      - code: RCH-2048
+        message: "fragment bad: output query is number, its state is text"
+      - code: RCH-2048
+        messageStart: "no block bad@1"

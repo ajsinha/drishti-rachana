@@ -82,6 +82,7 @@ panels:
 | `libraries` | | list of `name@major` | `[]` | the libraries whose fragments the Sutra uses (2.5, LIBRARIES 7.1); the exact version comes from the host's lock | since 1.2 |
 | `let` | | mapping name → expression | `{}` | named values (2.7): read as the bare name in every expression; each may read the ones written before it | since 1.2 |
 | `functions` | | mapping name → `{params, is, doc?, returns?, examples?}` | `{}` | pure functions (2.7), called `name(...)`; a library's are called `<library>.<name>(...)` | since 1.2 |
+| `state` | | mapping id → `{type, default?, doc?}` (≤ 40, fragments' private state included) | `{}` | named values with no widget (2.8): read as `state.<id>`, written only by an effect (`on:`) | since 1.2 |
 | `layout` | | mapping | panels flow | 12-column grid: `areas`, `columns`, `split`, `tabs`, `sections`, `sticky`, `arrange`, `phone`, `tablet` | today |
 | `phone` | | mapping | | phone order, default tier, summary | today |
 | `keys` | | mapping `F1`..`F12` → action | `{}` | function keys (TRANSLATION 2.5) | today |
@@ -241,9 +242,14 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   fragment reads nothing of the screen (`RCH-2117`). `as: <name>` on a use scopes every id it brings (`<name>-<id>`).
   `emits: [{name, payload, doc}]` declares the events the fragment returns, each raised by one inner panel's `emits`
   with that payload; the screen reads them as `@<as>.<event>.<field>`; `on: {<event>: {set: <control>, field: <name>}}`
-  sets a control from the event's row. A compile result lists the libraries it was built from with their exact version
-  and SHA-384 (`Sutra.libraries()`). Not yet at this level: private `state`, `let`, `outputs`, overlays,
-  host actions in `on:` (they arrive with S1, S2, I1 and L2).
+  sets a control from the event's row; an effect list `on: {<event>: [{set: {state: <id>, to: <expression>}}]}` writes the
+  screen's state, reading the payload as `event.<name>` (2.8). **Private state** (S1): a fragment's `state:` (the shape of
+  2.8) is private to each use and held as `<as>.<name>`; a fragment that has state is used with `as:` (`RCH-2115`); its own
+  panels read it as `state.<name>` and write it with `set` (any other state is `RCH-2117`). `outputs: {name: type}` names
+  private state (of that type; `RCH-2048` otherwise) the screen reads as `state.<as>.<name>`; reading any other private state,
+  or writing one, outputs included, is `RCH-2117`. A compile result lists the libraries it was built from with their exact
+  version and SHA-384 (`Sutra.libraries()`). Not yet at this level: a fragment's `let`, overlays, host actions in `on:`, a
+  `state` name parameter (LIBRARIES 6.3).
 - **Libraries** [since 1.2, X42; LIBRARIES 3, 7, 9 to 12]: `libraries: [demo@1]` names each library and its major;
   `use: demo/figure@1` uses a library's fragment (the major is required); `use: demo@1/figure@1` (the long form) is
   accepted without a `libraries:` key. Unqualified names and `<pack>/<name>@N` of the host's resolver keep their meaning.
@@ -286,6 +292,32 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    and every fragment of a loaded library, calls them as `<library>.<name>(...)`; a library function calls only
    library functions, by their library's name.
 4. Both are compile-time: the ViewModel never shows them.
+
+### 2.8 State and the effect list [since 1.2]
+
+1. **`state:`** (SUTRA_EXPANSION S1) maps an id (letters, digits, `_`, starting with a letter, at most 32 characters) to
+   `{type, default?, doc?}`. `type` is `text`, `number` (an exact decimal, 4.16), `boolean`, `date` (an ISO date text) or
+   `list` (a list of text) (`RCH-2023` otherwise); a `default` is a literal of that type (`RCH-2020` otherwise); without one
+   the value is empty. An id named like a control, a `let` or a `data:` entry is `RCH-2024`. At most 40 values per screen,
+   fragments' private state included (`RCH-2012`). `url: true` and `remember: user` wait for the view-state document (S4)
+   and are `RCH-2023` at this level.
+2. **Reading.** In a Sutra that holds state, `state.<id>` in any expression is that value (a field named `state` is then
+   read as `$.state` or `@.state`); an id it does not hold does not compile (`RCH-2101`, naming the ids it holds). A
+   function's body may not read it (2.7, `RCH-2101`); a `let` may. Below level 1.2 the key is `RCH-2008` and `state.x` keeps
+   its 1.0 meaning (a field).
+3. **The bind.** A bind request carries the values the host kept for the reader as `state.<id>=<text>` (`StateValues`,
+   beside `ControlValues`; a list's items joined by commas). A value of an id the Sutra does not hold, or one that does not
+   fit its type, is ignored and the default stands. The ViewModel lists every value (contract 1.2, VIEWMODEL.md): `state[]
+   {id, value, url, reads}`, `reads` naming the parts whose expressions read it, directly or through a `let`.
+4. **`on:`** (I1) on a panel maps a trigger to a list of effects, run in order. Built at this level: the triggers
+   `row-click` (table, ladder) and `bar-click` (hbar), and the effect `set` in two forms: `set: { state: <id>, to:
+   <expression> }` writes a state value, the expression read with `@` the clicked row and evaluated per row when the panel
+   binds (a row's or bar's `set` in the ViewModel; a value that fails or does not fit the state's type stops the list there);
+   `set: <control>` with an optional `field:` sets a control from the clicked row and is the panel's `on-select` (one
+   control per click, `RCH-2038`). A `set` naming a state the Sutra does not hold is `RCH-2020`. The other triggers of the
+   closed list (`row-dblclick`, `point-click`, `cell-click`, `change`, `open`, `close`), a trigger the panel's kind does not
+   fire, and the other effects (`toggle`, `clear`, `open`, `close`, `go`, `fire`, `submit`, `refresh`, `export`, `copy`,
+   `notify`, `host`) and `when` are `RCH-2023` until their step. `on:` is not offered inside a tab.
 
 ## 3. Where expressions appear
 
@@ -349,6 +381,7 @@ boolean → `true`/`false`; link → its label, else its id; list → `[n]`; obj
 | `#index` | 0-based position of the current row in its list | `-1` |
 | bare `name` | a `let` name in scope; else a field of `@` inside a row; else of `$` | |
 | `ctl.<id>` | the current value of control `id` | empty when not set |
+| `state.<id>` | the current value of state `id` (2.8; level 1.2, read so only in a Sutra that holds state) | empty when not set |
 | `@<panel>` | what panel `<panel>` emitted: `{event: payload}`; `@parent` the parent panel's | empty until it fires |
 | `$src` | what the panel's own `source:` names | empty |
 | `@acc` | inside `reduce`'s third argument only: the value so far | elsewhere: the events of a panel `acc` |

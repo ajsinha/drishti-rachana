@@ -28,7 +28,8 @@ public final class ViewDiff {
     public static List<Patch> patches(ViewModel before, ViewModel after) {
         List<Patch> out = new ArrayList<>();
         if (before.strip().size() != after.strip().size() || before.panels().size() != after.panels().size()
-                || !same(before.title(), after.title()) || !same(before.controls(), after.controls())) {
+                || !same(before.title(), after.title()) || !same(before.controls(), after.controls())
+                || !same(before.state(), after.state())) {                        // contract 1.2: the state values, as the controls
             return null;
         }
         for (int i = 0; i < after.strip().size(); i++) {

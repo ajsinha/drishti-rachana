@@ -18,11 +18,22 @@ public record Final(Double value) {
 
     static final byte TAG = 9;
 
-    byte[] encode() {
+    /**
+     * The state's bytes, as an aggregate state is stored and sent between nodes: a tag, whether there is a figure, the figure. Public for
+     * a host that finishes figures of its own (a cell's once-per-parent figure, a provider's native measure) and stores them beside Core's
+     * states, so it keeps no copy of this format (G4 binder pass R-2).
+     */
+    public byte[] encode() {
         return ByteBuffer.allocate(10).put(TAG).put((byte) (value == null ? 0 : 1)).putDouble(value == null ? 0 : value).array();
     }
 
-    static Final decode(byte[] b) {
+    /** True when {@code bytes} are a {@link #encode() finished figure's} state (its tag), so a host tells them from other states. */
+    public static boolean isEncoded(byte[] bytes) {
+        return bytes != null && bytes.length > 0 && bytes[0] == TAG;
+    }
+
+    /** The figure {@code b} holds ({@link #encode()}'s bytes). */
+    public static Final decode(byte[] b) {
         ByteBuffer bb = ByteBuffer.wrap(b);
         bb.get();
         boolean has = bb.get() == 1;

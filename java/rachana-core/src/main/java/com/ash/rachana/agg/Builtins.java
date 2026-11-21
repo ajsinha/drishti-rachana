@@ -708,7 +708,7 @@ public final class Builtins {
 
         @Override
         public Object decode(byte[] b) {
-            if (b[0] == Final.TAG) {
+            if (Final.isEncoded(b)) {
                 return Final.decode(b);
             }
             Set<String> out = new HashSet<>();

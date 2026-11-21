@@ -20,7 +20,7 @@ params:
       pnl:   { type: number, doc: The group's P&L }
   title: { type: text, default: P&L by group, doc: The panel's title }
   fmt:   { type: format, default: signed0, doc: How the P&L is written }
-  top:   { type: integer, optional: true, min: 1, max: 500, doc: Keep only this many groups, the largest by size }
+  top:   { type: integer, optional: true, min: 1, max: 500, doc: "Keep only this many groups, the largest by size" }
 emits:
   - { name: bar, payload: { label: text }, doc: A bar was chosen }
 panels:

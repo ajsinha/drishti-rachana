@@ -25,6 +25,57 @@ Entries are written per release; the regime's unreleased work is listed after th
   unchanged; API lines of the inherited members logged in `java/api-removals.txt`); the live-table declaration and the Data Protocol
   filter use `Checker.distance`; the form and state browser runners share `runners/static_page.py`.
 
+- **Library doc texts are no longer cut at a comma; the 1.0.0 libraries' content hashes change** (G4, lead decision: no customers
+  yet). An unquoted text in a fragment's flow mapping ends at its first comma: `delta: { type: number, optional: true, doc: The change
+  against a reference, written beside the figure }` is the doc "The change against a reference" and a key "written beside the figure",
+  and `rachana lib build` carried exactly that into the manifest (`core/key-figure`'s `delta`, and 45 more parameter and column docs
+  across the two libraries). The cause is fixed where it starts: a parameter declaration takes only its keys (`type`, `doc`, `default`, `required`,
+  `optional`, `columns`, `contract`, `min`, `max`, `options`, `pattern`, `max-rows`, `live`, `key`, `window`, `dynamic`, `of`) and a
+  column only `type`, `doc`, `optional`; any other is `RCH-2048`, and a key with spaces says to quote the text (LIBRARIES.md 4.2 rule
+  7). The 46 docs are quoted in the fragment files; the manifests, READMEs and `MANIFEST.sha384` of `core` and `finance` are rebuilt
+  (`rachana lib build`, gates LG1-LG5 and LG8 pass, the gallery paints). `FragmentDocTextTest`: a cut doc is refused with the fix; a
+  quoted doc with commas, colons, double and single quotes, `#`, a backslash, accents, CJK and an emoji goes through the manifest
+  writer and back unchanged, and the manifest is not stale. Content hashes (SHA-384 of the canonical archive, signature left out):
+  `core@1.0.0` `6736932f…5857fa7b1` → `f77b54a5…1610d2501`, `finance@1.0.0` `cc79698c…c23a30e68` → `87bd4ca2…178cc9c20`; a host
+  that pinned them (a `rachana.lock`) pins the new ones.
+
+- **`Final`'s state is public API, so a host keeps no copy** (G4 binder pass R-2). `com.ash.rachana.agg.Final` gains `encode()`,
+  `decode(byte[])` and `isEncoded(byte[])` (the tag test Core's own holistic states use too), marked `[experimental]` in
+  `java/api-surface.txt` (additions only). Drishti's `bicompute.functions.Final` (a copy kept because these were package-private) can be
+  deleted: its once-per-parent figures and native measures store and read Core's bytes. `FinalTest`.
+
+- **SPEC 9 items 11 and 12** (G4 binder pass, lead decisions): `and` is the canonical form from level 1.2 and a formula written with `and`
+  stays as written (P10: nothing to migrate); `geomean`'s state and `skewness_pop`'s figure may differ in the last place from Drishti's
+  retired kernel, and Core's kernel is authoritative (8.3h). Item 7 notes the 1.1 catalogue check. Upgrade rule `SAME_AT_EVERY_LEVEL`
+  covers both.
+
+- **The served ViewModel schema names the 1.2 `form` kind's data record** (G4 binder pass R-1; contract 1.2, append-only, CG4).
+  `ViewModelSchema.DATA_BY_KIND` had no entry for `form`, so the schema Core serves (`ViewModelSchema.build()`, the text a host's schema
+  test validates against) gave a form panel's `data` no record; it is now `FormPanel`, in the published order (after `chart`, before
+  `live`), so the generated kind rules equal `spec/1/viewmodel.schema.json`'s, which already held it (the contract file is unchanged).
+  `ViewCodeGeneratedTest` holds every panel kind to its data record. Elements' pinned copy of the contract file already has the record;
+  the next Elements sync re-pins it with this release's file (no change expected).
+
+- **Literal arguments checked against the function catalogue, the one place** (G4 binder pass P14; SPEC 4.10 rule 2). From level
+  1.1 an expression's literal arguments are checked against `functions.yaml` when it compiles (`CatalogueArgs`), wherever a function
+  has no check of its own words: a text outside its parameter's `enum` (`group(..., 'decade')`), a parameter typed `boolean-literal`,
+  `integer-literal`, `number-literal` or `string-literal` given something else (`rank(agg, desc = 'sideways')`, `lag(agg, 1.5, order)`,
+  `measure($.x)`), and an engine function's keyword-only parameter given by place (`rank(sum(x), 'sideways')`, which compiled before).
+  Each is `RCH-2101` at the argument. Level 1.0 is frozen and keeps the reference's acceptance; the audit found every other enumerated
+  text argument (`pad`, `datedif`, `yearfrac`, `intck`, `shift_date`, `fillmissing`, `interp1`) already held by its own check, which keeps
+  its words. Suite `el/catalogue-arguments-1-1` (11 cases, verified); upgrade rule `CATALOGUE_ARGUMENTS` (nothing to rewrite: at 1.0 these
+  are refused when they run).
+
+- **Stack guard: Rachana never crashes on a deep input** (G4 binder pass P15). The depth bound (SPEC 4.12, 200 levels) refuses a deep
+  expression with `RCH-2101` before any stack ends on a normal thread, but a host thread with less stack (Drishti's profile test thread)
+  overflowed while still inside the bound: `coalesce(` 300 deep was a `StackOverflowError` there and `RCH-2101` on the reference. The
+  parser, the checker, the printer and the binder now run again, from the start, on a thread of Core's own with the stack the bounds
+  need (`internal.Deep`; the Sutra declarations in force carried over), so the answer is the bound's own refusal, the same text and
+  place on every thread; only past that thread's stack is it the walk's refusal at the place reached. The JavaScript bundles replace
+  `Deep` (an engine has no second thread): an exhausted stack (`RangeError`, `InternalError`) is the refusal at once. `ElLimitsTest`
+  runs the deep case on 64, 128 and 256 KB stacks at levels 1.0 and 1.2. Drishti can drop its known difference
+  `el/limits#call-chain-past-the-depth`.
+
 - **Elements 3.2.0 vendored** (drishti-elements commit 787f97d, label `3.2.0`): `js/vendor/drishti-elements/3.2.0/` replaces the `3.2.0-dev+a40ca7e` folder (SHA-384 manifest; `ELEMENTS_VERSION`, the server pom, the Python assets, Studio and the docs name it); the pack's `data/formats.yaml` and `world-regions.yaml` are the bundled ones.
 
 - **`rachana upgrade` reads and writes a fragment's level as a Sutra's** (Gate 2 review 10.5; SPEC 2.1 rule 4). A fragment's own

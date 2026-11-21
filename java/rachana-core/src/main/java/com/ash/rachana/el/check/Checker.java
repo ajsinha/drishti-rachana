@@ -89,11 +89,15 @@ public final class Checker {
      */
     public static Checked check(Signatures catalog, Expr tree, Map<Expr, int[]> spans, String text, Scope scope, Fields fields,
             Spelling spelling, boolean v11) {
-        Checker c = new Checker(catalog, scope, fields, spans, text, spelling);
-        c.v11 = v11;
-        ElType t = c.visit(tree);
-        c.top(tree, t);
-        return new Checked(t, List.copyOf(c.problems), Set.copyOf(c.functions), Set.copyOf(c.usedFields), Set.copyOf(c.usedMeasures));
+        // the stack guard: a starved host thread checks again on one with the stack the depth bound needs (each attempt a fresh checker)
+        return com.ash.rachana.internal.Deep.call(() -> {
+            Checker c = new Checker(catalog, scope, fields, spans, text, spelling);
+            c.v11 = v11;
+            ElType t = c.visit(tree);
+            c.top(tree, t);
+            return new Checked(t, List.copyOf(c.problems), Set.copyOf(c.functions), Set.copyOf(c.usedFields), Set.copyOf(c.usedMeasures));
+        }, () -> new Checked(ElType.ANY, List.of(new Problem(Problem.LANGUAGE, Problem.ERROR, "the expression is nested too deeply to check", null, 0,
+                text == null ? 0 : Math.min(text.length(), 1))), Set.of(), Set.of(), Set.of()));
     }
 
     private void top(Expr tree, ElType t) {

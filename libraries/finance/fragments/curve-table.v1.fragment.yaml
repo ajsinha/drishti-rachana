@@ -16,7 +16,7 @@ params:
     required: true
     doc: One row per pillar
     columns:
-      tenor:      { type: text,   doc: The pillar's tenor, such as 3M or 5Y }
+      tenor:      { type: text,   doc: "The pillar's tenor, such as 3M or 5Y" }
       zero:       { type: number, doc: The zero rate }
       instrument: { type: text,   optional: true, doc: The instrument that fixes the pillar }
       quote:      { type: number, optional: true, doc: The market quote }

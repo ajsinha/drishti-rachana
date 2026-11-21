@@ -18,7 +18,7 @@ params:
     columns:
       date:  { type: date,   doc: The scenario date }
       rate:  { type: number, doc: The exchange rate }
-      shock: { type: number, optional: true, doc: The shock applied on that date, as a fraction }
+      shock: { type: number, optional: true, doc: "The shock applied on that date, as a fraction" }
   pair:      { type: text, required: true, doc: "The currency pair, such as EURUSD" }
   fmt:       { type: format, default: price4, doc: How rates are written }
   shock-fmt: { type: format, default: pct2, doc: How shocks are written }

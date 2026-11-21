@@ -17,7 +17,7 @@ params:
     doc: One row per scenario and group
     columns:
       scenario: { type: text,   doc: The scenario }
-      group:    { type: text,   doc: The book, desk or factor }
+      group:    { type: text,   doc: "The book, desk or factor" }
       pnl:      { type: number, doc: The P&L }
   title: { type: text, default: Scenarios, doc: The panel's title }
   fmt:   { type: format, default: signed0, doc: How the P&L is written }

@@ -39,7 +39,7 @@ One headline number, large, with its label and a caption.
 | `label` | text | default 'Value'. What the figure is |
 | `fmt` | format | default 'amount2'. How the figure is written |
 | `caption` | text | optional. A line under the figure |
-| `delta` | number | optional. The change against a reference |
+| `delta` | number | optional. The change against a reference, written beside the figure |
 | `delta-fmt` | format | default 'signed2'. How the change is written |
 | `tone` | enum | default 'accent'. How the figure is toned: by its sign, or one fixed tone |
 
@@ -272,7 +272,7 @@ Series stacked as areas over time, with an optional horizontal limit.
 | `title` | text | default 'Stacked areas'. The panel's title |
 | `limit` | number | optional. A horizontal limit drawn across the stack |
 | `limit-label` | text | default 'Limit'. What the limit is called |
-| `unit` | text | default ''. The unit |
+| `unit` | text | default ''. The unit, written beside the values |
 
 Example: `examples/area-stack.sutra.yaml`.
 
@@ -285,10 +285,10 @@ A histogram of one numeric column, with an optional marked value.
 | `values` | list<number> | required. The values to count into bins |
 | `title` | text | default 'Distribution'. The panel's title |
 | `bins` | integer | default 40. How many bins |
-| `marker` | number | optional. A value to mark |
+| `marker` | number | optional. A value to mark, such as a mean or a threshold |
 | `marker-label` | text | default 'Marker'. What the marked value is called |
 | `fmt` | format | default 'compact'. How the values are written |
-| `unit` | text | default ''. The unit |
+| `unit` | text | default ''. The unit, written beside the values |
 
 Example: `examples/distribution.sutra.yaml`.
 
@@ -358,7 +358,7 @@ A line of one series: x along the bottom, y up the side.
 | `rows` | table(x, y) | required. One row per point, in x order |
 | `title` | text | default 'Series'. The panel's title |
 | `fmt` | format | default 'amount2'. How the values are written |
-| `unit` | text | default ''. The unit |
+| `unit` | text | default ''. The unit, written beside the values |
 | `step` | boolean | default False. Whether the line steps between points instead of joining them |
 | `mark` | text | optional. An x value to mark |
 
@@ -373,7 +373,7 @@ From a starting total to an ending total through signed steps.
 | `rows` | table(label, value, total) | required. One row per step, in order |
 | `title` | text | default 'Bridge'. The panel's title |
 | `fmt` | format | default 'signed0'. How the amounts are written |
-| `unit` | text | default ''. The unit |
+| `unit` | text | default ''. The unit, written beside the amounts |
 | `sum-label` | text | default 'Total'. What the closing figure is called |
 
 Example: `examples/steps-waterfall.sutra.yaml`.

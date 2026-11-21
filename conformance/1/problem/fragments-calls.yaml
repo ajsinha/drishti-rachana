@@ -56,7 +56,7 @@ cases:
             columns:
               desk: { type: text, doc: The desk }
               amount: { type: number, doc: The amount }
-              note: { type: text, optional: true, doc: A remark, not shown yet }
+              note: { type: text, optional: true, doc: "A remark, not shown yet" }
         emits:
           - { name: pick, payload: { desk: text }, doc: A desk was chosen }
         panels:

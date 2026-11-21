@@ -15,7 +15,7 @@ params:
   label:     { type: text, default: Value, doc: What the figure is }
   fmt:       { type: format, default: amount2, doc: How the figure is written }
   caption:   { type: text, optional: true, doc: A line under the figure }
-  delta:     { type: number, optional: true, doc: The change against a reference, written beside the figure }
+  delta:     { type: number, optional: true, doc: "The change against a reference, written beside the figure" }
   delta-fmt: { type: format, default: signed2, doc: How the change is written }
   tone:      { type: enum, options: [sign, accent, ok, warn, bad, pos, neg], default: accent, doc: "How the figure is toned: by its sign, or one fixed tone" }
 panels:

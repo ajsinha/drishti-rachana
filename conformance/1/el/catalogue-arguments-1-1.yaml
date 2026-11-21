@@ -1,0 +1,75 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Language level 1.1: literal arguments are checked against the function catalogue when an expression compiles (SPEC 4.10 rule 2), written 2026-11-21 (G4 binder pass P14).
+suite: el/catalogue-arguments-1-1
+since: "1.1"
+profile: core
+verified: true
+description: "A call's literal arguments against the function catalogue, the one place: a closed set of words (enum), a parameter that takes a literal (boolean-literal, integer-literal, string-literal), and an engine function's keyword-only parameters by name only. Measure-level functions compile in Core and are refused only when evaluated without an engine."
+given: {"record": {"rows": [{"d": "2026-01-05", "x": 1}], "x": 2}}
+cases:
+
+  - id: "rank-direction-by-place-is-refused"
+    kind: "expr-error"
+    source: "functions.yaml rank(agg, desc = true, by = [fields]): desc is keyword-only (G4 binder pass P14)"
+    expr: "rank(sum($.rows, 'x'), 'sideways')"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 23, "end": 33}}]}
+
+  - id: "rank-direction-is-true-or-false"
+    kind: "expr-error"
+    source: "functions.yaml rank: desc is a boolean-literal"
+    expr: "rank(sum($.rows, 'x'), desc = 'sideways')"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 30, "end": 40}}]}
+
+  - id: "dense-rank-direction-is-a-literal"
+    kind: "expr-error"
+    source: "functions.yaml dense_rank: desc is a boolean-literal"
+    expr: "dense_rank(sum($.rows, 'x'), desc = $.x > 1)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "rank-with-its-direction-compiles"
+    kind: "grammar"
+    source: "functions.yaml rank(agg, desc = true, by = [fields])"
+    text: "rank(sum($.rows, 'x'), desc = false)"
+    expect: {"accepted": true}
+
+  - id: "lag-rows-are-a-whole-number"
+    kind: "expr-error"
+    source: "functions.yaml lag(agg, n, order): n is an integer-literal"
+    expr: "lag(sum($.rows, 'x'), 1.5, $.d)"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 22, "end": 25}}]}
+
+  - id: "moving-average-rows-are-written"
+    kind: "expr-error"
+    source: "functions.yaml moving_avg(agg, n, order): n is an integer-literal"
+    expr: "moving_avg(sum($.rows, 'x'), $.x, $.d)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "lag-with-its-rows-compiles"
+    kind: "grammar"
+    source: "functions.yaml lag(agg, n, order, by = [fields])"
+    text: "lag(sum($.rows, 'x'), 1, $.d)"
+    expect: {"accepted": true}
+
+  - id: "measure-name-is-a-text-literal"
+    kind: "expr-error"
+    source: "functions.yaml measure('name'): name is a string-literal"
+    expr: "measure($.x)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "group-by-period-is-one-of-its-words"
+    kind: "expr-error"
+    source: "functions.yaml group(list, key, aggregate?, by?): by is one of month, year"
+    expr: "group($.rows, @.d, sum(@.x), 'decade')"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "group-by-month-compiles"
+    kind: "grammar"
+    source: "functions.yaml group(list, key, aggregate?, by?)"
+    text: "group($.rows, @.d, sum(@.x), 'month')"
+    expect: {"accepted": true}
+
+  - id: "a-function-with-its-own-check-keeps-its-words"
+    kind: "expr-error"
+    source: "functions.yaml intck: its own check answers (the catalogue's check runs only where a function has none)"
+    expr: "intck('fortnight', date('2026-01-01'), date('2026-02-01'))"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'intck('fortnight', date('2026-01-01'), date('2026-02-01'))': intck: unknown interval 'fortnight' (known: "}]}

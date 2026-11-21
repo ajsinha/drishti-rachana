@@ -18,7 +18,7 @@ params:
   last:        { type: number, optional: true, doc: The last price }
   change:      { type: number, optional: true, doc: The change on the day }
   price-fmt:   { type: format, default: price2, doc: How the price is written }
-  status:      { type: text, dynamic: true, optional: true, doc: A status word, such as Active or Suspended }
+  status:      { type: text, dynamic: true, optional: true, doc: "A status word, such as Active or Suspended" }
 panels:
   - id: head
     kind: kv

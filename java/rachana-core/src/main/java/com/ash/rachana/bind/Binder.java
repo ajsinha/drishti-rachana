@@ -96,38 +96,13 @@ public final class Binder {
             title = p.title();   // a title that cannot be rendered from this document shows as written
         }
         String explanation = c.layout().explanations().get(p.id());
+        String shown = title;
+        BindContext given = c;
         try {
-            c = p.kind() == PanelKind.LINE ? c : sourced(p, c);   // a line names its source in its data itself
-            PanelData data = switch (p.kind()) {
-                case KV -> kv(p, c);
-                case TABLE, LADDER -> table(p, c);
-                case TABS -> tabs(p, c);
-                case LINE -> line(p, c);
-                case AREA -> area(p, c);
-                case HBAR -> bars(p, c);
-                case LINKS, PROVENANCE -> profilePanel(p, c);
-                case STATUS -> status(p, c);
-                case MARKDOWN -> new PanelData.Text(el.template(p.option("text").orElse("")).render(c.eval()));
-                case GAUGE -> gauge(p, c);
-                case SURFACE -> surface(p, c);
-                case WATERFALL -> charts.waterfall(p, c);
-                case HISTOGRAM -> charts.histogram(p, c);
-                case SCATTER -> charts.scatter(p, c);
-                case CANDLESTICK -> charts.candlestick(p, c);
-                case GRAPH -> charts.graph(p, c);
-                case TIMELINE -> charts.timeline(p, c);
-                case PIVOT -> charts.pivot(p, c);
-                case METRIC -> metric(p, c);
-                case MAP -> maps.map(p, c);
-                case TREEMAP -> more.treemap(p, c);                           // language 1.2
-                case BULLET -> more.bullet(p, c);
-                case GRID, TREE, CHART, LIVE -> datasets.bind(p, c);          // language 1.1 (1.2: live): the rows go into the view's datasets
-                case FORM -> form(p, c);                                       // language 1.2: a standalone form
-            };
-            boolean empty = DatasetBinder.reads(p.kind()) ? DatasetBinder.empty(data, c) : com.ash.rachana.view.Emptiness.of(data);
-            PanelView v = new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer() || explanation != null,
-                    explanation, data, null, empty, p.span().orElse(null), p.height().orElse(null));
-            return p.options().containsKey(com.ash.rachana.model.Effects.ACTIONS) ? v.withActions(actions(p, c.eval())) : v;
+            // the stack guard: a starved host thread binds the panel again on one with the stack the depth bound needs
+            return com.ash.rachana.internal.Deep.call(() -> panel(p, given, shown, explanation), () -> {
+                throw new StackOverflowError();
+            });
         } catch (SourceDeniedException e) {
             return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer(), explanation, null, null, true,
                     p.span().orElse(null), p.height().orElse(null), "no access to " + e.kind());
@@ -139,6 +114,41 @@ public final class Binder {
             return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer(), explanation, null,
                     error, true, p.span().orElse(null), p.height().orElse(null));
         }
+    }
+
+    /** One panel's view: its data bound from the document (the caller turns a failure into the panel's error). */
+    private PanelView panel(Panel p, BindContext c, String title, String explanation) {
+        c = p.kind() == PanelKind.LINE ? c : sourced(p, c);   // a line names its source in its data itself
+        PanelData data = switch (p.kind()) {
+            case KV -> kv(p, c);
+            case TABLE, LADDER -> table(p, c);
+            case TABS -> tabs(p, c);
+            case LINE -> line(p, c);
+            case AREA -> area(p, c);
+            case HBAR -> bars(p, c);
+            case LINKS, PROVENANCE -> profilePanel(p, c);
+            case STATUS -> status(p, c);
+            case MARKDOWN -> new PanelData.Text(el.template(p.option("text").orElse("")).render(c.eval()));
+            case GAUGE -> gauge(p, c);
+            case SURFACE -> surface(p, c);
+            case WATERFALL -> charts.waterfall(p, c);
+            case HISTOGRAM -> charts.histogram(p, c);
+            case SCATTER -> charts.scatter(p, c);
+            case CANDLESTICK -> charts.candlestick(p, c);
+            case GRAPH -> charts.graph(p, c);
+            case TIMELINE -> charts.timeline(p, c);
+            case PIVOT -> charts.pivot(p, c);
+            case METRIC -> metric(p, c);
+            case MAP -> maps.map(p, c);
+            case TREEMAP -> more.treemap(p, c);                           // language 1.2
+            case BULLET -> more.bullet(p, c);
+            case GRID, TREE, CHART, LIVE -> datasets.bind(p, c);          // language 1.1 (1.2: live): the rows go into the view's datasets
+            case FORM -> form(p, c);                                       // language 1.2: a standalone form
+        };
+        boolean empty = DatasetBinder.reads(p.kind()) ? DatasetBinder.empty(data, c) : com.ash.rachana.view.Emptiness.of(data);
+        PanelView v = new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer() || explanation != null,
+                explanation, data, null, empty, p.span().orElse(null), p.height().orElse(null));
+        return p.options().containsKey(com.ash.rachana.model.Effects.ACTIONS) ? v.withActions(actions(p, c.eval())) : v;
     }
 
     private static String area(Panel p) {

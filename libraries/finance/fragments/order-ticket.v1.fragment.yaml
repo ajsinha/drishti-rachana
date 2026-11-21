@@ -17,7 +17,7 @@ params:
   types:      { type: list<text>, default: [ MARKET, LIMIT ], doc: "The order types offered; LIMIT needs a limit price" }
   tifs:       { type: list<text>, default: [ DAY, GTC, IOC ], doc: The times in force offered }
   side:       { type: text, default: "", doc: "The side to start from, an expression (\"'BUY'\", state.side); none when empty" }
-  last:       { type: number, optional: true, doc: The last price, the limit price to start from }
+  last:       { type: number, optional: true, doc: "The last price, the limit price to start from" }
   title:      { type: text, default: Order ticket, doc: The panel's title }
   send-label: { type: text, default: Send, doc: The send button's text }
 emits:

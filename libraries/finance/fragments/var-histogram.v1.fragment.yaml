@@ -18,12 +18,12 @@ params:
     doc: One row per scenario
     columns:
       pnl: { type: number, doc: The scenario's P&L }
-  var:   { type: number, required: true, doc: The value-at-risk, as a positive loss }
-  es:    { type: number, optional: true, doc: The expected shortfall, as a positive loss }
+  var:   { type: number, required: true, doc: "The value-at-risk, as a positive loss" }
+  es:    { type: number, optional: true, doc: "The expected shortfall, as a positive loss" }
   title: { type: text, default: Scenario P&L, doc: The panel's title }
   bins:  { type: integer, default: 40, min: 2, max: 200, doc: How many bins }
   fmt:   { type: format, default: compact, doc: How the values are written }
-  unit:  { type: text, default: "", doc: The unit, written beside the values }
+  unit:  { type: text, default: "", doc: "The unit, written beside the values" }
 panels:
   - id: histogram
     kind: histogram

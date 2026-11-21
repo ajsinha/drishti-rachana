@@ -25,4 +25,13 @@ class ViewCodeGeneratedTest {
                 .as("ViewModelSchemaText.java is stale: run ViewCodeGenerator.main").isEqualTo(ViewCodeGenerator.schemaSource());
         assertThat(ViewModelSchema.build()).isEqualTo(ViewCodeGenerator.schema());
     }
+
+    /** Every panel kind of the grammar has the record its data is (G4 binder pass R-1: the 1.2 form kind had none in the served schema). */
+    @Test
+    void everyPanelKindHasItsDataRecord() {
+        for (com.ash.rachana.model.PanelKind k : com.ash.rachana.model.PanelKind.values()) {
+            assertThat(ViewModelSchema.DATA_BY_KIND).as("the data record of panel kind " + k.id()).containsKey(k.id());
+        }
+        assertThat(ViewModelSchema.DATA_BY_KIND.get("form")).isEqualTo(PanelData.FormPanel.class);
+    }
 }

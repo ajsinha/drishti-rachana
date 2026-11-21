@@ -16,7 +16,7 @@ params:
     required: true
     doc: One row per tenor, in tenor order
     columns:
-      tenor: { type: text,   doc: The tenor, such as 3M or 5Y }
+      tenor: { type: text,   doc: "The tenor, such as 3M or 5Y" }
       value: { type: number, doc: The measure at the tenor }
   title: { type: text, default: Term structure, doc: The panel's title }
   fmt:   { type: format, default: pct4, doc: How the values are written }

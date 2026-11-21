@@ -21,7 +21,7 @@ params:
   title:       { type: text, default: Stacked areas, doc: The panel's title }
   limit:       { type: number, optional: true, doc: A horizontal limit drawn across the stack }
   limit-label: { type: text, default: Limit, doc: What the limit is called }
-  unit:        { type: text, default: "", doc: The unit, written beside the values }
+  unit:        { type: text, default: "", doc: "The unit, written beside the values" }
 panels:
   - id: area
     kind: area

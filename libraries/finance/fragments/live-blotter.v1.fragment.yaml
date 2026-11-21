@@ -25,7 +25,7 @@ params:
     type: columns
     required: true
     doc: "The columns: a list of { label, bind: \"@.field\", fmt, tone }, each reading one field"
-  order: { type: id, default: id, doc: The field the rows are ordered by, newest first (a time or a version) }
+  order: { type: id, default: id, doc: "The field the rows are ordered by, newest first (a time or a version)" }
   title: { type: text, default: Blotter, doc: The panel's title }
 panels:
   - id: blotter

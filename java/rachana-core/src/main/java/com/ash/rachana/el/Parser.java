@@ -8,6 +8,7 @@ import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.el.Token.Type;
 import com.ash.rachana.el.check.Signatures;
+import com.ash.rachana.internal.Deep;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -122,11 +123,26 @@ final class Parser {
 
     /** {@link #parse(String, Set)} against one instance's function table. */
     static Expr parse(String src, Set<String> macros, FunctionTable table) {
-        Parser parser = new Parser(src, Lexer.tokens(src), ElLimits.DEFAULTS);
-        parser.macros = macros;
-        parser.table = table;
-        Expr e = parser.expr();
-        return e;
+        List<Token> tokens = Lexer.tokens(src);
+        Parser[] last = new Parser[1];
+        return guarded(() -> {
+            Parser parser = new Parser(src, tokens, ElLimits.DEFAULTS);
+            last[0] = parser;
+            parser.macros = macros;
+            parser.table = table;
+            return parser.expr();
+        }, last);
+    }
+
+    /**
+     * {@code walk} under the stack guard ({@link Deep}): a host thread with less stack than the depth bound needs runs the parse again on
+     * a thread that has it, so the bound refuses ({@code RCH-2101}), never a {@link StackOverflowError}; past even that, the refusal at
+     * the place the last attempt reached. Each attempt is a fresh parser ({@code last} holds the newest).
+     */
+    private static <T> T guarded(java.util.function.Supplier<T> walk, Parser[] last) {
+        return Deep.call(walk, () -> {
+            throw last[0] == null ? new ElException("expression nested too deeply", 0) : last[0].tooDeep();
+        });
     }
 
     private Set<String> macros = Set.of();
@@ -154,14 +170,20 @@ final class Parser {
             throw new ElException("expression is longer than " + limits.maxLength()
                     + " characters (drishti.rachana.max-expression-length)", limits.maxLength());
         }
-        Parser parser = new Parser(src, Lexer.tokens(src, v11), limits, v11);
-        parser.table = table;
-        parser.decls = Declarations.inForce();
-        Expr e = parser.expr();
-        if (parser.peek().type() != Type.EOF) {
-            throw new ElException("unexpected '" + parser.peek().text() + "'", parser.peek().pos());
-        }
-        return new Parsed(e, parser.spans);
+        List<Token> tokens = Lexer.tokens(src, v11);
+        Declarations decls = Declarations.inForce();
+        Parser[] last = new Parser[1];
+        return guarded(() -> {
+            Parser parser = new Parser(src, tokens, limits, v11);
+            last[0] = parser;
+            parser.table = table;
+            parser.decls = decls;
+            Expr e = parser.expr();
+            if (parser.peek().type() != Type.EOF) {
+                throw new ElException("unexpected '" + parser.peek().text() + "'", parser.peek().pos());
+            }
+            return new Parsed(e, parser.spans);
+        }, last);
     }
 
     private Token peek() {
@@ -211,6 +233,12 @@ final class Parser {
         }
         depths.put(e, d + 1);
         return e;
+    }
+
+    /** The text {@code e} was written as (its span), or null when it has none. */
+    private String written(Expr e) {
+        int[] s = spans.get(e);
+        return s == null ? null : src.substring(s[0], s[1]);
     }
 
     /** Records that {@code e} was written from {@code start} to where the parser now is (trailing blanks left out). */
@@ -788,6 +816,14 @@ final class Parser {
         String problem = table.check(name, args);
         if (problem != null) {
             throw new ElException(name + ": " + problem, t.pos());
+        }
+        if (v11 && !table.checksItself(name)) {
+            // level 1.1 and later: the literal arguments against the function catalogue, the one place (enums, literal types, keyword-only)
+            CatalogueArgs.Refusal refused = CatalogueArgs.check(name, args, named, this::written);
+            if (refused != null) {
+                int[] at = refused.at() == null ? null : spans.get(refused.at());
+                throw new ElException(name + ": " + refused.message(), at == null ? t.pos() : at[0], at == null ? t.pos() + name.length() : at[1]);
+            }
         }
         List<Expr> all = new ArrayList<>(args);
         all.addAll(named.values());

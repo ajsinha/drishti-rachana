@@ -19,7 +19,7 @@ params:
       name:     { type: text,   doc: The holding's name }
       value:    { type: number, doc: The market value }
       quantity: { type: number, optional: true, doc: The quantity held }
-      weight:   { type: number, optional: true, doc: The weight in the portfolio, as a fraction }
+      weight:   { type: number, optional: true, doc: "The weight in the portfolio, as a fraction" }
       change:   { type: number, optional: true, doc: The change in quantity since the last report }
   title: { type: text, default: Holdings, doc: The panel's title }
   fmt:   { type: format, default: amount0, doc: How values are written }

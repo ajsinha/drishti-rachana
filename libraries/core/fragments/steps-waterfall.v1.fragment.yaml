@@ -21,7 +21,7 @@ params:
       total: { type: boolean, optional: true, doc: True where the value is a total rather than a step }
   title:     { type: text, default: Bridge, doc: The panel's title }
   fmt:       { type: format, default: signed0, doc: How the amounts are written }
-  unit:      { type: text, default: "", doc: The unit, written beside the amounts }
+  unit:      { type: text, default: "", doc: "The unit, written beside the amounts" }
   sum-label: { type: text, default: Total, doc: What the closing figure is called }
 panels:
   - id: bridge

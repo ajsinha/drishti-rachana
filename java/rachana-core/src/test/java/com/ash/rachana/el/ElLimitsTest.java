@@ -60,4 +60,57 @@ class ElLimitsTest {
         assertThat(strict.compile(parens(5))).isNotNull();
         assertThatThrownBy(() -> new ElLimits(0, 10)).isInstanceOf(IllegalArgumentException.class);
     }
+    /** Runs {@code work} on a thread with {@code stack} bytes of stack, as a starved host thread would; its answer or what it threw. */
+    static Object onStack(long stack, java.util.function.Supplier<Object> work) throws InterruptedException {
+        Object[] out = new Object[1];
+        Thread t = new Thread(null, () -> {
+            try {
+                out[0] = work.get();
+            } catch (Throwable e) {
+                out[0] = e;
+            }
+        }, "starved", stack);
+        t.start();
+        t.join();
+        return out[0];
+    }
+
+    /**
+     * P15 (G4 binder pass): on a host thread with too little stack for the depth bound, the walk runs again on a thread that has it, so
+     * the answer is the bound's own refusal, the same text and place as on any thread; never a StackOverflowError. The parser at both
+     * levels, the checker and the printer; a tree within the bound prints and checks alike.
+     */
+    @Test
+    void aStarvedHostThreadGetsTheSameRefusalNeverAStackOverflow() throws Exception {
+        String deep = "coalesce(".repeat(300) + "1" + ")".repeat(300);
+        String within = "coalesce(".repeat(60) + "1" + ")".repeat(60);
+        for (String level : java.util.List.of("1.0", "1.2")) {
+            ElCompiler el = new ElCompiler(100, ElLimits.DEFAULTS, FunctionTable.core(), level);
+            String expected = String.valueOf(onStack(0, () -> {
+                try {
+                    el.compile(deep);
+                    return "compiled";
+                } catch (ElException e) {
+                    return e.getMessage();
+                }
+            }));
+            assertThat(expected).startsWith("RCH-2101").contains("nested deeper than 200");
+            for (long stack : new long[] {64 << 10, 128 << 10, 256 << 10}) {
+                Object starved = onStack(stack, () -> {
+                    try {
+                        new ElCompiler(100, ElLimits.DEFAULTS, FunctionTable.core(), level).compile(deep);
+                        return "compiled";
+                    } catch (ElException e) {
+                        return e.getMessage();
+                    }
+                });
+                assertThat(starved).as(level + " on " + stack + " bytes of stack").isEqualTo(expected);
+                Object checked = onStack(stack, () -> CheckedMode.check(deep, null, com.ash.rachana.el.check.Fields.NONE, level).problems().get(0).message());
+                assertThat(checked).as("checked mode").isInstanceOf(String.class).asString().contains("nested deeper than 200");
+                Expr tree = el.compile(within);
+                Object printed = onStack(stack, () -> Printer.print(tree, level));
+                assertThat(printed).as("printer").isEqualTo(Printer.print(tree, level));
+            }
+        }
+    }
 }

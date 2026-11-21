@@ -384,6 +384,12 @@ that need the live parts use three conventions of the adapter (the cases' paths,
 | `POST /_test/bridge` with a view → host bridge message | the body of the answer is the host → view message it produces (one channel per fixture: its subscriptions last until the next fixture) |
 | `GET /_test/bridge/out` | the host → view messages the channel pushed since the last read (`msg` of its subscriptions), as a JSON array |
 
+A host with live tables (section 16) adds: `POST /_test/live` (a live-table fixture, FORMAT 5.12: a declaration and its source's
+rows; the table's epoch is the host's own), `POST /_test/as` `{ reader, view? }` (later requests are made as that reader; one bridge
+channel per reader), `POST /_test/stream` (change the source, push the stream's upserts, deletes, gap or state), `POST /_test/upkeep`
+`{ waitMs?, advanceMs? }` (move the host's clock, run retention and idle close) and `POST /_test/audit` (the audit events since the
+last read).
+
 The adapter's paths exist only under test and are not part of the protocol.
 
 ## 16. Live tables (additions under `can`)
@@ -404,7 +410,8 @@ patches for those keys only, plus its new `total` when rows outside its page cha
 `top: true` (its page starts at the first row of the table's own order) and an order that is newest first (descending by
 `changedAt` or `rowVersion`), a new or changed row is sent to insert on top and listed in the patch's `top`; any other reader gets
 the total only. The window is changed by a `win` message (bridge, events) `{ sub, keys, top }`, or `POST {base}/changes/{sub}/window`
-in the minimal SSE form, whose first frame is `subd` with the `sub` id. Only the stream's own caller may change it; anyone else gets
+(body `{ keys, top? }`, answered `204`) in the minimal SSE form, whose `POST {base}/changes` body carries `window: { keys, top? }` and
+whose first frame is `subd` with the `sub` id. Only the stream's own caller may change it; anyone else gets
 `rdp.table.unknown`. A reader whose window falls more than the host's capacity behind gets a `gap` (`recoverable: false`) for itself
 only and reads its page again. A subscription without a window gets every patch (section 8).
 

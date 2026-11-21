@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 class LiveTablesTest {
 
     /** A source in memory: whole or columns tier; rows by key text. */
-    static final class Memory implements SnapshotSource {
+    static class Memory implements SnapshotSource {
         final Tier tier;
         final Map<String, Map<String, Object>> rows = new LinkedHashMap<>();
         volatile Runnable duringRead = () -> { };

@@ -1,0 +1,95 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/narrow
+since: "1.0"
+profile: core
+verified: false
+description: "Narrowed and vector-heavy live tables (PROTOCOL 16 narrowing, LIVE_TABLES 2.1): a bare list is refused naming the columns, a narrowed list leaves the heavy columns out, a filter fixing the whole key returns them. Run against a host with live tables (protocol_check.py --live)."
+cases:
+  - id: a-bare-list-is-refused-naming-the-columns
+    kind: protocol
+    source: "PROTOCOL 16 (rows without a filter that fixes one of narrow.anyOf: 422 rdp.query.narrow)"
+    fixture: &pvs
+      name: positions
+      declaration: &decl |
+        rachana: 1
+        live-table: positions
+        snapshot: positions
+        stream: positions.live
+        key: id
+        version: v
+        narrow: { any-of: [book, id] }
+        columns:
+          - { name: id }
+          - { name: v, type: integer }
+          - { name: book }
+          - { name: qty, type: integer }
+          - { name: pvs, type: list, items: decimal, heavy: true }
+      rows: &rows
+        - { id: a, v: 1, book: A, qty: 1, pvs: [1.5, 2.5] }
+        - { id: b, v: 1, book: A, qty: 2, pvs: [3.5] }
+        - { id: c, v: 1, book: B, qty: 3, pvs: [] }
+    steps:
+      - request: { method: GET, path: /tables/positions/rows }
+        expect: { status: 422, body: { error: { code: rdp.query.narrow, anyOf: [book, id] } } }
+
+  - id: a-filter-that-does-not-fix-a-narrow-column-is-refused
+    kind: protocol
+    source: "PROTOCOL 16 (only == or in on the column, at the top or and-ed at the top)"
+    fixture: *pvs
+    steps:
+      - request:
+          method: POST
+          path: /tables/positions/query
+          body: { filter: { op: ">", args: [ { col: qty }, { lit: 0 } ] } }
+        expect: { status: 422, body: { error: { code: rdp.query.narrow } } }
+      - request:
+          method: POST
+          path: /tables/positions/query
+          body: { filter: { op: "||", args: [ { op: "==", args: [ { col: book }, { lit: A } ] }, { op: "==", args: [ { col: book }, { lit: B } ] } ] } }
+        expect: { status: 422, body: { error: { code: rdp.query.narrow } } }
+
+  - id: a-narrowed-list-pages-without-the-heavy-columns
+    kind: protocol
+    source: "PROTOCOL 16 (heavy columns are left out of list pages)"
+    fixture: *pvs
+    steps:
+      - request:
+          method: POST
+          path: /tables/positions/query
+          body: { filter: { op: "&&", args: [ { op: "==", args: [ { col: book }, { lit: A } ] }, { op: ">", args: [ { col: qty }, { lit: 0 } ] } ] } }
+        expect: { status: 200, body: { columns: [id, v, book, qty], values: [ [a, 1, A, 1], [b, 1, A, 2] ], total: 2 } }
+
+  - id: in-on-a-narrow-column-narrows
+    kind: protocol
+    source: "PROTOCOL 16 (in on the column narrows)"
+    fixture: *pvs
+    steps:
+      - request:
+          method: POST
+          path: /tables/positions/query
+          body: { filter: { op: in, args: [ { col: book }, { list: [ { lit: B } ] } ] } }
+        expect: { status: 200, body: { columns: [id, v, book, qty], values: [ [c, 1, B, 3] ] } }
+
+  - id: one-row-by-its-key-has-the-heavy-columns
+    kind: protocol
+    source: "PROTOCOL 16 (query with a filter fixing the whole key returns them)"
+    fixture: *pvs
+    steps:
+      - request:
+          method: POST
+          path: /tables/positions/query
+          body: { filter: { op: "==", args: [ { col: id }, { lit: a } ] } }
+        expect: { status: 200, body: { columns: [id, v, book, qty, pvs], values: [ [a, 1, A, 1, [1.5, 2.5]] ] } }
+
+  - id: the-schema-says-narrow-and-heavy
+    kind: protocol
+    source: "PROTOCOL 16 (schema narrow.anyOf, column heavy, can narrow)"
+    fixture: *pvs
+    steps:
+      - request: { method: GET, path: /tables/positions }
+        expect:
+          status: 200
+          body:
+            name: positions
+            narrow: { anyOf: [book, id] }
+            columns: [ { name: id }, { name: v }, { name: book }, { name: qty }, { name: pvs, heavy: true } ]

@@ -9,13 +9,13 @@ the owner's delegation; the lead accepted them (DECISIONS, "Live tables").
 
 | Step | State |
 |---|---|
-| L1 | **built**: Core `com.ash.rachana.table.LiveTableSpec` (model, checker with every problem at once, `schema()`), codes `RCH-2080`..`2083` (SPEC 6.2; `2084`..`2089` reserved), conformance kind `live` (FORMAT 5.14, suite `live/declaration`, unverified), PROTOCOL section 16 and the JSON schema additions. Profile keys without their profile: `RCH-2060` at the top (as SPEC 6.2 says), `RCH-2058` inside `edit` (the form's code). Not yet: a JavaScript facade entry for Studio and `rachana lint` (the tools bundle answers the `live` kind through the harness only) |
+| L1 | **built**: Core `com.ash.rachana.table.LiveTableSpec` (model, checker with every problem at once, `schema()`), codes `RCH-2080`..`2083` (SPEC 6.2; `2084`..`2089` reserved), conformance kind `live` (FORMAT 5.14, suite `live/declaration`, unverified), PROTOCOL section 16 and the JSON schema additions. Profile keys without their profile: `RCH-2060` at the top (as SPEC 6.2 says), `RCH-2058` inside `edit` (the form's code). The tools bundle's `live(request)` checks a declaration for Studio and `rachana lint` (which lints `*.live.yaml` beside Sutras); the runtime bundle has no checker |
 | L2 | **built**: `ProtocolHost` (routes, bridge, query checks) over `TableProvider`s; `RowQuery` (a query document over rows in memory); `MemoryHost` is a provider; no behaviour change (protocol cases as before) |
 | L3 | **built**: module `rachana-live` (JVM only; guard `LiveModuleGuardTest`): SPIs `SnapshotSource` (whole, columns, query tiers), `LiveStream`; `LiveTable` (subscribe before the snapshot, merge by key and version with `KeyedRows.versionOrder`, condition, epochs, gap resync, paused state, retention, replay log), `LiveTables` (a `TableProvider`: declarations from code or `*.live.yaml`, lazy open, idle close, upkeep), `PollingDiff` |
-| L4 | **built**: `StoreOverlay`: columns-tier indexes (order, filter, audience; kept up to `maxIndexes`, a new source version or `indexTtl` reads again), pages merged with the live side, totals, cursors; query tier shadowed in place; `narrow` (`rdp.query.narrow`) and heavy columns (only with a filter fixing the whole key). Paged tables order by the first sort entry, then the key |
-| L5 | **built**: `Subscription` windows (keys, `top` in a newest-first order, `total` per patch, coalesced every `flushMs`, capacity overflow = one `gap` for that reader), bridge `sub.window`, `win`, `gap`; totals read outside the subscription's lock. Not yet: the minimal SSE `subd` + `POST /changes/{sub}/window`, `TableClient.window` |
+| L4 | **built**: `StoreOverlay`: columns-tier indexes (order, filter, audience; kept up to `maxIndexes`, a new source version or `indexTtl` reads again), pages merged with the live side, totals; query tier shadowed in place; `narrow` (`rdp.query.narrow`) and heavy columns (only with a filter fixing the whole key). Pages order by the whole sort list (`dir`, `nulls`), then the key values; a cursor is keyset (the last row sent, found by binary search in the index and the live side), an offset is placed by counting the live side and the shadowed positions: no page reads the rows before it. Not yet: the query tier does not place new live rows; a `rowTest` re-checks rows at index build |
+| L5 | **built**: `Subscription` windows (keys, `top` in a newest-first order, `total` per patch, coalesced every `flushMs`, capacity overflow = one `gap` for that reader), bridge `sub.window`, `win`, `gap`; totals read outside the subscription's lock; the minimal SSE form's windowed stream (`window` in the `POST /changes` body, first frame `subd`, `POST /changes/{sub}/window`, only the stream's own caller); `TableClient.follow(…, window, top, …)` and `window`; the JavaScript `DataClient.follow` option `window` and `window()` (HTTP and bridge) |
 | L6 | **built**: `Authoriser`, `ReaderView`, `AuditSink` (`read-refused`); row scope pushed down and re-checked, masks before filter/sort, audience-keyed indexes, refusals 403/404, fail closed (no authoriser: reads refused unless `openReads()`, a table with `edit:` refused); readers test (both tiers) |
-| L11 (G2 half) | **not built**: the live test adapter (`/_test/stream`, `/_test/as`, `/_test/audit`) and the `protocol/window`, `protocol/narrow`, `live/*` suites; the ported-case mapping table. The engine's scenarios are covered by `LiveTablesTest` meanwhile |
+| L11 (G2 half) | **built**: the live test adapter `LiveReferenceServer` (`/_test/live`, `/_test/as`, `/_test/stream`, `/_test/upkeep`, `/_test/audit`; PROTOCOL 15), run by `protocol_check.py --live`; suites `protocol/window` (12), `protocol/narrow` (6), `live/merge` (9), `live/resync` (5), `live/retention` (5), `live/overlay` (11), `live/readers` (11), all unverified and green on the reference; the mapping table in section 9.1. Other hosts report live-table cases unsupported (the Python host skips them, LT-14) |
 
 A **live table** is a named table of the [Data Protocol](DATA_PROTOCOL.md) that the server keeps current: a snapshot from a durable
 source, merged by key and version with the changes of a live stream, read a page at a time, and, when its declaration, the site and
@@ -360,6 +360,39 @@ Protocol cases run against any host through the test adapter (PROTOCOL 15), whic
 | `live/overlay` | changed row shadows, removed key hides, new row placed in order; totals; new source version rebuilds; sort by a column the source does not keep; query tier |
 | `live/readers` | two readers, different row filters and masks, concurrently: neither sees the other's rows in pages, patches, totals or changes; a masked value never orders or filters; equal audiences share an index |
 | `live/declaration` | every checker problem; profile keys without the profile; default declaration |
+
+### 9.1 Ported Drishti cases (G2 half)
+
+Each case of Drishti's `liveset` tests (read side; the engine half of `KafkaBlotterTest`) and where it now lives. "Unit" is a JVM test
+of `rachana-live` (`LiveTablesTest`, `StoreOverlayTest`, `LiveReferenceServerTest`); the rest are conformance cases.
+
+| Drishti case | Rachana |
+|---|---|
+| LiveSetTest `changesMergeByKeyAndVersionWithoutDuplicatesOrGoingBack` | `live/merge#older-and-equal-versions-are-dropped`, `#a-newer-version-replaces-the-row`, `#versions-compare-as-numbers`, `#a-skipped-version-is-applied`; unit |
+| LiveSetTest `whatArrivesWhileTheSnapshotIsReadIsAppliedAfterItByVersion` | unit `whatArrivesWhileTheSnapshotIsReadIsAppliedAfterItByVersion` (a race inside the engine: no adapter can drive it) |
+| LiveSetTest `aBurstOfTenThousandUpdatesReachesAViewerCoalescedOrAsOneResync` | `protocol/window#overflow-gives-an-unrecoverable-gap`; unit `aBurstReachesAWindowedReaderCoalescedOrAsOneGap` |
+| LiveSetTest `aPagedViewerIsSentChangesOfItsRowsAndOnlyTheCountOfOthers` | `protocol/window#window-by-keys`, `#a-change-outside-the-window-sends-the-total-only`, `#win-changes-the-window` |
+| LiveSetTest `inANewestFirstOrderANewOrChangedRowIsInsertedOnTopOfAPageAtTheTopAndOnlyCountedElsewhere` | `protocol/window#top-insert-in-a-newest-first-order`, `#no-top-insert-for-a-page-below-the-top`, `#no-top-insert-when-the-order-is-not-newest-first` |
+| LiveSetTest `retentionDropsRowsPastTheirAgeAndBeyondTheCapOldestFirst` | `live/retention#ttl-by-a-column`, `#ttl-by-arrival`, `#max-rows-drops-the-oldest` |
+| LiveSetTest `anEditPassesOnlyWhenTheConfigurationAndTheRightsAllowItAndTheVersionIsCurrent` | G3: `protocol/write` (L7) |
+| LiveSetTest `aDeclarationWithProblemsSaysThemAll` | `live/declaration` (L1) |
+| StorePagesTest `pagesAndTotalsEqualTheMergedOrderWithTheLiveSide` | `live/overlay#a-changed-row-shadows-the-sources-and-moves-in-the-order`, `#a-removed-key-hides-the-sources-row`, `#a-new-row-takes-its-place-in-the-order`, `#a-filtered-page-and-its-total`; unit `pagesFollowTheWholeSortListByCursorAndByOffsetThroughTheLiveSide` |
+| StorePagesTest `aMillionRecordsPageWithinTheBudget` | the scale run (G3 half); unit `aPageFarDownReadsOnlyItsOwnRows` (a far page reads only its own rows) |
+| StorePagesTest `aBlotterHoldsTheLakesTradesAndTheStreamedOnesMergedByKeyAndVersionNewestFirst` | `live/overlay` and `protocol/window#top-insert-in-a-newest-first-order`; unit `pagedPagesAndTotalsEqualTheMergedOrderWithTheLiveSide` |
+| LiveIsolationTest `theSameSearchGivesEachAudienceItsOwnSetAndNeitherReadsTheOthers` | `live/readers#the-same-paged-table-for-two-readers` (a search is a filtered query, LT-5) |
+| LiveIsolationTest `whichNodeAnsweredIsKeptFromPeopleWhoAreNotAdministrators` | the host's (Drishti adapter, i8 step 3): not the engine's |
+| LiveIsolationTest `aDeclaredSetIsSharedButEveryReadKeepsToTheReadersScope` | `live/readers#two-readers-see-their-own-rows-and-totals`, `#patches-reach-only-the-readers-whose-rows-they-are`, `#a-row-that-leaves-a-readers-scope-is-removed-for-them`, `#a-windowed-readers-total-counts-their-rows-only` |
+| LiveQueryTest `aFormOverALiveKindKeepsTheSearchsRowsAndOrderThenTicks` | `live/overlay#a-filtered-page-and-its-total`, `protocol/window#window-by-keys` |
+| LiveQueryTest `aPastBusinessDateOrAKindWithoutALiveBindingIsStaticAndReadAfreshWhenRunAgain` | a declaration without `stream:` is static; `live/retention#idle-close-and-reopen` (read afresh); as-of dates are the host's (i8 step 2) |
+| LiveQueryTest `maskedPeopleGetTheirOwnSetAndAMaskedValueNeverPicksSortsOrFiltersRows` | `live/readers#masked-values-are-sent-masked`, `#a-masked-value-never-orders-or-filters` |
+| LiveQueryTest `aBareMnemonicOpensItsKindsDefaultSetPagedTickingAndCapped` | `protocol/narrow` (a bare list refused); default declarations are the host's (i8 step 4); `capped` has no case yet |
+| LiveQueryTest `aClosedSearchSetIsNotReopenedAsSomethingElse` | no sets (LT-5); a cursor of another query is `rdp.cursor.invalid` (unit `aCursorContinuesAfterItsLastRowWhenRowsBeforeItChangeNeitherRepeatingNorSkipping`) |
+| LiveSetValidationTest `theShippedTradeBlotterPassesAndDescribesReadonlyAndPattern` | `live/declaration#blotter-reads-and-gives-its-schema` |
+| LiveSetValidationTest `aBadDeclarationIsSetAsideWithItsCodeAndRefused` | `live/declaration` (problem cases); `LiveTables.load` sets a file aside |
+| LiveSetValidationTest `aKindWithoutAContractIsCheckedForFormatsOnly` | the host's (data contracts, i8 step 4) |
+| KafkaBlotterTest `everyChangeOfTheKindIsPushedAndTheStateIsReadInOnePass` (engine half) | `live/merge#a-deletion-removes-the-row-and-is-sent`, `live/resync#a-reconnected-stream-is-up-again` |
+| KafkaBlotterTest `aCommandIsSentOnceKeyedByItsChangeIdAndAStaleOneIsRefusedSayingWhoChangedIt` | G3: `protocol/write` (change id, conflict) |
+| KafkaBlotterTest `aDocumentCommandWritesTheAmendedRecordBackWithTheNextVersion` | G3 and the host's write-back (LT-8) |
 
 Beyond conformance: unit tests per class; the ports of Drishti's `LiveSetTest`, `StorePagesTest`, `LiveIsolationTest`,
 `LiveQueryTest`, `LiveSetValidationTest` and the engine half of `KafkaBlotterTest` (each case mapped to a suite above; the mapping

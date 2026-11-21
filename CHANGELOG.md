@@ -44,6 +44,27 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 
+- **L11 (G2 half), conformance**: the live test adapter `LiveReferenceServer` (`rachana-live`: `/_test/live` loads a declaration and
+  its source's rows, `/_test/as` acts as a reader with a view, `/_test/stream` changes the source and pushes the stream, `/_test/upkeep`
+  moves the clock, `/_test/audit` reads the events; PROTOCOL 15), run by `protocol_check.py --live`; a fixture with a `declaration`
+  (FORMAT 5.12, `case.schema.json`) runs only there (other hosts: unsupported; the Python host skips it, LT-14). Suites
+  `protocol/window` 12, `protocol/narrow` 6, `live/merge` 9, `live/resync` 5, `live/retention` 5, `live/overlay` 11, `live/readers` 11,
+  all unverified, all green on the reference; the ported-case mapping table is LIVE_TABLES 9.1.
+- **Windows in the minimal SSE form and the clients**: `POST /changes` takes `window: {keys, top}`, answers `subd` first and is moved by
+  `POST /changes/{sub}/window` (only the stream's own caller: else `rdp.table.unknown`); a gap ends it. `TableClient.follow(…, window,
+  top, …)` and `TableClient.window`; JavaScript `DataClient.follow(…, {window})` and `DataClient.window` over HTTP and the bridge (`win`,
+  a window's `gap` routed). `ReferenceServer` gains `actAs`, `testPath`, `reset`, `onReset` (one bridge channel per caller);
+  `ProtocolHost.remove`. API additions only.
+- **Paging without O(offset)**: a paged table orders by the whole sort list (`dir`, `nulls`), then the key values; its cursor is keyset
+  (the last row sent, found by binary search in the kept index and the live side: rows changing before it neither repeat nor skip),
+  and an offset is placed by counting the live side and the shadowed positions.
+- **Declarations in Studio and lint**: the tools bundle's `live(request)` checks a `.live.yaml` (`{ok, problems, schema}`, FORMAT 5.14);
+  `rachana lint` lints `*.live.yaml` beside Sutras (the Drishti profile's keys with `--profiles core,drishti`). The runtime bundle stays
+  without the checker.
+- The four unverified JVM `examples` cases that fail at level 1.2 (`edit/examples/edit#set-a-title-keeps-comments`,
+  `#remove-a-required-key-is-refused`, `problem/examples/problem#problems-in-position-order-l11`, `#profile-key-without-the-profile`)
+  fail the same on fc74ffd, before the live tables work: not caused by it.
+
 - **L3 to L6, the engine** (new JVM module `rachana-live`, never in Core or the bundles: `LiveModuleGuardTest`): `LiveTables` is a
   Data Protocol provider over `SnapshotSource` (whole, columns, query tiers) and `LiveStream`; merge by key and record version
   (`KeyedRows.versionOrder`), new epoch on a gap, paused streams, retention, `PollingDiff`; `StoreOverlay` pages columns-tier sources

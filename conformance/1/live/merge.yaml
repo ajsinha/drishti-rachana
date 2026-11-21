@@ -1,0 +1,137 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: live/merge
+since: "1.0"
+profile: core
+verified: false
+description: "A live table merges its stream by key and record version (LIVE_TABLES 1.3): older and equal versions dropped, skipped versions applied, the latest arrival without a version column, deletions, rows that stop holding the condition, compound and numeric keys. Run against a host with live tables (protocol_check.py --live, PROTOCOL 15)."
+cases:
+  - id: older-and-equal-versions-are-dropped
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (version rule: never back in time, no duplicates)"
+    fixture: &orders
+      name: orders
+      declaration: &decl |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        version: v
+        where: "@.book != 'DEAD'"
+        columns: [ { name: id }, { name: v, type: integer }, { name: book }, { name: qty, type: integer } ]
+      rows: &rows
+        - { id: a, v: 5, book: A, qty: 1 }
+        - { id: b, v: 1, book: A, qty: 2 }
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 5, book: A, qty: 50 }, { id: a, v: 4, book: A, qty: 40 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { values: [ [a, 5, A, 1] ], version: { seq: 0 } } }
+
+  - id: a-newer-version-replaces-the-row
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (merge by key and version; each applied change the next seq)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 6, book: A, qty: 60 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { sort: [ { col: id } ] } }
+        expect: { status: 200, body: { values: [ [a, 6, A, 60], [b, 1, A, 2] ], total: 2, version: { seq: 1 } } }
+
+  - id: a-skipped-version-is-applied
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (rows are whole: the newest is right even when versions were skipped)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: b, v: 9, book: A, qty: 90 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { filter: { op: "==", args: [ { col: id }, { lit: b } ] } } }
+        expect: { status: 200, body: { values: [ [b, 9, A, 90] ] } }
+
+  - id: versions-compare-as-numbers
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (KeyedRows.versionOrder: 10 is after 9)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 10, book: A, qty: 100 }, { id: a, v: 9, book: A, qty: 90 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { values: [ [a, 10, A, 100] ] } }
+
+  - id: without-a-version-column-the-latest-arrival-wins
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (no version: the latest arrival wins)"
+    fixture:
+      name: orders
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        columns: [ { name: id }, { name: v, type: integer }, { name: qty, type: integer } ]
+      rows: [ { id: a, v: 5, qty: 1 } ]
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 1, qty: 10 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [a, 1, 10] ] } }
+
+  - id: a-deletion-removes-the-row-and-is-sent
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (a deletion leaves the table; PROTOCOL 8.1 remove)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { delete: [ [a] ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, seq: 1, data: { table: orders, remove: [ [a] ] } } ] }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [b, 1, A, 2] ], total: 1 } }
+
+  - id: a-row-that-stops-holding-the-condition-leaves
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (condition: a row that stops holding where leaves the table, a removal)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: b, v: 2, book: DEAD, qty: 2 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { remove: [ [b] ] } } ] }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [a, 5, A, 1] ], total: 1 } }
+
+  - id: a-snapshot-row-outside-the-condition-is-not-held
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (where holds for the snapshot too)"
+    fixture:
+      name: orders
+      declaration: *decl
+      rows: [ { id: a, v: 1, book: A, qty: 1 }, { id: x, v: 1, book: DEAD, qty: 9 } ]
+    steps:
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [a, 1, A, 1] ], total: 1 } }
+
+  - id: compound-and-numeric-keys
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (key text: each value's JSON text; a whole number never as 42.0)"
+    fixture:
+      name: rates
+      declaration: |
+        rachana: 1
+        live-table: rates
+        snapshot: rates
+        stream: rates.live
+        key: [ccy, days]
+        version: v
+        columns: [ { name: ccy }, { name: days, type: integer }, { name: v, type: integer }, { name: rate, type: number } ]
+      rows: [ { ccy: USD, days: 30, v: 1, rate: 1.5 }, { ccy: USD, days: 90, v: 1, rate: 1.75 }, { ccy: EUR, days: 30, v: 1, rate: 2.5 } ]
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { ccy: USD, days: 30, v: 2, rate: 1.25 } ], delete: [ [EUR, 30] ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/rates/query, body: { sort: [ { col: ccy }, { col: days } ] } }
+        expect: { status: 200, body: { values: [ [USD, 30, 2, 1.25], [USD, 90, 1, 1.75] ], total: 2 } }

@@ -1,0 +1,182 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/window
+since: "1.0"
+profile: core
+verified: false
+description: "Windowed subscriptions of a live table (PROTOCOL 16, LIVE_TABLES 1.5): patches for the window's keys, the reader's total when rows outside it change, top inserts in a newest-first order, win, the caller's own window, overflow, resume; the minimal SSE form's subd and window route. Run against a host with live tables (protocol_check.py --live): the fixture is a live table loaded with POST /_test/live; POST /_test/stream changes it, POST /_test/as names the reader (PROTOCOL 15)."
+cases:
+  - id: window-by-keys
+    kind: protocol
+    source: "PROTOCOL 16 (patches for the window's keys only)"
+    fixture: &orders
+      name: orders
+      declaration: &decl |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        version: v
+        changed-at: at
+        sort: { col: at, dir: desc }
+        columns: [ { name: id }, { name: v, type: integer }, { name: book }, { name: qty, type: integer }, { name: at, type: timestamp } ]
+      rows: &rows
+        - { id: a, v: 1, book: A, qty: 1, at: "2026-11-21T09:00:00Z" }
+        - { id: b, v: 1, book: A, qty: 2, at: "2026-11-21T10:00:00Z" }
+        - { id: c, v: 1, book: B, qty: 3, at: "2026-11-21T11:00:00Z" }
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a]] } } }
+        expect: { status: 200, body: { t: res, re: s1, body: { recovered: true } } }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, book: A, qty: 10, at: "2026-11-21T09:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect:
+          status: 200
+          body: [ { t: msg, sub: s1, table: orders, data: { table: orders, update: [ { id: a, v: 2, qty: 10 } ], total: 3 } } ]
+
+  - id: a-change-outside-the-window-sends-the-total-only
+    kind: protocol
+    source: "PROTOCOL 16 (a patch with no rows and a total)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a]] } } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: d, v: 1, book: B, qty: 4, at: "2026-11-21T08:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { table: orders, total: 4 } } ] }
+
+  - id: top-insert-in-a-newest-first-order
+    kind: protocol
+    source: "PROTOCOL 16 (top in a newest-first order: the new row on top of the page)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[c], [b]], top: true } } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: e, v: 1, book: A, qty: 5, at: "2026-11-21T12:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { table: orders, update: [ { id: e } ], top: [[e]], total: 4 } } ] }
+
+  - id: no-top-insert-for-a-page-below-the-top
+    kind: protocol
+    source: "PROTOCOL 16 (any other reader gets the total only)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a]], top: false } } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: e, v: 1, book: A, qty: 5, at: "2026-11-21T12:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { table: orders, total: 4 } } ] }
+
+  - id: no-top-insert-when-the-order-is-not-newest-first
+    kind: protocol
+    source: "PROTOCOL 16 (top only in an order descending by changedAt or rowVersion)"
+    fixture:
+      name: orders
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        version: v
+        sort: { col: qty }
+        columns: [ { name: id }, { name: v, type: integer }, { name: qty, type: integer } ]
+      rows: [ { id: a, v: 1, qty: 1 }, { id: b, v: 1, qty: 2 } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a]], top: true } } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: c, v: 1, qty: 0 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { table: orders, total: 3 } } ] }
+
+  - id: win-changes-the-window
+    kind: protocol
+    source: "PROTOCOL 16 (win { sub, keys, top })"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a]] } } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: win, id: w1, sub: s1, keys: [[b]] } }
+        expect: { status: 200, body: { t: res, re: w1, body: { } } }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: b, v: 2, book: A, qty: 20, at: "2026-11-21T10:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, book: A, qty: 10, at: "2026-11-21T09:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect:
+          status: 200
+          body: [ { t: msg, sub: s1, data: { update: [ { id: b, qty: 20 } ], total: 3 } }, { t: msg, sub: s1, data: { table: orders, total: 3 } } ]
+
+  - id: another-callers-window-is-refused
+    kind: protocol
+    source: "PROTOCOL 16 (only the stream's own caller may change it; anyone else gets rdp.table.unknown)"
+    fixture: { name: orders, declaration: *decl, rows: *rows, readers: { alice: { }, bob: { } } }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a]] } } }
+        expect: { status: 200, body: { body: { recovered: true } } }
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: win, id: w1, sub: s1, keys: [[b]] } }
+        expect: { status: 200, body: { t: res, re: w1, error: { code: rdp.table.unknown } } }
+
+  - id: overflow-gives-an-unrecoverable-gap
+    kind: protocol
+    source: "PROTOCOL 16 (a reader whose window falls more than the capacity behind gets a gap for itself only)"
+    fixture: { name: orders, declaration: *decl, rows: *rows, options: { flushMs: 50, windowCapacity: 1 } }
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a], [b]] } } }
+        expect: { status: 200 }
+      - request:
+          method: POST
+          path: /_test/stream
+          body: { upsert: [ { id: a, v: 2, book: A, qty: 10, at: "2026-11-21T09:00:00Z" }, { id: b, v: 2, book: A, qty: 20, at: "2026-11-21T10:00:00Z" } ] }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/upkeep, body: { waitMs: 300 } }
+        expect: { status: 200 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: gap, sub: s1, table: orders, recoverable: false } ] }
+
+  - id: a-windowed-resume-with-changes-missed-reads-again
+    kind: protocol
+    source: "PROTOCOL 16, 8.3 (a window is restated: a reader that missed changes reads its page again)"
+    fixture: *orders
+    steps:
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 200 }
+        capture: { epoch: /version/epoch }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, book: A, qty: 10, at: "2026-11-21T09:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, after: { epoch: "${epoch}", seq: 0 }, window: { keys: [[a]] } } }
+        expect: { status: 200, body: { t: res, re: s1, body: { recovered: false, version: { seq: 1 } } } }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s2, table: orders, window: { keys: [[a]] } } }
+        expect: { status: 200, body: { t: res, re: s2, body: { recovered: true, version: { seq: 1 } } } }
+
+  - id: sse-windowed-stream-starts-with-subd
+    kind: protocol
+    source: "PROTOCOL 16 (the minimal SSE form's first frame is subd with the sub id)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /changes, body: { table: orders, window: { keys: [[a]] } } }
+        expect: { status: 200, body: [ { t: subd, table: orders } ] }
+
+  - id: sse-window-route-of-an-unknown-stream
+    kind: protocol
+    source: "PROTOCOL 16 (POST {base}/changes/{sub}/window; a stream that is not the caller's is rdp.table.unknown)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /changes/no-such-stream/window, body: { keys: [[a]] } }
+        expect: { status: 404, body: { error: { code: rdp.table.unknown } } }
+
+  - id: the-schema-offers-windows
+    kind: protocol
+    source: "PROTOCOL 16 (can changes.window)"
+    fixture: *orders
+    steps:
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 200, body: { name: orders, key: [id], rowVersion: v, changedAt: at, live: { state: up } } }

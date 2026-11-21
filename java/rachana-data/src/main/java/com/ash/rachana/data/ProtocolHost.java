@@ -45,6 +45,11 @@ public final class ProtocolHost {
         return this;
     }
 
+    /** Removes a provider (its tables are no longer answered here); true when it was there. */
+    public boolean remove(TableProvider provider) {
+        return providers.remove(provider);
+    }
+
     public String base() {
         return base;
     }

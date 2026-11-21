@@ -124,7 +124,10 @@ class Level11Test {
         assertThatThrownBy(() -> V11.compile("range($.l)").eval(EvalContext.of(rec, null))).hasMessageContaining("write span(list, field?)");
     }
 
-    /** EL1-2: {@code -x ** n} and {@code -x ^ n} without parentheses are a warning at 1.1; parentheses on either side silence it. */
+    /**
+     * EL1-2: {@code -x ** n} without parentheses is a warning at 1.1; parentheses on either side silence it. {@code -x ^ n} does not
+     * compile (gate 2, O6): checked mode reports the syntax refusal as RCH-9127.
+     */
     @Test
     void aSignBeforeAPowerIsAHint() {
         var p = CheckedMode.check("-2 ** 2", null, Fields.NONE, "1.1").problems();
@@ -135,7 +138,10 @@ class Level11Test {
                 + "Excel reads (-x) ^ n)");
         assertThat(p.get(0).fix()).isEqualTo("write -(2 ** 2) to keep this meaning, or (-2) ** 2 for the power of the negative");
         assertThat(CheckedMode.check("1 + -$.x ^ 2", null, Fields.NONE, "1.1").problems())
-                .extracting(com.ash.rachana.el.check.Problem::code).containsExactly("RCH-2091");
+                .extracting(com.ash.rachana.el.check.Problem::code).containsExactly("RCH-9127");
+        assertThatThrownBy(() -> V11.compile("-2 ^ 2")).hasMessageContaining("write -(2 ^ n) or (-2) ^ n");
+        assertThat(V11.compile("-(2 ^ 2)").eval(EvalContext.of(com.ash.rachana.api.Node.of(java.util.Map.of()), null)).toString()).isEqualTo("-4");
+        assertThat(CheckedMode.check("(-2) ^ 2", null, Fields.NONE, "1.1").problems()).isEmpty();
         assertThat(CheckedMode.check("-(2 ** 2)", null, Fields.NONE, "1.1").problems()).isEmpty();
         assertThat(CheckedMode.check("(-2) ** 2", null, Fields.NONE, "1.1").problems()).isEmpty();
         assertThat(CheckedMode.check("-2 * 2", null, Fields.NONE, "1.1").problems()).isEmpty();

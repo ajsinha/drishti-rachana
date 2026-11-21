@@ -155,7 +155,11 @@ public final class LiveTableSpec {
         Reader r = new Reader(file, profileKeys, formats);
         issues.forEach(i -> r.problems.add(new SutraProblem("RCH-2033", i.message(), new SourceLocation(file, i.line(), i.column()))));
         r.read(root, true);
-        return r.done();
+        try {
+            return r.done();
+        } catch (SutraException e) {                                    // SPEC 6.1: each problem with its path and range
+            throw new SutraException(com.ash.rachana.parse.ProblemPlaces.of(yaml, file).place(e.problems()));
+        }
     }
 
     /**

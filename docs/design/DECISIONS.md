@@ -269,7 +269,7 @@ The owner delegated mock-up choices to the lead's recommendation; the alternativ
 | # | Decision | Why |
 |---|---|---|
 | EL1-1 | At level 1.1 `range(...)` is only Python's sequence. The A9 aggregate is renamed **`span(list, field?)`** (max − min) at 1.1; level 1.0 keeps the old `range` aggregate unchanged. No dispatch on the first argument's type. | One meaning per name (Python-like, owner PY4); choosing by argument type is fragile and surprises authors and the AI |
-| EL1-2 | Accepted: `**` and `^` share Python's precedence (`-2 ^ 2` is `-4`); the Excel difference is documented in the SPEC and flagged by a lint hint when `-x ^ n` is written without parentheses | One rule for both spellings; Python first (owner) |
+| EL1-2 | Accepted: `**` and `^` share Python's precedence; **amended at gate 2 (O6, 2026-11-21):** a sign right before a power spelled `^` without parentheses is refused at level 1.1 (`RCH-2101`, the message names both parenthesised forms); `-x ** n` keeps Python's rule with the checked-mode hint `RCH-2091`; level 1.0 has no infix `^` | A silent sign difference from Excel is the wrong default for a risk product; `**` stays Python's (owner, gate 2) |
 | EL1-3 | Accepted: whole JSON numbers from a host are exact at 1.1; fractional ones stay doubles | Exact where it is safe without changing host contracts |
 | EL1-4 | Accepted, with a condition: the level replay may skip a 1.0 case only when it is listed (moved with `since`, or withdrawn with a reason) in `compat/levels/moved-cases.yaml`; the G2 gate checks the list | Keeps "replay identical" auditable |
 | EL1-5 | Accepted: number-like text at 1.1 follows the decimal-only literal grammar | One number grammar |

@@ -52,6 +52,16 @@ public final class ToolsMain {
     }
 
     @JSExport
+    public static String checked(String request) {
+        return Facade.checked(request);
+    }
+
+    @JSExport
+    public static String grammar(String request) {
+        return Facade.grammar(request);
+    }
+
+    @JSExport
     public static String view(String request) {
         return Facade.view(request);
     }

@@ -201,13 +201,17 @@ Checked mode (SPEC 4.14). `scope` is `data` (a data scope: `ctl`, `@panel`, `$sr
 `types` gives the known types: `{ record: { qty: integer, price: decimal }, row: { … } }`, each a map from field name
 to one of SPEC 4.14's types, or a nested map for an object. `expect.type` is the checked type; `expect.problems` the
 refusals (`RCH-9127`, `RCH-9129`, `RCH-9152`, `RCH-9161`). A case expects one or the other: a refused expression has
-`type: null`.
+`type: null`. The actual is `{type, problems}`: every problem the checker finds, in order (both sides of `&&` that are not
+conditions are two problems), each `{code, severity, message, fix?, expr: {source, start, end}}`; a warning (`RCH-2091`)
+keeps the type.
 
 ### 5.5 `grammar`
 
 `text` is read by the grammar rule `rule` of [rachana-el.ebnf](../spec/1/rachana-el.ebnf): `expression` (default) or
 `template`. `expect.accepted` is `true` or `false`. These cases hold the recogniser of the grammar proof (plan H6) and
-the parser to the same answer: a text accepted by one and refused by the other is a defect.
+the parser to the same answer: a text accepted by one and refused by the other is a defect. A runtime answers with its own
+compiler at the case's level, so a case's text calls only functions the level has; a text the next level reads differently
+is two cases, the earlier with `until`.
 
 ### 5.6 `format`
 
@@ -230,7 +234,9 @@ schema is `spec/1/viewmodel.schema.json`; its key order is the order of output (
 
 The Sutra is compiled. `expect.ok` is `true` exactly when no problem has severity `error`. `expect.problems` is the
 **complete, ordered** list (section 6); `[]` when there are none: the errors, then the advisories (severity `warning`,
-such as `RCH-2120`). When the Sutra uses libraries (level 1.2), the actual also has `libraries`, each
+such as `RCH-2120`). From level 1.1 each actual problem of the file compiled carries `path` and the full `range` (start
+and end, each with `line`, `column`, `offset`); at level 1.0 a runtime writes `range.start` with `line` and `column` only, the
+shape level 1.0 was recorded in (SPEC 6.1). When the Sutra uses libraries (level 1.2), the actual also has `libraries`, each
 `{name, version, sha384}` sorted by name: the compile result's record of the library bytes it stands on; `expect.libraries`
 compares it whole. For every `problem` case whose actual problems carry
 a `fix`, the runner also applies every fix, compiles again and fails the case if the number of problems grew

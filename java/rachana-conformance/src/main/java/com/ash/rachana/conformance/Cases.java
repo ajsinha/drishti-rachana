@@ -39,7 +39,7 @@ public final class Cases {
     /** The runtime's greeting line (RUNNER 5) for a runtime name ({@code jvm}, {@code node}, {@code chromium}...). */
     public static String hello(String runtime) {
         return "{\"runtime\":" + str(runtime) + ",\"runtimeVersion\":\"rachana-" + VERSION + "\",\"language\":\"1.0\",\"profiles\":" + jsonList(profiles)
-                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"fire\",\"plan\",\"lib\",\"live\"]}";
+                + ",\"kinds\":[\"expr\",\"expr-error\",\"check\",\"grammar\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"fire\",\"plan\",\"lib\",\"live\"]}";
     }
 
     /** One case line answered: its results line (RUNNER 4), without the line end. */
@@ -52,6 +52,8 @@ public final class Cases {
             switch (kind) {
                 case "expr" -> expr(c, sb);
                 case "expr-error" -> exprError(c, sb);
+                case "check" -> checked(c, sb);
+                case "grammar" -> grammar(c, sb);
                 case "format" -> format(c, sb);
                 case "problem" -> problem(c, sb);
                 case "edit" -> edit(c, sb);
@@ -172,6 +174,82 @@ public final class Cases {
         }
     }
 
+    /**
+     * FORMAT 5.4: checked mode (SPEC 4.14) over the case's known types at the case's level. {@code types.record} names the fields of
+     * {@code $}, {@code types.row} those of {@code @}; a nested map is an object whose fields are read by their dotted path. Scope
+     * {@code data} is a row scope (no {@code ctl}, {@code @panel}, {@code $src}, {@code #index}); {@code screen} (or none) the screen's.
+     * The answer: the checked type (null when an error refuses the expression) and every problem, in order, with its place in the text.
+     */
+    public static void checked(Map<String, Object> c, StringBuilder sb) {
+        Map<String, com.ash.rachana.el.check.ElType> cols = new LinkedHashMap<>();
+        Map<String, Object> types = obj(c.get("types"));
+        fieldTypes("$", obj(types.get("record")), cols);
+        fieldTypes("@", obj(types.get("row")), cols);
+        com.ash.rachana.el.check.Fields fields = new com.ash.rachana.el.check.Fields() {
+            @Override
+            public Optional<com.ash.rachana.el.check.Fields.Field> field(List<String> parts) {
+                String path = String.join(".", parts);
+                com.ash.rachana.el.check.ElType t = cols.get(path);
+                return t == null ? Optional.empty() : Optional.of(new com.ash.rachana.el.check.Fields.Field(path, t, false));
+            }
+
+            @Override
+            public boolean alias(String name) {
+                return false;
+            }
+
+            @Override
+            public Optional<String> measure(String nameOrId) {
+                return Optional.empty();
+            }
+
+            @Override
+            public List<String> names() {
+                return new ArrayList<>(cols.keySet());
+            }
+        };
+        String src = text(c.get("expr"));
+        com.ash.rachana.el.check.Checker.Checked r = CheckedMode.check(src, "data".equals(text(c.get("scope")))
+                ? com.ash.rachana.el.check.Scope.ROW : null, fields, level(c));
+        boolean refused = r.problems().stream().anyMatch(com.ash.rachana.el.check.Problem::error);
+        sb.append("{\"type\":").append(refused || r.type() == null ? "null" : str(r.type().word())).append(",\"problems\":[");
+        boolean f = true;
+        for (com.ash.rachana.el.check.Problem p : r.problems()) {
+            if (!f) { sb.append(','); } f = false;
+            sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":").append(str(p.level())).append(",\"message\":").append(str(p.message()));
+            if (p.fix() != null) { sb.append(",\"fix\":").append(str(p.fix())); }
+            sb.append(",\"expr\":{\"source\":").append(str(src)).append(",\"start\":").append(p.start()).append(",\"end\":").append(p.end()).append("}}");
+        }
+        sb.append("]}");
+    }
+
+    /** The known types of {@code root}'s fields by dotted path ({@code $.a}, {@code $.o.b} for a nested map). */
+    private static void fieldTypes(String root, Map<String, Object> types, Map<String, com.ash.rachana.el.check.ElType> out) {
+        types.forEach((k, t) -> {
+            if (t instanceof Map<?, ?>) {
+                out.put(root + "." + k, com.ash.rachana.el.check.ElType.ANY);
+                fieldTypes(root + "." + k, obj(t), out);
+            } else {
+                out.put(root + "." + k, com.ash.rachana.el.check.ElType.ofColumn(text(t)));
+            }
+        });
+    }
+
+    /**
+     * FORMAT 5.5: whether the case's level reads {@code text} by the rule {@code rule} ({@code expression}, the default, or
+     * {@code template}). Read by Rachana's own compiler at that level, the one every Sutra is read with.
+     */
+    public static void grammar(Map<String, Object> c, StringBuilder sb) {
+        boolean ok = true;
+        try {
+            ElCompiler comp = at(c).compiler();
+            if ("template".equals(text(c.get("rule")))) { comp.template(text(c.get("text"))); } else { comp.compile(text(c.get("text"))); }
+        } catch (com.ash.rachana.RachanaException e) {
+            ok = false;
+        }
+        sb.append("{\"accepted\":").append(ok).append('}');
+    }
+
     public static void format(Map<String, Object> c, StringBuilder sb) {
         Object v = c.containsKey("value") ? plain(c.get("value")) : new LinkedHashMap<String, Object>();
         Object node = v instanceof Node ? v : (v == null ? null : v);
@@ -248,7 +326,7 @@ public final class Cases {
             ps.addAll(e.problems());
         }
         sb.append("{\"ok\":").append(ps.isEmpty()).append(",\"problems\":");
-        problems(ps, sb);
+        problems(c, ps, sb);
         sb.append(",\"version\":").append(lib == null ? "null" : str(lib.version())).append(",\"sha384\":").append(lib == null ? "null" : str(lib.sha384()))
                 .append(",\"fragments\":");
         if (lib == null) {
@@ -281,19 +359,39 @@ public final class Cases {
             ps.addAll(e.problems());
         }
         sb.append("{\"ok\":").append(ps.isEmpty()).append(",\"problems\":");
-        problems(ps, sb);
+        problems(c, ps, sb);
         sb.append(",\"schema\":").append(spec == null ? "null" : com.ash.rachana.parse.Json.write(spec.schema())).append('}');
     }
 
-    static void problems(List<com.ash.rachana.SutraProblem> ps, StringBuilder sb) {
+    static void problems(Map<String, Object> c, List<com.ash.rachana.SutraProblem> ps, StringBuilder sb) {
         sb.append('[');
         boolean f = true;
         for (var p : ps) {
             if (!f) { sb.append(','); } f = false;
-            sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":\"error\",\"message\":").append(str(p.message()))
-                    .append(",\"range\":{\"start\":{\"line\":").append(p.location().line()).append(",\"column\":").append(p.location().column()).append("}}}");
+            problem(p, !"1.0".equals(level(c)), sb);
         }
         sb.append(']');
+    }
+
+    /**
+     * One problem of a compile (SPEC 6.1): code, severity, message, and its place. At level 1.1 and later the place is the whole of
+     * SPEC 6.1, {@code path} (the YAML node's JSON Pointer) and {@code range} with start and end (line, column, offset) whenever the
+     * problem is in the text compiled; at level 1.0 it is the start line and column the level was recorded with (compat/levels/1.0,
+     * which a later runtime replays byte for byte). A problem of another file (a fragment, a library) has its start only.
+     */
+    static void problem(com.ash.rachana.SutraProblem p, boolean full, StringBuilder sb) {
+        sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":").append(str(p.severity())).append(",\"message\":").append(str(p.message()));
+        if (full && p.path() != null) {
+            sb.append(",\"path\":").append(str(p.path()));
+        }
+        var r = full ? p.range() : null;
+        sb.append(",\"range\":{\"start\":{\"line\":").append(r == null ? p.location().line() : r.line()).append(",\"column\":")
+                .append(r == null ? p.location().column() : r.column());
+        if (r != null) {
+            sb.append(",\"offset\":").append(r.offset()).append("},\"end\":{\"line\":").append(r.endLine()).append(",\"column\":").append(r.endColumn())
+                    .append(",\"offset\":").append(r.endOffset());
+        }
+        sb.append("}}}");
     }
 
     /** The Sutra is parsed, then its expressions are checked: the problems in the order found. */
@@ -317,9 +415,7 @@ public final class Cases {
         for (int i = 0; i < ps.size() + warnings.size(); i++) {           // errors, then advisories (severity warning; ok stays true)
             var p = i < ps.size() ? ps.get(i) : warnings.get(i - ps.size());
             if (!f) { sb.append(','); } f = false;
-            sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":").append(i < ps.size() ? "\"error\"" : "\"warning\"")
-                    .append(",\"message\":").append(str(p.message()))
-                    .append(",\"range\":{\"start\":{\"line\":").append(p.location().line()).append(",\"column\":").append(p.location().column()).append("}}}");
+            problem(p, !"1.0".equals(level(c)), sb);
         }
         sb.append(']');
         if (!libraries.isEmpty()) {                                        // the compile result's library hashes (level 1.2)

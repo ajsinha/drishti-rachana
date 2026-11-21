@@ -99,6 +99,7 @@ class public final class com.ash.rachana.parse.EffectsReader
 class public final class com.ash.rachana.parse.Json
 class public final class com.ash.rachana.parse.KeyTables
 class public final class com.ash.rachana.parse.PositionalYamlReader
+class public final class com.ash.rachana.parse.ProblemPlaces
 class public final class com.ash.rachana.parse.SutraBlocks
 class public final class com.ash.rachana.parse.SutraDocstring
 class public final class com.ash.rachana.parse.SutraParser
@@ -230,6 +231,7 @@ class public static final enum com.ash.rachana.model.PivotSpec$Mode
 class public static final enum com.ash.rachana.view.Include$Rule
 class public static final record com.ash.rachana.SutraLayoutEditor$Edit
 class public static final record com.ash.rachana.SutraLayoutEditor$Placement
+class public static final record com.ash.rachana.SutraProblem$Range
 class public static final record com.ash.rachana.SutraStore$Change
 class public static final record com.ash.rachana.SutraText$Blocks
 class public static final record com.ash.rachana.SutraWiring$Node
@@ -498,13 +500,33 @@ com.ash.rachana.SutraLayoutEditor$Placement :: public java.lang.String com.ash.r
 com.ash.rachana.SutraPivotEditor :: public com.ash.rachana.SutraLayoutEditor$Edit com.ash.rachana.SutraPivotEditor.apply(java.lang.String,java.lang.String,com.ash.rachana.model.PivotSpec)
 com.ash.rachana.SutraPivotEditor :: public com.ash.rachana.SutraPivotEditor()
 com.ash.rachana.SutraPivotEditor :: public com.ash.rachana.SutraPivotEditor(com.ash.rachana.parse.SutraParser)
+com.ash.rachana.SutraProblem :: public boolean com.ash.rachana.SutraProblem.error()
+com.ash.rachana.SutraProblem :: public com.ash.rachana.SutraProblem com.ash.rachana.SutraProblem.placed(java.lang.String,com.ash.rachana.SutraProblem$Range)
+com.ash.rachana.SutraProblem :: public com.ash.rachana.SutraProblem com.ash.rachana.SutraProblem.warning()
+com.ash.rachana.SutraProblem :: public com.ash.rachana.SutraProblem$Range com.ash.rachana.SutraProblem.range()
 com.ash.rachana.SutraProblem :: public com.ash.rachana.SutraProblem(java.lang.String,java.lang.String,com.ash.rachana.model.SourceLocation)
+com.ash.rachana.SutraProblem :: public com.ash.rachana.SutraProblem(java.lang.String,java.lang.String,java.lang.String,com.ash.rachana.model.SourceLocation,java.lang.String,com.ash.rachana.SutraProblem$Range)
 com.ash.rachana.SutraProblem :: public com.ash.rachana.model.SourceLocation com.ash.rachana.SutraProblem.location()
 com.ash.rachana.SutraProblem :: public final boolean com.ash.rachana.SutraProblem.equals(java.lang.Object)
 com.ash.rachana.SutraProblem :: public final int com.ash.rachana.SutraProblem.hashCode()
 com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.code()
 com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.message()
+com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.path()
+com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.severity()
 com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.toString()
+com.ash.rachana.SutraProblem :: public static final java.lang.String com.ash.rachana.SutraProblem.ERROR
+com.ash.rachana.SutraProblem :: public static final java.lang.String com.ash.rachana.SutraProblem.INFO
+com.ash.rachana.SutraProblem :: public static final java.lang.String com.ash.rachana.SutraProblem.WARNING
+com.ash.rachana.SutraProblem$Range :: public com.ash.rachana.SutraProblem$Range(int,int,int,int,int,int)
+com.ash.rachana.SutraProblem$Range :: public final boolean com.ash.rachana.SutraProblem$Range.equals(java.lang.Object)
+com.ash.rachana.SutraProblem$Range :: public final int com.ash.rachana.SutraProblem$Range.hashCode()
+com.ash.rachana.SutraProblem$Range :: public final java.lang.String com.ash.rachana.SutraProblem$Range.toString()
+com.ash.rachana.SutraProblem$Range :: public int com.ash.rachana.SutraProblem$Range.column()
+com.ash.rachana.SutraProblem$Range :: public int com.ash.rachana.SutraProblem$Range.endColumn()
+com.ash.rachana.SutraProblem$Range :: public int com.ash.rachana.SutraProblem$Range.endLine()
+com.ash.rachana.SutraProblem$Range :: public int com.ash.rachana.SutraProblem$Range.endOffset()
+com.ash.rachana.SutraProblem$Range :: public int com.ash.rachana.SutraProblem$Range.line()
+com.ash.rachana.SutraProblem$Range :: public int com.ash.rachana.SutraProblem$Range.offset()
 com.ash.rachana.SutraStore :: public boolean com.ash.rachana.SutraStore.remove(java.lang.String,int)
 com.ash.rachana.SutraStore :: public com.ash.rachana.SutraStore()
 com.ash.rachana.SutraStore :: public java.lang.Runnable com.ash.rachana.SutraStore.listen(java.util.function.Consumer<com.ash.rachana.SutraStore$Change>)
@@ -2737,6 +2759,7 @@ com.ash.rachana.model.Sutra :: public static final int com.ash.rachana.model.Sut
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.ADVISORIES
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.DECLARATIONS
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.LIBRARIES
+com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.PLACES
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.STATE
 com.ash.rachana.model.Title :: public com.ash.rachana.model.Title(java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.model.Title :: public final boolean com.ash.rachana.model.Title.equals(java.lang.Object)
@@ -2937,6 +2960,13 @@ com.ash.rachana.parse.PositionalYamlReader$Issue :: public final java.lang.Strin
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public int com.ash.rachana.parse.PositionalYamlReader$Issue.column()
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public int com.ash.rachana.parse.PositionalYamlReader$Issue.line()
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public java.lang.String com.ash.rachana.parse.PositionalYamlReader$Issue.message()
+com.ash.rachana.parse.ProblemPlaces :: public boolean com.ash.rachana.parse.ProblemPlaces.equals(java.lang.Object)
+com.ash.rachana.parse.ProblemPlaces :: public com.ash.rachana.SutraProblem com.ash.rachana.parse.ProblemPlaces.place(com.ash.rachana.SutraProblem)
+com.ash.rachana.parse.ProblemPlaces :: public int com.ash.rachana.parse.ProblemPlaces.hashCode()
+com.ash.rachana.parse.ProblemPlaces :: public java.lang.String com.ash.rachana.parse.ProblemPlaces.toString()
+com.ash.rachana.parse.ProblemPlaces :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.ProblemPlaces.place(java.util.List<com.ash.rachana.SutraProblem>)
+com.ash.rachana.parse.ProblemPlaces :: public static com.ash.rachana.parse.ProblemPlaces com.ash.rachana.parse.ProblemPlaces.of(java.lang.String,java.lang.String)
+com.ash.rachana.parse.ProblemPlaces :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.ProblemPlaces.place(com.ash.rachana.model.Sutra,java.util.List<com.ash.rachana.SutraProblem>)
 com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.atLeast(java.lang.String,java.lang.String)
 com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.isBlockFile(java.nio.file.Path)
 com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.isUse(com.ash.rachana.parse.PNode)

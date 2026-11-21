@@ -5,6 +5,23 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Gate 2 fixes A (compiler and engine)**:
+  - **F4 / O7, the `check` and `grammar` kinds run**: the 49 frozen cases no runtime answered are answered on the JVM, both JavaScript
+    bundles (facade `checked`, `grammar`; the tools bundle's harness) and Python on V8. Corrected cases that had never run: checked
+    mode reports every problem (`el/check#check-mtm-n`, `#check-status-in-1-2`: two each); `expected` of SPEC 6.1 is deferred
+    (`el/examples/check#unknown-name-did-you-mean`). `grammar/reserved`: the seven refusals level 1.1 reads (`|>`, `??`, spread, `{}`,
+    comments, digit separators, `??` in a template part) carry `until: "1.0"`, each with a level 1.1 twin that is accepted
+    (`pipe-refused` was wrong at 1.1: it passed only because `f` is no function).
+  - **F7 / O4, problems carry `path`, a full `range` and severity** (SPEC 6.1): `SutraProblem` is `(code, severity, message, location,
+    path, range)` (the three-argument constructor stays); the parser places every problem of the file it read (`parse.ProblemPlaces`:
+    the node's JSON Pointer and start and end with line, column and UTF-16 offset), live-table declarations too; advisories are
+    `warning`. Conformance answers carry them from level 1.1 (level 1.0 keeps its recorded shape, so its replay is identical). From
+    level 1.1 a duplicate panel id is reported at the id (`/panels/<n>/id`). `doc`, `fix` on compile problems and `expected` are
+    deferred to a later minor (SPEC 6.1 says so). `path` restored in `problem/examples/problem` (`-l11`, `profile-key-without-the-profile`).
+  - **O6, `-x ^ y` refused at level 1.1** (`RCH-2101`, the message names `-(x ^ n)` and `(-x) ^ n`); `-x ** n` keeps Python's rule and
+    the checked-mode hint `RCH-2091`; level 1.0 has no infix `^`. Cases `el/sign-power-1-1`; DECISIONS EL1-2 amended.
+  - **O5, `range` rename**: complete since lane B (`span` at 1.1); the SPEC's list of pending pivot names says so.
+
 - **Corpus binds no longer flaky**: `CustomerCorpusTest.recordedBindsReplay…` flipped between "differs" and "listed but identical now"
   because both the reference (i7a) and Core wrote some objects from `Map.of`, whose key order is drawn afresh in every JVM run. Core now
   writes a form's `rules`, `steps` and a field's `options` (and a problem's `at`, a grouped query's columns) in declaration order, and a

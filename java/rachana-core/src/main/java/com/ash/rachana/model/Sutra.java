@@ -134,6 +134,12 @@ public record Sutra(
     public static final String ADVISORIES = "$advisories";
 
     /**
+     * The key of the index that places a problem in the text the Sutra was read from (SPEC 6.1: path and range,
+     * {@link com.ash.rachana.parse.ProblemPlaces}); absent for a Sutra not read from a text.
+     */
+    public static final String PLACES = "$places";
+
+    /**
      * The libraries it was compiled from (level 1.2): each with its exact version and archive hash, sorted by name; empty when it uses
      * none.
      */

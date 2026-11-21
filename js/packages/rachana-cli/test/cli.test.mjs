@@ -137,6 +137,20 @@ test("lib verify runs the jar's LibraryTool (needs the Java classes built)", { s
   finally { delete process.env.RACHANA_CLASSPATH; rmSync(d, { recursive: true }); }
 });
 
+test("upgrade runs the jar's Upgrade: a dry run, then --write declares 1.2 and spells span (needs the Java classes built)", { skip: !existsSync(join(jv, "rachana-cli", "target", "classes")) && "java not built" }, async () => {
+  assert.deepEqual(libCommand(["x.sutra.yaml"], { RACHANA_JAR: "r.jar" }, "upgrade"), ["java", ["-jar", "r.jar", "upgrade", "x.sutra.yaml"]]);
+  process.env.RACHANA_CLASSPATH = cp;
+  const d = tmp();
+  const f = join(d, "u.sutra.yaml");
+  writeFileSync(f, "rachana: 1\nsutra: u\nversion: 1\npanels:\n  - { id: m, kind: metric, label: S, value: \"range($.r, 'p')\" }\n");
+  try {
+    assert.equal(await main(["upgrade", f], io().io), 0);
+    assert.ok(readFileSync(f, "utf8").startsWith("rachana: 1\n"));
+    assert.equal(await main(["upgrade", f, "--write"], io().io), 0);
+    assert.ok(readFileSync(f, "utf8").startsWith("rachana: 1.2\n") && readFileSync(f, "utf8").includes("span("));
+  } finally { delete process.env.RACHANA_CLASSPATH; rmSync(d, { recursive: true }); }
+});
+
 const examples = resolve(import.meta.dirname, "../../../../examples");
 test("lint reads each Sutra's own level and refuses --level; the examples lint clean", { skip: !hasBundle && "bundle not built" }, async () => {
   assert.equal(await main(["lint", join(examples, "static-sales"), join(examples, "live-orders")], io().io), 0);

@@ -48,7 +48,20 @@ public final class RachanaSchema {
         s.put("required", List.copyOf(required));
         s.put("additionalProperties", false);
         Map<String, Object> p = new LinkedHashMap<>();
-        p.put("rachana", Map.of("const", SutraParser.LANGUAGE, "description", "The Rachana language version; always " + SutraParser.LANGUAGE));
+        if (grammar.level() == null || "1.0".equals(grammar.level())) {
+            p.put("rachana", Map.of("const", SutraParser.LANGUAGE, "description", "The Rachana language version; always " + SutraParser.LANGUAGE));
+        } else {                                                  // SPEC 2.1 rule 4: the level the Sutra is written for, at most this one
+            List<Object> numbers = new ArrayList<>(List.of(SutraParser.LANGUAGE));
+            List<Object> texts = new ArrayList<>();
+            for (String l : com.ash.rachana.profile.Grammar.LEVELS) {
+                if (com.ash.rachana.parse.SutraBlocks.atLeast(grammar.level(), l)) {
+                    numbers.add(new java.math.BigDecimal(l));
+                    texts.add(l);
+                }
+            }
+            p.put("rachana", Map.of("anyOf", List.of(Map.of("enum", numbers), Map.of("enum", texts)),
+                    "description", "The language level the Sutra is written for: 1 is 1.0, 1.N is 1.N (at most " + grammar.level() + ")"));
+        }
         p.put("sutra", Map.of("type", "string", "pattern", "^[a-z][a-z0-9-]{1,63}$", "description", "The Sutra's name: lower-case kebab"));
         p.put("version", Map.of("type", "integer", "minimum", 1, "description", "The newest version of a name is the one used"));
         p.put("description", text("One paragraph: what this layout shows and for which entities"));

@@ -68,7 +68,7 @@ public final class SutraParser {
             return null;
         }
         if (lang.value() instanceof Long l) {
-            return l == LANGUAGE ? "1.0" : null;
+            return l == LANGUAGE ? com.ash.rachana.profile.Grammar.MAJOR_ONLY : null;
         }
         String written = lang.value() instanceof String t ? t : lang.value() instanceof Double ? raw(yaml, lang) : null;
         if (written == null || !written.startsWith(LANGUAGE + ".")) {

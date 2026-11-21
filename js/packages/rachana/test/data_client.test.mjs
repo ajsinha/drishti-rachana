@@ -27,7 +27,7 @@ function startServer() {
   });
 }
 
-const SUTRA = `rachana: 1
+const SUTRA = `rachana: 1.2
 sutra: live-sales
 version: 1
 controls:

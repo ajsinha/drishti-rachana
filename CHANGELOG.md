@@ -5,6 +5,24 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **A Sutra declares its language level in its `rachana:` key** (owner, 2026-11-21; SPEC 2.1 rule 4): `rachana: 1` (or `1.0`) is level
+  1.0, `rachana: 1.2` is 1.2. A host reads each Sutra at the level it declares, at most its own (`Grammar.declaredAt`,
+  `Declarations.atLevel`, `SutraParser.declaredLevel`, `Sutra.level()`): a host of 1.2 reads a `rachana: 1` Sutra exactly as a host of
+  1.0. A level above the host's is `RCH-2008`, an unknown minor `RCH-2009` naming the host's newest. The key is the one place: `--level`
+  is gone from `lint`, `build` and `preview` (Node and Python), `<rachana-view level>` is gone, the server refuses `project.level`;
+  `rachana new` writes the newest level. Level-1.1 and 1.2 conformance cases, the libraries' and the examples' Sutras declare their
+  level. One switch (`Grammar.MAJOR_ONLY`) retires levels 1.0 and 1.1 later. Suites `problem/level-declaration`, `sutra/level-declaration`.
+- **`rachana upgrade`** (`java/rachana-tools` `Upgrade`, `UpgradeRule`, `UpgradeCommand`; Node `rachana upgrade`, `python -m
+  drishti_rachana upgrade` and `java ... Main upgrade` run it): a level-1.0 Sutra or fragment rewritten for a later level with the same
+  meaning: `range(list, field)` becomes `span`, a named argument takes the catalogue's name, the Sutra declares `rachana: 1.2`; exact
+  arithmetic, number-like text of Java's grammar, `standardize`, texts beyond U+FFFF and run-time regular expressions are flagged; a
+  bare `lambda` blocks the file. Only rewritten words change (comments, layout, quoting kept; checked by reading the file again);
+  idempotent; dry run by default, `--diff`, `--write`, `--report`, `--rules`. The rule list is complete against the documents
+  (`UpgradeRulesTest`: 373 differences); 14 verified cases (`compat/upgrade/cases.yaml`, each bound at both levels on one host).
+  **Proof** (`UpgradeCorpusTest`, report `compat/upgrade/drishti-compat-corpus-2.9.11.i7a.report.json`): the 478 Sutras and 42
+  fragments of the Drishti corpus upgraded to 1.2 compile to the recorded documents and bind to the recorded ViewModels byte for byte
+  (stamp aside); 0 refused, 0 blocked; 18 review and 6 info flags, none of which changed a recorded view.
+
 - **Live tables, the edit path (L7, L8 client, L10 writes; experimental)**: writes are Data Protocol v1 additions under `can: write`
   (`POST {base}/tables/{name}/write`, bridge `write`): a change `{id, op, key, basedOn, set, from?, reason?}` is answered `{change,
   state: applied | queued | held | refused, message, version?}`; refusals `405 rdp.write.unsupported`, `403 rdp.write.forbidden`

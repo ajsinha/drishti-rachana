@@ -41,6 +41,14 @@ public final class Grammar {
     /** Language level 1.0: what every grammar reads unless its host raises the level (SUTRA_EXPANSION 6.2). */
     public static final String LEVEL_1_0 = "1.0";
 
+    /**
+     * THE switch of level retirement (owner 2026-11-21): the level of a Sutra whose {@code rachana:} key names the major only
+     * ({@code rachana: 1}). Today 1.0, so every Sutra written before levels keeps its meaning; when levels 1.0 and 1.1 retire (G4), this
+     * becomes the newest level and an older declared level is refused with "run rachana upgrade" (one commit: this line, {@link #LEVELS}
+     * and the refusal in SutraBuilder).
+     */
+    public static final String MAJOR_ONLY = "1.0";
+
     /** The language levels this runtime implements, oldest first. */
     public static final List<String> LEVELS = List.of("1.0", "1.1", "1.2");
 

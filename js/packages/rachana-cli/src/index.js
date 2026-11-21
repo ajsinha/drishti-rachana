@@ -11,11 +11,11 @@ import { lint, findSutras } from "./lint.js";
 import { scaffold } from "./scaffold.js";
 import { build } from "./build.js";
 import { preview } from "./serve.js";
-import { lib } from "./lib.js";
+import { lib, upgrade } from "./lib.js";
 import { studio } from "./studio.js";
 import { serve } from "./server.js";
 
-export const STATUS = "lint, new, build, painter included, preview, studio, lib, serve";
+export const STATUS = "lint, new, build, painter included, preview, studio, lib, upgrade, serve";
 
 const HELP = `rachana <command>
   new <dir> [--template <name>]                 a starter folder: a Sutra, sample data, rachana.yaml
@@ -52,6 +52,7 @@ export async function main(argv, io = { out: (s) => process.stdout.write(s + "\n
   try {
     if (!cmd || cmd === "help" || cmd === "--help") { io.out(HELP); return cmd ? 0 : 2; }
     if (cmd === "lib") return await lib(rest, io);
+    if (cmd === "upgrade") return await upgrade(rest, io);
     const { pos, flags } = parseArgs(rest);
     switch (cmd) {
       case "new": return await scaffold(pos[0], flags.template, io);

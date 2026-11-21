@@ -1,23 +1,9 @@
 /*
- * Project Drishti · Any data. Any domain. One grammar.
- *
- * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>.
- * All rights reserved.
- *
- * PROPRIETARY AND CONFIDENTIAL.
- *
- * This file is the confidential and proprietary property of Ashutosh Sinha.
- * Unauthorised copying, use, modification, distribution or disclosure of this
- * file, via any medium, is strictly prohibited except with the express prior
- * written permission of the copyright holder.
- *
- * See the LICENSE file in the root of this repository for the full terms.
+ * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+ * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
-package com.ash.drishti.bicompute.functions;
+package com.ash.rachana.agg;
 
-import com.ash.drishti.kernel.api.pivot.AggFunction;
-import com.ash.drishti.kernel.api.pivot.Batch;
-import com.ash.drishti.kernel.api.pivot.Kind;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -50,8 +36,8 @@ public record Final(Double value) {
      * @param name the name a view writes
      * @param plainSum true for an additive native measure (a PV, a trade count): a total is the sum of its cells
      */
-    public static AggFunction<Object> function(String name, boolean plainSum) {
-        return new AggFunction<>() {
+    public static Aggregate<Object> function(String name, boolean plainSum) {
+        return new Aggregate<>() {
             @Override
             public String name() {
                 return name;

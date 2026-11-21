@@ -26,3 +26,5 @@ drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/LegacyListAggr
 drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaAggregatesTest.java
 drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaListAnalyticsTest.java
 drishti-bicompute/src/test/java/com/ash/drishti/bicompute/rachana/RachanaStatisticsTest.java
+compute/drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Final.java
+drishti-bicompute/src/main/java/com/ash/drishti/bicompute/functions/Final.java

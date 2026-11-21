@@ -4,10 +4,9 @@
  */
 package com.ash.rachana.agg;
 
+import com.ash.rachana.internal.NumberText;
+import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.agg.Builtins.KSum;
-import com.ash.rachana.agg.AggFunction;
-import com.ash.rachana.agg.Batch;
-import com.ash.rachana.agg.Kind;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ public final class MoreAggregates {
     private MoreAggregates() {}
 
     /** Base of the compensated sums: the state a {@link KSum}, merged exactly, SQL's {@code sum(...)} its parts. */
-    abstract static class SumOf implements AggFunction<Object> {
+    abstract static class SumOf implements Aggregate<Object> {
         @Override
         public Kind kind() {
             return Kind.MERGEABLE;
@@ -154,7 +153,7 @@ public final class MoreAggregates {
      * overflows or underflows; the merge multiplies mantissas and adds exponents. Empty for no values; past a double's range, no figure,
      * said in words.
      */
-    public static final class Product implements AggFunction<Object> {
+    public static final class Product implements Aggregate<Object> {
         @Override
         public String name() {
             return "product";
@@ -239,11 +238,11 @@ public final class MoreAggregates {
             if (st[1] > Double.MAX_EXPONENT + 1 || st[1] < Double.MIN_EXPONENT - 60) {
                 return null;
             }
-            double v = Math.scalb(st[0], (int) st[1]);
+            double v = Math.scalb(st[0], CoreMath.toInt(st[1]));
             if (Double.isInfinite(v)) {
                 return null;
             }
-            return ((long) st[4]) % 2 == 1 ? -v : v;
+            return CoreMath.toLong(st[4]) % 2 == 1 ? -v : v;
         }
 
         @Override
@@ -333,7 +332,7 @@ public final class MoreAggregates {
             if (h < 1 || h > x.length) {
                 return null;
             }
-            int lo = (int) Math.floor(h);
+            int lo = CoreMath.toInt(Math.floor(h));
             return lo >= x.length ? x[x.length - 1] : x[lo - 1] + (h - lo) * (x[lo] - x[lo - 1]);
         }
 
@@ -407,7 +406,7 @@ public final class MoreAggregates {
                 throw new IllegalArgumentException("percent_rank_of takes the value to rank (percent_rank_of(PNL, 1000))");
             }
             double d = Double.isNaN(digits) ? 3 : digits;
-            if (!(d >= 1 && d <= 15 && d == Math.rint(d))) {
+            if (!(d >= 1 && d <= 15 && d == CoreMath.rint(d))) {
                 throw new IllegalArgumentException("percent_rank_of keeps 1 to 15 significant digits, not " + digits);
             }
             this.value = value;
@@ -448,7 +447,7 @@ public final class MoreAggregates {
                 double rHi = (double) b / (x.length - 1);
                 r = rLo + (value - lo) / (hi - lo) * (rHi - rLo);
             }
-            double scale = Math.pow(10, digits);
+            double scale = CoreMath.pow(10, digits);
             return Math.floor(r * scale + 1e-9) / scale;
         }
 
@@ -532,7 +531,7 @@ public final class MoreAggregates {
                 if (b.length() > 0) {
                     b.append(", ");
                 }
-                b.append(o instanceof Double d ? Holistics.plain(Double.toString(d)) : o);
+                b.append(o instanceof Double d ? Holistics.plain(NumberText.text(d)) : o);
             }
             return b.toString();
         }

@@ -4,8 +4,7 @@
  */
 package com.ash.rachana.agg;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.NodeType;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.el.Values;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,13 +28,13 @@ final class LegacyListAggregates {
 
     /** The old {@code sum(list, [field])}. */
     static Object sum(List<Object> a) {
-        if (!(a.get(0) instanceof DataNode.Arr arr)) {
+        if (!(a.get(0) instanceof Node arr && arr.isArray())) {
             return 0L;
         }
         String field = a.size() > 1 ? Values.text(a.get(1)) : null;
         double total = 0;
-        for (DataNode e : arr.elements()) {
-            DataNode x = field == null ? e : e.get(field);
+        for (Node e : ListAggregates.elements(arr)) {
+            Node x = field == null ? e : e.get(field);
             if (x.isMasked()) {
                 return Values.mask();
             }
@@ -49,7 +48,7 @@ final class LegacyListAggregates {
 
     /** The old {@code min}/{@code max} (one list, or several arguments). */
     static Object lenient(List<Object> a, boolean min) {
-        Iterable<?> items = a.size() == 1 && a.get(0) instanceof DataNode.Arr arr ? arr.elements() : a;
+        Iterable<?> items = a.size() == 1 && a.get(0) instanceof Node arr && arr.isArray() ? ListAggregates.elements(arr) : a;
         Double best = null;
         for (Object o : items) {
             if (Values.masked(o)) {
@@ -65,7 +64,7 @@ final class LegacyListAggregates {
 
     /** The old {@code group(list, 'key', 'value'?, 'by'?)}. */
     static Object group(List<Object> a) {
-        if (!(Values.simplify(a.get(0)) instanceof DataNode.Arr arr)) {
+        if (!(Values.simplify(a.get(0)) instanceof Node arr && arr.isArray())) {
             return null;
         }
         String key = Values.text(a.get(1));
@@ -73,7 +72,7 @@ final class LegacyListAggregates {
         String by = a.size() > 3 ? Values.text(a.get(3)) : "";
         TreeMap<String, double[]> groups = new TreeMap<>();
         Set<String> masked = new HashSet<>();
-        for (DataNode e : arr.elements()) {
+        for (Node e : ListAggregates.elements(arr)) {
             String k = e.at(key).asText();
             if (k == null || k.isBlank()) {
                 continue;
@@ -88,12 +87,12 @@ final class LegacyListAggregates {
                 g[0]++;
                 continue;
             }
-            DataNode v = e.at(value);
+            Node v = e.at(value);
             if (v.isMasked()) {
                 masked.add(k);
             }
             double d = v.asDouble();
-            if (Double.isNaN(d) && v.type() == NodeType.STRING) {
+            if (Double.isNaN(d) && v.kind() == Node.Kind.STRING) {
                 try {
                     d = Double.parseDouble(v.asText().trim());
                 } catch (NumberFormatException ignored) {
@@ -104,14 +103,14 @@ final class LegacyListAggregates {
                 g[0] += d;
             }
         }
-        List<DataNode> out = new ArrayList<>(groups.size());
+        List<Node> out = new ArrayList<>(groups.size());
         groups.forEach((k, g) -> {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("label", k);
             row.put("value", masked.contains(k) ? null : Values.normalise(g[0]));
             row.put("count", (long) g[1]);
-            out.add(DataNode.of(row));
+            out.add(Node.of(row));
         });
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(List.copyOf(out));
     }
 }

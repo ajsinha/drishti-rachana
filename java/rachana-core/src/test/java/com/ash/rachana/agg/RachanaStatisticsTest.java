@@ -8,8 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.common.JsonCodec;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.JsonCodec;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.ElException;
 import com.ash.rachana.el.EvalContext;
@@ -28,19 +28,19 @@ import org.junit.jupiter.api.Test;
 class RachanaStatisticsTest {
 
     static final ElCompiler EL = new ElCompiler();
-    static final Formats F = Formats.load(null, List.of("../../examples/packs/finance/config/formats.yaml"));
-    static final DataNode DOC;
+    static final Formats F = Formats.load(null, List.of(com.ash.rachana.TestFormats.file()));
+    static final Node DOC;
 
     static {
-        DataNode plain = new JsonCodec().read("""
+        Node plain = new JsonCodec().read("""
                 {"S":[3,4,5,2,3,4,5,6,4,7],"X":[3,2,4,5,6],"Y":[9,7,12,15,17],"T":[4,5,6,7,2,3,4,5,1,2,3],"G":[4,5,8,7,11,4,3],
                  "SHORT":[1,2,3],
                  "LEGS":[{"CURRENCY":"USD","PRICE":2,"QUANTITY":6,"IDX":null},{"CURRENCY":"EUR","PRICE":3,"QUANTITY":5},
                          {"CURRENCY":"USD","PRICE":9,"QUANTITY":11,"IDX":"SOFR"},{"CURRENCY":"GBP","PRICE":1,"QUANTITY":7},
                          {"CURRENCY":"EUR","PRICE":8,"QUANTITY":5},{"CURRENCY":"USD","PRICE":7,"QUANTITY":4},{"PRICE":5,"QUANTITY":4}]}""");
-        Map<String, DataNode> fields = new LinkedHashMap<>(((DataNode.Obj) plain).fields());
-        fields.put("MASKED", DataNode.of(List.of(Map.of("P", 5), Map.of("P", DataNode.masked()), Map.of("P", 6))));
-        DOC = new DataNode.Obj(fields);
+        Map<String, Node> fields = new LinkedHashMap<>(plain.fields());
+        fields.put("MASKED", Node.of(List.of(Map.of("P", 5), Map.of("P", Node.masked()), Map.of("P", 6))));
+        DOC = Node.of(fields);
     }
 
     static Object eval(String src) {
@@ -56,8 +56,8 @@ class RachanaStatisticsTest {
         for (String n : List.of("nmiss", "range", "mode", "iqr", "stderr", "cv", "skewness", "kurtosis", "geomean", "harmean", "trimmean",
                 "corr", "covar", "slope", "intercept", "rsq", "kth_largest", "kth_smallest", "string_agg")) {
             Functions.Entry e = Functions.catalogue().stream().filter(x -> x.name().equals(n)).findFirst().orElseThrow();
-            assertThat(e.source()).as(n).isEqualTo(EngineFunctions.SOURCE);
-            assertThat(e.runs()).as(n).isEqualTo("E");
+            assertThat(e.source()).as(n).isEqualTo(CoreAggregates.SOURCE);
+            assertThat(e.runs()).as(n).isEqualTo("R");
             assertThat(e.form()).as(n).isIn("mergeable", "holistic");
         }
     }
@@ -104,8 +104,8 @@ class RachanaStatisticsTest {
 
     @Test
     void aMaskedValueMasksTheResult() {
-        assertThat(eval("range($.MASKED, 'P')")).isEqualTo(DataNode.MASK);
-        assertThat(eval("string_agg($.MASKED, 'P', ', ')")).isEqualTo(DataNode.MASK);
+        assertThat(eval("range($.MASKED, 'P')")).isEqualTo(Node.MASK);
+        assertThat(eval("string_agg($.MASKED, 'P', ', ')")).isEqualTo(Node.MASK);
     }
 
     @Test

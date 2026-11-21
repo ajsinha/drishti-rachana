@@ -155,3 +155,12 @@ A7b (FormExpr into Rachana-EL), owner 2026-11-21: form rules keep `and`/`or`/`no
 | D5-6 | The regular-expression budget is a count of steps (`SafeRegex.Limits.maxSteps`, default 20 million), not a clock: the same value stops at the same place on every runtime. API: `timeoutNanos` removed (planned; baseline rewritten) |
 | D5-7 | `CoreDeterminismGuardTest` refuses, outside `CoreMath`, `NumberText`, `CoreText`, `CoreDecimal` and `DateText`: the transcendental `Math` calls and `rint`, `StrictMath`, `String.format`, `java.text`, `java.time.format`, locale names, the clock, `Double`/`Float` text and reading, `BigDecimal.sqrt`, the T1 gaps; and in the value code (`el/`, `format/`, the binder's `bind/`, `control/`, `view/`, `wire/`) the JDK's case mapping, strip, white space and `reverse`. Left for the JavaScript conformance run at A15 (JS_PROOF rows not in P2's closed list): `java.util.regex` for Core's fixed patterns (J12), hash iteration order (J17), implicit `"" + double` in messages |
 
+### A9: the aggregate kernel in Core (2026-11-21)
+
+| # | Decision |
+|---|---|
+| D9-1 | N7 as decided: Core takes the state and maths of the Core-listed aggregates and the list functions over them; it defines its own `Aggregate` contract (the engine's `AggFunction` shape, SQL state included, so the engine's shells delegate without changing bytes or SQL); the `_once` family, `measure`, `cell`, the sketches and the shells stay in the host |
+| D9-2 | `CoreAggregates` is the first provider of every function table: a host's provider can no longer give these names (Drishti drops them at A11, DRISHTI_MIGRATION_TODO 8.3g); the catalogue marks them `R`, source `Rachana Core` |
+| D9-3 | The moved maths follows A5: `CoreMath` (with `hypot` added) and `NumberText`; a geometric mean, skewness or kurtosis may move in the last place against today's engine until Drishti's shells run Core's classes |
+| D9-4 | **For the owner**: level 1.0 (unreleased) written again for A9: 37 results change (16 aggregate cases now computed, 7 determinism probes now expect Core's values, 14 refusals whose list of known functions now names the aggregates); listed in `tools/split/known-differences.txt` |
+

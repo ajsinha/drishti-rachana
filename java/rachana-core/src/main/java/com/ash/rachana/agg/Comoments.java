@@ -4,9 +4,6 @@
  */
 package com.ash.rachana.agg;
 
-import com.ash.rachana.agg.AggFunction;
-import com.ash.rachana.agg.Batch;
-import com.ash.rachana.agg.Kind;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -17,7 +14,7 @@ import java.util.List;
  * each batch's in two passes, merged by Chan's formulas: mergeable. Only rows where both values are present count, as Excel's
  * {@code CORREL} ignores a pair with an empty or text value.
  */
-public final class Comoments implements AggFunction<Object> {
+public final class Comoments implements Aggregate<Object> {
 
     /** The names this class answers. */
     public static final List<String> NAMES = List.of("corr", "covar", "slope", "intercept", "rsq", "covar_pop", "steyx");

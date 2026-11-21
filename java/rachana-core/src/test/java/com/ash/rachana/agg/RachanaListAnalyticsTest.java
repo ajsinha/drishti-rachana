@@ -8,8 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.common.JsonCodec;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.JsonCodec;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.ElException;
 import com.ash.rachana.el.EvalContext;
@@ -29,19 +29,19 @@ import org.junit.jupiter.api.Test;
 class RachanaListAnalyticsTest {
 
     static final ElCompiler EL = new ElCompiler();
-    static final Formats F = Formats.load(null, List.of("../../examples/packs/finance/config/formats.yaml"));
-    static final DataNode DOC;
+    static final Formats F = Formats.load(null, List.of(com.ash.rachana.TestFormats.file()));
+    static final Node DOC;
 
     static {
-        DataNode plain = new JsonCodec().read("""
+        Node plain = new JsonCodec().read("""
                 {"A":[4,8,6,-1,-2,-3,-1,3,4,5],"OUT":[57,59,60,100,59,58,57,58,300,61,62,60,62,58,57],
                  "C":[1,2,3,4,5],"G":[1,null,3],"M":[8,9,1,10,6,1,3,6,10,2],"B":[2,4,-1,10,6,3,0,-16],"ONE23":[1,2,3],
                  "PFX":[0,1,2,3,4],"PFY":[1,0,3,10,21],"LINE":[1,3,5,7],"L3":[3,5,7],"SAME":[2,2,2],"R":[0.1,0.2,-0.1],
                  "MM":[1,2,3,4,3,2,1,2,3,5,6,1],"TEMPS":[89,88,92,101,94,97,95],"PR":[13,12,11,8,4,3,2,1,1,1],
                  "LEGS":[{"N":3,"R":2},{"N":4,"R":7},{"N":8,"R":6},{"N":6,"R":7},{"N":1,"R":5},{"N":9,"R":3}]}""");
-        Map<String, DataNode> fields = new LinkedHashMap<>(((DataNode.Obj) plain).fields());
-        fields.put("HIDDEN", new DataNode.Arr(List.of(DataNode.of(1), DataNode.masked(), DataNode.of(3))));
-        DOC = new DataNode.Obj(fields);
+        Map<String, Node> fields = new LinkedHashMap<>(plain.fields());
+        fields.put("HIDDEN", Node.list(List.of(Node.of(1), Node.masked(), Node.of(3))));
+        DOC = Node.of(fields);
     }
 
     static Object eval(String src) {
@@ -50,8 +50,8 @@ class RachanaListAnalyticsTest {
 
     static List<Object> list(String src) {
         Object v = eval(src);
-        assertThat(v).as(src).isInstanceOf(DataNode.Arr.class);
-        return ((DataNode.Arr) v).elements().stream().map(Values::simplify).toList();
+        assertThat(v).as(src).matches(x -> x instanceof Node n && n.isArray());
+        return ListAggregates.elements((Node) v).stream().map(Values::simplify).toList();
     }
 
     static double[] doubles(String src) {
@@ -63,7 +63,7 @@ class RachanaListAnalyticsTest {
         for (String n : List.of("cumsum", "cumprod", "cummax", "cummin", "movsum", "movmean", "movstd", "movmedian", "maxk", "mink", "bounds",
                 "zscore", "rescale", "isoutlier", "polyfit")) {
             Functions.Entry e = Functions.catalogue().stream().filter(x -> x.name().equals(n)).findFirst().orElseThrow();
-            assertThat(e.source()).as(n).isEqualTo(EngineFunctions.SOURCE);
+            assertThat(e.source()).as(n).isEqualTo(CoreAggregates.SOURCE);
             assertThat(e.family()).as(n).isEqualTo("lists");
             assertThat(e.form()).as(n).isEqualTo("list");
         }
@@ -127,7 +127,7 @@ class RachanaListAnalyticsTest {
     @Test
     void theReferencesExamplesOnTheDemoTrade() {
         // RACHANA_REFERENCE.md, "The Excel, SAS and MATLAB set": each example's result on the demo trade MX-20000001
-        DataNode trade = new JsonCodec().read("""
+        Node trade = new JsonCodec().read("""
                 {"TRADE_ID":"MX-20000001","QUANTITY":242000000,"TRADE_DATE":"2025-11-21","STRATEGY":null,
                  "LEGS":[{"LEG_ID":1,"NOTIONAL":242000000},{"LEG_ID":2,"NOTIONAL":242000000}]}""");
         EvalContext c = EvalContext.of(trade, F);
@@ -136,7 +136,7 @@ class RachanaListAnalyticsTest {
         assertThat(ev.apply("is_blank($.STRATEGY)")).isEqualTo(true);
         assertThat(ev.apply("text($.QUANTITY, '#,##0')")).isEqualTo("242,000,000");
         assertThat(ev.apply("shift_date($.TRADE_DATE, 2)")).isEqualTo("2025-11-25");
-        assertThat(((DataNode.Arr) ev.apply("cumsum($.LEGS[*].NOTIONAL)")).elements().stream().map(Values::simplify).toList())
+        assertThat(ListAggregates.elements((Node) ev.apply("cumsum($.LEGS[*].NOTIONAL)")).stream().map(Values::simplify).toList())
                 .containsExactly(242000000L, 484000000L);
         assertThat(ev.apply("sumproduct($.LEGS, 'NOTIONAL', 'LEG_ID')")).isEqualTo(726000000L);
         assertThat(ev.apply("norm_s_inv(0.99)")).isEqualTo(2.3263478740408408);
@@ -144,10 +144,10 @@ class RachanaListAnalyticsTest {
 
     @Test
     void masksAndWrongArguments() {
-        assertThat(eval("cumsum($.HIDDEN)")).isEqualTo(DataNode.MASK);
-        assertThat(eval("movmean($.HIDDEN, 3)")).isEqualTo(DataNode.MASK);
-        assertThat(eval("zscore($.HIDDEN)")).isEqualTo(DataNode.MASK);
-        assertThat(eval("product($.HIDDEN)")).isEqualTo(DataNode.MASK);
+        assertThat(eval("cumsum($.HIDDEN)")).isEqualTo(Node.MASK);
+        assertThat(eval("movmean($.HIDDEN, 3)")).isEqualTo(Node.MASK);
+        assertThat(eval("zscore($.HIDDEN)")).isEqualTo(Node.MASK);
+        assertThat(eval("product($.HIDDEN)")).isEqualTo(Node.MASK);
         assertThat(eval("cumsum($.NOPE)")).isNull();
         assertThatThrownBy(() -> eval("movmean($.A, 0)")).isInstanceOf(ElException.class).hasMessageContaining("the window");
         assertThatThrownBy(() -> eval("maxk($.A, 1.5)")).isInstanceOf(ElException.class).hasMessageContaining("whole number");

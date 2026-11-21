@@ -787,6 +787,83 @@ public final class CoreMath {
         return s * z;
     }
 
+    // ------------------------------------------------------------------ hypot
+
+    /** sqrt(x² + y²) without undue overflow or underflow (fdlibm e_hypot.c). */
+    public static double hypot(double x, double y) {
+        double a;
+        double b;
+        int ha = hi(x) & 0x7fffffff;
+        int hb = hi(y) & 0x7fffffff;
+        if (hb > ha) {
+            a = y;
+            b = x;
+            int j = ha;
+            ha = hb;
+            hb = j;
+        } else {
+            a = x;
+            b = y;
+        }
+        a = withHi(a, ha);                                               // |a|
+        b = withHi(b, hb);                                               // |b|
+        if (ha - hb > 0x3c00000) {
+            return a + b;                                                // x / y > 2**60
+        }
+        int k = 0;
+        if (ha > 0x5f300000) {                                           // a > 2**500
+            if (ha >= 0x7ff00000) {                                      // Inf or NaN
+                double w = a + b;
+                if (((ha & 0xfffff) | lo(a)) == 0) {
+                    w = a;
+                }
+                if (((hb ^ 0x7ff00000) | lo(b)) == 0) {
+                    w = b;
+                }
+                return w;
+            }
+            ha -= 0x25800000;                                            // scale a and b by 2**-600
+            hb -= 0x25800000;
+            k += 600;
+            a = withHi(a, ha);
+            b = withHi(b, hb);
+        }
+        if (hb < 0x20b00000) {                                           // b < 2**-500
+            if (hb <= 0x000fffff) {                                      // subnormal b or 0
+                if ((hb | lo(b)) == 0) {
+                    return a;
+                }
+                double t1 = withHi(0.0, 0x7fd00000);                     // 2**1022
+                b *= t1;
+                a *= t1;
+                k -= 1022;
+            } else {                                                     // scale a and b by 2**600
+                ha += 0x25800000;
+                hb += 0x25800000;
+                k -= 600;
+                a = withHi(a, ha);
+                b = withHi(b, hb);
+            }
+        }
+        double w = a - b;                                                // medium size a and b
+        if (w > b) {
+            double t1 = withHi(0.0, ha);
+            double t2 = a - t1;
+            w = Math.sqrt(t1 * t1 - (b * (-b) - t2 * (a + t1)));
+        } else {
+            a = a + a;
+            double y1 = withHi(0.0, hb);
+            double y2 = b - y1;
+            double t1 = withHi(0.0, ha + 0x00100000);
+            double t2 = a - t1;
+            w = Math.sqrt(t1 * y1 - (w * (-w) - (t1 * y2 + t2 * b)));
+        }
+        if (k != 0) {
+            return withHi(1.0, hi(1.0) + (k << 20)) * w;
+        }
+        return w;
+    }
+
     // ------------------------------------------------------------------ atan, atan2
 
     private static final double[] ATANHI = {4.63647609000806093515e-01, 7.85398163397448278999e-01, 9.82793723247329054082e-01,

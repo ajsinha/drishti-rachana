@@ -12,9 +12,9 @@ import java.util.Map;
 /**
  * The functions one function table holds from {@link FunctionProvider}s (docs/architecture/ARCHITECTURE.md parts 1 and 2): the
  * providers a {@link com.ash.rachana.profile.Profile} hands over, per {@link com.ash.rachana.Rachana} instance; nothing is discovered by
- * scanning the class path. Rachana implements no aggregate: these names are the ones it asks a provider for,
- * so that an expression using one compiles whether or not the provider is on the class path; without it, evaluating one is refused
- * with the reason ({@code RCH-2102}), never computed another way.
+ * scanning the class path. Core's own aggregates come first ({@code com.ash.rachana.agg.CoreAggregates}, split step A9); the names
+ * below that only a host computes ({@code measure}, {@code cell}, the {@code _once} family) compile whether or not a provider gives
+ * them; without one, evaluating one is refused with the reason ({@code RCH-2102}), never computed another way.
  */
 final class Aggregates {
 

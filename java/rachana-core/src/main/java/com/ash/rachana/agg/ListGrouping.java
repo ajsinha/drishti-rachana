@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.agg;
 
-import com.ash.drishti.api.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.el.FunctionProvider;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -50,9 +50,9 @@ final class ListGrouping implements FunctionProvider.Grouping {
         }
         List<Object> args = new ArrayList<>(columns.size() + options.size());
         for (List<Object> column : columns) {
-            List<DataNode> part = new ArrayList<>(rows.size());
-            rows.forEach(r -> part.add(DataNode.of(column.get(r))));
-            args.add(new DataNode.Arr(List.copyOf(part)));
+            List<Node> part = new ArrayList<>(rows.size());
+            rows.forEach(r -> part.add(Node.of(column.get(r))));
+            args.add(Node.list(part));
         }
         args.addAll(options);
         return ListAggregates.apply(aggregate, args);

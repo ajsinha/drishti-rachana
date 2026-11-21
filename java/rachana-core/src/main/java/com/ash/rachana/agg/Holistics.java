@@ -4,10 +4,10 @@
  */
 package com.ash.rachana.agg;
 
+import com.ash.rachana.internal.CoreText;
+import com.ash.rachana.internal.NumberText;
+import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.agg.Builtins.Values;
-import com.ash.rachana.agg.AggFunction;
-import com.ash.rachana.agg.Batch;
-import com.ash.rachana.agg.Kind;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -31,13 +31,13 @@ public final class Holistics {
     /** The q-quantile of sorted values by linear interpolation at q·(n−1): Excel's {@code PERCENTILE.INC}, DuckDB's {@code quantile_cont}. */
     static double quantile(double[] sorted, double q) {
         double pos = q * (sorted.length - 1);
-        int lo = (int) Math.floor(pos);
-        int hi = (int) Math.ceil(pos);
+        int lo = CoreMath.toInt(Math.floor(pos));
+        int hi = CoreMath.toInt(Math.ceil(pos));
         return lo == hi ? sorted[lo] : sorted[lo] + (pos - lo) * (sorted[hi] - sorted[lo]);
     }
 
     /** Base of the numeric holistic functions over one input: the state is the cell's values (or a figure SQL finished, {@link Final}). */
-    abstract static class OfValues implements AggFunction<Object> {
+    abstract static class OfValues implements Aggregate<Object> {
         @Override
         public Kind kind() {
             return Kind.HOLISTIC;
@@ -173,7 +173,7 @@ public final class Holistics {
 
         @Override
         Double of(double[] x) {
-            int k = (int) Math.floor(x.length * pct / 2);
+            int k = CoreMath.toInt(Math.floor(x.length * pct / 2));
             Builtins.KSum s = new Builtins.KSum(0, 0, 0);
             for (int i = k; i < x.length - k; i++) {
                 s.add(x[i]);
@@ -188,7 +188,7 @@ public final class Holistics {
         private final int k;
 
         public Kth(String name, double k) {
-            if (!(k >= 1 && k == Math.rint(k) && k <= Integer.MAX_VALUE)) {
+            if (!(k >= 1 && k == CoreMath.rint(k) && k <= Integer.MAX_VALUE)) {
                 throw new IllegalArgumentException(name + " takes a whole k of 1 or more (kth_largest(NOTIONAL, 3)), not " + k);
             }
             this.largest = "kth_largest".equals(name);
@@ -215,7 +215,7 @@ public final class Holistics {
     }
 
     /** Base of the text holistic functions: a count per distinct text value (sorted), merged exactly by adding the counts. */
-    abstract static class OfTexts implements AggFunction<Object> {
+    abstract static class OfTexts implements Aggregate<Object> {
         @Override
         public Kind kind() {
             return Kind.HOLISTIC;
@@ -336,7 +336,7 @@ public final class Holistics {
 
     static Double number(String s) {
         try {
-            double d = Double.parseDouble(s.strip());
+            double d = NumberText.parse(CoreText.strip(s));
             return Double.isNaN(d) || Double.isInfinite(d) ? null : d;
         } catch (NumberFormatException e) {
             return null;

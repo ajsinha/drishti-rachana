@@ -5,6 +5,19 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (toward v0.10.0, the untangling)
 
+- **A9, the aggregate kernel in Core**: the state and maths of the aggregates SPEC 5.7 and 5.8 list, and the list functions over
+  them, moved here with their history from Drishti `c6bc1d1bc` (git filter-repo, `tools/split/a9-paths.txt`): `Builtins`, `Moments`,
+  `MoreAggregates`, `Holistics`, `Comoments`, `Final`, `ListAggregates`, `ListAnalytics`, `ListGrouping`, now
+  `com.ash.rachana.agg` (exported). Core's own contract `Aggregate` (start, add a columnar `Batch`, merge, finish, encode and decode
+  with the engine's bytes, SQL state) and `Kind`; `Catalogue.of(name, …)` gives an aggregate by name; `CoreAggregates` is the first
+  provider of every function table, so `sum`, `count`, `avg`, `min`, `max`, `median`, `percentile`, `distinct`, `wavg`, the variance
+  family, the 32 statistics, the list analytics and `group(...)`'s grouping are computed by Core (the catalogue says `R`, source
+  `Rachana Core`). What only a host computes stays with it and is refused in Core alone with the reason: the `_once` family,
+  `measure`, `cell`, a model's measure-level functions (decision N7); the sketches and the `AggFunction` shells stay in the engine.
+  The moved maths uses Core's own classes (A5's guard covers `agg/`; `CoreMath.hypot` added, equal to `StrictMath.hypot`). Results:
+  16 aggregate cases that the reference refused now pass, seven determinism probes expect Core's values, and refusals that list
+  the known functions now name the aggregates (56 known differences in all, 0 verified failing; 1,924 cases pass); level 1.0 written
+  again (37 results). 855 unit tests (the moved `RachanaAggregatesTest`, `RachanaStatisticsTest`, `RachanaListAnalyticsTest`).
 - **A13, the binder behind hooks**: the binder and its neighbours (Drishti's engine `bind`, `view`, `control`, `wire`, and the live
   `Frame` and `Patch` records) moved here with their history (84 commits, `tools/split/a13-paths.txt`) into
   `com.ash.rachana.{bind,view,control,wire}`, and every host type behind a hook: `LinkResolver` (which kind an id names, a kind's

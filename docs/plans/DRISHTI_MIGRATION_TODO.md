@@ -222,6 +222,16 @@ here. What Drishti must do when the migration starts, in this order:
       (`norm_s_dist`, `f_dist`, `binom_dist`, `hypgeom_dist`, `gamma_dist`, `npv`, `irr`, `mirr`, `rate`, `log`, `fisher`), which
       the pin move's golden run lists. The `date` format's `MMM` is English whatever the JVM's locale.
 
+- [ ] 8.3g **The aggregate kernel in Core (A9)**: delete `bicompute/functions/{Builtins,Moments,MoreAggregates,Holistics,Comoments,Final}`
+      and `bicompute/rachana/{ListAggregates,ListAnalytics,ListGrouping}`; every `AggFunction` of a Core name becomes a thin shell over
+      `com.ash.rachana.agg` (its `Aggregate`, `Batch`, `Kind` mapped at the edge; `encode`/`decode` and `sqlState` delegate, so the
+      bytes and the SQL text are unchanged); `Functions.builtIn` calls `Catalogue.of` for those names; `EngineFunctions` drops every name
+      `CoreAggregates` gives (a provider may not give a Core name twice) and keeps the `_once` family, `measure`, `cell` and the
+      measure-level functions. New test there: a state encoded by the old class decodes with the new (a cluster mid-upgrade).
+      Proof: `SutraAggregateParityTest`, `DifferentialTest`, the BI recordings, `VarGoldenMatrixTest`, `PackagedVarGoldenTest` exact.
+      Note: the moved maths now calls `CoreMath` (A5), so a geometric mean, a skewness or a kurtosis can move in the last place
+      against today's engine; the goldens list any.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

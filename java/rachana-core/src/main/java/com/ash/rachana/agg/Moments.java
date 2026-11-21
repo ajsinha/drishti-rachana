@@ -4,10 +4,8 @@
  */
 package com.ash.rachana.agg;
 
+import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.agg.Builtins.KSum;
-import com.ash.rachana.agg.AggFunction;
-import com.ash.rachana.agg.Batch;
-import com.ash.rachana.agg.Kind;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -23,7 +21,7 @@ import java.util.List;
  * </ul>
  * A null (an absent or unparseable value) is skipped by all but {@code nmiss}, which counts them.
  */
-public final class Moments implements AggFunction<Object> {
+public final class Moments implements Aggregate<Object> {
 
     /** The names this class answers. */
     public static final List<String> NAMES = List.of("stderr", "cv", "skewness", "kurtosis", "skewness_pop", "devsq");
@@ -132,7 +130,7 @@ public final class Moments implements AggFunction<Object> {
             return n < 1 ? null : m2;
         }
         if ("skewness_pop".equals(name)) {
-            return n < 1 || m2 == 0 ? null : Math.sqrt(n) * st[3] / Math.pow(m2, 1.5);
+            return n < 1 || m2 == 0 ? null : Math.sqrt(n) * st[3] / CoreMath.pow(m2, 1.5);
         }
         if (n < 2) {
             return null;
@@ -201,7 +199,7 @@ public final class Moments implements AggFunction<Object> {
     }
 
     /** {@code nmiss(x)}: the rows whose x is missing (null, absent); mergeable, a total the sum of its cells. */
-    public static final class NMiss implements AggFunction<Object> {
+    public static final class NMiss implements Aggregate<Object> {
         @Override
         public String name() {
             return "nmiss";
@@ -286,7 +284,7 @@ public final class Moments implements AggFunction<Object> {
     }
 
     /** {@code range(x)}: max − min, from the two extremes (mergeable); null when the cell has no value. */
-    public static final class Range implements AggFunction<Object> {
+    public static final class Range implements Aggregate<Object> {
         @Override
         public String name() {
             return "range";
@@ -366,7 +364,7 @@ public final class Moments implements AggFunction<Object> {
      * {@code geomean(x)} = exp(Σ ln x / n) and {@code harmean(x)} = n / Σ(1/x): (the compensated sum, n, the values ≤ 0). As Excel's, every
      * value must be positive: a cell with a value ≤ 0 has no figure, said in words.
      */
-    public static final class PositiveMean implements AggFunction<Object> {
+    public static final class PositiveMean implements Aggregate<Object> {
         private final boolean geometric;
 
         /** {@code name}: geomean or harmean. */
@@ -411,7 +409,7 @@ public final class Moments implements AggFunction<Object> {
                 if (x[i] <= 0) {
                     st.bad[0]++;
                 } else {
-                    st.sum.add(geometric ? Math.log(x[i]) : 1 / x[i]);
+                    st.sum.add(geometric ? CoreMath.log(x[i]) : 1 / x[i]);
                 }
             }
             return st;
@@ -430,7 +428,7 @@ public final class Moments implements AggFunction<Object> {
             if (st.sum.n == 0 || st.bad[0] > 0) {
                 return null;
             }
-            return geometric ? Math.exp(st.sum.value() / st.sum.n) : st.sum.n / st.sum.value();
+            return geometric ? CoreMath.exp(st.sum.value() / st.sum.n) : st.sum.n / st.sum.value();
         }
 
         @Override

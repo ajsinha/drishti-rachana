@@ -4,12 +4,10 @@
  */
 package com.ash.rachana.agg;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.rachana.agg.Builtins;
-import com.ash.rachana.agg.Functions;
-import com.ash.rachana.agg.AggFunction;
-import com.ash.rachana.agg.Batch;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.internal.CoreText;
+import com.ash.rachana.internal.NumberText;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.RachanaCode;
 import com.ash.rachana.el.ElException;
 import com.ash.rachana.el.Values;
 import java.util.ArrayList;
@@ -18,7 +16,7 @@ import java.util.Map;
 
 /**
  * The engine's aggregates over a Rachana list (docs/architecture/ARCHITECTURE.md part 2): the list's values made a {@link Batch} and run through the very
- * {@link AggFunction} a pivot cell runs (start, add, finish), so a sum in a Sutra and a sum in a pivot are one implementation with one
+ * {@link Aggregate} a pivot cell runs (start, add, finish), so a sum in a Sutra and a sum in a pivot are one implementation with one
  * treatment of nulls and masks. Written {@code f(list)} (the list's values), {@code f(list, 'FIELD', ...)} (a field of each element, a
  * dotted path), or {@code f(xs, ys)} (parallel lists, for the functions of two inputs: {@code wavg(prices, quantities)},
  * {@code sum_once(quantities, tradeIds)}); a number argument is the function's parameter ({@code percentile(list, 0.95)}).
@@ -53,11 +51,11 @@ final class ListAggregates {
         if (args.isEmpty()) {
             throw error(name, "count() counts the rows of a pivot cell or of a measure's table; over a list write count(list)");
         }
-        if (!(Values.simplify(args.get(0)) instanceof DataNode.Arr list)) {
+        if (!(Values.simplify(args.get(0)) instanceof Node list && list.isArray())) {
             return empty(name);
         }
         List<String> fields = new ArrayList<>();
-        List<DataNode.Arr> parallels = new ArrayList<>();
+        List<Node> parallels = new ArrayList<>();
         List<Double> numbers = new ArrayList<>();
         List<String> texts = new ArrayList<>();
         int sep = "string_agg".equals(name) ? separator(args) : -1;
@@ -67,7 +65,7 @@ final class ListAggregates {
                 texts.add(Values.text(a));
             } else if (a instanceof Boolean b && "string_agg".equals(name)) {
                 numbers.add(b ? 1.0 : 0.0);
-            } else if (a instanceof DataNode.Arr arr) {
+            } else if (a instanceof Node arr && arr.isArray()) {
                 parallels.add(arr);
             } else if (a instanceof Number n) {
                 numbers.add(n.doubleValue());
@@ -80,16 +78,16 @@ final class ListAggregates {
                 throw error(name, "argument " + (i + 1) + " is neither a field, a list nor a number");
             }
         }
-        AggFunction<Object> f = function(name, numbers, texts);
+        Aggregate<Object> f = function(name, numbers, texts);
         int inputs = "count".equals(name) ? 1 : f.inputs();
-        List<List<DataNode>> columns = columns(name, list, fields, parallels, inputs);
+        List<List<Node>> columns = columns(name, list, fields, parallels, inputs);
         Object[] batch = new Object[inputs];
         for (int c = 0; c < inputs; c++) {
-            List<DataNode> col = columns.get(c);
+            List<Node> col = columns.get(c);
             if (f.numeric()) {
                 double[] d = new double[col.size()];
                 for (int r = 0; r < d.length; r++) {
-                    DataNode x = col.get(r);
+                    Node x = col.get(r);
                     if (x.isMasked()) {
                         return Values.mask();                     // a masked value is never added up: the result is masked
                     }
@@ -99,7 +97,7 @@ final class ListAggregates {
             } else {
                 String[] s = new String[col.size()];
                 for (int r = 0; r < s.length; r++) {
-                    DataNode x = col.get(r);
+                    Node x = col.get(r);
                     if (x.isMasked()) {
                         return Values.mask();
                     }
@@ -114,9 +112,9 @@ final class ListAggregates {
             if (values == null) {
                 return null;
             }
-            List<DataNode> out = new ArrayList<>();
-            values.forEach(x -> out.add(DataNode.of(x instanceof Double d ? Values.normalise(d) : x)));
-            return new DataNode.Arr(List.copyOf(out));
+            List<Node> out = new ArrayList<>();
+            values.forEach(x -> out.add(Node.of(x instanceof Double d ? Values.normalise(d) : x)));
+            return Node.list(out);
         }
         Object v = f.result(state);
         if (v instanceof Double d && (d.isNaN() || d.isInfinite())) {
@@ -136,41 +134,41 @@ final class ListAggregates {
     }
 
     /** The engine's function of that name and parameters; a parameter out of range is a problem in words. */
-    private static AggFunction<Object> function(String name, List<Double> numbers, List<String> texts) {
+    private static Aggregate<Object> function(String name, List<Double> numbers, List<String> texts) {
         if ("count".equals(name)) {
             return new Builtins.Count(false);
         }
         try {
-            return Functions.builtIn(ENGINE_NAME.get(name), List.of(), numbers, texts)
-                    .orElseThrow(() -> error(name, "the pivot engine has no such aggregate"));
+            return Catalogue.of(ENGINE_NAME.get(name), List.of(), numbers, texts)
+                    .orElseThrow(() -> error(name, "Core has no such aggregate"));
         } catch (IllegalArgumentException e) {
             throw error(name, e.getMessage());
         }
     }
 
     /** The function's input columns, one value per element: the elements, fields of them, or parallel lists. */
-    private static List<List<DataNode>> columns(String name, DataNode.Arr list, List<String> fields, List<DataNode.Arr> parallels,
+    private static List<List<Node>> columns(String name, Node list, List<String> fields, List<Node> parallels,
             int inputs) {
-        List<List<DataNode>> out = new ArrayList<>();
+        List<List<Node>> out = new ArrayList<>();
         if (!parallels.isEmpty()) {
             if (!fields.isEmpty()) {
                 throw error(name, "write either fields of one list or parallel lists, not both");
             }
-            out.add(list.elements());
-            for (DataNode.Arr p : parallels) {
+            out.add(elements(list));
+            for (Node p : parallels) {
                 if (p.size() != list.size()) {
                     throw error(name, "the lists differ in length (" + list.size() + " and " + p.size() + ")");
                 }
-                out.add(p.elements());
+                out.add(elements(p));
             }
         } else if (!fields.isEmpty()) {
             for (String field : fields) {
-                List<DataNode> col = new ArrayList<>(list.size());
-                list.elements().forEach(e -> col.add(e.at(field)));
+                List<Node> col = new ArrayList<>(list.size());
+                elements(list).forEach(e -> col.add(e.at(field)));
                 out.add(col);
             }
         } else {
-            out.add(list.elements());
+            out.add(elements(list));
         }
         if (out.size() != inputs) {
             throw error(name, "takes " + inputs + " input" + (inputs == 1 ? "" : "s") + " (a field each, or as many lists), got " + out.size());
@@ -179,14 +177,14 @@ final class ListAggregates {
     }
 
     /** A value as a number: numbers, and number-like text (spaces around allowed); anything else is not a number. */
-    static double number(DataNode x) {
+    static double number(Node x) {
         Object s = Values.simplify(x);
         if (s instanceof Number n) {
             return n.doubleValue();
         }
         if (s instanceof String str && !str.isBlank()) {
             try {
-                return Double.parseDouble(str.strip());
+                return NumberText.parse(CoreText.strip(str));
             } catch (NumberFormatException e) {
                 return Double.NaN;
             }
@@ -200,7 +198,16 @@ final class ListAggregates {
                 ? (Object) 0L : null;
     }
 
+    /** The elements of a list node, in order. */
+    static List<Node> elements(Node list) {
+        List<Node> out = new ArrayList<>(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            out.add(list.get(i));
+        }
+        return out;
+    }
+
     static ElException error(String name, String why) {
-        return new ElException(ErrorCode.EL_EVAL, name + ": " + why);
+        return new ElException(RachanaCode.EL_EVAL, name + ": " + why);
     }
 }

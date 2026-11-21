@@ -42,7 +42,7 @@ public final class Functions {
      *
      * @param name its one name
      * @param family {@code logic}, {@code math}, {@code text}, {@code dates}, {@code lists} (Rachana's own), or {@code aggregates}
-     * @param runs {@code R} (Rachana, a scalar) or {@code E} (the pivot engine, through a provider)
+     * @param runs {@code R} (Rachana: a scalar, or one of Core's aggregates over a list) or {@code E} (a host's engine, through a provider)
      * @param source who implements it: {@code Rachana}, or the provider's own words; {@code none on the class path} when refused
      * @param args its arguments as a provider writes them (empty for Rachana's own: the reference documents them)
      * @param form a provided aggregate's {@code mergeable} or {@code holistic}, or {@code measure}; empty for a scalar

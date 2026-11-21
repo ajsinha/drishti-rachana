@@ -4,10 +4,8 @@
  */
 package com.ash.rachana.agg;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.rachana.agg.Functions;
-import com.ash.rachana.agg.AggFunction;
-import com.ash.rachana.agg.Batch;
+import com.ash.rachana.internal.CoreMath;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.el.FunctionProvider.Provided;
 import com.ash.rachana.el.Values;
 import java.util.ArrayList;
@@ -17,7 +15,7 @@ import java.util.List;
 /**
  * MATLAB's (and Octave's) list analytics that rest on an aggregate (FUNCTION_CATALOGUE.md section 6, "MATLAB/Octave coverage"), provided
  * to Rachana by the pivot engine so every sum, mean, standard deviation, median, minimum and maximum in them is the engine's one
- * implementation (the same {@link AggFunction} a pivot cell runs): {@code cumsum}, {@code cumprod}, {@code cummax}, {@code cummin} (running
+ * implementation (the same {@link Aggregate} a pivot cell runs): {@code cumsum}, {@code cumprod}, {@code cummax}, {@code cummin} (running
  * forms over a list), {@code movsum}, {@code movmean}, {@code movstd}, {@code movmedian} (moving windows), {@code maxk}, {@code mink},
  * {@code bounds}, {@code zscore}, {@code rescale}, {@code isoutlier} and {@code polyfit}.
  *
@@ -97,12 +95,12 @@ final class ListAnalytics {
         if (s == null) {
             return null;
         }
-        if (!(s instanceof DataNode.Arr list)) {
+        if (!(s instanceof Node list && list.isArray())) {
             throw ListAggregates.error(fn, Values.text(s) + " is not a list");
         }
         double[] x = new double[list.size()];
         for (int i = 0; i < x.length; i++) {
-            DataNode e = list.get(i);
+            Node e = list.get(i);
             if (e.isMasked()) {
                 throw Masked.INSTANCE;
             }
@@ -125,32 +123,32 @@ final class ListAnalytics {
 
     private static int whole(String fn, Object v, String what, int min) {
         double d = number(fn, v, what);
-        if (d != Math.rint(d) || d < min || d > Integer.MAX_VALUE) {
+        if (d != CoreMath.rint(d) || d < min || d > Integer.MAX_VALUE) {
             throw ListAggregates.error(fn, what + " " + Values.text(Values.normalise(d)) + " is not a whole number of at least " + min);
         }
         return (int) d;
     }
 
     /** A list of numbers (NaN as empty) as Rachana's list. */
-    static DataNode.Arr out(double[] x) {
-        List<DataNode> out = new ArrayList<>(x.length);
+    static Node out(double[] x) {
+        List<Node> out = new ArrayList<>(x.length);
         for (double d : x) {
-            out.add(Double.isNaN(d) || Double.isInfinite(d) ? DataNode.nullValue() : DataNode.of(Values.normalise(d)));
+            out.add(Double.isNaN(d) || Double.isInfinite(d) ? Node.nullValue() : Node.of(Values.normalise(d)));
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(out);
     }
 
     /** The engine's aggregate {@code name} with its parameters. */
-    static AggFunction<Object> engine(String name, double... params) {
+    static Aggregate<Object> engine(String name, double... params) {
         List<Double> p = new ArrayList<>();
         for (double d : params) {
             p.add(d);
         }
-        return Functions.builtIn(name, List.of("x"), p).orElseThrow();
+        return Catalogue.of(name, List.of("x"), p).orElseThrow();
     }
 
     /** The engine's aggregate over values[from, to); NaN when it has no figure. */
-    static double over(AggFunction<Object> f, double[] values, int from, int to) {
+    static double over(Aggregate<Object> f, double[] values, int from, int to) {
         Double r = f.finish(f.add(f.start(), new Batch(to - from, new Object[] {Arrays.copyOfRange(values, from, to)})));
         return r == null ? Double.NaN : r;
     }
@@ -161,7 +159,7 @@ final class ListAnalytics {
         if (x == null) {
             return null;
         }
-        AggFunction<Object> f = engine(aggregate);
+        Aggregate<Object> f = engine(aggregate);
         Object state = f.start();
         double[] y = new double[x.length];
         for (int i = 0; i < x.length; i++) {
@@ -200,7 +198,7 @@ final class ListAnalytics {
             throw ListAggregates.error(fn, "a window of " + (before + after + 1L) + " over " + x.length + " elements is more work than "
                     + MAX_WINDOW_WORK + " element-windows");
         }
-        AggFunction<Object> f = engine(aggregate);
+        Aggregate<Object> f = engine(aggregate);
         double[] y = new double[x.length];
         for (int i = 0; i < x.length; i++) {
             int from = Math.max(0, i - before);
@@ -233,7 +231,7 @@ final class ListAnalytics {
             return null;
         }
         int k = whole(fn, a.get(1), "k", 1);
-        AggFunction<Object> f = null;
+        Aggregate<Object> f = null;
         double[] p = present(x);
         double[] y = new double[Math.min(k, p.length)];
         for (int i = 0; i < y.length; i++) {
@@ -315,11 +313,11 @@ final class ListAnalytics {
             dev[i] = Math.abs(x[i] - med);
         }
         double mad = MAD_SCALE * over(engine("median"), dev, 0, dev.length);
-        List<DataNode> out = new ArrayList<>(x.length);
+        List<Node> out = new ArrayList<>(x.length);
         for (int i = 0; i < x.length; i++) {
-            out.add(DataNode.of(!Double.isNaN(x[i]) && dev[i] > t * mad));
+            out.add(Node.of(!Double.isNaN(x[i]) && dev[i] > t * mad));
         }
-        return new DataNode.Arr(List.copyOf(out));
+        return Node.list(out);
     }
 
     /**
@@ -386,7 +384,7 @@ final class ListAnalytics {
                 if (k > 0) {
                     binom = binom * (j - k + 1) / k;
                 }
-                power[k] += c[j] * binom * Math.pow(-mu, j - k) / Math.pow(sigma, j);
+                power[k] += c[j] * binom * CoreMath.pow(-mu, j - k) / CoreMath.pow(sigma, j);
             }
         }
         double[] desc = new double[cols];
@@ -409,7 +407,7 @@ final class ListAnalytics {
         for (int k = 0; k < cols; k++) {
             double norm = 0;
             for (int i = k; i < m; i++) {
-                norm = Math.hypot(norm, r[i][k]);
+                norm = CoreMath.hypot(norm, r[i][k]);
             }
             if (norm == 0) {
                 throw ListAggregates.error("polyfit", "the points do not determine the polynomial (dependent columns)");

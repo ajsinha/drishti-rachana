@@ -82,6 +82,7 @@ class CoreMathTest {
     void binaryFunctionsMatchStrictMath() {
         sameBinary("pow", CoreMath::pow, StrictMath::pow);
         sameBinary("atan2", CoreMath::atan2, StrictMath::atan2);
+        sameBinary("hypot", CoreMath::hypot, StrictMath::hypot);
     }
 
     @Test

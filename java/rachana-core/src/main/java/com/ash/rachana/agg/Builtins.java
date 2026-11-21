@@ -4,9 +4,7 @@
  */
 package com.ash.rachana.agg;
 
-import com.ash.rachana.agg.AggFunction;
-import com.ash.rachana.agg.Batch;
-import com.ash.rachana.agg.Kind;
+import com.ash.rachana.internal.CoreMath;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -80,7 +78,7 @@ public final class Builtins {
     }
 
     /** Base of the functions over one numeric input whose state is a {@link KSum}. */
-    abstract static class SumLike implements AggFunction<Object> {
+    abstract static class SumLike implements Aggregate<Object> {
         @Override
         public int inputs() {
             return 1;
@@ -174,7 +172,7 @@ public final class Builtins {
     }
 
     /** {@code count()} (rows) and {@code count(x)} (values of x). */
-    public static final class Count implements AggFunction<Object> {
+    public static final class Count implements Aggregate<Object> {
         private final boolean rows;
 
         public Count(boolean rows) {
@@ -264,7 +262,7 @@ public final class Builtins {
     }
 
     /** {@code min(x)}, {@code max(x)}: the extreme, null when none. */
-    public static final class MinMax implements AggFunction<Object> {
+    public static final class MinMax implements Aggregate<Object> {
         private final boolean max;
 
         public MinMax(boolean max) {
@@ -349,7 +347,7 @@ public final class Builtins {
     }
 
     /** {@code wavg(x, w)}: (Σwx, Σw) over the rows where both are present, finished Σwx / Σw. */
-    public static final class WeightedAvg implements AggFunction<Object> {
+    public static final class WeightedAvg implements Aggregate<Object> {
         @Override
         public String name() {
             return "wavg";
@@ -436,7 +434,7 @@ public final class Builtins {
     }
 
     /** Variance and standard deviation: Welford's (n, mean, M2), merged by Chan's formula. */
-    public static final class Welford implements AggFunction<Object> {
+    public static final class Welford implements Aggregate<Object> {
         private final String name;
         private final boolean sample;
         private final boolean root;
@@ -577,7 +575,7 @@ public final class Builtins {
     }
 
     /** {@code median(x)}, {@code percentile(x, q)}: exact, from the cell's own values (holistic). */
-    public static final class Quantile implements AggFunction<Object> {
+    public static final class Quantile implements Aggregate<Object> {
         private final double q;
         private final String name;
 
@@ -646,8 +644,8 @@ public final class Builtins {
             double[] x = Arrays.copyOf(v.v, v.n);
             Arrays.sort(x);
             double pos = q * (x.length - 1);
-            int lo = (int) Math.floor(pos);
-            int hi = (int) Math.ceil(pos);
+            int lo = CoreMath.toInt(Math.floor(pos));
+            int hi = CoreMath.toInt(Math.ceil(pos));
             return lo == hi ? x[lo] : x[lo] + (pos - lo) * (x[hi] - x[lo]);
         }
 
@@ -696,7 +694,7 @@ public final class Builtins {
     }
 
     /** {@code count_distinct(x)}: exact, from the cell's own values (holistic; the ≈ sketch comes with phase P3). */
-    public static final class Distinct implements AggFunction<Object> {
+    public static final class Distinct implements Aggregate<Object> {
         @Override
         public String name() {
             return "count_distinct";

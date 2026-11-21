@@ -37,7 +37,7 @@ class CoreDeterminismGuardTest {
             + "|java\\.time\\.format\\.(?!DateTimeParseException)|TextStyle|getDisplayName\\(|System\\.nanoTime|System\\.currentTimeMillis|Double\\.toString\\("
             + "|Double\\.parseDouble\\(|Float\\.toString\\(|Float\\.parseFloat\\(|\\.sqrt\\(MathContext|unmodifiableSortedMap|appendReplacement|appendTail)");
 
-    /** Forbidden in the value code (el/, format/, and the binder: bind/, control/, view/, wire/): what an expression's result or a formatted value is made of. */
+    /** Forbidden in the value code (el/, format/, agg/, and the binder: bind/, control/, view/, wire/): what an expression's result or a formatted value is made of. */
     private static final Pattern VALUE_CODE = Pattern.compile("\\.toUpperCase\\(|\\.toLowerCase\\(|\\.strip\\(\\)|\\.stripLeading\\("
             + "|\\.stripTrailing\\(|Character\\.isWhitespace|Character\\.toUpperCase|Character\\.toLowerCase|\\.reverse\\(\\)"
             + "|BigDecimal\\.valueOf\\([a-z]+\\)");
@@ -51,7 +51,7 @@ class CoreDeterminismGuardTest {
                 if (OWNERS.contains(rel)) {
                     continue;
                 }
-                boolean valueCode = rel.startsWith("el/") || rel.startsWith("format/") || rel.startsWith("bind/") || rel.startsWith("control/")
+                boolean valueCode = rel.startsWith("el/") || rel.startsWith("format/") || rel.startsWith("agg/") || rel.startsWith("bind/") || rel.startsWith("control/")
                         || rel.startsWith("view/") || rel.startsWith("wire/");
                 String[] lines = withoutComments(Files.readString(p)).split("\n", -1);
                 for (int i = 0; i < lines.length; i++) {

@@ -1,0 +1,17 @@
+<!doctype html>
+<!-- Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see LICENSE. -->
+<meta charset="utf-8">
+<title>rachana-view state test</title>
+<link rel="stylesheet" href="/js/vendor/drishti-elements/3.2.0-dev+282ee8a/drishti-elements.css">
+<script src="/js/vendor/drishti-elements/3.2.0-dev+282ee8a/drishti-elements.js"></script>
+<script type="module" src="/js/packages/rachana/src/rachana_view.js"></script>
+<rachana-view id="v" src="/js/packages/rachana/test/state.sutra.yaml" runtime="/js/packages/rachana/dist/rachana.runtime.js"
+              formats="/spec/1/formats.yaml" level="1.2" today="2026-01-15"></rachana-view>
+<script>
+  window.__events = [];
+  for (const n of ['ready', 'change', 'error']) {
+    document.addEventListener('rachana-view:' + n, (e) => window.__events.push({ name: n, detail: n === 'error' ? String(e.detail.error) : null }));
+  }
+  window.__bound = [];
+  document.addEventListener('elements-view:bound', (e) => window.__bound.push(e.detail));
+</script>

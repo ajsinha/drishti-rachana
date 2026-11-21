@@ -998,12 +998,15 @@
 [experimental] com.ash.rachana.agg.CoreAggregates :: public static final java.lang.String com.ash.rachana.agg.CoreAggregates.SOURCE
 [experimental] com.ash.rachana.agg.CoreAggregates :: public static final java.util.Set<java.lang.String> com.ash.rachana.agg.CoreAggregates.LIST_FIRST
 [experimental] com.ash.rachana.agg.CoreAggregates :: public static void com.ash.rachana.agg.CoreAggregates.requireList(java.lang.String,java.util.List<java.lang.Object>)
+[experimental] com.ash.rachana.agg.Final :: public byte[] com.ash.rachana.agg.Final.encode()
 [experimental] com.ash.rachana.agg.Final :: public com.ash.rachana.agg.Final(java.lang.Double)
 [experimental] com.ash.rachana.agg.Final :: public final boolean com.ash.rachana.agg.Final.equals(java.lang.Object)
 [experimental] com.ash.rachana.agg.Final :: public final int com.ash.rachana.agg.Final.hashCode()
 [experimental] com.ash.rachana.agg.Final :: public final java.lang.String com.ash.rachana.agg.Final.toString()
 [experimental] com.ash.rachana.agg.Final :: public java.lang.Double com.ash.rachana.agg.Final.value()
+[experimental] com.ash.rachana.agg.Final :: public static boolean com.ash.rachana.agg.Final.isEncoded(byte[])
 [experimental] com.ash.rachana.agg.Final :: public static com.ash.rachana.agg.Aggregate<java.lang.Object> com.ash.rachana.agg.Final.function(java.lang.String,boolean)
+[experimental] com.ash.rachana.agg.Final :: public static com.ash.rachana.agg.Final com.ash.rachana.agg.Final.decode(byte[])
 [experimental] com.ash.rachana.agg.Holistics :: public static final int com.ash.rachana.agg.Holistics.STRING_AGG_MAX
 [experimental] com.ash.rachana.agg.Holistics$Iqr :: public com.ash.rachana.agg.Holistics$Iqr()
 [experimental] com.ash.rachana.agg.Holistics$Iqr :: public java.lang.String com.ash.rachana.agg.Holistics$Iqr.name()

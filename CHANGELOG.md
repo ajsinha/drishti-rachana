@@ -5,6 +5,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **`Final`'s state is public API, so a host keeps no copy** (G4 binder pass R-2). `com.ash.rachana.agg.Final` gains `encode()`,
+  `decode(byte[])` and `isEncoded(byte[])` (the tag test Core's own holistic states use too), marked `[experimental]` in
+  `java/api-surface.txt` (additions only). Drishti's `bicompute.functions.Final` (a copy kept because these were package-private) can be
+  deleted: its once-per-parent figures and native measures store and read Core's bytes. `FinalTest`.
+
+- **SPEC 9 items 11 and 12** (G4 binder pass, lead decisions): `and` is the canonical form from level 1.2 and a formula written with `and`
+  stays as written (P10: nothing to migrate); `geomean`'s state and `skewness_pop`'s figure may differ in the last place from Drishti's
+  retired kernel, and Core's kernel is authoritative (8.3h). Item 7 notes the 1.1 catalogue check. Upgrade rule `SAME_AT_EVERY_LEVEL`
+  covers both.
+
 - **The served ViewModel schema names the 1.2 `form` kind's data record** (G4 binder pass R-1; contract 1.2, append-only, CG4).
   `ViewModelSchema.DATA_BY_KIND` had no entry for `form`, so the schema Core serves (`ViewModelSchema.build()`, the text a host's schema
   test validates against) gave a form panel's `data` no record; it is now `FormPanel`, in the published order (after `chart`, before

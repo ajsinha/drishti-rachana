@@ -132,8 +132,10 @@ public enum UpgradeRule {
             List.of("decision:D5-1", "decision:D9-4", "decision:D15-4", "decision:D15-6", "decision:G1-2", "decision:O5")),
 
     SAME_AT_EVERY_LEVEL(Action.NONE, "none", "Known differences from the draft that no level changes",
-            "SPEC 9 items 1, 2, 3, 5, 6, 7 and 10 describe the reference against the draft text; every level answers alike",
-            List.of("spec9:1", "spec9:2", "spec9:3", "spec9:5", "spec9:6", "spec9:7", "spec9:10")),
+            "SPEC 9 items 1, 2, 3, 5, 6, 7, 10, 11 and 12 describe the reference against the draft text, the canonical and of 1.2 (a text "
+                    + "written with and is kept as written) and the last digit of geomean and skewness_pop against Drishti's retired kernel; "
+                    + "every level answers alike",
+            List.of("spec9:1", "spec9:2", "spec9:3", "spec9:5", "spec9:6", "spec9:7", "spec9:10", "spec9:11", "spec9:12")),
 
     WITHDRAWN(Action.NONE, "none", "Withdrawn cases",
             "cases withdrawn from level 1.0 (placeholders, a protocol case, the ** messages): no language difference",

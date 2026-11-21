@@ -665,7 +665,7 @@ public final class Builtins {
 
         @Override
         public Object decode(byte[] b) {
-            if (b[0] == Final.TAG) {
+            if (Final.isEncoded(b)) {
                 return Final.decode(b);
             }
             ByteBuffer bb = ByteBuffer.wrap(b, 1, b.length - 1);
@@ -766,7 +766,7 @@ public final class Builtins {
 
         @Override
         public Object decode(byte[] b) {
-            if (b[0] == Final.TAG) {
+            if (Final.isEncoded(b)) {
                 return Final.decode(b);
             }
             Set<String> out = new HashSet<>();

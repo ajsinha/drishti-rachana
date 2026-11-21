@@ -1204,7 +1204,8 @@ to be settled with the conformance suite.
    point from level 1.1 (cases `el/text-code-points`); level 1.0 keeps the UTF-16 code unit order it was recorded with.
 5. **`+` with booleans** joins text (`true + 1` → `'true1'`) while `*` and `==` treat `true` as 1 (4.5, 4.6).
 6. **Links in a list literal** become their display text (the link is lost) (4.2).
-7. **Named keyword-only arguments** of profile functions compile in Core and fail only at evaluation (4.10).
+7. **Named keyword-only arguments** of profile functions compile in Core and fail only at evaluation (4.10); from level 1.1
+   their literals are checked against the catalogue when they compile (4.10 rule 2).
 8. **Message prefix, regex refusal, `standardize`** (settled, decision N5, 2026-11-19): at language level 1.0 the reference
    wins byte for byte (Q1): a compile problem of an expression alone has no `expression '<source>': ` prefix (6.3), a
    refused regular expression raises `RCH-4010`, and `standardize` gives a decimal. Each changes only at a raised level
@@ -1216,3 +1217,12 @@ to be settled with the conformance suite.
    A Core runtime with no profile does not require `match` (D12); the reference always loads the Drishti profile.
 10. The Drishti reference guide's grammar and error table predate list literals, `in`/`not in`, `^`, `@panel`, `$src`
    and named arguments, and still say "there are no list literals"; this specification supersedes them.
+11. **`and` is the canonical form from level 1.2** (G4 binder pass P10, lead decision 2026-11-21). Every level reads
+   `and`, `or`, `not` beside `&&`, `||`, `!` (PY1); the printer writes `&&` at level 1.0 and `and` from 1.1 (4.17). A host
+   that upgrades to 1.2 keeps a formula written with `and` exactly as written (`sum(PNL, where=DESK == 'RATES' and PNL > 0)`
+   is already a 1.2 formula, so there is nothing to migrate); only a 1.0 text is rewritten, and it becomes `and`, not `&&`.
+12. **`geomean` and `skewness_pop` in the last digit.** Core's aggregate kernel (`com.ash.rachana.agg`, CoreMath) is
+   authoritative (SPLIT_PLAN 8.3h): `geomean`'s state and `skewness_pop`'s figure may differ in the last place from
+   Drishti's retired kernel, which summed in another order; every other aggregate's state and figure is the same bytes.
+   They are real-number aggregates (5.8): a host compares a state recorded by the old kernel with a relative tolerance of one
+   unit in the last place, never byte for byte, and records new states with Core's kernel.

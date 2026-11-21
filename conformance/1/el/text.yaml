@@ -377,7 +377,7 @@ cases:
   - id: "regex-extract-ab-trade-id-l11"
     kind: "expr"
     since: "1.1"
-    verified: false
+    verified: true
     source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
     expr: "regex_extract('ab', $.TRADE_ID + '(')"
     expect: {"error": {"code": "RCH-2102"}}

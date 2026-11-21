@@ -4,7 +4,8 @@
 `write L` is run by the release that creates level L: it writes the folder once and refuses an existing one (no re-record flag).
 `check [L]` replays the conformance suite of Rachana's JVM runtime at --language L and compares each case recorded in results.jsonl
 byte for byte; it exits 1 on a difference. Cases added after the level was written are not part of it, and a case recorded as
-`unsupported` (a kind the runtime did not run yet) may be answered now: both are reported, neither is a difference. Build first: cd java && ./mvnw clean package -DskipTests."""
+`unsupported` (a kind the runtime did not run yet) may be answered now, and a case recorded `fail` (it never held at the level) may have
+moved to a later level or been withdrawn: all are reported, none is a difference. Build first: cd java && ./mvnw clean package -DskipTests."""
 import argparse, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -45,12 +46,16 @@ with tempfile.TemporaryDirectory(prefix="rachana-levels-") as tmp:
             import json
             now = {json.loads(x)["case"]: x for x in (Path(tmp) / f"{lv}.jsonl").read_text(encoding="utf-8").splitlines() if x}
             then = {json.loads(x)["case"]: x for x in (LEVELS / lv / "results.jsonl").read_text(encoding="utf-8").splitlines() if x}
-            changed = [c for c, x in then.items() if now.get(c) != x and json.loads(x)["status"] != "unsupported"]
+            # a case recorded failing (it never held at this level: an unverified case pinning a later behaviour) that the suite has
+            # since moved to a later level, or withdrawn, is no longer part of this level: reported, not a difference
+            moved = [c for c, x in then.items() if json.loads(x)["status"] == "fail"
+                     and (c not in now or json.loads(now[c])["status"] == "unsupported")]
+            changed = [c for c, x in then.items() if now.get(c) != x and json.loads(x)["status"] != "unsupported" and c not in moved]
             answered = [c for c, x in then.items() if now.get(c) != x and json.loads(x)["status"] == "unsupported"]
             added = len(set(now) - set(then))
             for c in changed:
                 print(f"  changed: {c}")
-            print(f"level {lv}: {'DIFFERENT' if changed else 'identical'} ({len(then) - len(changed) - len(answered)} identical, "
-                  f"{len(answered)} newly answered, {added} cases added since)")
+            print(f"level {lv}: {'DIFFERENT' if changed else 'identical'} ({len(then) - len(changed) - len(answered) - len(moved)} identical, "
+                  f"{len(answered)} newly answered, {len(moved)} failing cases moved to a later level or withdrawn, {added} cases added since)")
             bad += bool(changed)
         sys.exit(1 if bad else 0)

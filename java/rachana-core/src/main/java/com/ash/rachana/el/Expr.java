@@ -425,6 +425,26 @@ public interface Expr {
         public Object eval(EvalContext c) {
             List<Object> values = new ArrayList<>(items.size());
             for (Expr e : items) {
+                if (e instanceof Spread s) {                      // level 1.1: [...a, b] splices the list a
+                    Object v = Values.simplify(s.e().eval(c));
+                    if (Values.masked(v)) {
+                        return Values.mask();
+                    }
+                    if (v == null) {
+                        continue;
+                    }
+                    if (!(v instanceof Node n && n.isArray())) {
+                        throw Args.typeError("spread", v, "a list (a list spreads into a list)");
+                    }
+                    for (int i = 0; i < n.size(); i++) {
+                        values.add(n.get(i));
+                    }
+                    if (values.size() > Parser.MAX_RECORD_FIELDS * 10) {
+                        throw new ElException(RachanaCode.EL_EVAL, "a list written in an expression holds at most " + Parser.MAX_RECORD_FIELDS * 10
+                                + " values with its spreads");
+                    }
+                    continue;
+                }
                 values.add(e.eval(c));
             }
             return Args.list(values);
@@ -490,6 +510,254 @@ public interface Expr {
     record Absent() implements Expr {
         public Object eval(EvalContext c) {
             return null;
+        }
+    }
+
+    // ---- language level 1.1 (EL_EXPANSION X2, X6, X7, X11 to X13; DECISIONS PY2 to PY7) -----------------------------------------
+
+    /**
+     * A binary operator of level 1.1 ({@code + - * / %}, the comparisons, {@code == !=}): the rules of {@link Binary} with the numbers of
+     * SPEC 4.16 (integers and decimals exact, {@code /} to 34 digits, a double on either side a double) and texts ordered by code point.
+     */
+    record Op(String op, Expr l, Expr r) implements Expr {
+        public Object eval(EvalContext c) {
+            Object a = l.eval(c);
+            Object b = r.eval(c);
+            if (Values.masked(a) || Values.masked(b)) {
+                return Values.mask();
+            }
+            switch (op) {
+                case "==":
+                    return Exact.equal(a, b);
+                case "!=":
+                    return !Exact.equal(a, b);
+                case "+":
+                    if (Values.isNull(a) && (Values.isNull(b) || Values.isNumber(b)) || Values.isNull(b) && Values.isNumber(a)) {
+                        return null;
+                    }
+                    if (!(Values.isNumber(a) && Values.isNumber(b))) {
+                        return Values.text(a) + Values.text(b);
+                    }
+                    return Exact.arithmetic("+", Exact.operand(a), Exact.operand(b));
+                case "-", "*", "/", "%":
+                    if (Values.isNull(a) || Values.isNull(b)) {
+                        return null;
+                    }
+                    if ("-".equals(op) && Values.simplify(a) instanceof String sa && Values.simplify(b) instanceof String sb) {
+                        java.time.LocalDate x = Args.parseDate(sa);
+                        java.time.LocalDate y = Args.parseDate(sb);
+                        if (x != null && y != null) {
+                            return java.time.temporal.ChronoUnit.DAYS.between(y, x);
+                        }
+                    }
+                    return Exact.arithmetic(op, Exact.operand(a), Exact.operand(b));
+                default:
+                    break;
+            }
+            Integer order = Exact.compare(Exact.operand(a), Exact.operand(b));
+            if (order == null) {
+                if (Values.simplify(a) instanceof String sa && Values.simplify(b) instanceof String sb) {
+                    order = TextOrder.compare(sa, sb);                // two texts: by code point (SPEC 4.13)
+                } else {
+                    return false;
+                }
+            }
+            return switch (op) {
+                case "<" -> order < 0;
+                case "<=" -> order <= 0;
+                case ">" -> order > 0;
+                case ">=" -> order >= 0;
+                default -> throw new ElException(RachanaCode.EL_EVAL, "unknown operator " + op);
+            };
+        }
+
+        public void paths(Consumer<String> sink) {
+            l.paths(sink);
+            r.paths(sink);
+        }
+    }
+
+    /** Unary minus at level 1.1: an exact number stays exact. */
+    record Minus(Expr e) implements Expr {
+        public Object eval(EvalContext c) {
+            Object v = e.eval(c);
+            return Values.masked(v) ? Values.mask() : Values.isNull(v) ? null : Exact.negate(Exact.operand(v));
+        }
+
+        public void paths(Consumer<String> sink) {
+            e.paths(sink);
+        }
+    }
+
+    /**
+     * {@code a ** b} (PY6; {@code ^} between two values is the same operator, for Excel's users): right-associative, tighter than a
+     * unary sign on its left ({@code -2 ** 2} is {@code -4}). A whole exponent of at most 64 on an exact base is exact, as {@code power}.
+     */
+    record Power(Expr l, Expr r) implements Expr {
+        public Object eval(EvalContext c) {
+            Object a = l.eval(c);
+            Object b = r.eval(c);
+            if (Values.masked(a) || Values.masked(b)) {
+                return Values.mask();
+            }
+            if (Values.isNull(a) || Values.isNull(b)) {
+                return null;
+            }
+            return Exact.power(Exact.operand(a), Exact.operand(b));
+        }
+
+        public void paths(Consumer<String> sink) {
+            l.paths(sink);
+            r.paths(sink);
+        }
+    }
+
+    /** {@code a ?? b} (X12): {@code a} unless it is empty, else {@code b}, evaluated only then; {@code ''} and {@code 0} are values. */
+    record Coalesce(Expr l, Expr r) implements Expr {
+        public Object eval(EvalContext c) {
+            Object a = l.eval(c);
+            return Values.isNull(a) && !Values.masked(a) ? r.eval(c) : a;
+        }
+
+        public void paths(Consumer<String> sink) {
+            l.paths(sink);
+            r.paths(sink);
+        }
+    }
+
+    /** {@code ...e} inside a list or a record literal (X6). */
+    record Spread(Expr e) implements Expr {
+        public Object eval(EvalContext c) {
+            throw new ElException(RachanaCode.EL_EVAL, "'...' spreads only inside a list or a record");
+        }
+
+        public void paths(Consumer<String> sink) {
+            e.paths(sink);
+        }
+    }
+
+    /** {@code key: value} of a record literal. */
+    record Pair(String key, Expr value) implements Expr {
+        public Object eval(EvalContext c) {
+            return value.eval(c);
+        }
+
+        public void paths(Consumer<String> sink) {
+            value.paths(sink);
+        }
+    }
+
+    /**
+     * <code>{ key: value, ...r }</code> (X6): a record, its keys in written order; a later key or spread replaces an earlier one in its
+     * place. A spread of empty adds nothing; of a masked value, the record is masked.
+     */
+    record RecordLit(List<Expr> entries) implements Expr {
+        public RecordLit {
+            entries = List.copyOf(entries);
+        }
+
+        public Object eval(EvalContext c) {
+            java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+            for (Expr e : entries) {
+                if (e instanceof Pair p) {
+                    out.put(p.key(), Args.node(p.value().eval(c)));
+                    continue;
+                }
+                Object v = Values.simplify(((Spread) e).e().eval(c));
+                if (Values.masked(v)) {
+                    return Values.mask();
+                }
+                if (v == null) {
+                    continue;
+                }
+                if (!(v instanceof Node n && n.kind() == Node.Kind.OBJECT)) {
+                    throw Args.typeError("spread", v, "a record (a record spreads into a record)");
+                }
+                n.fields().forEach((k, x) -> out.put(k, x));
+                if (out.size() > Parser.MAX_RECORD_FIELDS) {
+                    throw new ElException(RachanaCode.EL_EVAL, "a record holds at most " + Parser.MAX_RECORD_FIELDS + " fields");
+                }
+            }
+            return Node.of(out);
+        }
+
+        public void paths(Consumer<String> sink) {
+            entries.forEach(e -> e.paths(sink));
+        }
+    }
+
+    /**
+     * {@code target[start:stop]}, {@code target[start:stop:step]} (PY4, Python's slice): end-exclusive, a negative end counts from the
+     * end, out of range is clamped; a list gives a list, a text a text (by code point); a step of 0 is {@code RCH-2102}.
+     */
+    record Slice(Expr target, Expr start, Expr stop, Expr step) implements Expr {
+        public Object eval(EvalContext c) {
+            Object t = Values.simplify(target.eval(c));
+            Object a = start == null ? null : Values.simplify(start.eval(c));
+            Object b = stop == null ? null : Values.simplify(stop.eval(c));
+            Object s = step == null ? null : Values.simplify(step.eval(c));
+            if (Values.masked(t) || Values.masked(a) || Values.masked(b) || Values.masked(s)) {
+                return Values.mask();
+            }
+            return Ranges.slice(t, a, b, s);
+        }
+
+        public void paths(Consumer<String> sink) {
+            target.paths(sink);
+            if (start != null) {
+                start.paths(sink);
+            }
+            if (stop != null) {
+                stop.paths(sink);
+            }
+            if (step != null) {
+                step.paths(sink);
+            }
+        }
+    }
+
+    /**
+     * {@code lambda x: body}, {@code lambda acc, x: body} (X13 in Python's spelling, PY3): a function value, second class. It is passed to
+     * {@code map}, {@code sort}, {@code reduce} or {@code group}, or bound by {@code let} and called; {@code @} inside keeps its outer
+     * meaning. Evaluated, it is the function closed over its context.
+     */
+    record Lambda(List<String> params, Expr body) implements Expr {
+        public Lambda {
+            params = List.copyOf(params);
+        }
+
+        public Object eval(EvalContext c) {
+            return new Closure(this, c);
+        }
+
+        public void paths(Consumer<String> sink) {
+            body.paths(sink);
+        }
+    }
+
+    /** A {@code let} name bound to a lambda, passed on as a function ({@code map($.legs, f)}). */
+    record FnRef(String name) implements Expr {
+        public Object eval(EvalContext c) {
+            return c.local(name);
+        }
+    }
+
+    /** {@code f(a, ...)} where {@code let} bound {@code f} to a lambda. */
+    record LocalCall(String name, List<Expr> args) implements Expr {
+        public LocalCall {
+            args = List.copyOf(args);
+        }
+
+        public Object eval(EvalContext c) {
+            List<Object> values = new ArrayList<>(args.size());
+            for (Expr a : args) {
+                values.add(a.eval(c));
+            }
+            return ((Closure) c.local(name)).call(values);
+        }
+
+        public void paths(Consumer<String> sink) {
+            args.forEach(a -> a.paths(sink));
         }
     }
 }

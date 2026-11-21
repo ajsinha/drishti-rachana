@@ -9,12 +9,22 @@ import com.ash.rachana.el.Token.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Splits a Rachana-EL expression into tokens. */
+/**
+ * Splits a Rachana-EL expression into tokens. Level 1.0 reads exactly what the reference read; level 1.1 (the syntax batch, EL_EXPANSION
+ * X6, X7, X11 to X14, DECISIONS PY1 to PY8) adds comments {@code /* ... *}{@code /}, digit separators ({@code 1_000}), the tokens
+ * {@code |>}, {@code ??}, {@code **}, {@code ...}, <code>{</code> and <code>}</code>, and keeps {@code =>} and {@code ..} reserved with
+ * the Python spelling as the fix.
+ */
 final class Lexer {
 
     private Lexer() {}
 
     static List<Token> tokens(String src) {
+        return tokens(src, false);
+    }
+
+    /** The tokens of {@code src}; {@code v11}: read at language level 1.1 or later. */
+    static List<Token> tokens(String src, boolean v11) {
         List<Token> out = new ArrayList<>();
         int i = 0;
         int n = src.length();
@@ -22,6 +32,14 @@ final class Lexer {
             char c = src.charAt(i);
             if (CoreText.isWhitespace(c)) {
                 i++;
+            } else if (v11 && src.startsWith("/*", i)) {
+                int end = src.indexOf("*/", i + 2);                // X14: a comment stands where white space may
+                if (end < 0) {
+                    throw new ElException("a comment '/*' is not closed", i);
+                }
+                i = end + 2;
+            } else if (v11 && (Character.isDigit(c) || (c == '.' && i + 1 < n && Character.isDigit(src.charAt(i + 1))))) {
+                i = number11(src, i, out);
             } else if (Character.isDigit(c) || (c == '.' && i + 1 < n && Character.isDigit(src.charAt(i + 1)))) {
                 int j = i;
                 while (j < n && (Character.isDigit(src.charAt(j)) || src.charAt(j) == '.'
@@ -54,6 +72,29 @@ final class Lexer {
                 i = j;
             } else {
                 String two = i + 1 < n ? src.substring(i, i + 2) : "";
+                if (v11) {
+                    if (src.startsWith("...", i)) {
+                        out.add(new Token(Type.SPREAD, "...", i));    // X6: spread in a record or a list
+                        i += 3;
+                        continue;
+                    }
+                    switch (two) {
+                        case "|>", "??", "**" -> {                       // X11 the pipe, X12 the first non-empty, PY6 the power
+                            out.add(new Token(Type.OP, two, i));
+                            i += 2;
+                            continue;
+                        }
+                        case "=>" -> throw new ElException("'=>' is reserved for a later version of Rachana: write lambda x: ...", i, i + 2);
+                        case ".." -> throw new ElException("'..' is reserved for a later version of Rachana: write range(start, stop)", i, i + 2);
+                        case "*/" -> throw new ElException("'*/' closes no comment", i, i + 2);
+                        default -> { }
+                    }
+                    if (c == '{' || c == '}') {
+                        out.add(new Token(c == '{' ? Type.LBRACE : Type.RBRACE, String.valueOf(c), i));   // X6: a record
+                        i++;
+                        continue;
+                    }
+                }
                 switch (two) {
                     case "**" -> throw new ElException("'**' is not Rachana: write power(x, y)", i);
                     case "//" -> throw new ElException("'//' is not Rachana: write floor(x / y)", i);
@@ -110,5 +151,37 @@ final class Lexer {
         }
         out.add(new Token(Type.EOF, "", n));
         return out;
+    }
+
+    /**
+     * A number at level 1.1: digits, one point, an exponent, and {@code _} only between two digits (X14); the run ends before {@code ..}.
+     * The token's text is the number without its separators.
+     */
+    private static int number11(String src, int i, List<Token> out) {
+        int n = src.length();
+        int j = i;
+        while (j < n) {
+            char ch = src.charAt(j);
+            boolean sign = (ch == '-' || ch == '+') && j > i && (src.charAt(j - 1) == 'e' || src.charAt(j - 1) == 'E');
+            if (ch == '.' && j + 1 < n && src.charAt(j + 1) == '.') {
+                break;
+            }
+            if (!(Character.isDigit(ch) || ch == '.' || ch == '_' || ch == 'e' || ch == 'E' || sign)) {
+                break;
+            }
+            j++;
+        }
+        String run = src.substring(i, j);
+        for (int k = 0; k < run.length(); k++) {
+            if (run.charAt(k) == '_' && (k == 0 || k + 1 == run.length() || !ascii(run.charAt(k - 1)) || !ascii(run.charAt(k + 1)))) {
+                throw new ElException("'_' in a number stands only between two digits: '" + run + "'", i, j);
+            }
+        }
+        out.add(new Token(Type.NUMBER, run.replace("_", ""), i, j - i));
+        return j;
+    }
+
+    private static boolean ascii(char c) {
+        return c >= '0' && c <= '9';
     }
 }

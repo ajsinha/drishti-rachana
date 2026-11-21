@@ -79,7 +79,7 @@ cases:
   - id: "standardize-42-40-1-5-l11"
     kind: "expr"
     since: "1.1"
-    verified: false
+    verified: true
     source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
     expr: "standardize(42, 40, 1.5)"
     expect: {"value": 1.333333333, "type": "number", "tolerance": {"abs": 1.0e-09}}

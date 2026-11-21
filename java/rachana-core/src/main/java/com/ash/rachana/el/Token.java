@@ -11,9 +11,13 @@ package com.ash.rachana.el;
  * @param text the source text (unquoted for strings)
  * @param pos 0-based offset in the expression
  */
-record Token(Type type, String text, int pos) {
+record Token(Type type, String text, int pos, int length) {
 
-    enum Type { NUMBER, STRING, IDENT, DOLLAR, AT, CARET, EVENT, SRC, HASH_INDEX, OP, LPAREN, RPAREN, LBRACKET, FILTER, RBRACKET, DOT, COMMA, QUESTION, COLON, EOF }
+    Token(Type type, String text, int pos) {
+        this(type, text, pos, text.length());
+    }
+
+    enum Type { NUMBER, STRING, IDENT, DOLLAR, AT, CARET, EVENT, SRC, HASH_INDEX, OP, LPAREN, RPAREN, LBRACKET, FILTER, RBRACKET, DOT, COMMA, QUESTION, COLON, SPREAD, LBRACE, RBRACE, EOF }
 
     boolean is(Type t, String s) {
         return type == t && text.equals(s);

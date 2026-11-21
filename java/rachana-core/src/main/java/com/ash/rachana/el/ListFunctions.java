@@ -90,6 +90,15 @@ final class ListFunctions {
      * ordering what the earlier leave equal. Masked when a key is masked.
      */
     private static Object sort(List<Expr> args, EvalContext c) {
+        return sort(args, c, false);
+    }
+
+    /** {@code sort} at language level 1.1: texts ordered by code point (SPEC 4.13). */
+    static Object sortByCodePoint(List<Expr> args, EvalContext c) {
+        return sort(args, c, true);
+    }
+
+    private static Object sort(List<Expr> args, EvalContext c, boolean codePoints) {
         Object v = listOf("sort", args.get(0), c);
         if (!(v instanceof Node list && list.isArray())) {
             return v;
@@ -111,7 +120,7 @@ final class ListFunctions {
             Node e = list.get(i);
             Object[] row = new Object[keys + 1];
             for (int j = 0; j < keys; j++) {
-                Object k = args.size() > 1 + 2 * j ? args.get(1 + 2 * j).eval(c.withRow(e, i)) : e;
+                Object k = args.size() > 1 + 2 * j ? Closure.each(args.get(1 + 2 * j), c, e, i) : e;
                 if (Values.masked(k)) {
                     return Values.mask();                                 // an order by a hidden value would tell it
                 }
@@ -130,7 +139,7 @@ final class ListFunctions {
                     }
                     continue;
                 }
-                int order = compare(x[j], y[j]);
+                int order = codePoints ? compare11(x[j], y[j]) : compare(x[j], y[j]);
                 if (order != 0) {
                     return desc[j] ? -order : order;
                 }
@@ -153,6 +162,16 @@ final class ListFunctions {
             return Double.isNaN(a) ? 1 : -1;
         }
         return Values.text(x).compareTo(Values.text(y));
+    }
+
+    /** {@link #compare} with texts by code point (level 1.1). */
+    static int compare11(Object x, Object y) {
+        double a = x instanceof Boolean ? Double.NaN : Values.number(x);
+        double b = y instanceof Boolean ? Double.NaN : Values.number(y);
+        if (!Double.isNaN(a) || !Double.isNaN(b)) {
+            return compare(x, y);
+        }
+        return TextOrder.compare(Values.text(x), Values.text(y));
     }
 
     /**
@@ -230,7 +249,7 @@ final class ListFunctions {
         }
         List<Object> out = new ArrayList<>(list.size());
         for (int i = 0; i < list.size(); i++) {
-            out.add(args.get(1).eval(c.withRow(list.get(i), i)));
+            out.add(Closure.each(args.get(1), c, list.get(i), i));
         }
         return Args.list(out);
     }
@@ -246,8 +265,10 @@ final class ListFunctions {
             return v;
         }
         Object acc = args.get(1).eval(c);
+        Closure f = Closure.of(args.get(2), c);                    // level 1.1: reduce(l, init, lambda acc, x: ...)
         for (int i = 0; i < list.size(); i++) {
-            acc = args.get(2).eval(c.withRow(list.get(i), i).withLocal(ACC, acc));
+            acc = f != null ? f.call(java.util.Arrays.asList(acc, list.get(i)))
+                    : args.get(2).eval(c.withRow(list.get(i), i).withLocal(ACC, acc));
         }
         return acc;
     }

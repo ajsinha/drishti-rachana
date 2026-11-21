@@ -125,13 +125,13 @@ public final class Cases {
         List<String> reads = new ArrayList<>();
         try {
             if (c.containsKey("template")) {
-                Template t = EL.template(text(c.get("template")));
+                Template t = at(c).compiler().template(text(c.get("template")));
                 v = t.render(ctx);
                 LinkedHashSet<String> s = new LinkedHashSet<>();
                 t.paths(s::add);
                 reads.addAll(s);
             } else {
-                Expr e = EL.compile(text(c.get("expr")));
+                Expr e = at(c).compiler().compile(text(c.get("expr")));
                 v = e.eval(ctx);
                 LinkedHashSet<String> s = new LinkedHashSet<>();
                 e.paths(s::add);
@@ -156,14 +156,14 @@ public final class Cases {
         String src = c.containsKey("template") ? text(c.get("template")) : text(c.get("expr"));
         Map<String, Object> limits = obj(obj(c.get("given")).get("limits"));
         int depth = whole(limits.get("depth"), 200), len = whole(limits.get("length"), 10_000);
-        ElCompiler comp = new ElCompiler(1000, new ElLimits(depth, len), rachana.functions());
+        ElCompiler comp = new ElCompiler(1000, new ElLimits(depth, len), rachana.functions(), level(c));
         try {
             if (c.containsKey("template")) { comp.template(src); } else { comp.compile(src); }
             sb.append("{\"problems\":[]}");
         } catch (ElException e) {
             int at = Math.max(0, e.position());
             sb.append("{\"problems\":[{\"code\":").append(str(code(e))).append(",\"severity\":\"error\",\"message\":").append(str(words(e)))
-                    .append(",\"expr\":{\"source\":").append(str(src)).append(",\"start\":").append(at).append(",\"end\":").append(Math.min(src.length(), at + 1)).append("}}]}");
+                    .append(",\"expr\":{\"source\":").append(str(src)).append(",\"start\":").append(at).append(",\"end\":").append(Math.min(src.length(), e.end() > at ? e.end() : at + 1)).append("}}]}");
         }
     }
 

@@ -47,7 +47,7 @@ public final class Rachana {
         this.options = options;
         this.profiles = profiles;
         this.functions = functions;
-        this.compiler = new ElCompiler(options.expressionCacheSize(), options.expressionLimits(), functions);
+        this.compiler = new ElCompiler(options.expressionCacheSize(), options.expressionLimits(), functions, grammar.level());
         this.formats = formats;
     }
 

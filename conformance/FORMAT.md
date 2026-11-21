@@ -36,6 +36,7 @@ conformance/
     plan/        plan cases
     edit/        edit cases
     protocol/    protocol cases (run against a Data Protocol host, not a compiler)
+    lib/         lib cases (one library folder read and checked)
     <area>/examples/   hand-written examples of this format, one file per kind; ordinary cases, run like any other
 ```
 
@@ -129,7 +130,7 @@ text anyway.
 
 ## 5. The kinds
 
-Eleven kinds. Every kind is a pure function from the case's inputs to one **actual** document; a runner writes that
+Twelve kinds. Every kind is a pure function from the case's inputs to one **actual** document; a runner writes that
 document in full on the case's results line (RUNNER section 4) and compares the parts `expect` names (section 7).
 
 | Kind | Area | Input fields | Actual document (all fields always written) | Typical `expect` |
@@ -145,6 +146,7 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 | `plan` | `plan/` | `sutra`, `file`, `files`, `given` (with `schemas`) | `{plan}` | `plan`, or `at` |
 | `edit` | `edit/` | `sutra`, `file`, `operation` | `{text, problems}` | `text`, or `problems` |
 | `protocol` | `protocol/` | `fixture`, `steps` (requests) | `{steps: [{status, body}…]}` | `steps` with `status`, `body` |
+| `lib` | `lib/` | `library`, `files` | `{ok, problems, version, sha384, fragments}` | `ok`, `problems`, `sha384` |
 
 ### 5.1 `given`: the context
 
@@ -211,7 +213,9 @@ These are R-FMT and R-TONE of TRANSLATION 1.1 on their own.
 ### 5.7 `sutra`
 
 `sutra` is the Sutra text (a YAML block scalar), `file` its file name (default `case.sutra.yaml`), `files` other
-files by name for `use:` fragments. With `given`, the ViewModel is built (TRANSLATION). `expect.viewModel` is the
+files by name for `use:` fragments: a `<name>.v<N>.fragment.yaml` (or `.block.yaml`) file is a fragment the host's
+resolver serves in place of the profile's; `rachana_libs/<library>/<path>` files are the libraries a `LibraryResolver`
+finds (one folder per library); `rachana.lock` is their lock (`problem` and `patch` cases read `files` the same way). With `given`, the ViewModel is built (TRANSLATION). `expect.viewModel` is the
 whole ViewModel; `expect.at` checks parts of it by JSON Pointer (section 7). Always dropped from the actual before
 writing or comparing: `timings`, `provenance.fetchedAt`, `provenance.updatedAt` (TRANSLATION 0). The ViewModel's
 schema is `spec/1/viewmodel.schema.json`; its key order is the order of output (section 8).
@@ -260,6 +264,16 @@ list of `{ request, expect, capture }`:
 - `capture`: `{ name: "/json/pointer" }` into the step's response body (a cursor for the next page).
 
 A `protocol` case has no top-level `expect`: each step carries its own.
+
+### 5.13 `lib`
+
+`files` is one library folder (paths inside it, `/` separated, text content), `library` its name. The library is read
+and checked as a host loads it with no signature requirement ([LIBRARIES](../docs/design/LIBRARIES.md) 3, 11, 12): the
+file-type rule, the manifest, `MANIFEST.sha384` against every file, `exports` against the fragment files, the uses
+inside it and the scope of its typed fragments. `ok` is `true` when it loads; `problems` as in `problem` cases;
+`version` (the manifest's), `sha384` (SHA-384 of the canonical `.rlib` archive of the files, 96 hex digits: the
+library's identity in a lock) and `fragments` (its fragment names, sorted) are `null` when it is refused. Signatures are
+not part of this kind (a runtime need not carry Ed25519); they are tested by the JVM tools.
 
 ## 6. Matching expected problems
 

@@ -25,7 +25,7 @@ const rachana = await import(pathToFileURL(bundle).href);
 rachana.init(profiles, JSON.stringify(files.map((f) => readFileSync(f, "utf8"))));
 
 // the runtime bundle has no harness entry: its facade answers each kind, and the line is put together here as the harness does
-const BY_KIND = { "expr": "evaluate", "expr-error": "evaluateError", "format": "format", "problem": "check", "sutra": "view", "patch": "patch", "plan": "plan" };
+const BY_KIND = { "expr": "evaluate", "expr-error": "evaluateError", "format": "format", "problem": "check", "sutra": "view", "patch": "patch", "plan": "plan", "lib": "library" };
 const hello = rachana.hello ? (r) => rachana.hello(r) : (r) => JSON.stringify({ runtime: r, runtimeVersion: `rachana-${rachana.version()}`,
   language: "1.0", profiles: profiles.split(","), kinds: Object.keys(BY_KIND) });
 const answer = rachana.answer ? (line) => rachana.answer(line) : (line) => {

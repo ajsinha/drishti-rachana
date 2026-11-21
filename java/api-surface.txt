@@ -13,6 +13,8 @@ class public abstract interface com.ash.rachana.el.ElFunction
 class public abstract interface com.ash.rachana.el.Expr
 class public abstract interface com.ash.rachana.el.FunctionProvider
 class public abstract interface com.ash.rachana.el.check.Fields
+class public abstract interface com.ash.rachana.lib.LibraryResolver
+class public abstract interface com.ash.rachana.lib.SignatureVerifier
 class public abstract interface com.ash.rachana.parse.FragmentResolver
 class public abstract interface com.ash.rachana.profile.SutraKey
 class public abstract interface com.ash.rachana.view.PanelData
@@ -72,6 +74,11 @@ class public final class com.ash.rachana.format.IdText
 class public final class com.ash.rachana.format.ListValues
 class public final class com.ash.rachana.format.Tones
 class public final class com.ash.rachana.format.WorldRegions
+class public final class com.ash.rachana.lib.Library
+class public final class com.ash.rachana.lib.LibraryLock
+class public final class com.ash.rachana.lib.LibrarySet
+class public final class com.ash.rachana.lib.Rlib
+class public final class com.ash.rachana.lib.Sha384
 class public final class com.ash.rachana.model.ControlRules
 class public final class com.ash.rachana.model.FormExpr
 class public final class com.ash.rachana.model.ModelVersion
@@ -83,6 +90,7 @@ class public final class com.ash.rachana.parse.PositionalYamlReader
 class public final class com.ash.rachana.parse.SutraBlocks
 class public final class com.ash.rachana.parse.SutraDocstring
 class public final class com.ash.rachana.parse.SutraParser
+class public final class com.ash.rachana.parse.TypedFragment
 class public final class com.ash.rachana.parse.YamlSyntaxException
 class public final class com.ash.rachana.profile.Entities
 class public final class com.ash.rachana.profile.Grammar
@@ -143,6 +151,8 @@ class public final record com.ash.rachana.el.EvalContext
 class public final record com.ash.rachana.el.Link
 class public final record com.ash.rachana.el.check.Problem
 class public final record com.ash.rachana.format.FormatSpec
+class public final record com.ash.rachana.lib.LibraryBundle
+class public final record com.ash.rachana.lib.LibraryRef
 class public final record com.ash.rachana.model.Column
 class public final record com.ash.rachana.model.Control
 class public final record com.ash.rachana.model.DataEntry
@@ -268,6 +278,8 @@ class public static final record com.ash.rachana.el.check.Fields$Field
 class public static final record com.ash.rachana.el.check.Signatures$Example
 class public static final record com.ash.rachana.el.check.Signatures$Param
 class public static final record com.ash.rachana.el.check.Signatures$Signature
+class public static final record com.ash.rachana.lib.Library$Trust
+class public static final record com.ash.rachana.lib.LibraryLock$Entry
 class public static final record com.ash.rachana.model.Control$Choice
 class public static final record com.ash.rachana.model.Form$Field
 class public static final record com.ash.rachana.model.Form$Hint
@@ -293,6 +305,8 @@ class public static final record com.ash.rachana.parse.BlockUses$Brought
 class public static final record com.ash.rachana.parse.BlockUses$Use
 class public static final record com.ash.rachana.parse.PositionalYamlReader$Issue
 class public static final record com.ash.rachana.parse.SutraBlocks$Block
+class public static final record com.ash.rachana.parse.TypedFragment$Param
+class public static final record com.ash.rachana.parse.TypedFragment$Slot
 class public static final record com.ash.rachana.table.DataRecord$Rows
 class public static final record com.ash.rachana.table.TableSchema$Column
 class public static final record com.ash.rachana.view.MaskCount$Result
@@ -365,6 +379,7 @@ class public static final record com.ash.rachana.wire.ScreenWire$Result
 class public static final record com.ash.rachana.wire.ScreenWire$Screen
 class public static final record com.ash.rachana.wire.ScreenWire$Selection
 com.ash.rachana.Rachana :: public com.ash.rachana.Rachana com.ash.rachana.Rachana.language(java.lang.String)
+com.ash.rachana.Rachana :: public com.ash.rachana.Rachana com.ash.rachana.Rachana.libraries(com.ash.rachana.lib.LibrarySet)
 com.ash.rachana.Rachana :: public com.ash.rachana.RachanaOptions com.ash.rachana.Rachana.options()
 com.ash.rachana.Rachana :: public com.ash.rachana.bind.Binder com.ash.rachana.Rachana.binder(com.ash.rachana.bind.BindHooks,com.ash.rachana.bind.PivotEngine)
 com.ash.rachana.Rachana :: public com.ash.rachana.bind.ViewBuilder com.ash.rachana.Rachana.views(com.ash.rachana.bind.BindHooks,com.ash.rachana.bind.PivotEngine,com.ash.rachana.bind.TableProvider,com.ash.rachana.control.BusinessDays,java.time.Duration)
@@ -1890,6 +1905,98 @@ com.ash.rachana.format.WorldRegions :: public java.util.Optional<java.lang.Strin
 com.ash.rachana.format.WorldRegions :: public java.util.Optional<java.lang.String> com.ash.rachana.format.WorldRegions.regionOf(java.lang.String,java.lang.String)
 com.ash.rachana.format.WorldRegions :: public java.util.Optional<java.lang.String> com.ash.rachana.format.WorldRegions.subRegionOf(java.lang.String)
 com.ash.rachana.format.WorldRegions :: public static com.ash.rachana.format.WorldRegions com.ash.rachana.format.WorldRegions.load()
+com.ash.rachana.lib.Library :: public int com.ash.rachana.lib.Library.major()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.licence()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.name()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.publisherKey()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.scope()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.sha384()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.signedBy()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.source()
+com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.version()
+com.ash.rachana.lib.Library :: public java.util.List<java.lang.String> com.ash.rachana.lib.Library.profiles()
+com.ash.rachana.lib.Library :: public java.util.Map<java.lang.String, java.lang.Integer> com.ash.rachana.lib.Library.depends()
+com.ash.rachana.lib.Library :: public java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.lib.Library.fragment(java.lang.String,int)
+com.ash.rachana.lib.Library :: public java.util.Set<java.lang.String> com.ash.rachana.lib.Library.fragmentNames()
+com.ash.rachana.lib.Library :: public static com.ash.rachana.lib.Library com.ash.rachana.lib.Library.load(com.ash.rachana.lib.LibraryBundle,com.ash.rachana.lib.Library$Trust)
+com.ash.rachana.lib.Library :: public static final int com.ash.rachana.lib.Library.MAX_FRAGMENTS
+com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.HASHES
+com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.INTEGRITY
+com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.INVALID
+com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.NOT_FOUND
+com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.NOT_LOCKED
+com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.SIGNATURE
+com.ash.rachana.lib.Library :: public static java.lang.String com.ash.rachana.lib.Library.hashList(java.util.Map<java.lang.String, byte[]>)
+com.ash.rachana.lib.Library :: public static java.util.List<java.lang.String> com.ash.rachana.lib.Library.exportLines(java.util.Map<java.lang.String, byte[]>)
+com.ash.rachana.lib.Library$Trust :: public boolean com.ash.rachana.lib.Library$Trust.requireSigned()
+com.ash.rachana.lib.Library$Trust :: public com.ash.rachana.lib.Library$Trust(com.ash.rachana.lib.SignatureVerifier,java.util.Set<java.lang.String>,boolean)
+com.ash.rachana.lib.Library$Trust :: public com.ash.rachana.lib.SignatureVerifier com.ash.rachana.lib.Library$Trust.verifier()
+com.ash.rachana.lib.Library$Trust :: public final boolean com.ash.rachana.lib.Library$Trust.equals(java.lang.Object)
+com.ash.rachana.lib.Library$Trust :: public final int com.ash.rachana.lib.Library$Trust.hashCode()
+com.ash.rachana.lib.Library$Trust :: public final java.lang.String com.ash.rachana.lib.Library$Trust.toString()
+com.ash.rachana.lib.Library$Trust :: public java.util.Set<java.lang.String> com.ash.rachana.lib.Library$Trust.publishers()
+com.ash.rachana.lib.Library$Trust :: public static final com.ash.rachana.lib.Library$Trust com.ash.rachana.lib.Library$Trust.NONE
+com.ash.rachana.lib.LibraryBundle :: public byte[] com.ash.rachana.lib.LibraryBundle.archive()
+com.ash.rachana.lib.LibraryBundle :: public com.ash.rachana.lib.LibraryBundle(java.lang.String,java.util.Map<java.lang.String, byte[]>,java.lang.String)
+com.ash.rachana.lib.LibraryBundle :: public final boolean com.ash.rachana.lib.LibraryBundle.equals(java.lang.Object)
+com.ash.rachana.lib.LibraryBundle :: public final int com.ash.rachana.lib.LibraryBundle.hashCode()
+com.ash.rachana.lib.LibraryBundle :: public final java.lang.String com.ash.rachana.lib.LibraryBundle.toString()
+com.ash.rachana.lib.LibraryBundle :: public java.lang.String com.ash.rachana.lib.LibraryBundle.manifest()
+com.ash.rachana.lib.LibraryBundle :: public java.lang.String com.ash.rachana.lib.LibraryBundle.manifestPath()
+com.ash.rachana.lib.LibraryBundle :: public java.lang.String com.ash.rachana.lib.LibraryBundle.name()
+com.ash.rachana.lib.LibraryBundle :: public java.lang.String com.ash.rachana.lib.LibraryBundle.sha384()
+com.ash.rachana.lib.LibraryBundle :: public java.lang.String com.ash.rachana.lib.LibraryBundle.source()
+com.ash.rachana.lib.LibraryBundle :: public java.lang.String com.ash.rachana.lib.LibraryBundle.version()
+com.ash.rachana.lib.LibraryBundle :: public java.util.Map<java.lang.String, byte[]> com.ash.rachana.lib.LibraryBundle.files()
+com.ash.rachana.lib.LibraryBundle :: public static com.ash.rachana.lib.LibraryBundle com.ash.rachana.lib.LibraryBundle.archive(java.lang.String,byte[],java.lang.String)
+com.ash.rachana.lib.LibraryBundle :: public static com.ash.rachana.lib.LibraryBundle com.ash.rachana.lib.LibraryBundle.ofBytes(java.lang.String,java.util.Map<java.lang.String, byte[]>,java.lang.String)
+com.ash.rachana.lib.LibraryBundle :: public static com.ash.rachana.lib.LibraryBundle com.ash.rachana.lib.LibraryBundle.ofText(java.lang.String,java.util.Map<java.lang.String, java.lang.String>,java.lang.String)
+com.ash.rachana.lib.LibraryLock :: public com.ash.rachana.lib.LibraryLock$Entry com.ash.rachana.lib.LibraryLock.get(java.lang.String)
+com.ash.rachana.lib.LibraryLock :: public java.lang.String com.ash.rachana.lib.LibraryLock.write()
+com.ash.rachana.lib.LibraryLock :: public java.util.Map<java.lang.String, com.ash.rachana.lib.LibraryLock$Entry> com.ash.rachana.lib.LibraryLock.entries()
+com.ash.rachana.lib.LibraryLock :: public static com.ash.rachana.lib.LibraryLock com.ash.rachana.lib.LibraryLock.of(java.util.List<com.ash.rachana.lib.LibraryLock$Entry>)
+com.ash.rachana.lib.LibraryLock :: public static com.ash.rachana.lib.LibraryLock com.ash.rachana.lib.LibraryLock.read(java.lang.String)
+com.ash.rachana.lib.LibraryLock :: public static final java.lang.String com.ash.rachana.lib.LibraryLock.FILE
+com.ash.rachana.lib.LibraryLock$Entry :: public com.ash.rachana.lib.LibraryLock$Entry(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.lib.LibraryLock$Entry :: public final boolean com.ash.rachana.lib.LibraryLock$Entry.equals(java.lang.Object)
+com.ash.rachana.lib.LibraryLock$Entry :: public final int com.ash.rachana.lib.LibraryLock$Entry.hashCode()
+com.ash.rachana.lib.LibraryLock$Entry :: public final java.lang.String com.ash.rachana.lib.LibraryLock$Entry.toString()
+com.ash.rachana.lib.LibraryLock$Entry :: public java.lang.String com.ash.rachana.lib.LibraryLock$Entry.licence()
+com.ash.rachana.lib.LibraryLock$Entry :: public java.lang.String com.ash.rachana.lib.LibraryLock$Entry.name()
+com.ash.rachana.lib.LibraryLock$Entry :: public java.lang.String com.ash.rachana.lib.LibraryLock$Entry.sha384()
+com.ash.rachana.lib.LibraryLock$Entry :: public java.lang.String com.ash.rachana.lib.LibraryLock$Entry.signedBy()
+com.ash.rachana.lib.LibraryLock$Entry :: public java.lang.String com.ash.rachana.lib.LibraryLock$Entry.source()
+com.ash.rachana.lib.LibraryLock$Entry :: public java.lang.String com.ash.rachana.lib.LibraryLock$Entry.version()
+com.ash.rachana.lib.LibraryRef :: public com.ash.rachana.lib.LibraryRef(java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.lib.LibraryRef :: public final boolean com.ash.rachana.lib.LibraryRef.equals(java.lang.Object)
+com.ash.rachana.lib.LibraryRef :: public final int com.ash.rachana.lib.LibraryRef.hashCode()
+com.ash.rachana.lib.LibraryRef :: public java.lang.String com.ash.rachana.lib.LibraryRef.name()
+com.ash.rachana.lib.LibraryRef :: public java.lang.String com.ash.rachana.lib.LibraryRef.source()
+com.ash.rachana.lib.LibraryRef :: public java.lang.String com.ash.rachana.lib.LibraryRef.toString()
+com.ash.rachana.lib.LibraryRef :: public java.lang.String com.ash.rachana.lib.LibraryRef.version()
+com.ash.rachana.lib.LibraryResolver :: public abstract java.util.List<com.ash.rachana.lib.LibraryRef> com.ash.rachana.lib.LibraryResolver.list()
+com.ash.rachana.lib.LibraryResolver :: public abstract java.util.Optional<com.ash.rachana.lib.LibraryBundle> com.ash.rachana.lib.LibraryResolver.resolve(java.lang.String,java.lang.String)
+com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.archives(java.nio.file.Path)
+com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.first(java.util.List<com.ash.rachana.lib.LibraryResolver>)
+com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.folder(java.nio.file.Path)
+com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.none()
+com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.of(java.util.Collection<com.ash.rachana.lib.LibraryBundle>)
+com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.Library com.ash.rachana.lib.LibrarySet.load(java.lang.String,int)
+com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.LibraryLock com.ash.rachana.lib.LibrarySet.lock()
+com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibrarySet.resolver()
+com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.LibrarySet com.ash.rachana.lib.LibrarySet.locked(com.ash.rachana.lib.LibraryLock)
+com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.LibrarySet com.ash.rachana.lib.LibrarySet.trusting(com.ash.rachana.lib.Library$Trust)
+com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.parse.FragmentResolver com.ash.rachana.lib.LibrarySet.fragments(com.ash.rachana.parse.FragmentResolver,com.ash.rachana.parse.PNode,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>)
+com.ash.rachana.lib.LibrarySet :: public static com.ash.rachana.lib.LibrarySet com.ash.rachana.lib.LibrarySet.none()
+com.ash.rachana.lib.LibrarySet :: public static com.ash.rachana.lib.LibrarySet com.ash.rachana.lib.LibrarySet.of(com.ash.rachana.lib.LibraryResolver)
+com.ash.rachana.lib.LibrarySet :: public static final int com.ash.rachana.lib.LibrarySet.MAX_DEPTH
+com.ash.rachana.lib.Rlib :: public static byte[] com.ash.rachana.lib.Rlib.write(java.util.Map<java.lang.String, byte[]>)
+com.ash.rachana.lib.Rlib :: public static final int com.ash.rachana.lib.Rlib.MAX_BYTES
+com.ash.rachana.lib.Rlib :: public static java.lang.String com.ash.rachana.lib.Rlib.hex(byte[])
+com.ash.rachana.lib.Rlib :: public static java.util.Map<java.lang.String, byte[]> com.ash.rachana.lib.Rlib.read(byte[])
+com.ash.rachana.lib.Sha384 :: public static byte[] com.ash.rachana.lib.Sha384.digest(byte[])
+com.ash.rachana.lib.Sha384 :: public static java.lang.String com.ash.rachana.lib.Sha384.hex(byte[])
+com.ash.rachana.lib.SignatureVerifier :: public abstract boolean com.ash.rachana.lib.SignatureVerifier.verify(java.lang.String,byte[],byte[])
 com.ash.rachana.model.Area :: public static com.ash.rachana.model.Area com.ash.rachana.model.Area.valueOf(java.lang.String)
 com.ash.rachana.model.Area :: public static com.ash.rachana.model.Area[] com.ash.rachana.model.Area.values()
 com.ash.rachana.model.Area :: public static final com.ash.rachana.model.Area com.ash.rachana.model.Area.MAIN
@@ -2550,6 +2657,7 @@ com.ash.rachana.parse.PositionalYamlReader$Issue :: public final java.lang.Strin
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public int com.ash.rachana.parse.PositionalYamlReader$Issue.column()
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public int com.ash.rachana.parse.PositionalYamlReader$Issue.line()
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public java.lang.String com.ash.rachana.parse.PositionalYamlReader$Issue.message()
+com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.atLeast(java.lang.String,java.lang.String)
 com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.isBlockFile(java.nio.file.Path)
 com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.isUse(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.SutraBlocks :: public static com.ash.rachana.parse.SutraBlocks$Block com.ash.rachana.parse.SutraBlocks.read(java.lang.String,java.lang.String)
@@ -2559,6 +2667,7 @@ com.ash.rachana.parse.SutraBlocks :: public static final java.lang.String com.as
 com.ash.rachana.parse.SutraBlocks :: public static java.lang.String com.ash.rachana.parse.SutraBlocks.flow(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.SutraBlocks :: public static java.lang.String com.ash.rachana.parse.SutraBlocks.packOf(java.nio.file.Path)
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.expand(java.util.List<com.ash.rachana.parse.PNode>,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>,com.ash.rachana.parse.FragmentResolver)
+com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.expand(java.util.List<com.ash.rachana.parse.PNode>,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>,com.ash.rachana.parse.FragmentResolver,java.lang.String)
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<java.lang.Integer> com.ash.rachana.parse.SutraBlocks.sizes(java.util.List<com.ash.rachana.parse.PNode>,com.ash.rachana.parse.FragmentResolver)
 com.ash.rachana.parse.SutraBlocks$Block :: public boolean com.ash.rachana.parse.SutraBlocks$Block.fragment()
 com.ash.rachana.parse.SutraBlocks$Block :: public com.ash.rachana.parse.SutraBlocks$Block(java.lang.String,int,java.lang.String,java.util.Map<java.lang.String, java.lang.String>,java.lang.String)
@@ -2589,6 +2698,51 @@ com.ash.rachana.parse.SutraParser :: public com.ash.rachana.profile.Grammar com.
 com.ash.rachana.parse.SutraParser :: public static final int com.ash.rachana.parse.SutraParser.LANGUAGE
 com.ash.rachana.parse.SutraParser :: public static final java.lang.String com.ash.rachana.parse.SutraParser.AMBIGUOUS_YAML
 com.ash.rachana.parse.SutraParser :: public static final java.lang.String com.ash.rachana.parse.SutraParser.STUDIO
+com.ash.rachana.parse.TypedFragment :: public java.lang.String com.ash.rachana.parse.TypedFragment.name()
+com.ash.rachana.parse.TypedFragment :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.TypedFragment.outsideScope()
+com.ash.rachana.parse.TypedFragment :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.TypedFragment.problems()
+com.ash.rachana.parse.TypedFragment :: public java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.TypedFragment.expand(com.ash.rachana.parse.PNode,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>)
+com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Param> com.ash.rachana.parse.TypedFragment.params()
+com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Slot> com.ash.rachana.parse.TypedFragment.slots()
+com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.parse.TypedFragment.isTyped(com.ash.rachana.parse.PNode)
+com.ash.rachana.parse.TypedFragment :: public static com.ash.rachana.parse.TypedFragment com.ash.rachana.parse.TypedFragment.of(com.ash.rachana.parse.SutraBlocks$Block)
+com.ash.rachana.parse.TypedFragment :: public static final int com.ash.rachana.parse.TypedFragment.MAX_PARAMS
+com.ash.rachana.parse.TypedFragment :: public static final int com.ash.rachana.parse.TypedFragment.MAX_SLOTS
+com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.MISSING
+com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.SCOPE
+com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.SINCE
+com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.SLOT
+com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.UNKNOWN
+com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.WRONG_TYPE
+com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.KEYS
+com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.NAME_TYPES
+com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.SLOT_KINDS
+com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.TONES
+com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.VALUE_TYPES
+com.ash.rachana.parse.TypedFragment$Param :: public boolean com.ash.rachana.parse.TypedFragment$Param.optional()
+com.ash.rachana.parse.TypedFragment$Param :: public boolean com.ash.rachana.parse.TypedFragment$Param.required()
+com.ash.rachana.parse.TypedFragment$Param :: public com.ash.rachana.parse.PNode com.ash.rachana.parse.TypedFragment$Param.at()
+com.ash.rachana.parse.TypedFragment$Param :: public com.ash.rachana.parse.PNode com.ash.rachana.parse.TypedFragment$Param.dflt()
+com.ash.rachana.parse.TypedFragment$Param :: public com.ash.rachana.parse.TypedFragment$Param(java.lang.String,java.lang.String,java.lang.String,boolean,com.ash.rachana.parse.PNode,java.lang.String,java.lang.Number,java.lang.Number,java.util.List<java.lang.String>,java.util.List<java.lang.String>,com.ash.rachana.parse.PNode)
+com.ash.rachana.parse.TypedFragment$Param :: public final boolean com.ash.rachana.parse.TypedFragment$Param.equals(java.lang.Object)
+com.ash.rachana.parse.TypedFragment$Param :: public final int com.ash.rachana.parse.TypedFragment$Param.hashCode()
+com.ash.rachana.parse.TypedFragment$Param :: public final java.lang.String com.ash.rachana.parse.TypedFragment$Param.toString()
+com.ash.rachana.parse.TypedFragment$Param :: public java.lang.Number com.ash.rachana.parse.TypedFragment$Param.max()
+com.ash.rachana.parse.TypedFragment$Param :: public java.lang.Number com.ash.rachana.parse.TypedFragment$Param.min()
+com.ash.rachana.parse.TypedFragment$Param :: public java.lang.String com.ash.rachana.parse.TypedFragment$Param.doc()
+com.ash.rachana.parse.TypedFragment$Param :: public java.lang.String com.ash.rachana.parse.TypedFragment$Param.kind()
+com.ash.rachana.parse.TypedFragment$Param :: public java.lang.String com.ash.rachana.parse.TypedFragment$Param.name()
+com.ash.rachana.parse.TypedFragment$Param :: public java.lang.String com.ash.rachana.parse.TypedFragment$Param.type()
+com.ash.rachana.parse.TypedFragment$Param :: public java.util.List<java.lang.String> com.ash.rachana.parse.TypedFragment$Param.columns()
+com.ash.rachana.parse.TypedFragment$Param :: public java.util.List<java.lang.String> com.ash.rachana.parse.TypedFragment$Param.options()
+com.ash.rachana.parse.TypedFragment$Slot :: public com.ash.rachana.parse.TypedFragment$Slot(java.lang.String,java.lang.String,int,java.lang.String)
+com.ash.rachana.parse.TypedFragment$Slot :: public final boolean com.ash.rachana.parse.TypedFragment$Slot.equals(java.lang.Object)
+com.ash.rachana.parse.TypedFragment$Slot :: public final int com.ash.rachana.parse.TypedFragment$Slot.hashCode()
+com.ash.rachana.parse.TypedFragment$Slot :: public final java.lang.String com.ash.rachana.parse.TypedFragment$Slot.toString()
+com.ash.rachana.parse.TypedFragment$Slot :: public int com.ash.rachana.parse.TypedFragment$Slot.max()
+com.ash.rachana.parse.TypedFragment$Slot :: public java.lang.String com.ash.rachana.parse.TypedFragment$Slot.accepts()
+com.ash.rachana.parse.TypedFragment$Slot :: public java.lang.String com.ash.rachana.parse.TypedFragment$Slot.doc()
+com.ash.rachana.parse.TypedFragment$Slot :: public java.lang.String com.ash.rachana.parse.TypedFragment$Slot.name()
 com.ash.rachana.parse.YamlSyntaxException :: public com.ash.rachana.parse.YamlSyntaxException(java.lang.String,int,int)
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.column()
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.line()
@@ -2605,8 +2759,11 @@ com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Gramma
 com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.hasKey(java.lang.String)
 com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.known(com.ash.rachana.model.PanelKind)
 com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.sourceForm(java.lang.String)
+com.ash.rachana.profile.Grammar :: public com.ash.rachana.lib.LibrarySet com.ash.rachana.profile.Grammar.libraries()
 com.ash.rachana.profile.Grammar :: public com.ash.rachana.parse.FragmentResolver com.ash.rachana.profile.Grammar.fragments()
 com.ash.rachana.profile.Grammar :: public com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.atLevel(java.lang.String)
+com.ash.rachana.profile.Grammar :: public com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.withFragments(com.ash.rachana.parse.FragmentResolver)
+com.ash.rachana.profile.Grammar :: public com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.withLibraries(com.ash.rachana.lib.LibrarySet)
 com.ash.rachana.profile.Grammar :: public java.lang.String com.ash.rachana.profile.Grammar.level()
 com.ash.rachana.profile.Grammar :: public java.util.List<com.ash.rachana.model.PanelKind> com.ash.rachana.profile.Grammar.panelKinds()
 com.ash.rachana.profile.Grammar :: public java.util.Map<java.lang.String, com.ash.rachana.profile.SutraKey> com.ash.rachana.profile.Grammar.keys()
@@ -2618,6 +2775,7 @@ com.ash.rachana.profile.Grammar :: public static final java.util.Map<java.lang.S
 com.ash.rachana.profile.Grammar :: public static final java.util.Set<com.ash.rachana.model.PanelKind> com.ash.rachana.profile.Grammar.PROFILE_KINDS
 com.ash.rachana.profile.Grammar :: public static final java.util.Set<java.lang.String> com.ash.rachana.profile.Grammar.CORE_KEYS
 com.ash.rachana.profile.Grammar :: public static final java.util.Set<java.lang.String> com.ash.rachana.profile.Grammar.SOURCE_FORMS
+com.ash.rachana.profile.Grammar :: public static java.lang.String com.ash.rachana.profile.Grammar.keySince(java.lang.String)
 com.ash.rachana.profile.Profile :: public boolean com.ash.rachana.profile.Profile.formSave()
 com.ash.rachana.profile.Profile :: public boolean com.ash.rachana.profile.Profile.isCore()
 com.ash.rachana.profile.Profile :: public com.ash.rachana.el.Calendars$Resolver com.ash.rachana.profile.Profile.calendars()

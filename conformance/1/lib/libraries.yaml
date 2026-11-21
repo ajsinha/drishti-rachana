@@ -1,0 +1,517 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: lib/libraries
+since: "1.2"
+profile: core
+verified: true
+description: "A library folder read and checked (LIBRARIES 3, 11, 12): files, manifest, hashes, exports; its identity is the SHA-384 of its canonical archive."
+cases:
+
+  - id: valid-library
+    kind: lib
+    source: LIBRARIES 3, 11.1, 12
+    library: demo
+    files:
+      LICENSE: |
+        Test material for the conformance suite only.
+      MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
+        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
+        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+      demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: key-figure, majors: [1] }
+      fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+    expect:
+      ok: true
+      problems: []
+      version: 1.0.0
+      fragments:
+      - figure-pair
+      - key-figure
+      sha384: 6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843
+
+  - id: no-manifest-hashes
+    kind: lib
+    source: LIBRARIES 12 (RCH-2112)
+    library: demo
+    files:
+      LICENSE: |
+        Test material for the conformance suite only.
+      demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: key-figure, majors: [1] }
+      fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2112
+        severity: error
+        message: the library has no MANIFEST.sha384 (rachana lib build writes it)
+        range:
+          start:
+            line: 1
+            column: 1
+
+  - id: a-file-changed-after-hashing
+    kind: lib
+    source: LIBRARIES 12 (RCH-2113)
+    library: demo
+    files:
+      LICENSE: |
+        Changed after the hashes were written.
+      MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
+        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
+        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+      demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: key-figure, majors: [1] }
+      fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2113
+        severity: error
+        message: 'the files do not match MANIFEST.sha384: LICENSE'
+        range:
+          start:
+            line: 1
+            column: 1
+
+  - id: a-file-that-is-code
+    kind: lib
+    source: LIBRARIES 3.1 (RCH-2112)
+    library: demo
+    files:
+      LICENSE: |
+        Test material for the conformance suite only.
+      MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
+        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
+        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        55a93465caf76f177cb6ad377a99ccbe4b5466ea48e8a96a60e6be4d2ecbf7f1ef247bee07a4b69bbe2875acbeb6d6f3  fragments/run.js
+      demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: key-figure, majors: [1] }
+      fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+      fragments/run.js: |
+        alert(1)
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2112
+        severity: error
+        message: 'the library holds fragments/run.js: only .yaml, .json, .jsonl, .md, LICENSE, MANIFEST.sha384 and SIGNATURE files (a library carries no code,
+          markup, fonts or images)'
+        range:
+          start:
+            line: 1
+            column: 1
+      - code: RCH-2112
+        severity: error
+        message: 'a file under fragments/ is <name>.v<N>.fragment.yaml: fragments/run.js'
+        range:
+          start:
+            line: 1
+            column: 1
+
+  - id: stale-exports
+    kind: lib
+    source: LIBRARIES 3.2 (RCH-2112)
+    library: demo
+    files:
+      LICENSE: |
+        Test material for the conformance suite only.
+      MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        fe4026d3ea952831a60056fd7e1dafb37e8d9a2bdcdd76ad39b4178a122084927ab38ea47229617af367a21ccf2fedb8  demo.rachana-lib.yaml
+        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
+        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+      demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: gone, majors: [1] }
+            - { name: key-figure, majors: [1] }
+      fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2112
+        severity: error
+        message: exports list gone, which has no fragment file (rachana lib build writes them)
+        range:
+          start:
+            line: 12
+            column: 1
+
+  - id: public-library-names-a-profile
+    kind: lib
+    source: LIBRARIES 3.3 rule 3 (RCH-2112)
+    library: demo
+    files:
+      LICENSE: |
+        Test material for the conformance suite only.
+      MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        64db9e73a412dd335dae81e6c84a57971ace13f462a6754b3d66d6d59933eb34c2b4a91d55c385c47477292f8efc1ace  demo.rachana-lib.yaml
+        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
+        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+      demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: [somehost]
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: key-figure, majors: [1] }
+      fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2112
+        severity: error
+        message: 'a library that declares profiles [somehost] is scope: private (a public library never names a host)'
+        range:
+          start:
+            line: 9
+            column: 1
+
+  - id: library-functions-wait-for-x41
+    kind: lib
+    source: EL_EXPANSION X41, X42 (RCH-2112)
+    library: demo
+    files:
+      LICENSE: |
+        Test material for the conformance suite only.
+      MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        324aee84a85091ee3753d46abdc98c8a7b0fcf72e10b8d88c6320e94c399e36ac9dd297349a4f1b4aee5c6c3df9cb0c2  demo.rachana-lib.yaml
+        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
+        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+      demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: key-figure, majors: [1] }
+        functions: {}
+      fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2112
+        severity: error
+        message: library functions arrive with Sutra functions (X41); this level holds fragments
+        range:
+          start:
+            line: 1
+            column: 1

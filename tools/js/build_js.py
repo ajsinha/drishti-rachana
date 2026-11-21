@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 BUNDLES = ("rachana.runtime.js", "rachana.tools.js")
-LEVELS = ("1.0", "1.1")
+LEVELS = ("1.0", "1.1", "1.2")
 CONFORMANCE = ROOT / "tools" / "conformance" / "rachana_conformance.py"
 
 

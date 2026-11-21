@@ -54,6 +54,11 @@ public final class RuntimeMain {
     }
 
     @JSExport
+    public static String library(String request) {
+        return Facade.library(request);
+    }
+
+    @JSExport
     public static String patch(String request) {
         return Facade.patch(request);
     }

@@ -301,7 +301,7 @@ def run(a) -> int:
     for p, suite, doc, c, cid in todo:
         profiles = c["profile"] if isinstance(c["profile"], list) else [c["profile"]]
         ok = c["kind"] in can_kinds and set(profiles) <= can_profiles | {"core"} and tuple(int(x) for x in str(c["since"]).split(".")) <= lang \
-            and set(profiles) - {"core"} <= can_profiles
+            and ("until" not in c or lang <= tuple(int(x) for x in str(c["until"]).split("."))) and set(profiles) - {"core"} <= can_profiles
         sent.append(ok)
         if ok:
             msg = {k: v for k, v in c.items() if k not in ("expect", "verified", "source", "note", "tags", "id")}

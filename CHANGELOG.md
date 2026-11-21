@@ -14,13 +14,50 @@ Entries are written per release; the regime's unreleased work is listed after th
   the index, `tools/libraries/` the build and check (`build.py`, `LibCheck.java`; the jars come from this repository's own build);
   `LibrariesCheckTest` runs the check in `./mvnw verify` (and proves an external folder and an `.rlib` beside bundled `core`); Studio, `lint` and `build` (`--libs`, `RACHANA_LIBS`) and the Python `lint` take extra library paths beside the bundled ones; a same-name conflict is refused (`LibraryResolver.first` too). The old repository's history is merged in.
   **core 1.0.0** (baseline LB1, language level 1.2): 28 typed fragments (figures, records, tables, charts, states, history) with examples
-  and ViewModel snapshots; not built: `entry-form`, `stepped-form` (no standalone form panel yet), `compare-ab` (needs iteration over
-  fields). Differences from the catalogue are listed in `libraries/core/README.md`.
+  and ViewModel snapshots, and `compare-ab` (lane A6: two records field by field over a `list<record{field, label, fmt?}>`, the
+  differences highlighted, `only-different`); not built: `entry-form`, `stepped-form` (no standalone form panel yet). Differences from the catalogue are listed in `libraries/core/README.md`.
 
 - **Rachana Studio, first slice** (`js/packages/rachana-studio`, `rachana studio <folder> [--libs ...]`; decision MK-1): three panes (the fragments of the
   project's libraries, the live `<rachana-view>`, the Sutra source with its live problems, the parameter form of the chosen fragment and the
   unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
   placeholder. Built from Drishti Elements 3.1.0 widgets only; `<rachana-view>` takes a `files` property (the libraries). Vendored js-yaml 4.1.0.
+
+### Nested stateful fragments, the rest of the effect list (G2 lane A7)
+
+- **Nested uses are instances of the outer use** (SPEC 2.5; LIBRARIES 7.2): a use named `x` inside a fragment used as `a`
+  is `a-x` (ids `a-x-<id>`, private state `a-x.<name>`, events `@a-x.<event>`); before, two uses of a fragment holding a
+  stateful use collided. The outer fragment reads only the inner use's outputs, and the screen no nested instance
+  (`RCH-2117`). Cases `sutra/fragments-nested-state` (2), `problem/fragments-nested-state` (3).
+- **State name parameters** (LIBRARIES 4.2, 6.3; SPEC 2.5): `{ type: state, of: text }` hands a fragment one name of the
+  screen's state; the fragment writes only it, as `set: { state: "%{into}" }` (`RCH-2048` elsewhere); the name must be held
+  and of type `of` (`RCH-2116`); `selection` parameters wait for I2 (`RCH-2023`). Cases `sutra/fragments-state-params` (1),
+  `problem/fragments-state-params` (4).
+- **`submit` and `cancel` join I1's closed trigger list** (for the standalone form panel; its effects run only once the
+  form's rules pass); refused (`RCH-2023`) until that panel is built. At 1.2 an emits trigger message no longer calls
+  `point-click` later (`problem/wiring#emits-on-tick` now `until: "1.1"`, its 1.2 answer a new case); case files take
+  `until:` (FORMAT 4, the runner skips a case above it).
+
+### Typed fragments, the gaps the core library found (G2 lane A6)
+
+- **Renames over derived rows** (L-21, never silent): a panel whose `rows` is the table parameter filtered, sorted, limited or piped
+  (`take(sort(arg.rows, lambda r: -r.amount), arg.top)`, `arg.rows[?@.amount > 0] |> sort(...)`) has its field-name options and
+  `bind`s renamed to the caller's columns (they were left as written, with the advisory `RCH-2120`); over `map(arg.rows, {k: ...})`
+  the panel reads the fixed names; a local column named over rows derived any other way is `RCH-2121`. `FragmentColumns.rowsOf`
+  (API addition). Suites `sutra/fragments-gaps`, `problem/fragments-gaps`.
+- **`list<record{...}>` and written-out records**: a `list<T>`, `record{f: T, ...}` or `list<record{...}>` parameter may be written
+  at the use as YAML (a list, a mapping), checked item by item and field by field (`RCH-2116`; `max`/`min` count the items); as a
+  whole value it is placed as written (`fields: arg.fields`), in an expression it is the EL literal. A text literal inside a fragment
+  is now quoted with a backslash escape (was a doubled quote, which Rachana-EL does not read).
+- **Dynamic text parameters**: `type: text, dynamic: true` takes a template at the use (`"Limit used ${fmt(..., 'pct0')}"`), read in
+  the caller's context: the template as a whole value, `concat(...)` of its parts inside an expression; `@`, `^`, `#index` refused.
+  A plain `text` keeps its text as written. `FragmentColumns.templateParts` (API addition).
+- **Events beyond rows and bars** (I1 `point-click`, level 1.2): `emits: [{ on: point-click }]` on `line`, `area`, `scatter`,
+  `waterfall`, `timeline`, `candlestick` (each mark a row of `rows`; its `ev` the row before `where`) and on `metric`, `gauge`, `kv`,
+  `status` (the panel one mark, `ev` "0", the payload read in the panel's context); `RCH-2057` on other kinds. Contract 1.2 appended:
+  `ev` on `Point`, `Step`, `Event`, `Candle`, `Metric`, `Gauge`, `Fields`, `Chart.ev` beside `x`; the stamp is 1.2 when one is
+  present. A fragment can now return events from its charts and figures. `Wiring.POINT_CLICK`, `POINT_KINDS`, `ONE_MARK`,
+  `Wiring.fires`, the records' `ev` (API additions; old constructors kept). Not yet: `on: { point-click: [ set ... ] }` (the effect
+  list's trigger table, lane A5's `Effects.BUILT`), graph nodes, the painter's side (Elements).
 
 ### Screen state and the effect list's set (G2 lane A5)
 

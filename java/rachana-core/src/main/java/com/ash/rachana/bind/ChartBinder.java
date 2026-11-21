@@ -63,6 +63,28 @@ final class ChartBinder {
         return "rows".equals(option) ? binder.where(p, n, c.eval()) : n;
     }
 
+    /**
+     * Each kept row's place in the panel's data ({@code ev}, level 1.2): on a panel that emits on point-click, its row in {@code rows}
+     * before {@code where} keeps some, which a click sends back; null when the panel emits nothing on point-click.
+     */
+    private String[] evs(Panel p, BindContext c) {
+        if (!p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK)) {
+            return null;
+        }
+        Object v = binder.eval(p.option("rows").orElseThrow(), c.eval());
+        Node all = v instanceof Node d ? d : Node.missing();
+        int[] origin = binder.originals(p, all, c.eval());
+        String[] out = new String[origin == null ? all.size() : origin.length];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = String.valueOf(origin == null ? i : origin[i]);
+        }
+        return out;
+    }
+
+    private static String ev(String[] evs, int i) {
+        return evs == null || i >= evs.length ? null : evs[i];
+    }
+
     /** A row's value: an expression over the row when {@code spec} reads like one, else a field or dotted path. */
     private Object field(String spec, Node row, int index, BindContext c) {
         if (spec == null) {
@@ -118,6 +140,7 @@ final class ChartBinder {
         double run = 0;
         boolean masked = false;
         int n = Math.min(rows.size(), limits.maxPoints());
+        String[] evs = evs(p, c);
         for (int i = 0; i < n; i++) {
             Node row = rows.get(i);
             Object x = field(value, row, i, c);
@@ -128,10 +151,10 @@ final class ChartBinder {
             }
             String l = text(field(label, row, i, c));
             if (Values.truthy(field(total, row, i, c))) {
-                steps.add(new PanelData.Step(l, v, 0, v, format(fmt, v), "muted", true));
+                steps.add(new PanelData.Step(l, v, 0, v, format(fmt, v), "muted", true, ev(evs, i)));
                 run = v;
             } else {
-                steps.add(new PanelData.Step(l, v, run, run + v, format(fmt, v), v < 0 ? fall : rise, false));
+                steps.add(new PanelData.Step(l, v, run, run + v, format(fmt, v), v < 0 ? fall : rise, false, ev(evs, i)));
                 run += v;
             }
         }
@@ -212,6 +235,7 @@ final class ChartBinder {
 
     PanelData scatter(Panel p, BindContext c) {
         Node rows = list(p, "rows", c);
+        String[] evs = evs(p, c);
         String x = p.option("x").orElseThrow();
         String y = p.option("y").orElseThrow();
         String size = p.option("size").orElse(null);
@@ -244,7 +268,7 @@ final class ChartBinder {
                 groups.add(g);
             }
             points.add(new PanelData.Point(xv, yv, sv, format(xFmt, xv), format(fmt, yv), lv == null ? null : text(lv),
-                    g == null || g.isEmpty() ? null : g, lv == null ? null : linkOf(lv)));
+                    g == null || g.isEmpty() ? null : g, lv == null ? null : linkOf(lv), ev(evs, i)));
         }
         return new PanelData.Scatter(points, List.copyOf(groups), p.option("xLabel").orElse(x), p.option("yLabel").orElse(y), size != null, more);
     }
@@ -253,6 +277,7 @@ final class ChartBinder {
 
     PanelData candlestick(Panel p, BindContext c) {
         Node rows = list(p, "rows", c);
+        String[] evs = evs(p, c);
         String x = p.option("x").orElse("date");
         String[] ohlc = {p.option("open").orElse("open"), p.option("high").orElse("high"), p.option("low").orElse("low"),
             p.option("close").orElse("close")};
@@ -280,7 +305,8 @@ final class ChartBinder {
             double hi = Math.max(v[1], Math.max(v[0], v[3]));
             double lo = Math.min(v[2], Math.min(v[0], v[3]));
             candles.add(new PanelData.Candle(text(field(x, row, i, c)), v[0], hi, lo, v[3], vol,
-                    format(fmt, v[0]), format(fmt, hi), format(fmt, lo), format(fmt, v[3]), vol == null ? null : formats.format("amount0", Values.normalise(vol))));
+                    format(fmt, v[0]), format(fmt, hi), format(fmt, lo), format(fmt, v[3]), vol == null ? null : formats.format("amount0", Values.normalise(vol)),
+                    ev(evs, i)));
         }
         String last = null;
         String change = null;
@@ -348,6 +374,7 @@ final class ChartBinder {
 
     PanelData timeline(Panel p, BindContext c) {
         Node rows = list(p, "rows", c);
+        String[] evs = evs(p, c);
         String date = p.option("date").orElse("date");
         String label = p.option("label").orElse("event");
         String detail = p.option("detail").orElse("description");
@@ -364,7 +391,8 @@ final class ChartBinder {
             Object sv = field(status, row, i, c);
             String s = text(sv);
             String dt = text(field(detail, row, i, c));
-            events.add(new PanelData.Event(d, l, dt.isEmpty() ? null : dt, s.isEmpty() ? null : s, s.isEmpty() ? null : Tones.resolve(tone, sv)));
+            events.add(new PanelData.Event(d, l, dt.isEmpty() ? null : dt, s.isEmpty() ? null : s, s.isEmpty() ? null : Tones.resolve(tone, sv),
+                    ev(evs, i)));
         }
         // ISO dates and timestamps sort as text; undated events keep their place at the start
         events.sort(Comparator.comparing(PanelData.Event::date));

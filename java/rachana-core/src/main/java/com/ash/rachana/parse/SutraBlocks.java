@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -317,6 +318,24 @@ public final class SutraBlocks {
             return state;
         }
 
+        private final Set<String> nested = new java.util.LinkedHashSet<>();
+        /** The Sutra's state, id to type, once read (the checks of {@link #checkNested} use it). */
+        Map<String, String> states = Map.of();
+        private final List<java.util.function.Consumer<List<SutraProblem>>> checks = new ArrayList<>();
+
+        /**
+         * The stateful uses made inside a fragment ({@code <outer-as>-<inner-as>}, LIBRARIES.md 7.2): the screen reads none of them; only the
+         * fragment that holds the use reads its outputs.
+         */
+        Set<String> nested() {
+            return java.util.Collections.unmodifiableSet(nested);
+        }
+
+        /** Adds to {@code out} what the fragments read of their nested uses that is not an output ({@code RCH-2117}); run once all are bound. */
+        void checkNested(List<SutraProblem> out) {
+            checks.forEach(c -> c.accept(out));
+        }
+
         /** The uses that hold private state, by their {@code as}: what the screen may read of each (its outputs). */
         public Map<String, TypedFragment.Stateful> stateful() {
             return stateful;
@@ -425,6 +444,31 @@ public final class SutraBlocks {
                 if (!bound.state().isEmpty()) {                           // S1: the use's private state, <as>.<name>
                     calls.state.addAll(bound.state());
                     calls.stateful.put(bound.state().get(0).owner(), new TypedFragment.Stateful(b.name(), t.stateNames(), t.outputs().keySet()));
+                    if (!chain.isEmpty()) {
+                        calls.nested.add(bound.state().get(0).owner());
+                    }
+                }
+                PNode with = p.map().get("with");
+                t.stateParams().forEach((param, of) -> {               // LIBRARIES 6.3: the handed name is a state the Sutra holds, of that type
+                    PNode v = with != null && with.isMap() && with.map().get(param) != null ? with.map().get(param) : t.params().get(param).dflt();
+                    if (v != null && v.text() != null) {
+                        calls.checks.add(problemsOut -> {
+                            String type = calls.states.get(v.text());
+                            String why = type == null ? "names state '" + v.text() + "', which the Sutra does not hold" + (calls.states.isEmpty() ? " (declare "
+                                    + "it under state:)" : " (it holds " + String.join(", ", calls.states.keySet()) + ")")
+                                    : of != null && !of.equals(type) ? "names state '" + v.text() + "', a " + type + "; it takes a state of type " + of : null;
+                            if (why != null) {
+                                problemsOut.add(TypedFragment.problem(TypedFragment.WRONG_TYPE, "parameter " + param + " of fragment " + b.name() + " " + why,
+                                        file, v));
+                            }
+                        });
+                    }
+                });
+                Set<String> inner = NestedUses.names(typedRoot.map().get("panels"));
+                if (!inner.isEmpty()) {
+                    String outer = p.map().get("as") == null ? null : p.map().get("as").text();       // what it reads of its nested uses, checked once every use is bound
+                    calls.checks.add(problemsOut -> NestedUses.checkReads(b.name(), typedRoot.map().get("panels"), outer, inner, calls.stateful, b.file(),
+                            problemsOut));
                 }
                 calls.advisories.addAll(bound.advisories());
                 List<String> deeper = new ArrayList<>(chain);

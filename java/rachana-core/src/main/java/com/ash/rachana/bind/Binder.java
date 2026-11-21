@@ -319,7 +319,12 @@ public final class Binder {
                 }
             });
         }
-        return new PanelData.Fields(fields);
+        return new PanelData.Fields(fields, oneMark(p));
+    }
+
+    /** A figure's or a record's {@code ev} (level 1.2): "0" on a panel that emits on point-click, the panel itself one mark. */
+    private static String oneMark(Panel p) {
+        return p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK) ? "0" : null;
     }
 
     private PanelData status(Panel p, BindContext c) {
@@ -333,7 +338,7 @@ public final class Binder {
                 }
             }
         }
-        return new PanelData.Fields(fields);
+        return new PanelData.Fields(fields, oneMark(p));
     }
 
     private PanelData table(Panel p, BindContext c) {
@@ -677,6 +682,7 @@ public final class Binder {
         }
         List<String> xs = new ArrayList<>();
         List<Double> ys = new ArrayList<>();
+        List<String> evs = new ArrayList<>();
         if (p.option("values").isPresent()) {
             // a vector: the y values are a list of numbers (a scenario's rates), the x labels another list (its dates) or the position
             Node values = node(eval(p.option("values").get(), data));
@@ -687,12 +693,17 @@ public final class Binder {
                 xs.add(labels != null && i < labels.size() ? labels.get(i).asText() : String.valueOf(i));
             }
         } else {
-            Node rows = where(p, node(eval(p.option("rows").orElse("points"), data)), data);
+            Node all = node(eval(p.option("rows").orElse("points"), data));
+            int[] origin = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK) ? originals(p, all, data) : null;
+            Node rows = origin == null ? where(p, all, data) : keep(all, origin);
             String x = p.option("x").orElse("tenor");
             String y = p.option("y").orElse("value");
             for (int i = 0; i < rows.size(); i++) {
                 xs.add(rows.get(i).get(x).asText());
                 ys.add(rows.get(i).get(y).asDouble());
+                if (p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK)) {
+                    evs.add(String.valueOf(origin == null ? i : origin[i]));   // level 1.2: each point's row in the data
+                }
             }
         }
         String mark = p.option("mark").map(m -> Values.text(eval(m, c.eval()))).filter(s -> !s.isEmpty()).orElse(null);
@@ -704,15 +715,22 @@ public final class Binder {
                     + (unit.isEmpty() || unit.equals("%") ? unit : " " + unit);
         }
         return new PanelData.Chart(xs, List.of(new PanelData.Series(p.title(), ys, "link")), mark, markText, null, null, source,
-                p.option("unit").orElse(null), "true".equals(p.option("step").orElse(null)) ? Boolean.TRUE : null);
+                p.option("unit").orElse(null), "true".equals(p.option("step").orElse(null)) ? Boolean.TRUE : null, evs.isEmpty() ? null : evs);
     }
 
     private PanelData area(Panel p, BindContext c) {
-        Node rows = where(p, node(eval(p.option("rows").orElseThrow(), c.eval())), c.eval());
+        Node all = node(eval(p.option("rows").orElseThrow(), c.eval()));
+        boolean clicks = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK);
+        int[] origin = clicks ? originals(p, all, c.eval()) : null;
+        Node rows = origin == null ? where(p, all, c.eval()) : keep(all, origin);
         String x = p.option("x").orElse("tenor");
         List<String> xs = new ArrayList<>();
+        List<String> evs = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
             xs.add(rows.get(i).get(x).asText());
+            if (clicks) {
+                evs.add(String.valueOf(origin == null ? i : origin[i]));   // level 1.2: each point's row in the data
+            }
         }
         List<PanelData.Series> series = new ArrayList<>();
         if (p.options().get("series") instanceof List<?> list) {
@@ -728,7 +746,8 @@ public final class Binder {
             }
         }
         Double limit = p.option("limit").map(l -> Values.number(eval(l, c.eval()))).filter(d -> !d.isNaN()).orElse(null);
-        return new PanelData.Chart(xs, series, null, null, limit, p.option("limitLabel").orElse(null), null, p.option("unit").orElse(null));
+        return new PanelData.Chart(xs, series, null, null, limit, p.option("limitLabel").orElse(null), null, p.option("unit").orElse(null), null,
+                evs.isEmpty() ? null : evs);
     }
 
     private PanelData bars(Panel p, BindContext c) {
@@ -787,7 +806,7 @@ public final class Binder {
                 return t;
             }
         }).orElse(null);
-        return new PanelData.Metric(value, delta, p.option("unit").orElse(null), caption);
+        return new PanelData.Metric(value, delta, p.option("unit").orElse(null), caption, oneMark(p));
     }
 
     /** A value a document may lack: it shows as a dash, never as an error. */
@@ -807,9 +826,9 @@ public final class Binder {
         double max = p.option("max").map(m -> Values.number(eval(m, c.eval()))).filter(Double::isFinite).orElse(1.0);
         String fmt = p.option("fmt").orElse("pct0");
         if (!Double.isFinite(v)) {
-            return new PanelData.Gauge(Double.NaN, max, Values.masked(value) ? Node.MASK : "—", p.option("label").orElse(null));
+            return new PanelData.Gauge(Double.NaN, max, Values.masked(value) ? Node.MASK : "—", p.option("label").orElse(null), oneMark(p));
         }
-        return new PanelData.Gauge(v, max, formats.format(fmt, v / (max == 0 ? 1 : max)), p.option("label").orElse(null));
+        return new PanelData.Gauge(v, max, formats.format(fmt, v / (max == 0 ? 1 : max)), p.option("label").orElse(null), oneMark(p));
     }
 
     private PanelData surface(Panel p, BindContext c) {

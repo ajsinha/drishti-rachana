@@ -1,0 +1,36 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: compare-ab
+version: 1
+doc:
+  summary: Two records side by side, field by field, with the differences marked and the numeric differences computed.
+  description: >-
+    One row per field you list: its label, the value in each record (written with the field's format) and, where both are
+    numbers, the second less the first. A row whose two values differ is highlighted; only-different leaves the equal ones out.
+  category: history
+  tags: [compare, difference, record]
+params:
+  a:              { type: "record{}", required: true, doc: The first record }
+  b:              { type: "record{}", required: true, doc: The second record }
+  fields:         { type: "list<record{field: text, label: text, fmt: text?}>", required: true, min: 1, max: 60, doc: "The fields compared, in order: a list of { field, label, fmt } where field is the records' own field name" }
+  a-label:        { type: text, default: A, doc: What the first record is called }
+  b-label:        { type: text, default: B, doc: What the second record is called }
+  only-different: { type: boolean, default: false, doc: Whether fields with equal values are left out }
+  title:          { type: text, default: Compare, doc: The panel's title }
+panels:
+  - id: compare
+    kind: table
+    title: arg.title
+    rows: >-
+      map(arg.fields, lambda f: {label: f.label,
+        a: fmt(arg.a[f.field], f.fmt ?? 'text'), b: fmt(arg.b[f.field], f.fmt ?? 'text'),
+        diff: fmt(arg.b[f.field] - arg.a[f.field], f.fmt ?? 'text') if is_number(arg.a[f.field]) and is_number(arg.b[f.field]) else '',
+        different: arg.a[f.field] != arg.b[f.field]})[?@.different or not arg.only-different]
+    highlight: "@.different"
+    search: false
+    columns:
+      - { label: Field, bind: "@.label" }
+      - { label: arg.a-label, bind: "@.a" }
+      - { label: arg.b-label, bind: "@.b" }
+      - { label: Difference, bind: "@.diff" }

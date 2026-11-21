@@ -220,13 +220,25 @@ final class WiringReader {
                 problem(EVENTS, "the panel emits '" + name + "' twice", e);
             }
             String on = text(m.get("on"));
-            if (on == null || !Wiring.TRIGGERS.contains(on)) {
-                problem(EVENTS, "event " + name + ": 'on' is what fires it, one of " + String.join(", ", new java.util.TreeSet<>(Wiring.TRIGGERS))
-                        + (on == null ? "" : ", not '" + on + "' (point-click, select, submit, load and tick come in later phases)"), m.get("on") == null ? e : m.get("on"));
+            boolean point = Wiring.POINT_CLICK.equals(on) && SutraBlocks.atLeast(grammar.level(), Wiring.POINT_SINCE);
+            if (point && (kind == null || !Wiring.POINT_KINDS.contains(kind.id()))) {
+                problem(EVENTS, "event " + name + ": a " + (kind == null ? "?" : kind.id()) + " panel cannot fire on point-click (point-click: "
+                        + String.join(", ", new java.util.TreeSet<>(Wiring.POINT_KINDS)) + "; row-click: table, ladder; bar-click: hbar)", m.get("on"));
+                continue;
+            }
+            if (!point && (on == null || !Wiring.TRIGGERS.contains(on))) {
+                boolean points = SutraBlocks.atLeast(grammar.level(), Wiring.POINT_SINCE);     // level 1.2 fires point-click: it is not "later"
+                java.util.Set<String> fired = new java.util.TreeSet<>(Wiring.TRIGGERS);
+                if (points) {
+                    fired.add(Wiring.POINT_CLICK);
+                }
+                problem(EVENTS, "event " + name + ": 'on' is what fires it, one of " + String.join(", ", fired)
+                        + (on == null ? "" : ", not '" + on + "' (" + (points ? "" : "point-click, ") + "select, submit, load and tick come in later phases)"),
+                        m.get("on") == null ? e : m.get("on"));
                 continue;
             }
             boolean rows = kind == PanelKind.TABLE || kind == PanelKind.LADDER;
-            if ("row-click".equals(on) && !rows || "bar-click".equals(on) && kind != PanelKind.HBAR) {
+            if (!point && ("row-click".equals(on) && !rows || "bar-click".equals(on) && kind != PanelKind.HBAR)) {
                 problem(EVENTS, "event " + name + ": a " + (kind == null ? "?" : kind.id()) + " panel cannot fire on " + on
                         + " (row-click: table, ladder; bar-click: hbar)", m.get("on"));
                 continue;

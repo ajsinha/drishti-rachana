@@ -331,6 +331,21 @@ public final class ScreenWire {
         if (c.denied != null) {
             throw new RachanaException(RachanaCode.FORBIDDEN, "panel " + panelId + ": " + c.denied);
         }
+        if (com.ash.rachana.model.Wiring.POINT_CLICK.equals(emit.on()) && p.kind() != null
+                && com.ash.rachana.model.Wiring.ONE_MARK.contains(p.kind().id())) {   // level 1.2: a figure or a record is one mark, no row
+            if (row != 0) {
+                throw new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " shows no row " + row);
+            }
+            Map<String, Object> seen = new LinkedHashMap<>();
+            Map<String, Object> raw = new LinkedHashMap<>();
+            emit.payload().forEach((field, f) -> {
+                Object sv = soft(() -> Values.simplify(el.compile(f.bind()).eval(c.seen.eval())));
+                Object rv = soft(() -> Values.simplify(el.compile(f.bind()).eval(c.raw)));
+                seen.put(field, sv instanceof Node d && d.isMissing() ? null : sv);
+                raw.put(field, rv instanceof Node d && d.isMissing() ? null : rv);
+            });
+            return new Selection(panelId, event, Node.of(seen), Node.of(raw));
+        }
         String rowsExpr = p.option("rows").orElseThrow(() -> new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " has no rows"));
         Node seenAll = node(el.compile(rowsExpr).eval(c.seen.eval()));
         Node rawAll = node(el.compile(rowsExpr).eval(c.raw));

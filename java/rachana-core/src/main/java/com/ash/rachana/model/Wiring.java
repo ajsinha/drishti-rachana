@@ -28,6 +28,18 @@ public record Wiring(Source source, List<Emit> emits, String waits, List<Childre
 
     /** The triggers built (RACHANA_REFERENCE.md 7): a table's or ladder's row, an hbar's bar. */
     public static final Set<String> TRIGGERS = Set.of("row-click", "bar-click");
+    /**
+     * The trigger of the marks beyond rows and bars (level 1.2, SUTRA_EXPANSION I1): a point of a {@code line} or {@code area}, a
+     * {@code scatter} point, a {@code waterfall} step, a {@code timeline} event, a {@code candlestick} candle (each a row of the panel's
+     * {@code rows}), and a figure or a record as one mark ({@code metric}, {@code gauge}, {@code kv}, {@code status}).
+     */
+    public static final String POINT_CLICK = "point-click";
+    /** The panel kinds that fire {@link #POINT_CLICK}, and the level that brings it. */
+    public static final Set<String> POINT_KINDS = Set.of("line", "area", "scatter", "waterfall", "timeline", "candlestick", "metric", "gauge", "kv",
+            "status");
+    public static final String POINT_SINCE = "1.2";
+    /** The kinds whose {@link #POINT_CLICK} is the whole panel, one mark ({@code ev} "0"; a payload reads the panel's context, no row). */
+    public static final Set<String> ONE_MARK = Set.of("metric", "gauge", "kv", "status");
     /** Where child panels are placed relative to their parent. */
     public static final List<String> PLACES = List.of("expand-row", "detail-right", "detail-below", "tabs");
     /** When child panels are shown: when the parent fires (the default), with the parent, or when the reader opens them. */
@@ -36,6 +48,11 @@ public record Wiring(Source source, List<Emit> emits, String waits, List<Childre
     public static final List<String> TYPES = List.of("id", "text", "number", "date", "bool", "any");
     /** Screen panel, child, grandchild: a great-grandchild is refused ({@code RCH-2056}). */
     public static final int MAX_DEPTH = 3;
+
+    /** Whether the panel emits an event on {@code trigger} ({@code row-click}, {@code bar-click}, {@code point-click}). */
+    public boolean fires(String trigger) {
+        return emits.stream().anyMatch(e -> trigger.equals(e.on()));
+    }
 
     public Wiring {
         emits = emits == null ? List.of() : List.copyOf(emits);

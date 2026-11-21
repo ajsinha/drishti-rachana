@@ -1,0 +1,278 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/fragments-gaps
+since: "1.2"
+profile: core
+verified: true
+description: "Typed fragments, the gaps the core library found (G2 lane A6): renames over derived rows, list<record> and record parameters, dynamic text parameters, events beyond rows and bars; level 1.2."
+cases:
+
+  - id: rename-reaches-sorted-and-limited-rows
+    kind: sutra
+    source: L-21 (3), never silent; core library finding (ranked-bars)
+    files: &ranked
+      top-desks.v1.fragment.yaml: |
+        rachana: 1
+        fragment: top-desks
+        version: 1
+        doc:
+          summary: The largest desks as bars, and the ones over a floor as a table.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+          top: { type: integer, default: 2, doc: How many bars }
+        panels:
+          - id: bars
+            kind: hbar
+            rows: "take(sort(arg.rows, lambda r: -r.amount), arg.top)"
+            label: desk
+            value: amount
+            fmt: amount0
+          - id: over
+            kind: table
+            rows: "arg.rows[?@.amount > 900] |> sort(lambda r: r.desk)"
+            columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 } ]
+          - id: fixed
+            kind: hbar
+            rows: "map(arg.rows, {label: @.desk + '!', value: @.amount / 100})"
+            label: label
+            value: value
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 }, { BOOK_DESK: Credit, MTM_USD: 2000 } ] }
+      panels:
+        - use: top-desks@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      at:
+        /panels/0/data/bars/0/label: Credit
+        /panels/0/data/bars/1/label: FX
+        /panels/0/data/bars/1/text: "1,200"
+        /panels/1/data/rows/0/cells/0/text: Credit
+        /panels/1/data/rows/1/cells/1/text: "1,200"
+        /panels/2/data/bars/2/label: Credit!
+        /panels/2/data/bars/2/value: 20
+
+  - id: list-of-records-written-at-the-use
+    kind: sutra
+    source: LIBRARIES 4.2 (list<record{...}>); core library finding (status-badges, entry-form)
+    files: &badges
+      badges.v1.fragment.yaml: |
+        rachana: 1
+        fragment: badges
+        version: 1
+        doc:
+          summary: A row of named figures, and the same as a table.
+        params:
+          items:
+            type: "list<record{label: text, value: number, tone: text?}>"
+            required: true
+            max: 4
+            doc: The figures, each a label and a value
+          fields:
+            type: "list<record{label: text, bind: text}>"
+            default: []
+            doc: Facts of the record shown beside them
+          totals:
+            type: "record{count: integer, sum: number}"
+            default: { count: 0, sum: 0 }
+            doc: Counted and summed elsewhere
+        panels:
+          - id: list
+            kind: table
+            rows: "sort(arg.items, lambda i: -i.value)"
+            columns: [ { label: Name, bind: "@.label" }, { label: Value, bind: "@.value", fmt: amount0 }, { label: Tone, bind: "@.tone ?? '-'" } ]
+          - { id: facts, kind: status, fields: arg.fields }
+          - { id: total, kind: metric, label: Total, value: "arg.totals.sum + sum(map(arg.items, @.value))" }
+          - { id: count, kind: metric, label: Count, value: "size(arg.items) + arg.totals.count" }
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        desk: { rows: [ { state: OPEN, owner: "O'Neil" } ] }
+      panels:
+        - use: badges@1
+          with:
+            items: [ { label: Cash, value: 120 }, { label: "Bonds 'A'", value: 300, tone: ok } ]
+            fields: [ { label: State, bind: "first($.desk).state" }, { label: Owner, bind: "first($.desk).owner" } ]
+            totals: { count: 3, sum: 1000 }
+    expect:
+      at:
+        /panels/0/data/rows/0/cells/0/text: "Bonds 'A'"
+        /panels/0/data/rows/0/cells/2/text: ok
+        /panels/0/data/rows/1/cells/1/text: "120"
+        /panels/0/data/rows/1/cells/2/text: "-"
+        /panels/1/data/fields/1/text: "O'Neil"
+        /panels/2/data/value/text: "1420"
+        /panels/3/data/value/text: "5"
+
+  - id: list-of-records-from-an-expression-and-defaults
+    kind: sutra
+    source: LIBRARIES 4.2 (list<record{...}> as an expression; a literal default)
+    files: *badges
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        figures: { rows: [ { label: Cash, value: 5 } ] }
+      panels:
+        - use: badges@1
+          with: { items: $.figures }
+    expect:
+      at:
+        /panels/0/data/rows/0/cells/0/text: Cash
+        /panels/2/data/value/text: "5"
+        /panels/3/data/value/text: "1"
+
+  - id: dynamic-text-takes-a-template
+    kind: sutra
+    source: "LIBRARIES 4.2 (text, dynamic: true); core library finding (alert-banner, source-note)"
+    files:
+      banner.v1.fragment.yaml: |
+        rachana: 1
+        fragment: banner
+        version: 1
+        doc:
+          summary: A message, with a plain heading.
+        params:
+          message: { type: text, dynamic: true, default: All clear, doc: "The message, which may hold the caller's figures" }
+          heading: { type: text, default: Note, doc: A heading as written }
+        panels:
+          - { id: msg, kind: markdown, text: arg.message }
+          - { id: both, kind: markdown, text: "**${arg.heading}**: ${upper(arg.message)}" }
+          - { id: size, kind: metric, label: Length, value: "len(arg.message)" }
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        limit: { rows: [ { used: 45, size: 60 } ] }
+      panels:
+        - use: banner@1
+          with:
+            message: "Limit used ${fmt(first($.limit).used / first($.limit).size, 'pct0')} of ${first($.limit).size}"
+            heading: "Plain ${not a template}"
+        - { use: banner@1, as: quiet }
+    expect:
+      at:
+        /panels/0/data/text: Limit used 75% of 60
+        /panels/1/data/text: "**Plain ${not a template}**: LIMIT USED 75% OF 60"
+        /panels/2/data/value/text: "20"
+        /panels/3/data/text: All clear
+        /panels/4/data/text: "**Note**: ALL CLEAR"
+
+  - id: point-click-on-charts-figures-and-records
+    kind: sutra
+    source: SUTRA_EXPANSION I1 (point-click; marks carry ev); core library finding (events only on rows and bars)
+    files:
+      trend.v1.fragment.yaml: |
+        rachana: 1
+        fragment: trend
+        version: 1
+        doc:
+          summary: A measure through time, its points, its latest figure and its facts, each clickable.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per day
+            columns:
+              date: { type: date, doc: The day }
+              amount: { type: number, doc: The amount }
+        emits:
+          - { name: day, payload: { date: text }, doc: A day was chosen }
+        panels:
+          - id: line
+            kind: line
+            rows: arg.rows
+            x: date
+            y: amount
+            emits: [ { name: day, on: point-click, payload: { date: "@.date" } } ]
+          - id: dots
+            kind: scatter
+            rows: arg.rows
+            x: amount
+            y: amount
+            where: "@.amount > 0"
+            emits: [ { name: dot, on: point-click, payload: { date: "@.date" } } ]
+          - id: steps
+            kind: waterfall
+            rows: arg.rows
+            label: date
+            value: amount
+            emits: [ { name: step, on: point-click, payload: { date: "@.date" } } ]
+          - id: days
+            kind: timeline
+            rows: arg.rows
+            date: date
+            label: "@.amount"
+            emits: [ { name: when, on: point-click, payload: { date: "@.date" } } ]
+          - id: last
+            kind: metric
+            label: Last
+            value: "last(arg.rows).amount"
+            emits: [ { name: open, on: point-click, payload: { amount: "last(arg.rows).amount" } } ]
+          - id: used
+            kind: gauge
+            value: "last(arg.rows).amount"
+            max: 100
+            emits: [ { name: open, on: point-click } ]
+          - id: facts
+            kind: status
+            fields: [ { label: Days, bind: "size(arg.rows)" } ]
+            emits: [ { name: open, on: point-click } ]
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        daily: { rows: [ { D: "2026-11-18", AMT: 10 }, { D: "2026-11-19", AMT: -4 }, { D: "2026-11-20", AMT: 30 } ] }
+      panels:
+        - use: trend@1
+          as: pnl
+          with: { rows: { from: $.daily, columns: { date: D, amount: AMT } } }
+        - { id: picked, kind: markdown, text: "Day ${@pnl.day.date}", waits: pnl.day }
+    expect:
+      at:
+        /contract: "1.2"
+        /panels/0/id: pnl-line
+        /panels/0/data/ev: [ "0", "1", "2" ]
+        /panels/0/wire/emits/0: { name: day, on: point-click }
+        /panels/1/data/points/0/ev: "0"
+        /panels/1/data/points/1/ev: "2"
+        /panels/2/data/steps/1/ev: "1"
+        /panels/3/data/events/2/ev: "2"
+        /panels/4/data/ev: "0"
+        /panels/5/data/ev: "0"
+        /panels/6/data/ev: "0"
+
+  - id: no-ev-without-point-click
+    kind: sutra
+    source: SUTRA_EXPANSION I1 (contract 1.2 only when used)
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      panels:
+        - { id: one, kind: metric, label: One, value: "1" }
+        - { id: line, kind: line, rows: "[{x: 'a', y: 1}]", x: x, y: y }
+    expect:
+      at:
+        /contract: "1.0"
+        /panels/0/data: { value: { label: One, text: "1", emphasis: true }, delta: null, unit: null, caption: null }
+        /panels/1/data/x: [ a ]

@@ -14,6 +14,7 @@ import java.util.List;
 /** The grammar most moved tests were written for: Core's with the entity additions (split step A7), as a host's profile brings them. */
 public final class TestGrammar {
 
+    private static final com.ash.rachana.parse.BlockLibrary BLOCKS = new com.ash.rachana.parse.BlockLibrary();
     private static final Grammar ENTITIES = grammar(List.of());
     private static final SutraParser PARSER = new SutraParser(ENTITIES);
 
@@ -26,7 +27,12 @@ public final class TestGrammar {
 
     /** The same, the schema's {@code match.kind} listing these kinds. */
     public static Grammar grammar(Collection<String> kinds) {
-        return Grammar.of(List.of(Profile.core(), Entities.addTo(Profile.named("host"), () -> kinds).build()));
+        return Grammar.of(List.of(Profile.core(), Entities.addTo(Profile.named("host"), () -> kinds, BLOCKS).build()));
+    }
+
+    /** The block library of {@link #entities()} (the tests' host's, one per instance in a real host). */
+    public static com.ash.rachana.parse.BlockLibrary blocks() {
+        return BLOCKS;
     }
 
     /** A parser of {@link #entities()}. */

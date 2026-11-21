@@ -44,7 +44,7 @@ class SutraBlocksTest {
 
     @AfterEach
     void empty() {
-        SutraBlocks.load(List.of());
+        com.ash.rachana.TestGrammar.blocks().load(List.of());
     }
 
     @Test
@@ -52,8 +52,8 @@ class SutraBlocksTest {
         Files.createDirectories(dir.resolve("common"));
         Files.writeString(dir.resolve("common/ticket.v1.block.yaml"), TICKET);
         Files.writeString(dir.resolve("common/ticket.v2.block.yaml"), TICKET.replace("version: 1", "version: 2").replace("Price", "Price v2"));
-        assertThat(SutraBlocks.load(List.of(dir))).isEmpty();
-        assertThat(SutraBlocks.library().get("ticket")).containsOnlyKeys(1, 2);
+        assertThat(com.ash.rachana.TestGrammar.blocks().load(List.of(dir))).isEmpty();
+        assertThat(com.ash.rachana.TestGrammar.blocks().library().get("ticket")).containsOnlyKeys(1, 2);
 
         Sutra s = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { use: ticket@1, with: { rate-fmt: pct4 } }\n  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
         assertThat(s.panels()).extracting(Panel::id).containsExactly("ticket", "built", "notes");
@@ -66,16 +66,16 @@ class SutraBlocksTest {
     @Test
     void anUnknownBlockOrParameterIsDrs2048AndABlockMayNotUseAnother() throws Exception {
         Files.writeString(dir.resolve("ticket.v1.block.yaml"), TICKET);
-        SutraBlocks.load(List.of(dir));
+        com.ash.rachana.TestGrammar.blocks().load(List.of(dir));
         assertThatThrownBy(() -> com.ash.rachana.TestGrammar.parser().parse(sutra("  - { use: nothing@1 }\n"), "deal.v1.sutra.yaml", "x"))
                 .isInstanceOf(SutraException.class).satisfies(e -> assertThat(((SutraException) e).problems())
                         .extracting(SutraProblem::code).contains(SutraBlocks.BLOCK));
         assertThatThrownBy(() -> com.ash.rachana.TestGrammar.parser().parse(sutra("  - { use: ticket@1, with: { colour: red } }\n"), "deal.v1.sutra.yaml", "x"))
                 .isInstanceOf(SutraException.class).hasMessageContaining("no parameter 'colour'");
         Files.writeString(dir.resolve("nested.v1.block.yaml"), "rachana: 1\nblock: nested\nversion: 1\npanels:\n  - { use: ticket@1 }\n");
-        assertThat(SutraBlocks.load(List.of(dir))).extracting(SutraProblem::message).anyMatch(m -> m.contains("uses another block"));
+        assertThat(com.ash.rachana.TestGrammar.blocks().load(List.of(dir))).extracting(SutraProblem::message).anyMatch(m -> m.contains("uses another block"));
         Files.writeString(dir.resolve("wrong.v1.block.yaml"), TICKET);
-        assertThat(SutraBlocks.load(List.of(dir))).extracting(SutraProblem::message).anyMatch(m -> m.contains("name it ticket.v1.block.yaml"));
+        assertThat(com.ash.rachana.TestGrammar.blocks().load(List.of(dir))).extracting(SutraProblem::message).anyMatch(m -> m.contains("name it ticket.v1.block.yaml"));
     }
 
     static final String SECTION = """
@@ -105,16 +105,37 @@ class SutraBlocksTest {
 
     @Test
     void aModulesSectionJoinsEverySutraOfItsKindWhileTheModuleRunsAndLeavesWithIt() {
-        SutraBlocks.contribute("source-swapone", "trade", SECTION, "trade-swapone.v1.fragment.yaml");
+        com.ash.rachana.TestGrammar.blocks().contribute("source-swapone", "trade", SECTION, "trade-swapone.v1.fragment.yaml");
         try {
             Sutra s = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
             assertThat(s.panels()).extracting(Panel::id).containsExactly("notes", "swapone-fields");
             Sutra other = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n").replace("kind: trade", "kind: position"), "deal.v1.sutra.yaml", "endur");
             assertThat(other.panels()).extracting(Panel::id).containsExactly("notes");                  // only the kind it names
         } finally {
-            SutraBlocks.withdraw("source-swapone");
+            com.ash.rachana.TestGrammar.blocks().withdraw("source-swapone");
         }
         Sutra gone = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
         assertThat(gone.panels()).extracting(Panel::id).containsExactly("notes");
+    }
+
+    @Test
+    void twoInstancesKeepTheirOwnLibrariesNothingIsShared() throws Exception {
+        Files.writeString(dir.resolve("ticket.v1.block.yaml"), TICKET);
+        BlockLibrary a = new BlockLibrary(), b = new BlockLibrary();
+        assertThat(a.load(List.of(dir))).isEmpty();
+        b.contribute("source-swapone", "trade", SECTION, "trade-swapone.v1.fragment.yaml");
+        SutraParser pa = new SutraParser(com.ash.rachana.profile.Grammar.of(List.of(com.ash.rachana.profile.Entities.addTo(
+                com.ash.rachana.profile.Profile.named("a"), List::of, a).build())));
+        SutraParser pb = new SutraParser(com.ash.rachana.profile.Grammar.of(List.of(com.ash.rachana.profile.Entities.addTo(
+                com.ash.rachana.profile.Profile.named("b"), List::of, b).build())));
+        assertThat(pa.parse(sutra("  - { use: ticket@1 }\n"), "deal.v1.sutra.yaml", "x").panels()).extracting(Panel::id).containsExactly("ticket", "built");
+        assertThatThrownBy(() -> pb.parse(sutra("  - { use: ticket@1 }\n"), "deal.v1.sutra.yaml", "x")).isInstanceOf(SutraException.class);
+        assertThat(pb.parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "x").panels()).extracting(Panel::id)
+                .containsExactly("notes", "swapone-fields");
+        assertThat(pa.parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "x").panels()).extracting(Panel::id)
+                .containsExactly("notes");
+        assertThat(com.ash.rachana.TestGrammar.blocks().library()).isEmpty();           // and the tests' own host saw neither
+        assertThatThrownBy(() -> new SutraParser().parse(sutra("  - { use: ticket@1 }\n").replaceAll("match:.*\n", ""), "deal.v1.sutra.yaml", "x"))
+                .isInstanceOf(SutraException.class);                                        // Core alone has no blocks at all
     }
 }

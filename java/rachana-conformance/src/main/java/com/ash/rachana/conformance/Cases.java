@@ -95,16 +95,25 @@ public final class Cases {
                 .withFormats(null, files.isEmpty() ? List.of() : files.subList(0, names.isEmpty() ? files.size() : 1));
         List<com.ash.rachana.profile.Profile> ps = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
-            com.ash.rachana.profile.Profile.Builder b = com.ash.rachana.profile.Profile.named(names.get(i).trim());
-            if (i == 0) {
-                com.ash.rachana.profile.Entities.addTo(b);      // A7: match, domain, links, provenance, kind sources, form.save
-            }
+            com.ash.rachana.profile.Profile.Builder b = i == 0 ? profile(names.get(i).trim(), null)
+                    : com.ash.rachana.profile.Profile.named(names.get(i).trim());
             if (i == 0 && files.size() > 1) {
                 b.formats(files.subList(1, files.size()).toArray(String[]::new));
             }
             ps.add(b.build());
         }
         return com.ash.rachana.Rachana.with(options, ps.toArray(com.ash.rachana.profile.Profile[]::new));
+    }
+
+    /**
+     * The conformance suite's host profile ({@code drishti}): the entity additions (split step A7: match, domain, links, provenance,
+     * kind sources, form.save), no function of its own; its format names are added by the caller. With {@code blocks}, that library is
+     * its fragment resolver and the source of the sections modules contribute (split step A6); without, no block resolves. The customer
+     * corpus test (rachana-compat, CG3) compiles the corpus through this same profile.
+     */
+    public static com.ash.rachana.profile.Profile.Builder profile(String name, com.ash.rachana.parse.BlockLibrary blocks) {
+        com.ash.rachana.profile.Profile.Builder b = com.ash.rachana.profile.Profile.named(name);
+        return blocks == null ? com.ash.rachana.profile.Entities.addTo(b) : com.ash.rachana.profile.Entities.addTo(b, List::of, blocks);
     }
 
     // ---- expr ----------------------------------------------------------------------------------------------------

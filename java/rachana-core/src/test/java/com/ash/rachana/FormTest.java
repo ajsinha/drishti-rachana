@@ -119,6 +119,24 @@ class FormTest {
         }
     }
 
+    /** Gate finding F3: a field's pattern is matched whole, by Core's linear-time engine; what it cannot run is refused at lint. */
+    @Test
+    void aFieldsPatternRunsOnTheOneRegexEngine() {
+        Form f = parser.parse(SUTRA.replace("pattern: \"[A-Z]{3}\"", "pattern: \"(a+)+b\""), "desk.yaml", "x").panels().get(0).form().orElseThrow();
+        long t0 = System.nanoTime();
+        assertThat(f.check(Map.of("code", "a".repeat(4000)), Set.of("code"), TODAY)).extracting(Form.Issue::message)
+                .containsExactly("Code is not in the expected form");                       // backtracking would not finish
+        assertThat(System.nanoTime() - t0).isLessThan(2_000_000_000L);
+        assertThat(f.check(Map.of("code", "aaab"), Set.of("code"), TODAY)).isEmpty();
+        assertThat(f.check(Map.of("code", "aaabx"), Set.of("code"), TODAY)).isNotEmpty();      // the whole value, as Matcher.matches
+        assertThat(form().check(Map.of("code", "xABC"), Set.of("code"), TODAY)).isNotEmpty();
+        for (String p : new String[] {"(?=A)[A-Z]{3}", "(A)\\\\1", "[A-Z]{3}(?!X)"}) {
+            assertThatThrownBy(() -> parser.parse(SUTRA.replace("[A-Z]{3}", p), "bad.yaml", "x")).as(p)
+                    .isInstanceOfSatisfying(SutraException.class, e -> assertThat(e.problems()).extracting(SutraProblem::message)
+                            .anySatisfy(m -> assertThat(m).startsWith("field code: pattern is not a regular expression (")));
+        }
+    }
+
     @Test
     void theServerChecksValuesAndRules() {
         Form f = form();

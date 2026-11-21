@@ -4,6 +4,8 @@
  */
 package com.ash.rachana.model;
 
+import com.ash.rachana.RachanaException;
+import com.ash.rachana.el.SafeRegex;
 import com.ash.rachana.internal.NumberText;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,8 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import com.ash.rachana.internal.RegexText;
 
 /**
  * A panel's {@code form:} (RACHANA_REFERENCE.md 10): the typed fields people may edit, the rules they must keep (an error stops the
@@ -72,6 +72,11 @@ public record Form(String title, String key, String edit, String create, String 
     public static final List<String> NEW_MODES = List.of("drawer");
     public static final int MAX_FIELDS = 60;
     public static final int MAX_TEXT = 4000;
+    /**
+     * A field's {@code pattern} runs on Core's linear-time engine ({@link SafeRegex}: no look-around, no back-references) with Core's
+     * caps; a value is at most {@link #MAX_TEXT} characters, so it is never cut.
+     */
+    private static final SafeRegex.Limits PATTERN_LIMITS = SafeRegex.Limits.DEFAULTS;
 
     private static final Pattern ID = Pattern.compile("^[a-z][a-z0-9_]{0,39}$");
     private static final Pattern BIND = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]{0,63}$");
@@ -342,9 +347,9 @@ public record Form(String title, String key, String edit, String create, String 
         }
         if (m.get("pattern") != null) {
             try {
-                Pattern.compile(m.get("pattern").toString());
-            } catch (PatternSyntaxException e) {
-                out.add("field " + id + ": pattern is not a regular expression (" + RegexText.describe(m.get("pattern").toString(), e) + ")");
+                SafeRegex.compile(m.get("pattern").toString(), false, PATTERN_LIMITS);   // the one regex engine (gate finding F3)
+            } catch (RachanaException e) {
+                out.add("field " + id + ": pattern is not a regular expression (" + e.words() + ")");
             }
         }
         if (m.get("max-length") != null && !(m.get("max-length") instanceof Number n && n.intValue() >= 1 && n.intValue() <= MAX_TEXT)) {
@@ -728,7 +733,7 @@ public record Form(String title, String key, String edit, String create, String 
         if (s.length() > max) {
             return f.label() + " is at most " + max + " characters";
         }
-        if (f.pattern() != null && !Pattern.compile(f.pattern()).matcher(s).matches()) {
+        if (f.pattern() != null && !SafeRegex.compile(f.pattern(), false, PATTERN_LIMITS).matches(s)) {
             return f.label() + " is not in the expected form";
         }
         return null;

@@ -213,3 +213,11 @@ waits for level 1.1), so the decimals are the profile's. Changed answers:
 | O7 | The pushes made before the G1 rule are confirmed as the approved state: Rachana `main` `d90176e` with `v0.9.0`, Elements `v3.0.0-rc.1`, Drishti `a816aa7c0` |
 | O8 | PY1 to PY8 as built are confirmed |
 | O10 | A form field's `pattern` moves onto `SafeRegex` (no look-around, no back-references); the F3 work first checks Drishti's forms for those constructs |
+
+### G1 gate fixes (2026-11-21)
+
+| # | Decision |
+|---|---|
+| G1-1 | A form field's `pattern` runs on `SafeRegex` (one regex engine; gate finding F3, owner decision O10): matched against the whole value (`SafeRegex.matches`), linear time, Core's caps; look-around, back-references, word boundaries, possessive and atomic groups are refused at lint (`RCH-2058`). No shipped Sutra of Drishti (its repository and the 2.9.11.i7a corpus, 478 Sutras) has a form pattern at all, so no pattern keeps `java.util.regex`. `internal.RegexText` (Core's and the JavaScript build's) is gone |
+| G1-2 | **For the owner**: level 1.0 (unreleased) re-recorded for two results, and the two case files edited before release: `problem/forms#pattern-not-a-regex` now says SafeRegex's words (`a '[' is not closed`, was Java's `Unclosed character class`; G1-1), and `el/determinism#d-m01-a` expects Core's `exp(1)`, `2.7182818284590455` (F9: D15-4 had re-recorded the result but not the probe). Only these two lines of `compat/levels/1.0/results.jsonl` changed; `FROZEN.sha384` (pre-release) rewritten, now also listing `el/python-words.yaml` and `sutra/binder/panels.yaml` and the earlier `sutra/examples/sutra.yaml` edit |
+| G1-3 | The block library is per instance (`BlockLibrary`, F4): Core alone has no block; a host's library reaches the parser through its profile. The customer corpus is compiled on Core by default with the conformance suite's `drishti` profile (F1); the corpus's ViewModels (`binds/`) are recorded later, before G4 (F13) |

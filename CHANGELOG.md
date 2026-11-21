@@ -20,10 +20,40 @@ Entries are written per release; the regime's unreleased work is listed after th
   in the grammar: `Grammar.atLevel`, `Rachana.language(level)`; every instance starts at 1.0, where the new kinds are not offered
   (`RCH-2021`'s list unchanged) and using one is `RCH-2008`. A conformance case runs at the level of its `since`.
 - Conformance: `sutra/binder/datasets` (6 cases, since 1.1, verified on the JVM), `problem/levels` (1 case, since 1.0; a known
-  difference from the reference, which has no level 1.1). JVM and the JavaScript build agree on all 2,130 cases at levels 1.0 and
+  difference from the reference, which has no level 1.1). the customer corpus (478 Sutras) byte-identical on Core; JVM and the JavaScript build agree on all 2,130 cases at levels 1.0 and
   1.1; 0 verified failing; `levels.py check`: level 1.0 identical. API baseline: additions only (view records, `Grammar` levels,
   `PanelKind.since/at`, `BindContext.datasets`, `Rachana.language`). `DatasetPanelsTest`. The generated `rachana.lang.json` and
   `sutra.schema.json` still describe level 1.0 (generated from the reference's tables); SPEC lists the 1.1 names.
+## Unreleased (G1 gate fixes)
+
+Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).
+
+- **F4, the block library per instance (A6)**: `parse.BlockLibrary` holds what `SutraBlocks` kept in static fields (the library,
+  its problems, warnings and clashes, the UI kit folder, the modules' contributed sections). A host makes one per instance and hands
+  it to its profile (`Entities.addTo(profile, kinds, blocks)`, or `Profile.Builder.fragments`); two instances never share blocks.
+  `SutraBlocks` keeps the stateless half (`read`, `expand(..., resolver)`, `sizes(..., resolver)`, `packOf`, `flow`, `isUse`).
+  Core alone resolves no block (`FragmentResolver.none()`, was the static folder library). API: removed the static `SutraBlocks.load`,
+  `kit`, `fromKit`, `library`, `blocks`, `find`, `problems`, `warnings`, `clashes`, `contribute`, `withdraw`, `contributedUses`,
+  `expand(3 args)`, `sizes(1 arg)`, `SutraBlocks.Contribution` (now `BlockLibrary.Contribution`), `FragmentResolver.folders()`;
+  changed `BlockUses.of(text)` to `of(text, resolver)`; added `BlockLibrary`, `FragmentResolver.none()`, `Entities.addTo(…, blocks)`,
+  `Entities.match(kinds, sections)` (DRISHTI_MIGRATION_TODO 8.3i).
+- **F1, the customer corpus on Core (CG3)**: `CustomerCorpusTest` compiles the 478 Sutras of `compat/customers/drishti/2.9.11.i7a`
+  on Core (`CoreRuntime`: one instance with the conformance suite's `drishti` profile, `conformance.Cases.profile`, and its own
+  `BlockLibrary`), by default; every document is byte-identical to the recorded `compiled/`, and the test checks that all 478 were
+  compared. A runtime that cannot run fails the test (it was skipped). The reference bridge runs only with
+  `-Drachana.compat.runtime=bridge`. The Drishti profile's formats are not loaded: no format enters these documents. Not yet: the
+  corpus's recorded ViewModels (`binds/`, F13), before G4.
+- **F2, one regex budget per call**: `SafeRegex.replaceAll` draws every match on one `maxSteps` budget (it was one budget per match,
+  so a pattern that rescans the value for each match cost the value's length times the budget: 0.6 to 1.7 s for one call on 8 KB).
+  The review's three 8 KB cases now stop at `RCH-4011` within one budget (`SafeRegexBudgetTest`). `find` and `extract` were already
+  one scan. A `regex_replace` over many matches can now reach the budget where it did not.
+- **F3, a form field's `pattern` on `SafeRegex`** (one regex engine, DECISIONS G1-1): matched against the whole value by the new
+  `SafeRegex.matches` (linear time; a value over the input cap is refused, never cut); look-around, back-references and the rest
+  of what `SafeRegex` does not offer are refused at lint (`RCH-2058`, SafeRegex's words in brackets). No shipped Drishti Sutra
+  (repository and the i7a corpus) has a form pattern. `internal.RegexText` deleted (Core and the JavaScript build).
+- **F9**: `el/determinism#d-m01-a` expects Core's `exp(1)` (`2.7182818284590455`); its known-differences reason corrected.
+  Level 1.0 re-recorded for this case and `problem/forms#pattern-not-a-regex` only (DECISIONS G1-2, for the owner); conformance
+  `--jvm`: 2,123 cases, pass 1,938, fail 58 (all unverified, F8), 0 verified failing.
 
 ## v0.11.0 ready (untagged): the JavaScript build
 

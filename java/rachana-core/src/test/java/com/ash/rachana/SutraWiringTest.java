@@ -34,7 +34,7 @@ class SutraWiringTest {
 
     @AfterEach
     void empty() {
-        SutraBlocks.load(List.of());
+        com.ash.rachana.TestGrammar.blocks().load(List.of());
     }
 
     static String sutra(String panels) {

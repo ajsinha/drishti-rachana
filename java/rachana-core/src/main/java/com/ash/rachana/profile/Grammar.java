@@ -38,7 +38,7 @@ public final class Grammar {
     /** The source forms a profile may bring: {@code kind} ({@code source: { kind, id | where | search, pack, params }}). */
     public static final Set<String> SOURCE_FORMS = Set.of("kind");
 
-    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.folders(), LEVEL_1_0);
+    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.none(), LEVEL_1_0);
 
     private final Map<String, SutraKey> keys;
     private final Set<PanelKind> profileKinds;
@@ -57,7 +57,7 @@ public final class Grammar {
         this.fragments = fragments;
     }
 
-    /** Core's grammar alone: no profile key, kind, source form or {@code form.save}; fragments from the folder library. */
+    /** Core's grammar alone: no profile key, kind, source form or {@code form.save}; no fragments ({@link FragmentResolver#none()}). */
     public static Grammar core() {
         return CORE;
     }
@@ -98,7 +98,7 @@ public final class Grammar {
         if (keys.isEmpty() && kinds.isEmpty() && forms.isEmpty() && !save && fragments == null) {
             return CORE;
         }
-        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.folders() : fragments, LEVEL_1_0);
+        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.none() : fragments, LEVEL_1_0);
     }
 
     /**

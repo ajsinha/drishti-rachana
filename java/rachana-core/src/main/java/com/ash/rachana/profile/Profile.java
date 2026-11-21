@@ -204,7 +204,7 @@ public final class Profile {
             return this;
         }
 
-        /** Where {@code use:} finds fragments (one profile of an instance may give it; Core's default is the folder library). */
+        /** Where {@code use:} finds fragments (one profile of an instance may give it; Core's default is none: every use is unknown). */
         public Builder fragments(FragmentResolver resolver) {
             this.fragments = Objects.requireNonNull(resolver, "a fragment resolver");
             return this;

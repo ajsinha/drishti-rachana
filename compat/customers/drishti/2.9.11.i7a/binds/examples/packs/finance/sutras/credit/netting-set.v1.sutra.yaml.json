@@ -8,13 +8,19 @@
    "answer": {
     "exposure": [
      {
-      "VALUE": 855.53
+      "tenor": 45,
+      "ee": 789.83,
+      "pfe95": 378
      },
      {
-      "VALUE": 705.53
+      "tenor": 145,
+      "ee": 639.83,
+      "pfe95": 478
      },
      {
-      "VALUE": 1055.53
+      "tenor": -4,
+      "ee": 989.83,
+      "pfe95": 328
      }
     ],
     "memberTrades": [
@@ -23,7 +29,7 @@
       "product": 610.57,
       "currency": 257.71,
       "notional": 144,
-      "maturity": "2026-09-18",
+      "maturity": "2026-02-10",
       "mtm": 499.01
      },
      {
@@ -31,7 +37,7 @@
       "product": 710.57,
       "currency": 357.71,
       "notional": 494,
-      "maturity": "2026-01-21",
+      "maturity": "2026-03-19",
       "mtm": 849.01
      },
      {
@@ -39,30 +45,8 @@
       "product": 560.57,
       "currency": 207.71,
       "notional": 594,
-      "maturity": "2026-02-24",
+      "maturity": "2026-04-25",
       "mtm": 949.01
-     }
-    ],
-    "csaTerms": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "collateral": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
      }
     ],
     "nettingSetId": "NETTINGSETID-K1",
@@ -77,7 +61,17 @@
     "pfe95Peak": 658,
     "limit": 504.73,
     "utilisation": 805.37,
-    "asOf": "2026-01-10"
+    "asOf": "2026-01-21",
+    "csaTerms": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    },
+    "collateral": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

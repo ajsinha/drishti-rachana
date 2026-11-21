@@ -8,46 +8,44 @@
    "answer": {
     "GROWTH_PATH": [
      {
-      "VALUE": 855.53
+      "YEAR": 728,
+      "GROWTH": 155
      },
      {
-      "VALUE": 705.53
+      "YEAR": 578,
+      "GROWTH": 505
      },
      {
-      "VALUE": 1055.53
+      "YEAR": 928,
+      "GROWTH": 605
      }
     ],
     "SECTORS": [
      {
-      "VALUE": 855.53
+      "SECTOR": "SECTOR-T1",
+      "SHARE": -225
      },
      {
-      "VALUE": 705.53
+      "SECTOR": "SECTOR-U2",
+      "SHARE": 124
      },
      {
-      "VALUE": 1055.53
+      "SECTOR": "SECTOR-V3",
+      "SHARE": 224
      }
     ],
     "GDP_PATH": [
      {
-      "VALUE": 855.53
+      "YEAR": 728,
+      "GDP": 458.45
      },
      {
-      "VALUE": 705.53
+      "YEAR": 578,
+      "GDP": 308.45
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "YEAR": 928,
+      "GDP": 658.45
      }
     ],
     "ECONOMY_ID": "ECONOMY_ID-U1",
@@ -59,14 +57,88 @@
     "INFLATION": 291.11,
     "UNEMPLOYMENT": 461,
     "DEBT_TO_GDP": 754,
-    "ISO3": -103,
-    "REGION_GROUP": "REGION_GROUP-Y1"
+    "REGION_GROUP": "REGION_GROUP-Y1",
+    "ISO3": "USA",
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "economy",
+    "ECONOMY-1"
+   ],
+   "answer": {
+    "data": {
+     "GDP_PER_CAPITA": -4,
+     "ISO3": "USA"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "economy",
+    "ECONOMY-2"
+   ],
+   "answer": {
+    "data": {
+     "GDP_PER_CAPITA": 345,
+     "ISO3": "GBR"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "economy",
+    "ECONOMY-3"
+   ],
+   "answer": {
+    "data": {
+     "GDP_PER_CAPITA": 445,
+     "ISO3": "DEU"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.search",
+   "args": [
+    "economy",
+    ""
+   ],
+   "answer": [
+    {
+     "id": "ECONOMY-1",
+     "title": "Economy 1",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "ECONOMY-2",
+     "title": "Economy 2",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "ECONOMY-3",
+     "title": "Economy 3",
+     "subtitle": "recorded"
+    }
+   ]
   },
   {
    "hook": "panel",
@@ -98,7 +170,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Region group",
+      "text": "REGION_GROUP-Y1",
+      "link": {
+       "kind": "country-group",
+       "id": "REGION_GROUP-Y1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

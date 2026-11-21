@@ -30,6 +30,85 @@
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "stress-scenario-pnl",
+    "SCENARIO_ID-Y1"
+   ],
+   "answer": {
+    "data": {
+     "DESKS": [
+      {
+       "RESULT_ID": "RESULT_ID-X1",
+       "DESK": "DESK-G1",
+       "PNL": 367,
+       "LIMIT": 5,
+       "LIMIT_USE": -204.43,
+       "STATUS": "STATUS-Y1"
+      },
+      {
+       "RESULT_ID": "RESULT_ID-Y2",
+       "DESK": "DESK-H2",
+       "PNL": 217,
+       "LIMIT": -144,
+       "LIMIT_USE": 145.57,
+       "STATUS": "STATUS-Z2"
+      },
+      {
+       "RESULT_ID": "RESULT_ID-Z3",
+       "DESK": "DESK-I3",
+       "PNL": 567,
+       "LIMIT": 205,
+       "LIMIT_USE": 245.57,
+       "STATUS": "STATUS-A3"
+      }
+     ],
+     "PNL": 367,
+     "DESK_COUNT": "DESK_COUNT-P1",
+     "WORST_DESK_PNL": "WORST_DESK_P-T1",
+     "BREACHES": 45,
+     "WORST_LIMIT_USE": 129
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "stress-scenario"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "source.freshness",
+   "args": [
+    "stress-scenario-pnl"
+   ],
+   "answer": {
+    "source": "recorded",
+    "lastUpdate": null,
+    "staleAfter": null,
+    "stale": false
+   }
   }
  ]
 }

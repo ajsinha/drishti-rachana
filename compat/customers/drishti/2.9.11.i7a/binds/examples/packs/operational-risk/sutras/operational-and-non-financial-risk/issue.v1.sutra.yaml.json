@@ -68,7 +68,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Desk",
+      "text": "628.33",
+      "link": {
+       "kind": "desk",
+       "id": "628.33",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

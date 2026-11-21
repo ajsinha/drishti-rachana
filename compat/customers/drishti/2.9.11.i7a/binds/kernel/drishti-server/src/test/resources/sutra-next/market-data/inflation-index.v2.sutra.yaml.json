@@ -66,7 +66,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Inflation curve",
+      "text": "786",
+      "link": {
+       "kind": "inflation-curve",
+       "id": "786",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

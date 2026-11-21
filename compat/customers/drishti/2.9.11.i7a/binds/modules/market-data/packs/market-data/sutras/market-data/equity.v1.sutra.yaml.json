@@ -8,35 +8,42 @@
    "answer": {
     "HISTORY": [
      {
-      "VALUE": 855.53
+      "DATE": "2026-04-27",
+      "CLOSE": 590
      },
      {
-      "VALUE": 705.53
+      "DATE": "2026-01-04",
+      "CLOSE": 440
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "IDENTIFIERS": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "DATE": "2026-02-10",
+      "CLOSE": 790
      }
     ],
     "OHLC": [
      {
-      "VALUE": 855.53
+      "DATE": "2026-04-27",
+      "open": 624.41,
+      "high": 473.93,
+      "low": 660,
+      "close": 403,
+      "VOLUME": 746.81
      },
      {
-      "VALUE": 705.53
+      "DATE": "2026-01-04",
+      "open": 474.41,
+      "high": 823.93,
+      "low": 760,
+      "close": 753,
+      "VOLUME": 596.81
      },
      {
-      "VALUE": 1055.53
+      "DATE": "2026-02-10",
+      "open": 824.41,
+      "high": 923.93,
+      "low": 610,
+      "close": 853,
+      "VOLUME": 946.81
      }
     ],
     "TICKER": "TICKER-K1",
@@ -47,13 +54,95 @@
     "SECTOR": "SECTOR-T1",
     "EXCHANGE": 20.17,
     "CURRENCY": "CURRENCY-Z1",
-    "ISSUER": 116
+    "ISSUER": 116,
+    "IDENTIFIERS": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "equity-beta",
+    "TICKER-K1"
+   ],
+   "answer": {
+    "data": {
+     "BETA": 453.13,
+     "INDEX": "INDEX-Q1",
+     "WINDOW": 521.03,
+     "FROM": "2026-01-15",
+     "TO": 480.29,
+     "CORRELATION": 217.93,
+     "R_SQUARED": 349.81
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "equity"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": [
+     {
+      "label": "Issuer",
+      "text": "116",
+      "link": {
+       "kind": "issuer",
+       "id": "116",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "source.freshness",
+   "args": [
+    "equity-beta"
+   ],
+   "answer": {
+    "source": "recorded",
+    "lastUpdate": null,
+    "staleAfter": null,
+    "stale": false
+   }
   }
  ]
 }

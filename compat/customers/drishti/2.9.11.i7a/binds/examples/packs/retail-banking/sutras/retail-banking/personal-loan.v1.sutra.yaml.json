@@ -71,7 +71,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Customer",
+      "text": "78",
+      "link": {
+       "kind": "customer",
+       "id": "78",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

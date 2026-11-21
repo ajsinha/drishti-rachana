@@ -33,7 +33,7 @@
     "HELD": 15.95,
     "POSTED": 896,
     "NET": 15,
-    "AS_OF": "2026-07-25",
+    "AS_OF": "2026-02-05",
     "CSA": -204.55
    }
   },
@@ -72,7 +72,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Csa",
+      "text": "-204.55",
+      "link": {
+       "kind": "csa",
+       "id": "-204.55",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

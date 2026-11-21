@@ -8,13 +8,16 @@
    "answer": {
     "spend": [
      {
-      "VALUE": 855.53
+      "category": 78.05,
+      "amount": 555.05
      },
      {
-      "VALUE": 705.53
+      "category": -71.95,
+      "amount": 905.05
      },
      {
-      "VALUE": 1055.53
+      "category": 278.05,
+      "amount": 1005.05
      }
     ],
     "statements": [
@@ -83,7 +86,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Customer",
+      "text": "78",
+      "link": {
+       "kind": "customer",
+       "id": "78",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

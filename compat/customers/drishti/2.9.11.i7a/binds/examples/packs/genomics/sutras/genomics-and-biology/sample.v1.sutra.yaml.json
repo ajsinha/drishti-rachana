@@ -29,17 +29,6 @@
       "filter": 1045.03
      }
     ],
-    "qc": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "sampleId": "SAMPLEID-A1",
     "tissue": 779.47,
     "diagnosis": 20.27,
@@ -47,7 +36,12 @@
     "variantCount": 637,
     "meanCoverage": 534.77,
     "collected": 500,
-    "sequencingRun": 481
+    "sequencingRun": 481,
+    "qc": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -85,7 +79,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Sequencing run",
+      "text": "481",
+      "link": {
+       "kind": "sequencing-run",
+       "id": "481",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

@@ -8,13 +8,16 @@
    "answer": {
     "COMPONENTS": [
      {
-      "VALUE": 855.53
+      "NAME": "NAME-X1",
+      "AMOUNT": 146
      },
      {
-      "VALUE": 705.53
+      "NAME": "NAME-Y2",
+      "AMOUNT": 496
      },
      {
-      "VALUE": 1055.53
+      "NAME": "NAME-Z3",
+      "AMOUNT": 596
      }
     ],
     "SENSITIVITIES": [
@@ -78,7 +81,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Netting set",
+      "text": "67",
+      "link": {
+       "kind": "netting-set",
+       "id": "67",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

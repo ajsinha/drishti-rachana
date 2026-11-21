@@ -8,13 +8,16 @@
    "answer": {
     "RISK_CLASSES": [
      {
-      "VALUE": 855.53
+      "RISK_CLASS": "RISK_CLASS-Z1",
+      "IM": 253
      },
      {
-      "VALUE": 705.53
+      "RISK_CLASS": "RISK_CLASS-A2",
+      "IM": 103
      },
      {
-      "VALUE": 1055.53
+      "RISK_CLASS": "RISK_CLASS-B3",
+      "IM": 453
      }
     ],
     "CALC_ID": "CALC_ID-A1",
@@ -60,7 +63,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Netting set",
+      "text": "67",
+      "link": {
+       "kind": "netting-set",
+       "id": "67",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

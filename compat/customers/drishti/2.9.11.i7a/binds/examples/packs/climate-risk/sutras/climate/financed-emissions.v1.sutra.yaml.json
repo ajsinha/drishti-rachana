@@ -31,13 +31,16 @@
     ],
     "bySector": [
      {
-      "VALUE": 855.53
+      "sector": 530.87,
+      "financed": -169.45
      },
      {
-      "VALUE": 705.53
+      "sector": 380.87,
+      "financed": 180.55
      },
      {
-      "VALUE": 1055.53
+      "sector": 730.87,
+      "financed": 280.55
      }
     ],
     "resultId": "RESULTID-N1",
@@ -83,7 +86,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Book",
+      "text": "573.43",
+      "link": {
+       "kind": "book",
+       "id": "573.43",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

@@ -8,12 +8,15 @@
    "answer": {
     "HISTORY": [
      {
+      "PERIOD": -199.39,
       "VALUE": 855.53
      },
      {
+      "PERIOD": 150.61,
       "VALUE": 705.53
      },
      {
+      "PERIOD": 250.61,
       "VALUE": 1055.53
      }
     ],
@@ -32,7 +35,12 @@
     "MEMBERS": 567.35,
     "VECTOR": 123,
     "FREQUENCY": 236.99,
-    "SCALE": 548
+    "SCALE": 548,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

@@ -8,13 +8,16 @@
    "answer": {
     "UNEMPLOYMENT_PATH": [
      {
-      "VALUE": 855.53
+      "YEAR": 728,
+      "RATE": 158.87
      },
      {
-      "VALUE": 705.53
+      "YEAR": 578,
+      "RATE": 8.87
      },
      {
-      "VALUE": 1055.53
+      "YEAR": 928,
+      "RATE": 358.87
      }
     ],
     "BY_SECTOR": [
@@ -34,17 +37,6 @@
       "VALUE_ADDED_SHARE": 445
      }
     ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "LABOUR_ID": "LABOUR_ID-B1",
     "ECONOMY_NAME": "ECONOMY_NAME-N1",
     "UNEMPLOYMENT": 461,
@@ -52,7 +44,12 @@
     "YOUTH_UNEMPLOYMENT": 719,
     "EMPLOYMENT_RATIO": 338.93,
     "FEMALE_PARTICIPATION": 78,
-    "ECONOMY": 141.49
+    "ECONOMY": 141.49,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -90,7 +87,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Economy",
+      "text": "141.49",
+      "link": {
+       "kind": "economy",
+       "id": "141.49",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

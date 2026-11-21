@@ -8,27 +8,16 @@
    "answer": {
     "timeline": [
      {
-      "at": "2026-04-13",
+      "at": "2026-05-06",
       "step": 140
      },
      {
-      "at": "2026-05-16",
+      "at": "2026-01-13",
       "step": 490
      },
      {
-      "at": "2026-06-19",
+      "at": "2026-02-19",
       "step": 590
-     }
-    ],
-    "systems": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
      }
     ],
     "incidentId": "INCIDENTID-L1",
@@ -38,7 +27,12 @@
     "containHours": -8.77,
     "recordsAffected": 897.65,
     "status": "STATUS-Y1",
-    "legalEntity": "LEGALENTITY-L1"
+    "legalEntity": "LEGALENTITY-L1",
+    "systems": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -76,7 +70,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

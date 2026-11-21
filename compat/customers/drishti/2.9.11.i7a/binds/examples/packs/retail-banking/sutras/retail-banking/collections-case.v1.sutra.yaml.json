@@ -8,17 +8,17 @@
    "answer": {
     "contacts": [
      {
-      "date": "2026-09-27",
+      "date": "2026-04-08",
       "channel": 94.93,
       "outcome": 373
      },
      {
-      "date": "2026-01-12",
+      "date": "2025-12-16",
       "channel": 194.93,
       "outcome": 473
      },
      {
-      "date": "2026-02-15",
+      "date": "2026-01-22",
       "channel": 44.93,
       "outcome": 323
      }
@@ -68,7 +68,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Customer",
+      "text": "78",
+      "link": {
+       "kind": "customer",
+       "id": "78",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

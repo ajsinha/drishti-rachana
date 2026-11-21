@@ -9,67 +9,76 @@
     "EXPOSURE_ENGINE": {
      "PROFILE": [
       {
-       "VALUE": 855.53
+       "TENOR": "TENOR-M1",
+       "EE": 736,
+       "PFE": 784.01,
+       "PFE_99": 366.23
       },
       {
-       "VALUE": 705.53
+       "TENOR": "TENOR-N2",
+       "EE": 836,
+       "PFE": 634.01,
+       "PFE_99": 716.23
       },
       {
-       "VALUE": 1055.53
+       "TENOR": "TENOR-O3",
+       "EE": 686,
+       "PFE": 984.01,
+       "PFE_99": 816.23
       }
      ],
      "EPE": 810,
      "PEAK_PFE": 459.61,
      "STATUS": "STATUS-Y1",
-     "BUSINESS_DATE": "2026-06-24",
+     "BUSINESS_DATE": "2026-03-30",
      "RUN_ID": "RUN_ID-A1",
      "PATHS": 799,
      "CE": 198,
      "EEPE": 332.59,
-     "PEAK_PFE_DATE": "2026-05-23",
+     "PEAK_PFE_DATE": "2026-01-04",
      "NOTE": "NOTE-M1"
     },
     "TRADES": [
      {
-      "ASSET_CLASS": "ASSET_CLASS-P1",
-      "PRODUCT": "PRODUCT-R1",
-      "STATUS": "STATUS-Y1",
-      "NOTIONAL": 155,
       "TRADE_ID": "TRADE_ID-P1",
-      "MATURITY": "2026-02-20",
-      "MTM": 728.03
+      "STATUS": "STATUS-Y1",
+      "PRODUCT": "PRODUCT-R1",
+      "NOTIONAL": 155,
+      "MATURITY": "2026-01-07",
+      "MTM": 728.03,
+      "ASSET_CLASS": "ASSET_CLASS-P1"
      },
      {
-      "ASSET_CLASS": "ASSET_CLASS-Q2",
-      "PRODUCT": "PRODUCT-S2",
-      "STATUS": "STATUS-Z2",
-      "NOTIONAL": 255,
       "TRADE_ID": "TRADE_ID-Q2",
-      "MATURITY": "2026-03-23",
-      "MTM": 578.03
+      "STATUS": "STATUS-Z2",
+      "PRODUCT": "PRODUCT-S2",
+      "NOTIONAL": 255,
+      "MATURITY": "2026-02-13",
+      "MTM": 578.03,
+      "ASSET_CLASS": "ASSET_CLASS-Q2"
      },
      {
-      "ASSET_CLASS": "ASSET_CLASS-R3",
-      "PRODUCT": "PRODUCT-T3",
-      "STATUS": "STATUS-A3",
-      "NOTIONAL": 105,
       "TRADE_ID": "TRADE_ID-R3",
-      "MATURITY": "2026-04-26",
-      "MTM": 928.03
+      "STATUS": "STATUS-A3",
+      "PRODUCT": "PRODUCT-T3",
+      "NOTIONAL": 105,
+      "MATURITY": "2026-03-22",
+      "MTM": 928.03,
+      "ASSET_CLASS": "ASSET_CLASS-R3"
      }
     ],
     "BY_ASSET": [
      {
-      "VALUE": 855.53,
-      "ASSET": 119.21
+      "ASSET": 119.21,
+      "MTM": 728.03
      },
      {
-      "VALUE": 705.53,
-      "ASSET": 469.21
+      "ASSET": 469.21,
+      "MTM": 578.03
      },
      {
-      "VALUE": 1055.53,
-      "ASSET": 569.21
+      "ASSET": 569.21,
+      "MTM": 928.03
      }
     ],
     "NETTING_SET_ID": "NETTING_SET_-Y1",
@@ -85,6 +94,122 @@
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "nset-mtm",
+    "NETTING_SET_-Y1"
+   ],
+   "answer": {
+    "data": {
+     "BY_PRODUCT_GROUP": [
+      {
+       "label": "LABEL-W1",
+       "value": 418
+      },
+      {
+       "label": "LABEL-X2",
+       "value": 268
+      },
+      {
+       "label": "LABEL-Y3",
+       "value": 618
+      }
+     ],
+     "PAST_MATURITY": [
+      {
+       "TRADE_ID": "TRADE_ID-P1",
+       "TRADE_STATUS": "TRADE_STATUS-U1",
+       "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
+       "MATURITY_DATE": "2026-01-23",
+       "MTM": 728.03
+      },
+      {
+       "TRADE_ID": "TRADE_ID-Q2",
+       "TRADE_STATUS": "TRADE_STATUS-V2",
+       "PRODUCT_TYPE": "PRODUCT_TYPE-W2",
+       "MATURITY_DATE": "2026-03-01",
+       "MTM": 578.03
+      },
+      {
+       "TRADE_ID": "TRADE_ID-R3",
+       "TRADE_STATUS": "TRADE_STATUS-W3",
+       "PRODUCT_TYPE": "PRODUCT_TYPE-X3",
+       "MATURITY_DATE": "2026-04-07",
+       "MTM": 928.03
+      }
+     ],
+     "NET_MTM": 454.13,
+     "TRADE_COUNT": 622.07,
+     "GROSS_POSITIVE_MTM": 151.63,
+     "GROSS_NEGATIVE_MTM": 354,
+     "NETTING_BENEFIT": 833,
+     "NET_TO_GROSS": 193,
+     "CE_UNCOLLATERALISED": 768,
+     "PAST_MATURITY_COUNT": "2026-03-26",
+     "CURRENCY_NOTE": "CURRENCY_NOT-O1"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "netting-set"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": [
+     {
+      "label": "Counterparty",
+      "text": "COUNTERPARTY-N1",
+      "link": {
+       "kind": "counterparty",
+       "id": "COUNTERPARTY-N1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "source.freshness",
+   "args": [
+    "nset-mtm"
+   ],
+   "answer": {
+    "source": "recorded",
+    "lastUpdate": null,
+    "staleAfter": null,
+    "stale": false
+   }
   }
  ]
 }

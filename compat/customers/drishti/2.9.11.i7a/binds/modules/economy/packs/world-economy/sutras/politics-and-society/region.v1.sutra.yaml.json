@@ -8,34 +8,43 @@
    "answer": {
     "GOVERNMENT_TYPES": [
      {
-      "VALUE": 855.53
+      "TYPE": "TYPE-X1",
+      "COUNT": 267
      },
      {
-      "VALUE": 705.53
+      "TYPE": "TYPE-Y2",
+      "COUNT": 117
      },
      {
-      "VALUE": 1055.53
+      "TYPE": "TYPE-Z3",
+      "COUNT": 467
      }
     ],
     "LIFE_TREND": [
      {
+      "YEAR": 728,
       "VALUE": 855.53
      },
      {
+      "YEAR": 578,
       "VALUE": 705.53
      },
      {
+      "YEAR": 928,
       "VALUE": 1055.53
      }
     ],
     "INTERNET_TREND": [
      {
+      "YEAR": 728,
       "VALUE": 855.53
      },
      {
+      "YEAR": 578,
       "VALUE": 705.53
      },
      {
+      "YEAR": 928,
       "VALUE": 1055.53
      }
     ],
@@ -46,7 +55,12 @@
     "LIFE_EXPECTANCY": 636.89,
     "WOMEN_PARLIAMENT": 663,
     "INTERNET": 501.11,
-    "MEMBER_STATES": "MEMBER_STATE-F1"
+    "MEMBER_STATES": "MEMBER_STATE-F1",
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -84,7 +98,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Member states",
+      "text": "MEMBER_STATE-F1",
+      "link": {
+       "kind": "jurisdiction",
+       "id": "MEMBER_STATE-F1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

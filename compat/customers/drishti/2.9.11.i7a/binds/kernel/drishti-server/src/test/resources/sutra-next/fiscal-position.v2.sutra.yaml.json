@@ -8,46 +8,44 @@
    "answer": {
     "RATIOS": [
      {
+      "ITEM": -179.89,
       "VALUE": 855.53
      },
      {
+      "ITEM": 170.11,
       "VALUE": 705.53
      },
      {
+      "ITEM": 270.11,
       "VALUE": 1055.53
      }
     ],
     "DEBT_PATH": [
      {
-      "VALUE": 855.53
+      "YEAR": 728,
+      "DEBT": 591
      },
      {
-      "VALUE": 705.53
+      "YEAR": 578,
+      "DEBT": 441
      },
      {
-      "VALUE": 1055.53
+      "YEAR": 928,
+      "DEBT": 791
      }
     ],
     "BALANCE_PATH": [
      {
-      "VALUE": 855.53
+      "YEAR": 728,
+      "BALANCE": 94
      },
      {
-      "VALUE": 705.53
+      "YEAR": 578,
+      "BALANCE": 444
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "YEAR": 928,
+      "BALANCE": 544
      }
     ],
     "FISCAL_ID": "FISCAL_ID-X1",
@@ -55,9 +53,14 @@
     "DEBT": 591,
     "BALANCE": 94,
     "REVENUE": 647,
-    "SPENDING": "2026-02-11",
+    "SPENDING": "2026-05-04",
     "MILITARY": 327,
-    "ECONOMY": 141.49
+    "ECONOMY": 141.49,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -95,7 +98,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Economy",
+      "text": "141.49",
+      "link": {
+       "kind": "economy",
+       "id": "141.49",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

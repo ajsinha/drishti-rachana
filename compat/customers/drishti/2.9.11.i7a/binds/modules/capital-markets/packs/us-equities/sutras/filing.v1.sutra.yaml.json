@@ -26,7 +26,12 @@
     "FORM": 337.49,
     "FORM_NAME": "FORM_NAME-M1",
     "FILED": 177.17,
-    "REPORT_DATE": "2026-03-21"
+    "REPORT_DATE": "2026-05-08",
+    "ITEMS_TEXT": "ITEMS_TEXT-M1",
+    "DOCUMENT_DESCRIPTION": "DOCUMENT_DES-C1",
+    "SIZE_KB": 135,
+    "PATH": 898.09,
+    "PRIMARY_DOCUMENT": 223.69
    }
   },
   {
@@ -64,7 +69,30 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Accession",
+      "text": "373",
+      "link": {
+       "kind": "filing",
+       "id": "373",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Company",
+      "text": "-37.51",
+      "link": {
+       "kind": "us-company",
+       "id": "-37.51",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

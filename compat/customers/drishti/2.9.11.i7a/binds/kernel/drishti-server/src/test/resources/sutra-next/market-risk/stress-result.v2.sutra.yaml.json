@@ -8,13 +8,16 @@
    "answer": {
     "BY_BOOK": [
      {
-      "VALUE": 855.53
+      "BOOK": "BOOK-L1",
+      "PNL": 367
      },
      {
-      "VALUE": 705.53
+      "BOOK": "BOOK-M2",
+      "PNL": 217
      },
      {
-      "VALUE": 1055.53
+      "BOOK": "BOOK-N3",
+      "PNL": 567
      }
     ],
     "RESULT_ID": "RESULT_ID-X1",
@@ -59,7 +62,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Scenario",
+      "text": "143",
+      "link": {
+       "kind": "stress-scenario",
+       "id": "143",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

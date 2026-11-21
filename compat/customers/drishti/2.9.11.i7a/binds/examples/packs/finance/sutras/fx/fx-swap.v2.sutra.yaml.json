@@ -6,6 +6,50 @@
    "hook": "record",
    "args": [],
    "answer": {
+    "legs": [
+     {
+      "leg": 181,
+      "valueDate": "2026-03-03",
+      "buy": {
+       "ccy": 136,
+       "amount": 555.05
+      },
+      "sell": {
+       "ccy": 136,
+       "amount": 555.05
+      },
+      "rate": 593.99,
+      "settlement": "2026-04-26"
+     },
+     {
+      "leg": 531,
+      "valueDate": "2026-04-09",
+      "buy": {
+       "ccy": 486,
+       "amount": 905.05
+      },
+      "sell": {
+       "ccy": 486,
+       "amount": 905.05
+      },
+      "rate": 443.99,
+      "settlement": "2026-01-03"
+     },
+     {
+      "leg": 631,
+      "valueDate": "2025-12-17",
+      "buy": {
+       "ccy": 586,
+       "amount": 1005.05
+      },
+      "sell": {
+       "ccy": 586,
+       "amount": 1005.05
+      },
+      "rate": 793.99,
+      "settlement": "2026-02-09"
+     }
+    ],
     "cashflows": [
      {
       "payDate": "2026-03-21",
@@ -17,7 +61,7 @@
       "pvUsd": 441
      },
      {
-      "payDate": "2026-04-24",
+      "payDate": "2026-04-27",
       "leg": 531,
       "currency": 357.71,
       "direction": 641.39,
@@ -26,7 +70,7 @@
       "pvUsd": 291
      },
      {
-      "payDate": "2026-05-27",
+      "payDate": "2026-01-04",
       "leg": 631,
       "currency": 207.71,
       "direction": 491.39,
@@ -37,13 +81,16 @@
     ],
     "risk": [
      {
-      "VALUE": 855.53
+      "factor": 459.47,
+      "usd": 787.33
      },
      {
-      "VALUE": 705.53
+      "factor": 809.47,
+      "usd": 887.33
      },
      {
-      "VALUE": 1055.53
+      "factor": 909.47,
+      "usd": 737.33
      }
     ],
     "productType": "PRODUCTTYPE-C1",
@@ -60,21 +107,48 @@
     "swapPoints": 636.19,
     "mtm": 499.01,
     "book": 573.43,
-    "legs": -61.21,
+    "nettingSet": 535.01,
     "confirmation": {
      "status": "STATUS-Y1",
      "matched": -231,
      "clsEligible": 480,
      "trader": 436
     },
-    "forwardCurve": 272,
-    "nettingSet": 535.01
+    "forwardCurve": 272
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "curve",
+    "272"
+   ],
+   "answer": {
+    "data": {
+     "points": [
+      {
+       "tenor": 45,
+       "points": 595
+      },
+      {
+       "tenor": 145,
+       "points": 695
+      },
+      {
+       "tenor": -4,
+       "points": 545
+      }
+     ],
+     "forwardCurve": 272
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
   },
   {
    "hook": "panel",
@@ -106,7 +180,41 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Book",
+      "text": "573.43",
+      "link": {
+       "kind": "book",
+       "id": "573.43",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Netting set",
+      "text": "535.01",
+      "link": {
+       "kind": "netting-set",
+       "id": "535.01",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Forward curve",
+      "text": "272",
+      "link": {
+       "kind": "curve",
+       "id": "272",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

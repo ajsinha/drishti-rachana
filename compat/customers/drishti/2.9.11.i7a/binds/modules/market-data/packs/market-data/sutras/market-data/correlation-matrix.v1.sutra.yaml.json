@@ -15,6 +15,103 @@
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "correlation-result",
+    "MATRIX_ID-A1~estimator=pearson~window=0"
+   ],
+   "answer": {
+    "data": {
+     "PAIRS": [
+      {
+       "A": 302,
+       "B": 668,
+       "RHO": 433.33
+      },
+      {
+       "A": 152,
+       "B": 518,
+       "RHO": 533.33
+      },
+      {
+       "A": 502,
+       "B": 868,
+       "RHO": 383.33
+      }
+     ],
+     "FACTOR_STATS": [
+      {
+       "FACTOR": 640.27,
+       "LAST": 120,
+       "RETURN": 54.53,
+       "VOLATILITY": 619
+      },
+      {
+       "FACTOR": 740.27,
+       "LAST": -29,
+       "RETURN": -95.47,
+       "VOLATILITY": 719
+      },
+      {
+       "FACTOR": 590.27,
+       "LAST": 320,
+       "RETURN": 254.53,
+       "VOLATILITY": 569
+      }
+     ],
+     "AVERAGE": -232,
+     "ESTIMATOR": 76.67,
+     "WINDOW": 521.03,
+     "FROM": "2026-01-15",
+     "TO": 480.29,
+     "MIN_RHO": 452,
+     "MAX_RHO": 373,
+     "STAMP": {
+      "NAME": "NAME-X1",
+      "CODE": "CODE-P1",
+      "AMOUNT": 146
+     }
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "correlation-matrix"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "source.freshness",
+   "args": [
+    "correlation-result"
+   ],
+   "answer": {
+    "source": "recorded",
+    "lastUpdate": null,
+    "staleAfter": null,
+    "stale": false
+   }
   }
  ]
 }

@@ -6,24 +6,23 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "MANDATE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "OFFICE_ID": "OFFICE_ID-Y1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "ROLE": "ROLE-H1",
     "HOLDER": 512,
     "SINCE": 444,
     "GOVERNMENT_TYPE": "GOVERNMENT_T-M1",
-    "JURISDICTION": 584
+    "JURISDICTION": 584,
+    "MANDATE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    },
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -61,7 +60,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Jurisdiction",
+      "text": "584",
+      "link": {
+       "kind": "jurisdiction",
+       "id": "584",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

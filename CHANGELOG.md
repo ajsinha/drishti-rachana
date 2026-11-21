@@ -15,6 +15,17 @@ Entries are written per release; the regime's unreleased work is listed after th
   `@['mtm-usd']`, a fragment's own `@['bid-size']` is renamed too; such a name in a field-name option is `RCH-2121`, never a minus.
   Cases: `format/promoted`, `sutra/binder/tree-formats`, `problem/tree-format-level`, `sutra/fragments-hyphens`,
   `problem/fragments-hyphens`.
+- **The corpus's bind proof binds real data** (gate finding F2, owner decision O2): the recorder (`tools/regime/corpus_binds.py`,
+  `CorpusBind.java`) now makes its synthetic data from each Sutra as the reference parsed it (fragments and blocks expanded: rows for
+  timelines, charts' named fields, field-lists, histograms, graphs) and gives the reference a **recording source router** (one source
+  plugin serving every kind: linked documents, wired `source:`s, map lookups, control lookups), the record's links and the host's
+  pivot engine; every answer is a host call in `binds/<file>.json` (`source.fetch`, `source.search`, `source.freshness`,
+  `pivot.cells`, `pivot.key`). Core's replay answers its `TableProvider` and `PivotEngine` from the same recording
+  (`CoreBinds.tables`, `CoreBinds.pivots`; the links panel replays its items). Before: 463 of 478 bound, 454 compared, 24 listed,
+  65% of data panels empty (1,312 of 1,447 tables, 788 of 863 line charts, every timeline and links panel). Now: **478 of 478
+  bind on the reference and are identical on Core, none listed**; 3 of 5,569 data panels empty (0.1%: panels waiting for a
+  selection), 6 of 400 links panels empty (the record names no entity), every panel kind filled somewhere.
+  `corpus_binds.py --report` prints the count by kind.
 - **Corpus binds no longer flaky**: `CustomerCorpusTest.recordedBindsReplay…` flipped between "differs" and "listed but identical now"
   because both the reference (i7a) and Core wrote some objects from `Map.of`, whose key order is drawn afresh in every JVM run. Core now
   writes a form's `rules`, `steps` and a field's `options` (and a problem's `at`, a grouped query's columns) in declaration order, and a

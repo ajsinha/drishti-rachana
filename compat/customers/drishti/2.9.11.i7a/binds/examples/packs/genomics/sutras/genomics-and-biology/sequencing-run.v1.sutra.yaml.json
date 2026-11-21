@@ -8,13 +8,16 @@
    "answer": {
     "qualityByCycle": [
      {
-      "VALUE": 855.53
+      "cycle": 159.95,
+      "q": 498
      },
      {
-      "VALUE": 705.53
+      "cycle": 509.95,
+      "q": 348
      },
      {
-      "VALUE": 1055.53
+      "cycle": 609.95,
+      "q": 698
      }
     ],
     "samples": [

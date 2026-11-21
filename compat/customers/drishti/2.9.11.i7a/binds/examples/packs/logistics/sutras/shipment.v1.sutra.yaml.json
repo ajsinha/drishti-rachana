@@ -9,7 +9,7 @@
     "route": [
      {
       "leg": 181,
-      "from": "2026-07-16",
+      "from": "2026-04-27",
       "to": 407.05,
       "mode": 603.53,
       "departed": 390,
@@ -18,7 +18,7 @@
      },
      {
       "leg": 531,
-      "from": "2026-08-19",
+      "from": "2026-01-04",
       "to": 507.05,
       "mode": 453.53,
       "departed": 240,
@@ -27,7 +27,7 @@
      },
      {
       "leg": 631,
-      "from": "2026-09-22",
+      "from": "2026-02-10",
       "to": 357.05,
       "mode": 803.53,
       "departed": 590,
@@ -37,17 +37,17 @@
     ],
     "milestones": [
      {
-      "date": "2026-09-27",
+      "date": "2026-04-08",
       "event": 314,
       "location": 134
      },
      {
-      "date": "2026-01-12",
+      "date": "2025-12-16",
       "event": 664,
       "location": -15
      },
      {
-      "date": "2026-02-15",
+      "date": "2026-01-22",
       "event": 764,
       "location": 334
      }
@@ -65,16 +65,44 @@
     "currency": 257.71,
     "declaredValue": 369,
     "incoterm": 203,
+    "vessel": 419.53,
     "commodity": -218,
     "departed": 390,
-    "container": 495.05,
-    "vessel": 419.53
+    "container": 495.05
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "container",
+    "495.05"
+   ],
+   "answer": {
+    "data": {
+     "readings": [
+      {
+       "hour": 368.69,
+       "celsius": 23
+      },
+      {
+       "hour": 718.69,
+       "celsius": 123
+      },
+      {
+       "hour": 818.69,
+       "celsius": -26
+      }
+     ],
+     "container": 495.05
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
   },
   {
    "hook": "panel",
@@ -106,7 +134,52 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Origin",
+      "text": "260.21",
+      "link": {
+       "kind": "port",
+       "id": "260.21",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Destination",
+      "text": "80.45",
+      "link": {
+       "kind": "port",
+       "id": "80.45",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Vessel",
+      "text": "419.53",
+      "link": {
+       "kind": "vessel",
+       "id": "419.53",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Container",
+      "text": "495.05",
+      "link": {
+       "kind": "container",
+       "id": "495.05",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

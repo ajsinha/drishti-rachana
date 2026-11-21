@@ -8,24 +8,16 @@
    "answer": {
     "hazards": [
      {
-      "VALUE": 855.53
+      "hazard": 588.71,
+      "score": 185.75
      },
      {
-      "VALUE": 705.53
+      "hazard": 438.71,
+      "score": 535.75
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "location": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "hazard": 788.71,
+      "score": 635.75
      }
     ],
     "assetId": "ASSETID-W1",
@@ -35,7 +27,12 @@
     "value": 418,
     "worstHazard": 440.03,
     "insured": 240,
-    "counterparty": 745.87
+    "counterparty": 745.87,
+    "location": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -73,7 +70,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Counterparty",
+      "text": "745.87",
+      "link": {
+       "kind": "counterparty",
+       "id": "745.87",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

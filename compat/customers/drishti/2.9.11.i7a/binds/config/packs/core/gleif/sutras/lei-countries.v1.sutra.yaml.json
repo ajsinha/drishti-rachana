@@ -22,24 +22,16 @@
     ],
     "BY_COUNTRY": [
      {
-      "VALUE": 855.53
+      "label": "LABEL-W1",
+      "value": 418
      },
      {
-      "VALUE": 705.53
+      "label": "LABEL-X2",
+      "value": 268
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "label": "LABEL-Y3",
+      "value": 618
      }
     ],
     "COUNTRY": "COUNTRY-I1",
@@ -47,7 +39,12 @@
     "COUNTRIES": 429,
     "ENTITIES": 620.71,
     "GROUPS_HEADQUARTERED": "GROUPS_HEADQ-K1",
-    "LAPSED": 139.13
+    "LAPSED": 139.13,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

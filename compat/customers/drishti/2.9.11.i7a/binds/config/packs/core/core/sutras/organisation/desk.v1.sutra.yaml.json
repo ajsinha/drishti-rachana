@@ -28,22 +28,22 @@
       "BOOK": "BOOK-L1",
       "CURRENCY": "CURRENCY-Z1",
       "MTM": 728.03,
-      "TRADE_ID": "TRADE_ID-P1",
-      "FAMILY": 691
+      "FAMILY": 691,
+      "TRADE_ID": "TRADE_ID-P1"
      },
      {
       "BOOK": "BOOK-M2",
       "CURRENCY": "CURRENCY-A2",
       "MTM": 578.03,
-      "TRADE_ID": "TRADE_ID-Q2",
-      "FAMILY": 791
+      "FAMILY": 791,
+      "TRADE_ID": "TRADE_ID-Q2"
      },
      {
       "BOOK": "BOOK-N3",
       "CURRENCY": "CURRENCY-B3",
       "MTM": 928.03,
-      "TRADE_ID": "TRADE_ID-R3",
-      "FAMILY": 641
+      "FAMILY": 641,
+      "TRADE_ID": "TRADE_ID-R3"
      }
     ],
     "DESK_ID": "DESK_ID-W1",
@@ -60,6 +60,361 @@
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "pivot.cells",
+   "args": [
+    {
+     "source": "panel",
+     "rows": [
+      "b0"
+     ],
+     "columns": [
+      "x"
+     ],
+     "values": [
+      {
+       "measure": "count()",
+       "as": "v"
+      }
+     ],
+     "expandTo": {
+      "rows": 1,
+      "columns": 1
+     }
+    },
+    [
+     {
+      "name": "b0",
+      "type": "string",
+      "label": "BOOK",
+      "description": ""
+     },
+     {
+      "name": "x",
+      "type": "string",
+      "label": "FAMILY",
+      "description": ""
+     },
+     {
+      "name": "v",
+      "type": "number",
+      "label": "rows",
+      "description": ""
+     }
+    ],
+    [
+     [
+      "BOOK-L1",
+      "691",
+      1.0
+     ],
+     [
+      "BOOK-M2",
+      "791",
+      1.0
+     ],
+     [
+      "BOOK-N3",
+      "641",
+      1.0
+     ]
+    ]
+   ],
+   "answer": {
+    "b0=BOOK-L1|x=691": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-L1",
+      "x": "691"
+     },
+     "key": "c:5e3c3c9f1c2f"
+    },
+    "b0=BOOK-L1|*": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-L1"
+     },
+     "key": "c:56e6064ae949"
+    },
+    "b0=BOOK-M2|x=791": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-M2",
+      "x": "791"
+     },
+     "key": "c:14f6452957ed"
+    },
+    "b0=BOOK-M2|*": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-M2"
+     },
+     "key": "c:2ad8daa1ab5a"
+    },
+    "b0=BOOK-N3|x=641": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-N3",
+      "x": "641"
+     },
+     "key": "c:8bb67141008c"
+    },
+    "b0=BOOK-N3|*": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-N3"
+     },
+     "key": "c:d51cf4d8cb7a"
+    },
+    "*|x=641": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "x": "641"
+     },
+     "key": "c:59007ca12222"
+    },
+    "*|x=691": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "x": "691"
+     },
+     "key": "c:4f1598977668"
+    },
+    "*|x=791": {
+     "values": {
+      "v": 1.0
+     },
+     "members": 1,
+     "coords": {
+      "x": "791"
+     },
+     "key": "c:85e4e50fcfd9"
+    },
+    "*|*": {
+     "values": {
+      "v": 3.0
+     },
+     "members": 3,
+     "coords": {},
+     "key": "c:684888c0ebb1"
+    }
+   }
+  },
+  {
+   "hook": "pivot.cells",
+   "args": [
+    {
+     "source": "panel",
+     "rows": [
+      "b0"
+     ],
+     "columns": [
+      "x"
+     ],
+     "values": [
+      {
+       "measure": "sum(v)",
+       "as": "v"
+      }
+     ],
+     "expandTo": {
+      "rows": 1,
+      "columns": 1
+     }
+    },
+    [
+     {
+      "name": "b0",
+      "type": "string",
+      "label": "@.BOOK",
+      "description": ""
+     },
+     {
+      "name": "x",
+      "type": "string",
+      "label": "@.CURRENCY",
+      "description": ""
+     },
+     {
+      "name": "v",
+      "type": "number",
+      "label": "sum(@.MTM)",
+      "description": ""
+     }
+    ],
+    [
+     [
+      "BOOK-L1",
+      "CURRENCY-Z1",
+      728.03
+     ],
+     [
+      "BOOK-M2",
+      "CURRENCY-A2",
+      578.03
+     ],
+     [
+      "BOOK-N3",
+      "CURRENCY-B3",
+      928.03
+     ]
+    ]
+   ],
+   "answer": {
+    "b0=BOOK-L1|x=CURRENCY-Z1": {
+     "values": {
+      "v": 728.03
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-L1",
+      "x": "CURRENCY-Z1"
+     },
+     "key": "c:5a407ed2601d"
+    },
+    "b0=BOOK-L1|*": {
+     "values": {
+      "v": 728.03
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-L1"
+     },
+     "key": "c:56e6064ae949"
+    },
+    "b0=BOOK-M2|x=CURRENCY-A2": {
+     "values": {
+      "v": 578.03
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-M2",
+      "x": "CURRENCY-A2"
+     },
+     "key": "c:a54135b2a168"
+    },
+    "b0=BOOK-M2|*": {
+     "values": {
+      "v": 578.03
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-M2"
+     },
+     "key": "c:2ad8daa1ab5a"
+    },
+    "b0=BOOK-N3|x=CURRENCY-B3": {
+     "values": {
+      "v": 928.03
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-N3",
+      "x": "CURRENCY-B3"
+     },
+     "key": "c:051431c84699"
+    },
+    "b0=BOOK-N3|*": {
+     "values": {
+      "v": 928.03
+     },
+     "members": 1,
+     "coords": {
+      "b0": "BOOK-N3"
+     },
+     "key": "c:d51cf4d8cb7a"
+    },
+    "*|x=CURRENCY-A2": {
+     "values": {
+      "v": 578.03
+     },
+     "members": 1,
+     "coords": {
+      "x": "CURRENCY-A2"
+     },
+     "key": "c:7fc578fa8aa6"
+    },
+    "*|x=CURRENCY-B3": {
+     "values": {
+      "v": 928.03
+     },
+     "members": 1,
+     "coords": {
+      "x": "CURRENCY-B3"
+     },
+     "key": "c:d097856a28cd"
+    },
+    "*|x=CURRENCY-Z1": {
+     "values": {
+      "v": 728.03
+     },
+     "members": 1,
+     "coords": {
+      "x": "CURRENCY-Z1"
+     },
+     "key": "c:f63b04fb4422"
+    },
+    "*|*": {
+     "values": {
+      "v": 2234.09
+     },
+     "members": 3,
+     "coords": {},
+     "key": "c:684888c0ebb1"
+    }
+   }
+  },
+  {
+   "hook": "pivot.key",
+   "args": [
+    {
+     "b0": "BOOK-L1"
+    }
+   ],
+   "answer": "b0=BOOK-L1"
+  },
+  {
+   "hook": "pivot.key",
+   "args": [
+    {
+     "b0": "BOOK-M2"
+    }
+   ],
+   "answer": "b0=BOOK-M2"
+  },
+  {
+   "hook": "pivot.key",
+   "args": [
+    {
+     "b0": "BOOK-N3"
+    }
+   ],
+   "answer": "b0=BOOK-N3"
   },
   {
    "hook": "panel",
@@ -91,7 +446,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGAL_ENTITY-E1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGAL_ENTITY-E1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

@@ -8,19 +8,19 @@
    "answer": {
     "transactions": [
      {
-      "date": "2026-09-27",
+      "date": "2026-04-08",
       "description": 338.71,
       "amount": 555.05,
       "balance": 525
      },
      {
-      "date": "2026-01-12",
+      "date": "2025-12-16",
       "description": 438.71,
       "amount": 905.05,
       "balance": 375
      },
      {
-      "date": "2026-02-15",
+      "date": "2026-01-22",
       "description": 288.71,
       "amount": 1005.05,
       "balance": 725
@@ -28,13 +28,16 @@
     ],
     "history": [
      {
-      "VALUE": 855.53
+      "month": 395.93,
+      "balance": 525
      },
      {
-      "VALUE": 705.53
+      "month": 745.93,
+      "balance": 375
      },
      {
-      "VALUE": 1055.53
+      "month": 845.93,
+      "balance": 725
      }
     ],
     "accountId": "ACCOUNTID-K1",
@@ -82,7 +85,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Customer",
+      "text": "78",
+      "link": {
+       "kind": "customer",
+       "id": "78",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

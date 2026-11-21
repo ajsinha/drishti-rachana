@@ -6,15 +6,47 @@
    "hook": "record",
    "args": [],
    "answer": {
+    "HOLDERS": [
+     {
+      "FUND": 575,
+      "FUND_NAME": "FUND_NAME-C1",
+      "TYPE": "TYPE-X1",
+      "PCT": 75.47,
+      "VALUE": 855.53,
+      "SHARES": 409,
+      "REPORT_DATE": "2026-05-08"
+     },
+     {
+      "FUND": 675,
+      "FUND_NAME": "FUND_NAME-D2",
+      "TYPE": "TYPE-Y2",
+      "PCT": 425.47,
+      "VALUE": 705.53,
+      "SHARES": 759,
+      "REPORT_DATE": "2026-01-15"
+     },
+     {
+      "FUND": 525,
+      "FUND_NAME": "FUND_NAME-E3",
+      "TYPE": "TYPE-Z3",
+      "PCT": 525.47,
+      "VALUE": 1055.53,
+      "SHARES": 859,
+      "REPORT_DATE": "2026-02-21"
+     }
+    ],
     "TOP_WEIGHTS": [
      {
-      "VALUE": 855.53
+      "FUND": 575,
+      "PCT": 75.47
      },
      {
-      "VALUE": 705.53
+      "FUND": 675,
+      "PCT": 425.47
      },
      {
-      "VALUE": 1055.53
+      "FUND": 525,
+      "PCT": 525.47
      }
     ],
     "TICKER": "TICKER-K1",

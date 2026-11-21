@@ -6,38 +6,27 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "contractTerms": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "settlements": [
      {
-      "intraday": "2026-02-11",
-      "date": "2026-09-27",
-      "settle": "2026-09-18",
+      "date": "2026-04-08",
+      "intraday": "2026-04-04",
+      "settle": "2026-02-04",
       "change": 445,
       "variationMargin": 403,
       "cumulative": 440
      },
      {
-      "intraday": "2026-03-14",
-      "date": "2026-01-12",
-      "settle": "2026-01-21",
+      "date": "2025-12-16",
+      "intraday": "2026-05-11",
+      "settle": "2026-03-13",
       "change": 795,
       "variationMargin": 753,
       "cumulative": 540
      },
      {
-      "intraday": "2026-04-17",
-      "date": "2026-02-15",
-      "settle": "2026-02-24",
+      "date": "2026-01-22",
+      "intraday": "2026-01-18",
+      "settle": "2026-04-19",
       "change": 895,
       "variationMargin": 853,
       "cumulative": 390
@@ -57,20 +46,53 @@
     "mtm": 499.01,
     "lastTrade": 61,
     "book": 573.43,
+    "clearingAccount": 507.73,
+    "contractTerms": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    },
     "margin": {
      "initialMargin": 318.83,
-     "variationMarginToday": "2026-08-26",
+     "variationMarginToday": "2026-04-19",
      "deltaBbl": 705.67,
      "usdPerDollarMove": 383
     },
-    "forwardCurve": 272,
-    "clearingAccount": 507.73
+    "forwardCurve": 272
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "curve",
+    "272"
+   ],
+   "answer": {
+    "data": {
+     "points": [
+      {
+       "tenor": 45,
+       "price": 559.31
+      },
+      {
+       "tenor": 145,
+       "price": 909.31
+      },
+      {
+       "tenor": -4,
+       "price": 1009.31
+      }
+     ],
+     "forwardCurve": 272
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
   },
   {
    "hook": "panel",
@@ -102,7 +124,41 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Book",
+      "text": "573.43",
+      "link": {
+       "kind": "book",
+       "id": "573.43",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Clearing account",
+      "text": "507.73",
+      "link": {
+       "kind": "clearing-account",
+       "id": "507.73",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Forward curve",
+      "text": "272",
+      "link": {
+       "kind": "curve",
+       "id": "272",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

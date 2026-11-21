@@ -6,28 +6,6 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "FACTS": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "REGION_ID": "REGION_ID-K1",
     "NAME": "NAME-X1",
     "REGION_CODE": "REGION_CODE-W1",
@@ -35,7 +13,17 @@
     "POPULATION_M": 318,
     "GDP_USD_BN": 22,
     "GDP_PER_CAPITA": -4,
-    "ECONOMY": 141.49
+    "ECONOMY": 141.49,
+    "FACTS": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    },
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -73,7 +61,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Economy",
+      "text": "141.49",
+      "link": {
+       "kind": "economy",
+       "id": "141.49",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

@@ -8,24 +8,16 @@
    "answer": {
     "history": [
      {
-      "VALUE": 855.53
+      "date": "2026-04-08",
+      "value": 418
      },
      {
-      "VALUE": 705.53
+      "date": "2025-12-16",
+      "value": 268
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "definition": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "date": "2026-01-22",
+      "value": 618
      }
     ],
     "kriId": "KRIID-W1",
@@ -35,7 +27,12 @@
     "amber": 144.79,
     "red": 526,
     "status": "STATUS-Y1",
-    "desk": 628.33
+    "desk": 628.33,
+    "definition": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -73,7 +70,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Desk",
+      "text": "628.33",
+      "link": {
+       "kind": "desk",
+       "id": "628.33",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

@@ -6,25 +6,19 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "terms": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "fundingId": "FUNDINGID-D1",
     "counterpartyName": "COUNTERPARTY-N1",
     "type": "TYPE-Q1",
     "amount": 555.05,
     "currency": 257.71,
-    "maturity": "2026-09-18",
+    "maturity": "2026-02-10",
     "runOffRate": 303,
-    "counterparty": 745.87
+    "counterparty": 745.87,
+    "terms": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -62,7 +56,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Counterparty",
+      "text": "745.87",
+      "link": {
+       "kind": "counterparty",
+       "id": "745.87",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

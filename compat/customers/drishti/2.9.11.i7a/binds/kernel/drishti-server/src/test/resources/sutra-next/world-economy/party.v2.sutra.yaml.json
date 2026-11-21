@@ -8,24 +8,16 @@
    "answer": {
     "RESULTS": [
      {
-      "VALUE": 855.53
+      "PARTY": 46,
+      "SEATS": 318
      },
      {
-      "VALUE": 705.53
+      "PARTY": -103,
+      "SEATS": 168
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "PARTY": 246,
+      "SEATS": 518
      }
     ],
     "PARTY_ID": "PARTY_ID-L1",
@@ -34,8 +26,13 @@
     "SEATS": 318,
     "SEAT_SHARE": 426.29,
     "CHAMBER": 789,
-    "ELECTION_DATE": "2026-08-26",
-    "ELECTION": -5
+    "ELECTION_DATE": "2026-01-07",
+    "ELECTION": -5,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -73,7 +70,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Election",
+      "text": "-5",
+      "link": {
+       "kind": "election",
+       "id": "-5",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

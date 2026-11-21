@@ -9,29 +9,18 @@
     "domains": [
      {
       "name": "NAME-D1",
-      "start": "2026-05-14",
-      "end": "2026-04-22"
+      "start": "2026-04-01",
+      "end": "2026-03-22"
      },
      {
       "name": "NAME-E2",
-      "start": "2026-06-17",
-      "end": "2026-05-25"
+      "start": "2026-05-08",
+      "end": "2026-04-28"
      },
      {
       "name": "NAME-F3",
-      "start": "2026-07-20",
-      "end": "2026-06-10"
-     }
-    ],
-    "function": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "start": "2026-01-15",
+      "end": "2026-01-05"
      }
     ],
     "proteinId": "PROTEINID-R1",
@@ -40,7 +29,12 @@
     "length": 264,
     "massKda": 345,
     "subcellular": 556,
-    "gene": 87
+    "gene": 87,
+    "function": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -78,7 +72,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Gene",
+      "text": "87",
+      "link": {
+       "kind": "gene",
+       "id": "87",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

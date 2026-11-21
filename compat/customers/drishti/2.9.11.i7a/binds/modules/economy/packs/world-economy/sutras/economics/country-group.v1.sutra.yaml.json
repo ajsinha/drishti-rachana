@@ -8,13 +8,19 @@
    "answer": {
     "TOP_ECONOMIES": [
      {
-      "VALUE": 855.53
+      "ECONOMY": 141.49,
+      "GDP_USD_BN": 22,
+      "GROWTH": 155
      },
      {
-      "VALUE": 705.53
+      "ECONOMY": 241.49,
+      "GDP_USD_BN": -127,
+      "GROWTH": 505
      },
      {
-      "VALUE": 1055.53
+      "ECONOMY": 91.49,
+      "GDP_USD_BN": 222,
+      "GROWTH": 605
      }
     ],
     "ROWS": [
@@ -48,13 +54,16 @@
     ],
     "GDP_PATH": [
      {
-      "VALUE": 855.53
+      "label": "LABEL-W1",
+      "value": 418
      },
      {
-      "VALUE": 705.53
+      "label": "LABEL-X2",
+      "value": 268
      },
      {
-      "VALUE": 1055.53
+      "label": "LABEL-Y3",
+      "value": 618
      }
     ],
     "GROUP_ID": "GROUP_ID-D1",
@@ -66,7 +75,12 @@
     "POPULATION_M": 318,
     "GROWTH": 155,
     "INFLATION": 291.11,
-    "MEMBER_ECONOMIES": 758
+    "MEMBER_ECONOMIES": 758,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -104,7 +118,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Member economies",
+      "text": "758",
+      "link": {
+       "kind": "economy",
+       "id": "758",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

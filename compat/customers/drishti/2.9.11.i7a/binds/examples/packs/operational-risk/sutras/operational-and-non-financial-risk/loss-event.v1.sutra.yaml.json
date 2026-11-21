@@ -6,30 +6,19 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "details": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "timeline": [
      {
-      "date": "2026-09-27",
+      "date": "2026-04-08",
       "step": 140,
       "by": -24
      },
      {
-      "date": "2026-01-12",
+      "date": "2025-12-16",
       "step": 490,
       "by": 325
      },
      {
-      "date": "2026-02-15",
+      "date": "2026-01-22",
       "step": 590,
       "by": 425
      }
@@ -42,7 +31,12 @@
     "netLoss": 458.81,
     "status": "STATUS-Y1",
     "occurred": 773,
-    "desk": 628.33
+    "desk": 628.33,
+    "details": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -80,7 +74,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Desk",
+      "text": "628.33",
+      "link": {
+       "kind": "desk",
+       "id": "628.33",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

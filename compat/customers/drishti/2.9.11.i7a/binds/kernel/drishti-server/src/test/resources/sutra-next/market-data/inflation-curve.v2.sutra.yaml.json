@@ -8,24 +8,30 @@
    "answer": {
     "POINTS": [
      {
-      "VALUE": 855.53
+      "TENOR": "TENOR-M1",
+      "BREAKEVEN": 744.11
      },
      {
-      "VALUE": 705.53
+      "TENOR": "TENOR-N2",
+      "BREAKEVEN": 594.11
      },
      {
-      "VALUE": 1055.53
+      "TENOR": "TENOR-O3",
+      "BREAKEVEN": 944.11
      }
     ],
     "SEASONALITY": [
      {
-      "VALUE": 855.53
+      "MONTH": 696.05,
+      "FACTOR": 640.27
      },
      {
-      "VALUE": 705.53
+      "MONTH": 546.05,
+      "FACTOR": 740.27
      },
      {
-      "VALUE": 1055.53
+      "MONTH": 896.05,
+      "FACTOR": 590.27
      }
     ],
     "CURVE_ID": "CURVE_ID-Z1",
@@ -70,7 +76,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Inflation index",
+      "text": "INFLATION_IN-T1",
+      "link": {
+       "kind": "inflation-index",
+       "id": "INFLATION_IN-T1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

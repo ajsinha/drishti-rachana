@@ -8,21 +8,18 @@
    "answer": {
     "TREE": [
      {
-      "CHILDREN": 769.61,
       "LEI": "LEI-Z1",
       "NAME": "NAME-X1",
       "COUNTRY": "COUNTRY-I1",
       "LEVEL": "LEVEL-A1"
      },
      {
-      "CHILDREN": 619.61,
       "LEI": "LEI-A2",
       "NAME": "NAME-Y2",
       "COUNTRY": "COUNTRY-J2",
       "LEVEL": "LEVEL-B2"
      },
      {
-      "CHILDREN": 969.61,
       "LEI": "LEI-B3",
       "NAME": "NAME-Z3",
       "COUNTRY": "COUNTRY-K3",
@@ -31,55 +28,56 @@
     ],
     "ROWS": [
      {
-      "LEI": "LEI-Z1",
       "NAME": "NAME-X1",
+      "COUNTRY": "COUNTRY-I1",
+      "LEVEL": "LEVEL-A1",
+      "LEI": "LEI-Z1",
       "SEGMENT": 371.87,
       "US_COMPANY": 236.27
      },
      {
-      "LEI": "LEI-A2",
       "NAME": "NAME-Y2",
+      "COUNTRY": "COUNTRY-J2",
+      "LEVEL": "LEVEL-B2",
+      "LEI": "LEI-A2",
       "SEGMENT": 721.87,
       "US_COMPANY": 586.27
      },
      {
-      "LEI": "LEI-B3",
       "NAME": "NAME-Z3",
+      "COUNTRY": "COUNTRY-K3",
+      "LEVEL": "LEVEL-C3",
+      "LEI": "LEI-B3",
       "SEGMENT": 821.87,
       "US_COMPANY": 686.27
      }
     ],
     "BY_COUNTRY": [
      {
-      "VALUE": 855.53
+      "label": "LABEL-W1",
+      "value": 418
      },
      {
-      "VALUE": 705.53
+      "label": "LABEL-X2",
+      "value": 268
      },
      {
-      "VALUE": 1055.53
+      "label": "LABEL-Y3",
+      "value": 618
      }
     ],
     "BY_LEGAL_FORM": [
      {
-      "VALUE": 855.53
+      "label": "LABEL-W1",
+      "value": 418
      },
      {
-      "VALUE": 705.53
+      "label": "LABEL-X2",
+      "value": 268
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "label": "LABEL-Y3",
+      "value": 618
      }
     ],
     "GROUP_ID": "GROUP_ID-D1",
@@ -96,7 +94,12 @@
     "SEGMENT": 371.87,
     "US_COMPANY": 236.27,
     "LAPSED": 139.13,
-    "CAPPED": 506
+    "CAPPED": 506,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

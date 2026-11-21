@@ -71,7 +71,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Issuer",
+      "text": "116",
+      "link": {
+       "kind": "issuer",
+       "id": "116",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

@@ -71,7 +71,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Counterparty",
+      "text": "COUNTERPARTY-N1",
+      "link": {
+       "kind": "counterparty",
+       "id": "COUNTERPARTY-N1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

@@ -8,24 +8,30 @@
    "answer": {
     "HISTORY": [
      {
-      "VALUE": 855.53
+      "DATE": "2026-04-27",
+      "AVG_TONE": 28
      },
      {
-      "VALUE": 705.53
+      "DATE": "2026-01-04",
+      "AVG_TONE": 378
      },
      {
-      "VALUE": 1055.53
+      "DATE": "2026-02-10",
+      "AVG_TONE": 478
      }
     ],
     "BY_CATEGORY": [
      {
-      "VALUE": 855.53
+      "CATEGORY": "CATEGORY-A1",
+      "EVENTS": 183.35
      },
      {
-      "VALUE": 705.53
+      "CATEGORY": "CATEGORY-B2",
+      "EVENTS": 33.35
      },
      {
-      "VALUE": 1055.53
+      "CATEGORY": "CATEGORY-C3",
+      "EVENTS": 383.35
      }
     ],
     "TOP_STORIES": [
@@ -47,20 +53,94 @@
     ],
     "EVENT_COUNTRY_ID": "EVENT_COUNTR-J1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
-    "DATE": "2026-04-22",
+    "DATE": "2026-04-27",
     "EVENTS": 183.35,
     "MENTIONS": 273.13,
     "AVG_TONE": 28,
     "TONE_CHANGE": 185,
     "AVG_GOLDSTEIN": 736,
     "CONFLICT_SHARE": 108,
-    "ISO3": -103
+    "ISO3": "USA",
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "event-country",
+    "EVENT-COUNTRY-1"
+   ],
+   "answer": {
+    "data": {
+     "AVG_TONE": 28,
+     "ISO3": "USA"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "event-country",
+    "EVENT-COUNTRY-2"
+   ],
+   "answer": {
+    "data": {
+     "AVG_TONE": 378,
+     "ISO3": "GBR"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "event-country",
+    "EVENT-COUNTRY-3"
+   ],
+   "answer": {
+    "data": {
+     "AVG_TONE": 478,
+     "ISO3": "DEU"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.search",
+   "args": [
+    "event-country",
+    ""
+   ],
+   "answer": [
+    {
+     "id": "EVENT-COUNTRY-1",
+     "title": "Event Country 1",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "EVENT-COUNTRY-2",
+     "title": "Event Country 2",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "EVENT-COUNTRY-3",
+     "title": "Event Country 3",
+     "subtitle": "recorded"
+    }
+   ]
   },
   {
    "hook": "panel",

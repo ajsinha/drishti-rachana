@@ -8,18 +8,21 @@
    "answer": {
     "POINTS": [
      {
-      "VALUE": 855.53
+      "YEAR": 728,
+      "AMOUNT": 146
      },
      {
-      "VALUE": 705.53
+      "YEAR": 578,
+      "AMOUNT": 496
      },
      {
-      "VALUE": 1055.53
+      "YEAR": 928,
+      "AMOUNT": 596
      }
     ],
     "CURVE_ID": "CURVE_ID-Z1",
     "UNDERLIER": 162,
-    "DIVIDEND_YIELD": "2026-01-19",
+    "DIVIDEND_YIELD": "2026-03-13",
     "UNDERLYING_EQUITY": 582.17
    }
   },
@@ -58,7 +61,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Underlying equity",
+      "text": "582.17",
+      "link": {
+       "kind": "equity",
+       "id": "582.17",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

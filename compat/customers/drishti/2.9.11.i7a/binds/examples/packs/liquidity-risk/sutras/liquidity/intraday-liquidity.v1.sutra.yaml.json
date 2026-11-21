@@ -8,28 +8,31 @@
    "answer": {
     "usage": [
      {
-      "VALUE": 855.53
+      "time": "2026-04-23",
+      "used": 425
      },
      {
-      "VALUE": 705.53
+      "time": "2025-12-31",
+      "used": 775
      },
      {
-      "VALUE": 1055.53
+      "time": "2026-02-06",
+      "used": 875
      }
     ],
     "largePayments": [
      {
-      "time": "2026-03-12",
+      "time": "2026-04-23",
       "counterparty": 745.87,
       "amount": 555.05
      },
      {
-      "time": "2026-04-15",
+      "time": "2025-12-31",
       "counterparty": 845.87,
       "amount": 905.05
      },
      {
-      "time": "2026-05-18",
+      "time": "2026-02-06",
       "counterparty": 695.87,
       "amount": 1005.05
      }
@@ -78,7 +81,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

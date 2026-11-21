@@ -66,7 +66,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Commodity ref",
+      "text": "636.95",
+      "link": {
+       "kind": "commodity",
+       "id": "636.95",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

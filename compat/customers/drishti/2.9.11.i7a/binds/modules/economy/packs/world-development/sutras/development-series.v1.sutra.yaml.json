@@ -8,12 +8,15 @@
    "answer": {
     "HISTORY": [
      {
+      "YEAR": 728,
       "VALUE": 855.53
      },
      {
+      "YEAR": 578,
       "VALUE": 705.53
      },
      {
+      "YEAR": 928,
       "VALUE": 1055.53
      }
     ],
@@ -28,7 +31,12 @@
     "WDI_PROFILE": 212,
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "INDICATOR_CODE": "INDICATOR_CO-F1",
-    "DEFINITION": -66.43
+    "DEFINITION": -66.43,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -66,7 +74,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Wdi profile",
+      "text": "212",
+      "link": {
+       "kind": "development-profile",
+       "id": "212",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

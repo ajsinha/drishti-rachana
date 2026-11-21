@@ -10,17 +10,17 @@
      {
       "ISIN": "ISIN-H1",
       "COUPON": 305.93,
-      "MATURITY": "2026-02-20"
+      "MATURITY": "2026-01-07"
      },
      {
       "ISIN": "ISIN-I2",
       "COUPON": 155.93,
-      "MATURITY": "2026-03-23"
+      "MATURITY": "2026-02-13"
      },
      {
       "ISIN": "ISIN-J3",
       "COUPON": 505.93,
-      "MATURITY": "2026-04-26"
+      "MATURITY": "2026-03-22"
      }
     ],
     "ISSUER_ID": "ISSUER_ID-O1",
@@ -66,7 +66,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Credit curve",
+      "text": "188",
+      "link": {
+       "kind": "credit-curve",
+       "id": "188",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

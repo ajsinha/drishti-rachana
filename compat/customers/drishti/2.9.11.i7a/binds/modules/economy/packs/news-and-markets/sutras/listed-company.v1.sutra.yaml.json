@@ -6,48 +6,6 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "HISTORY": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "ITEMS": [
-     {
-      "PUBLISHED": -193.15,
-      "SOURCE": "SOURCE-O1",
-      "TITLE": "TITLE-X1",
-      "LINK": 795.37
-     },
-     {
-      "PUBLISHED": 156.85,
-      "SOURCE": "SOURCE-P2",
-      "TITLE": "TITLE-Y2",
-      "LINK": 895.37
-     },
-     {
-      "PUBLISHED": 256.85,
-      "SOURCE": "SOURCE-Q3",
-      "TITLE": "TITLE-Z3",
-      "LINK": 745.37
-     }
-    ],
-    "BY_SOURCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "COMPANY_ID": "COMPANY_ID-B1",
     "NAME": "NAME-X1",
     "TICKER": "TICKER-K1",
@@ -56,6 +14,7 @@
     "COUNTRY": "COUNTRY-I1",
     "ALIAS_TEXT": "ALIAS_TEXT-E1",
     "QUOTE_ID": "QUOTE_ID-D1",
+    "NEWS_ID": "NEWS_ID-F1",
     "PRICE": 757,
     "CURRENCY": "CURRENCY-Z1",
     "CHANGE": 436.25,
@@ -65,14 +24,102 @@
     "FIFTY_TWO_WEEK_RANGE": 345,
     "VOLUME": 746.81,
     "MARKET_CAP": 483.71,
-    "AS_OF": "2026-07-25",
-    "NEWS_ID": "NEWS_ID-F1"
+    "AS_OF": "2026-02-05",
+    "HISTORY": 111,
+    "ITEMS": 218,
+    "BY_SOURCE": "BY_SOURCE-T1"
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "news",
+    "NEWS_ID-F1"
+   ],
+   "answer": {
+    "data": {
+     "ITEMS": [
+      {
+       "PUBLISHED": -193.15,
+       "SOURCE": "SOURCE-O1",
+       "TITLE": "TITLE-X1",
+       "LINK": 795.37
+      },
+      {
+       "PUBLISHED": 156.85,
+       "SOURCE": "SOURCE-P2",
+       "TITLE": "TITLE-Y2",
+       "LINK": 895.37
+      },
+      {
+       "PUBLISHED": 256.85,
+       "SOURCE": "SOURCE-Q3",
+       "TITLE": "TITLE-Z3",
+       "LINK": 745.37
+      }
+     ],
+     "BY_SOURCE": [
+      {
+       "SOURCE": "SOURCE-O1",
+       "COUNT": 267
+      },
+      {
+       "SOURCE": "SOURCE-P2",
+       "COUNT": 117
+      },
+      {
+       "SOURCE": "SOURCE-Q3",
+       "COUNT": 467
+      }
+     ],
+     "NEWS_ID": "NEWS_ID-F1"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "quote",
+    "QUOTE_ID-D1"
+   ],
+   "answer": {
+    "data": {
+     "HISTORY": [
+      {
+       "DATE": "2026-04-27",
+       "CLOSE": 590
+      },
+      {
+       "DATE": "2026-01-04",
+       "CLOSE": 440
+      },
+      {
+       "DATE": "2026-02-10",
+       "CLOSE": 790
+      }
+     ],
+     "PRICE": 757,
+     "CURRENCY": "CURRENCY-Z1",
+     "CHANGE": 436.25,
+     "CHANGE_PCT": 702,
+     "MARKET_STATE": "MARKET_STATE-I1",
+     "DAY_RANGE": 732,
+     "FIFTY_TWO_WEEK_RANGE": 345,
+     "VOLUME": 746.81,
+     "MARKET_CAP": 483.71,
+     "AS_OF": "2026-02-05",
+     "QUOTE_ID": "QUOTE_ID-D1"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
   },
   {
    "hook": "panel",
@@ -104,7 +151,30 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Quote id",
+      "text": "QUOTE_ID-D1",
+      "link": {
+       "kind": "quote",
+       "id": "QUOTE_ID-D1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "News id",
+      "text": "NEWS_ID-F1",
+      "link": {
+       "kind": "news",
+       "id": "NEWS_ID-F1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

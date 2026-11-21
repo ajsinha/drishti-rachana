@@ -6,26 +6,30 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "SPEC": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "OHLC": [
      {
-      "VALUE": 855.53
+      "DATE": "2026-04-27",
+      "open": 624.41,
+      "high": 473.93,
+      "low": 660,
+      "close": 403,
+      "VOLUME": 746.81
      },
      {
-      "VALUE": 705.53
+      "DATE": "2026-01-04",
+      "open": 474.41,
+      "high": 823.93,
+      "low": 760,
+      "close": 753,
+      "VOLUME": 596.81
      },
      {
-      "VALUE": 1055.53
+      "DATE": "2026-02-10",
+      "open": 824.41,
+      "high": 923.93,
+      "low": 610,
+      "close": 853,
+      "VOLUME": 946.81
      }
     ],
     "COMMODITY_ID": "COMMODITY_ID-D1",
@@ -34,7 +38,12 @@
     "UNIT": 271,
     "EXCHANGE": 20.17,
     "SECTOR": "SECTOR-T1",
-    "COMMODITY_CURVE": 267.59
+    "COMMODITY_CURVE": 267.59,
+    "SPEC": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -72,7 +81,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Commodity curve",
+      "text": "267.59",
+      "link": {
+       "kind": "commodity-curve",
+       "id": "267.59",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

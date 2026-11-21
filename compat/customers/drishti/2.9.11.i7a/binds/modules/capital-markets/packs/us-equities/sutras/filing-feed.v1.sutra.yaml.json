@@ -8,34 +8,41 @@
    "answer": {
     "ROWS": [
      {
-      "VALUE": 855.53
+      "FILED": 177.17,
+      "FORM": 337.49,
+      "DESCRIPTION": "DESCRIPTION-K1",
+      "COMPANY_NAME": "COMPANY_NAME-L1",
+      "ACCESSION": 373,
+      "COMPANY": -37.51
      },
      {
-      "VALUE": 705.53
+      "FILED": 527.17,
+      "FORM": 687.49,
+      "DESCRIPTION": "DESCRIPTION-L2",
+      "COMPANY_NAME": "COMPANY_NAME-M2",
+      "ACCESSION": 223,
+      "COMPANY": 312.49
      },
      {
-      "VALUE": 1055.53
+      "FILED": 627.17,
+      "FORM": 787.49,
+      "DESCRIPTION": "DESCRIPTION-M3",
+      "COMPANY_NAME": "COMPANY_NAME-N3",
+      "ACCESSION": 573,
+      "COMPANY": 412.49
      }
     ],
     "BY": [
      {
+      "LABEL": "LABEL-I1",
       "VALUE": 855.53
      },
      {
+      "LABEL": "LABEL-J2",
       "VALUE": 705.53
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
+      "LABEL": "LABEL-K3",
       "VALUE": 1055.53
      }
     ],
@@ -44,7 +51,12 @@
     "FILINGS": 1.37,
     "COMPANIES": 829.79,
     "LATEST": 449.41,
-    "EARLIEST": -247
+    "EARLIEST": -247,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

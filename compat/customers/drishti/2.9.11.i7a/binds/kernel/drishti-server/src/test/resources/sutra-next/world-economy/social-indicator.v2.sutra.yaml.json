@@ -8,45 +8,29 @@
    "answer": {
     "SERIES": [
      {
+      "YEAR": 728,
       "VALUE": 855.53
      },
      {
+      "YEAR": 578,
       "VALUE": 705.53
      },
      {
+      "YEAR": 928,
       "VALUE": 1055.53
      }
     ],
     "BY_REGION": [
      {
+      "COUNTRY": "COUNTRY-I1",
       "VALUE": 855.53
      },
      {
+      "COUNTRY": "COUNTRY-J2",
       "VALUE": 705.53
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "MEANING": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
+      "COUNTRY": "COUNTRY-K3",
       "VALUE": 1055.53
      }
     ],
@@ -57,7 +41,17 @@
     "LATEST_YEAR": 542,
     "CHANGE_5Y": 375,
     "SOURCE_NAME": "SOURCE_NAME-E1",
-    "JURISDICTION": 584
+    "JURISDICTION": 584,
+    "MEANING": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    },
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -95,7 +89,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Jurisdiction",
+      "text": "584",
+      "link": {
+       "kind": "jurisdiction",
+       "id": "584",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

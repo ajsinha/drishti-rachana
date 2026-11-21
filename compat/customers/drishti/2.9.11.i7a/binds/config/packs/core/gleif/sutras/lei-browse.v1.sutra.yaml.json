@@ -31,35 +31,30 @@
     ],
     "BY_SEGMENT": [
      {
-      "VALUE": 855.53
+      "label": "LABEL-W1",
+      "value": 418
      },
      {
-      "VALUE": 705.53
+      "label": "LABEL-X2",
+      "value": 268
      },
      {
-      "VALUE": 1055.53
+      "label": "LABEL-Y3",
+      "value": 618
      }
     ],
     "BY_COUNTRY": [
      {
-      "VALUE": 855.53
+      "label": "LABEL-W1",
+      "value": 418
      },
      {
-      "VALUE": 705.53
+      "label": "LABEL-X2",
+      "value": 268
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "label": "LABEL-Y3",
+      "value": 618
      }
     ],
     "GROUP_ID": "GROUP_ID-D1",
@@ -68,13 +63,137 @@
     "GROUPS": "GROUPS-X1",
     "COUNTRIES": 429,
     "LAPSED": 139.13,
-    "LATE_RENEWALS": 592.93
+    "LATE_RENEWALS": 592.93,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "lei-entity",
+    "LEI-ENTITY-1"
+   ],
+   "answer": {
+    "data": {
+     "LEI": "LEI-Z1",
+     "NAME": "NAME-X1",
+     "LEI_COUNTRY": "LEI_COUNTRY-L1",
+     "LEGAL_CITY": 462.85,
+     "LEGAL_FORM": 601,
+     "REGISTRATION_STATUS": "REGISTRATION-J1",
+     "LEI_GROUP": "LEI_GROUP-Q1"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "lei-entity",
+    "LEI-ENTITY-2"
+   ],
+   "answer": {
+    "data": {
+     "LEI": "LEI-A2",
+     "NAME": "NAME-Y2",
+     "LEI_COUNTRY": "LEI_COUNTRY-M2",
+     "LEGAL_CITY": 562.85,
+     "LEGAL_FORM": 451,
+     "REGISTRATION_STATUS": "REGISTRATION-K2",
+     "LEI_GROUP": "LEI_GROUP-R2"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "lei-entity",
+    "LEI-ENTITY-3"
+   ],
+   "answer": {
+    "data": {
+     "LEI": "LEI-B3",
+     "NAME": "NAME-Z3",
+     "LEI_COUNTRY": "LEI_COUNTRY-N3",
+     "LEGAL_CITY": 412.85,
+     "LEGAL_FORM": 801,
+     "REGISTRATION_STATUS": "REGISTRATION-L3",
+     "LEI_GROUP": "LEI_GROUP-S3"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.search",
+   "args": [
+    "lei-entity",
+    "bank"
+   ],
+   "answer": [
+    {
+     "id": "LEI-ENTITY-1",
+     "title": "Lei Entity 1",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "LEI-ENTITY-2",
+     "title": "Lei Entity 2",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "LEI-ENTITY-3",
+     "title": "Lei Entity 3",
+     "subtitle": "recorded"
+    }
+   ]
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "lei-browse"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "source.freshness",
+   "args": [
+    "lei-entity"
+   ],
+   "answer": {
+    "source": "recorded",
+    "lastUpdate": null,
+    "staleAfter": null,
+    "stale": false
+   }
   }
  ]
 }

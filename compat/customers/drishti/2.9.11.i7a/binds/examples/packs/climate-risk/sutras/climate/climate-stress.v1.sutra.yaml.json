@@ -8,24 +8,30 @@
    "answer": {
     "bySector": [
      {
-      "VALUE": 855.53
+      "sector": 530.87,
+      "loss": 874
      },
      {
-      "VALUE": 705.53
+      "sector": 380.87,
+      "loss": 974
      },
      {
-      "VALUE": 1055.53
+      "sector": 730.87,
+      "loss": 824
      }
     ],
     "byHorizon": [
      {
-      "VALUE": 855.53
+      "year": 770,
+      "loss": 874
      },
      {
-      "VALUE": 705.53
+      "year": 870,
+      "loss": 974
      },
      {
-      "VALUE": 1055.53
+      "year": 720,
+      "loss": 824
      }
     ],
     "resultId": "RESULTID-N1",
@@ -72,7 +78,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Climate scenario",
+      "text": "230.41",
+      "link": {
+       "kind": "climate-scenario",
+       "id": "230.41",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

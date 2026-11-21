@@ -175,7 +175,7 @@ public final class SutraBlocks {
             ps.map().forEach((k, v) -> params.put(k, flow(v).replace("pXq{", "%{")));
         }
         if (fragment && TypedFragment.isTyped(root)) {                 // the typed form (C1, level 1.2): its declarations are its doc
-            List<SutraProblem> typed = new ArrayList<>(TypedFragment.read(name, file, root).problems());
+            List<SutraProblem> typed = new ArrayList<>(inFile(TypedFragment.read(name, file, root).problems(), text, file));
             if (!typed.isEmpty()) {
                 throw new SutraException(typed);
             }
@@ -187,6 +187,11 @@ public final class SutraBlocks {
             }
         }
         return new Block(name, version, text, Map.copyOf(params), file, path);
+    }
+
+    /** The problems placed in the fragment file they were found in (SPEC 6.1: {@code path} and {@code range} of that file's text). */
+    static List<SutraProblem> inFile(List<SutraProblem> problems, String text, String file) {
+        return problems.isEmpty() ? problems : ProblemPlaces.of(text, file).place(problems);
     }
 
     /**
@@ -333,7 +338,23 @@ public final class SutraBlocks {
 
         /** Adds to {@code out} what the fragments read of their nested uses that is not an output ({@code RCH-2117}); run once all are bound. */
         void checkNested(List<SutraProblem> out) {
+            int from = out.size();
             checks.forEach(c -> c.accept(out));
+            placeIn(out, from);
+        }
+
+        /** The texts of the fragment files read by the uses, by file name: where their problems are placed (SPEC 6.1). */
+        private final Map<String, String> texts = new LinkedHashMap<>();
+
+        /** The problems of {@code out} from {@code from} on that are located in a fragment file read, placed in that file's text. */
+        void placeIn(List<SutraProblem> out, int from) {
+            for (int i = from; i < out.size(); i++) {
+                SutraProblem p = out.get(i);
+                String text = p.path() == null && p.location() != null ? texts.get(p.location().file()) : null;
+                if (text != null) {
+                    out.set(i, ProblemPlaces.of(text, p.location().file()).place(p));
+                }
+            }
         }
 
         /** The uses that hold private state, by their {@code as}: what the screen may read of each (its outputs). */
@@ -348,7 +369,9 @@ public final class SutraBlocks {
      */
     public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments, String level, Calls calls) {
         calls.fragments = fragments;
+        int from = problems.size();
         List<PNode> out = expand(panels, file, problems, new ArrayList<>(), fragments, level, calls);
+        calls.placeIn(problems, from);
         return calls.events.isEmpty() ? out : out.stream().map(p -> events(p, calls.events)).toList();
     }
 
@@ -422,6 +445,7 @@ public final class SutraBlocks {
                         + String.join(", ", fragments.names()) + ")"), file, p.line(), p.column()));
                 continue;
             }
+            calls.texts.put(b.file(), b.text());
             PNode typedRoot = typedRoot(b);
             if (typedRoot != null) {                                   // the typed form: checked parameters, tokens, slots (C1)
                 if (!atLeast(level, TypedFragment.SINCE)) {
@@ -431,8 +455,8 @@ public final class SutraBlocks {
                 }
                 TypedFragment t = TypedFragment.read(b.name(), b.file(), typedRoot);
                 if (!t.problems().isEmpty() || !t.outsideScope().isEmpty()) {     // hermetic like a function (L-21): parameters only
-                    problems.addAll(t.problems());
-                    problems.addAll(t.outsideScope());
+                    problems.addAll(inFile(t.problems(), b.text(), b.file()));
+                    problems.addAll(inFile(t.outsideScope(), b.text(), b.file()));
                     continue;
                 }
                 TypedFragment.Bound bound = t.bind(b, p, file, problems, calls);

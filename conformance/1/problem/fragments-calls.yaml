@@ -34,6 +34,8 @@ cases:
       - code: RCH-2117
         severity: error
         message: "fragment peek reads the screen around it ('$.total'): a library fragment reads only its parameters (arg.), its tables and its slots"
+        file: peek.v1.fragment.yaml
+        path: "/panels/0/value"
         range: { start: { line: 9, column: 58 } }
 
   - id: mapping-names-an-unknown-local-column
@@ -393,6 +395,8 @@ cases:
       - code: RCH-2121
         severity: error
         message: "fragment desk-total names a column of table rows in sum(...) by a computed text ('arg.measure'): the caller's mapping cannot rename it; write the column parameter as text (one of desk, amount) or read the column as @.<name>"
+        file: desk-total.v1.fragment.yaml
+        path: "/panels/0/value"
         range: { start: { line: 16, column: 53 } }
 
   - id: filter-over-rows-the-mapping-cannot-follow
@@ -432,6 +436,8 @@ cases:
       - code: RCH-2121
         severity: error
         message: "fragment desk-mapped reads @.amount over 'map(arg.rows, @)', rows derived from table rows that the caller's mapping cannot follow: filter the table itself (arg.rows[?...]), or derive the rows with sort, take, drop, unique, difference or intersect over it"
+        file: desk-mapped.v1.fragment.yaml
+        path: "/panels/0/value"
         range: { start: { line: 15, column: 51 } }
 
   - id: bare-name-of-a-local-column
@@ -475,6 +481,8 @@ cases:
       - code: RCH-2121
         severity: error
         message: "fragment desk-list reads 'amount', a local column of table rows, as a bare name: the caller's mapping does not reach a bare name; write @.amount (or the column as text in a Core function's column parameter, sum(arg.rows, 'amount'))"
+        file: desk-list.v1.fragment.yaml
+        path: "/panels/0/where"
         range: { start: { line: 18, column: 12 } }
 
   - id: local-column-text-over-another-list
@@ -514,6 +522,8 @@ cases:
       - code: RCH-2121
         severity: error
         message: "fragment desk-total names 'amount', a local column of table rows, in sum(...) over a list that is not the table: the caller's mapping cannot rename it; call it over the table (sum(arg.rows, 'amount')) or read it as @.amount"
+        file: desk-total.v1.fragment.yaml
+        path: "/panels/0/value"
         range: { start: { line: 15, column: 53 } }
 
   - id: column-text-the-table-does-not-declare
@@ -553,6 +563,8 @@ cases:
       - code: RCH-2121
         severity: error
         message: "fragment desk-total names column 'qty' of table rows in sum(...), which it does not declare (it has desk, amount)"
+        file: desk-total.v1.fragment.yaml
+        path: "/panels/0/value"
         range: { start: { line: 15, column: 53 } }
 
   - id: function-parameter-needs-a-lambda
@@ -669,6 +681,8 @@ cases:
       - code: RCH-2048
         severity: error
         message: "parameter f of fragment bad has type 'fn() -> number': a value type ([boolean, date, datetime, decimal, duration, integer, money, number, text], list<T>, record{...}, T?, fn(T, ...) -> U with one name or more), a name type ([area, columns, enum, format, icon, id, key, palette, tone, variant]) or table"
+        file: bad.v1.fragment.yaml
+        path: "/params/f/type"
         range: { start: { line: 7, column: 14 } }
       - code: RCH-2048
         severity: error

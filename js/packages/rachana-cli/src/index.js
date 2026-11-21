@@ -53,7 +53,7 @@ export async function main(argv, io = { out: (s) => process.stdout.write(s + "\n
     if (cmd === "lib") return await lib(rest, io);
     const { pos, flags } = parseArgs(rest);
     switch (cmd) {
-      case "new": return scaffold(pos[0], flags.template, io);
+      case "new": return await scaffold(pos[0], flags.template, io);
       case "lint": return await lint(pos.length ? pos : ["."], flags, io);
       case "build": return await build(flags.src ?? pos[0] ?? ".", flags.out ?? "site", io, flags);
       case "studio": return await studio(pos[0] ?? ".", flags, io);

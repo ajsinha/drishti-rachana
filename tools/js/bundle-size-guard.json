@@ -1,0 +1,8 @@
+{
+  "about": "The size guard of the two JavaScript bundles (tools/js/build_js.py and tools/gate/verify_lanes.py read it). Brotli quality 11, bytes. 'max' is the measured size plus 5%. A bigger bundle is allowed when it is deliberate: change this file in the same commit and say why in 'reason'. It guards against growth nobody chose; it never asks for a smaller bundle.",
+  "bundles": {
+    "rachana.runtime.js": { "measured": 512202, "max": 537812 },
+    "rachana.tools.js": { "measured": 537046, "max": 563898 }
+  },
+  "reason": "2026-11-21, G2 golden: the sizes of the bundles at the G2 base (measured by tools/js/build_js.py), plus 5%."
+}

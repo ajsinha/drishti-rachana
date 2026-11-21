@@ -21,7 +21,7 @@ in the Maven build (`LibrariesCheckTest` in rachana-cli). `rachana studio` offer
 ## Adding your own
 
 The libraries here are one source among others, never the only one. Drop a library folder or an `.rlib` into a folder and name it:
-`rachana lint|build|studio --libs <path>[,<path>]` (Python `rachana lint --libs` too), or `RACHANA_LIBS=<path>[:<path>]`, or
+`rachana lint|build|studio --libs <path>[,<path>]` (`python -m drishti_rachana lint --libs` too), or `RACHANA_LIBS=<path>[:<path>]`, or
 `<project>/rachana_libs`. Nothing in Rachana is modified or rebuilt. A name found twice with different contents is refused with a
 problem, never silently shadowed (rename or remove one).
 

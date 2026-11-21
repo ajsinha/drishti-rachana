@@ -159,8 +159,12 @@ cases:
       problems:
       - code: RCH-2048
         messageStart: "fragment bad: output answer is not one of its state"
+        file: bad.v1.fragment.yaml
+        path: "/outputs/answer"
       - code: RCH-2048
         message: "fragment bad: output query is number, its state is text"
+        file: bad.v1.fragment.yaml
+        path: "/outputs/query"
       - code: RCH-2048
         messageStart: "no block bad@1"
 

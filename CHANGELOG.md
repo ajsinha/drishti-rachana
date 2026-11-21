@@ -5,6 +5,12 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **G2 golden fixes**: a problem inside a fragment file carries `file` and `path` (SPEC 6.1); one program is named `rachana` (the Node
+  CLI; Python runs as `python -m drishti_rachana`, no console script); a size guard on both bundles (`tools/js/bundle-size-guard.json`,
+  Brotli 11, measured + 5%, changed deliberately with a reason); the vendored Elements pack says the version of its folder; the
+  default-level rule stated (SPEC 7.2) and `rachana new` writes `level:` into `rachana.yaml` (read by lint, build, preview); level 1.0's
+  UTF-16 text order stated (SPEC 4.7, 4.13); `FROZEN.sha384` lists every case file.
+
 - **Live tables, the edit path (L7, L8 client, L10 writes; experimental)**: writes are Data Protocol v1 additions under `can: write`
   (`POST {base}/tables/{name}/write`, bridge `write`): a change `{id, op, key, basedOn, set, from?, reason?}` is answered `{change,
   state: applied | queued | held | refused, message, version?}`; refusals `405 rdp.write.unsupported`, `403 rdp.write.forbidden`

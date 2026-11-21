@@ -27,6 +27,23 @@ public interface Authoriser {
     }
 
     /**
+     * Whether the caller holds the approve right on a table (four eyes, LT-9): its tray ({@code <name>.changes}) then also lists the
+     * {@code held} changes of others whose rows are in the caller's scope of the table, and the caller may decide them there
+     * ({@link #mayDecide}). Never by default.
+     */
+    default boolean approves(Object caller, String table) {
+        return false;
+    }
+
+    /**
+     * Whether the caller may release or reject this held change (asked after {@link #approves}); the host's rules, such as "never your
+     * own", live here. Never allows by default. A {@link Decision.Refuse} is answered 403 and audited ({@code write-refused}).
+     */
+    default Decision mayDecide(Object caller, String table, Map<String, Object> change) {
+        return new Decision.Refuse("this host decides no held changes");
+    }
+
+    /**
      * The caller's name as changes and the tray record it ({@code by}), or null when the caller has none (then the caller may not write).
      * By default the caller's text.
      */

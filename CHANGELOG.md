@@ -5,6 +5,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Live tables, the screen and four eyes (L9, L10 file writers; experimental)**: the live panel takes `edit: none | cells | beside`
+  (language 1.2; contract 1.2 `LiveRef.edit`); core library fragments `core/live-table@1` and `core/held-changes@1`;
+  `LiveTables.screen(name)` gives the Sutra a declaration needs. The approvers' tray: `Authoriser.approves`/`mayDecide`,
+  `ChangeSink.holds`; an approver's `<name>.changes` lists others' held changes in scope and decides one by writing `state`
+  (`released`/`rejected`); suite `protocol/approve` (10, unverified). `rachana-server`: file-table writers (CSV, JSON, JSON lines:
+  atomic replace, visible journal, each change id applied once), `edits.hold` and `access.tables.<name>.approve`.
+
 - **G2 golden fixes**: a problem inside a fragment file carries `file` and `path` (SPEC 6.1); one program is named `rachana` (the Node
   CLI; Python runs as `python -m drishti_rachana`, no console script); a size guard on both bundles (`tools/js/bundle-size-guard.json`,
   Brotli 11, measured + 5%, changed deliberately with a reason); the vendored Elements pack says the version of its folder; the

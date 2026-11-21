@@ -1,0 +1,79 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/live-edit
+since: "1.2"
+profile: core
+verified: false
+description: >-
+  Language 1.2 and ViewModel contract 1.2 (SPEC 2.3, VIEWMODEL "Contract 1.2"): a live panel's edit (none, the default, cells or beside)
+  offers the host's guarded edit path (PROTOCOL 16 Writes). The view carries it as the live reference's edit; the columns offered are not in
+  the view: the painter reads them from the table's schema (write, for the reader) and sends each change as a protocol write. Synthetic data
+  only.
+given:
+  today: "2026-01-15"
+  tables:
+    orders:
+      schema:
+        name: orders
+        key: [id]
+        columns:
+          - { name: id, type: string }
+          - { name: v, type: integer }
+          - { name: qty, type: integer }
+          - { name: status, type: string }
+        can: [page, sort, filter, changes, changes.window, write]
+      rows:
+        - { id: O-1, v: 1, qty: 500, status: NEW }
+        - { id: O-2, v: 3, qty: 1200, status: FILLED }
+cases:
+  - id: a-live-panel-edits-in-its-cells
+    kind: sutra
+    source: SPEC 2.3; VIEWMODEL contract 1.2 (LiveRef.edit)
+    sutra: |
+      rachana: 1
+      sutra: blotter
+      version: 1
+      data:
+        orders: { table: orders, key: id, live: true }
+      panels:
+        - { kind: live, id: blotter, rows: $.orders, sort: v desc, edit: cells }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "blotter", "kind": "live", "area": "main", "inferred": false, "data": {"dataset": "blotter", "sort": [{"field": "v", "desc": true}], "search": true}, "empty": false}], "keys": [], "contract": "1.2", "datasets": {"blotter": {"key": ["id"], "fields": [{"name": "id", "type": "string"}, {"name": "v", "type": "number"}, {"name": "qty", "type": "number"}, {"name": "status", "type": "string"}], "live": {"table": "orders", "window": 200, "edit": "cells"}}}}}
+
+  - id: a-live-panel-edits-beside-its-grid
+    kind: sutra
+    source: SPEC 2.3; VIEWMODEL contract 1.2 (LiveRef.edit)
+    sutra: |
+      rachana: 1
+      sutra: blotter
+      version: 1
+      data:
+        orders: { table: orders, key: id }
+      panels:
+        - { kind: live, id: blotter, rows: $.orders, edit: beside, columns: [ { label: Order, bind: "@.id" }, { label: Qty, bind: "@.qty" } ] }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "blotter", "kind": "live", "area": "main", "inferred": false, "data": {"dataset": "blotter", "columns": [{"field": "id"}, {"field": "qty"}], "search": true}, "empty": false}], "keys": [], "contract": "1.2", "datasets": {"blotter": {"key": ["id"], "fields": [{"name": "id", "type": "string", "label": "Order"}, {"name": "qty", "type": "number", "label": "Qty"}], "live": {"table": "orders", "window": 200, "edit": "beside"}}}}}
+
+  - id: edit-none-is-read-only
+    kind: sutra
+    source: SPEC 2.3 (edit none, the default)
+    sutra: |
+      rachana: 1
+      sutra: blotter
+      version: 1
+      data:
+        orders: { table: orders, key: id }
+      panels:
+        - { kind: live, id: blotter, rows: $.orders, edit: none }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "blotter", "kind": "live", "area": "main", "inferred": false, "data": {"dataset": "blotter", "search": true}, "empty": false}], "keys": [], "contract": "1.2", "datasets": {"blotter": {"key": ["id"], "fields": [{"name": "id", "type": "string"}, {"name": "v", "type": "number"}, {"name": "qty", "type": "number"}, {"name": "status", "type": "string"}], "live": {"table": "orders", "window": 200}}}}}
+
+  - id: edit-is-one-of-three-words
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      data:
+        orders: { table: orders, key: id }
+      panels:
+        - { id: l, kind: live, rows: $.orders, edit: rows }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'edit' of 'live' panels must be one of none, cells, beside, not 'rows'", "range": {"start": {"line": 8, "column": 48}}}]}

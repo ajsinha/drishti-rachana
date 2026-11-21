@@ -6,7 +6,7 @@ Typed fragments, grouped by domain, built and released with Rachana. Each librar
 
 | Library | Status | What it holds |
 |---|---|---|
-| [core](core/README.md) | built, 1.0.0 (31 fragments) | generic screens for any domain: figures, records, tables, basic charts, forms, states, history |
+| [core](core/README.md) | built, 1.0.0 (33 fragments) | generic screens for any domain: figures, records, tables, basic charts, forms, states, history |
 | [finance](finance/README.md) | built, 1.0.0 (50 fragments, two examples each) | trading, P&L, market risk, limits, counterparty and collateral, market data, funds; generic terms, every figure arrives as data |
 | genomics | planned | |
 | economy | planned | |

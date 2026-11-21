@@ -1,0 +1,46 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: held-changes
+version: 1
+doc:
+  summary: The changes waiting on a live table - your own, and for an approver the others' held changes to decide.
+  description: >-
+    Give the pending changes of a live table (the host's table <name>.changes: one row per change, newest first). Each row says the
+    change, its state, what it sets and who made it, and follows the table as changes are sent, held or decided. A reader with the
+    approve right also sees the held changes of others and decides one by setting its state to released or rejected (a rejection
+    gives its reason); the host decides who may approve, never this screen.
+  category: tables
+  tags: [live, approval, four-eyes, pending, changes]
+params:
+  changes:
+    type: table
+    required: true
+    live: ok
+    key: required
+    doc: The pending changes of a live table (<name>.changes)
+    columns:
+      change:  { type: text, doc: The change's id }
+      state:   { type: text, doc: "queued, held or failed" }
+      summary: { type: text, doc: The row and what the change sets, in words }
+      by:      { type: text, doc: Who made the change }
+      at:      { type: datetime, doc: When it was made or last moved }
+      message: { type: text, doc: Why it waits, or what happened to it }
+  decide: { type: enum, options: [none, cells, beside], default: cells, doc: "How an approver decides a held change: in the state cell, in a record panel beside the list, or not here (none)" }
+  order:  { type: id, default: at, doc: "The field of when a change was made or last moved, newest first (at; name your own when you map the columns: a mapping does not rename an order)" }
+  title:  { type: text, default: Pending changes, doc: The panel's title }
+panels:
+  - id: changes
+    kind: live
+    title: arg.title
+    rows: arg.changes
+    columns:
+      - { label: Change, bind: "@.change" }
+      - { label: State, bind: "@.state", tone: status }
+      - { label: What, bind: "@.summary" }
+      - { label: By, bind: "@.by" }
+      - { label: At, bind: "@.at" }
+      - { label: Note, bind: "@.message" }
+    sort: "%{order} desc"
+    top: true
+    edit: "%{decide}"

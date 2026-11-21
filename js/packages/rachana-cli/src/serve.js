@@ -6,8 +6,8 @@ import { createServer } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, join, resolve, sep, dirname } from "node:path";
 import { UsageError } from "./errors.js";
-import { findSutras } from "./lint.js";
-import { esc, nameOf, siteAssets, elementsStubs, STUB_CSS, tableFiles, viewPage } from "./site.js";
+import { findSutras, libraryFiles } from "./lint.js";
+import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, tableFiles, viewPage } from "./site.js";
 
 const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".csv": "text/csv", ".yaml": "application/yaml", ".jsonl": "application/x-ndjson" };
 
@@ -17,14 +17,22 @@ function within(root, rel) {
 }
 
 /** The handler of the preview server: pure (path to [status, type, body]) so it is testable without a socket. */
-export function handler(sutras, dataDir, level = "1.1") {
+export function handler(sutras, dataDir, level = "1.1", libFiles = {}) {
   const assets = new Map(siteAssets().map(([p, f]) => ["/" + p, f]));
   const stubs = new Set(elementsStubs().map((p) => "/" + p));
   return (url) => {
     const path = decodeURIComponent(new URL(url, "http://x").pathname);
     if (path === "/") return [200, TYPES[".html"], `<!doctype html><meta charset=utf-8><title>Sutras</title><h1>Sutras</h1><ul>${[...sutras.keys()].map((n) => `<li><a href="/page/${esc(n)}">${esc(n)}</a></li>`).join("")}</ul>`];
     let m;
-    if ((m = path.match(/^\/page\/([^/]+)$/)) && sutras.has(m[1])) return [200, TYPES[".html"], viewPage(m[1], `/sutras/${m[1]}.sutra.yaml`, "/data", "/", level)];
+    if ((m = path.match(/^\/page\/([^/]+)$/)) && sutras.has(m[1])) {
+      const needed = neededLibraryPaths(readFileSync(sutras.get(m[1]), "utf8"), libFiles);   // the libraries the page uses, as `rachana build` lists them
+      return [200, TYPES[".html"], viewPage(m[1], `/sutras/${m[1]}.sutra.yaml`, "/data", "/", level, needed.length ? `/libraries/${m[1]}.libraries.json` : "")];
+    }
+    if ((m = path.match(/^\/libraries\/([^/]+)\.libraries\.json$/)) && sutras.has(m[1])) {
+      return [200, TYPES[".json"], JSON.stringify({ files: neededLibraryPaths(readFileSync(sutras.get(m[1]), "utf8"), libFiles) })];
+    }
+    const lp = path.replace(/^\/page\//, "/");      // the manifest names files relative to the page (/page/<name>), as a built site does
+    if (lp.startsWith("/rachana_libs/") && Object.hasOwn(libFiles, lp.slice(1))) return [200, TYPES[extname(lp)] ?? "application/octet-stream", Buffer.from(libFiles[lp.slice(1)])];
     if ((m = path.match(/^\/sutras\/([^/]+)\.sutra\.yaml$/)) && sutras.has(m[1])) return [200, TYPES[".yaml"], readFileSync(sutras.get(m[1]), "utf8")];
     if (path === "/data/index.json") return [200, TYPES[".json"], JSON.stringify({ protocol: "rdp", v: 1, mode: "static-files", tables: tableFiles(dataDir) })];
     if (path.startsWith("/data/") && dataDir) { const f = within(dataDir, path.slice(6)); if (f && existsSync(f) && statSync(f).isFile()) return [200, TYPES[extname(f)] ?? "application/octet-stream", readFileSync(f)]; }
@@ -41,7 +49,9 @@ export async function preview(target, flags, io) {
   if (!files.length) throw new UsageError(`no *.sutra.yaml in ${target}`);
   const root = statSync(target).isDirectory() ? target : dirname(target);
   const dataDir = flags.data ?? (existsSync(join(root, "data")) ? join(root, "data") : existsSync(join(root, "..", "data")) ? join(root, "..", "data") : null);
-  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, flags.level ?? "1.1");
+  const lib = libraryFiles(root, flags, (m) => io.err(`rachana: ${m}`));
+  if (lib.problems.length) return 1;
+  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, flags.level ?? "1.1", lib.files);
   const server = createServer((req, res) => {
     try { const [s, t, b] = handle(req.url); res.writeHead(s, { "content-type": t, "cache-control": "no-store" }); res.end(b); }
     catch (e) { res.writeHead(500); res.end(String(e.message)); }

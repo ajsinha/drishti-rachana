@@ -418,6 +418,11 @@
         "volumeText": {
           "type": "string",
           "description": "the volume as text; absent without a volume"
+        },
+        "ev": {
+          "type": "string",
+          "description": "on a candlestick that emits on point-click: the candle's row in the data, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -565,6 +570,14 @@
         "step": {
           "type": "boolean",
           "description": "drawn as steps (a value holds until the next point)"
+        },
+        "ev": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "on a line or area over rows that emits on point-click: beside x, each point's row in the data, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -705,6 +718,11 @@
             }
           ],
           "description": "the status tone (ok, warn, bad)"
+        },
+        "ev": {
+          "type": "string",
+          "description": "on a timeline that emits on point-click: the event's row in the data, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -728,6 +746,11 @@
             }
           ],
           "description": "label/value fields"
+        },
+        "ev": {
+          "type": "string",
+          "description": "a figure or record that emits on point-click: \"0\", the panel one mark, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -784,6 +807,11 @@
             }
           ],
           "description": "label"
+        },
+        "ev": {
+          "type": "string",
+          "description": "a figure or record that emits on point-click: \"0\", the panel one mark, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -1352,6 +1380,11 @@
             }
           ],
           "description": "small text under the figure, or null"
+        },
+        "ev": {
+          "type": "string",
+          "description": "a figure or record that emits on point-click: \"0\", the panel one mark, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -2668,6 +2701,11 @@
             }
           ],
           "description": "the entity the label names"
+        },
+        "ev": {
+          "type": "string",
+          "description": "on a scatter that emits on point-click: the point's row in the data, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -3272,6 +3310,11 @@
         "total": {
           "type": "boolean",
           "description": "drawn as a full bar from zero"
+        },
+        "ev": {
+          "type": "string",
+          "description": "on a waterfall that emits on point-click: the step's row in the data, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
         }
       },
       "required": [

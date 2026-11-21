@@ -200,7 +200,9 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   A control's value is read as `ctl.<id>`
   (text; a list of text for `multi-select`; a whole number for `top-n`; `from..to` text for a range). A control
   option form that names an entity kind (`options: { kind: … }`) is a profile form.
-- **Events** [today]: a panel `emits: [{name, on}]` (`row-click`, `bar-click`, …); another reads them as
+- **Events** [today]: a panel `emits: [{name, on}]` (`row-click`, `bar-click`, …; from level 1.2 `point-click` on a `line`, `area`,
+  `scatter`, `waterfall`, `timeline` or `candlestick` mark, each a row of its `rows`, and on a `metric`, `gauge`, `kv` or `status`
+  as one mark whose payload reads the panel's context; another kind is `RCH-2057`); another reads them as
   `@<panel>.<event>.<field>`; `waits` says what a panel shows until an event fires; `children` nests panels shown
   `always` or on selection (depth limit `RCH-2056`). `on-select: {by, field?, filter?}` sets a control from a click.
 - **Forms** [today, D2]: `form:` with fields, rules, hints, steps and drafts is Core; it raises a `submit` action.
@@ -214,7 +216,14 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   `record{…}`, `T?`): written at the use as an expression in the user's context, read inside as `arg.<name>`; a YAML
   number or `true`/`false` at the use is a literal checked against the type, `min` and `max`; a `text` parameter takes its
   text as written; `arg.x` as a whole value becomes the expression or literal itself, inside a longer expression or
-  template the expression in parentheses or the literal as EL text. A **function** value `fn(T, …) -> U` (one name or
+  template the expression in parentheses or the literal as EL text. A `list<T>` or `record{f: T, …}` (fields `name: type`,
+  `?` optional; `list<record{…}>` a list of them; no record inside a record) may also be written out at the use as YAML, a
+  list of items or a mapping: checked item by item and field by field (a field the type does not declare, a required field
+  missing, a field of the wrong type, more items than `max` or fewer than `min`: `RCH-2116`); as a whole value it is placed
+  as written (`fields: arg.fields`), inside an expression it is the EL list or record literal. A `text` parameter declared
+  `dynamic: true` (only a `text`; else `RCH-2048`) takes a template at the use, read in the caller's context: as a whole
+  value it is the template, inside an expression `concat` of its texts and parts; its parts may not read `@`, `^` or
+  `#index` (`RCH-2116`); text without `${` and a default stay text as written. A **function** value `fn(T, …) -> U` (one name or
   more; X13) is written at the use as a lambda in the user's context, `lambda x: x / 1000`, with the type's count of names
   and a body that reads its names and the user's screen but not `@`, `^` or `#index` (`RCH-2116`); inside, `arg.f(x)`
   calls it (the expression is wrapped in `let(fn_f = <lambda>, …)`) and `arg.f` as a whole argument of `map`, `sort`,
@@ -230,7 +239,11 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   table parameter names its local columns (`columns:`) or a published contract (`contract: <name>`, the file
   `contracts/<name>.json` of its library or host, Data Protocol schema form); the use binds it to the caller's table,
   `rows: $.t` (identity) or `rows: { from: $.t, columns: { <local>: <caller column> } }`, and the compiler renames the
-  local columns to the caller's at compile time: in the panels that read the table its field-name options and `bind`s; in every
+  local columns to the caller's at compile time: in the panels that read the table its field-name options and `bind`s (a panel
+  reads the table when its `rows` gives the table's own rows: `arg.<t>`, filtered, through `sort`, `take`, `drop`, `unique`,
+  `difference`, `intersect` or a pipe of them; over `map(arg.<t>, {k: …})`, a record literal, the panel reads the fixed names `k`
+  and nothing is renamed; a field-name option or `@.<column>` naming a local column over rows derived any other way is
+  `RCH-2121`, never a silent read); in every
   expression `@.<column>` where `@` is a row of the table (such a panel, a filter of the table, the per-element argument of `map`,
   `sort`, `reduce`, `group` over it), a lambda element's field, the field of `first`/`last`/an index of its rows, and the text of a
   Core **column parameter** over it (`sum(arg.rows, 'amount')`; the parameters marked `role: column` in `functions.yaml`). A column

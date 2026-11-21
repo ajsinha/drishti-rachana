@@ -9,6 +9,7 @@ import com.ash.rachana.SutraProblem;
 import com.ash.rachana.lib.Library;
 import com.ash.rachana.lib.LibraryLock;
 import com.ash.rachana.tools.Ed25519;
+import com.ash.rachana.tools.LibraryGates;
 import com.ash.rachana.tools.LibraryTool;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,8 @@ import java.util.Set;
  * rachana lib pack   DIR [--out FOLDER] [--require-signed] [--publisher KEY]...
  * rachana lib verify DIR-OR-RLIB [--require-signed] [--publisher KEY]...
  * rachana lib lock   DIR-OR-RLIB... [--lock rachana.lock] [--require-signed] [--publisher KEY]...
+ * rachana lib gate  DIR [--strict]        the quality gates LG1-LG5, LG8; exit 1 when one fails
+ * rachana lib freeze DIR                  records the released baseline (FROZEN.sha384, released/); run build after
  * rachana lib contracts  DIR-OR-RLIB [--json]
  * rachana lib check-host DIR-OR-RLIB --base URL [--table CONTRACT=TABLE]... [--json]
  * </pre>
@@ -44,7 +47,7 @@ public final class Main {
     /** Runs a command line and returns the exit status. */
     public static int run(String[] args) {
         if (args.length < 2 || !args[0].equals("lib")) {
-            System.err.println("usage: rachana lib build|sign|keygen|pack|verify|lock|contracts|check-host ...  (the other commands: npx drishti-rachana-cli, or pip install drishti-rachana)");
+            System.err.println("usage: rachana lib build|sign|keygen|pack|verify|lock|gate|freeze|contracts|check-host ...  (the other commands: npx drishti-rachana-cli, or pip install drishti-rachana)");
             return 2;
         }
         List<String> pos = new ArrayList<>();
@@ -54,6 +57,7 @@ public final class Main {
         String lock = LibraryLock.FILE;
         String base = null;
         boolean json = false;
+        boolean strict = false;
         java.util.Map<String, String> tables = new java.util.LinkedHashMap<>();
         try {
             for (int i = 2; i < args.length; i++) {
@@ -64,6 +68,7 @@ public final class Main {
                     case "--lock" -> lock = arg(args, ++i);
                     case "--base" -> base = arg(args, ++i);
                     case "--json" -> json = true;
+                    case "--strict" -> strict = true;
                     case "--table" -> {
                         String t = arg(args, ++i);
                         int eq = t.indexOf('=');
@@ -118,6 +123,24 @@ public final class Main {
                     }
                     Files.writeString(f, LibraryLock.of(es).write());
                     System.out.println("wrote " + f + " (" + pos.size() + " added)");
+                }
+                case "gate" -> {
+                    need(pos, 1);
+                    Path dir = Path.of(pos.get(0)).toAbsolutePath().normalize();
+                    boolean ok = true;
+                    for (LibraryGates.Result r : LibraryGates.run(dir.getParent(), dir.getFileName().toString(), strict)) {
+                        System.out.println((r.pass() ? "pass " : "FAIL ") + r.gate() + " " + r.title());
+                        r.failures().forEach(f -> System.out.println("       " + f));
+                        r.notes().forEach(f -> System.out.println("     . " + f));
+                        ok &= r.pass();
+                    }
+                    return ok ? 0 : 1;
+                }
+                case "freeze" -> {
+                    need(pos, 1);
+                    Path dir = Path.of(pos.get(0)).toAbsolutePath().normalize();
+                    LibraryGates.freeze(dir.getParent(), dir.getFileName().toString());
+                    System.out.println("froze " + dir.getFileName() + " (run: rachana lib build " + pos.get(0) + ")");
                 }
                 case "contracts" -> {
                     need(pos, 1);

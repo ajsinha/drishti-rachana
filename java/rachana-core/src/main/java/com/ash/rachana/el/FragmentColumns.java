@@ -105,6 +105,62 @@ public final class FragmentColumns {
         return r.result();
     }
 
+    /**
+     * What a panel's {@code rows} expression gives, as the column pass sees it (decision L-21, never silent): the table parameter whose
+     * rows it is ({@code arg.t}, with filters, through {@code sort}, {@code take}, {@code drop}, {@code unique}, {@code difference},
+     * {@code intersect}, a pipe of them), or a {@link Rows} of fixed field names ({@code map(arg.t, {label: @.desk, ...})}, a record
+     * literal: the panel reads the fragment's own names), or the tables it is derived from in a way the mapping cannot follow; null when it
+     * reads no table parameter or is not an expression.
+     */
+    public static Rows rowsOf(String text, Tables tables) {
+        List<Token> toks;
+        try {
+            toks = Lexer.tokens(text, true);
+        } catch (ElException e) {
+            return null;
+        }
+        Run r = new Run(text, toks, tables, false, new ArrayList<>());
+        int e = toks.size() - 1;
+        String t = r.rows(0, e, null);
+        if (t != null) {
+            return new Rows(t, null, List.of());
+        }
+        List<String> fixed = r.mapFields(0, e);
+        if (fixed != null) {
+            return new Rows(null, fixed, List.of());
+        }
+        List<String> reach = r.mentioned(0, e);
+        return reach.isEmpty() ? null : new Rows(null, null, reach);
+    }
+
+    /**
+     * The rows a panel reads (see {@link #rowsOf}).
+     *
+     * @param table the table parameter whose rows they are (renamed through its mapping), or null
+     * @param fields the fixed field names a {@code map} gives them, or null
+     * @param derived the tables they are derived from in a way the mapping cannot follow (empty unless both others are null)
+     */
+    public record Rows(String table, List<String> fields, List<String> derived) {
+
+        /**
+         * The row {@link #rename} reads {@code @} as for a panel over these rows: the table, or (derived rows) a mark that refuses a local
+         * column of the tables they come from ({@code text} is the panel's rows, for the message); null over fixed fields.
+         */
+        public String row(String text) {
+            return table != null ? table : derived.isEmpty() ? null : UNKNOWN_ROWS + String.join(",", derived) + UNKNOWN_ROWS + text;
+        }
+    }
+
+    /** Whether a row given to {@link #rename} is the mark of rows the mapping cannot follow ({@link Rows#row}). */
+    public static boolean unfollowed(String row) {
+        return row != null && row.startsWith(UNKNOWN_ROWS);
+    }
+
+    /** The tables a mark of {@link Rows#row} names. */
+    public static List<String> unfollowedTables(String row) {
+        return List.of(row.substring(1, row.indexOf(UNKNOWN_ROWS, 1)).split(","));
+    }
+
     /** The parts {@code ${...}} of a template rendered through {@link #rename}; the text between them kept. */
     public static String template(String text, String row, Tables tables, List<String> problems) {
         return parts(text, part -> {
@@ -128,6 +184,28 @@ public final class FragmentColumns {
             i = text.indexOf("${", end);
         }
         return out.append(text, copied, text.length()).toString();
+    }
+
+    /**
+     * A template split at its parts: the texts at even places (each possibly empty), the expressions of its parts {@code ${...}} at odd
+     * places; an unclosed part stays text.
+     */
+    public static List<String> templateParts(String text) {
+        List<String> out = new ArrayList<>();
+        int copied = 0;
+        int i = text.indexOf("${");
+        while (i >= 0) {
+            int end = close(text, i + 2);
+            if (end < 0) {
+                break;
+            }
+            out.add(text.substring(copied, i));
+            out.add(text.substring(i + 2, end));
+            copied = end + 1;
+            i = text.indexOf("${", copied);
+        }
+        out.add(text.substring(copied));
+        return out;
     }
 
     /** The index of the brace closing a template part opened before {@code from}, or -1. */
@@ -278,6 +356,49 @@ public final class FragmentColumns {
                 return first != null && first.equals(rows(args.get(1)[0], args.get(1)[1], row)) ? first : null;
             }
             return null;
+        }
+
+        /**
+         * The field names of the records {@code [s, e)} gives when it is {@code map(<list>, {k: ..., ...})} or {@code map(<list>, lambda x:
+         * {k: ...})}, a record literal without spreads; null otherwise.
+         */
+        List<String> mapFields(int s, int e) {
+            if (e - s < 4 || !tok(s).is(Type.IDENT, "map") || tok(s + 1).type() != Type.LPAREN || match[s + 1] != e - 1) {
+                return null;
+            }
+            List<int[]> args = args(s + 1);
+            if (args.size() != 2) {
+                return null;
+            }
+            int a = args.get(1)[0];
+            int b = args.get(1)[1];
+            if (tok(a).is(Type.IDENT, "lambda")) {
+                while (a < b && tok(a).type() != Type.COLON) {
+                    a++;
+                }
+                a++;
+            }
+            if (a >= b || tok(a).type() != Type.LBRACE || match[a] != b - 1) {
+                return null;
+            }
+            List<String> keys = new ArrayList<>();
+            boolean head = true;
+            for (int i = a + 1; i < b - 1; i++) {
+                Token t = tok(i);
+                if (head) {
+                    if (t.type() == Type.SPREAD || i + 1 >= b - 1 || tok(i + 1).type() != Type.COLON) {
+                        return null;
+                    }
+                    keys.add(t.text());
+                    head = false;
+                    i++;
+                } else if (t.type() == Type.COMMA) {
+                    head = true;
+                } else if (match[i] > i) {
+                    i = match[i];
+                }
+            }
+            return keys;
         }
 
         /** The table parameters {@code [s, e)} reads ({@code arg.<table>} anywhere in it), in order. */

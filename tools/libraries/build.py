@@ -3,7 +3,7 @@
 # Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
 """Builds, tests, signs, packs and verifies the libraries of this repository with the Rachana command line.
 
-    python3 tools/libraries/build.py [--update-goldens] [--release] [--rachana-java DIR] [LIBRARY ...]
+    python3 tools/libraries/build.py [--update-goldens] [--release] [--gallery] [--rachana-java DIR] [LIBRARY ...]
 
 Steps, for each library under libraries/ (all of them when none is named):
 
@@ -11,10 +11,14 @@ Steps, for each library under libraries/ (all of them when none is named):
   2. build    rachana lib build: regenerates `exports` in the manifest and MANIFEST.sha384
   3. test     tools/libraries/LibCheck.java: every example compiles at language level 1.2 with no problem and no advisory, and its
               ViewModel equals the golden snapshot (--update-goldens rewrites the goldens, then builds again)
+  3b gate     rachana lib gate: the quality gates LG1-LG5 and LG8 (LIBRARIES.md 15.2); a failing gate stops the build
   4. sign     rachana lib sign, with the development key (results/libraries/keys/dev.key, created on first use, never committed);
               --release signs with the owner's release key instead: RACHANA_RELEASE_PUBLIC and RACHANA_RELEASE_SEED
   5. pack     rachana lib pack: dist/<name>-<version>.rlib, deterministic, signature required
   6. verify   rachana lib verify of the archive, signed by the key above
+
+With --gallery, the gallery of each library is built with Rachana itself (tools/libraries/gallery.py) into results/libraries/gallery/site/<name>/
+(needs node and the JavaScript bundles: python3 tools/js/build_js.py). Its Chromium paint test: tools/libraries/gallery_check.py.
 
 The Rachana jars are read from results/libraries/rachana-jars/ (RACHANA_JARS overrides). By default they are copied there from this repository's own build (java/, after `./mvnw clean package -DskipTests`; nothing is installed);
 --rachana-java DIR names another `java` folder.
@@ -131,6 +135,7 @@ def main():
     ap.add_argument("libraries", nargs="*")
     ap.add_argument("--update-goldens", action="store_true")
     ap.add_argument("--release", action="store_true", help="sign with the owner's release key (RACHANA_RELEASE_PUBLIC, RACHANA_RELEASE_SEED)")
+    ap.add_argument("--gallery", action="store_true", help="also build the library gallery (tools/libraries/gallery.py)")
     ap.add_argument("--rachana-java", metavar="DIR")
     a = ap.parse_args()
     # this repository's own build (java/*/target) is the default; nothing is installed
@@ -164,6 +169,10 @@ def main():
             return 1
         if a.update_goldens and cli("build", str(lib)) is None:
             return 1
+        gate = cli("gate", str(lib))
+        if gate is None:
+            return 1
+        print("\n".join("  " + l for l in gate.splitlines() if l.startswith(("pass", "FAIL"))))
         if cli("sign", str(lib), pub, seed) is None:
             return 1
         archive = cli("pack", str(lib), "--out", str(dist), "--require-signed", "--publisher", pub)
@@ -173,6 +182,11 @@ def main():
         if cli("verify", archive.splitlines()[-1], "--require-signed", "--publisher", pub) is None:
             return 1
         print("  verified (signed)")
+    if a.gallery:
+        sys.path.insert(0, str(ROOT / "tools" / "libraries"))
+        import gallery
+        for lib in libs:
+            gallery.build(lib, ROOT / "results" / "libraries" / "gallery")
     print("all passed")
     return 0
 

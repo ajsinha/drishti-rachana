@@ -115,7 +115,7 @@ public record ViewModel(
      * when it uses what contract 1.1 adds.
      */
     static String stamp(String given, List<PanelView> panels, Map<String, Dataset> datasets, List<StateView> state) {
-        int needed = state != null && !state.isEmpty() ? 2 : datasets != null && !datasets.isEmpty() || uses11(panels) ? 1 : 0;
+        int needed = state != null && !state.isEmpty() || uses12(panels) ? 2 : datasets != null && !datasets.isEmpty() || uses11(panels) ? 1 : 0;
         if (needed == 0 || !given.startsWith("1.")) {
             return given;
         }
@@ -126,6 +126,31 @@ public record ViewModel(
             return given;
         }
         return minor >= needed ? given : "1." + needed;
+    }
+
+    /** Whether a panel's marks carry what contract 1.2 adds: an {@code ev} beyond rows and bars (I1 point-click). */
+    private static boolean uses12(List<PanelView> panels) {
+        for (PanelView p : panels == null ? List.<PanelView>of() : panels) {
+            Object d = p == null ? null : p.data();
+            if (d == null) {
+                continue;
+            }
+            boolean ev = switch (d) {
+                case PanelData.Metric m -> m.ev() != null;
+                case PanelData.Gauge g -> g.ev() != null;
+                case PanelData.Fields f -> f.ev() != null;
+                case PanelData.Chart c -> c.ev() != null && !c.ev().isEmpty();
+                case PanelData.Waterfall w -> w.steps().stream().anyMatch(s -> s.ev() != null);
+                case PanelData.Scatter s -> s.points().stream().anyMatch(x -> x.ev() != null);
+                case PanelData.Candles c -> c.candles().stream().anyMatch(x -> x.ev() != null);
+                case PanelData.Timeline t -> t.events().stream().anyMatch(x -> x.ev() != null);
+                default -> false;
+            };
+            if (ev) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean uses11(List<PanelView> panels) {

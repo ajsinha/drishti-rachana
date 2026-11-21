@@ -77,6 +77,11 @@ public final class TypedFragment {
     private static final Pattern MASKED = Pattern.compile("pXq\\{([a-z][a-z0-9-]*)}");
     private static final Pattern ARG = Pattern.compile("(?<![A-Za-z0-9_.$@])arg\\.([a-z][a-z0-9-]*)");
     private static final Pattern VALUE_TYPE = Pattern.compile("(list<)?([a-z]+)(>)?\\??|record\\{[^}]*}\\??");
+    /** A list of records ({@code list<record{id: text, label: text}>}), written at the use as a YAML list of mappings or an expression. */
+    private static final Pattern LIST_RECORD = Pattern.compile("list<(record\\{[^}]*})>\\??");
+    /** A record type and its fields. */
+    private static final Pattern RECORD = Pattern.compile("record\\{([^}]*)}\\??");
+    private static final Pattern FIELD_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,63}");
     /** A function type (EL_EXPANSION X8, X13): {@code fn(T, ...) -> U}. */
     private static final Pattern FN_TYPE = Pattern.compile("fn\\(([^()]*)\\)\\s*->\\s*(.+)");
     /** A lambda as a use writes it: its names, then its body. */
@@ -230,6 +235,10 @@ public final class TypedFragment {
         if (blank(text(m.get("doc")))) {
             out.add(problem("RCH-2055", "fragment " + fragment + ": parameter " + name + " has a doc of one line", file, d));
         }
+        if (m.containsKey("dynamic") && (!"text".equals(type) && !"text?".equals(type) || !(m.get("dynamic").value() instanceof Boolean))) {
+            out.add(problem(SutraBlocks.BLOCK, "parameter " + name + " of fragment " + fragment + ": dynamic: true is for a text parameter (the use"
+                    + " may write a template)", file, m.get("dynamic")));
+        }
         List<String> options = new ArrayList<>();
         if (m.get("options") != null) {
             m.get("options").list().forEach(o -> options.add(o.text()));
@@ -258,6 +267,15 @@ public final class TypedFragment {
     }
 
     private static boolean valueType(String type) {
+        Matcher lr = type == null ? null : LIST_RECORD.matcher(type);
+        if (lr != null && lr.matches()) {
+            return valueType(lr.group(1));
+        }
+        Matcher rec = type == null ? null : RECORD.matcher(type);
+        if (rec != null && rec.matches()) {
+            Map<String, String> fields = recordFields(type);
+            return fields != null && fields.values().stream().allMatch(t -> !t.startsWith("record") && !t.startsWith("list<record") && valueType(t));
+        }
         Matcher fn = type == null ? null : FN_TYPE.matcher(type);
         if (fn != null && fn.matches()) {
             if (fn.group(1).isBlank()) {
@@ -275,6 +293,82 @@ public final class TypedFragment {
             return false;
         }
         return type.startsWith("record{") || VALUE_TYPES.contains(vm.group(2)) && (vm.group(1) == null) == (vm.group(3) == null);
+    }
+
+    /**
+     * The fields of a record type ({@code record{id: text, required: boolean?}}: name to type, in written order; {@code record{}} has
+     * none, any field is taken), or null when a field is not written {@code name: type}.
+     */
+    static Map<String, String> recordFields(String type) {
+        Matcher rec = RECORD.matcher(type);
+        if (!rec.matches()) {
+            return null;
+        }
+        Map<String, String> out = new LinkedHashMap<>();
+        if (rec.group(1).isBlank()) {
+            return out;
+        }
+        for (String f : rec.group(1).split(",")) {
+            int colon = f.indexOf(':');
+            String n = colon < 0 ? "" : f.substring(0, colon).strip();
+            if (!FIELD_NAME.matcher(n).matches() || out.containsKey(n)) {
+                return null;
+            }
+            out.put(n, f.substring(colon + 1).strip());
+        }
+        return out;
+    }
+
+    /**
+     * What is wrong with a written list or record (YAML at the use, or a default) for a {@code list<T>} or {@code record{...}} type, or
+     * null: a list's items each of {@code T}; a record's fields among the declared ones, each required one present and of its type; a
+     * scalar of its type (a {@code text} takes a word or a number as written, a date or a duration its text).
+     */
+    static String structure(String type, PNode v) {
+        String t = type.endsWith("?") ? type.substring(0, type.length() - 1) : type;
+        if (t.startsWith("list<") && t.endsWith(">")) {
+            if (!v.isList()) {
+                return "is a list (" + type + "), not " + shown(v);
+            }
+            for (int i = 0; i < v.list().size(); i++) {
+                String w = structure(t.substring(5, t.length() - 1), v.list().get(i));
+                if (w != null) {
+                    return "item " + (i + 1) + " " + w;
+                }
+            }
+            return null;
+        }
+        if (t.startsWith("record{")) {
+            if (!v.isMap()) {
+                return "is a record (" + type + "), not " + shown(v);
+            }
+            Map<String, String> fields = recordFields(t);
+            for (Map.Entry<String, PNode> e : v.map().entrySet()) {
+                if (!fields.isEmpty() && !fields.containsKey(e.getKey())) {
+                    return "has no field '" + e.getKey() + "' (it has " + String.join(", ", fields.keySet()) + ")";
+                }
+                String w = fields.isEmpty() || e.getValue().value() == null && fields.get(e.getKey()).endsWith("?") ? null
+                        : structure(fields.get(e.getKey()), e.getValue());
+                if (w != null) {
+                    return "field " + e.getKey() + " " + w;
+                }
+            }
+            for (Map.Entry<String, String> f : fields.entrySet()) {
+                if (!f.getValue().endsWith("?") && !v.map().containsKey(f.getKey())) {
+                    return "needs field " + f.getKey() + " (" + f.getValue() + ")";
+                }
+            }
+            return null;
+        }
+        Object x = v.value();
+        boolean ok = switch (t) {
+            case "text" -> x instanceof String || x instanceof Number;
+            case "number", "decimal", "money" -> x instanceof Number;
+            case "integer" -> x instanceof Long;
+            case "boolean" -> x instanceof Boolean;
+            default -> x instanceof String;                       // date, datetime, duration: their text
+        };
+        return ok ? null : "is " + ("integer".equals(t) ? "a whole number" : "a " + t) + ", not " + shown(v);
     }
 
     /**
@@ -590,6 +684,7 @@ public final class TypedFragment {
         Map<String, Map<String, String>> renames = new LinkedHashMap<>();
         Map<String, PNode> mappedAt = new LinkedHashMap<>();
         Set<String> unbound = new LinkedHashSet<>();
+        Map<String, String> templates = new LinkedHashMap<>();
         for (Param p : params.values()) {
             PNode v = with.get(p.name());
             boolean fromDefault = v == null;
@@ -619,6 +714,16 @@ public final class TypedFragment {
             switch (p.kind()) {
                 case "name" -> tokens.put(p.name(), v);
                 default -> {
+                    if (isText(p) && dynamic(p) && !fromDefault && v.value() instanceof String s && s.contains("${")) {
+                        List<String> parts = com.ash.rachana.el.FragmentColumns.templateParts(s);
+                        if (java.util.stream.IntStream.range(0, parts.size()).anyMatch(i -> i % 2 == 1 && rowReads(parts.get(i)))) {
+                            out.add(problem(WRONG_TYPE, "parameter " + p.name() + " of fragment " + name + " is a template read in your screen's"
+                                    + " context: its parts read the screen, not @, ^ or #index (inside the fragment they are the fragment's rows,"
+                                    + " not yours): '" + s + "'", sutraFile, v));
+                            continue;
+                        }
+                        templates.put(p.name(), s);           // a dynamic text: the caller's template
+                    }
                     if (v.value() instanceof String s && (!fromDefault || isFn(p)) && !isText(p)) {
                         exprs.put(p.name(), s);
                         if ("table".equals(p.kind())) {
@@ -670,19 +775,18 @@ public final class TypedFragment {
                 m.remove("when-bound");
                 p = new PNode(m, p.line(), p.column());
             }
-            PNode rowsOf = p.map().get("rows");
-            String table = rowsOf != null && rowsOf.text() != null && rowsOf.text().startsWith("arg.") ? longest(rowsOf.text().substring(4)) : null;
-            if (table != null && (rowsOf.text().length() != 4 + table.length() || !locals.containsKey(table))) {
-                table = null;
-            }
             if (!privateState.isEmpty() && as != null) {
                 p = ownState(p, as, sutraFile, out);                    // S1: state.<name> and set: { state: <name> } become <as>.<name>
             } else {
                 foreignWrites(p, sutraFile, out);
             }
             Columns cols = new Columns(locals, renames, read);
+            PNode rowsOf = p.map().get("rows");             // the rows the panel reads: a table's own (renamed), fixed fields, or refused
+            com.ash.rachana.el.FragmentColumns.Rows over = rowsOf == null || rowsOf.text() == null ? null
+                    : com.ash.rachana.el.FragmentColumns.rowsOf(rowsOf.text(), cols);
+            String table = over == null ? null : over.row(rowsOf.text().trim());
             p = columns(p, table, SutraExpressions.expressionOptions(text(p.map().get("kind"))), true, false, cols, out);
-            PNode filled = fill(p, exprs, literals, tokens, sutraFile, out);
+            PNode filled = fill(p, exprs, literals, tokens, templates, sutraFile, out);
             panels.add(filled);
             own.add(true);
         }
@@ -960,7 +1064,7 @@ public final class TypedFragment {
 
     /** {@code @.<column>} renamed in a text that is no expression (read as text, the rule as written before the pass). */
     private static String atColumns(String s, String table, Columns cols) {
-        if (!s.contains("@.")) {
+        if (!s.contains("@.") || cols.columns(table) == null) {
             return s;
         }
         Matcher m = Pattern.compile("(?<![A-Za-z0-9_$@])@\\.([A-Za-z_][A-Za-z0-9_]*)").matcher(s);
@@ -985,7 +1089,17 @@ public final class TypedFragment {
             v.list().forEach(x -> l.add(field(x, table, expr, cols, out)));
             return new PNode(l, v.line(), v.column());
         }
-        if (v.value() instanceof String s && cols.columns(table).contains(s)) {
+        if (com.ash.rachana.el.FragmentColumns.unfollowed(table)) {       // rows derived where the mapping cannot follow: never silent
+            for (String t : com.ash.rachana.el.FragmentColumns.unfollowedTables(table)) {
+                if (v.value() instanceof String s && cols.columns(t) != null && cols.columns(t).contains(s)) {
+                    out.add(problem(COLUMN_TEXT, "fragment " + name + " names column " + s + " of table " + t + " over rows derived from it that the "
+                            + "caller's mapping cannot follow ('" + table.substring(table.indexOf('?', 1) + 1) + "'): read the table's own rows"
+                            + " (arg." + t + ", filtered or through sort, take, drop, unique), or reshape them to fixed names (map(arg." + t
+                            + ", {label: @." + s + "}))", file, v));
+                    return v;
+                }
+            }
+        } else if (v.value() instanceof String s && cols.columns(table).contains(s)) {
             cols.read(table, s);
             return new PNode(cols.rename(table, s), v.line(), v.column());
         }
@@ -1179,15 +1293,16 @@ public final class TypedFragment {
         return List.of();
     }
 
-    private PNode fill(PNode n, Map<String, String> exprs, Map<String, PNode> literals, Map<String, PNode> tokens, String sutraFile, List<SutraProblem> out) {
+    private PNode fill(PNode n, Map<String, String> exprs, Map<String, PNode> literals, Map<String, PNode> tokens, Map<String, String> templates,
+            String sutraFile, List<SutraProblem> out) {
         if (n.isMap()) {
             Map<String, PNode> m = new LinkedHashMap<>();
-            n.map().forEach((k, v) -> m.put(k, fill(v, exprs, literals, tokens, sutraFile, out)));
+            n.map().forEach((k, v) -> m.put(k, fill(v, exprs, literals, tokens, templates, sutraFile, out)));
             return new PNode(m, n.line(), n.column());
         }
         if (n.isList()) {
             List<PNode> l = new ArrayList<>();
-            n.list().forEach(v -> l.add(fill(v, exprs, literals, tokens, sutraFile, out)));
+            n.list().forEach(v -> l.add(fill(v, exprs, literals, tokens, templates, sutraFile, out)));
             return new PNode(l, n.line(), n.column());
         }
         if (!(n.value() instanceof String s)) {
@@ -1222,7 +1337,7 @@ public final class TypedFragment {
         }
         sb.append(s, copied, s.length());
         String text = sb.toString();
-        String done = args(text, exprs, literals);
+        String done = args(text, exprs, literals, templates);
         return new PNode(done, n.line(), n.column());
     }
 
@@ -1232,9 +1347,9 @@ public final class TypedFragment {
      * ({@code arg.f(x)}) as a {@code let}-bound name around the expression ({@code let(fn_f = lambda v: ..., ... fn_f(x) ...)}; in a
      * template, around each {@code ${...}} that calls it).
      */
-    private String args(String text, Map<String, String> exprs, Map<String, PNode> literals) {
+    private String args(String text, Map<String, String> exprs, Map<String, PNode> literals, Map<String, String> templates) {
         if (text.contains("${") && callsFunction(text)) {
-            return com.ash.rachana.el.FragmentColumns.parts(text, part -> args(part, exprs, literals));
+            return com.ash.rachana.el.FragmentColumns.parts(text, part -> args(part, exprs, literals, templates));
         }
         StringBuilder done = new StringBuilder();
         Map<String, String> called = new LinkedHashMap<>();
@@ -1259,7 +1374,8 @@ public final class TypedFragment {
                     done.append(exprs.get(p).strip());
                 }
             } else {
-                done.append(exprs.containsKey(p) ? "(" + exprs.get(p) + ")" : literals.containsKey(p) ? el(literals.get(p)) : "null");
+                done.append(exprs.containsKey(p) ? "(" + exprs.get(p) + ")" : templates.containsKey(p) ? templateEl(templates.get(p))
+                        : literals.containsKey(p) ? el(literals.get(p)) : "null");
             }
             copied = end;
         }
@@ -1354,18 +1470,53 @@ public final class TypedFragment {
         return "fn_" + param.replace('-', '_');
     }
 
+    /** Whether a {@code text} parameter is declared {@code dynamic: true}: the use may write a template in its own context. */
+    private static boolean dynamic(Param p) {
+        PNode d = p.at() == null || !p.at().isMap() ? null : p.at().map().get("dynamic");
+        return d != null && Boolean.TRUE.equals(d.value());
+    }
+
+    /** A template as one Rachana-EL expression: {@code concat} of its texts and its parts, each part's text form in its place. */
+    private static String templateEl(String template) {
+        List<String> parts = com.ash.rachana.el.FragmentColumns.templateParts(template);
+        List<String> args = new ArrayList<>();
+        for (int i = 0; i < parts.size(); i++) {
+            if (i % 2 == 1) {
+                args.add("(" + parts.get(i) + ")");
+            } else if (!parts.get(i).isEmpty()) {
+                args.add(quoted(parts.get(i)));
+            }
+        }
+        return "concat(" + String.join(", ", args) + ")";
+    }
+
     private static boolean isText(Param p) {
         return "text".equals(p.type()) || "text?".equals(p.type());
     }
 
+    /** A text as a Rachana-EL text literal (a backslash makes the next character literal, SPEC 4.2). */
+    private static String quoted(String s) {
+        return "'" + s.replace("\\", "\\\\").replace("'", "\\'") + "'";
+    }
+
     /** A literal as Rachana-EL text: a number, {@code true}/{@code false}, {@code null} or a quoted text. */
     private static String el(PNode v) {
+        if (v.isList()) {                                     // a list or a record written out: its Rachana-EL literal (level 1.1)
+            List<String> items = new ArrayList<>();
+            v.list().forEach(x -> items.add(el(x)));
+            return "[" + String.join(", ", items) + "]";
+        }
+        if (v.isMap()) {
+            List<String> fields = new ArrayList<>();
+            v.map().forEach((k, x) -> fields.add(quoted(k) + ": " + el(x)));
+            return "{" + String.join(", ", fields) + "}";
+        }
         Object x = v.value();
         if (x == null) {
             return "null";
         }
         if (x instanceof String s) {
-            return "'" + s.replace("'", "''") + "'";
+            return quoted(s);
         }
         return x.toString();
     }
@@ -1402,8 +1553,18 @@ public final class TypedFragment {
                 if (isFn(p)) {
                     return function(p, v);
                 }
-                if (v.isMap() || v.isList()) {
-                    return "is a value: write it as an expression";
+                if (v.isMap() || v.isList()) {                 // a list or a record written out: checked field by field
+                    if (!base.startsWith("list<") && !base.startsWith("record{")) {
+                        return "is a value: write it as an expression";
+                    }
+                    String w = structure(base, v);
+                    if (w == null && v.isList() && p.max() != null && v.list().size() > p.max().longValue()) {
+                        w = "has at most " + p.max() + " items, not " + v.list().size();
+                    }
+                    if (w == null && v.isList() && p.min() != null && v.list().size() < p.min().longValue()) {
+                        w = "has at least " + p.min() + " items, not " + v.list().size();
+                    }
+                    return w;
                 }
                 if (x == null) {
                     return p.type().endsWith("?") || !p.required() ? null : "is required and may not be empty";

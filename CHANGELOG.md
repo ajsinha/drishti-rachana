@@ -5,6 +5,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **Library quality gates and gallery**: `rachana lib gate <lib> [--strict]` (one implementation, `LibraryGates` over `LibraryTool`, run by `LibrariesCheckTest` on every bundled library and by `tools/libraries/build.py`) reports LG1 valid, LG2 frozen goldens, LG3 definition of done, LG4 level replay (`RCH-2008` one level below), LG5 interface append-only and LG8 budgets; `rachana lib freeze <lib>` records the released baseline (`FROZEN.sha384`, `released/*.interface.json`). Notes, not failures: a second example per fragment (`--strict` fails it), edge tests, live/window cases, accessibility summaries and table samples are not built; LG6, LG7 and LG9 run in release. `lib build` writes each fragment's full interface (doc, parameters, contract, slots, events, budget, needs) into `exports`, checked for staleness. `tools/libraries/build.py --gallery` builds the library gallery with Rachana itself (`gallery.py`: a Sutra per fragment over the manifest, the live example and its source; `gallery_check.py`: Chromium paint test). `rachana preview` resolves libraries as `build` does. The tools bundle checks expressions at the Sutra's language level.
 - **Studio on the new Drishti Elements widgets**: the vendored pack is now `js/vendor/drishti-elements/3.2.0-dev+475232e/` (packed from drishti-elements commit 475232e, SHA-384 manifest kept). Studio's frame is `SplitPane` (palette | preview | a vertical split of source, properties and changes), the palette a `NavList` grouped by library, the column mapping the `columnmap` form field; `<rachana-view complete>` asks the painter to complete the view, so the console no longer warns that `ref` is missing. No hand-rolled widget is left in Studio.
 - **`rachana build` sites load libraries in the browser**: a page that uses `use:` gets the files of the libraries it names (project, `--libs`, `RACHANA_LIBS`, bundled) copied to `rachana_libs/<library>/` and a `libraries/<page>.libraries.json` manifest that `<rachana-view libraries="...">` reads (a Sutra with `libraries:` builds at `--level 1.2`); tested in Node and by the Chromium `paint_check.py`.
 - **Fragment libraries moved into this repository** (owner decision, L-12 superseded): `libraries/<name>/` by domain, `libraries/README.md`
@@ -25,6 +26,28 @@ Entries are written per release; the regime's unreleased work is listed after th
   is `a-x` (ids `a-x-<id>`, private state `a-x.<name>`, events `@a-x.<event>`); before, two uses of a fragment holding a
   stateful use collided. The outer fragment reads only the inner use's outputs, and the screen no nested instance
   (`RCH-2117`). Cases `sutra/fragments-nested-state` (2), `problem/fragments-nested-state` (3).
+
+### Typed fragments, the gaps the core library found (G2 lane A6)
+
+- **Renames over derived rows** (L-21, never silent): a panel whose `rows` is the table parameter filtered, sorted, limited or piped
+  (`take(sort(arg.rows, lambda r: -r.amount), arg.top)`, `arg.rows[?@.amount > 0] |> sort(...)`) has its field-name options and
+  `bind`s renamed to the caller's columns (they were left as written, with the advisory `RCH-2120`); over `map(arg.rows, {k: ...})`
+  the panel reads the fixed names; a local column named over rows derived any other way is `RCH-2121`. `FragmentColumns.rowsOf`
+  (API addition). Suites `sutra/fragments-gaps`, `problem/fragments-gaps`.
+- **`list<record{...}>` and written-out records**: a `list<T>`, `record{f: T, ...}` or `list<record{...}>` parameter may be written
+  at the use as YAML (a list, a mapping), checked item by item and field by field (`RCH-2116`; `max`/`min` count the items); as a
+  whole value it is placed as written (`fields: arg.fields`), in an expression it is the EL literal. A text literal inside a fragment
+  is now quoted with a backslash escape (was a doubled quote, which Rachana-EL does not read).
+- **Dynamic text parameters**: `type: text, dynamic: true` takes a template at the use (`"Limit used ${fmt(..., 'pct0')}"`), read in
+  the caller's context: the template as a whole value, `concat(...)` of its parts inside an expression; `@`, `^`, `#index` refused.
+  A plain `text` keeps its text as written. `FragmentColumns.templateParts` (API addition).
+- **Events beyond rows and bars** (I1 `point-click`, level 1.2): `emits: [{ on: point-click }]` on `line`, `area`, `scatter`,
+  `waterfall`, `timeline`, `candlestick` (each mark a row of `rows`; its `ev` the row before `where`) and on `metric`, `gauge`, `kv`,
+  `status` (the panel one mark, `ev` "0", the payload read in the panel's context); `RCH-2057` on other kinds. Contract 1.2 appended:
+  `ev` on `Point`, `Step`, `Event`, `Candle`, `Metric`, `Gauge`, `Fields`, `Chart.ev` beside `x`; the stamp is 1.2 when one is
+  present. A fragment can now return events from its charts and figures. `Wiring.POINT_CLICK`, `POINT_KINDS`, `ONE_MARK`,
+  `Wiring.fires`, the records' `ev` (API additions; old constructors kept). Not yet: `on: { point-click: [ set ... ] }` (the effect
+  list's trigger table, lane A5's `Effects.BUILT`), graph nodes, the painter's side (Elements).
 
 ### Screen state and the effect list's set (G2 lane A5)
 

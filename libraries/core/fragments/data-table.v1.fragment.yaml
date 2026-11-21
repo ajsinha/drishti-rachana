@@ -5,6 +5,9 @@ fragment: data-table
 version: 1
 doc:
   summary: A sortable, searchable table of rows with the columns you give, totals and a row event.
+  description: >-
+    Use it to show any list of records with the columns you choose: it sorts, searches and can total a column, and a click on a
+    row raises an event. For a grid grouped by a hierarchy use tree-table; for a ranking of one measure use ranked-bars.
   category: tables
 params:
   rows:

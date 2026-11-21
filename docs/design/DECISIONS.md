@@ -249,3 +249,16 @@ The owner delegated mock-up choices to the lead's recommendation; the alternativ
 | MK-1 | Rachana Studio | **A, the three-pane editor** (fragment palette · live `<rachana-view>` preview · Sutra/properties) **with B's command bar** for the AI "describe a screen" prompt on top; C's prose cell later as a documentation mode | B canvas-first, C notebook |
 | MK-2 | Workspace document (L4) | **A, docked tiles**, extended with tabs of docks; channels link tiles | B tabs, C floating windows (later, in the desktop hosts only) |
 | MK-3 | Docs site front page | **A, task-first**, with B's search box and contents tree on the inner pages | B reference-first |
+
+### EL1 decisions taken (lead, under the owner's delegation, 2026-11-21)
+
+| # | Decision | Why |
+|---|---|---|
+| EL1-1 | At level 1.1 `range(...)` is only Python's sequence. The A9 aggregate is renamed **`span(list, field?)`** (max − min) at 1.1; level 1.0 keeps the old `range` aggregate unchanged. No dispatch on the first argument's type. | One meaning per name (Python-like, owner PY4); choosing by argument type is fragile and surprises authors and the AI |
+| EL1-2 | Accepted: `**` and `^` share Python's precedence (`-2 ^ 2` is `-4`); the Excel difference is documented in the SPEC and flagged by a lint hint when `-x ^ n` is written without parentheses | One rule for both spellings; Python first (owner) |
+| EL1-3 | Accepted: whole JSON numbers from a host are exact at 1.1; fractional ones stay doubles | Exact where it is safe without changing host contracts |
+| EL1-4 | Accepted, with a condition: the level replay may skip a 1.0 case only when it is listed (moved with `since`, or withdrawn with a reason) in `compat/levels/moved-cases.yaml`; the G2 gate checks the list | Keeps "replay identical" auditable |
+| EL1-5 | Accepted: number-like text at 1.1 follows the decimal-only literal grammar | One number grammar |
+| EL1-6 | Accepted: lambdas in `map`, `sort`, `reduce`, `group`, `let`; second class, no recursion | Safe and bounded |
+
+Alternatives stay recorded in the table above; the owner may override any of them.

@@ -159,21 +159,12 @@ public final class Moments implements Aggregate<Object> {
 
     @Override
     public byte[] encode(Object s) {
-        ByteBuffer bb = ByteBuffer.allocate(40);
-        for (double d : (double[]) s) {
-            bb.putDouble(d);
-        }
-        return bb.array();
+        return Builtins.encodeDoubles((double[]) s);
     }
 
     @Override
     public Object decode(byte[] b) {
-        ByteBuffer bb = ByteBuffer.wrap(b);
-        double[] st = new double[5];
-        for (int i = 0; i < 5; i++) {
-            st[i] = bb.getDouble();
-        }
-        return st;
+        return Builtins.decodeDoubles(b, 5);
     }
 
     @Override
@@ -199,15 +190,10 @@ public final class Moments implements Aggregate<Object> {
     }
 
     /** {@code nmiss(x)}: the rows whose x is missing (null, absent); mergeable, a total the sum of its cells. */
-    public static final class NMiss implements Aggregate<Object> {
+    public static final class NMiss extends Builtins.Tally {
         @Override
         public String name() {
             return "nmiss";
-        }
-
-        @Override
-        public Kind kind() {
-            return Kind.MERGEABLE;
         }
 
         @Override
@@ -216,18 +202,8 @@ public final class Moments implements Aggregate<Object> {
         }
 
         @Override
-        public boolean numeric() {
-            return false;
-        }
-
-        @Override
         public String resultUnit() {
             return "count";
-        }
-
-        @Override
-        public Object start() {
-            return new long[1];
         }
 
         @Override
@@ -235,7 +211,7 @@ public final class Moments implements Aggregate<Object> {
             long[] n = (long[]) s;
             Object c = b.columns()[0];
             for (int i = 0; i < b.rows(); i++) {
-                if (c instanceof double[] d ? Double.isNaN(d[i]) : ((String[]) c)[i] == null) {
+                if (!present(c, i)) {
                     n[0]++;
                 }
             }
@@ -243,43 +219,8 @@ public final class Moments implements Aggregate<Object> {
         }
 
         @Override
-        public Object merge(Object a, Object b) {
-            return new long[] {((long[]) a)[0] + ((long[]) b)[0]};
-        }
-
-        @Override
-        public Double finish(Object s) {
-            return (double) ((long[]) s)[0];
-        }
-
-        @Override
-        public byte[] encode(Object s) {
-            return ByteBuffer.allocate(8).putLong(((long[]) s)[0]).array();
-        }
-
-        @Override
-        public Object decode(byte[] b) {
-            return new long[] {ByteBuffer.wrap(b).getLong()};
-        }
-
-        @Override
-        public long bytes(Object s) {
-            return 24;
-        }
-
-        @Override
-        public boolean plainSum() {
-            return true;
-        }
-
-        @Override
         public List<String> sqlState(List<String> in) {
             return List.of("count(*) - count(" + in.get(0) + ")");
-        }
-
-        @Override
-        public Object fromSql(Object[] p) {
-            return new long[] {Builtins.lng(p[0])};
         }
     }
 

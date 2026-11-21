@@ -6,6 +6,7 @@ package com.ash.rachana.format;
 
 import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreText;
+import com.ash.rachana.parse.Json;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -83,7 +84,7 @@ public final class ListValues {
             } else if (e instanceof Boolean) {
                 b.append(e);
             } else {
-                quote(b, text(e));
+                Json.quote(text(e), b);
             }
         }
         return b.append(']').toString();
@@ -93,28 +94,6 @@ public final class ListValues {
     public static String joined(Object v) {
         List<String> l = of(v);
         return l == null ? (v == null ? null : String.valueOf(v)) : String.join(", ", l);
-    }
-
-    private static void quote(StringBuilder b, String s) {
-        b.append('"');
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '"' -> b.append("\\\"");
-                case '\\' -> b.append("\\\\");
-                case '\n' -> b.append("\\n");
-                case '\r' -> b.append("\\r");
-                case '\t' -> b.append("\\t");
-                default -> {
-                    if (c < 0x20) {
-                        b.append("\\u" + NumberText.hex(c, 4));
-                    } else {
-                        b.append(c);
-                    }
-                }
-            }
-        }
-        b.append('"');
     }
 
     /** A JSON array of simple values, read without a library; null for anything else. */

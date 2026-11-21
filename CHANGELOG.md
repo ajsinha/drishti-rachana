@@ -5,6 +5,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Known duplicates folded** (i7b G3, I7B_DUPLICATES Q1 to Q3): the library manifest's exports and the `list` format write their
+  JSON strings through `Json.quote` (a control character other than tab, newline and return is now written `\b`, `\f` or `\u00XX`;
+  no committed file holds one); `median`/`percentile` share `Holistics.OfValues` with the other holistic functions, `count` and `nmiss`
+  one count base, `stderr`/`cv`/`skewness`/`kurtosis` and `product` one encoder of a state of doubles (state bytes and numbers
+  unchanged; API lines of the inherited members logged in `java/api-removals.txt`); the live-table declaration and the Data Protocol
+  filter use `Checker.distance`; the form and state browser runners share `runners/static_page.py`.
+
 - **Elements 3.2.0 vendored** (drishti-elements commit 787f97d, label `3.2.0`): `js/vendor/drishti-elements/3.2.0/` replaces the `3.2.0-dev+a40ca7e` folder (SHA-384 manifest; `ELEMENTS_VERSION`, the server pom, the Python assets, Studio and the docs name it); the pack's `data/formats.yaml` and `world-regions.yaml` are the bundled ones.
 
 - **`rachana upgrade` reads and writes a fragment's level as a Sutra's** (Gate 2 review 10.5; SPEC 2.1 rule 4). A fragment's own

@@ -535,6 +535,21 @@
         "path": {
           "type": "string",
           "description": "document path the value came from, for live patches"
+        },
+        "ev": {
+          "type": "string",
+          "description": "a pivot cell's place among the panel's cells (row by row) on a pivot that emits on point-click, sent back by a click (level 1.2, I1)",
+          "x-since": "1.2"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on the pivot cell writes into the screen's state",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "description": "the pivot cell's whole effect list when it holds more than state writes",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -3732,6 +3747,60 @@
             "3d"
           ],
           "description": "heatmap (default) or 3d"
+        },
+        "ev": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "description": "beside z on a surface that emits on point-click: each point's place among the marks (row by row), null where there is no number (level 1.2, I1)",
+          "x-since": "1.2"
+        },
+        "set": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "description": "beside z: what a point-click on each point writes into the state",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "description": "beside z: each point's whole effect list when it holds more than state writes",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,

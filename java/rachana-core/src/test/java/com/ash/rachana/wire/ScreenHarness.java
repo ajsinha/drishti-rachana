@@ -48,9 +48,14 @@ final class ScreenHarness {
 
     /** A screen of {@code yaml} (a Core Sutra, level 1.2) over {@code record} (plain values: maps, lists, text, numbers). */
     static ScreenHarness of(String yaml, Map<String, Object> record) {
+        return of(yaml, record, PivotEngine.NONE);
+    }
+
+    /** As {@link #of(String, Map)} with a host's pivot engine. */
+    static ScreenHarness of(String yaml, Map<String, Object> record, PivotEngine pivots) {
         Rachana r = Rachana.core().language("1.2");
         Sutra s = r.parser().parse(yaml, "harness.sutra.yaml", "harness");
-        ViewBuilder v = r.views(BindHooks.core(), PivotEngine.NONE, TableProvider.NONE, BusinessDays.of(TODAY, BusinessCalendar.of("WEEKENDS")),
+        ViewBuilder v = r.views(BindHooks.core(), pivots, TableProvider.NONE, BusinessDays.of(TODAY, BusinessCalendar.of("WEEKENDS")),
                 Duration.ofSeconds(2));
         return new ScreenHarness(s, v, Node.of(record == null ? Map.of() : record));
     }

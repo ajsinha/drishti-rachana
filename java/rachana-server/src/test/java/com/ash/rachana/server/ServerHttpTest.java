@@ -255,4 +255,40 @@ class ServerHttpTest {
         assertTrue(get("/problems", alice).body().contains("orphan.live.yaml"), "a declaration naming no configured table is listed");
         assertEquals(404, get(RachanaServer.DATA + "/tables/orphan/rows", alice).statusCode());
     }
+
+    /** The status of {@code GET /healthz} sent with the given Host header (a raw socket: the HTTP client does not let a test set Host). */
+    static int statusWithHost(RachanaServer server, String host) throws Exception {
+        try (java.net.Socket sock = new java.net.Socket("127.0.0.1", server.port())) {
+            sock.setSoTimeout(5000);
+            sock.getOutputStream().write(("GET /healthz HTTP/1.1\r\nHost: " + host + "\r\nConnection: close\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+            String line = new java.io.BufferedReader(new java.io.InputStreamReader(sock.getInputStream(), StandardCharsets.UTF_8)).readLine();
+            return Integer.parseInt(line.split(" ")[1]);
+        }
+    }
+
+    /** G2 gate F8: only the server's own names answer, in every auth mode (DNS rebinding: the attacker's name arrives in Host). */
+    @Test
+    void aHostThatIsNotThisServersIsRefusedInEveryAuthMode() throws Exception {
+        int port = server.port();
+        assertEquals(200, statusWithHost(server, "127.0.0.1:" + port));
+        assertEquals(200, statusWithHost(server, "localhost:" + port));
+        assertEquals(200, statusWithHost(server, "LOCALHOST:" + port), "names are not case sensitive");
+        assertEquals(403, statusWithHost(server, "evil.example:" + port));
+        assertEquals(403, statusWithHost(server, "evil.example"));
+        assertEquals(403, statusWithHost(server, "127.0.0.1"), "a name without the server's port is not its address");
+        assertEquals(403, statusWithHost(server, "127.0.0.1:" + (port + 1)));
+        assertEquals(403, post("/signin", null, "application/x-www-form-urlencoded", "", "http://evil.example:" + port).statusCode());
+        Path none = fx.dir.resolve("none.yaml");
+        Files.writeString(none, Files.readString(fx.users("")).replace("auth: { mode: users, users: \"${config}/users.yaml\" }", "auth: { mode: none }"));
+        try (RachanaServer open = RachanaServer.start(ServerConfig.read(none), fx.log)) {
+            assertEquals(200, statusWithHost(open, "127.0.0.1:" + open.port()));
+            assertEquals(403, statusWithHost(open, "rebound.example:" + open.port()), "auth none: a rebound name cannot read the tables");
+        }
+        Files.writeString(none, Files.readString(fx.users("")).replace("server: { bind: 127.0.0.1, port: 0 }",
+                "server: { bind: 127.0.0.1, port: 0, origins: [\"http://reports.example.test\"] }"));
+        try (RachanaServer listed = RachanaServer.start(ServerConfig.read(none), fx.log)) {
+            assertEquals(200, statusWithHost(listed, "reports.example.test"), "a name listed in server.origins");
+            assertEquals(403, statusWithHost(listed, "other.example.test"));
+        }
+    }
 }

@@ -152,6 +152,11 @@ public final class RachanaServer implements AutoCloseable {
             secure(x);
             path = x.getRequestURI().getPath();
             String method = x.getRequestMethod();
+            if (!hostAllowed(x)) {                  // DNS-rebinding defence, in every auth mode, before anything else is read or answered
+                log.warn("host-refused", "path", path, "host", x.getRequestHeaders().getFirst("Host"));
+                text(x, 403, "this server answers only under its own address (other names: server.origins)");
+                return;
+            }
             if (path == null || path.contains("\0") || path.contains("\\") || List.of(path.split("/")).contains("..")) {
                 text(x, 400, "a bad address");
                 return;
@@ -320,7 +325,7 @@ public final class RachanaServer implements AutoCloseable {
         if (path.startsWith("/static/")) {
             Path root = config.project().dir().resolve("static").toAbsolutePath().normalize();
             Path f = root.resolve(path.substring("/static/".length())).normalize();
-            if (!f.startsWith(root) || !Files.isRegularFile(f) || hidden(root.relativize(f))) {
+            if (!f.startsWith(root) || !Files.isRegularFile(f) || hidden(root.relativize(f)) || !realInside(root, f)) {
                 text(x, 404, "not found");
             } else {
                 bytes(x, 200, Assets.type(f.getFileName().toString()), Files.readAllBytes(f), "no-store");
@@ -332,6 +337,15 @@ public final class RachanaServer implements AutoCloseable {
 
     private static int problemCount(Project.State st) {
         return st.problems().size() + st.sutras().values().stream().mapToInt(s -> s.problems().size()).sum();
+    }
+
+    /** A file whose real path (symbolic links followed) is still inside the real folder: a link in static/ cannot lead out of it. */
+    private static boolean realInside(Path root, Path f) {
+        try {
+            return f.toRealPath().startsWith(root.toRealPath());
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private static boolean hidden(Path rel) {
@@ -476,19 +490,11 @@ public final class RachanaServer implements AutoCloseable {
     }
 
     /**
-     * The checks of a write beside the protocol's own (LIVE_TABLES 5): the {@code Host} is this server's (its own address, a loopback
-     * name on its port, {@code server.hosts} or an origin of {@code server.origins}: a page served from another name, a DNS rebinding,
-     * is refused); the request carries the session's CSRF token as {@code X-Rachana-CSRF} (header mode: the header present, which a page
-     * of another site cannot send without a preflight this server never answers); the {@code Origin} check ran for every POST. A refusal
-     * is answered {@code 403 rdp.write.forbidden} and logged.
+     * The check of a write beside the protocol's own (LIVE_TABLES 5; the {@code Host} check ran for every request, the {@code Origin} check
+     * for every POST): the session's CSRF token as {@code X-Rachana-CSRF} (header mode: the header present, which a page of another site
+     * cannot send without a preflight this server never answers). A refusal is answered {@code 403 rdp.write.forbidden} and logged.
      */
     private boolean writeAllowed(HttpExchange x, Who who, String rel) throws IOException {
-        String host = x.getRequestHeaders().getFirst("Host");
-        if (!hostAllowed(host)) {
-            log.warn("write-refused", "reason", "host", "host", host, "path", rel);
-            error(x, 403, "rdp.write.forbidden", "this server is not reached by that name");
-            return false;
-        }
         String token = x.getRequestHeaders().getFirst("X-Rachana-CSRF");
         boolean ok = who.session() != null ? Sessions.same(token, who.session().csrf()) : token != null && !token.isBlank();
         if (!ok) {
@@ -505,28 +511,36 @@ public final class RachanaServer implements AutoCloseable {
         return t == null ? List.of() : t.declared(table);
     }
 
-    /** Whether a {@code Host} header names this server. */
-    private boolean hostAllowed(String host) {
-        if (host == null) {
+    /**
+     * Whether the {@code Host} header names this server: its bind address (unless it is a wildcard), {@code localhost}, {@code 127.0.0.1} or
+     * {@code [::1]}, each with the server's port, or the authority of one of {@code server.origins}. A page of another site that
+     * re-points its name at this address (DNS rebinding) carries its own name in {@code Host} and is refused, whatever the auth mode.
+     */
+    private boolean hostAllowed(HttpExchange x) {
+        String host = x.getRequestHeaders().getFirst("Host");
+        if (host == null || host.isBlank()) {
             return false;
         }
         String h = host.toLowerCase(Locale.ROOT);
-        int port = port();
-        for (String own : List.of("127.0.0.1", "localhost", "[::1]", config.http().bind())) {
-            if (h.equals(own + ":" + port) || port == 80 && h.equals(own)) {
+        String bind = config.http().bind();
+        boolean wildcard = bind.equals("0.0.0.0") || bind.equals("::") || bind.equals("[::]");
+        for (String name : wildcard ? List.of("localhost", "127.0.0.1", "[::1]") : List.of(bind.contains(":") && !bind.startsWith("[") ? "[" + bind + "]" : bind,
+                "localhost", "127.0.0.1", "[::1]")) {
+            if (h.equals(name.toLowerCase(Locale.ROOT) + ":" + port())) {
                 return true;
             }
         }
         for (String o : origins) {
             try {
-                if (h.equalsIgnoreCase(new URI(o).getRawAuthority())) {
+                String a = new URI(o).getRawAuthority();
+                if (a != null && h.equals(a.toLowerCase(Locale.ROOT))) {
                     return true;
                 }
             } catch (java.net.URISyntaxException e) {
-                // checked at start
+                // a malformed origin never matches (the configuration refuses it at start)
             }
         }
-        return config.edits().hosts().stream().anyMatch(a -> a.equalsIgnoreCase(h));
+        return false;
     }
 
     /**

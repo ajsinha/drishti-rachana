@@ -19,8 +19,8 @@ params:
       date:  { type: date,   doc: The fixing date }
       value: { type: number, doc: The fixed rate }
   title:      { type: text, default: Fixings, doc: The panel's title }
-  fmt:        { type: format, default: pct2, doc: How the rates are written }
-  change-fmt: { type: format, default: signed2, doc: How the change is written in basis points }
+  fmt:        { type: format, default: pct4, doc: How the rates are written }
+  change-fmt: { type: format, default: bp1, doc: How the change is written in basis points }
 panels:
   - id: ladder
     kind: ladder

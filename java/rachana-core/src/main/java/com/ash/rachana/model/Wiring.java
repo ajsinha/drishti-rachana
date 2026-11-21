@@ -36,7 +36,7 @@ public record Wiring(Source source, List<Emit> emits, String waits, List<Childre
     public static final String POINT_CLICK = "point-click";
     /** The panel kinds that fire {@link #POINT_CLICK}, and the level that brings it. */
     public static final Set<String> POINT_KINDS = Set.of("line", "area", "scatter", "waterfall", "timeline", "candlestick", "metric", "gauge", "kv",
-            "status", "treemap");
+            "status", "treemap", "pivot", "surface");
     public static final String POINT_SINCE = "1.2";
     /** The kinds whose {@link #POINT_CLICK} is the whole panel, one mark ({@code ev} "0"; a payload reads the panel's context, no row). */
     public static final Set<String> ONE_MARK = Set.of("metric", "gauge", "kv", "status");

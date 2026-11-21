@@ -162,6 +162,9 @@ public record ViewModel(
                 case PanelData.Scatter s -> s.points().stream().anyMatch(x -> x.ev() != null);
                 case PanelData.Candles c -> c.candles().stream().anyMatch(x -> x.ev() != null);
                 case PanelData.Timeline t -> t.events().stream().anyMatch(x -> x.ev() != null);
+                case PanelData.Pivot pv -> pv.rows() != null && pv.rows().stream().anyMatch(r -> r != null && r.cells() != null
+                        && r.cells().stream().anyMatch(x -> x != null && (x.ev() != null || x.set() != null || x.on() != null)));
+                case PanelData.Surface sf -> sf.ev() != null || sf.set() != null || sf.on() != null;
                 default -> false;
             };
             if (ev) {
@@ -317,12 +320,25 @@ public record ViewModel(
      * @param link when the value opens another entity
      * @param emphasis draw highlighted
      * @param path document path the value came from, for live patches
+     * @param ev a pivot cell's place among the panel's marks (row by row) on a panel that emits on point-click (contract 1.2), or none
+     * @param set what a point-click on it writes into the state (contract 1.2), or none
+     * @param on its whole effect list when it holds more than state writes (contract 1.2), or none
      */
     @Include(Include.Rule.NON_DEFAULT)
-    public record Cell(String label, String text, String tone, LinkView link, boolean emphasis, String path) {
+    public record Cell(String label, String text, String tone, LinkView link, boolean emphasis, String path, String ev, Map<String, Object> set,
+            Map<String, Object> on) {
+
+        public Cell(String label, String text, String tone, LinkView link, boolean emphasis, String path) {
+            this(label, text, tone, link, emphasis, path, null, null, null);
+        }
 
         public static Cell of(String label, String text) {
             return new Cell(label, text, null, null, false, null);
+        }
+
+        /** This cell as a mark (contract 1.2): its place, and what a click on it writes or runs. */
+        public Cell withMark(String ev, Map<String, Object> set, Map<String, Object> on) {
+            return new Cell(label, text, tone, link, emphasis, path, ev, set, on);
         }
     }
 

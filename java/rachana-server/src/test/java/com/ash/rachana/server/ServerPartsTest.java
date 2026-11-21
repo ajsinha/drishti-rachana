@@ -77,6 +77,17 @@ class ServerPartsTest {
     }
 
     @Test
+    void usersSignInOnAnOpenAddressNeedsAnExplicitTlsProxy() {
+        String users = "auth: { mode: users, users: \"${config}/users.yaml\" }\n";
+        assertTrue(has(invalid(MINIMAL + "server: { bind: 0.0.0.0 }\n" + users), "sends passwords over plain HTTP"));
+        try {
+            ServerConfig.parse(MINIMAL + "server: { bind: 0.0.0.0, behind-tls-proxy: true }\n" + users, tmp.resolve("rachana-server.yaml"));
+        } catch (ServerConfig.Invalid e) {
+            assertFalse(e.problems().toString().contains("plain HTTP"), e.problems().toString());       // other problems (no users file here) are not this one
+        }
+    }
+
+    @Test
     void aJdbcTableIsOneSelectWithBoundParametersAndNoPasswordInTheFile() {
         String base = MINIMAL + "tables:\n  t:\n    key: id\n    jdbc: { url: \"jdbc:h2:mem:x;PASSWORD=hunter2\" }\n";
         assertTrue(has(invalid(base + "    query: \"select * from t\"\n"), "no password in the address"));

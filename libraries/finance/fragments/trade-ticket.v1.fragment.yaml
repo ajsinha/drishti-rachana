@@ -16,7 +16,7 @@ params:
     required: true
     doc: "The trade: id, product, and optionally direction, counterparty, book, trade_date, maturity, notional, currency, price, status"
   notional-fmt: { type: format, default: amount0, doc: How the notional is written }
-  price-fmt:    { type: format, default: text, doc: How the price is written }
+  price-fmt:    { type: format, default: price4, doc: How the price is written }
 slots:
   extra: { accepts: panels, max: 2, doc: Panels under the ticket }
 panels:

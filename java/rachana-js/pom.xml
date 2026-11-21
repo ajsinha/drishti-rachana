@@ -28,6 +28,9 @@
     <!-- Rachana's own modules reach the build as classes unpacked into target/classes (below), not as jars on TeaVM's class path:
          this module's com.ash.rachana.internal.NumberText then replaces Core's (TeaVM reads jars before the module's classes). -->
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-conformance</artifactId><version>${project.version}</version><scope>test</scope></dependency>
+    <!-- RowQuery (the one evaluator of the Data Protocol's filter tree) is compiled into the bundles for the static-files host: only Rachana's own classes, none of the module's Arrow -->
+    <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-data</artifactId><version>${project.version}</version><scope>test</scope>
+      <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
     <dependency><groupId>org.teavm</groupId><artifactId>teavm-classlib</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
     <dependency><groupId>org.teavm</groupId><artifactId>teavm-jso</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency>
     <!-- build time only: the resource SPI (BundledResources), the tool API (BuildBundles), the class the build patches -->

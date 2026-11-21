@@ -118,6 +118,18 @@ def _steps_diff(exp: list, act: Any) -> str | None:
                 return f"steps[{i}].status: expected {e['status']}, actual {a.get('status')}"
             if "body" in e and not subset(e["body"], a.get("body")):
                 return f"steps[{i}].body: expected {dumps(e['body'])}"
+        elif any(k in e for k in ("state", "effects", "problems")):   # fire step (FORMAT 5.15): state and effects exactly, problems as matched, at
+            for f in ("state", "effects"):
+                if f in e and dumps(e[f]) != dumps(a.get(f)):
+                    return f"steps[{i}].{f}: expected {dumps(e[f])}, actual {dumps(a.get(f))}"
+            if "problems" in e:
+                d = problems_diff(e["problems"], a.get("problems") or [])
+                if d:
+                    return f"steps[{i}].{d}"
+            if "at" in e:
+                d = diff({"at": e["at"]}, a.get("viewModel") if isinstance(a.get("viewModel"), dict) else {})
+                if d:
+                    return f"steps[{i}].{d}"
         else:                                                  # patch step: frames and/or at
             d = diff({k: v for k, v in e.items() if k in ("frames", "at")}, a)
             if d:

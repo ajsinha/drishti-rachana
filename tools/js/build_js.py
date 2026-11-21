@@ -15,7 +15,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 BUNDLES = ("rachana.runtime.js", "rachana.tools.js")
-LEVELS = ("1.0", "1.1", "1.2")
+
+def bundle_levels(dist: Path) -> list[str]:
+    """The language levels the tools bundle reads (Core's Grammar.DEFAULT_LEVEL and LEVELS: the one place), oldest first."""
+    js = ("import(process.argv[1]).then((m) => { m.init('core', '[]'); process.stdout.write(m.levels()); });")
+    out = subprocess.run(["node", "-e", js, (dist / "rachana.tools.js").resolve().as_uri()], check=True, capture_output=True, text=True).stdout
+    return json.loads(out)["levels"]
 CONFORMANCE = ROOT / "tools" / "conformance" / "rachana_conformance.py"
 
 
@@ -33,7 +38,7 @@ def check_bundles(dist: Path, work: Path) -> int:
     the runtime serves (only edit and live, the declaration checker of Studio and lint, are the tools bundle's alone, by design)."""
     work.mkdir(parents=True, exist_ok=True)
     bad = 0
-    for level in LEVELS:
+    for level in bundle_levels(dist):
         res = {}
         for b in BUNDLES:
             out = work / f"{b}-{level}.jsonl"

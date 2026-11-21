@@ -21,6 +21,8 @@ params:
   title:   { type: text, default: Volatility surface, doc: The panel's title }
   fmt:     { type: format, default: pct2, doc: How the values are written }
   view:    { type: enum, options: [heatmap, 3d], default: heatmap, doc: How the surface is drawn }
+emits:
+  - { name: cell, payload: { expiry: text, strike: any }, doc: A point was chosen }
 panels:
   - id: surface
     kind: surface
@@ -30,3 +32,4 @@ panels:
     columns: "%{strikes}"
     fmt: "%{fmt}"
     view: "%{view}"
+    emits: [ { name: cell, on: point-click, payload: { expiry: "@.y", strike: "@.x" } } ]

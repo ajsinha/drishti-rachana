@@ -22,6 +22,8 @@ params:
   title: { type: text, default: Scenarios, doc: The panel's title }
   fmt:   { type: format, default: signed0, doc: How the P&L is written }
   heat:  { type: boolean, default: true, doc: Whether cells are shaded by size }
+emits:
+  - { name: cell, payload: { scenario: text, group: text }, doc: A cell was chosen }
 panels:
   - id: matrix
     kind: pivot
@@ -33,3 +35,4 @@ panels:
     agg: sum
     fmt: "%{fmt}"
     heat: arg.heat
+    emits: [ { name: cell, on: point-click, payload: { scenario: "@.row", group: "@.column" } } ]

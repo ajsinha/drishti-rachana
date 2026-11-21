@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+2b87fcd,
-// vendored under js/vendor/drishti-elements/3.2.0-dev+2b87fcd: load drishti-elements.js before this module). The element holds no meaning of its own:
+// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+6b4a3b2,
+// vendored under js/vendor/drishti-elements/3.2.0-dev+6b4a3b2: load drishti-elements.js before this module). The element holds no meaning of its own:
 // the bundle compiles, plans, binds and diffs; the DataClient fetches; the painter paints.
 //
-//   <script src="/vendor/drishti-elements/3.2.0-dev+2b87fcd/drishti-elements.js"></script>
+//   <script src="/vendor/drishti-elements/3.2.0-dev+6b4a3b2/drishti-elements.js"></script>
 //   <script type="module" src="/rachana/src/rachana_view.js"></script>
 //   <rachana-view src="/sutras/sales.sutra.yaml" data="/rdp/v1" runtime="/rachana/dist/rachana.runtime.js"
 //                 formats="/spec/1/formats.yaml" live></rachana-view>
@@ -83,7 +83,7 @@ export function defineRachanaView(o) {
         allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null,
         csrf: meta ? meta.getAttribute('content') : null }) : null;
       this.client = client;
-      const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || '1.1', today: this.getAttribute('today') || undefined,
+      const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || undefined, today: this.getAttribute('today') || undefined,
         ctl: this.controls, record: this.record, client, files });
       this.screen = screen;
       await screen.load();

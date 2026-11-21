@@ -1,0 +1,44 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/surface-points
+since: "1.2"
+profile: core
+verified: true
+description: "point-click on a surface's points (I1, level 1.2; contract 1.2 Surface.ev, set beside z): each point with a number is a mark, @ the point {x, y, z}, #index its place row by row; a point without a number keeps its place and carries nothing."
+cases:
+
+  - id: a-surface-point-writes-state
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (point-click, set: { state, to }); VIEWMODEL contract 1.2 (Surface.ev, set)"
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Vols'" }
+      data:
+        smile: { rows: [ { expiry: 1M, k90: 0.25, k110: 0.2 }, { expiry: 1Y, k110: 0.22 } ] }
+      state:
+        at: { type: text }
+      panels:
+        - id: s
+          kind: surface
+          rows: $.smile
+          y: expiry
+          columns: [ { label: "90", bind: "@.k90" }, { label: "110", bind: "@.k110" } ]
+          emits: [ { name: point, on: point-click, payload: { expiry: "@.y", strike: "@.x" } } ]
+          on:
+            point-click: [ { set: { state: at, to: "@.y + ' ' + @.x + ' ' + #index" } } ]
+        - { id: shown, kind: metric, label: At, value: "state.at ?? 'none'" }
+    steps:
+      - { panel: s, trigger: point-click, mark: 3 }
+    expect:
+      at:
+        /contract: "1.2"
+        /panels/0/data/ev/0/1: "1"
+        /panels/0/data/ev/1/0: null
+        /panels/0/data/set/0/0: { at: "1M 90 0" }
+        /panels/0/data/set/1/1: { at: "1Y 110 3" }
+      steps:
+        - state: { at: "1Y 110 3" }
+          effects: [ { do: set, state: at, value: "1Y 110 3" } ]
+          at:
+            /panels/1/data/value/text: "1Y 110 3"

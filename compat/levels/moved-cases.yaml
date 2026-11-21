@@ -68,3 +68,5 @@ levels:
   - {case: "edit/examples/edit#remove-a-required-key-is-refused", withdrawn: "a placeholder: no operation removes a top-level key (remove takes a panel); the operations and their refusals are pinned by edit/ops"}
   - {case: "problem/examples/problem#profile-key-without-the-profile", since: "1.1"}
   - {case: "protocol/examples/bridge#bridge-rows-request-answered-once", withdrawn: "it sorts a table that does not declare sort, which PROTOCOL 4 refuses, so no host answered it; protocol/host#bridge-rows-of-a-sortable-table is the corrected case"}
+  - {case: "el/messages-level-1-1#expr-error-double-star-is-not-rachana-l11", withdrawn: "level 1.1 makes ** the power operator (PY6): the case pinned the message of a ** that is not Rachana"}
+  - {case: "el/messages-level-1-1#math-bad-quantity-2-l11", withdrawn: "level 1.1 makes ** the power operator (PY6): the case pinned the message of a ** that is not Rachana"}

@@ -44,6 +44,14 @@ public final class Grammar {
     /** The language levels this runtime implements, oldest first. */
     public static final List<String> LEVELS = List.of("1.0", "1.1", "1.2");
 
+    /**
+     * THE default language level of the tools (G2 gate F12): what the command lines, {@code <rachana-view>}, the server and the Studio read a
+     * Sutra at when nobody names a level, the newest built. It is written here only: the bundles hand it out ({@code levels()}), the server
+     * reads it from here, and a guard refuses another level literal in those entry points. {@code Rachana.core()} itself still reads
+     * {@link #LEVEL_1_0} until its host raises the level, so a host that names nothing is never moved by a new minor.
+     */
+    public static final String DEFAULT_LEVEL = LEVELS.get(LEVELS.size() - 1);
+
 
     /** The source forms a profile may bring: {@code kind} ({@code source: { kind, id | where | search, pack, params }}). */
     public static final Set<String> SOURCE_FORMS = Set.of("kind");

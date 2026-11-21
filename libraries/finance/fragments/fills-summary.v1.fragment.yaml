@@ -24,7 +24,7 @@ params:
   ordered:   { type: number, required: true, doc: The quantity ordered }
   reference: { type: number, optional: true, doc: A price to measure slippage against }
   title:     { type: text, default: Fills, doc: The panel's title }
-  price-fmt: { type: format, default: text, doc: How prices are written }
+  price-fmt: { type: format, default: price4, doc: How prices are written }
 panels:
   - id: filled
     kind: metric

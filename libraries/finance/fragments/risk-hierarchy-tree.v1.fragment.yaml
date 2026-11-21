@@ -23,6 +23,7 @@ params:
       value:  { type: number, doc: The node's figure }
       limit:  { type: number, optional: true, doc: The node's limit }
   title: { type: text, default: Risk by hierarchy, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How the figures are written }
   open:  { type: integer, default: 2, min: 0, max: 8, doc: How many levels start open }
 panels:
   - id: tree
@@ -33,4 +34,12 @@ panels:
     parent: parent
     label: name
     mode: grid
+    fmt: "%{fmt}"
     open: arg.open
+    columns:
+      - { label: Id, bind: "@.id" }
+      - { label: Parent, bind: "@.parent" }
+      - { label: Name, bind: "@.name" }
+      - { label: Value, bind: "@.value" }
+      - { label: Limit, bind: "@.limit" }
+      - { label: Used, bind: "@.used", fmt: pct0 }

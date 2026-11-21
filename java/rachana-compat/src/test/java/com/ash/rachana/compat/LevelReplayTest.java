@@ -5,7 +5,6 @@
 package com.ash.rachana.compat;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.*;
 import java.util.*;
@@ -102,7 +101,7 @@ class LevelReplayTest {
     /** EL1-4: the replay skips only the cases compat/levels/moved-cases.yaml lists; an unlisted difference or a wrong entry fails. */
     @Test
     void theReplaySkipsOnlyListedMovedCases(@org.junit.jupiter.api.io.TempDir Path tmp) throws Exception {
-        assumeTrue(run(tmp, List.of("python3", "-c", "import yaml")) == 0, "python3 with PyYAML not present: levels.py compare not run");
+        assertEquals(0, run(tmp, List.of("python3", "-c", "import yaml")), "python3 with PyYAML is a prerequisite of the build (pip install -r tools/conformance/requirements.txt)");
         Path suites = Files.createDirectories(tmp.resolve("suites"));
         Files.writeString(suites.resolve("s.yaml"), "suite: el/s\nsince: \"1.0\"\nprofile: core\ncases:\n"
             + "  - {id: kept, kind: expr}\n  - {id: moved, kind: expr, since: \"1.1\"}\n");
@@ -122,6 +121,12 @@ class LevelReplayTest {
             "a moved case listed at the wrong level");
         Files.writeString(now, "{\"case\":\"el/s#kept\",\"status\":\"fail\"}\n{\"case\":\"el/s#moved\",\"status\":\"unsupported\"}\n");
         assertEquals(1, compare(tmp, then, now, moved + gone, suites), "a recorded case that changed: a difference");
+        // G2 gate F9: a recorded unsupported case that was deleted is not "newly answered": an unlisted deletion fails, a listed withdrawal passes
+        Files.writeString(then, "{\"case\":\"el/s#kept\",\"status\":\"pass\"}\n{\"case\":\"el/s#dropped\",\"status\":\"unsupported\"}\n");
+        Files.writeString(now, "{\"case\":\"el/s#kept\",\"status\":\"pass\"}\n");
+        String dropped = "moved_cases_version: 1\nlevels:\n  \"1.0\":\n    - {case: \"el/s#dropped\", withdrawn: \"why\"}\n";
+        assertEquals(1, compare(tmp, then, now, "moved_cases_version: 1\nlevels: {}\n", suites), "a deleted unsupported case, unlisted: a difference");
+        assertEquals(0, compare(tmp, then, now, dropped, suites), "a deleted unsupported case, listed as withdrawn: identical");
     }
 
     private static int compare(Path tmp, Path then, Path now, String moved, Path suites) throws Exception {
@@ -140,7 +145,7 @@ class LevelReplayTest {
     @Test
     void theSuiteAtEachLevelGivesTheCommittedResults() throws Exception {
         Path cp = Corpus.repoRoot().resolve("java/rachana-conformance/target/runtime-classpath.txt");
-        assumeTrue(Files.isRegularFile(cp), "JVM runtime not built (cd java && ./mvnw package -DskipTests): replay skipped");
+        assertTrue(Files.isRegularFile(cp), "JVM runtime not built: run ./mvnw verify from java/ (rachana-conformance builds it before this module); nothing is skipped");
         Process p = new ProcessBuilder("python3", Corpus.repoRoot().resolve("tools/regime/levels.py").toString(), "check")
             .redirectErrorStream(true).start();
         String out = new String(p.getInputStream().readAllBytes());

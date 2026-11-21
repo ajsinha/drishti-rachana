@@ -445,6 +445,9 @@ final class ViewRecords {
                 ViewJson.put(m, "fmt", r.fmt(), Rule.NON_NULL);
                 ViewJson.put(m, "unit", r.unit(), Rule.NON_NULL);
                 ViewJson.put(m, "view", r.view(), Rule.NON_NULL);
+                ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
+                ViewJson.put(m, "set", r.set(), Rule.NON_NULL);
+                ViewJson.put(m, "on", r.on(), Rule.NON_NULL);
                 yield m;
             }
             case PanelData.Tab r -> {
@@ -569,6 +572,9 @@ final class ViewRecords {
                 ViewJson.put(m, "link", r.link(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "emphasis", r.emphasis(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "path", r.path(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "ev", r.ev(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "set", r.set(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "on", r.on(), Rule.NON_DEFAULT);
                 yield m;
             }
             case ViewModel.ControlView r -> {

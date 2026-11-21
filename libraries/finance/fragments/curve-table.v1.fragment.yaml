@@ -22,8 +22,8 @@ params:
       quote:      { type: number, optional: true, doc: The market quote }
       df:         { type: number, optional: true, doc: The discount factor }
   title:    { type: text, default: Pillars, doc: The panel's title }
-  zero-fmt: { type: format, default: pct2, doc: How rates are written }
-  df-fmt:   { type: format, default: text, doc: How discount factors are written }
+  zero-fmt: { type: format, default: pct4, doc: How rates are written }
+  df-fmt:   { type: format, default: df4, doc: How discount factors are written }
 emits:
   - { name: select, payload: { tenor: text }, doc: A pillar was chosen }
 panels:

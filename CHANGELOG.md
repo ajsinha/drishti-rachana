@@ -12,9 +12,29 @@ Entries are written per release; the regime's unreleased work is listed after th
   rdp.write.invalid` with `fields [{column, rule, message}]` from the declaration's form rules (Core's checker). The host's
   `ChangeSink` takes checked changes (Drishti binds its write-back, LT-8); `Outbox` + `FileOutboxStore` give exactly-once for hosts
   without one; `held` and `release`/`reject` are the host's decisions; the tray `<name>.changes` lists the caller's pending changes.
-  `TableClient.write`, `DataClient.write`, the `<rachana-view>` edit hook. `rachana-server`: CSRF, Origin and Host checks on writes,
+  `TableClient.write`, `DataClient.write`, the `<rachana-view>` edit hook. `rachana-server`: the CSRF token on writes (beside its Host and Origin checks),
   `access.tables.<name>.edit`, `edits:`, `tables.<name>.write` (JDBC, change id journal table). Suite `protocol/write` (20, unverified).
 
+- **G2 gate fixes (B)**: `./mvnw verify` runs what G2 built (`tools/gate/verify_lanes.py`, four executions of `rachana-guards`, nothing skipped):
+  conformance at every language level on the JVM and on the Node bundle with identical bytes, the protocol cases on the JVM reference, the
+  Python host and the live server, the Python SDK tests (the case reader takes the `fire` and `live` kinds), and a Chromium lane
+  (`<rachana-view>` live, forms, state, a built site, the Studio); `-DskipTests` leaves them out, `rachana-guards` honours it. The two
+  `arrow` expectations of the live declaration cases (F5). The static-files host evaluates through the runtime bundle's `query` (Core's
+  `RowQuery`), with no filter evaluator of its own (F6). The server answers only its own `Host` names (bind address, `localhost`,
+  `server.origins`) in every auth mode, and a link in `static/` cannot leave it (F8). `levels.py` refuses a deleted recorded case that
+  is not a listed withdrawal (F9). One default language level, `Grammar.DEFAULT_LEVEL`, handed out by the bundles' `levels()` (F12;
+  guard `DefaultLevelGuardTest`). One Elements pin (`ElementsPinGuardTest`). The reference server serves a path with a `+`.
+- **finance library on the new formats and events**: rates default to `pct4` (curve-table, curve-overview, term-structure,
+  curve-compare, fixing-ladder, leg-table), changes and spreads to `bp1` (fixing-ladder; curve-compare's new `spread-fmt`), discount
+  factors to `df4`, prices to `price4` (depth-ladder, fx-scenario-chart, trade-ticket, fills-summary); the two trees take `fmt`
+  (risk-hierarchy-tree keeps its share used in `pct0` through a column); correlation-matrix, scenario-matrix, sensitivity-heatmap and
+  vol-surface raise `cell` on a click (their catalogue events). Goldens rewritten (22), gate green, gallery pages paint. Elements
+  pack `3.2.0-dev+6b4a3b2` (pivot cells and surface points as marks).
+- **Events on pivot cells and surface points** (level 1.2, contract 1.2 appended): `pivot` and `surface` fire `point-click`. A pivot
+  cell with a figure is a mark, `@` the cell `{row, path?, column, value}`; a surface point is `{x, y, z}`; `#index` the place row by
+  row. `Cell.ev`, `set`, `on` (a pivot's cells) and `Surface.ev`, `set`, `on` (lists beside `z`); `ev` only on a panel that emits on
+  point-click. A click fires the panel's event with the payload read over the rebound mark (`ScreenWire`), `Fire` finds the mark by its
+  place, the painter draws the cells and points as clickable marks. Cases `fire/surface-points`, `PointCellsTest` (a host's pivot engine).
 - **Gate 2 fixes A (compiler and engine)**:
   - **F4 / O7, the `check` and `grammar` kinds run**: the 49 frozen cases no runtime answered are answered on the JVM, both JavaScript
     bundles (facade `checked`, `grammar`; the tools bundle's harness) and Python on V8. Corrected cases that had never run: checked

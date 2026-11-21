@@ -6,7 +6,7 @@
     pip install drishti-rachana[flask]
     python flask_app.py                    # then open http://127.0.0.1:5000/dash/
 
-The page needs the painter (<rachana-view>, built on branch g2/data); the data endpoints under /dash/data work today.
+The page is the real <rachana-view>: the adapter serves it and its assets under /dash/static.
 A change of (key, None) removes the row.
 """
 import time

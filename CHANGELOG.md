@@ -15,6 +15,13 @@ Entries are written per release; the regime's unreleased work is listed after th
   (opaque) travels from the transport to the provider. No behaviour change: protocol cases 54 of 55 as before (the frozen
   `examples/bridge` sort case).
 
+### Python SDK parity with the JVM data host (G2)
+
+- **Arrow IPC and NDJSON** from `DataHost` (`drishti_rachana.rows_forms`): `Accept: application/vnd.apache.arrow.stream` (official pyarrow, optional extra `drishti-rachana[arrow]`; `406` + `rdp.query.unsupported` when it is not installed or the table does not declare `arrow`, as the JVM) and `application/x-ndjson`, by the rules of PROTOCOL 3.1, 3.2, 5.2 (metadata, masked `<name>$masked`, big integers, decimals), 5.3; a reader that also accepts JSON or `*/*` gets JSON.
+- **Filtered and conflated subscriptions** (`drishti_rachana.subscription`, port of `Subscription.java`): `changes.filter` restates each patch (`remove` / `update`, an empty patch keeps the numbering), `conflate: {everyMs}` merges by key with `first` and `seq`; `GET` or `POST /changes` (`table`, `after`, `filter`, `conflate`); an unresumable position (and any filtered stream not at the table's position) is one `gap` frame with `recoverable: false`. The bridge moved from the test host to `drishti_rachana.bridge` (`sub`, `unsub`, `msg`, `res.arrow`).
+- **`protocol_check.py --python` runs every `protocol` case** (the `--python` skips of `protocol/forms` and `protocol/live` are gone): 55 cases, 54 pass; the one failure is the frozen `bridge-rows-request-answered-once`, which the JVM reference fails the same way.
+- **The adapters serve the real `<rachana-view>`**: `drishti_rachana.assets` serves the element and its modules, the vendored Drishti Elements 3.1.0 pack and the runtime bundle (and Apache Arrow JS) under `<mount>/static/...` with correct media types, as package data of the wheel (`pyproject.toml` force-include) or from `js/` in a checkout; the placeholder `DEFAULT_VIEW_SCRIPT` and `view_script=` are deleted. `@table(..., schema=)` declares `arrow`. The FastAPI change stream no longer fails on an async table function (the first read ran inside the event loop). `examples/live-orders/paint_check.py` (Chromium): paints, changes while open, no console error.
+
 ### CLI and Python SDK, second pass (G2)
 
 - **Language level for `lint` / `check`**: the bundle's `check` already read `since` (as `open` does), so no facade change; `rachana lint`,
@@ -26,14 +33,34 @@ Entries are written per release; the regime's unreleased work is listed after th
   warning and the TODO are gone. Tests: node (`build` of static-sales), `test/paint_check.py` (Chromium: every page
   paints, no console error). 
 - **Python `DataHost` and the JVM reference answer the same `protocol` cases**: `drishti_rachana.testhost` (the PROTOCOL 15 test
-  adapter over the standard library) and `protocol_check.py --python`; the host skips `protocol/forms` (Arrow, NDJSON) and `protocol/live`
-  (bridge subscriptions, filtered and conflated streams), which it does not offer, and passes 39 of the other 40 (the one case is the
+  adapter over the standard library) and `protocol_check.py --python`; the host first passed 39 of the 40 cases it ran (superseded by the parity entry above; the one failing case is the
   frozen example that sorts a table without `can: sort`, which the JVM reference fails the same way). The host now enforces `can` (`rdp.query.unsupported` with `operation`), checks filter columns
   (`rdp.column.unknown`) and operations (`rdp.query.invalid`), refuses masked columns (`rdp.forbidden`), orders by the key last with
   empty values last, compares decimals exactly, answers `group` (count, sum, min, max, avg, distinct, totals) and sends `t: msg` frames
   and `gap` with `recoverable: false` when there is no replay. `python/tests/test_protocol_cases.py` runs the cases.
 - The three `test_conformance.py` failures could not be reproduced on `g2/integration` (6 pass, 26 in the package); two stale
   expectations in `test_server_adapters.py` were corrected to the spec.
+
+### Fragments are functions: column texts reach the mapping (decision L-21 rule 3, lead), level 1.2 (G2 lane A3)
+
+- **Column parameters** (SPEC 2.5, `functions.yaml`): every Core parameter whose argument names a column of the list's rows is
+  marked `role: "column"` (`field` of `sum`, `count`, `avg`, `median`, `variance`, `stddev`, `variance_pop`, `stddev_pop`,
+  `distinct`, `percentile`, `span`; `key` and `aggregate` of `group`; `b` and `c` of `wavg`); `roles_since: "1.2"` says when roles
+  arrived, so `levels.py write` and `LevelReplayTest` write a level before it without them (level 1.0's file is unchanged).
+  `functions.schema.json` describes both keys.
+- **Renamed at compile time like `@.col`** (`com.ash.rachana.el.FragmentColumns`, used by `TypedFragment.bind` before the
+  arguments are put in): the text of a column parameter over a table parameter (`sum(arg.rows, 'amount')`), `@.<column>` where
+  `@` is a row of the table (a panel that reads it, a filter `arg.rows[?...]`, the per-element argument of `map`, `sort`, `reduce`,
+  `group`), a lambda element's field (`lambda r: r.amount`), the field of `first`/`last`/an index of the rows, and the same inside a
+  template's `${...}`; the pipe and `sort`/`take`/`drop`/`unique` keep the table's rows. The spelling is kept; only the names change.
+  `RCH-2120` now also counts these reads.
+- **`RCH-2121`** (error): a column parameter over the table given a computed text, a text naming a local column over a list that is
+  not the table, a column the table does not declare, or a bare name that is a local column; the message names the local column and
+  says to write `@.<name>` or the column as text.
+- **Conformance**: `sutra/fragments-calls` (+2: every renamed form, identity), `problem/fragments-calls` (+4: one per refusal),
+  verified; the `sutra` kind now builds the view at the case's level (it built at 1.0, so 1.1 syntax in a 1.2 case did not
+  read). `FragmentColumnsTest` checks the Java table of column parameters equals the role marks. API additions only
+  (`FragmentColumns`, `SutraExpressions.expressionOptions(String)`, `TypedFragment.COLUMN_TEXT`).
 
 ### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
 

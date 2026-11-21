@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.parse;
 
+import com.ash.rachana.SutraExpressions;
 import com.ash.rachana.SutraProblem;
 import com.ash.rachana.model.SourceLocation;
 import java.util.ArrayList;
@@ -49,6 +50,8 @@ public final class TypedFragment {
     public static final String SCOPE = "RCH-2117";
     /** Slot content of a kind the slot does not accept, or more of it than its {@code max}. */
     public static final String SLOT = "RCH-2118";
+    /** A column named where the caller's mapping cannot reach it (a computed column text, a bare name, a text off its table). */
+    public static final String COLUMN_TEXT = com.ash.rachana.el.FragmentColumns.CODE;
     /** The language level that brings the typed form. */
     public static final String SINCE = "1.2";
 
@@ -508,11 +511,12 @@ public final class TypedFragment {
             }
             PNode rowsOf = p.map().get("rows");
             String table = rowsOf != null && rowsOf.text() != null && rowsOf.text().startsWith("arg.") ? longest(rowsOf.text().substring(4)) : null;
-            PNode filled = fill(p, exprs, literals, tokens, sutraFile, out);
-            if (table != null && rowsOf.text().length() == 4 + table.length() && renames.containsKey(table)) {
-                Set<String> r = read.computeIfAbsent(table, k -> new LinkedHashSet<>());
-                filled = rename(filled, locals.getOrDefault(table, Map.of()), renames.get(table), r, true);
+            if (table != null && (rowsOf.text().length() != 4 + table.length() || !locals.containsKey(table))) {
+                table = null;
             }
+            Columns cols = new Columns(locals, renames, read);
+            p = columns(p, table, SutraExpressions.expressionOptions(text(p.map().get("kind"))), true, false, cols, out);
+            PNode filled = fill(p, exprs, literals, tokens, sutraFile, out);
             panels.add(filled);
             own.add(true);
         }
@@ -691,53 +695,117 @@ public final class TypedFragment {
         return l.isEmpty() || t.isEmpty() || l.equals(t) || numbers.contains(l) && numbers.contains(t) || "datetime".equals(l) && "date".equals(t);
     }
 
-    /** A panel with its local column names renamed to the caller's: field-name options and {@code @.<column>} in its texts. */
-    private static PNode rename(PNode n, Map<String, Col> locals, Map<String, String> rename, Set<String> read, boolean top) {
+    /** The fragment's tables as the column pass sees them (decision L-21, rule 3). */
+    private final class Columns implements com.ash.rachana.el.FragmentColumns.Tables {
+        private final Map<String, Map<String, Col>> locals;
+        private final Map<String, Map<String, String>> renames;
+        private final Map<String, Set<String>> read;
+
+        Columns(Map<String, Map<String, Col>> locals, Map<String, Map<String, String>> renames, Map<String, Set<String>> read) {
+            this.locals = locals;
+            this.renames = renames;
+            this.read = read;
+        }
+
+        @Override
+        public String table(String afterArg) {
+            String p = longest(afterArg);
+            return p != null && locals.containsKey(p) ? p : null;
+        }
+
+        @Override
+        public Set<String> columns(String table) {
+            Map<String, Col> c = locals.get(table);
+            return c == null ? null : c.keySet();
+        }
+
+        @Override
+        public String rename(String table, String column) {
+            return renames.getOrDefault(table, Map.of()).getOrDefault(column, column);
+        }
+
+        @Override
+        public void read(String table, String column) {
+            read.computeIfAbsent(table, k -> new LinkedHashSet<>()).add(column);
+        }
+
+        @Override
+        public List<String> tableNames() {
+            return List.copyOf(locals.keySet());
+        }
+    }
+
+    /**
+     * A panel with its local column names renamed to the caller's (decision L-21, rule 3): over the table {@code table} the panel reads, its
+     * field-name options and {@code bind}s; in every expression and template, {@code @.<column>}, a lambda element's field and the text of
+     * a Core column parameter over a table ({@link com.ash.rachana.el.FragmentColumns}). A column named where the mapping cannot reach it is
+     * {@code RCH-2121}.
+     */
+    private PNode columns(PNode n, String table, Set<String> exprKeys, boolean top, boolean expr, Columns cols, List<SutraProblem> out) {
         if (n.isMap()) {
             Map<String, PNode> m = new LinkedHashMap<>();
             n.map().forEach((k, v) -> {
-                if (top && FIELD_OPTIONS.contains(k) && (v.isScalar() || v.isList()) || "bind".equals(k) && v.isScalar()) {
-                    m.put(k, field(v, locals, rename, read));
+                boolean isExpr = top && exprKeys.contains(k) || "bind".equals(k) || "when".equals(k);
+                if (table != null && (top && FIELD_OPTIONS.contains(k) && (v.isScalar() || v.isList()) || "bind".equals(k) && v.isScalar())) {
+                    m.put(k, field(v, table, isExpr, cols, out));
                 } else {
-                    m.put(k, rename(v, locals, rename, read, false));
+                    m.put(k, columns(v, table, exprKeys, false, isExpr, cols, out));
                 }
             });
             return new PNode(m, n.line(), n.column());
         }
         if (n.isList()) {
             List<PNode> l = new ArrayList<>();
-            n.list().forEach(v -> l.add(rename(v, locals, rename, read, false)));
+            n.list().forEach(v -> l.add(columns(v, table, exprKeys, false, expr, cols, out)));
             return new PNode(l, n.line(), n.column());
         }
-        if (!(n.value() instanceof String s) || !s.contains("@.")) {
+        if (!(n.value() instanceof String s)) {
             return n;
+        }
+        List<String> wrong = new ArrayList<>();
+        String done = s.contains("${") ? com.ash.rachana.el.FragmentColumns.template(s, table, cols, wrong)
+                : com.ash.rachana.el.FragmentColumns.rename(s, table, expr, cols, wrong);
+        for (String w : wrong) {
+            out.add(problem(COLUMN_TEXT, "fragment " + name + " " + w, file, n));
+        }
+        if (done == null) {
+            done = table == null ? s : atColumns(s, table, cols);
+        }
+        return done.equals(s) ? n : new PNode(done, n.line(), n.column());
+    }
+
+    /** {@code @.<column>} renamed in a text that is no expression (read as text, the rule as written before the pass). */
+    private static String atColumns(String s, String table, Columns cols) {
+        if (!s.contains("@.")) {
+            return s;
         }
         Matcher m = Pattern.compile("(?<![A-Za-z0-9_$@])@\\.([A-Za-z_][A-Za-z0-9_]*)").matcher(s);
         StringBuilder sb = new StringBuilder();
         int copied = 0;
         while (m.find()) {
             String c = m.group(1);
-            if (locals.containsKey(c)) {
-                read.add(c);
+            if (cols.columns(table).contains(c)) {
+                cols.read(table, c);
+                c = cols.rename(table, c);
             }
-            sb.append(s, copied, m.start()).append(("@." + rename.getOrDefault(c, c)));
+            sb.append(s, copied, m.start()).append("@.").append(c);
             copied = m.end();
         }
-        sb.append(s, copied, s.length());
-        return new PNode(sb.toString(), n.line(), n.column());
+        return sb.append(s, copied, s.length()).toString();
     }
 
-    private static PNode field(PNode v, Map<String, Col> locals, Map<String, String> rename, Set<String> read) {
+    /** A field-name option or {@code bind}: a local column name (or a list of them) renamed; anything else read as an expression. */
+    private PNode field(PNode v, String table, boolean expr, Columns cols, List<SutraProblem> out) {
         if (v.isList()) {
             List<PNode> l = new ArrayList<>();
-            v.list().forEach(x -> l.add(field(x, locals, rename, read)));
+            v.list().forEach(x -> l.add(field(x, table, expr, cols, out)));
             return new PNode(l, v.line(), v.column());
         }
-        if (v.value() instanceof String s && locals.containsKey(s)) {
-            read.add(s);
-            return new PNode(rename.getOrDefault(s, s), v.line(), v.column());
+        if (v.value() instanceof String s && cols.columns(table).contains(s)) {
+            cols.read(table, s);
+            return new PNode(cols.rename(table, s), v.line(), v.column());
         }
-        return rename(v, locals, rename, read, false);
+        return columns(v, table, Set.of(), false, expr, cols, out);
     }
 
     /** The fragment's own panels with ids scoped to the use ({@code <as>-<id>}) and their reads of each other ({@code @id}) moved with them. */

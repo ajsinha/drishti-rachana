@@ -21,6 +21,7 @@ class public abstract interface com.ash.rachana.view.PanelData
 class public abstract interface com.ash.rachana.wire.TableRows
 class public abstract static interface com.ash.rachana.el.Calendars$Calendar
 class public abstract static interface com.ash.rachana.el.Calendars$Resolver
+class public abstract static interface com.ash.rachana.el.FragmentColumns$Tables
 class public abstract static interface com.ash.rachana.el.FunctionProvider$Grouping
 class public abstract static interface com.ash.rachana.parse.TypedFragment$Caller
 class public abstract static interface com.ash.rachana.profile.SutraKey$Context
@@ -61,6 +62,7 @@ class public final class com.ash.rachana.el.CheckedMode
 class public final class com.ash.rachana.el.DatePartFunctions
 class public final class com.ash.rachana.el.ElCompiler
 class public final class com.ash.rachana.el.FormRules
+class public final class com.ash.rachana.el.FragmentColumns
 class public final class com.ash.rachana.el.FunctionTable
 class public final class com.ash.rachana.el.Functions
 class public final class com.ash.rachana.el.MeasureFunctions
@@ -269,6 +271,7 @@ class public static final record com.ash.rachana.el.Expr$Slice
 class public static final record com.ash.rachana.el.Expr$Spread
 class public static final record com.ash.rachana.el.Expr$Src
 class public static final record com.ash.rachana.el.Expr$Ternary
+class public static final record com.ash.rachana.el.FragmentColumns$ColumnParam
 class public static final record com.ash.rachana.el.FunctionProvider$Group
 class public static final record com.ash.rachana.el.FunctionProvider$Provided
 class public static final record com.ash.rachana.el.Functions$AggregateCall
@@ -439,6 +442,7 @@ com.ash.rachana.SutraException :: public com.ash.rachana.SutraException(java.uti
 com.ash.rachana.SutraException :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.SutraException.problems()
 com.ash.rachana.SutraExpressions :: public com.ash.rachana.SutraExpressions(com.ash.rachana.el.ElCompiler)
 com.ash.rachana.SutraExpressions :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.SutraExpressions.check(com.ash.rachana.model.Sutra)
+com.ash.rachana.SutraExpressions :: public static java.util.Set<java.lang.String> com.ash.rachana.SutraExpressions.expressionOptions(java.lang.String)
 com.ash.rachana.SutraLayoutEditor :: public com.ash.rachana.SutraLayoutEditor$Edit com.ash.rachana.SutraLayoutEditor.apply(java.lang.String,java.util.List<com.ash.rachana.SutraLayoutEditor$Placement>,boolean)
 com.ash.rachana.SutraLayoutEditor :: public com.ash.rachana.SutraLayoutEditor$Edit com.ash.rachana.SutraLayoutEditor.apply(java.lang.String,java.util.List<com.ash.rachana.SutraLayoutEditor$Placement>,boolean,boolean)
 com.ash.rachana.SutraLayoutEditor :: public com.ash.rachana.SutraLayoutEditor()
@@ -1619,6 +1623,23 @@ com.ash.rachana.el.FormRules :: public static java.math.BigDecimal com.ash.racha
 com.ash.rachana.el.FormRules$Compiled :: public java.lang.Object com.ash.rachana.el.FormRules$Compiled.eval(java.util.Map<java.lang.String, java.lang.Object>,java.time.LocalDate)
 com.ash.rachana.el.FormRules$Compiled :: public java.lang.String com.ash.rachana.el.FormRules$Compiled.text()
 com.ash.rachana.el.FormRules$Compiled :: public void com.ash.rachana.el.FormRules$Compiled.names(java.util.Set<java.lang.String>)
+com.ash.rachana.el.FragmentColumns :: public static final java.lang.String com.ash.rachana.el.FragmentColumns.CODE
+com.ash.rachana.el.FragmentColumns :: public static final java.util.List<com.ash.rachana.el.FragmentColumns$ColumnParam> com.ash.rachana.el.FragmentColumns.COLUMN_PARAMS
+com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.rename(java.lang.String,java.lang.String,boolean,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
+com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.template(java.lang.String,java.lang.String,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public boolean com.ash.rachana.el.FragmentColumns$ColumnParam.textOnly()
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public com.ash.rachana.el.FragmentColumns$ColumnParam(java.lang.String,int,java.lang.String,boolean)
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public final boolean com.ash.rachana.el.FragmentColumns$ColumnParam.equals(java.lang.Object)
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public final int com.ash.rachana.el.FragmentColumns$ColumnParam.hashCode()
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public final java.lang.String com.ash.rachana.el.FragmentColumns$ColumnParam.toString()
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public int com.ash.rachana.el.FragmentColumns$ColumnParam.place()
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public java.lang.String com.ash.rachana.el.FragmentColumns$ColumnParam.function()
+com.ash.rachana.el.FragmentColumns$ColumnParam :: public java.lang.String com.ash.rachana.el.FragmentColumns$ColumnParam.name()
+com.ash.rachana.el.FragmentColumns$Tables :: public abstract java.lang.String com.ash.rachana.el.FragmentColumns$Tables.rename(java.lang.String,java.lang.String)
+com.ash.rachana.el.FragmentColumns$Tables :: public abstract java.lang.String com.ash.rachana.el.FragmentColumns$Tables.table(java.lang.String)
+com.ash.rachana.el.FragmentColumns$Tables :: public abstract java.util.List<java.lang.String> com.ash.rachana.el.FragmentColumns$Tables.tableNames()
+com.ash.rachana.el.FragmentColumns$Tables :: public abstract java.util.Set<java.lang.String> com.ash.rachana.el.FragmentColumns$Tables.columns(java.lang.String)
+com.ash.rachana.el.FragmentColumns$Tables :: public abstract void com.ash.rachana.el.FragmentColumns$Tables.read(java.lang.String,java.lang.String)
 com.ash.rachana.el.FunctionProvider :: public abstract java.lang.String com.ash.rachana.el.FunctionProvider.source()
 com.ash.rachana.el.FunctionProvider :: public abstract java.util.List<com.ash.rachana.el.FunctionProvider$Provided> com.ash.rachana.el.FunctionProvider.functions()
 com.ash.rachana.el.FunctionProvider :: public default com.ash.rachana.el.FunctionProvider$Grouping com.ash.rachana.el.FunctionProvider.grouping()
@@ -2740,6 +2761,7 @@ com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.par
 com.ash.rachana.parse.TypedFragment :: public static com.ash.rachana.parse.TypedFragment com.ash.rachana.parse.TypedFragment.of(com.ash.rachana.parse.SutraBlocks$Block)
 com.ash.rachana.parse.TypedFragment :: public static final int com.ash.rachana.parse.TypedFragment.MAX_PARAMS
 com.ash.rachana.parse.TypedFragment :: public static final int com.ash.rachana.parse.TypedFragment.MAX_SLOTS
+com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.COLUMN_TEXT
 com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.MISSING
 com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.SCOPE
 com.ash.rachana.parse.TypedFragment :: public static final java.lang.String com.ash.rachana.parse.TypedFragment.SINCE

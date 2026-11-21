@@ -217,7 +217,12 @@ function, REST paging or a topic: a host exposes those as named tables.
   table parameter names its local columns (`columns:`) or a published contract (`contract: <name>`, the file
   `contracts/<name>.json` of its library or host, Data Protocol schema form); the use binds it to the caller's table,
   `rows: $.t` (identity) or `rows: { from: $.t, columns: { <local>: <caller column> } }`, and the compiler renames the
-  local columns to the caller's in the panels that read the table (field-name options, `bind`, `@.<column>`). When the
+  local columns to the caller's at compile time: in the panels that read the table its field-name options and `bind`s; in every
+  expression `@.<column>` where `@` is a row of the table (such a panel, a filter of the table, the per-element argument of `map`,
+  `sort`, `reduce`, `group` over it), a lambda element's field, the field of `first`/`last`/an index of its rows, and the text of a
+  Core **column parameter** over it (`sum(arg.rows, 'amount')`; the parameters marked `role: column` in `functions.yaml`). A column
+  named where the mapping cannot reach it is `RCH-2121`: a column parameter given a computed text, a local column's text over a
+  list that is not the table, a column the table does not declare, a bare name that is a local column (write `@.<name>`). When the
   caller's columns are known (a `data:` entry's `fields`, or its written rows) each required local column must be there
   (`RCH-2115`), a mapped caller column must exist and fit the type (`RCH-2116`); a mapping to a column the fragment does
   not declare is `RCH-2114`; a mapping the fragment never reads is the advisory `RCH-2120` (severity warning). A typed

@@ -516,6 +516,7 @@
         "expect": {
           "type": "object", "additionalProperties": false, "required": ["steps"],
           "properties": {
+            "at": { "$ref": "#/$defs/atMap" },
             "steps": {
               "type": "array", "minItems": 1,
               "items": {

@@ -13,7 +13,12 @@ import java.util.Map;
 public sealed interface PanelData {
 
     /** Label/value fields for {@code kv}, {@code status} and {@code provenance}. */
-    record Fields(List<Cell> fields, @Include(Include.Rule.NON_NULL) String ev) implements PanelData {
+    record Fields(List<Cell> fields, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) implements PanelData {
+
+        /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
+        public Fields(List<Cell> fields, String ev) {
+            this(fields, ev, null);
+        }
 
         /** As it was before {@code ev} (contract 1.2): a record nobody clicks; {@code ev} is "0" on a panel that emits on point-click. */
         public Fields(List<Cell> fields) {
@@ -151,7 +156,15 @@ public sealed interface PanelData {
      */
     @Include(Include.Rule.NON_NULL)
     record Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel,
-            LinkView source, String unit, Boolean step, @Include(Include.Rule.NON_EMPTY) List<String> ev) implements PanelData {
+            LinkView source, String unit, Boolean step, @Include(Include.Rule.NON_EMPTY) List<String> ev,
+            @Include(Include.Rule.NON_EMPTY) List<Map<String, Object>> set) implements PanelData {
+
+        /** As it was before {@code set} (contract 1.2): beside {@code x}, what a point-click on each point writes into the screen's state. */
+        public Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel, LinkView source, String unit,
+                Boolean step, List<String> ev) {
+            this(x, series, mark, markText, limit, limitLabel, source, unit, step, ev, null);
+        }
+
 
         public Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel, LinkView source, String unit) {
             this(x, series, mark, markText, limit, limitLabel, source, unit, null);
@@ -225,7 +238,12 @@ public sealed interface PanelData {
      * @param unit a short unit, or null
      * @param caption small text under the figure, or null
      */
-    record Metric(Cell value, Cell delta, String unit, String caption, @Include(Include.Rule.NON_NULL) String ev) implements PanelData {
+    record Metric(Cell value, Cell delta, String unit, String caption, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) implements PanelData {
+
+        /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
+        public Metric(Cell value, Cell delta, String unit, String caption, String ev) {
+            this(value, delta, unit, caption, ev, null);
+        }
 
         /** As it was before {@code ev} (contract 1.2): a figure nobody clicks; {@code ev} is "0" on a panel that emits on point-click. */
         public Metric(Cell value, Cell delta, String unit, String caption) {
@@ -293,7 +311,12 @@ public sealed interface PanelData {
     record ShadeItem(String code, double value, String text) {}
 
     /** {@code gauge}. */
-    record Gauge(double value, double max, String text, String label, @Include(Include.Rule.NON_NULL) String ev) implements PanelData {
+    record Gauge(double value, double max, String text, String label, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) implements PanelData {
+
+        /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
+        public Gauge(double value, double max, String text, String label, String ev) {
+            this(value, max, text, label, ev, null);
+        }
 
         /** As it was before {@code ev} (contract 1.2): a gauge nobody clicks; {@code ev} is "0" on a panel that emits on point-click. */
         public Gauge(double value, double max, String text, String label) {
@@ -319,7 +342,13 @@ public sealed interface PanelData {
      * @param tone {@code pos} (up), {@code neg} (down) or {@code link} (a total)
      * @param total drawn as a full bar from zero
      */
-    record Step(String label, double value, double from, double to, String text, String tone, boolean total, @Include(Include.Rule.NON_NULL) String ev) {
+    record Step(String label, double value, double from, double to, String text, String tone, boolean total, @Include(Include.Rule.NON_NULL) String ev,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+
+        /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
+        public Step(String label, double value, double from, double to, String text, String tone, boolean total, String ev) {
+            this(label, value, from, to, text, tone, total, ev, null);
+        }
 
         /** As it was before {@code ev} (contract 1.2): {@code ev} is the step's row in the data on a panel that emits on point-click. */
         public Step(String label, double value, double from, double to, String text, String tone, boolean total) {
@@ -361,7 +390,13 @@ public sealed interface PanelData {
 
     /** A point: its measures and their text, an optional size, label, group and the entity the label names. */
     @Include(Include.Rule.NON_NULL)
-    record Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link, String ev) {
+    record Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link, String ev,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+
+        /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
+        public Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link, String ev) {
+            this(x, y, size, xText, yText, label, group, link, ev, null);
+        }
 
         /** As it was before {@code ev} (contract 1.2): {@code ev} is the point's row in the data on a panel that emits on point-click. */
         public Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link) {
@@ -389,7 +424,13 @@ public sealed interface PanelData {
      */
     @Include(Include.Rule.NON_NULL)
     record Candle(String x, double open, double high, double low, double close, Double volume,
-            String openText, String highText, String lowText, String closeText, String volumeText, String ev) {
+            String openText, String highText, String lowText, String closeText, String volumeText, String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+
+        /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
+        public Candle(String x, double open, double high, double low, double close, Double volume, String openText, String highText, String lowText,
+                String closeText, String volumeText, String ev) {
+            this(x, open, high, low, close, volume, openText, highText, lowText, closeText, volumeText, ev, null);
+        }
 
         /** As it was before {@code ev} (contract 1.2): {@code ev} is the candle's row in the data on a panel that emits on point-click. */
         public Candle(String x, double open, double high, double low, double close, Double volume, String openText, String highText, String lowText,
@@ -437,7 +478,12 @@ public sealed interface PanelData {
      * @param tone the status tone ({@code ok}, {@code warn}, {@code bad}), or null
      */
     @Include(Include.Rule.NON_NULL)
-    record Event(String date, String label, String detail, String status, String tone, String ev) {
+    record Event(String date, String label, String detail, String status, String tone, String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+
+        /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
+        public Event(String date, String label, String detail, String status, String tone, String ev) {
+            this(date, label, detail, status, tone, ev, null);
+        }
 
         /** As it was before {@code ev} (contract 1.2): {@code ev} is the event's row in the data on a panel that emits on point-click. */
         public Event(String date, String label, String detail, String status, String tone) {

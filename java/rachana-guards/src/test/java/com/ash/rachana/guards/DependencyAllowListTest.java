@@ -48,7 +48,9 @@ class DependencyAllowListTest {
                 boolean arrowData = g.equals("org.apache.arrow") && module.equals("rachana-data");
                 // a JDBC driver for the standalone server's JDBC source tests: test scope, in rachana-server only (drivers are the operator's)
                 boolean jdbcTest = g.equals("com.h2database") && module.equals("rachana-server") && body.contains("<scope>test</scope>");
-                assertTrue(rachana || junitTest || teavmBuild || arrowData || jdbcTest, pom + " has a dependency outside the allow-list: " + g + ":" + m.group(2));
+                // Drishti Tools' CSV reader and writer (owner decision O6, G3 gate): the standalone server only; Core and the rest stay free of Tools
+                boolean toolsCsv = g.equals("com.ash.tools") && m.group(2).trim().equals("tools-csv") && module.equals("rachana-server");
+                assertTrue(rachana || junitTest || teavmBuild || arrowData || jdbcTest || toolsCsv, pom + " has a dependency outside the allow-list: " + g + ":" + m.group(2));
             }
         }
         Set<String> stale = new LinkedHashSet<>(exempt);

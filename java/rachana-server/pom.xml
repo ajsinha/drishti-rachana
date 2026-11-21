@@ -10,9 +10,11 @@
   <name>rachana-server</name>
   <!-- The standalone server (COMPILER_AND_RUNTIMES 10, MODES 4): a project folder of Sutras, Data Protocol tables from files, JDBC and REST
        sources kept live by rachana-live, sign-in. The JDK's HTTP server on virtual threads; no framework, no driver bundled (JDBC drivers
-       are the operator's, named in the configuration). Depends on rachana-live (and through it rachana-data and Core) only. -->
+       are the operator's, named in the configuration). Depends on rachana-live (and through it rachana-data and Core) and, for reading and
+       writing CSV files, Drishti Tools' tools-csv (owner decision O6; no module but this one may). -->
   <dependencies>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-live</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.ash.tools</groupId><artifactId>tools-csv</artifactId></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
     <!-- A JDBC driver for the JDBC source's tests only (test scope; DependencyAllowListTest allows it here and nowhere else). -->
     <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><version>2.3.232</version><scope>test</scope></dependency>

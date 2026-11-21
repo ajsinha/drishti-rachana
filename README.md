@@ -98,7 +98,8 @@ python3 tools/conformance/rachana_conformance.py --jvm    # the conformance suit
 
 ## Install for Drishti
 
-The Drishti family builds in this order: **Rachana → tools → Lake → Drishti**. Each one is installed into the local Maven repository
+The Drishti family builds in this order: **Drishti Tools → Rachana → Lake → Drishti** (`rachana-server` reads and writes CSV
+files with Tools' `tools-csv`; Core and the other modules use nothing of Tools). Each one is installed into the local Maven repository
 (`~/.m2/repository`, Windows `C:\Users\<user>\.m2\repository`) **from its release tag**, never from a branch, before the next one
 builds:
 

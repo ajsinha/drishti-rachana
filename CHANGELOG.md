@@ -5,6 +5,12 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **`rachana-server` reads and writes CSV with Drishti Tools (owner decision O6)**: the server's own RFC 4180 parser and writer are
+  replaced by `tools-csv` 1.0.0 (`CsvReader`, `CsvWriter`; `drishti.tools.version` in `java/pom.xml`); Core and every other module
+  stay free of Tools (`DependencyAllowListTest` allows `com.ash.tools:tools-csv` in `rachana-server` only). The install order is now
+  Drishti Tools → Rachana → Lake → Drishti. The table writer writes LF line ends and no formula guard (the file is the table's own
+  source and is read back as written). A CSV that holds only its header now keeps that column order when the first row is added
+  (the old header read returned no names).
 - **The same bytes on every run (G3 gate F1)**: a ViewModel's `layout.split` and `layout.sections` were written from `Map.of`, so
   their key order changed from one JVM run to the next and differed on Node; the server's home page listed Sutras from `Map.copyOf`
   (another order at every start), and the pending tables, a table source's column types, the bundle's `levels()` answer, the live

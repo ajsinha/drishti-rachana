@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "drishti-rachana"
-version = "0.0.1.dev0"
+version = "0.11.0.dev0"
 description = "Drishti Rachana for Python: Data Protocol types, conformance runner, Flask and FastAPI adapters (skeleton)."
 readme = "README.md"
 requires-python = ">=3.10"

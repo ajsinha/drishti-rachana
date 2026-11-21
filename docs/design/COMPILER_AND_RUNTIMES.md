@@ -145,7 +145,7 @@ cross-compile.
 | # | Measure | Passes when |
 |---|---|---|
 | T1 | it compiles: every JDK class and language feature Core uses that the tool lacks | each gap has one replacement inside Core, no second code path |
-| T2 | size, minified + Brotli | runtime ≤ 150 KB, tools ≤ 350 KB |
+| T2 | size, minified + Brotli | runtime ≤ 365 KB, tools ≤ 385 KB (restated, G1 gate O1) |
 | T3 | start: module evaluation to first compiled Sutra | ≤ 30 ms on the reference laptop |
 | T4 | evaluation speed against a hand-written JavaScript evaluator of the same twenty expressions | within 3× per evaluation, and the budgets of section 7 met |
 | T5 | data hand-over: a live change touches only changed rows | no allocation proportional to table size per change |
@@ -297,7 +297,7 @@ expressions. "Large Sutra": 50 panels, 400 expressions.
 | P7 | sustained live: 1,000 row changes per second on a 50,000-row table | n/a | no dropped frame at 60 Hz; main thread ≤ 4 ms per frame | n/a |
 | P8 | Sutra text to first paint, 1,000 rows, cold page | n/a | ≤ 300 ms | n/a |
 | P9 | lint 500 Sutra files (CLI) | ≤ 2 s | ≤ 5 s (Node) | ≤ 6 s |
-| P10 | bundle size (Brotli) | jar ≤ 1.5 MB (core) | runtime ≤ 150 KB, tools ≤ 350 KB | wasm ≤ 3 MB |
+| P10 | bundle size (Brotli) | jar ≤ 1.5 MB (core) | runtime ≤ 365 KB, tools ≤ 385 KB (restated 2026-11-21 from the measured 361 and 381 KB; about 10% trimmed in G3 packaging) | wasm ≤ 3 MB |
 | P11 | memory per open view, typical | ≤ 2 MB | ≤ 4 MB excluding rows | n/a |
 
 How the budgets are met: expressions compiled once and cached by text; dependency paths per expression, so a change

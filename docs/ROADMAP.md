@@ -14,7 +14,7 @@ first customer of what ships here. The designs behind each phase are in [design/
 | **R2a: desktop, Electron first** | i8.x | The **in-process bridge transport** of the Data Protocol and the page-side bridge module; the **Node/Electron host SDK** (`drishti-rachana-electron`). It needs R1's JavaScript build, `<rachana-view>` and the Data Protocol, which is why it is the first item after R1 and not inside it. |
 | **R2b: desktop, Java Swing** | i8.x | `rachana-swing`: a Swing panel over **JCEF** (JavaFX WebView as a fallback, subject to a painter test run). |
 | **R2c: desktop, .NET** | i8.x, i9 | `Rachana.WebView2`: WinForms and WPF controls over **Microsoft WebView2** (MAUI on Windows through the same control; CefSharp as an alternative). |
-| **R2: the product** | i8.x, i9 | WebAssembly build of the compiler for Python-side compile and lint (no JVM), after its proof; the standalone server; editor support (language service); playground and gallery; **GenAI writes Sutras** ([AI_GENUI](design/AI_GENUI.md)): prompt kit, certain fixes, evaluation harness, the generic Rachana MCP server, the Rachana tool pack for sajhamcpserver, Drishti's in-process GenUI (i9). |
+| **R2: the product** | i8.x, i9 | Python-side compile and lint with no JVM (built in A15: the JavaScript bundle on V8, decision W-1; a WebAssembly build only if a later proof wins); the standalone server; editor support (language service); playground and gallery; **GenAI writes Sutras** ([AI_GENUI](design/AI_GENUI.md)): prompt kit, certain fixes, evaluation harness, the generic Rachana MCP server, the Rachana tool pack for sajhamcpserver, Drishti's in-process GenUI (i9). |
 | **R3: distribution** | after i9 | npm, CDN and PyPI publishing; licensing tiers; a specification licence for `spec/` and `conformance/`; native ports only where needed, proven by the conformance suite. |
 
 GenUI (R2, with Drishti i9) is built on Rachana, not on Drishti, so it serves Drishti, other applications and AI
@@ -41,7 +41,7 @@ Part of milestone M1 (the split), tracked here because it gates every later rele
 corpus (`drishti-compat-corpus-2.9.11.i7a`), `RecordedHost`, the CG1, CG3, CG4 and CG6 tests, the CG8 driver in dry-run form, and the
 CG7 forward-vector file list. Waiting on the compiler move (`v0.9.0`): `CustomerCorpusTest` over Core instead of the reference bridge,
 the pin of `FROZEN.sha384` and `spec/1/released/` at the release, the CG8 run against a candidate. Waiting on the binder (`v0.10.0`):
-the corpus's `binds/`. Not started: CG2 level replay, CG5 API surface, CG10 speed. See the README's table and
+the corpus's `binds/`. Built: CG2 level replay and CG5 API surface. Not started: CG10 speed. See the README's table and
 [SUTRA_EXPANSION 6](design/SUTRA_EXPANSION.md).
 
 ## Sutra libraries (planning)
@@ -68,7 +68,7 @@ libraries, 209 fragments); open decisions L-1 to L-20 in [DECISIONS](design/DECI
 | `v1.0.0` is tagged | Core packages have no product dependency; the "names no host" guard passes; the public API is reviewed against three consumers |
 | Drishti moves to the pin | Drishti's full suite, the goldens (byte-identical) and Core conformance with the Drishti profile loaded all pass |
 | the JavaScript build is adopted | proof T1 to T10 pass ([COMPILER_AND_RUNTIMES](design/COMPILER_AND_RUNTIMES.md) 4.2); otherwise the stated fallbacks |
-| the WebAssembly build is adopted | proof W1 to W6 pass; otherwise the stated fallbacks |
+| a WebAssembly build is adopted (instead of V8) | proof W1 to W6 pass on the then-current TeaVM and `wasmtime`; otherwise Python stays on V8 |
 | the GenUI prompt kit ships | the evaluation targets are met on the held-out tasks ([AI_GENUI](design/AI_GENUI.md) section 6) |
 
 ## Rules

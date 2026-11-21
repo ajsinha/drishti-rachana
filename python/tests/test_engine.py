@@ -39,3 +39,22 @@ def test_runtime_bundle_and_version():
     r = Rachana(bundle="runtime")
     assert r.version() == "0.11.0"
     assert r.check(GOOD)["ok"] is True
+
+
+def test_a_bundle_that_is_not_the_recorded_one_is_refused(tmp_path):
+    import shutil
+
+    from drishti_rachana.engine import BundleHashError
+    shutil.copy(BUNDLE_DIR / "rachana.tools.js", tmp_path / "rachana.tools.js")
+    shutil.copy(BUNDLE_DIR / "SHA256SUMS", tmp_path / "SHA256SUMS")
+    Rachana(bundle_dir=tmp_path)                       # untouched: runs
+    with (tmp_path / "rachana.tools.js").open("a", encoding="utf-8") as f:
+        f.write("\n// altered\n")
+    with pytest.raises(BundleHashError):
+        Rachana(bundle_dir=tmp_path)
+
+
+def test_a_runaway_call_is_cancelled():
+    r = Rachana(timeout=1.0)
+    with pytest.raises(Exception, match="(?i)timeout|timed out"):
+        r._ctx.eval("while (true) {}", timeout_sec=1.0)

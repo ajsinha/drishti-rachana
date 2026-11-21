@@ -222,6 +222,20 @@ here. What Drishti must do when the migration starts, in this order:
       (`norm_s_dist`, `f_dist`, `binom_dist`, `hypgeom_dist`, `gamma_dist`, `npv`, `irr`, `mirr`, `rate`, `log`, `fisher`), which
       the pin move's golden run lists. The `date` format's `MMM` is English whatever the JVM's locale.
 
+- [ ] 8.3f2 **Every removal of the public surface (CG5, `java/api-surface.txt`), with its replacement** (the five lines the baseline of
+      `349f001` held and the current file no longer does):
+
+      | Removed | Replacement | Drishti's work |
+      |---|---|---|
+      | `RachanaSchema.build(Collection, Collection)` | `rachana.schema(formats)` of the instance | 8.3d |
+      | `Calendars.use(Resolver)` | the profile's `calendars(...)`, read per instance | 8.3c |
+      | `Functions.register(String, List<Provided>)` (and the `ServiceLoader` discovery of `FunctionProvider`) | the profile's `functions(provider)`; the holder rebuilds the instance when a module starts or stops | 8.3c |
+      | `Functions.liveSource(String)` (the source of a loaded module's function, which a refusal and the catalogue named) | `FunctionProvider.source()` of the provider that holds the function, through the instance's `FunctionTable`; no static lookup remains | 8.3c: where `ModuleBridge` or the catalogue asked `liveSource(name)`, ask the instance's table |
+      | `SafeRegex.Limits.timeoutNanos()` | `maxSteps()` (a count of steps, equal on every runtime: D5-6) | 8.3f |
+
+      A removal is never silent: `ApiSurfaceTest` fails on any line that leaves the file, and the file is rewritten only with
+      `-Drachana.api.surface.write=true` and the owner's line in DECISIONS.
+
 - [ ] 8.3g **The binder's API and writer (A14)**: Drishti's `ViewPipeline` stays (sources, links, provenance, augmenters, caches,
       timings) and builds its `Binder` with `rachana.binder(hooks, pivotEngine)`; Core's `ViewBuilder` (`rachana.views(...)`) is the
       same steps without them, for Core alone and other hosts — keep the two step lists equal (the bridge's `sutra` kind is the

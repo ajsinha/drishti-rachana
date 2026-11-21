@@ -18,7 +18,7 @@ flowchart TB
   subgraph Core[Reference compiler - proprietary runtime]
     JVM[Compiler, Java]
     JS[JavaScript build]
-    WASM[WebAssembly build]
+    V8[Python on V8]
   end
   subgraph Front[Browser]
     VIEWS[Views: elements-view]
@@ -36,13 +36,13 @@ flowchart TB
   end
   Spec --> Core
   CONF -. proves .-> JS
-  CONF -. proves .-> WASM
+  CONF -. proves .-> V8
   JVM --> JS
-  JVM --> WASM
+  JVM --> V8
   JS --> VIEWS
   VIEWS --> EL
   JS --> SJS
-  WASM --> SPY
+  V8 --> SPY
   JVM --> SJ
   Core --> Tool
   DP --> SDK
@@ -107,7 +107,7 @@ sequenceDiagram
 
 The exact message shapes are not final and will be fixed in the protocol document (R0).
 
-## Languages: JVM, JavaScript, WebAssembly
+## Languages: JVM, JavaScript, Python on V8
 
 There is **one compiler source**, written in Java.
 
@@ -115,9 +115,9 @@ There is **one compiler source**, written in Java.
 |---|---|---|
 | JVM | Java SDK, Drishti server, the standalone server, Swing hosts | native home of the reference |
 | JavaScript | browsers, Node | compile in the page; no round trip |
-| WebAssembly | Python and other hosts | compile and lint without installing a JVM |
+| JavaScript bundle on V8 (`mini-racer`) | Python | compile, lint and bind without installing a JVM; the same bundle as the browser, no second build target (decision W-1) |
 
-The JavaScript build is attempted after a short proof (see ROADMAP R1); the WebAssembly build comes in R2. A native
+The JavaScript build is attempted after a short proof (see ROADMAP R1); Python runs that bundle on V8 (decision W-1, built in A15); a WebAssembly build is re-proven on each TeaVM and `wasmtime` release and adopted only if it wins. A native
 port in another language is allowed only where needed, and is accepted only when it passes the conformance suite.
 
 ## Desktop hosts

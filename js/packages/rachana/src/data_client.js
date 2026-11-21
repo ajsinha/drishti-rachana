@@ -104,8 +104,17 @@ export class DataClient {
    * @param {function} [o.subscribe] a host's change stream instead of the minimal SSE form: (table, {epoch, seq}, onFrame) => unsubscribe
    * @param {string} [o.form] the row form asked: 'json' (default), 'arrow' (only of a table whose can has arrow; JSON otherwise) or 'ndjson'
    * @param {Object} [o.arrow] the Apache Arrow JS module object (default globalThis.Arrow, set by js/vendor/apache-arrow's script)
+   * @param {Object} [o.bridge] the in-process bridge instead of HTTP (PROTOCOL 12; a desktop host's web view channel):
+   *   {post(message), listen(handler) => stop}; every request is a bridge message answered by `res` (or `res.arrow`), changes are
+   *   `sub` / `unsub` with `msg` pushed back. Only messages from this channel are read (never from page content or another frame).
+   * @param {Object} [o.filter] (follow) a filter tree for every subscription: only matching rows (the table must declare changes.filter)
+   * @param {number} [o.everyMs] (follow) ask the host to conflate a table's changes to at most one message per everyMs (PROTOCOL 8.4)
    */
   constructor(o) {
+    this.form = o.form || 'json';
+    this.arrow = o.arrow || null;
+    this.everyMs = o.everyMs || 0;
+    if (o.bridge) { this.bridge = new BridgeChannel(o.bridge); this.base = null; return; }
     const origin = o.origin || (typeof location !== 'undefined' ? location.origin : null);
     const base = new URL(o.base, origin || undefined);
     const allowed = [origin, ...(o.allow || [])].filter(Boolean);
@@ -115,12 +124,14 @@ export class DataClient {
     this.base = base.href.replace(/\/$/, '');
     this.fetch = o.fetch || ((u, init) => globalThis.fetch(u, init));
     this.subscribeHook = o.subscribe || null;
-    this.form = o.form || 'json';
-    this.arrow = o.arrow || null;
   }
 
   /** One page of a query in a row form other than JSON, read into the JSON page. */
   async rowsPage(table, doc, form) {
+    if (this.bridge) {
+      if (form !== 'arrow') return this.bridge.request('POST', `/tables/${encodeURIComponent(table)}/query`, doc);
+      return arrowPage(this.arrow || globalThis.Arrow, await this.bridge.request('POST', `/tables/${encodeURIComponent(table)}/query`, doc, 'arrow'));
+    }
     const init = { method: 'POST', headers: { Accept: form === 'arrow' ? ARROW : NDJSON, 'Content-Type': 'application/json' }, body: JSON.stringify(doc) };
     const r = await this.fetch(`${this.base}/tables/${encodeURIComponent(table)}/query`, init);
     if (r.status !== 200) { const t = await r.text(); throw new DataError(r.status, t ? JSON.parse(t).error : null); }
@@ -128,6 +139,7 @@ export class DataClient {
   }
 
   async json(method, path, body) {
+    if (this.bridge) return this.bridge.request(method, path, body);
     const init = { method, headers: { Accept: 'application/json' } };
     if (body !== undefined) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(body); }
     const r = await this.fetch(this.base + path, init);
@@ -165,10 +177,14 @@ export class DataClient {
    * Follows a table's changes after a position. onFrame receives each `msg` or `gap` frame parsed; the rules of PROTOCOL 8.3 (drop a
    * seq not above the last, resync on a gap or another epoch) are the caller's. Returns a function that stops.
    */
-  follow(table, after, onFrame, onError) {
-    if (this.subscribeHook) return this.subscribeHook(table, after, onFrame, onError);
+  follow(table, after, onFrame, onError, opts) {
+    const filter = (opts && opts.filter) || null, everyMs = (opts && opts.everyMs) || this.everyMs;
+    if (this.subscribeHook) return this.subscribeHook(table, after, onFrame, onError, { filter, everyMs });
+    if (this.bridge) return this.bridge.subscribe(table, after, filter, everyMs, onFrame, onError);
     const url = `${this.base}/changes?table=${encodeURIComponent(table)}&after=${encodeURIComponent(`${after.epoch}:${after.seq}`)}`;
-    if (typeof EventSource !== 'undefined') {
+    // a filtered or conflated stream is asked with POST (the minimal SSE form's body); EventSource cannot POST, so fetch reads it
+    const post = filter || everyMs ? { table, after: `${after.epoch}:${after.seq}`, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined } : null;
+    if (typeof EventSource !== 'undefined' && !post) {
       const es = new EventSource(url);
       const on = (e) => { try { onFrame(JSON.parse(e.data)); } catch (x) { if (onError) onError(x); } };
       es.addEventListener('msg', on);
@@ -179,7 +195,9 @@ export class DataClient {
     // Node and workers without EventSource: read the stream with fetch
     const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     (async () => {
-      const r = await this.fetch(url, { headers: { Accept: 'text/event-stream' }, signal: ctl && ctl.signal });
+      const init = { headers: { Accept: 'text/event-stream' }, signal: ctl && ctl.signal };
+      if (post) Object.assign(init, { method: 'POST', body: JSON.stringify(post) }, { headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json' } });
+      const r = await this.fetch(post ? `${this.base}/changes` : url, init);
       if (r.status !== 200) { const t = await r.text(); throw new DataError(r.status, t ? JSON.parse(t).error : null); }
       const reader = r.body.getReader(), dec = new TextDecoder();
       let buf = '';
@@ -196,5 +214,57 @@ export class DataClient {
       }
     })().catch((x) => { if (!(ctl && ctl.signal.aborted) && onError) onError(x); });
     return () => { if (ctl) ctl.abort(); };
+  }
+}
+
+/** Base64 (a bridge res.arrow buffer in JSON) as bytes; a platform's transferable buffer is used as it is. */
+function bytesOf(buffer) {
+  if (typeof buffer !== 'string') return buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  if (typeof atob === 'function') { const b = atob(buffer), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  return new Uint8Array(Buffer.from(buffer, 'base64'));
+}
+
+/**
+ * The view's end of the bridge (PROTOCOL 12): requests as bridge messages, each answered exactly once by `res` (or `res.arrow`);
+ * subscriptions as `sub`/`unsub`, the host's `msg` frames routed by their `sub` id. Request ids are unique per view.
+ */
+export class BridgeChannel {
+  constructor(ch) {
+    this.ch = ch; this.n = 0; this.waiting = new Map(); this.subs = new Map();
+    this.stop = ch.listen((m) => this.receive(typeof m === 'string' ? JSON.parse(m) : m));
+    ch.post({ rdp: 1, t: 'hello', client: 'drishti-rachana', v: 1 });
+  }
+
+  receive(m) {
+    if (!m || m.rdp !== 1) return;
+    if (m.t === 'res' || m.t === 'res.arrow') {
+      const w = this.waiting.get(m.re);
+      if (!w) return;
+      this.waiting.delete(m.re);
+      if (m.error) w.fail(new DataError(0, m.error)); else w.ok(m.t === 'res.arrow' ? bytesOf(m.buffer) : m.body);
+    } else if (m.t === 'msg' && this.subs.has(m.sub)) {
+      this.subs.get(m.sub)(m);
+    }
+  }
+
+  send(message) {
+    const id = `r${++this.n}`;
+    return new Promise((ok, fail) => { this.waiting.set(id, { ok, fail }); this.ch.post(Object.assign({ rdp: 1, id }, message(id))); });
+  }
+
+  /** An HTTP-shaped request of the client as its bridge message. */
+  request(method, path, body, accept) {
+    const m = /^\/tables(?:\/([^/]+)(?:\/(rows|query))?)?$/.exec(path);
+    if (!m) return Promise.reject(new DataError(0, { code: 'rdp.query.invalid', message: `no bridge request for ${path}` }));
+    const table = m[1] ? decodeURIComponent(m[1]) : undefined, t = !m[1] ? 'tables' : m[2] || 'schema';
+    return this.send(() => ({ t, table, body, accept }));
+  }
+
+  subscribe(table, after, filter, everyMs, onFrame, onError) {
+    let id = null, live = true;
+    this.send((rid) => { id = rid; this.subs.set(rid, (msg) => onFrame({ t: 'msg', epoch: msg.epoch, seq: msg.seq, first: msg.first, data: msg.data }));
+      return { t: 'sub', table, after, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined }; })
+      .then((body) => { if (live && body && body.recovered === false) onFrame({ t: 'gap', recoverable: false }); }, (e) => { if (onError) onError(e); });
+    return () => { live = false; if (id) { this.subs.delete(id); this.ch.post({ rdp: 1, t: 'unsub', id }); } };
   }
 }

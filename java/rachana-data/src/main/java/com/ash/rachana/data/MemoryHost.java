@@ -55,6 +55,7 @@ public final class MemoryHost {
         String epoch = "t1";
         long seq;
         final List<Map<String, Object>> log = new ArrayList<>();
+        final List<Subscription> subs = new java.util.concurrent.CopyOnWriteArrayList<>();
     }
 
     /** @param base the base address the host's documents name ({@code /dash/data/v1}); "" for none */
@@ -96,6 +97,7 @@ public final class MemoryHost {
      */
     public Map<String, Object> publish(Map<String, Object> patch) {
         Map<String, Object> frame;
+        List<Subscription> subs;
         synchronized (this) {
             String name = String.valueOf(patch.get("table"));
             Table t = table(name);
@@ -116,6 +118,13 @@ public final class MemoryHost {
             if (t.log.size() > LOG) {
                 t.log.remove(0);
             }
+            subs = t.subs;
+            for (Subscription s : subs) {
+                s.offer(frame, t.rows.rows());
+            }
+        }
+        for (Subscription s : subs) {
+            s.drain();
         }
         for (Consumer<Map<String, Object>> l : listeners) {
             l.accept(frame);
@@ -165,6 +174,59 @@ public final class MemoryHost {
             }
         }
         return out;
+    }
+
+    /**
+     * Subscribes to a table's changes after a position (PROTOCOL 8.2, 8.3): the frames after {@code after} are replayed, then every new
+     * one follows, to {@code sink}. {@code filter} (a filter tree; the table must declare {@code changes.filter}) restates each patch for
+     * the matching rows; a filtered subscription resumes only from the table's current position. {@code everyMs} above 0 conflates
+     * (PROTOCOL 8.4). When the position cannot be resumed the subscription is not {@link Subscription#recovered()} and nothing is sent:
+     * the reader reads the rows again and subscribes from their version.
+     *
+     * @throws ProtocolError {@code rdp.table.unknown}, {@code rdp.table.no-key}, {@code rdp.query.unsupported} (a filter the table cannot
+     *     take), {@code rdp.query.invalid} or {@code rdp.column.unknown} (a bad filter tree)
+     */
+    public Subscription subscribe(String name, String after, Object filter, long everyMs, Consumer<Map<String, Object>> sink) {
+        Subscription sub;
+        synchronized (this) {
+            Table t = table(name);
+            java.util.function.Predicate<Map<String, Object>> match = null;
+            if (filter != null) {
+                if (!t.schema.can("changes.filter")) {
+                    throw ProtocolError.of("rdp.query.unsupported", 422, name + " cannot filter its changes", "table", name, "operation",
+                            "changes.filter");
+                }
+                try {
+                    match = matcher(t.schema, filter);
+                } catch (FilterTree.Refused r) {
+                    throw new ProtocolError(r.code(), "rdp.forbidden".equals(r.code()) ? 403 : 422, r.getMessage(), r.fields());
+                }
+            }
+            List<Map<String, Object>> backlog = changes(name, after);
+            boolean gap = !backlog.isEmpty() && "gap".equals(backlog.get(0).get("t"));
+            boolean recovered = !gap && (match == null || backlog.isEmpty());
+            sub = new Subscription(name, t.schema.key(), match, everyMs, recovered, sink);
+            if (!recovered) {
+                return sub;
+            }
+            sub.start(t.rows.rows());
+            for (Map<String, Object> f : backlog) {
+                sub.offer(f, t.rows.rows());                 // no filter here: a filtered subscription has no backlog
+            }
+            t.subs.add(sub);
+            Subscription s = sub;
+            sub.onClose = () -> t.subs.remove(s);
+        }
+        sub.drain();
+        return sub;
+    }
+
+    /** A filter tree as a row predicate: checked, then evaluated as the Rachana-EL condition it spells (PROTOCOL 7). */
+    private java.util.function.Predicate<Map<String, Object>> matcher(TableSchema s, Object filter) {
+        FilterTree.check(filter, s, FILTER_DEPTH);
+        Expr cond = el.compile(FilterTree.toEl(filter));
+        EvalContext ctx = EvalContext.of(Node.of(Map.of()), null);
+        return row -> Values.truthy(cond.eval(ctx.withRow(Node.of(s.decode(row)), 0)));
     }
 
     /** The schema of a table ({@code rdp.table.unknown} when there is none). */
@@ -354,15 +416,7 @@ public final class MemoryHost {
         }
         List<Map<String, Object>> all = new ArrayList<>(t.rows.rows());
         if (doc.get("filter") != null) {
-            Expr cond = el.compile(FilterTree.toEl(doc.get("filter")));
-            EvalContext ctx = EvalContext.of(Node.of(Map.of()), null);
-            List<Map<String, Object>> kept = new ArrayList<>();
-            for (int i = 0; i < all.size(); i++) {
-                if (Values.truthy(cond.eval(ctx.withRow(Node.of(s.decode(all.get(i))), i)))) {
-                    kept.add(all.get(i));
-                }
-            }
-            all = kept;
+            all = all.stream().filter(matcher(s, doc.get("filter"))).collect(java.util.stream.Collectors.toCollection(ArrayList::new));
         }
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("table", s.name());
@@ -667,14 +721,107 @@ public final class MemoryHost {
 
     /**
      * One view → host bridge message (section 12) answered with the host → view message it produces: {@code welcome} for {@code hello},
-     * {@code res} for a request, {@code pong} for {@code ping}. Subscriptions are the caller's (it forwards {@link #subscribe}d frames).
+     * {@code res} for a request, {@code pong} for {@code ping}. Without a channel back there are no subscriptions: {@code sub} is
+     * refused; {@link #bridge(Consumer)} opens a channel that has them.
      */
-    @SuppressWarnings("unchecked")
     public Map<String, Object> bridge(Map<String, Object> m) {
+        return answer(m, null);
+    }
+
+    /** A bridge channel to one view: {@link Bridge#handle} answers its messages and {@code push} receives the {@code msg} frames of its subscriptions. */
+    public Bridge bridge(Consumer<Map<String, Object>> push) {
+        return new Bridge(push);
+    }
+
+    /** One view's bridge channel (section 12): its subscriptions by request id, closed with it. */
+    public final class Bridge implements AutoCloseable {
+        private final Consumer<Map<String, Object>> push;
+        private final Map<String, Subscription> subs = new java.util.concurrent.ConcurrentHashMap<>();
+
+        Bridge(Consumer<Map<String, Object>> push) {
+            this.push = push;
+        }
+
+        /** Answers one view → host message (exactly one answer per request); {@code sub} and {@code unsub} as well. */
+        public Map<String, Object> handle(Map<String, Object> m) {
+            return answer(m, this);
+        }
+
+        @Override
+        public void close() {
+            subs.values().forEach(Subscription::close);
+            subs.clear();
+        }
+
+        @SuppressWarnings("unchecked")
+        private Map<String, Object> sub(Map<String, Object> m, Map<String, Object> out) {
+            String id = String.valueOf(m.get("id"));
+            String name = String.valueOf(m.get("table"));
+            String after;
+            synchronized (MemoryHost.this) {
+                Table t = table(name);
+                after = m.get("after") instanceof Map<?, ?> a ? a.get("epoch") + ":" + a.get("seq") : t.epoch + ":" + t.seq;
+            }
+            long every = m.get("conflate") instanceof Map<?, ?> c && c.get("everyMs") instanceof Number n ? n.longValue() : 0;
+            Subscription old = subs.remove(id);
+            if (old != null) {
+                old.close();
+            }
+            Subscription sub = subscribe(name, after, m.get("filter"), every, f -> {
+                Map<String, Object> msg = new LinkedHashMap<>();
+                msg.put("rdp", 1L);
+                msg.put("t", "msg");
+                msg.put("sub", id);
+                msg.put("table", name);
+                msg.put("epoch", f.get("epoch"));
+                msg.put("seq", f.get("seq"));
+                if (f.get("first") != null) {
+                    msg.put("first", f.get("first"));
+                }
+                msg.put("data", f.get("data"));
+                push.accept(msg);
+            });
+            if (sub.recovered()) {
+                subs.put(id, sub);
+            }
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("recovered", sub.recovered());
+            synchronized (MemoryHost.this) {
+                body.put("version", version(table(name)));
+            }
+            out.put("body", body);
+            return out;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> answer(Map<String, Object> m, Bridge channel) {
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("rdp", 1L);
         String t = String.valueOf(m.get("t"));
         switch (t) {
+            case "sub" -> {
+                out.put("t", "res");
+                out.put("re", m.get("id"));
+                if (channel == null) {
+                    out.put("error", ProtocolError.of("rdp.query.unsupported", 422, "no channel back for changes", "operation", "sub").error());
+                    return out;
+                }
+                try {
+                    return channel.sub(m, out);
+                } catch (ProtocolError e) {
+                    out.put("error", e.error());
+                }
+            }
+            case "unsub" -> {
+                out.put("t", "res");
+                out.put("re", m.get("id"));
+                Subscription s = channel == null ? null : channel.subs.remove(String.valueOf(m.get("id")));
+                if (s != null) {
+                    s.close();
+                }
+                out.put("body", Map.of());
+            }
             case "hello" -> {
                 out.put("t", "welcome");
                 out.put("v", 1L);

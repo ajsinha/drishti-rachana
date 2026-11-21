@@ -47,6 +47,19 @@ Entries are written per release; the regime's unreleased work is listed after th
   Apache Arrow JS 21.1.0, `js/vendor/apache-arrow`, the same file Drishti Elements vendors), `ndjsonPage`, `DataClient({form, arrow})`,
   `<rachana-view form="arrow|ndjson">`. Every form gives the same rows (`RowFormsTest`, `data_client.test.mjs`). Cases
   `protocol/forms` (7); `protocol_check.py` compares Arrow and NDJSON answers as the JSON page they stand for (Arrow with pyarrow).
+- **Subscriptions** (PROTOCOL 8.2 to 8.4, 12). `MemoryHost.subscribe(table, after, filter, everyMs, sink)` gives a `Subscription`:
+  the backlog then live frames in seq order; **filtered** (`changes.filter`): each patch restated for the rows the reader sees (a row
+  that stops matching is a `remove`, one that starts an `update` with every field, an untouched patch an empty one so the numbering has
+  no holes; resumable only from the current position, else `recovered: false`); **conflated** (`everyMs`): one message per window,
+  merged by key (`Subscription.merge`: later remove cancels, later fields win, `reset` restarts), carrying `first` and `seq`. The
+  bridge: `MemoryHost.bridge(push)` opens a channel (`sub` answered by `res {recovered, version}`, `msg` with the `sub` id, `unsub`);
+  the reference server's SSE stream runs on a subscription and takes `POST /changes {table, after, filter?, conflate?}`; the test
+  adapter gains `GET /_test/bridge/out` (PROTOCOL 15). `TableClient.follow(..., filter, everyMs, ...)`, and a gap now stops the follow.
+  JavaScript: `BridgeChannel` (requests, `res.arrow`, `sub`/`msg`) behind `DataClient({bridge})`, `follow(..., {filter, everyMs})`;
+  `Screen` follows a table read through a pushed-down filter with a filtered subscription where the table offers one, and takes a
+  conflated message's `first`. Specification additions: PROTOCOL 8.2 (the POST form), 8.4 (`first`), 12 (`sub.conflate`, `msg.sub`,
+  `msg.first`, the `sub` answer), 15; `bridge.json`, `patch.json`. Cases `protocol/live` (8); tests `SubscriptionTest`, the Node bridge
+  test.
 
 ### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
 

@@ -150,11 +150,36 @@ public final class TableClient {
      * Follows a table's change stream from a position until {@code frames} returns false or the stream ends; each frame ({@code msg} or
      * {@code gap}) is handed over parsed. The caller applies the rules of section 8.3 (drop a seq not above the last; resync on a gap).
      */
-    @SuppressWarnings("unchecked")
     public void follow(String table, String epoch, long seq, java.util.function.Predicate<Map<String, Object>> frames)
             throws IOException, InterruptedException {
-        HttpRequest rq = HttpRequest.newBuilder(URI.create(base + "/changes?table=" + enc(table) + "&after=" + enc(epoch + ":" + seq)))
-                .header("Accept", "text/event-stream").build();
+        follow(table, epoch, seq, null, 0, frames);
+    }
+
+    /**
+     * As {@link #follow(String, String, long, java.util.function.Predicate)}, filtered (a filter tree: only the matching rows, PROTOCOL 8.2;
+     * the table must declare {@code changes.filter}) and conflated ({@code everyMs} above 0: at most one message per window, merged by key,
+     * PROTOCOL 8.4; a merged message's {@code first} is its first seq). Asked with {@code POST {base}/changes}.
+     */
+    @SuppressWarnings("unchecked")
+    public void follow(String table, String epoch, long seq, Object filter, long everyMs, java.util.function.Predicate<Map<String, Object>> frames)
+            throws IOException, InterruptedException {
+        HttpRequest rq;
+        if (filter == null && everyMs <= 0) {
+            rq = HttpRequest.newBuilder(URI.create(base + "/changes?table=" + enc(table) + "&after=" + enc(epoch + ":" + seq)))
+                    .header("Accept", "text/event-stream").build();
+        } else {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("table", table);
+            body.put("after", epoch + ":" + seq);
+            if (filter != null) {
+                body.put("filter", filter);
+            }
+            if (everyMs > 0) {
+                body.put("conflate", Map.of("everyMs", everyMs));
+            }
+            rq = HttpRequest.newBuilder(URI.create(base + "/changes")).header("Accept", "text/event-stream")
+                    .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(Json.write(body))).build();
+        }
         HttpResponse<java.io.InputStream> r = http.send(rq, HttpResponse.BodyHandlers.ofInputStream());
         if (r.statusCode() != 200) {
             throw error(r.statusCode(), new String(r.body().readAllBytes(), StandardCharsets.UTF_8));
@@ -187,8 +212,12 @@ public final class TableClient {
                 return false;
             }
             long seq = f.get("seq") instanceof Number x ? x.longValue() : 0;
+            long first = f.get("first") instanceof Number x ? x.longValue() : seq;     // a conflated message starts at first
             if (seq <= last[0]) {
                 return true;
+            }
+            if (first != last[0] + 1) {
+                return false;                                                        // a gap: the caller resyncs
             }
             last[0] = seq;
             frames.accept(screen.patch(table, (Map<String, Object>) f.get("data")));

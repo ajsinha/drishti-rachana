@@ -104,3 +104,49 @@ test('the client refuses an origin that is not allowed', () => {
   assert.throws(() => new DataClient({ base: 'https://elsewhere.test/rdp', origin: 'https://page.test' }), /allow-list/);
   assert.ok(new DataClient({ base: '/rdp/v1', origin: 'https://page.test' }).base.startsWith('https://page.test/'));
 });
+
+// The bridge (PROTOCOL 12) between a view and its host: here the reference server's test adapter carries the channel (POST /_test/bridge
+// answers a message; GET /_test/bridge/out hands over what the host pushed), as a desktop host's web view channel would.
+function adapterChannel(base) {
+  let handler = null, polling = true;
+  const poll = async () => {
+    while (polling) {
+      const out = await (await fetch(base + '/_test/bridge/out')).json();
+      for (const m of out) if (handler) handler(m);
+      await new Promise((r) => setTimeout(r, 30));
+    }
+  };
+  poll().catch(() => {});      // the server goes away at the end of the test
+  return {
+    post: (m) => { post(base, '/_test/bridge', m).then((r) => r.json()).then((a) => handler && handler(a)).catch(() => {}); },
+    listen: (h) => { handler = h; return () => { handler = null; }; },
+    close: () => { polling = false; },
+  };
+}
+
+test('a screen over the bridge: rows as Arrow, a filtered subscription', { skip: !ready && 'build the bundle and java/rachana-data first' }, async () => {
+  const { p, base } = await startServer();
+  const ch = adapterChannel(base);
+  try {
+    await post(base, '/_test/fixture', { schema: { name: 'sales', key: ['region', 'desk'], columns: [{ name: 'region', type: 'string' },
+      { name: 'desk', type: 'string' }, { name: 'revenue', type: 'decimal' }], can: ['page', 'filter', 'arrow', 'changes', 'changes.filter'] },
+    rows: [{ region: 'North', desk: 'A', revenue: '100' }, { region: 'South', desk: 'B', revenue: '50' }, { region: 'North', desk: 'C', revenue: '7' }] });
+    const rt = await loadRuntime(pathToFileURL(BUNDLE).href, [readFileSync(resolve(ROOT, 'spec/1/formats.yaml'), 'utf8')], 'core');
+    const client = new DataClient({ bridge: ch, form: 'arrow', arrow: Arrow });
+    const sutra = SUTRA.replace("live: true }", "live: true, where: \"@.revenue >= 10\" }").replace('options: [North, South]', 'options: [North, South]');
+    const screen = new Screen(rt, { sutra, ctl: { region: 'North' }, client });
+    await screen.load();
+    assert.equal(screen.view().panels[0].data.value.text, '150');     // C (7) filtered by the host
+    const changes = [];
+    const got = new Promise((ok) => screen.live((c) => { changes.push(c); if (changes.length === 2) ok(); }, (e) => ok(e)));
+    await new Promise((r) => setTimeout(r, 100));
+    await post(base, '/_test/patch', { table: 'sales', update: [{ region: 'North', desk: 'C', revenue: '20' }] });   // starts matching
+    await post(base, '/_test/patch', { table: 'sales', update: [{ region: 'South', desk: 'B', revenue: '5' }] });    // stops matching
+    await got;
+    assert.equal(screen.view().panels[0].data.value.text, '120');     // 100 + 20; B removed by the filtered stream
+    screen.close();
+  } finally {
+    ch.close();
+    p.kill();
+  }
+});

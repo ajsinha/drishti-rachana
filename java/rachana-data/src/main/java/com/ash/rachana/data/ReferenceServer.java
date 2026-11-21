@@ -21,7 +21,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * The reference Data Protocol server (small, for conformance and for trying a view): a {@link MemoryHost} over the JDK's HTTP server.
@@ -40,6 +39,8 @@ public final class ReferenceServer implements AutoCloseable {
     private final String base;
     private final Path statics;
     private volatile boolean closed;
+    private final List<Map<String, Object>> outbox = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private MemoryHost.Bridge testBridge;
 
     public ReferenceServer(int port, String base, Path statics) throws IOException {
         this.base = base == null || base.equals("/") ? "" : base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
@@ -93,7 +94,7 @@ public final class ReferenceServer implements AutoCloseable {
             if (rel.startsWith("/_test/")) {
                 test(x, rel, body);
             } else if (rel.equals("/changes") && (m.equals("GET") || m.equals("POST"))) {
-                stream(x, q);
+                stream(x, q, body);
             } else if (rel.startsWith("/tables/") && (rel.endsWith("/rows") || rel.endsWith("/query"))
                     && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
                 binary(x, m, rel, q, body, x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson");
@@ -112,6 +113,13 @@ public final class ReferenceServer implements AutoCloseable {
         try {
             switch (rel) {
                 case "/_test/fixture" -> {
+                    synchronized (this) {
+                        if (testBridge != null) {
+                            testBridge.close();
+                        }
+                        testBridge = host.bridge(outbox::add);
+                        outbox.clear();
+                    }
                     host.clear();
                     host.put(b.get("schema"), (List<Map<String, Object>>) b.getOrDefault("rows", List.of()), "t1");
                     json(x, 204, null);
@@ -120,7 +128,15 @@ public final class ReferenceServer implements AutoCloseable {
                     host.publish(b);
                     json(x, 204, null);
                 }
-                case "/_test/bridge" -> json(x, 200, host.bridge(b));
+                case "/_test/bridge" -> json(x, 200, bridge().handle(b));
+                case "/_test/bridge/out" -> {
+                    List<Map<String, Object>> sent;
+                    synchronized (outbox) {
+                        sent = new java.util.ArrayList<>(outbox);
+                        outbox.removeAll(sent);
+                    }
+                    json(x, 200, sent);
+                }
                 default -> json(x, 404, ProtocolError.of("rdp.table.unknown", 404, "no test path " + rel).body());
             }
         } catch (ProtocolError e) {
@@ -128,53 +144,58 @@ public final class ReferenceServer implements AutoCloseable {
         }
     }
 
-    /** The minimal SSE form (section 8.2): the frames after {@code after} (or {@code Last-Event-ID}), then live ones until the client leaves. */
-    private void stream(HttpExchange x, Map<String, String> q) throws IOException {
-        String table = q.get("table");
-        String after = q.get("after") != null ? q.get("after") : x.getRequestHeaders().getFirst("Last-Event-ID");
+    private synchronized MemoryHost.Bridge bridge() {
+        if (testBridge == null) {
+            testBridge = host.bridge(outbox::add);
+        }
+        return testBridge;
+    }
+
+    /**
+     * The minimal SSE form (section 8.2): the frames after {@code after} (or {@code Last-Event-ID}), then live ones until the client leaves.
+     * {@code POST} takes {@code {table, after, filter?, conflate?: {everyMs}}} (a filtered or conflated stream, sections 8.2 and 8.4);
+     * {@code GET} also takes {@code everyMs}. A position that cannot be resumed is one {@code gap} frame ({@code recoverable: false}).
+     */
+    private void stream(HttpExchange x, Map<String, String> q, Object body) throws IOException {
+        Map<?, ?> b = body instanceof Map<?, ?> m ? m : Map.of();
+        String table = b.get("table") instanceof String t ? t : q.get("table");
+        String after = b.get("after") instanceof String a ? a : q.get("after") != null ? q.get("after") : x.getRequestHeaders().getFirst("Last-Event-ID");
+        long every = b.get("conflate") instanceof Map<?, ?> c && c.get("everyMs") instanceof Number n ? n.longValue()
+                : q.get("everyMs") != null ? Long.parseLong(q.get("everyMs")) : 0;
         BlockingQueue<Map<String, Object>> live = new LinkedBlockingQueue<>();
-        Consumer<Map<String, Object>> listener = f -> {
-            if (("rdp." + table).equals(f.get("topic"))) {
-                live.add(f);
-            }
-        };
-        host.subscribe(listener);
+        Subscription sub;
         try {
-            List<Map<String, Object>> backlog;
-            try {
-                backlog = host.changes(table, after);
-            } catch (ProtocolError e) {
-                json(x, e.status(), e.body());
-                return;
-            }
+            sub = host.subscribe(table, after, b.get("filter"), every, live::add);
+        } catch (ProtocolError e) {
+            json(x, e.status(), e.body());
+            return;
+        }
+        try (sub) {
             x.getResponseHeaders().set("Content-Type", "text/event-stream; charset=utf-8");
             x.getResponseHeaders().set("Cache-Control", "no-store");
             x.sendResponseHeaders(200, 0);
             OutputStream out = x.getResponseBody();
-            long last = -1;
-            for (Map<String, Object> f : backlog) {
-                event(out, f);
-                last = f.get("seq") instanceof Long s ? s : last;
+            if (!sub.recovered()) {
+                event(out, host.changes(table, "-:0").get(0));      // the gap frame at the table's position
+                out.flush();
+                return;
+            }
+            for (Map<String, Object> f = live.poll(); f != null; f = live.poll()) {
+                event(out, f);                                       // the backlog, then a heartbeat, then live frames
             }
             out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
             out.flush();
-            if (!backlog.isEmpty() && "gap".equals(backlog.get(0).get("t"))) {
-                return;
-            }
             while (!closed) {
                 Map<String, Object> f = live.poll(15, TimeUnit.SECONDS);
                 if (f == null) {
                     out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
-                } else if ((long) f.get("seq") > last) {
+                } else {
                     event(out, f);
-                    last = (long) f.get("seq");
                 }
                 out.flush();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } finally {
-            host.unsubscribe(listener);
         }
     }
 

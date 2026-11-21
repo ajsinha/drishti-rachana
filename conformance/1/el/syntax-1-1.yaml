@@ -686,3 +686,9 @@ cases:
     source: "EL_EXPANSION / DECISIONS X2"
     expr: "-5.5 % 2"
     expect: {"value": -1.5, "type": "decimal"}
+
+  - id: "exact-sum-of-a-field"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2 (SPEC 4.16 rule 7)"
+    expr: "sum([{v: 0.1}, {v: 0.2}, {v: null}], 'v')"
+    expect: {"value": 0.3, "type": "decimal"}

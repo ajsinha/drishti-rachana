@@ -30,7 +30,7 @@ final class Level11 {
             Map.entry("pad", new Fn(2, 4, Level11::pad)),
             Map.entry("least", new Fn(1, 64, (a, c) -> pick("least", a, true))),
             Map.entry("greatest", new Fn(1, 64, (a, c) -> pick("greatest", a, false))),
-            Map.entry("sum", new Fn(1, 1, Level11::sum)),
+            Map.entry("sum", new Fn(1, 2, Level11::sum)),
             Map.entry("standardize", new Fn(3, 3, Level11::standardize)),
             Map.entry("regex_extract", regexAsValueError("regex_extract", 2, 3)),
             Map.entry("regex_replace", regexAsValueError("regex_replace", 3, 3)),
@@ -69,9 +69,11 @@ final class Level11 {
         return FUNCTIONS.containsKey(name);
     }
 
+    /** The argument counts: Core's own where level 1.1 only changes how a function computes; {@code range}'s widened (PY4). */
     static int[] arity(String name) {
         Fn f = FUNCTIONS.get(name);
-        return new int[] {f.min(), f.max()};
+        int[] core = FunctionTable.core().arityOf(name);
+        return core == null ? new int[] {f.min(), f.max()} : new int[] {Math.min(core[0], f.min()), Math.max(core[1], f.max())};
     }
 
     static ElFunction function(String name) {
@@ -187,13 +189,18 @@ final class Level11 {
     /** {@code sum(list)}: exact over integers and decimals (SPEC 4.16 rule 7); with a double among the elements, the 1.0 sum. */
     private static Object sum(List<Object> a, EvalContext c) {
         Object v = Values.simplify(a.get(0));
+        String field = a.size() > 1 && Values.simplify(a.get(1)) instanceof String f ? f : null;
+        if (a.size() > 1 && field == null) {
+            return FunctionTable.core().get("sum").apply(a, c);
+        }
         if (v instanceof com.ash.rachana.api.Node list && list.isArray()) {
             java.math.BigDecimal total = java.math.BigDecimal.ZERO;
             boolean any = false;
             for (int i = 0; i < list.size(); i++) {
-                Object e = Values.simplify(list.get(i));
-                if (e == null || Values.masked(list.get(i))) {
-                    if (Values.masked(list.get(i))) {
+                com.ash.rachana.api.Node at = field == null ? list.get(i) : list.get(i).get(field);
+                Object e = Values.simplify(at);
+                if (e == null || Values.masked(at)) {
+                    if (Values.masked(at)) {
                         return Values.mask();
                     }
                     continue;

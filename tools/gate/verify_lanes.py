@@ -122,6 +122,7 @@ def browser(env: dict[str, str]) -> list[str]:
     scripts = [(["js/packages/rachana/runners/view_browser.py", "--browsers", "chromium"], "painted"),
                (["js/packages/rachana/runners/form_browser.py"], "submitted"),
                (["js/packages/rachana/runners/state_browser.py"], "state"),
+               (["js/packages/rachana/runners/live_edit_browser.py"], "editable live table"),
                (["js/packages/rachana-cli/test/paint_check.py"], "ok"),
                (["js/packages/rachana-studio/test/studio_check.py"], "ok")]
     for args, marker in scripts:

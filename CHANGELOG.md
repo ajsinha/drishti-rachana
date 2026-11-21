@@ -45,6 +45,11 @@ Entries are written per release; the regime's unreleased work is listed after th
   (`domain`, `match` in their places; `extensions` lists only profile data). `Rachana.at(level, options, profiles...)`. A profile
   function (or grouping) with a Core name is refused with the reason. Conformance: `el/aggregates-host-values`, the host-node fixture
   (`JvmRuntime --host-nodes`, `HostNodeConformanceTest`).
+- **The grid's edit UI for live tables (LIVE_TABLES 8.1)**: the vendored Elements pack is re-packed with the grid's live-mode edit (the table's
+  `write` columns and rules, cells and beside modes, one write per row with a ULID, a pending mark until the patch, 409/422/403/405/404 shown, the
+  held-changes tray decided in cells, the paused banner and "N new"); `liveTables(client)` answers `schema()` beside `page`, `follow` and `write`;
+  `LiveReferenceServer` takes `--static <dir>` (a page and its table on one origin); the runner `runners/live_edit_browser.py` (in the browser lane)
+  paints an editable live table and edits a cell against the reference host.
 
 - **Live tables, the screen and four eyes (L9, L10 file writers; experimental)**: the live panel takes `edit: none | cells | beside`
   (language 1.2; contract 1.2 `LiveRef.edit`); core library fragments `core/live-table@1` and `core/held-changes@1`;

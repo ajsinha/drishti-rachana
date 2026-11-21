@@ -89,3 +89,13 @@ test('write over the bridge: a write message answered by res', async () => {
   const w = posted.find((m) => m.t === 'write');
   assert.deepEqual([w.table, w.body.op, w.body.set.qty], ['trades', 'update', 2]);
 });
+
+test('the live tables of a view answer schema(): the table\'s schema document, its write and live state', async () => {
+  const doc = { name: 'trades', write: { columns: { qty: { type: 'number', min: 0 } }, reason: 'optional' }, live: { state: 'paused', reason: 'the broker is absent' } };
+  const posted = [];
+  let listener = null;
+  const ch = { post: (m) => { posted.push(m); if (m.t === 'schema') queueMicrotask(() => listener({ rdp: 1, t: 'res', re: m.id, body: doc })); }, listen: (h) => { listener = h; return () => {}; } };
+  const t = liveTables(new DataClient({ bridge: ch }))({ table: 'trades' });
+  assert.deepEqual(await t.schema(), doc);
+  assert.equal(posted.find((m) => m.t === 'schema').table, 'trades');
+});

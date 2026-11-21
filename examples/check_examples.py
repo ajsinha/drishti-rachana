@@ -79,7 +79,7 @@ def check_sutra(path, fns, errs, fmts=frozenset()):
     except yaml.YAMLError as e:
         return bad(f"YAML: {e}")
     for k in set(doc) - TOP: bad(f"unknown top-level key {k}")
-    if doc.get("rachana") != 1: bad("rachana must be 1")
+    if str(doc.get("rachana")) not in ("1", "1.1", "1.2"): bad("rachana must be a declared level: 1, 1.1 or 1.2")
     if not re.fullmatch(r"[a-z][a-z0-9-]{1,63}", str(doc.get("sutra", ""))): bad("bad sutra name")
     texts = [doc.get("title", {}).get("id", "")]
     for name, src in (doc.get("data") or {}).items():

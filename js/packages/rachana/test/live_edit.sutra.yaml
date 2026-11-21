@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+rachana: 1.2
+sutra: live-edit
+version: 1
+title: { id: "'Editable live table'" }
+data:
+  trades: { table: trades, key: id, live: true }
+panels:
+  - id: trades
+    kind: live
+    title: Trades
+    rows: $.trades
+    columns:
+      - { label: Trade, bind: "@.id" }
+      - { label: Book, bind: "@.book" }
+      - { label: Quantity, bind: "@.qty" }
+      - { label: Status, bind: "@.status" }
+      - { label: Version, bind: "@.v" }
+    sort: at desc
+    top: true
+    window: 50
+    edit: cells

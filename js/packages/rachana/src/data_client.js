@@ -350,7 +350,8 @@ export class BridgeChannel {
  * The live tables of a view for Drishti Elements' painter (its options.tables; contract 1.2, panel kind live): for a dataset's live
  * reference {table, window, top, filter}, page(query) reads one page and follow(after, keys, top, onPatch, onGap) subscribes with that
  * window (PROTOCOL 16; a table whose schema has no changes is not followed, one without changes.window gets every patch), passes each patch on in seq order and calls onGap on a gap, another epoch or a skipped seq (the painter reads
- * its page again). The answer's window(keys, top) moves the window; stop() ends it. write(change) is the live panel's edit (PROTOCOL 16):
+ * its page again). The answer's window(keys, top) moves the window; stop() ends it. schema() is the table's schema document (the painter reads
+ * `write` from it for the edit, `live` for the paused banner). write(change) is the live panel's edit (PROTOCOL 16):
  * the painter calls it when a cell or record is saved, with {key, basedOn, set, reason?} (an id is made); onWrite (the view's hook) sees
  * every change and its answer or error, and may refuse one first by returning false.
  * @param {DataClient} client
@@ -363,6 +364,8 @@ export function liveTables(client, onWrite) {
     const caps = () => can || (can = client.schema(ref.table).then((s) => (s && s.can) || [], () => []));
     return {
       page: (query) => client.page(ref.table, query),
+      /** The table's schema document: its `write` (the columns the reader may change, their rules, the reason) and `live` state (paused, stale). */
+      schema: () => client.schema(ref.table),
       async write(change) {
         const c = Object.assign({ op: 'update' }, change);
         if (!c.id) c.id = ulid();

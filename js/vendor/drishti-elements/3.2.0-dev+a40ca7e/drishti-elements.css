@@ -13,7 +13,7 @@
  *
  * See the LICENSE file in the root of this repository.
  */
-/* Drishti Elements 3.2.0-dev+2f21158, packed by tools/elements/cli.py pack: drishti-core 3.2.0-dev+2f21158, drishti-views 3.2.0-dev+2f21158, drishti-events 3.2.0-dev+2f21158, drishti-inputs 3.2.0-dev+2f21158, drishti-chart 3.2.0-dev+2f21158, drishti-grid 3.2.0-dev+2f21158, drishti-graph 3.2.0-dev+2f21158, drishti-tree 3.2.0-dev+2f21158.
+/* Drishti Elements 3.2.0-dev+a40ca7e, packed by tools/elements/cli.py pack: drishti-core 3.2.0-dev+a40ca7e, drishti-views 3.2.0-dev+a40ca7e, drishti-events 3.2.0-dev+a40ca7e, drishti-inputs 3.2.0-dev+a40ca7e, drishti-chart 3.2.0-dev+a40ca7e, drishti-grid 3.2.0-dev+a40ca7e, drishti-graph 3.2.0-dev+a40ca7e, drishti-tree 3.2.0-dev+a40ca7e.
    Theme: every theme (data-theme on <html>; the default without one). Override a token after this sheet: :root { --d-accent: #0a6; } */
 /* ---- the design tokens ---- */
 /* Drishti design tokens. Colours are defined here and nowhere else.
@@ -1835,6 +1835,22 @@ div.dc-lgq { cursor: default; }
 .dg-cell.dg-editable { cursor: text; }
 .dg-cell.dg-edited { box-shadow: inset 3px 0 0 var(--d-link); }
 .dg-cell.dg-proposed { box-shadow: inset 3px 0 0 var(--d-warn); background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--d-warn) 12%, transparent) 6px 8px); }
+/* a live table's edit (drishti_live-edit.js): the cell's mark while its change is sent and until the table's patch arrives */
+.dg-cell.dg-sending, .dg-cell.dg-staged { box-shadow: inset 3px 0 0 var(--d-link); opacity: 0.75; }
+.dg-cell.dg-queued, .dg-cell.dg-applied { box-shadow: inset 3px 0 0 var(--d-link); background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--d-link) 12%, transparent) 6px 8px); }
+.dg-cell.dg-held { box-shadow: inset 3px 0 0 var(--d-warn); background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--d-warn) 12%, transparent) 6px 8px); }
+.dg-cell.dg-invalid { box-shadow: inset 3px 0 0 var(--d-bad); background-color: color-mix(in srgb, var(--d-bad) 10%, var(--d-surface)); }
+.dg-le-status, .dg-le-note { margin: 4px 0; font-size: 0.85em; color: var(--d-muted); }
+.dg-le-alert { margin: 4px 0; padding: 6px 8px; border: 1px solid var(--d-warn); border-radius: 4px; font-size: 0.9em; }
+.dg-le-alert[data-kind="refused"], .dg-le-alert[data-kind="failed"] { border-color: var(--d-bad); }
+.dg-le-btn { margin-left: 6px; padding: 2px 8px; border: 1px solid var(--d-border); border-radius: 4px; background: var(--d-surface); color: var(--d-ink); font: inherit; cursor: pointer; }
+.dg-le-reason { display: flex; gap: 6px; align-items: center; margin: 4px 0; font-size: 0.9em; }
+.dg-le-reason-in { flex: 1; min-width: 0; padding: 3px 6px; border: 1px solid var(--d-border); border-radius: 4px; background: var(--d-surface); color: var(--d-ink); font: inherit; }
+.dg-le-reason-in[aria-invalid="true"] { border-color: var(--d-bad); }
+.dg-le-panel { margin: 6px 0; padding: 8px; border: 1px solid var(--d-border); border-radius: 4px; max-height: 40vh; overflow: auto; }
+.dg-le-title { margin: 0 0 6px; font-size: 1em; }
+.dg-le-banner { margin: 4px 0; padding: 4px 8px; border: 1px solid var(--d-warn); border-radius: 4px; font-size: 0.9em; }
+.dg-le-new { margin: 4px 0; padding: 2px 10px; border: 1px solid var(--d-accent); border-radius: 999px; background: var(--d-surface); color: var(--d-accent); font: inherit; cursor: pointer; }
 .dg-editor { position: absolute; z-index: 6; display: flex; }
 .dg-editor-input { width: 100%; height: 100%; border: 2px solid var(--d-accent); border-radius: 0; padding: 0 6px; background: var(--d-surface); color: var(--d-ink); font: inherit; outline: none; }
 .dg-editor-input.dg-num { text-align: right; font-variant-numeric: tabular-nums; }

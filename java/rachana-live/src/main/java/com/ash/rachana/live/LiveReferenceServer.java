@@ -59,7 +59,7 @@ import java.util.function.Consumer;
  *       outbox's queued changes, or decides a held one as the host; answers {@code {sent, entries: [{change, state}]}}</li>
  * </ul>
  *
- * <p>Usage: {@code java ... -m com.ash.rachana.live/com.ash.rachana.live.LiveReferenceServer [--port 0] [--base /rdp/v1]}; prints
+ * <p>Usage: {@code java ... -m com.ash.rachana.live/com.ash.rachana.live.LiveReferenceServer [--port 0] [--base /rdp/v1] [--static <dir>]}; prints
  * {@code rdp-reference-server listening on http://127.0.0.1:<port><base>} when ready.
  */
 public final class LiveReferenceServer implements AutoCloseable {
@@ -191,7 +191,12 @@ public final class LiveReferenceServer implements AutoCloseable {
     private final AtomicLong failures = new AtomicLong();
 
     public LiveReferenceServer(int port, String base) throws IOException {
-        server = new ReferenceServer(port, base, null);
+        this(port, base, null);
+    }
+
+    /** As above, also serving a folder of static files outside the base on the same origin (a page and its table without cross-origin rules). */
+    public LiveReferenceServer(int port, String base, java.nio.file.Path statics) throws IOException {
+        server = new ReferenceServer(port, base, statics);
         server.onReset(this::dropTables);
         server.testPath("live", this::live);
         server.testPath("as", this::as);
@@ -546,14 +551,16 @@ public final class LiveReferenceServer implements AutoCloseable {
     public static void main(String[] args) throws Exception {
         int port = 0;
         String base = "/rdp/v1";
+        java.nio.file.Path statics = null;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "--port" -> port = Integer.parseInt(args[++i]);
                 case "--base" -> base = args[++i];
+                case "--static" -> statics = java.nio.file.Path.of(args[++i]);
                 default -> throw new IllegalArgumentException("unknown argument " + args[i]);
             }
         }
-        LiveReferenceServer s = new LiveReferenceServer(port, base);
+        LiveReferenceServer s = new LiveReferenceServer(port, base, statics);
         System.out.println("rdp-reference-server listening on " + s.url());
         System.out.flush();
         Thread.currentThread().join();

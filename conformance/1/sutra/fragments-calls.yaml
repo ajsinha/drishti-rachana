@@ -1,0 +1,172 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/fragments-calls
+since: "1.2"
+profile: core
+verified: true
+description: "Fragments are functions (decision L-21): the caller binds the fragment's local names, columns included, at compile time; level 1.2."
+cases:
+
+  - id: caller-columns-map-to-local-columns
+    kind: sutra
+    source: L-21 (2, 3); LIBRARIES 5.1
+    files: &desk
+      desk-list.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-list
+        version: 1
+        doc:
+          summary: Amounts by desk, one row each.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        emits:
+          - { name: pick, payload: { desk: text }, doc: A desk was chosen }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 } ]
+            emits: [ { name: pick, on: row-click, payload: { desk: "@.desk" } } ]
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      at:
+        /panels/0/id: list
+        /panels/0/data/rows/0/cells/0/text: FX
+        /panels/0/data/rows/1/cells/1/text: "800"
+
+  - id: identity-when-names-already-match
+    kind: sutra
+    source: L-21 (2)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        by_desk: { rows: [ { desk: Credit, amount: 75 } ] }
+      panels:
+        - { use: desk-list@1, with: { rows: $.by_desk } }
+    expect:
+      at:
+        /panels/0/data/rows/0/cells/0/text: Credit
+        /panels/0/data/rows/0/cells/1/text: "75"
+
+  - id: two-uses-two-instances
+    kind: sutra
+    source: L-21 (6); LIBRARIES 7.2 (as)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+        limits: { rows: [ { DESK_NAME: Rates, LIMIT_USD: 5000 } ] }
+      panels:
+        - use: desk-list@1
+          as: mtm
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+        - use: desk-list@1
+          as: lim
+          with: { rows: { from: $.limits, columns: { desk: DESK_NAME, amount: LIMIT_USD } } }
+    expect:
+      at:
+        /panels/0/id: mtm-list
+        /panels/0/data/rows/0/cells/1/text: "1,200"
+        /panels/1/id: lim-list
+        /panels/1/data/rows/0/cells/0/text: Rates
+
+  - id: event-read-in-the-callers-names
+    kind: sutra
+    source: L-21 (4); LIBRARIES 6.1
+    note: "@mtm.pick.desk is read as @mtm-list.pick.desk: the panel of the use mtm that raises pick; desk is the fragment's return value."
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-list@1
+          as: mtm
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+        - { id: chosen, kind: markdown, text: "Desk ${@mtm.pick.desk}", waits: mtm-list }
+    expect:
+      at:
+        /panels/0/id: mtm-list
+        /panels/1/id: chosen
+
+  - id: on-sets-a-control-from-the-event
+    kind: sutra
+    source: L-21 (4); LIBRARIES 7.2 (on)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      controls:
+        - { id: desk, kind: dropdown, options: [FX, Rates] }
+      panels:
+        - use: desk-list@1
+          as: mtm
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+          on: { pick: { set: desk, field: desk } }
+    expect:
+      at:
+        /panels/0/id: mtm-list
+        /panels/0/data/rows/0/pick: FX
+
+  - id: table-parameter-by-published-contract
+    kind: sutra
+    source: L-21 (1); LIBRARIES 5.2
+    files:
+      contracts/desk-amounts.json: |
+        { "contract": "desk-amounts", "title": "Amounts by desk", "grain": "one row per desk", "key": ["desk"],
+          "columns": [ { "name": "desk", "type": "string", "doc": "The desk" },
+                       { "name": "amount", "type": "decimal", "doc": "The amount" } ] }
+      desk-total.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-total
+        version: 1
+        doc:
+          summary: Amounts by desk, from the published shape.
+        params:
+          rows: { type: table, contract: desk-amounts, required: true, doc: One row per desk }
+        panels:
+          - { id: bars, kind: hbar, rows: arg.rows, label: desk, value: amount, fmt: amount0 }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 } ] }
+      panels:
+        - use: desk-total@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      at:
+        /panels/0/id: bars
+        /panels/0/data/bars/0/label: FX
+        /panels/0/data/bars/1/text: "800"

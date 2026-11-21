@@ -148,6 +148,48 @@ class LibraryToolTest {
         assertEquals("RCH-2113", e.problems().get(0).code());
     }
 
+    @Test
+    void classpathAndPackageResolversFindTheSameBytes(@TempDir Path tmp) throws Exception {
+        Path dir = library(tmp.resolve("libs"), null);
+        LibraryTool.build(dir);
+        String sha = LibraryResolver.folder(tmp.resolve("libs")).resolve("demo", "1").orElseThrow().sha384();
+        Path jar = tmp.resolve("jar");                                   // a jar's layout: META-INF/rachana/libs/demo/ and the index
+        copy(dir, jar.resolve(LibraryResolver.CLASSPATH_ROOT + "demo"));
+        Files.writeString(jar.resolve(LibraryResolver.CLASSPATH_INDEX), "demo\n");
+        try (java.net.URLClassLoader cl = new java.net.URLClassLoader(new java.net.URL[] {jar.toUri().toURL()}, null)) {
+            LibraryResolver cp = LibraryResolver.classpath(cl);
+            assertEquals(sha, cp.resolve("demo", "1").orElseThrow().sha384());
+            assertEquals("demo 1.2.0", cp.list().get(0).name() + " " + cp.list().get(0).version());
+            assertTrue(cp.resolve("other", "1").isEmpty());
+        }
+        Path nm = tmp.resolve("node_modules");                          // npm: package.json declares the library and its folder
+        copy(dir, nm.resolve("@drishti-rachana/lib-demo/lib"));
+        Files.writeString(nm.resolve("@drishti-rachana/lib-demo/package.json"), "{\"name\": \"@drishti-rachana/lib-demo\", \"rachana\": {\"library\": \"demo\"}}");
+        assertEquals(sha, LibraryResolver.packages(List.of(nm)).resolve("demo", "1").orElseThrow().sha384());
+        Path site = tmp.resolve("site-packages");                       // PyPI: the entry point group rachana.libraries
+        copy(dir, site.resolve("drishti_rachana_lib_demo/library"));
+        Files.createDirectories(site.resolve("drishti_rachana_lib_demo-1.2.0.dist-info"));
+        Files.writeString(site.resolve("drishti_rachana_lib_demo-1.2.0.dist-info/entry_points.txt"),
+                "[console_scripts]\nx = y:z\n\n[rachana.libraries]\ndemo = drishti_rachana_lib_demo.library\n");
+        LibraryResolver py = LibraryResolver.packages(List.of(site));
+        assertEquals(sha, py.resolve("demo", "1").orElseThrow().sha384());
+        assertEquals(1, py.list().size());
+    }
+
+    private static void copy(Path from, Path to) throws Exception {
+        try (var s = Files.walk(from)) {
+            for (Path p : s.toList()) {
+                Path t = to.resolve(from.relativize(p).toString());
+                if (Files.isDirectory(p)) {
+                    Files.createDirectories(t);
+                } else {
+                    Files.createDirectories(t.getParent());
+                    Files.copy(p, t);
+                }
+            }
+        }
+    }
+
     private static Path library(Path root, String key) throws Exception {
         Path dir = root.resolve("demo");
         Files.createDirectories(dir.resolve("fragments"));

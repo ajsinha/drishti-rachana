@@ -18,7 +18,7 @@ or set `RACHANA_DIST`).
 client, `static_files_host.js`), `rachana/rachana.runtime.js`, `vendor/drishti-elements/3.1.0/`, one page per Sutra, the Sutras and
 `data/`. With no server beside it, the page answers the Data Protocol itself from `data/index.json` and the table files
 (`static_files_host.js`: schema, filter tree, sort, columns, cursor paging; no change stream); serve the folder with any static web
-server (a browser does not fetch from `file://`). Charts need the Elements engine, which the pack leaves out. `test/paint_check.py`
+server (a browser does not fetch from `file://`). `test/paint_check.py`
 (`uv run --with playwright==1.64.0 python js/packages/rachana-cli/test/paint_check.py`) builds `examples/static-sales`, opens every
 page in Chromium and fails on a console error, a failed request or an empty page.
 

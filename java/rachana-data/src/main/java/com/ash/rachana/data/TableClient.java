@@ -30,6 +30,17 @@ import java.util.function.Consumer;
  */
 public final class TableClient {
 
+    /** The row form asked of the host (PROTOCOL 5): JSON, Arrow IPC (a table whose {@code can} has {@code arrow}) or NDJSON. */
+    public enum Form {
+        JSON("application/json"), ARROW(ArrowRows.MEDIA), NDJSON(NdjsonRows.MEDIA);
+
+        final String media;
+
+        Form(String media) {
+            this.media = media;
+        }
+    }
+
     /** A table read whole: its schema, rows in JSON form, and the stream position the rows are a snapshot of. */
     public record Read(TableSchema schema, List<Map<String, Object>> rows, String epoch, long seq) {}
 
@@ -51,15 +62,25 @@ public final class TableClient {
      * Every row a query document selects (the plan's {@code query}; an empty one reads the table), page by page; the position is the
      * first page's (a host without {@code snapshot} may move rows between pages: a live table is reconciled by its stream).
      */
-    @SuppressWarnings("unchecked")
     public Read read(String table, Map<String, Object> query) throws IOException, InterruptedException {
+        return read(table, query, Form.JSON);
+    }
+
+    /**
+     * As {@link #read(String, Map)}, with the rows in the given form; Arrow is asked only of a table that declares it (JSON otherwise).
+     * Every form gives the same rows in their JSON form.
+     */
+    @SuppressWarnings("unchecked")
+    public Read read(String table, Map<String, Object> query, Form form) throws IOException, InterruptedException {
         TableSchema schema = schema(table);
+        Form f = form == Form.ARROW && !schema.can("arrow") ? Form.JSON : form;
         List<Map<String, Object>> rows = new ArrayList<>();
         Map<String, Object> doc = new LinkedHashMap<>(query == null ? Map.of() : query);
         String epoch = null;
         long seq = 0;
         while (true) {
-            Map<String, Object> page = (Map<String, Object>) send("POST", "/tables/" + enc(table) + "/query", doc);
+            Map<String, Object> page = f == Form.JSON ? (Map<String, Object>) send("POST", "/tables/" + enc(table) + "/query", doc)
+                    : sendRows("/tables/" + enc(table) + "/query", doc, f);
             if (epoch == null && page.get("version") instanceof Map<?, ?> v) {
                 epoch = String.valueOf(v.get("epoch"));
                 seq = v.get("seq") instanceof Number n ? n.longValue() : 0;
@@ -129,11 +150,36 @@ public final class TableClient {
      * Follows a table's change stream from a position until {@code frames} returns false or the stream ends; each frame ({@code msg} or
      * {@code gap}) is handed over parsed. The caller applies the rules of section 8.3 (drop a seq not above the last; resync on a gap).
      */
-    @SuppressWarnings("unchecked")
     public void follow(String table, String epoch, long seq, java.util.function.Predicate<Map<String, Object>> frames)
             throws IOException, InterruptedException {
-        HttpRequest rq = HttpRequest.newBuilder(URI.create(base + "/changes?table=" + enc(table) + "&after=" + enc(epoch + ":" + seq)))
-                .header("Accept", "text/event-stream").build();
+        follow(table, epoch, seq, null, 0, frames);
+    }
+
+    /**
+     * As {@link #follow(String, String, long, java.util.function.Predicate)}, filtered (a filter tree: only the matching rows, PROTOCOL 8.2;
+     * the table must declare {@code changes.filter}) and conflated ({@code everyMs} above 0: at most one message per window, merged by key,
+     * PROTOCOL 8.4; a merged message's {@code first} is its first seq). Asked with {@code POST {base}/changes}.
+     */
+    @SuppressWarnings("unchecked")
+    public void follow(String table, String epoch, long seq, Object filter, long everyMs, java.util.function.Predicate<Map<String, Object>> frames)
+            throws IOException, InterruptedException {
+        HttpRequest rq;
+        if (filter == null && everyMs <= 0) {
+            rq = HttpRequest.newBuilder(URI.create(base + "/changes?table=" + enc(table) + "&after=" + enc(epoch + ":" + seq)))
+                    .header("Accept", "text/event-stream").build();
+        } else {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("table", table);
+            body.put("after", epoch + ":" + seq);
+            if (filter != null) {
+                body.put("filter", filter);
+            }
+            if (everyMs > 0) {
+                body.put("conflate", Map.of("everyMs", everyMs));
+            }
+            rq = HttpRequest.newBuilder(URI.create(base + "/changes")).header("Accept", "text/event-stream")
+                    .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(Json.write(body))).build();
+        }
         HttpResponse<java.io.InputStream> r = http.send(rq, HttpResponse.BodyHandlers.ofInputStream());
         if (r.statusCode() != 200) {
             throw error(r.statusCode(), new String(r.body().readAllBytes(), StandardCharsets.UTF_8));
@@ -166,8 +212,12 @@ public final class TableClient {
                 return false;
             }
             long seq = f.get("seq") instanceof Number x ? x.longValue() : 0;
+            long first = f.get("first") instanceof Number x ? x.longValue() : seq;     // a conflated message starts at first
             if (seq <= last[0]) {
                 return true;
+            }
+            if (first != last[0] + 1) {
+                return false;                                                        // a gap: the caller resyncs
             }
             last[0] = seq;
             frames.accept(screen.patch(table, (Map<String, Object>) f.get("data")));
@@ -183,6 +233,18 @@ public final class TableClient {
             throw error(r.statusCode(), r.body());
         }
         return Json.read(r.body());
+    }
+
+    private Map<String, Object> sendRows(String path, Object body, Form form) throws IOException, InterruptedException {
+        HttpRequest rq = HttpRequest.newBuilder(URI.create(base + path)).header("Accept", form.media).header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(Json.write(body))).build();
+        HttpResponse<java.io.InputStream> r = http.send(rq, HttpResponse.BodyHandlers.ofInputStream());
+        try (java.io.InputStream in = r.body()) {
+            if (r.statusCode() != 200) {
+                throw error(r.statusCode(), new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            }
+            return form == Form.ARROW ? ArrowRows.read(in) : NdjsonRows.read(in);
+        }
     }
 
     @SuppressWarnings("unchecked")

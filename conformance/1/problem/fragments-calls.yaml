@@ -1,0 +1,356 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/fragments-calls
+since: "1.2"
+profile: core
+verified: true
+description: "Fragments are functions (decision L-21): problems at the call site name the fragment's local name and the caller's; level 1.2."
+cases:
+
+  - id: fragment-reads-only-its-parameters
+    kind: problem
+    source: L-21 (1, 4); LIBRARIES 4.4 (RCH-2117)
+    files:
+      peek.v1.fragment.yaml: |
+        rachana: 1
+        fragment: peek
+        version: 1
+        doc:
+          summary: A figure that reads the screen around it.
+        params:
+          label: { type: text, default: Value, doc: What the figure is }
+        panels:
+          - { id: figure, kind: metric, label: arg.label, value: "$.total" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      panels:
+        - { use: peek@1 }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2117
+        severity: error
+        message: "fragment peek reads the screen around it ('$.total'): a library fragment reads only its parameters (arg.), its tables and its slots"
+        range: { start: { line: 9, column: 58 } }
+
+  - id: mapping-names-an-unknown-local-column
+    kind: problem
+    source: L-21 (5); LIBRARIES 5.1 (RCH-2114)
+    files: &desk
+      desk-list.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-list
+        version: 1
+        doc:
+          summary: Amounts by desk, one row each.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+              note: { type: text, optional: true, doc: A remark, not shown yet }
+        emits:
+          - { name: pick, payload: { desk: text }, doc: A desk was chosen }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 } ]
+            emits: [ { name: pick, on: row-click, payload: { desk: "@.desk" } } ]
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amt: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2114
+        severity: error
+        message: "fragment desk-list: table rows has no column 'amt' (it has desk, amount, note); the use maps it to MTM_USD"
+        range: { start: { line: 10, column: 73 } }
+
+  - id: required-column-not-mapped
+    kind: problem
+    source: L-21 (5); LIBRARIES 5.1 (RCH-2115)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2115
+        severity: error
+        message: "fragment desk-list: table rows needs column amount (number); $.positions has BOOK_DESK, MTM_USD (map it: { from: $.positions, columns: { amount: <column> } })"
+        range: { start: { line: 10, column: 19 } }
+
+  - id: mapped-to-a-column-the-caller-lacks
+    kind: problem
+    source: L-21 (5); LIBRARIES 5.1 (RCH-2116)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_EUR } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2116
+        severity: error
+        message: "column amount of rows (fragment desk-list) is mapped to MTM_EUR, which $.positions does not have (it has BOOK_DESK, MTM_USD)"
+        range: { start: { line: 10, column: 19 } }
+
+  - id: column-type-does-not-fit-the-contract
+    kind: problem
+    source: L-21 (5); LIBRARIES 5.1 (RCH-2116)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions:
+          rows: [ { BOOK_DESK: FX, MTM_USD: "1200" } ]
+          fields: { BOOK_DESK: { type: text }, MTM_USD: { type: text } }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2116
+        severity: error
+        message: "column amount of rows (fragment desk-list) is number; $.positions's MTM_USD is text"
+        range: { start: { line: 12, column: 19 } }
+
+  - id: unused-mapping-is-a-warning
+    kind: problem
+    source: L-21 (5) (RCH-2120)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200, REMARK: ok } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD, note: REMARK } } }
+    expect:
+      ok: true
+      problems:
+      - code: RCH-2120
+        severity: warning
+        message: "the use maps column note of rows to REMARK, and fragment desk-list never reads note"
+        range: { start: { line: 10, column: 19 } }
+
+  - id: event-payload-is-the-fragments-return-value
+    kind: problem
+    source: L-21 (4); LIBRARIES 6.1
+    note: "@mtm.pick.amount is read as @mtm-list.pick.amount: pick returns desk only, so the check names the scoped panel."
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-list@1
+          as: mtm
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+        - { id: chosen, kind: markdown, text: "Desk ${@mtm.pick.desk}, ${@mtm.pick.amount}", waits: mtm-list }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2057
+        severity: error
+        message: "panel 'chosen' reads @mtm-list.pick.amount, but the payload of pick has desk"
+        range: { start: { line: 12, column: 5 } }
+
+  - id: on-names-an-unknown-event
+    kind: problem
+    source: L-21 (4); LIBRARIES 7.2 (RCH-2114)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      controls:
+        - { id: desk, kind: dropdown, options: [FX, Rates] }
+      panels:
+        - use: desk-list@1
+          as: mtm
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+          on: { choose: { set: desk, field: desk } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2114
+        severity: error
+        message: "fragment desk-list has no event 'choose' (it has pick)"
+        range: { start: { line: 14, column: 19 } }
+
+  - id: same-fragment-twice-without-as-collides
+    kind: problem
+    source: L-21 (6); LIBRARIES 7.2 (as)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2024
+        severity: error
+        message: "duplicate panel id 'list'"
+        range: { start: { line: 18, column: 5 } }
+
+  - id: as-is-a-kebab-name
+    kind: problem
+    source: LIBRARIES 7.2 (as)
+    files: *desk
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { desk: FX, amount: 1200 } ] }
+      panels:
+        - { use: desk-list@1, as: My_Desk, with: { rows: $.positions } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2116
+        severity: error
+        message: "as: names this use of fragment desk-list with a lower-case kebab word, not 'My_Desk'"
+        range: { start: { line: 9, column: 29 } }
+
+  - id: compile-result-records-library-hashes
+    kind: problem
+    source: LIBRARIES 9.3, 12
+    files:
+      rachana_libs/demo/LICENSE: |
+        Test material for the conformance suite only.
+      rachana_libs/demo/MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
+        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
+        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+      rachana_libs/demo/demo.rachana-lib.yaml: |
+        rachana: 1
+        library: demo
+        version: 1.0.0
+        title: Demo
+        summary: A tiny synthetic library that exercises the library machinery in the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        exports:
+          fragments:
+            - { name: figure-pair, majors: [1] }
+            - { name: key-figure, majors: [1] }
+      rachana_libs/demo/fragments/figure-pair.v1.fragment.yaml: |
+        rachana: 1
+        fragment: figure-pair
+        version: 1
+        doc:
+          summary: Two figures side by side, with room for a note under them.
+        params:
+          left: { type: number, required: true, doc: The first figure }
+          right: { type: number, required: true, doc: The second figure }
+        slots:
+          below: { accepts: panels, max: 1, doc: A note under the figures }
+        panels:
+          - { use: demo/key-figure@1, with: { id: left, value: arg.left, label: Left } }
+          - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
+          - { slot: below }
+      rachana_libs/demo/fragments/key-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: key-figure
+        version: 1
+        doc:
+          summary: One figure with its label and format.
+        params:
+          value: { type: number, required: true, doc: The figure }
+          label: { type: text, default: Value, doc: What the figure is }
+          fmt: { type: format, default: amount0, doc: How the figure is written }
+          id: { type: id, default: figure, doc: The panel's id }
+          floor: { type: number, default: 0, min: 0, doc: Below this the caption says so }
+        panels:
+          - id: "%{id}"
+            kind: metric
+            label: arg.label
+            value: arg.value
+            fmt: "%{fmt}"
+            caption: "${arg.value < arg.floor ? 'below floor' : 'ok'}"
+      rachana.lock: |
+        lock: 1
+        libraries:
+          demo: { version: 1.0.0, sha384: "6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843" }
+    sutra: |
+      rachana: 1
+      sutra: lib-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      libraries: [demo@1]
+      panels:
+        - { use: demo/key-figure@1, with: { value: 1 } }
+    expect:
+      ok: true
+      problems: []
+      libraries:
+      - { name: demo, version: 1.0.0, sha384: 6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843 }

@@ -62,7 +62,8 @@
       "type": "object", "required": ["rdp", "t", "id", "table"],
       "properties": {
         "rdp": { "const": 1 }, "t": { "const": "sub" }, "id": { "$ref": "#/$defs/id" }, "table": { "type": "string" },
-        "after": { "$ref": "schema.json#/$defs/version" }, "filter": { "$ref": "filter.json#/$defs/node" }
+        "after": { "$ref": "schema.json#/$defs/version" }, "filter": { "$ref": "filter.json#/$defs/node" },
+        "conflate": { "type": "object", "properties": { "everyMs": { "type": "integer", "minimum": 1 } } }
       }
     },
     "unsub": {
@@ -74,7 +75,9 @@
       "type": "object", "required": ["rdp", "t", "table", "epoch", "seq", "data"],
       "properties": {
         "rdp": { "const": 1 }, "t": { "const": "msg" }, "table": { "type": "string" }, "epoch": { "type": "string" },
-        "seq": { "type": "integer", "minimum": 1 }, "data": { "$ref": "patch.json" }
+        "seq": { "type": "integer", "minimum": 1 }, "data": { "$ref": "patch.json" },
+        "sub": { "$ref": "#/$defs/id", "description": "the id of the sub this message belongs to" },
+        "first": { "type": "integer", "minimum": 1, "description": "a conflated message (PROTOCOL.md 8.4): the first seq it merges" }
       }
     },
     "table": {

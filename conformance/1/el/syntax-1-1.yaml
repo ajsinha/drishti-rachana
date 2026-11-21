@@ -194,18 +194,56 @@ cases:
     expr: "range(1.5)"
     expect: {"error": {"code": "RCH-2102", "message": "range: 1.5 is not a whole number"}}
 
-  - id: "range-of-a-list-stays-the-aggregate"
+  - id: "span-of-a-list"
     kind: "expr"
-    source: "EL_EXPANSION / DECISIONS PY4"
-    note: "Core's aggregate range (max - min, split step A9) keeps its meaning over a list: level 1.1 only adds."
-    expr: "range([3, 9, 4])"
+    source: "DECISIONS EL1-1"
+    note: "Core's aggregate max - min (split step A9), spelled range at level 1.0, is span at 1.1: one meaning per name."
+    expr: "span([3, 9, 4])"
     expect: {"value": 6, "type": "number"}
+
+  - id: "span-of-a-field"
+    kind: "expr"
+    source: "DECISIONS EL1-1"
+    expr: "span($.legs, 'n')"
+    expect: {"value": 10, "type": "number"}
+
+  - id: "span-of-empty-is-empty"
+    kind: "expr"
+    source: "DECISIONS EL1-1"
+    expr: "span($.missing)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "range-of-a-written-list-names-span"
+    kind: "expr-error"
+    source: "DECISIONS EL1-1"
+    note: "range is only Python's sequence at 1.1; a list or a text written as its argument does not compile, and the reason names span."
+    expr: "range([3, 9, 4])"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'range([3, 9, 4])': range: it gives whole numbers, as Python's range(start, stop, step) does; for the largest value of a list minus its smallest write span(list, field?) at 0", "expr": {"source": "range([3, 9, 4])", "start": 0, "end": 5}}]}
+
+  - id: "range-with-a-field-names-span"
+    kind: "expr-error"
+    source: "DECISIONS EL1-1"
+    expr: "range($.legs, 'n')"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'range($.legs, 'n')': range: it gives whole numbers, as Python's range(start, stop, step) does; for the largest value of a list minus its smallest write span(list, field?) at 0", "expr": {"source": "range($.legs, 'n')", "start": 0, "end": 5}}]}
+
+  - id: "range-of-a-list-value-names-span"
+    kind: "expr"
+    source: "DECISIONS EL1-1"
+    note: "A list met at evaluation: the evaluation error names span."
+    expr: "range($.l1)"
+    expect: {"error": {"code": "RCH-2102", "message": "range: it gives whole numbers, as Python's range(start, stop, step) does; for the largest value of a list minus its smallest write span(list, field?)"}}
 
   - id: "range-of-empty-is-empty"
     kind: "expr"
     source: "EL_EXPANSION / DECISIONS PY4"
     expr: "range($.missing)"
     expect: {"value": null, "type": "empty"}
+
+  - id: "range-of-masked-is-masked"
+    kind: "expr"
+    source: "SPEC 4.9"
+    expr: "range($.masked)"
+    expect: {"value": {"$masked": true}, "type": "masked"}
 
   - id: "slice-of-a-list"
     kind: "expr"

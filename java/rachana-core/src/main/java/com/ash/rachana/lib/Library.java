@@ -68,9 +68,11 @@ public final class Library {
     private final String source;
     private final String signedBy;
     private final Map<String, TreeMap<Integer, SutraBlocks.Block>> fragments;
+    private final Map<String, String> contracts;
 
     private Library(String name, String version, String scope, List<String> profiles, Map<String, Integer> depends, String publisherKey,
-            String licence, String sha384, String source, String signedBy, Map<String, TreeMap<Integer, SutraBlocks.Block>> fragments) {
+            String licence, String sha384, String source, String signedBy, Map<String, TreeMap<Integer, SutraBlocks.Block>> fragments,
+            Map<String, String> contracts) {
         this.name = name;
         this.version = version;
         this.scope = scope;
@@ -82,6 +84,7 @@ public final class Library {
         this.source = source;
         this.signedBy = signedBy;
         this.fragments = fragments;
+        this.contracts = contracts;
     }
 
     /** The trust a host places in libraries (LIBRARIES.md 12): its verifier, the publishers it trusts, whether a signature is required. */
@@ -207,6 +210,12 @@ public final class Library {
                 out.addAll(e.problems());
             }
         }
+        Map<String, String> contracts = new TreeMap<>();
+        for (Map.Entry<String, byte[]> f : b.files().entrySet()) {          // published table shapes (LIBRARIES.md 5.2)
+            if (f.getKey().startsWith("contracts/")) {
+                contract(name, f.getKey(), new String(f.getValue(), StandardCharsets.UTF_8), contracts, out);
+            }
+        }
         if (frags.values().stream().mapToInt(Map::size).sum() > MAX_FRAGMENTS) {
             out.add(problem(INVALID, "a library holds at most " + MAX_FRAGMENTS + " fragments", mfile, 1));
         }
@@ -220,7 +229,7 @@ public final class Library {
         Map<String, TreeMap<Integer, SutraBlocks.Block>> fixed = new TreeMap<>();
         frags.forEach((k, v) -> fixed.put(k, new TreeMap<>(v)));
         return new Library(name, version, scope, List.copyOf(profiles), Collections.unmodifiableMap(depends), key, text(m.get("licence")), b.sha384(),
-                b.source(), signedBy, Collections.unmodifiableMap(fixed));
+                b.source(), signedBy, Collections.unmodifiableMap(fixed), Collections.unmodifiableMap(contracts));
     }
 
     /** Checks {@code MANIFEST.sha384} against every file and the signature against the trust; the key that signed, or null. */
@@ -416,6 +425,50 @@ public final class Library {
     }
 
     /** A fragment by name and major ({@code limit-gauge}, 1); the block's name is qualified ({@code finance/limit-gauge}). */
+    /** The text of its published contract {@code name} ({@code contracts/<name>.json}), if it holds one. */
+    public Optional<String> contract(String name) {
+        return Optional.ofNullable(contracts.get(name));
+    }
+
+    /** The names of its published contracts, sorted. */
+    public Set<String> contractNames() {
+        return contracts.keySet();
+    }
+
+    /**
+     * A contract file read and checked: {@code contracts/<name>.json}, a JSON object with {@code contract} equal to its file name and
+     * {@code columns}, a list of {@code { name, type, doc, optional? }} with distinct field names ({@code RCH-2112} otherwise).
+     */
+    private static void contract(String library, String path, String text, Map<String, String> into, List<SutraProblem> out) {
+        String where = library + "/" + path;
+        Matcher fm = java.util.regex.Pattern.compile("contracts/([a-z][a-z0-9-]{0,63})\\.json").matcher(path);
+        if (!fm.matches()) {
+            out.add(problem(INVALID, "a file under contracts/ is <name>.json: " + path, where, 1));
+            return;
+        }
+        PNode c;
+        try {
+            c = SutraBlocksAccess.parse(text, where);
+        } catch (SutraException e) {
+            out.addAll(e.problems());
+            return;
+        }
+        PNode cols = c.isMap() ? c.map().get("columns") : null;
+        if (!c.isMap() || !fm.group(1).equals(text(c.map().get("contract"))) || cols == null || !cols.isList() || cols.list().isEmpty()) {
+            out.add(problem(INVALID, "contract " + path + " is { contract: " + fm.group(1) + ", columns: [ { name, type, doc } ] }", where, 1));
+            return;
+        }
+        Set<String> seen = new java.util.HashSet<>();
+        for (PNode col : cols.list()) {
+            String n = col.isMap() ? text(col.map().get("name")) : null;
+            if (n == null || !n.matches("[A-Za-z_][A-Za-z0-9_]*") || !seen.add(n) || text(col.map().get("type")) == null) {
+                out.add(problem(INVALID, "contract " + fm.group(1) + ": each column is { name, type, doc } with a distinct field name", where, line(col)));
+                return;
+            }
+        }
+        into.put(fm.group(1), text);
+    }
+
     public Optional<SutraBlocks.Block> fragment(String fragment, int major) {
         TreeMap<Integer, SutraBlocks.Block> v = fragments.get(fragment);
         return Optional.ofNullable(v == null ? null : v.get(major));
@@ -445,6 +498,14 @@ public final class Library {
     private static final class SutraBlocksAccess {
         static PNode masked(SutraBlocks.Block b) {
             return new PositionalYamlReader().read(b.text().replace("%{", "pXq{"));
+        }
+
+        static PNode parse(String text, String file) {
+            try {
+                return new PositionalYamlReader().read(text);
+            } catch (RuntimeException e) {
+                throw new SutraException(List.of(problem(INVALID, "contract " + file + " does not read as JSON: " + e.getMessage(), file, 1)));
+            }
         }
     }
 }

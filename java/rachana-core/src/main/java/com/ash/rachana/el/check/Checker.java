@@ -140,6 +140,33 @@ public final class Checker {
         return s == null || s[1] > text.length() ? "" : text.substring(s[0], s[1]);
     }
 
+    /**
+     * EL1-2: {@code -x ** n} (or {@code ^}) written without parentheses is {@code -(x ** n)}, Python's rule, where Excel reads
+     * {@code (-x) ^ n}: a warning with both spellings. Parentheses around the power or around the sign say which is meant.
+     */
+    private void signBeforePower(Expr.Minus x) {
+        if (!(x.e() instanceof Expr.Power w)) {
+            return;
+        }
+        int[] minus = spans.get(x);
+        int[] power = spans.get(w);
+        if (minus == null || power == null || power[0] <= minus[0] || power[1] > text.length()) {
+            return;
+        }
+        if (!CoreText.strip(text.substring(minus[0] + 1, power[0])).isEmpty()) {
+            return;                                                 // -(x ** n): the parentheses say it
+        }
+        String p = text.substring(power[0], power[1]);
+        int[] exp = spans.get(w.r());
+        String head = exp == null || exp[0] < power[0] ? "" : CoreText.strip(text.substring(power[0], exp[0]));
+        String op = head.endsWith("**") ? "**" : head.endsWith("^") ? "^" : null;
+        String fix = op == null ? "write -(" + p + ")"
+                : "write -(" + p + ") to keep this meaning, or (-" + CoreText.strip(head.substring(0, head.length() - op.length())) + ") " + op + " "
+                        + text.substring(exp[0], power[1]) + " for the power of the negative";
+        warn(Problem.SIGN_POWER, "'-" + p + "' is -(" + p + "): a power binds tighter than the sign before it (Python's rule; Excel "
+                + "reads (-x) ^ n)", fix, x);
+    }
+
     // ---- visiting ----------------------------------------------------------------------------------------------------
 
     /** Checking a tree of language level 1.1. */
@@ -149,6 +176,7 @@ public final class Checker {
         return switch (n) {
             case Expr.Op b -> COMPARISONS.contains(b.op()) ? compare(b, b.op(), b.l(), b.r()) : arithmetic(b, b.op(), b.l(), b.r());
             case Expr.Minus x -> {
+                signBeforePower(x);
                 ElType t = visit(x.e());
                 yield t.fits(ElType.NUMBER) ? t : err(Problem.LANGUAGE, "'-' needs a number; this is a " + t.word(), null, x);
             }

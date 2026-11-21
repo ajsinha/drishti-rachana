@@ -24,6 +24,14 @@ public interface FragmentResolver {
     /** The names it knows, for the words of a use that does not resolve. */
     Collection<String> names();
 
+    /**
+     * The text of the published contract (LIBRARIES.md 5.2, Data Protocol schema form) named {@code name} that {@code fragment}'s table
+     * parameter refers to ({@code contract: scenario-pnl}): its library's {@code contracts/<name>.json}. None by default.
+     */
+    default Optional<String> contract(SutraBlocks.Block fragment, String name) {
+        return Optional.empty();
+    }
+
     /** No blocks: Core's default when no profile gives a resolver. */
     static FragmentResolver none() {
         return of(List.of());
@@ -31,6 +39,12 @@ public interface FragmentResolver {
 
     /** An in-memory set of blocks (every version of a name kept; {@code name} alone is the newest). */
     static FragmentResolver of(Collection<SutraBlocks.Block> blocks) {
+        return of(blocks, Map.of());
+    }
+
+    /** An in-memory set of blocks and the contracts their table parameters name (name to the contract's JSON text). */
+    static FragmentResolver of(Collection<SutraBlocks.Block> blocks, Map<String, String> contracts) {
+        Map<String, String> cs = Map.copyOf(contracts);
         Map<String, TreeMap<Integer, SutraBlocks.Block>> byName = new TreeMap<>();
         for (SutraBlocks.Block b : blocks) {
             byName.computeIfAbsent(b.name(), n -> new TreeMap<>()).put(b.version(), b);
@@ -44,6 +58,11 @@ public interface FragmentResolver {
             @Override
             public Collection<String> names() {
                 return List.copyOf(byName.keySet());
+            }
+
+            @Override
+            public Optional<String> contract(SutraBlocks.Block fragment, String name) {
+                return Optional.ofNullable(cs.get(name));
             }
         };
     }

@@ -5,26 +5,26 @@
     "drishti-views": "3.1.0",
     "drishti-events": "3.1.0",
     "drishti-inputs": "3.1.0",
-    "drishti-chart": "3.1.0",
-    "drishti-grid": "3.1.0"
+    "drishti-chart": "3.1.0"
   },
   "requested": [
     "core",
     "views",
     "events",
-    "inputs",
-    "grid"
+    "chart"
   ],
   "theme": "all",
-  "engines": [],
+  "engines": [
+    "vendor/echarts/echarts.min.js"
+  ],
   "files": {
     "drishti-elements.css": {
-      "bytes": 137350,
-      "integrity": "sha384-0iXtpq9qwVnYu0BoGbOV/oSxnaslOUP+2DvQ2bHrJovw0JcUuGQK6PlwzuN7ZRqu"
+      "bytes": 101689,
+      "integrity": "sha384-xXz+OpnvZSUWXqLxllDpFUSr7OvMnN8Ur3xmNE5biODvZ/TAEH2O7SAaCk7DYUqv"
     },
     "drishti-elements.js": {
-      "bytes": 1643016,
-      "integrity": "sha384-FbAPqUNSSX2NuH2LeCYZHoLnu17MYTzIwzPrEflRcPUVKnKBMR5iA4cUF2AHfLND"
+      "bytes": 2226134,
+      "integrity": "sha384-b90VqfIa8M2RjDBQ1I6uKUDWDWM/i/o3j76kBYyfodqpRDfb7vC7szzQrE6rxAkg"
     },
     "vendor/codemirror/LICENSE": {
       "bytes": 1113,

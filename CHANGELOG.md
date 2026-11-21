@@ -13,9 +13,8 @@ Entries are written per release; the regime's unreleased work is listed after th
   a `table:`).
 - **`rachana build` / `preview` use the real `<rachana-view>`**: the element, its modules, the vendored Elements pack and the runtime
   bundle are copied into the site; `static_files_host.js` answers the Data Protocol in the page from `data/` (static-files mode); the
-  Elements pack is repacked with `inputs` and `grid` (`tools/elements/cli.py pack --libs core,views,events,inputs,grid --no-engines`
-  at v3.1.0). The warning and the TODO are gone. Tests: node (`build` of static-sales), `test/paint_check.py` (Chromium: every page
-  paints, no console error). Charts need the engine the pack leaves out.
+  warning and the TODO are gone. Tests: node (`build` of static-sales), `test/paint_check.py` (Chromium: every page
+  paints, no console error). 
 - **Python `DataHost` and the JVM reference answer the same `protocol` cases**: `drishti_rachana.testhost` (the PROTOCOL 15 test
   adapter over the standard library) and `protocol_check.py --python`; both pass 39 of 40, the one case being the frozen example that
   sorts a table without `can: sort`. The host now enforces `can` (`rdp.query.unsupported` with `operation`), checks filter columns
@@ -25,11 +24,36 @@ Entries are written per release; the regime's unreleased work is listed after th
 - The three `test_conformance.py` failures could not be reproduced on `g2/integration` (6 pass, 26 in the package); two stale
   expectations in `test_server_adapters.py` were corrected to the spec.
 
+### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
+
+- **Binding like a call** (SPEC 2.5, LIBRARIES 5 to 7, DECISIONS L-21): a table parameter names its local columns or a
+  published contract (`contract: <name>`; `contracts/<name>.json` in a library, `Library.contract`, or served by the host,
+  `FragmentResolver.contract`); the use binds it as `rows: $.t` (identity) or `{ from, columns: { <local>: <caller> } }`,
+  renamed at compile time in the panels that read it (field options, `bind`, `@.<column>`). With the caller's columns known
+  (`data:` `fields` or written rows) problems name both sides: `RCH-2114` unknown local column, `RCH-2115` required column
+  missing, `RCH-2116` unknown caller column or type misfit; `RCH-2120` advisory for a mapping never read (severity warning,
+  `Sutra.advisories()`). Every typed fragment is hermetic (`RCH-2117`).
+- **Instances and return values**: `as:` scopes ids (`<as>-<id>`); `emits: [{name, payload, doc}]` declared and checked
+  against the inner panel that raises it; the screen reads `@<as>.<event>.<field>`; `on: {<event>: {set, field}}` sets a
+  control from the event's row (`on-select`). `TypedFragment.bind`, `TypedFragment.Caller`, `SutraBlocks.Calls`.
+- **Resolvers for the carriers** (LIBRARIES 10, 11.2): `LibraryResolver.classpath(ClassLoader)` reads
+  `META-INF/rachana/libs/<name>/` by its `MANIFEST.sha384` (index `META-INF/rachana/libraries`);
+  `LibraryResolver.packages(roots)` reads npm packages declaring `"rachana": {"library", "folder"}` and Python distributions
+  declaring the entry point group `rachana.libraries`, as data (nothing is run). Same bytes, same SHA-384 as the folder.
+- **Compile result records library hashes**: `Sutra.libraries()` (`UsedLibrary`: name, exact version, SHA-384), from
+  `LibrarySet.fragments(..., Consumer<Library>)`; the `problem` case output carries `libraries` (FORMAT 5.8, schema).
+- **Conformance**: `sutra/fragments-calls` (6), `problem/fragments-calls` (11), verified; JVM and both JavaScript bundles
+  agree at 1.0, 1.1, 1.2; level-1.0 replay and the customer corpus unchanged. API additions only (`api-surface.txt`).
+
+### IntelliJ launchers and installing a release
+
+- **Build launchers**: `java/run-configs/` holds four IntelliJ Maven configurations in the folder **Rachana** (build all, test, install release for a release tag only, JS bundles), the build guide is [java/README](java/README.md#build-in-intellij-idea), and a release is installed into `~/.m2` for Drishti from its tag only (decision R-1).
+
 ### Rachana-EL level 1.1: the syntax batch and exact numbers (lane B: EL phase 1)
 
 - **Syntax at language level 1.1** (SPEC 4.17, EBNF part D; EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY1 to PY8): record literals
   `{a: 1, 'k-2': x, ...r}` and list spread `[...a, b]`; Python slices `t[a:b:c]` and `range(start, stop, step)` (end-exclusive; `..` stays
-  reserved; over a list `range` is still Core's aggregate); the pipe `x |> f(a)`; `a ?? b`; `a if c else b`; lambdas `lambda x: …`,
+  reserved; `range` is only the sequence at 1.1, the aggregate max − min is `span`, EL1-1); the pipe `x |> f(a)`; `a ?? b`; `a if c else b`; lambdas `lambda x: …`,
   second class (map, sort, reduce, group, `let`; no recursion; `=>` stays reserved); `**` and infix `^` (right-associative, `-2 ** 2` is
   `-4`); comments `/* … */`; digit separators `1_000_000`. Reserved names are refused by name at 1.1.
 - **Numbers built at 1.1** (SPEC 4.16, X2, XD3): literals without an exponent are exact integers and decimals (34 digits), `+ - * %`
@@ -43,9 +67,21 @@ Entries are written per release; the regime's unreleased work is listed after th
   `ElException.end()`). The checker types `??`, `**` and the exact operators (X8, first part). `FilterTree` reads level 1.1 trees.
 - **Conformance**: `el/syntax-1-1` (114 cases) and `el/syntax-at-1-0` (13), verified; `el/numbers-exact`, `el/text-code-points`,
   `el/reserved` and `el/messages-level-1-1` verified, their cases that failed at 1.0 moved to `since: "1.1"` (9 reserved-token
-  cases withdrawn: 1.1 defines the tokens; two `**` message cases withdrawn: PY6). `tools/regime/levels.py check` reports a case
-  recorded failing that moved to a later level or was withdrawn, and does not count it as a difference. JVM, both JavaScript bundles
+  cases withdrawn: 1.1 defines the tokens; two `**` message cases withdrawn: PY6). `tools/regime/levels.py check` skips a recorded
+  case that moved to a later level or was withdrawn only when `compat/levels/moved-cases.yaml` lists it (EL1-4, below). JVM, both JavaScript bundles
   and the Python V8 engine agree.
+
+### The EL1 decisions built (DECISIONS "EL1 decisions taken")
+
+- **EL1-1**: at level 1.1 `range(...)` is only Python's sequence (the dispatch on the first argument is gone); the aggregate max − min is
+  `span(list, field?)` (functions.yaml, `since: "1.1"`; Core's `range` kernel); a list or a text written as `range`'s argument does not
+  compile (`RCH-2101`), one met at evaluation is `RCH-2102`, both naming `span`; a masked argument masks. Level 1.0 keeps the `range`
+  aggregate and has no `span`. Cases in `el/syntax-1-1` and `el/syntax-at-1-0`.
+- **EL1-4**: `compat/levels/moved-cases.yaml` lists every recorded 1.0 case that moved to a later level (46, with `since`) or was withdrawn
+  (9, with the reason); `tools/regime/levels.py check` skips only those and fails on any other difference and on a wrong entry
+  (`levels.py compare`, tested by `LevelReplayTest`). A level's `functions.yaml` is spec/1's less the entries of a later `since`.
+- **EL1-2**: checked mode at 1.1 warns `RCH-2091` on `-x ** n` or `-x ^ n` without parentheses (`-(x ** n)` by Python's rule, `(-x) ^ n`
+  in Excel), with both spellings as the fix (SPEC 4.17, 6.2).
 
 ### `data:` and the Data Protocol; `<rachana-view>` (lane C: SPLIT_PLAN steps 15 and 16, B1 to B3)
 
@@ -75,8 +111,41 @@ Entries are written per release; the regime's unreleased work is listed after th
   on all 2,160 cases at levels 1.0 and 1.1; budgets: runtime 379 KB, tools 399 KB Brotli. Tests: Core `TablesTest`, `MemoryHostTest`,
   `TableClientTest` (JVM end to end), `js/packages/rachana/test/data_client.test.mjs` (Node end to end),
   `runners/view_browser.py` (`<rachana-view>` live in Chromium).
-- Not yet: Arrow IPC and NDJSON, bridge subscriptions, conflation, filtered subscriptions, checked mode over table schemas, exact
-  decimal arithmetic in aggregates (the decimals item, X2).
+- Not yet (lane C2 below builds the protocol's rest and checked mode over table schemas): exact decimal arithmetic in aggregates (the
+  decimals item, X2).
+
+### The Data Protocol completed: row forms, bridge subscriptions, conflation, filters (lane C2)
+
+- **Arrow IPC and NDJSON** (PROTOCOL 5.2, 5.3, 12). `java/rachana-data`: `ArrowRows` writes a page as an Arrow IPC stream and reads one
+  back with the official Apache Arrow Java library (19.0.0, `arrow-vector` with the `arrow-memory-unsafe` allocator; allowed in this
+  module only, Core stays free of it; a JVM that runs it opens `java.nio` to `org.apache.arrow.memory.core`), types by PROTOCOL 3.1,
+  masked cells as `<name>$masked`, the protocol facts as schema metadata (`rachana.totals` and `rachana.schema` added); `NdjsonRows`
+  (header, then one line per row). The reference server answers both (Arrow only for tables declaring `arrow`, else `406`); the bridge
+  answers `accept: arrow` with `res.arrow` (base64). `TableClient.read(table, query, Form)`. JavaScript: `arrowPage` (the vendored
+  Apache Arrow JS 21.1.0, `js/vendor/apache-arrow`, the same file Drishti Elements vendors), `ndjsonPage`, `DataClient({form, arrow})`,
+  `<rachana-view form="arrow|ndjson">`. Every form gives the same rows (`RowFormsTest`, `data_client.test.mjs`). Cases
+  `protocol/forms` (7); `protocol_check.py` compares Arrow and NDJSON answers as the JSON page they stand for (Arrow with pyarrow).
+- **Subscriptions** (PROTOCOL 8.2 to 8.4, 12). `MemoryHost.subscribe(table, after, filter, everyMs, sink)` gives a `Subscription`:
+  the backlog then live frames in seq order; **filtered** (`changes.filter`): each patch restated for the rows the reader sees (a row
+  that stops matching is a `remove`, one that starts an `update` with every field, an untouched patch an empty one so the numbering has
+  no holes; resumable only from the current position, else `recovered: false`); **conflated** (`everyMs`): one message per window,
+  merged by key (`Subscription.merge`: later remove cancels, later fields win, `reset` restarts), carrying `first` and `seq`. The
+  bridge: `MemoryHost.bridge(push)` opens a channel (`sub` answered by `res {recovered, version}`, `msg` with the `sub` id, `unsub`);
+  the reference server's SSE stream runs on a subscription and takes `POST /changes {table, after, filter?, conflate?}`; the test
+  adapter gains `GET /_test/bridge/out` (PROTOCOL 15). `TableClient.follow(..., filter, everyMs, ...)`, and a gap now stops the follow.
+  JavaScript: `BridgeChannel` (requests, `res.arrow`, `sub`/`msg`) behind `DataClient({bridge})`, `follow(..., {filter, everyMs})`;
+  `Screen` follows a table read through a pushed-down filter with a filtered subscription where the table offers one, and takes a
+  conflated message's `first`. Specification additions: PROTOCOL 8.2 (the POST form), 8.4 (`first`), 12 (`sub.conflate`, `msg.sub`,
+  `msg.first`, the `sub` answer), 15; `bridge.json`, `patch.json`. Cases `protocol/live` (8); tests `SubscriptionTest`, the Node bridge
+  test.
+- **Chart panels in `<rachana-view>`**: the vendored Elements 3.1.0 pack now has `drishti-chart` (with `drishti-inputs`, Apache
+  ECharts in the script, and its run-time files under `vendor/`), packed from the `v3.1.0` tag with its SHA-384 manifest. The browser
+  test's Sutra has a line panel; `runners/view_browser.py` passes in Chromium 156, Firefox 157 and WebKit 27.2 (Playwright 1.64.0).
+- **Checked mode over table schemas** (SPEC 4.14, EL_EXPANSION X8 where it touches tables), from level 1.2: `DataPlan.plan(...,
+  level)` reads each row condition over a table (the entry's `where`, a reading panel's `where`) against the table's column types and
+  masks (`TableFields`): `RCH-9127` for a type refusal (no implicit casts, no text arithmetic), `RCH-9161` for a filter on a masked
+  column, each problem with `entry`, `panel`, `where`; an unknown column stays `RCH-2071`; controls are values. Levels 1.0 and 1.1 are
+  unchanged. `LiveScreen` and the conformance runner pass the level. Cases `plan/checked` (5); `TablesTest`.
 
 ### The `rachana` command and the Python SDK basics (G2, CLI and SDK lane)
 

@@ -31,6 +31,69 @@ export function pageRows(page) {
   return out;
 }
 
+const ARROW = 'application/vnd.apache.arrow.stream', NDJSON = 'application/x-ndjson';
+const pad2 = (n) => String(n).padStart(2, '0');
+
+/** One Arrow cell in its JSON form (PROTOCOL 3.1), by the field's rachana.type; the same rules as the JVM's ArrowRows. */
+function arrowCell(A, field, x) {
+  if (x === null || x === undefined) return null;
+  const type = field.metadata.get('rachana.type');
+  switch (field.typeId) {
+    case A.Type.Int: { const b = BigInt(x); const big = b > 9007199254740992n || b < -9007199254740992n; return big ? b.toString() : Number(b); }
+    case A.Type.Decimal: {
+      const u = A.util.bigNumToBigInt(x), neg = u < 0n, digits = (neg ? -u : u).toString(), sc = field.type.scale;
+      if (type === 'integer') return (u > 9007199254740992n || u < -9007199254740992n) ? u.toString() : Number(u);
+      if (sc <= 0) return (neg ? '-' : '') + digits;
+      const d = digits.padStart(sc + 1, '0');
+      return `${neg ? '-' : ''}${d.slice(0, d.length - sc)}.${d.slice(d.length - sc)}`;
+    }
+    case A.Type.Date: return new Date(x).toISOString().slice(0, 10);
+    case A.Type.Timestamp: return new Date(x).toISOString();
+    case A.Type.Time: {
+      const ms = Number(x), s = Math.floor(ms / 1000), f = ms % 1000;
+      const t = `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor(s / 60) % 60)}:${pad2(s % 60)}`;
+      return f ? `${t}.${String(f).padStart(3, '0')}` : t;
+    }
+    case A.Type.Utf8: return type === 'list' || type === 'object' ? JSON.parse(x) : x;
+    default: return typeof x === 'bigint' ? Number(x) : x;
+  }
+}
+
+/**
+ * An Arrow IPC stream (PROTOCOL 5.2) as the columnar-by-row JSON page the host would have answered, read with the vendored Apache Arrow
+ * JS (A: its module object, js/vendor/apache-arrow). Masked cells come back as {$masked: true} from their <name>$masked column.
+ */
+export function arrowPage(A, bytes) {
+  const t = A.tableFromIPC(bytes), meta = t.schema.metadata, page = { table: meta.get('rachana.table') || '' };
+  if (meta.has('rachana.epoch')) page.version = { epoch: meta.get('rachana.epoch'), seq: Number(meta.get('rachana.seq') || 0) };
+  const fields = t.schema.fields.filter((f) => !f.metadata.has('rachana.masked'));
+  const masks = new Map(t.schema.fields.filter((f) => f.metadata.has('rachana.masked')).map((f) => [f.metadata.get('rachana.masked'), t.getChild(f.name)]));
+  const vecs = fields.map((f) => t.getChild(f.name));
+  page.columns = fields.map((f) => f.name);
+  page.values = [];
+  for (let i = 0; i < t.numRows; i++) {
+    page.values.push(fields.map((f, c) => {
+      const m = masks.get(f.name);
+      return m && m.get(i) === true ? { $masked: true } : arrowCell(A, f, vecs[c].get(i));
+    }));
+  }
+  if (meta.has('rachana.total')) page.total = Number(meta.get('rachana.total'));
+  if (meta.has('rachana.next')) page.next = meta.get('rachana.next');
+  if (meta.has('rachana.totals')) page.totals = JSON.parse(meta.get('rachana.totals'));
+  if (meta.has('rachana.schema')) page.schema = JSON.parse(meta.get('rachana.schema'));
+  return page;
+}
+
+/** NDJSON text (PROTOCOL 5.3: a header object, then one array of cells per line) as the columnar-by-row JSON page. */
+export function ndjsonPage(text) {
+  const lines = text.split('\n').filter((l) => l.trim());
+  const head = lines.length ? JSON.parse(lines[0]) : {}, page = {};
+  for (const [k, v] of Object.entries(head)) { page[k] = v; if (k === 'columns') page.values = []; }
+  if (!page.values) page.values = [];
+  for (const l of lines.slice(1)) page.values.push(JSON.parse(l));
+  return page;
+}
+
 export class DataClient {
   /**
    * @param {Object} o
@@ -39,8 +102,19 @@ export class DataClient {
    * @param {string[]} [o.allow] other origins the base may be on (default none: the page's own origin only)
    * @param {string} [o.origin] the page's origin (default location.origin; required outside a page)
    * @param {function} [o.subscribe] a host's change stream instead of the minimal SSE form: (table, {epoch, seq}, onFrame) => unsubscribe
+   * @param {string} [o.form] the row form asked: 'json' (default), 'arrow' (only of a table whose can has arrow; JSON otherwise) or 'ndjson'
+   * @param {Object} [o.arrow] the Apache Arrow JS module object (default globalThis.Arrow, set by js/vendor/apache-arrow's script)
+   * @param {Object} [o.bridge] the in-process bridge instead of HTTP (PROTOCOL 12; a desktop host's web view channel):
+   *   {post(message), listen(handler) => stop}; every request is a bridge message answered by `res` (or `res.arrow`), changes are
+   *   `sub` / `unsub` with `msg` pushed back. Only messages from this channel are read (never from page content or another frame).
+   * @param {Object} [o.filter] (follow) a filter tree for every subscription: only matching rows (the table must declare changes.filter)
+   * @param {number} [o.everyMs] (follow) ask the host to conflate a table's changes to at most one message per everyMs (PROTOCOL 8.4)
    */
   constructor(o) {
+    this.form = o.form || 'json';
+    this.arrow = o.arrow || null;
+    this.everyMs = o.everyMs || 0;
+    if (o.bridge) { this.bridge = new BridgeChannel(o.bridge); this.base = null; return; }
     const origin = o.origin || (typeof location !== 'undefined' ? location.origin : null);
     const base = new URL(o.base, origin || undefined);
     const allowed = [origin, ...(o.allow || [])].filter(Boolean);
@@ -52,7 +126,20 @@ export class DataClient {
     this.subscribeHook = o.subscribe || null;
   }
 
+  /** One page of a query in a row form other than JSON, read into the JSON page. */
+  async rowsPage(table, doc, form) {
+    if (this.bridge) {
+      if (form !== 'arrow') return this.bridge.request('POST', `/tables/${encodeURIComponent(table)}/query`, doc);
+      return arrowPage(this.arrow || globalThis.Arrow, await this.bridge.request('POST', `/tables/${encodeURIComponent(table)}/query`, doc, 'arrow'));
+    }
+    const init = { method: 'POST', headers: { Accept: form === 'arrow' ? ARROW : NDJSON, 'Content-Type': 'application/json' }, body: JSON.stringify(doc) };
+    const r = await this.fetch(`${this.base}/tables/${encodeURIComponent(table)}/query`, init);
+    if (r.status !== 200) { const t = await r.text(); throw new DataError(r.status, t ? JSON.parse(t).error : null); }
+    return form === 'arrow' ? arrowPage(this.arrow || globalThis.Arrow, new Uint8Array(await r.arrayBuffer())) : ndjsonPage(await r.text());
+  }
+
   async json(method, path, body) {
+    if (this.bridge) return this.bridge.request(method, path, body);
     const init = { method, headers: { Accept: 'application/json' } };
     if (body !== undefined) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(body); }
     const r = await this.fetch(this.base + path, init);
@@ -69,12 +156,15 @@ export class DataClient {
    * Every row a query document selects, page by page; the version is the first page's.
    * @returns {Promise<{rows: Object[], version: ?{epoch: string, seq: number}}>}
    */
-  async read(table, query) {
+  async read(table, query, schema) {
     const doc = Object.assign({}, query || {});
+    let form = this.form;
+    if (form === 'arrow' && !((schema && schema.can) || []).includes('arrow')) form = 'json';
+    if (form === 'arrow' && !(this.arrow || globalThis.Arrow)) throw new DataError(0, { code: 'rdp.query.unsupported', message: 'Apache Arrow JS is not loaded' });
     const rows = [];
     let version = null;
     for (;;) {
-      const page = await this.json('POST', `/tables/${encodeURIComponent(table)}/query`, doc);
+      const page = form === 'json' ? await this.json('POST', `/tables/${encodeURIComponent(table)}/query`, doc) : await this.rowsPage(table, doc, form);
       if (!version && page.version) version = page.version;
       for (const r of pageRows(page)) rows.push(r);
       if (typeof page.next !== 'string') break;
@@ -87,10 +177,14 @@ export class DataClient {
    * Follows a table's changes after a position. onFrame receives each `msg` or `gap` frame parsed; the rules of PROTOCOL 8.3 (drop a
    * seq not above the last, resync on a gap or another epoch) are the caller's. Returns a function that stops.
    */
-  follow(table, after, onFrame, onError) {
-    if (this.subscribeHook) return this.subscribeHook(table, after, onFrame, onError);
+  follow(table, after, onFrame, onError, opts) {
+    const filter = (opts && opts.filter) || null, everyMs = (opts && opts.everyMs) || this.everyMs;
+    if (this.subscribeHook) return this.subscribeHook(table, after, onFrame, onError, { filter, everyMs });
+    if (this.bridge) return this.bridge.subscribe(table, after, filter, everyMs, onFrame, onError);
     const url = `${this.base}/changes?table=${encodeURIComponent(table)}&after=${encodeURIComponent(`${after.epoch}:${after.seq}`)}`;
-    if (typeof EventSource !== 'undefined') {
+    // a filtered or conflated stream is asked with POST (the minimal SSE form's body); EventSource cannot POST, so fetch reads it
+    const post = filter || everyMs ? { table, after: `${after.epoch}:${after.seq}`, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined } : null;
+    if (typeof EventSource !== 'undefined' && !post) {
       const es = new EventSource(url);
       const on = (e) => { try { onFrame(JSON.parse(e.data)); } catch (x) { if (onError) onError(x); } };
       es.addEventListener('msg', on);
@@ -101,7 +195,9 @@ export class DataClient {
     // Node and workers without EventSource: read the stream with fetch
     const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     (async () => {
-      const r = await this.fetch(url, { headers: { Accept: 'text/event-stream' }, signal: ctl && ctl.signal });
+      const init = { headers: { Accept: 'text/event-stream' }, signal: ctl && ctl.signal };
+      if (post) Object.assign(init, { method: 'POST', body: JSON.stringify(post) }, { headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json' } });
+      const r = await this.fetch(post ? `${this.base}/changes` : url, init);
       if (r.status !== 200) { const t = await r.text(); throw new DataError(r.status, t ? JSON.parse(t).error : null); }
       const reader = r.body.getReader(), dec = new TextDecoder();
       let buf = '';
@@ -118,5 +214,57 @@ export class DataClient {
       }
     })().catch((x) => { if (!(ctl && ctl.signal.aborted) && onError) onError(x); });
     return () => { if (ctl) ctl.abort(); };
+  }
+}
+
+/** Base64 (a bridge res.arrow buffer in JSON) as bytes; a platform's transferable buffer is used as it is. */
+function bytesOf(buffer) {
+  if (typeof buffer !== 'string') return buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  if (typeof atob === 'function') { const b = atob(buffer), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  return new Uint8Array(Buffer.from(buffer, 'base64'));
+}
+
+/**
+ * The view's end of the bridge (PROTOCOL 12): requests as bridge messages, each answered exactly once by `res` (or `res.arrow`);
+ * subscriptions as `sub`/`unsub`, the host's `msg` frames routed by their `sub` id. Request ids are unique per view.
+ */
+export class BridgeChannel {
+  constructor(ch) {
+    this.ch = ch; this.n = 0; this.waiting = new Map(); this.subs = new Map();
+    this.stop = ch.listen((m) => this.receive(typeof m === 'string' ? JSON.parse(m) : m));
+    ch.post({ rdp: 1, t: 'hello', client: 'drishti-rachana', v: 1 });
+  }
+
+  receive(m) {
+    if (!m || m.rdp !== 1) return;
+    if (m.t === 'res' || m.t === 'res.arrow') {
+      const w = this.waiting.get(m.re);
+      if (!w) return;
+      this.waiting.delete(m.re);
+      if (m.error) w.fail(new DataError(0, m.error)); else w.ok(m.t === 'res.arrow' ? bytesOf(m.buffer) : m.body);
+    } else if (m.t === 'msg' && this.subs.has(m.sub)) {
+      this.subs.get(m.sub)(m);
+    }
+  }
+
+  send(message) {
+    const id = `r${++this.n}`;
+    return new Promise((ok, fail) => { this.waiting.set(id, { ok, fail }); this.ch.post(Object.assign({ rdp: 1, id }, message(id))); });
+  }
+
+  /** An HTTP-shaped request of the client as its bridge message. */
+  request(method, path, body, accept) {
+    const m = /^\/tables(?:\/([^/]+)(?:\/(rows|query))?)?$/.exec(path);
+    if (!m) return Promise.reject(new DataError(0, { code: 'rdp.query.invalid', message: `no bridge request for ${path}` }));
+    const table = m[1] ? decodeURIComponent(m[1]) : undefined, t = !m[1] ? 'tables' : m[2] || 'schema';
+    return this.send(() => ({ t, table, body, accept }));
+  }
+
+  subscribe(table, after, filter, everyMs, onFrame, onError) {
+    let id = null, live = true;
+    this.send((rid) => { id = rid; this.subs.set(rid, (msg) => onFrame({ t: 'msg', epoch: msg.epoch, seq: msg.seq, first: msg.first, data: msg.data }));
+      return { t: 'sub', table, after, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined }; })
+      .then((body) => { if (live && body && body.recovered === false) onFrame({ t: 'gap', recoverable: false }); }, (e) => { if (onError) onError(e); });
+    return () => { live = false; if (id) { this.subs.delete(id); this.ch.post({ rdp: 1, t: 'unsub', id }); } };
   }
 }

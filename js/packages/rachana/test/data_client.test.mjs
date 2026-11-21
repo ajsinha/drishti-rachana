@@ -10,6 +10,7 @@ import { spawn } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve, delimiter } from 'node:path';
+import { createRequire } from 'node:module';
 import { DataClient, Screen, loadRuntime } from '../src/index.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -19,7 +20,7 @@ const BUNDLE = resolve(ROOT, 'js/packages/rachana/dist/rachana.runtime.js');
 function startServer() {
   const jar = readdirSync(TARGET).find((f) => /^rachana-data-.*\.jar$/.test(f) && !/-(sources|tests)\.jar$/.test(f));
   const mp = [resolve(TARGET, jar), readFileSync(resolve(TARGET, 'runtime-classpath.txt'), 'utf8').trim()].join(delimiter);
-  const p = spawn('java', ['-p', mp, '-m', 'com.ash.rachana.data/com.ash.rachana.data.ReferenceServer', '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
+  const p = spawn('java', ['--add-opens=java.base/java.nio=org.apache.arrow.memory.core', '-p', mp, '-m', 'com.ash.rachana.data/com.ash.rachana.data.ReferenceServer', '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
   return new Promise((ok, fail) => {
     p.stdout.once('data', (b) => { const m = /listening on (\S+)/.exec(String(b)); m ? ok({ p, base: m[1] }) : fail(new Error(String(b))); });
     p.once('exit', (c) => fail(new Error(`server exited ${c}`)));
@@ -39,6 +40,34 @@ panels:
 `;
 
 const ready = existsSync(BUNDLE) && existsSync(TARGET);
+const Arrow = createRequire(import.meta.url)(resolve(ROOT, 'js/vendor/apache-arrow/21.1.0/Arrow.es2015.min.js'));
+const post = (base, path, body) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+// every type of PROTOCOL 3.1, a masked cell, an integer beyond 2^53 (the JVM's RowFormsTest uses the same table)
+const ALL = { schema: { name: 'all', key: ['id'], can: ['page', 'sort', 'filter', 'arrow', 'count'], columns: [
+  { name: 'id', type: 'string' }, { name: 'n', type: 'integer' }, { name: 'amt', type: 'decimal', scale: 2 }, { name: 'x', type: 'number' },
+  { name: 'ok', type: 'boolean' }, { name: 'd', type: 'date' }, { name: 'ts', type: 'timestamp' }, { name: 'tm', type: 'time' },
+  { name: 'tags', type: 'list', items: 'string' }, { name: 'o', type: 'object' }, { name: 'sal', type: 'decimal', fmt: 'amount0' }] },
+rows: [{ id: 'a', n: 1, amt: '-1250.05', x: 0.25, ok: true, d: '2026-11-17', ts: '2026-11-17T09:30:00.000Z', tm: '09:30:00', tags: ['p', 'q'],
+  o: { k: 1 }, sal: { $masked: true } },
+{ id: 'b', n: '9007199254740993', amt: null, x: null, ok: false, d: null, ts: null, tm: '23:59:59.250', tags: null, o: null, sal: '3.5' }] };
+
+test('JSON, Arrow and NDJSON give the same rows', { skip: !existsSync(TARGET) && 'build java/rachana-data first' }, async () => {
+  const { p, base } = await startServer();
+  try {
+    await post(base, '/_test/fixture', ALL);
+    const origin = new URL(base).origin, schema = ALL.schema, q = { sort: [{ col: 'id' }] };
+    const json = await new DataClient({ base, origin }).read('all', q, schema);
+    assert.deepEqual(json.rows, ALL.rows);
+    for (const form of ['arrow', 'ndjson']) {
+      const r = await new DataClient({ base, origin, form, arrow: Arrow }).read('all', Object.assign({ limit: 1 }, q), schema);
+      assert.deepEqual(r.rows, ALL.rows, form);
+      assert.deepEqual(r.version, json.version, form);
+    }
+  } finally {
+    p.kill();
+  }
+});
 
 test('a screen reads its tables through the plan and follows their changes', { skip: !ready && 'build the bundle and java/rachana-data first' }, async () => {
   const { p, base } = await startServer();
@@ -74,4 +103,50 @@ test('a screen reads its tables through the plan and follows their changes', { s
 test('the client refuses an origin that is not allowed', () => {
   assert.throws(() => new DataClient({ base: 'https://elsewhere.test/rdp', origin: 'https://page.test' }), /allow-list/);
   assert.ok(new DataClient({ base: '/rdp/v1', origin: 'https://page.test' }).base.startsWith('https://page.test/'));
+});
+
+// The bridge (PROTOCOL 12) between a view and its host: here the reference server's test adapter carries the channel (POST /_test/bridge
+// answers a message; GET /_test/bridge/out hands over what the host pushed), as a desktop host's web view channel would.
+function adapterChannel(base) {
+  let handler = null, polling = true;
+  const poll = async () => {
+    while (polling) {
+      const out = await (await fetch(base + '/_test/bridge/out')).json();
+      for (const m of out) if (handler) handler(m);
+      await new Promise((r) => setTimeout(r, 30));
+    }
+  };
+  poll().catch(() => {});      // the server goes away at the end of the test
+  return {
+    post: (m) => { post(base, '/_test/bridge', m).then((r) => r.json()).then((a) => handler && handler(a)).catch(() => {}); },
+    listen: (h) => { handler = h; return () => { handler = null; }; },
+    close: () => { polling = false; },
+  };
+}
+
+test('a screen over the bridge: rows as Arrow, a filtered subscription', { skip: !ready && 'build the bundle and java/rachana-data first' }, async () => {
+  const { p, base } = await startServer();
+  const ch = adapterChannel(base);
+  try {
+    await post(base, '/_test/fixture', { schema: { name: 'sales', key: ['region', 'desk'], columns: [{ name: 'region', type: 'string' },
+      { name: 'desk', type: 'string' }, { name: 'revenue', type: 'decimal' }], can: ['page', 'filter', 'arrow', 'changes', 'changes.filter'] },
+    rows: [{ region: 'North', desk: 'A', revenue: '100' }, { region: 'South', desk: 'B', revenue: '50' }, { region: 'North', desk: 'C', revenue: '7' }] });
+    const rt = await loadRuntime(pathToFileURL(BUNDLE).href, [readFileSync(resolve(ROOT, 'spec/1/formats.yaml'), 'utf8')], 'core');
+    const client = new DataClient({ bridge: ch, form: 'arrow', arrow: Arrow });
+    const sutra = SUTRA.replace("live: true }", "live: true, where: \"@.revenue >= 10\" }").replace('options: [North, South]', 'options: [North, South]');
+    const screen = new Screen(rt, { sutra, ctl: { region: 'North' }, client });
+    await screen.load();
+    assert.equal(screen.view().panels[0].data.value.text, '150');     // C (7) filtered by the host
+    const changes = [];
+    const got = new Promise((ok) => screen.live((c) => { changes.push(c); if (changes.length === 2) ok(); }, (e) => ok(e)));
+    await new Promise((r) => setTimeout(r, 100));
+    await post(base, '/_test/patch', { table: 'sales', update: [{ region: 'North', desk: 'C', revenue: '20' }] });   // starts matching
+    await post(base, '/_test/patch', { table: 'sales', update: [{ region: 'South', desk: 'B', revenue: '5' }] });    // stops matching
+    await got;
+    assert.equal(screen.view().panels[0].data.value.text, '120');     // 100 + 20; B removed by the filtered stream
+    screen.close();
+  } finally {
+    ch.close();
+    p.kill();
+  }
 });

@@ -213,9 +213,20 @@ function, REST paging or a topic: a host exposes those as named tables.
   (`RCH-2055`); `doc.summary` is required (≤ 120 characters). `slots: {name: {accepts: panels, max, doc}}` are filled at
   the use by `slots: {name: [panels]}` and placed by `{slot: name}` in the fragment. At a use: unknown parameter or slot
   `RCH-2114`, required parameter missing `RCH-2115`, wrong type or constraint `RCH-2116`, slot content over `max`
-  `RCH-2118`. Below level 1.2 a use of a typed fragment is `RCH-2008`. Not yet at this level: `as:`, `emits`/`on:`,
-  private `state`, `let`, `outputs`, overlays, `fn` parameters, table column mapping `{from, columns}` (they arrive with
-  S1, S2, I1, L2, X13 and the plan rename).
+  `RCH-2118`. Below level 1.2 a use of a typed fragment is `RCH-2008`. **Fragments are functions** (decision L-21): a
+  table parameter names its local columns (`columns:`) or a published contract (`contract: <name>`, the file
+  `contracts/<name>.json` of its library or host, Data Protocol schema form); the use binds it to the caller's table,
+  `rows: $.t` (identity) or `rows: { from: $.t, columns: { <local>: <caller column> } }`, and the compiler renames the
+  local columns to the caller's in the panels that read the table (field-name options, `bind`, `@.<column>`). When the
+  caller's columns are known (a `data:` entry's `fields`, or its written rows) each required local column must be there
+  (`RCH-2115`), a mapped caller column must exist and fit the type (`RCH-2116`); a mapping to a column the fragment does
+  not declare is `RCH-2114`; a mapping the fragment never reads is the advisory `RCH-2120` (severity warning). A typed
+  fragment reads nothing of the screen (`RCH-2117`). `as: <name>` on a use scopes every id it brings (`<name>-<id>`).
+  `emits: [{name, payload, doc}]` declares the events the fragment returns, each raised by one inner panel's `emits`
+  with that payload; the screen reads them as `@<as>.<event>.<field>`; `on: {<event>: {set: <control>, field: <name>}}`
+  sets a control from the event's row. A compile result lists the libraries it was built from with their exact version
+  and SHA-384 (`Sutra.libraries()`). Not yet at this level: private `state`, `let`, `outputs`, overlays, `fn` parameters,
+  host actions in `on:` (they arrive with S1, S2, I1, L2 and X13).
 - **Libraries** [since 1.2, X42; LIBRARIES 3, 7, 9 to 12]: `libraries: [demo@1]` names each library and its major;
   `use: demo/figure@1` uses a library's fragment (the major is required); `use: demo@1/figure@1` (the long form) is
   accepted without a `libraries:` key. Unqualified names and `<pack>/<name>@N` of the host's resolver keep their meaning.
@@ -226,8 +237,8 @@ function, REST paging or a topic: a host exposes those as named tables.
   `MANIFEST.sha384` (a SHA-384 per file); an optional `SIGNATURE` holds Ed25519 signatures of `MANIFEST.sha384`. Inside
   a library every use is `<library>/<fragment>@N` of itself or a declared dependency; a typed fragment of a public
   library reads only its parameters (`RCH-2117` for `$`, `ctl.`, `state.`, `sel.`, `source:`, `data:`, `url:`). Codes:
-  `RCH-2110` not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity (hashes, lock,
-  signature). The `.rlib` archive is a ZIP written deterministically (sorted entries, stored, fixed time, no extras), so
+  `RCH-2110` not found, `2111` not in the lock or another major, `2112` invalid library (also a malformed
+  `contracts/<name>.json`), `2113` integrity (hashes, lock, signature). The `.rlib` archive is a ZIP written deterministically (sorted entries, stored, fixed time, no extras), so
   a folder and its archive have one identity.
 
 ### 2.6 Formats and tones
@@ -494,7 +505,9 @@ before it runs. Types: `integer`, `decimal`, `number`, `string`, `boolean`, `dat
 against `'9 Oct'`), chained comparisons, screen-only roots (`ctl`, `@panel`, `$src`, `#index`) in data scopes, old
 spellings (`RCH-9127`); functions without a signature yet (`RCH-9129`); unknown names with "did you mean"
 (`RCH-9152`); a filter, `in`, sort or grouping on a field masked for the reader (`RCH-9161`). **Checked mode only
-refuses more; it never changes what a text means.** A literal's type is `integer` (whole, no exponent), `decimal` (a
+refuses more; it never changes what a text means.** From level 1.2, a Sutra's plan over the host's schemas (DataPlan, `rachana
+explain`) reads each row condition over a table (the entry's `where`, a reading panel's `where`) in checked mode against the table's
+columns, with the controls' values in place; an unknown column stays `RCH-2071`. A literal's type is `integer` (whole, no exponent), `decimal` (a
 fraction, no exponent) or `number` (with an exponent), as 4.16 says.
 
 ### 4.15 Reservations
@@ -581,12 +594,13 @@ words (`el/syntax-at-1-0`). Every one is pinned by `el/syntax-1-1`.
 | record <code>{k: v, 'k-2': v, ...r}</code> | an object, keys in written order; a key written twice does not compile; a later key or spread replaces an earlier one in its place; spreading empty adds nothing, a masked value masks the record, a non-record is `RCH-2102`; at most 1,000 fields | `{...$.r, b: 9}` → `{b: 9, c: 3}` |
 | list spread `[...a, b]` | the elements of `a` in place; empty adds nothing; a non-list is `RCH-2102` | `[...[1, 2], 3]` → `[1, 2, 3]` |
 | slice `t[a:b]`, `t[a:b:c]` | Python's: end-exclusive, each part optional, a negative end from the end, clamped; a list gives a list, a text a text by code point; step 0 is `RCH-2102`; empty gives empty | `[10, 20, 30, 40][1:3]` → `[20, 30]` |
-| `range(stop)`, `range(start, stop, step?)` | Python's, end-exclusive, whole numbers, at most 10,000; `..` stays reserved (PY4). Over a list it is still Core's aggregate `range(list, field?)`, max − min | `range(10, 0, -3)` → `[10, 7, 4, 1]` |
+| `range(stop)`, `range(start, stop, step?)` | Python's, end-exclusive, whole numbers, at most 10,000; `..` stays reserved (PY4). Only the sequence (DECISIONS EL1-1): a list or a text written as an argument does not compile and one met at evaluation is `RCH-2102`, both naming `span` | `range(10, 0, -3)` → `[10, 7, 4, 1]` |
+| `span(list, field?)` | max − min, the aggregate level 1.0 spells `range(list, field?)` (split step A9; the same kernel); not a name at 1.0 (EL1-1) | `span([3, 9, 4])` → `6` |
 | pipe `x \|> f(a)` | `f(x, a)`, rewritten before anything else; the lowest precedence; the right side is a call | `1 + 2 \|> round(0)` → `3` |
 | `a ?? b` | `a` unless it is empty, else `b` (evaluated only then); `''` and `0` are values; a masked `a` is passed on; between the conditional and `\|\|` | `$.missing ?? 'n/a'` → `'n/a'` |
 | `a if c else b` | the conditional in Python's order (PY2); `c ? a : b` and `if(c, a, b)` stay | `'big' if 5 > 3 else 'small'` → `'big'` |
 | `lambda x: body`, `lambda acc, x: body` | a function, **second class** (XD8): an argument of `map`, `sort` (a key), `reduce` (two names) or `group` (the key), or a `let` value called as `f(…)`; never stored, compared or printed; a `let` name is not in scope in its own value, so there is no recursion; inside, `@`, `^`, `#index` keep their outer meaning; `=>` stays reserved (PY3) | `let(bp = lambda x: x * 10000, bp(0.0125))` → `125` |
-| `a ** b`, `a ^ b` | power (PY6), right-associative, tighter than a sign on its left (`-2 ** 2` → `-4`, Python's rule); exact for an exact base and a whole exponent of at most 64, else a double; `^` before an operand is still the parent | `2 ** 3 ** 2` → `512` |
+| `a ** b`, `a ^ b` | power (PY6), right-associative, tighter than a sign on its left (`-2 ** 2` → `-4`, Python's rule; Excel reads `-2 ^ 2` as `4`), the same for both spellings (EL1-2); checked mode warns `RCH-2091` on a sign before a power without parentheses, with both spellings as the fix; exact for an exact base and a whole exponent of at most 64, else a double; `^` before an operand is still the parent | `2 ** 3 ** 2` → `512` |
 | comment `/* … */` | white space; not nested; not kept by the printer | `1 /* one */ + 2` → `3` |
 | digit separator `1_000_000` | an underscore only between two digits | `1_000.000_1` → `1000.0001` |
 | exact numbers | 4.16 | `0.1 * 3 == 0.3` → `true` |
@@ -725,7 +739,7 @@ way; stable. `unique` keeps the first of each (`1` and `1.0` are one; `'1'` diff
 
 `sum(l, 'field'?)`, `avg`, `median`, `variance`, `stddev`, `variance_pop`, `stddev_pop`, `distinct` (1–2);
 `count(l?, 'field'?)` (0–2); `percentile(l, 'field'?, p)` (2–3); `wavg(l, 'x', 'w')` or `wavg(xs, ws)` (2–3);
-`min(l)`, `max(l)` (above). Number-like text counts; other non-numbers are skipped; a masked element masks the result;
+`min(l)`, `max(l)` (above); from level 1.1 `span(l, 'field'?)`, max − min (4.17). Number-like text counts; other non-numbers are skipped; a masked element masks the result;
 `sum` uses compensated summation [CS]. `percentile` is Excel's `PERCENTILE.INC`.
 
 `sum($.legs, 'notional')` → `484000000`; `percentile($.pnl[*].v, 0.99)`; `wavg($.legs, 'price', 'qty')`.
@@ -818,8 +832,8 @@ Core keeps the reference's numbers with the prefix `RCH-` (decision D8; Drishti 
 | `RCH-2048`..`2059` | reuse, docstring, wiring, forms, layout | `2048` fragment not found, `2055` docstring, `2056` children depth, `2057` event or source read, `2058` form, `2059` layout |
 | `RCH-2060`..`2069` | profiles | `2060` key, kind or function of a profile not loaded, `2061` profile claimed but unused, `2062` unknown profile |
 | `RCH-2070`..`2079` | data | `2070` unknown table, `2071` unknown column (`expected`), `2072` key missing for a live table, `2073` source shape or name clash, `2074` not push-down-able over a server table |
-| `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling |
-| `RCH-2110`..`2119` | libraries and typed fragments (since 1.2) | `2110` library not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity, `2114` unknown parameter or slot, `2115` required parameter missing, `2116` wrong type or constraint, `2117` reads outside its scope, `2118` slot content; `2119` reserved (a library needs a profile or level the host lacks) |
+| `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling, `2091` a sign before a power without parentheses (level 1.1, checked mode: `-x ** n` is `-(x ** n)`; EL1-2) |
+| `RCH-2110`..`2119` | libraries and typed fragments (since 1.2) | `2110` library not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity, `2114` unknown parameter or slot, `2115` required parameter missing, `2116` wrong type or constraint, `2117` reads outside its scope, `2118` slot content; `2119` reserved (a library needs a profile or level the host lacks); `2120` advisory (warning): a column mapping the fragment never reads (L-21) |
 | `RCH-2101`, `2102` | expressions | `2101` does not compile (syntax, unknown function, arity, literal check, limits); `2102` evaluation error |
 | `RCH-9127`, `9129`, `9152`, `9161` | checked mode | type or scope; not yet available; unknown name; masked field filtered |
 

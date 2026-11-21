@@ -21,7 +21,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * The reference Data Protocol server (small, for conformance and for trying a view): a {@link MemoryHost} over the JDK's HTTP server.
@@ -30,7 +29,7 @@ import java.util.function.Consumer;
  * patch, {@code POST /_test/bridge} answers a bridge message). Optionally serves a folder of static files outside the base (same origin
  * for a page that embeds a view). Not a production server: no authentication, everything in memory, loopback only.
  *
- * <p>Usage: {@code java -m com.ash.rachana.data/com.ash.rachana.data.ReferenceServer [--port 0] [--base /rdp/v1] [--static <dir>]
+ * <p>Usage: {@code java --add-opens=java.base/java.nio=org.apache.arrow.memory.core -m com.ash.rachana.data/com.ash.rachana.data.ReferenceServer [--port 0] [--base /rdp/v1] [--static <dir>]
  * [--table <{schema, rows}.json>]...}; prints {@code rdp-reference-server listening on http://127.0.0.1:<port><base>} when ready.
  */
 public final class ReferenceServer implements AutoCloseable {
@@ -40,6 +39,8 @@ public final class ReferenceServer implements AutoCloseable {
     private final String base;
     private final Path statics;
     private volatile boolean closed;
+    private final List<Map<String, Object>> outbox = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private MemoryHost.Bridge testBridge;
 
     public ReferenceServer(int port, String base, Path statics) throws IOException {
         this.base = base == null || base.equals("/") ? "" : base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
@@ -93,10 +94,10 @@ public final class ReferenceServer implements AutoCloseable {
             if (rel.startsWith("/_test/")) {
                 test(x, rel, body);
             } else if (rel.equals("/changes") && (m.equals("GET") || m.equals("POST"))) {
-                stream(x, q);
-            } else if (rel.startsWith("/tables/") && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
-                String form = x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson";
-                json(x, 406, ProtocolError.of("rdp.query.unsupported", 406, "this host answers JSON only", "operation", form).body());
+                stream(x, q, body);
+            } else if (rel.startsWith("/tables/") && (rel.endsWith("/rows") || rel.endsWith("/query"))
+                    && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
+                binary(x, m, rel, q, body, x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson");
             } else {
                 MemoryHost.Answer a = host.handle(m, rel, q, body);
                 json(x, a.status(), a.body());
@@ -112,6 +113,13 @@ public final class ReferenceServer implements AutoCloseable {
         try {
             switch (rel) {
                 case "/_test/fixture" -> {
+                    synchronized (this) {
+                        if (testBridge != null) {
+                            testBridge.close();
+                        }
+                        testBridge = host.bridge(outbox::add);
+                        outbox.clear();
+                    }
                     host.clear();
                     host.put(b.get("schema"), (List<Map<String, Object>>) b.getOrDefault("rows", List.of()), "t1");
                     json(x, 204, null);
@@ -120,7 +128,15 @@ public final class ReferenceServer implements AutoCloseable {
                     host.publish(b);
                     json(x, 204, null);
                 }
-                case "/_test/bridge" -> json(x, 200, host.bridge(b));
+                case "/_test/bridge" -> json(x, 200, bridge().handle(b));
+                case "/_test/bridge/out" -> {
+                    List<Map<String, Object>> sent;
+                    synchronized (outbox) {
+                        sent = new java.util.ArrayList<>(outbox);
+                        outbox.removeAll(sent);
+                    }
+                    json(x, 200, sent);
+                }
                 default -> json(x, 404, ProtocolError.of("rdp.table.unknown", 404, "no test path " + rel).body());
             }
         } catch (ProtocolError e) {
@@ -128,57 +144,101 @@ public final class ReferenceServer implements AutoCloseable {
         }
     }
 
-    /** The minimal SSE form (section 8.2): the frames after {@code after} (or {@code Last-Event-ID}), then live ones until the client leaves. */
-    private void stream(HttpExchange x, Map<String, String> q) throws IOException {
-        String table = q.get("table");
-        String after = q.get("after") != null ? q.get("after") : x.getRequestHeaders().getFirst("Last-Event-ID");
+    private synchronized MemoryHost.Bridge bridge() {
+        if (testBridge == null) {
+            testBridge = host.bridge(outbox::add);
+        }
+        return testBridge;
+    }
+
+    /**
+     * The minimal SSE form (section 8.2): the frames after {@code after} (or {@code Last-Event-ID}), then live ones until the client leaves.
+     * {@code POST} takes {@code {table, after, filter?, conflate?: {everyMs}}} (a filtered or conflated stream, sections 8.2 and 8.4);
+     * {@code GET} also takes {@code everyMs}. A position that cannot be resumed is one {@code gap} frame ({@code recoverable: false}).
+     */
+    private void stream(HttpExchange x, Map<String, String> q, Object body) throws IOException {
+        Map<?, ?> b = body instanceof Map<?, ?> m ? m : Map.of();
+        String table = b.get("table") instanceof String t ? t : q.get("table");
+        String after = b.get("after") instanceof String a ? a : q.get("after") != null ? q.get("after") : x.getRequestHeaders().getFirst("Last-Event-ID");
+        long every = b.get("conflate") instanceof Map<?, ?> c && c.get("everyMs") instanceof Number n ? n.longValue()
+                : q.get("everyMs") != null ? Long.parseLong(q.get("everyMs")) : 0;
         BlockingQueue<Map<String, Object>> live = new LinkedBlockingQueue<>();
-        Consumer<Map<String, Object>> listener = f -> {
-            if (("rdp." + table).equals(f.get("topic"))) {
-                live.add(f);
-            }
-        };
-        host.subscribe(listener);
+        Subscription sub;
         try {
-            List<Map<String, Object>> backlog;
-            try {
-                backlog = host.changes(table, after);
-            } catch (ProtocolError e) {
-                json(x, e.status(), e.body());
-                return;
-            }
+            sub = host.subscribe(table, after, b.get("filter"), every, live::add);
+        } catch (ProtocolError e) {
+            json(x, e.status(), e.body());
+            return;
+        }
+        try (sub) {
             x.getResponseHeaders().set("Content-Type", "text/event-stream; charset=utf-8");
             x.getResponseHeaders().set("Cache-Control", "no-store");
             x.sendResponseHeaders(200, 0);
             OutputStream out = x.getResponseBody();
-            long last = -1;
-            for (Map<String, Object> f : backlog) {
-                event(out, f);
-                last = f.get("seq") instanceof Long s ? s : last;
+            if (!sub.recovered()) {
+                event(out, host.changes(table, "-:0").get(0));      // the gap frame at the table's position
+                out.flush();
+                return;
+            }
+            for (Map<String, Object> f = live.poll(); f != null; f = live.poll()) {
+                event(out, f);                                       // the backlog, then a heartbeat, then live frames
             }
             out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
             out.flush();
-            if (!backlog.isEmpty() && "gap".equals(backlog.get(0).get("t"))) {
-                return;
-            }
             while (!closed) {
                 Map<String, Object> f = live.poll(15, TimeUnit.SECONDS);
                 if (f == null) {
                     out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
-                } else if ((long) f.get("seq") > last) {
+                } else {
                     event(out, f);
-                    last = (long) f.get("seq");
                 }
                 out.flush();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } finally {
-            host.unsubscribe(listener);
         }
     }
 
-    /** Whether the reader asks only for Arrow or NDJSON (sections 5.2, 5.3), which this host does not offer. */
+    /**
+     * Rows as Arrow IPC (section 5.2: only for a table whose {@code can} has {@code arrow}, else {@code 406}) or NDJSON (section 5.3: one
+     * header object, then one array of cells per line, written as they are produced). The answer is the JSON page's, in the other form.
+     */
+    @SuppressWarnings("unchecked")
+    private void binary(HttpExchange x, String m, String rel, Map<String, String> q, Object body, String form) throws IOException {
+        String name = rel.substring("/tables/".length(), rel.lastIndexOf('/'));
+        com.ash.rachana.table.TableSchema schema;
+        try {
+            schema = host.schemaOf(name);
+        } catch (ProtocolError e) {
+            json(x, e.status(), e.body());
+            return;
+        }
+        if (form.equals("arrow") && !schema.can("arrow")) {
+            json(x, 406, ProtocolError.of("rdp.query.unsupported", 406, name + " is not offered as Arrow", "table", name, "operation", "arrow").body());
+            return;
+        }
+        MemoryHost.Answer a = host.handle(m, rel, q, body);
+        if (a.status() != 200) {
+            json(x, a.status(), a.body());
+            return;
+        }
+        Map<String, Object> page = (Map<String, Object>) a.body();
+        x.getResponseHeaders().set("Cache-Control", "no-store");
+        if (form.equals("arrow")) {
+            byte[] bytes = ArrowRows.write(page, schema, ArrowRows.BATCH_ROWS);
+            x.getResponseHeaders().set("Content-Type", ArrowRows.MEDIA);
+            x.sendResponseHeaders(200, bytes.length);
+            x.getResponseBody().write(bytes);
+            return;
+        }
+        x.getResponseHeaders().set("Content-Type", NdjsonRows.MEDIA);
+        x.sendResponseHeaders(200, 0);
+        OutputStream out = x.getResponseBody();
+        NdjsonRows.write(page, out);
+        out.flush();
+    }
+
+    /** Whether the reader asks only for Arrow or NDJSON (sections 5.2, 5.3). */
     private static boolean binaryAccept(String accept) {
         return accept != null && (accept.contains("application/vnd.apache.arrow.stream") || accept.contains("application/x-ndjson"))
                 && !accept.contains("application/json") && !accept.contains("*/*");

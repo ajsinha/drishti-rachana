@@ -104,4 +104,26 @@ class TablesTest {
         assertThat(TableSchema.decode("integer", "9007199254740993")).isEqualTo(9007199254740993L);
         assertThat(Values.masked(TableSchema.decode("string", Map.of("$masked", true)))).isTrue();
     }
+
+    @Test
+    void aPlanIsCheckedAgainstTheSchemasFromLevel12() {
+        com.ash.rachana.Rachana r = com.ash.rachana.Rachana.with(com.ash.rachana.RachanaOptions.DEFAULTS).language("1.2");
+        com.ash.rachana.model.Sutra sutra = r.parser().parse("""
+                rachana: 1
+                sutra: checked
+                version: 1
+                data:
+                  sales: { table: sales, where: "@.units + 'x' > 3 && @.salary > 1" }
+                panels:
+                  - { id: n, kind: metric, label: N, value: "count($.sales)" }
+                """, "checked.sutra.yaml", "test");
+        Map<String, TableSchema> schemas = Map.of("sales", TableSchema.of(json("{\"name\":\"sales\",\"key\":[\"id\"],\"can\":[\"filter\"],"
+                + "\"columns\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"units\",\"type\":\"integer\"},"
+                + "{\"name\":\"salary\",\"type\":\"decimal\",\"masked\":true}]}")));
+        EvalContext ctx = EvalContext.of(Node.of(Map.of()), null);
+        List<?> at12 = (List<?>) DataPlan.plan(sutra, schemas, r.compiler(), ctx, "1.2").get("problems");
+        assertThat(at12.stream().map(x -> String.valueOf(((Map<?, ?>) x).get("code"))).sorted().toList()).containsExactly("RCH-9127", "RCH-9161");
+        assertThat((List<?>) DataPlan.plan(sutra, schemas, r.compiler(), ctx, "1.1").get("problems")).isEmpty();
+        assertThat((List<?>) DataPlan.plan(sutra, schemas, r.compiler(), ctx).get("problems")).isEmpty();
+    }
 }

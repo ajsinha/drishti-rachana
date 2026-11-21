@@ -1,0 +1,124 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/live
+since: "1.0"
+profile: core
+verified: false
+description: Subscriptions over the bridge (PROTOCOL 12 sub, unsub, msg), filtered subscriptions (8.2 changes.filter) and conflation (8.4 everyMs), run by tools/conformance/protocol_check.py; GET /_test/bridge/out reads the host → view messages pushed since the last read (PROTOCOL 15).
+cases:
+  - id: bridge-sub-then-msg
+    kind: protocol
+    source: PROTOCOL 12 (sub answered once; msg per patch)
+    fixture: &live
+      name: rdp-live2
+      schema:
+        name: rdp-live2
+        key: [id]
+        columns: [ { name: id, type: string }, { name: n, type: integer } ]
+        can: [page, changes, changes.filter, replay]
+      rows: [ { id: a, n: 1 }, { id: b, n: 5 } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: rdp-live2 } }
+        expect: { status: 200, body: { rdp: 1, t: res, re: s1, body: { recovered: true, version: { epoch: t1, seq: 0 } } } }
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, update: [ { id: a, n: 2 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect:
+          status: 200
+          body: [ { rdp: 1, t: msg, sub: s1, table: rdp-live2, epoch: t1, seq: 1, data: { table: rdp-live2, update: [ { id: a, n: 2 } ] } } ]
+
+  - id: bridge-sub-resumes-after-a-position
+    kind: protocol
+    source: PROTOCOL 12, 8.3 (after replays what the reader missed)
+    fixture: *live
+    steps:
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, update: [ { id: a, n: 2 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: rdp-live2, after: { epoch: t1, seq: 0 } } }
+        expect: { status: 200, body: { t: res, re: s1, body: { recovered: true, version: { epoch: t1, seq: 1 } } } }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, seq: 1 } ] }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s2, table: rdp-live2, after: { epoch: other, seq: 1 } } }
+        expect: { status: 200, body: { t: res, re: s2, body: { recovered: false } } }
+
+  - id: bridge-unsub-stops-the-messages
+    kind: protocol
+    source: PROTOCOL 12
+    fixture: *live
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: rdp-live2 } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: unsub, id: s1 } }
+        expect: { status: 200, body: { rdp: 1, t: res, re: s1, body: { } } }
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, update: [ { id: a, n: 2 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ ] }
+
+  - id: bridge-sub-of-a-table-without-a-key
+    kind: protocol
+    source: PROTOCOL 8.1, 12 (rdp.table.no-key at subscribe)
+    fixture:
+      name: rdp-nokey
+      schema: { name: rdp-nokey, columns: [ { name: v, type: integer } ], can: [page, changes] }
+      rows: [ { v: 1 } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: rdp-nokey } }
+        expect: { status: 200, body: { t: res, re: s1, error: { code: rdp.table.no-key } } }
+
+  - id: a-filtered-subscription-restates-each-patch
+    kind: protocol
+    source: PROTOCOL 8.2 (filtered subscription; remove for a row that stops matching, update with every field for one that starts)
+    fixture: *live
+    steps:
+      - request:
+          method: POST
+          path: /_test/bridge
+          body: { rdp: 1, t: sub, id: f1, table: rdp-live2, filter: { op: ">", args: [ { col: n }, { lit: 2 } ] } }
+        expect: { status: 200, body: { t: res, re: f1, body: { recovered: true } } }
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, update: [ { id: a, n: 3 }, { id: b, n: 1 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, add: [ { id: c, n: 0 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect:
+          status: 200
+          body:
+            - { t: msg, sub: f1, seq: 1, data: { table: rdp-live2, remove: [ [b] ], update: [ { id: a, n: 3 } ] } }
+            - { t: msg, sub: f1, seq: 2, data: { table: rdp-live2 } }
+
+  - id: a-filter-needs-changes-filter
+    kind: protocol
+    source: PROTOCOL 8.2 (without changes.filter a filtered sub is refused with rdp.query.unsupported)
+    fixture:
+      name: rdp-live3
+      schema: { name: rdp-live3, key: [id], columns: [ { name: id, type: string } ], can: [page, changes] }
+      rows: [ { id: a } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: f1, table: rdp-live3, filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { t: res, re: f1, error: { code: rdp.query.unsupported, operation: changes.filter } } }
+
+  - id: a-filtered-stream-resumes-only-from-now
+    kind: protocol
+    source: PROTOCOL 8.2, 8.3 (a host that cannot replay a filtered stream says so, a gap with recoverable false)
+    fixture: *live
+    steps:
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, update: [ { id: a, n: 3 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /changes, body: { table: rdp-live2, after: "t1:0", filter: { op: ">", args: [ { col: n }, { lit: 2 } ] } } }
+        expect: { status: 200, body: [ { t: gap, recoverable: false } ] }
+
+  - id: a-conflated-stream-merges-by-key
+    kind: protocol
+    source: PROTOCOL 8.4 (conflate everyMs, a later remove cancels an earlier add, the merged message has first and seq)
+    fixture: *live
+    steps:
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, update: [ { id: a, n: 2 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, add: [ { id: c, n: 9 } ], update: [ { id: a, n: 4 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live2, remove: [ [c] ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /changes, body: { table: rdp-live2, after: "t1:0", conflate: { everyMs: 100 } } }
+        expect:
+          status: 200
+          body: [ { t: msg, epoch: t1, seq: 3, first: 1, data: { table: rdp-live2, remove: [ [c] ], update: [ { id: a, n: 4 } ] } } ]

@@ -22,6 +22,10 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **Conformance**: `sutra/fragments-calls` (6), `problem/fragments-calls` (11), verified; JVM and both JavaScript bundles
   agree at 1.0, 1.1, 1.2; level-1.0 replay and the customer corpus unchanged. API additions only (`api-surface.txt`).
 
+### IntelliJ launchers and installing a release
+
+- **Build launchers**: `java/run-configs/` holds four IntelliJ Maven configurations in the folder **Rachana** (build all, test, install release for a release tag only, JS bundles), the build guide is [java/README](java/README.md#build-in-intellij-idea), and a release is installed into `~/.m2` for Drishti from its tag only (decision R-1).
+
 ### Rachana-EL level 1.1: the syntax batch and exact numbers (lane B: EL phase 1)
 
 - **Syntax at language level 1.1** (SPEC 4.17, EBNF part D; EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY1 to PY8): record literals

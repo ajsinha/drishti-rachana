@@ -45,6 +45,9 @@ def main(argv=None) -> int:
                      "sha256": hashlib.sha256(data).hexdigest()}
         r = report[b]
         print(f"{b}: raw {r['raw']:,} · gzip {r['gzip9']:,} · brotli {r['brotli11']:,} · sha256 {r['sha256']}")
+    # the Python engine checks every bundle against this file before it runs it (python/src/drishti_rachana/engine.py)
+    sums = "".join(f"{report[b]['sha256']}  {b}\n" for b in BUNDLES)
+    (ROOT / "python" / "src" / "drishti_rachana" / "bundle" / "SHA256SUMS").write_text(sums, encoding="utf-8")
     if a.json:
         Path(a.json).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return 0

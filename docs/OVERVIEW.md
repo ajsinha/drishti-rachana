@@ -36,7 +36,7 @@ All parts are **planned** as separate deliverables of this repository; the langu
 |---|---|
 | Sutra spec | The language. Structure: JSON Schema. Expressions (**Rachana-EL**): EBNF grammar. |
 | Conformance suite | Sutra + data in, exact expected ViewModel out. Passing it is what "being Rachana" means. |
-| Compiler | Sutra + data schema to ViewModel. One Java reference; built for JavaScript and WebAssembly. |
+| Compiler | Sutra + data schema to ViewModel. One Java reference; built for JavaScript; Python runs that bundle on V8. |
 | Views | `<rachana-view>` compiles and binds a Sutra, then paints the ViewModel with Drishti Elements' painter (`<elements-view>`). |
 | Rachana Data Protocol | How tables and live changes travel: JSON rows or Arrow; keyed patches over SSE or WebSocket. |
 | SDKs | Java, JavaScript, Python (Flask and FastAPI adapters). |

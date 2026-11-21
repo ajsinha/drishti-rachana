@@ -29,7 +29,7 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 |---|---|
 | **Sutra spec** | The language: a screen as a short YAML document (`rachana: 1`). Structure defined by a published JSON Schema; the expression language **Rachana-EL** defined by an EBNF grammar. |
 | **Conformance suite** | Shared test cases (a Sutra plus data, and the exact expected result). Any implementation, in any language, is Rachana if it passes them. |
-| **Compiler** | Turns a Sutra into a ViewModel. One reference implementation (Java), built for the JVM, for JavaScript (browsers, Node) and for WebAssembly (Python and others). |
+| **Compiler** | Turns a Sutra into a ViewModel. One reference implementation (Java), built for the JVM, for JavaScript (browsers, Node); Python runs the JavaScript bundle on V8 (decision W-1). |
 | **Views** | `<rachana-view>`: compiles and binds a Sutra, then paints the ViewModel with Drishti Elements' painter (`<elements-view>`). |
 | **Rachana Data Protocol** | Tables as JSON rows or Apache Arrow; live changes as keyed patches over SSE or WebSocket. |
 | **SDKs** | Java, JavaScript and **Python** (Flask and FastAPI adapters: serve Sutras and data endpoints, stream live changes, lint Sutras in CI). |
@@ -103,7 +103,7 @@ and the data hand-over come with B3.
 | [Specification](docs/design/SPEC.md) | The normative language: document structure and JSON Schema, Rachana-EL grammar (EBNF), types, functions, versioning, the error model |
 | [Core and profiles](docs/design/CORE_AND_PROFILES.md) | What is Sutra Core and what is a host's profile, file by file over the existing code; the profile mechanism; tables as data sources |
 | [Data Protocol](docs/design/DATA_PROTOCOL.md) | Rachana Data Protocol v1: schema and types, JSON and Arrow, paging and push-down, live keyed patches, errors, limits, the in-process bridge |
-| [Compiler and runtimes](docs/design/COMPILER_AND_RUNTIMES.md) | Repository layout, the Java reference, the JavaScript and WebAssembly builds, the conformance suite, performance budgets, the CLI, desktop hosts, the standalone server |
+| [Compiler and runtimes](docs/design/COMPILER_AND_RUNTIMES.md) | Repository layout, the Java reference, the JavaScript build and the Python route on V8, the conformance suite, performance budgets, the CLI, desktop hosts, the standalone server |
 | [Split plan](docs/design/SPLIT_PLAN.md) | The step-by-step separation from Drishti, guards, tests that move, risks |
 | [Sutra libraries](docs/design/LIBRARIES.md) | **Planning.** The fragment-library framework: one mechanism (fragments, typed), `use: library/fragment@major`, table contracts, events, versions and the lock file, resolution, the `.rlib` archive, signing, licensing, generated documents and gallery, tests and gates, the AI kit, the Studio palette, a bank's private library, Drishti's migration with no screen change |
 | [Library catalogue](docs/design/LIBRARY_CATALOGUE.md) | **Planning.** Seven libraries and 209 fragments, each with its purpose, parameters, data, slots, events, what it needs and an example |
@@ -127,4 +127,4 @@ The promise that a host changes no byte by moving from one Rachana release to a 
 | CG7 painter forward vectors | the file list for the Elements lane: [compat/forward-vectors/FILES.md](compat/forward-vectors/FILES.md) |
 | CG8 release candidate in Drishti | `tools/gate/drishti_gate.py`: read-only dry run today; `--run` drives a scratch copy at release time |
 
-The tests are in `java/rachana-compat` (tests only, no product code). CG2 (level replay: `compat/levels/1.0/`, `tools/regime/levels.py`, `LevelReplayTest`) and CG5 (API surface: `java/api-surface.txt`, `ApiSurfaceTest`; update with `-Drachana.api.surface.write=true`) have a skeleton; the JavaScript facade's surface and CG10 are not started.
+The tests are in `java/rachana-compat` (tests only, no product code). CG2 (level replay: `compat/levels/1.0/`, `tools/regime/levels.py`, `LevelReplayTest`) and CG5 (API surface: `java/api-surface.txt`, `ApiSurfaceTest`; update with `-Drachana.api.surface.write=true`) are built and run in the gate; the packages `view`, `agg`, `bind`, `wire`, `profile`, `control` and the `parse` additions are **EXPERIMENTAL until v1.0.0** (the baseline says so); the JavaScript facade's surface and CG10 (speed) are not started.

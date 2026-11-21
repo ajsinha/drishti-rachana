@@ -21,6 +21,7 @@ python3 tools/split/rename_packages.py java/rachana-core/src
 | `a10-paths.txt` | the reviewed path allow-list (main code, the signatures catalogue, the unit tests that need only the compiler) |
 | `a13-paths.txt` | the binder's allow-list (step A13) |
 | `rename_packages.py` | headers and the package rename of the rename commit |
+| `make_reference.py` | rebuilds the reference results (`ref.jsonl`) from a given Drishti commit (a scratch worktree, read only, removed at the end): `make_reference.py --drishti <clone> --commit <sha> --out ref.jsonl`; nothing from Drishti is committed |
 | `compare_results.py` | the proof of each step: results over this code against the reference bridge's, byte for byte but for `known-differences.txt` |
 
 The binder moved the same way at step A13 with its own allow-list (`a13-paths.txt`: engine `bind`, `view`, `control`, `wire` and the

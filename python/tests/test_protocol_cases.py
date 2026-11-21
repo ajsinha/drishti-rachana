@@ -2,7 +2,7 @@
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """The `protocol` conformance cases (conformance/1/protocol) against the Python DataHost: the same cases tools/conformance/protocol_check.py
 runs against the JVM reference server (`--reference`) and against this host (`--python`)."""
-import sys, threading
+import fnmatch, sys, threading
 from pathlib import Path
 
 import pytest
@@ -25,8 +25,8 @@ def _cases():
     for _p, suite, doc in load_files(ROOT / "conformance" / "1"):
         for c in doc["cases"]:
             c = merged(doc, c)
-            if c["kind"] == "protocol":
-                cid = f"{suite}#{c['id']}"
+            cid = f"{suite}#{c['id']}"
+            if c["kind"] == "protocol" and not any(fnmatch.fnmatchcase(cid, g) for g in pc.PYTHON_SKIPS):
                 out.append(pytest.param(c, id=cid, marks=[pytest.mark.xfail(strict=True, reason="PROTOCOL 4")] if cid in KNOWN else []))
     return out
 

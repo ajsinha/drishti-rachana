@@ -16,8 +16,9 @@ Entries are written per release; the regime's unreleased work is listed after th
   warning and the TODO are gone. Tests: node (`build` of static-sales), `test/paint_check.py` (Chromium: every page
   paints, no console error). 
 - **Python `DataHost` and the JVM reference answer the same `protocol` cases**: `drishti_rachana.testhost` (the PROTOCOL 15 test
-  adapter over the standard library) and `protocol_check.py --python`; both pass 39 of 40, the one case being the frozen example that
-  sorts a table without `can: sort`. The host now enforces `can` (`rdp.query.unsupported` with `operation`), checks filter columns
+  adapter over the standard library) and `protocol_check.py --python`; the host skips `protocol/forms` (Arrow, NDJSON) and `protocol/live`
+  (bridge subscriptions, filtered and conflated streams), which it does not offer, and passes 39 of the other 40 (the one case is the
+  frozen example that sorts a table without `can: sort`, which the JVM reference fails the same way). The host now enforces `can` (`rdp.query.unsupported` with `operation`), checks filter columns
   (`rdp.column.unknown`) and operations (`rdp.query.invalid`), refuses masked columns (`rdp.forbidden`), orders by the key last with
   empty values last, compares decimals exactly, answers `group` (count, sum, min, max, avg, distinct, totals) and sends `t: msg` frames
   and `gap` with `recoverable: false` when there is no replay. `python/tests/test_protocol_cases.py` runs the cases.

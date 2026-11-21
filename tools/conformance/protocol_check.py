@@ -206,6 +206,11 @@ def start_reference():
     return p, line.split("listening on", 1)[1].strip()
 
 
+# What the Python host does not offer (it answers JSON only, with no bridge subscriptions, filtered or conflated streams): its own
+# declaration, not a failure. A host of your own can pass --skip too.
+PYTHON_SKIPS = ("protocol/forms#*", "protocol/live#*")
+
+
 def start_python():
     p = subprocess.Popen([sys.executable, "-m", "drishti_rachana.testhost", "--port", "0"], stdout=subprocess.PIPE, text=True,
                          env={**os.environ, "PYTHONPATH": str(ROOT / "python" / "src") + os.pathsep + os.environ.get("PYTHONPATH", "")})
@@ -223,6 +228,7 @@ def main(argv=None):
     ap.add_argument("--python", action="store_true", help="start python/src/drishti_rachana/testhost.py (DataHost) and run the same cases")
     ap.add_argument("--cases", default=str(ROOT / "conformance" / "1"))
     ap.add_argument("--only")
+    ap.add_argument("--skip", help="comma list of case globs not run (--python skips what the Python host does not offer: " + ", ".join(PYTHON_SKIPS) + ")")
     ap.add_argument("--out", default=str(ROOT / "results" / "protocol.jsonl"))
     a = ap.parse_args(argv)
     proc = None
@@ -234,6 +240,7 @@ def main(argv=None):
         ap.error("give --base, --reference or --python")
     host = Host(a.base)
     only = [g for g in (a.only or "").split(",") if g]
+    skip = [g for g in (a.skip or "").split(",") if g] + (list(PYTHON_SKIPS) if a.python else [])
     counts, failures, lines = {"pass": 0, "fail": 0, "error": 0}, [], []
     t0 = time.time()
     try:
@@ -242,6 +249,8 @@ def main(argv=None):
                 c = merged(doc, c)
                 cid = f"{suite}#{c['id']}"
                 if c["kind"] != "protocol" or (only and not any(fnmatch.fnmatchcase(cid, g) for g in only)):
+                    continue
+                if any(fnmatch.fnmatchcase(cid, g) for g in skip):
                     continue
                 try:
                     status, why, actual = run_case(host, c)

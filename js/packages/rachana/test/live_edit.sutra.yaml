@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
-rachana: 1
+rachana: 1.2
 sutra: live-edit
 version: 1
 title: { id: "'Editable live table'" }

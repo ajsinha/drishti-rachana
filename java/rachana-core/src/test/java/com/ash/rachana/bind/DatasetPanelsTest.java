@@ -74,8 +74,8 @@ class DatasetPanelsTest {
 
     @Test
     void aRowsPatchWritesOnlyWhatItCarries() {
-        assertThat(ViewJson.write(Patch.rows("trades", null, List.of("T-1"), List.of(Map.of("id", "T-2", "pv", 5)), null)))
-                .isEqualTo("{\"op\":\"rows\",\"dataset\":\"trades\",\"remove\":[\"T-1\"],\"update\":[{\"id\":\"T-2\",\"pv\":5}]}");
+        assertThat(ViewJson.write(Patch.rows("trades", null, List.of("T-1"), List.of(Map.of("pv", 5)), null)))
+                .isEqualTo("{\"op\":\"rows\",\"dataset\":\"trades\",\"remove\":[\"T-1\"],\"update\":[{\"pv\":5}]}");
         assertThat(ViewJson.write(new Patch("restored", null, null, null, null))).isEqualTo("{\"op\":\"restored\"}");
     }
 

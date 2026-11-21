@@ -36,4 +36,4 @@ inserts a `use:` block (tables and column mapping from the folder's data files),
 `build`, `preview`, Studio and `<rachana-view>` read every Sutra at its own level, and `rachana new` writes the newest. No command takes
 `--level`. `rachana upgrade` rewrites a level-1.0 Sutra or fragment to a later level with the same meaning, reading each file's level from its own `rachana:` key (needs a JVM, as `lib` does).
 
-**Not done yet:** `dev` is `preview` of a folder without live reload. `fix`, `fmt`, `explain`, `schema`, `migrate` are not written.
+`dev` is `preview` of a folder (no live reload). The guide: [docs/guides/CLI_AND_SDKS.md](../../../docs/guides/CLI_AND_SDKS.md).

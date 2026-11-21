@@ -1,7 +1,7 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
-# live-orders (deliverable D2)
+# live-orders
 
-Demo inputs for the Python app mode (docs/MODES.md 3): the same live board under Flask and under FastAPI. **Synthetic
+The Python app example (tutorial: [A live board in Flask](../../docs/tutorials/PYTHON_APP.md)): the same live board under Flask and under FastAPI. **Synthetic
 data**: fictional customers and items. The CSV has no header comment; it is covered by the repository licence.
 
 | File | What |
@@ -13,7 +13,7 @@ data**: fictional customers and items. The CSV has no header comment; it is cove
 | `paint_check.py` | Chromium check: the board paints, changes while open (SSE), no console error (`uv run --with flask --with playwright==1.64.0 python paint_check.py`) |
 
 ```bash
-python3 gen_orders.py --duration 5 --rate 4 --seed 7     # works today: patches on stdout
+python3 gen_orders.py --duration 5 --rate 4 --seed 7     # patches on stdout, no app needed
 ```
 
 `python flask_app.py` or `uvicorn fastapi_app:app`, open `/dash/`; orders arrive, statuses move and the

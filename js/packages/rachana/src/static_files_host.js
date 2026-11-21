@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// The Data Protocol's static-files mode (docs/MODES.md 1), in the page: a site with no server beside it holds data/index.json and
+// The Data Protocol's static-files mode (docs/guides/CLI_AND_SDKS.md), in the page: a site with no server beside it holds data/index.json and
 // data/<table>.csv|json|jsonl; this module answers the protocol's GET /tables/<t> and POST /tables/<t>/query for the DataClient from
 // those files (filter tree, sort, columns, offset, limit, cursor; no changes stream). It evaluates nothing itself: the query is answered by the runtime bundle's
 // `query` (Core's RowQuery, the one evaluator of the filter tree and the sort order), so a static site and a server answer alike. It wraps fetch for URLs under the data folder

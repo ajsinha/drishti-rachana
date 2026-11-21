@@ -1,8 +1,8 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Scope change: Rachana complete inside Drishti i7b (pointer)
 
-**Status: proposed to the owner, 2026-11-19. Not yet decided.** Until it is, [ROADMAP](../ROADMAP.md) and
-[R0_R1_I8_PLAN](R0_R1_I8_PLAN.md) stand as written.
+**Status: proposed to the owner, 2026-11-19. Not yet decided.** Until it is,
+[R0_R1_I8_PLAN](R0_R1_I8_PLAN.md) stands as written.
 
 The owner has directed that Drishti release i7b become "the products, then Drishti proven on them": Drishti Elements
 and Drishti Rachana complete as products in themselves, and Drishti migrated onto their released pins with published

@@ -4,20 +4,22 @@
 The Java reference implementation of Rachana: a Maven reactor, group `com.ash.rachana`, Java 21. Each module is a named Java
 module (`module-info.java`).
 
-## Modules as built
+## Modules
 
-| Module | Holds | State |
-|---|---|---|
-| `rachana-api` | `Node` (the value interface) and Rachana's own nodes (`Node.of`); zero dependencies | built (A2): the evaluator, formats and checker read only `Node` |
-| `rachana-core` | **the compiler, moved from its first host with its history** (split step A10): `com.ash.rachana` (Sutra writer, text, expressions, wiring, schema, layout and pivot editors, problems), `el` and `el.check` (Rachana-EL and its checker), `format` (formats, tones, world regions), `model`, `parse` (the positional YAML reader and the section readers), `design.ops` (editing operations); `profile` (profiles, grammar); `bind`, `view`, `control`, `wire` (the binder, the ViewModel and its canonical writer, controls, event wiring; moved at A13, the host behind hooks) | built; 823 unit tests |
-| `rachana-tools` | editing tools, writer, generators | skeleton (the editing code is still in `rachana-core`) |
-| `rachana-data` | Data Protocol | skeleton |
-| `rachana-server` | the standalone server (COMPILER_AND_RUNTIMES 10): a project folder of Sutras as pages, the Data Protocol over tables from files, JDBC and REST kept live by `rachana-live`, sign-in; `java -jar rachana-server-<version>-all.jar serve --config <file>`; every key in [rachana-server.example.yaml](rachana-server/rachana-server.example.yaml) | built (G3 step 1) |
-| `rachana-cli` | command line: `rachana lib build, sign, keygen, pack, verify, lock, contracts, check-host` over `LibraryTool` | built |
-| `rachana-conformance` | `JvmRuntime`: the conformance runtime program over `rachana-core` (RUNNER section 5) | built |
-| `rachana-conformance-cases` | the cases and specification as a jar, no code | built |
-| `rachana-compat` | the compatibility regime's tests (CG1 to CG6) | built by the regime lane |
-| `rachana-guards` | the guards: names no host, dependency allow-list, public surface, licence header and line cap | built |
+| Module | Holds |
+|---|---|
+| `rachana-api` | `Node` (the value interface) and Rachana's own nodes (`Node.of`); zero dependencies |
+| `rachana-core` | the compiler: `com.ash.rachana` (Sutra writer, text, expressions, wiring, schema, layout and pivot editors, problems), `el` and `el.check` (Rachana-EL and its checker), `format` (formats, tones, world regions), `model`, `parse` (the positional YAML reader and the section readers), `design.ops` (editing operations), `profile` (profiles, grammar), `lib` (libraries), `table` (live-table declarations), `bind`, `view`, `control`, `wire` (the binder, the ViewModel and its canonical writer, controls, event wiring) |
+| `rachana-tools` | `Upgrade` (`rachana upgrade`), `LibraryTool` and `LibraryGates` (`rachana lib`), `LangFiles` (the generated `spec/1` language files) |
+| `rachana-data` | the Data Protocol: `TableProvider`, `ProtocolHost` and `ProtocolHttp`, JSON, Arrow and NDJSON rows, `TableClient`, the `ReferenceServer` |
+| `rachana-live` | live tables: `LiveTables`, the snapshot, stream, authoriser, audit and change-sink interfaces (`spi`), the `Outbox`, the `LiveReferenceServer` ([guide](../docs/guides/LIVE_TABLES.md)) |
+| `rachana-server` | the standalone server: a project folder of Sutras as pages, the Data Protocol over tables from files, JDBC and REST kept live, sign-in, edits; `java -jar rachana-server-<version>-all.jar serve --config <file>`; every key in [rachana-server.example.yaml](rachana-server/rachana-server.example.yaml) ([guide](../docs/guides/SERVER.md)) |
+| `rachana-cli` | `com.ash.rachana.cli.Main`: `rachana upgrade` and `rachana lib build, sign, keygen, pack, verify, lock, gate, freeze, contracts, check-host` |
+| `rachana-js` | the TeaVM build of the compiler into the JavaScript bundles (profile `-Pjs`) |
+| `rachana-conformance` | `JvmRuntime`: the conformance runtime program over `rachana-core` (RUNNER section 5) |
+| `rachana-conformance-cases` | the cases and specification as a jar, no code |
+| `rachana-compat` | the compatibility regime's tests: frozen cases, level replay, customer corpus, contract append-only, API surface, reserved names, upgrade |
+| `rachana-guards` | the guards: names no host, dependency allow-list, public surface, licence header and line cap |
 
 `rachana-core` bundles two data files whose home is Drishti Elements (`formats.yaml`, `world-regions.yaml`), read from the
 pinned copy under `js/vendor/drishti-elements/<drishti.elements.version>/data/`; there is no second copy.

@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""Flask adapter (docs/MODES.md 3): a blueprint that serves Sutras and the Data Protocol v1 resources.
+"""Flask adapter (docs/guides/CLI_AND_SDKS.md, Python): a blueprint that serves Sutras and the Data Protocol v1 resources.
 
     from drishti_rachana.adapters.flask import RachanaBlueprint
     rachana = RachanaBlueprint(sutras="sutras/")

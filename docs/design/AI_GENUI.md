@@ -1,7 +1,7 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Generative UI on Rachana: design
 
-Status: **design; built in phase R2** (with Drishti i9). Nothing here is implemented. This refines [AI](../AI.md).
+Status: **design; built in phase R2** (with Drishti i9). Nothing here is implemented.
 Tool names and schemas are the planned contract and may still change before they ship.
 
 ## 1. The idea, and the boundary

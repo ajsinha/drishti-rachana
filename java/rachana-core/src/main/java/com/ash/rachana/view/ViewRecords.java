@@ -643,6 +643,7 @@ final class ViewRecords {
                 ViewJson.put(m, "window", r.window(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "top", r.top(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "filter", r.filter(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "edit", r.edit(), Rule.NON_DEFAULT);
                 yield m;
             }
             case ViewModel.Opt r -> {

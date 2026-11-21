@@ -170,7 +170,9 @@ final class DatasetBinder {
             filter.put("args", trees);
         }
         int window = p.options().get("window") instanceof Number n ? n.intValue() : PanelOptions.WINDOW;
-        return new ViewModel.LiveRef(String.valueOf(entry.get("table")), window, Boolean.TRUE.equals(p.options().get("top")), filter);
+        Object edit = p.options().get("edit");
+        return new ViewModel.LiveRef(String.valueOf(entry.get("table")), window, Boolean.TRUE.equals(p.options().get("top")), filter,
+                edit == null || "none".equals(edit) ? null : String.valueOf(edit));
     }
 
     /** The option the parser hands a live panel's data entry under (SutraBuilder). */

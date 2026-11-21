@@ -4921,6 +4921,10 @@
         "filter": {
           "type": "object",
           "description": "the rows' condition as a filter tree (PROTOCOL 7)"
+        },
+        "edit": {
+         "type": "string",
+         "description": "how the painter offers the table's guarded edit path (PROTOCOL 16 Writes): cells (in the grid's cells) or beside (a record panel beside the grid); absent: read only. The columns offered are those the table's schema lists under write for the reader"
         }
       },
       "required": [

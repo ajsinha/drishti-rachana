@@ -33,6 +33,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **Dynamic text parameters**: `type: text, dynamic: true` takes a template at the use (`"Limit used ${fmt(..., 'pct0')}"`), read in
   the caller's context: the template as a whole value, `concat(...)` of its parts inside an expression; `@`, `^`, `#index` refused.
   A plain `text` keeps its text as written. `FragmentColumns.templateParts` (API addition).
+- **Events beyond rows and bars** (I1 `point-click`, level 1.2): `emits: [{ on: point-click }]` on `line`, `area`, `scatter`,
+  `waterfall`, `timeline`, `candlestick` (each mark a row of `rows`; its `ev` the row before `where`) and on `metric`, `gauge`, `kv`,
+  `status` (the panel one mark, `ev` "0", the payload read in the panel's context); `RCH-2057` on other kinds. Contract 1.2 appended:
+  `ev` on `Point`, `Step`, `Event`, `Candle`, `Metric`, `Gauge`, `Fields`, `Chart.ev` beside `x`; the stamp is 1.2 when one is
+  present. A fragment can now return events from its charts and figures. `Wiring.POINT_CLICK`, `POINT_KINDS`, `ONE_MARK`,
+  `Wiring.fires`, the records' `ev` (API additions; old constructors kept). Not yet: `on: { point-click: [ set ... ] }` (the effect
+  list's trigger table, lane A5's `Effects.BUILT`), graph nodes, the painter's side (Elements).
 
 ### Screen state and the effect list's set (G2 lane A5)
 

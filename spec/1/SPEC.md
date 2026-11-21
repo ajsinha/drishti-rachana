@@ -200,7 +200,9 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   A control's value is read as `ctl.<id>`
   (text; a list of text for `multi-select`; a whole number for `top-n`; `from..to` text for a range). A control
   option form that names an entity kind (`options: { kind: … }`) is a profile form.
-- **Events** [today]: a panel `emits: [{name, on}]` (`row-click`, `bar-click`, …); another reads them as
+- **Events** [today]: a panel `emits: [{name, on}]` (`row-click`, `bar-click`, …; from level 1.2 `point-click` on a `line`, `area`,
+  `scatter`, `waterfall`, `timeline` or `candlestick` mark, each a row of its `rows`, and on a `metric`, `gauge`, `kv` or `status`
+  as one mark whose payload reads the panel's context; another kind is `RCH-2057`); another reads them as
   `@<panel>.<event>.<field>`; `waits` says what a panel shows until an event fires; `children` nests panels shown
   `always` or on selection (depth limit `RCH-2056`). `on-select: {by, field?, filter?}` sets a control from a click.
 - **Forms** [today, D2]: `form:` with fields, rules, hints, steps and drafts is Core; it raises a `submit` action.

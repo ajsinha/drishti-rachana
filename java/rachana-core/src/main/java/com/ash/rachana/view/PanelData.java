@@ -13,7 +13,13 @@ import java.util.Map;
 public sealed interface PanelData {
 
     /** Label/value fields for {@code kv}, {@code status} and {@code provenance}. */
-    record Fields(List<Cell> fields) implements PanelData {}
+    record Fields(List<Cell> fields, @Include(Include.Rule.NON_NULL) String ev) implements PanelData {
+
+        /** As it was before {@code ev} (contract 1.2): a record nobody clicks; {@code ev} is "0" on a panel that emits on point-click. */
+        public Fields(List<Cell> fields) {
+            this(fields, null);
+        }
+    }
 
     /**
      * {@code table} and {@code ladder}.
@@ -145,10 +151,16 @@ public sealed interface PanelData {
      */
     @Include(Include.Rule.NON_NULL)
     record Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel,
-            LinkView source, String unit, Boolean step) implements PanelData {
+            LinkView source, String unit, Boolean step, @Include(Include.Rule.NON_EMPTY) List<String> ev) implements PanelData {
 
         public Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel, LinkView source, String unit) {
             this(x, series, mark, markText, limit, limitLabel, source, unit, null);
+        }
+
+        /** As it was before {@code ev} (contract 1.2): {@code ev}, beside {@code x}, is each point's row in the data on a panel that emits on point-click. */
+        public Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel, LinkView source, String unit,
+                Boolean step) {
+            this(x, series, mark, markText, limit, limitLabel, source, unit, step, null);
         }
     }
 
@@ -213,7 +225,13 @@ public sealed interface PanelData {
      * @param unit a short unit, or null
      * @param caption small text under the figure, or null
      */
-    record Metric(Cell value, Cell delta, String unit, String caption) implements PanelData {}
+    record Metric(Cell value, Cell delta, String unit, String caption, @Include(Include.Rule.NON_NULL) String ev) implements PanelData {
+
+        /** As it was before {@code ev} (contract 1.2): a figure nobody clicks; {@code ev} is "0" on a panel that emits on point-click. */
+        public Metric(Cell value, Cell delta, String unit, String caption) {
+            this(value, delta, unit, caption, null);
+        }
+    }
 
     /**
      * {@code map}: the world, or one country's regions, with a place highlighted, shaded by a measure, and clickable.
@@ -275,7 +293,13 @@ public sealed interface PanelData {
     record ShadeItem(String code, double value, String text) {}
 
     /** {@code gauge}. */
-    record Gauge(double value, double max, String text, String label) implements PanelData {}
+    record Gauge(double value, double max, String text, String label, @Include(Include.Rule.NON_NULL) String ev) implements PanelData {
+
+        /** As it was before {@code ev} (contract 1.2): a gauge nobody clicks; {@code ev} is "0" on a panel that emits on point-click. */
+        public Gauge(double value, double max, String text, String label) {
+            this(value, max, text, label, null);
+        }
+    }
 
     /**
      * {@code waterfall}: ordered steps as floating bars.
@@ -295,7 +319,13 @@ public sealed interface PanelData {
      * @param tone {@code pos} (up), {@code neg} (down) or {@code link} (a total)
      * @param total drawn as a full bar from zero
      */
-    record Step(String label, double value, double from, double to, String text, String tone, boolean total) {}
+    record Step(String label, double value, double from, double to, String text, String tone, boolean total, @Include(Include.Rule.NON_NULL) String ev) {
+
+        /** As it was before {@code ev} (contract 1.2): {@code ev} is the step's row in the data on a panel that emits on point-click. */
+        public Step(String label, double value, double from, double to, String text, String tone, boolean total) {
+            this(label, value, from, to, text, tone, total, null);
+        }
+    }
 
     /**
      * {@code histogram}: the distribution of a list of numbers.
@@ -331,7 +361,13 @@ public sealed interface PanelData {
 
     /** A point: its measures and their text, an optional size, label, group and the entity the label names. */
     @Include(Include.Rule.NON_NULL)
-    record Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link) {}
+    record Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link, String ev) {
+
+        /** As it was before {@code ev} (contract 1.2): {@code ev} is the point's row in the data on a panel that emits on point-click. */
+        public Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link) {
+            this(x, y, size, xText, yText, label, group, link, null);
+        }
+    }
 
     /**
      * {@code candlestick}: open, high, low and close by date, oldest first.
@@ -353,7 +389,14 @@ public sealed interface PanelData {
      */
     @Include(Include.Rule.NON_NULL)
     record Candle(String x, double open, double high, double low, double close, Double volume,
-            String openText, String highText, String lowText, String closeText, String volumeText) {
+            String openText, String highText, String lowText, String closeText, String volumeText, String ev) {
+
+        /** As it was before {@code ev} (contract 1.2): {@code ev} is the candle's row in the data on a panel that emits on point-click. */
+        public Candle(String x, double open, double high, double low, double close, Double volume, String openText, String highText, String lowText,
+                String closeText, String volumeText) {
+            this(x, open, high, low, close, volume, openText, highText, lowText, closeText, volumeText, null);
+        }
+
         /** A bar without its texts (a client then prints the numbers as they are). */
         public Candle(String x, double open, double high, double low, double close, Double volume) {
             this(x, open, high, low, close, volume, null, null, null, null, null);
@@ -394,7 +437,13 @@ public sealed interface PanelData {
      * @param tone the status tone ({@code ok}, {@code warn}, {@code bad}), or null
      */
     @Include(Include.Rule.NON_NULL)
-    record Event(String date, String label, String detail, String status, String tone) {}
+    record Event(String date, String label, String detail, String status, String tone, String ev) {
+
+        /** As it was before {@code ev} (contract 1.2): {@code ev} is the event's row in the data on a panel that emits on point-click. */
+        public Event(String date, String label, String detail, String status, String tone) {
+            this(date, label, detail, status, tone, null);
+        }
+    }
 
     /**
      * {@code pivot}: an aggregate of the rows by one field (down) and across another.

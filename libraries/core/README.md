@@ -187,7 +187,8 @@ A live table of the host, read a window at a time and kept current by key, optio
 |---|---|---|
 | `rows` | table(key) | required. The live table (a data entry with table and key), one row per record |
 | `columns` | columns | required. The columns: a list of { label, bind: "@.field", fmt, tone }, each reading one field |
-| `order` | id | required. The field the rows are ordered by |
+| `order` | id | required. The field the rows are ordered by (a time or a version) |
+| `direction` | enum | default 'desc'. The order's direction: desc (newest first, new rows on top) or asc |
 | `edit` | enum | default 'none'. How the host's edits are offered: none (read only), cells (in the grid) or beside (a record panel) |
 | `title` | text | default 'Live table'. The panel's title |
 | `window` | integer | default 200. The rows read and followed at a time |

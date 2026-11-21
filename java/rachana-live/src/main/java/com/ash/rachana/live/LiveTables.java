@@ -234,6 +234,16 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         }
     }
 
+    /**
+     * The screen a declaration gives (LIVE_TABLES 2.2, LT-12): a Sutra (text) that calls {@code core/live-table@1} with the declaration's
+     * columns, order and edit mode, and {@code core/held-changes@1} over {@code <name>.changes} for a table with edits and a tray.
+     *
+     * @throws com.ash.rachana.data.ProtocolError {@code rdp.table.unknown} when no such table is declared
+     */
+    public String screen(String name) {
+        return LiveScreens.screen(spec(name));
+    }
+
     /** The declarations set aside, by file, with their problems. */
     public Map<String, List<SutraProblem>> problems() {
         return Map.copyOf(problems);
@@ -384,6 +394,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
             set.forEach((k, v) -> shown.put(String.valueOf(k), masked.contains(String.valueOf(k)) ? Map.of("$masked", true) : v));
             Map<String, Object> out = new LinkedHashMap<>(row);
             out.put("set", shown);
+            out.put("summary", WriteGuard.summary((String) row.get("op"), row.get("key") instanceof List<?> k ? new ArrayList<>(k) : List.of(), shown));
             return out;
         };
         return reader(spec, new ReaderView("approve:" + who + "|" + b.audience(), null, Set.of(), test, redact, Set.of(WriteGuard.STATE),

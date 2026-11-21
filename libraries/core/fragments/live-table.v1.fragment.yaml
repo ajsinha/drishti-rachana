@@ -23,7 +23,8 @@ params:
     columns:
       key: { type: text, optional: true, doc: The row's key }
   columns: { type: columns, required: true, doc: "The columns: a list of { label, bind: \"@.field\", fmt, tone }, each reading one field" }
-  order:   { type: id, required: true, doc: The field the rows are ordered by, newest first (a time or a version) }
+  order:   { type: id, required: true, doc: The field the rows are ordered by (a time or a version) }
+  direction: { type: enum, options: [desc, asc], default: desc, doc: "The order's direction: desc (newest first, new rows on top) or asc" }
   edit:    { type: enum, options: [none, cells, beside], default: none, doc: "How the host's edits are offered: none (read only), cells (in the grid) or beside (a record panel)" }
   title:   { type: text, default: Live table, doc: The panel's title }
   window:  { type: integer, default: 200, min: 1, max: 5000, doc: The rows read and followed at a time }
@@ -33,7 +34,7 @@ panels:
     title: arg.title
     rows: arg.rows
     columns: "%{columns}"
-    sort: "%{order} desc"
+    sort: "%{order} %{direction}"
     top: true
     window: arg.window
     edit: "%{edit}"

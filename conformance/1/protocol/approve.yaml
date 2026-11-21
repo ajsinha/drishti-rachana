@@ -47,10 +47,12 @@ cases:
         expect: { status: 204 }
       - request: { method: POST, path: /tables/trades.changes/query, body: { columns: [change, state, key, by], sort: [ { col: change } ] } }
         expect: { status: 200, body: { values: [ [c1, held, [a], bob], [c2, held, [b], bob] ], total: 2 } }
+      - request: { method: POST, path: /tables/trades.changes/query, body: { columns: [change, op, summary], filter: { op: "==", args: [ { col: change }, { lit: c2 } ] } } }
+        expect: { status: 200, body: { values: [ [c2, update, "b: qty = 8, status = DONE"] ] } }
       - request: { method: POST, path: /_test/as, body: { reader: dana } }
         expect: { status: 204 }
-      - request: { method: POST, path: /tables/trades.changes/query, body: { columns: [change, key, set, by] } }
-        expect: { status: 200, body: { values: [ [c2, [b], { qty: { $masked: true }, status: DONE }, bob] ], total: 1 } }
+      - request: { method: POST, path: /tables/trades.changes/query, body: { columns: [change, key, set, by, summary] } }
+        expect: { status: 200, body: { values: [ [c2, [b], { qty: { $masked: true }, status: DONE }, bob, "b: qty = (masked), status = DONE"] ], total: 1 } }
       - request: { method: POST, path: /_test/as, body: { reader: alice } }
         expect: { status: 204 }
       - request: { method: POST, path: /tables/trades.changes/query, body: { columns: [change] } }

@@ -545,7 +545,7 @@ final class WriteGuard {
         doc.put("stream", base.name() + TRAY);
         doc.put("key", "change");
         doc.put("columns", List.of(col("change", "string"), col("state", "string"), col("key", "list"), col("set", "object"),
-                col("by", "string"), col("at", "timestamp"), col("message", "string")));
+                col("by", "string"), col("at", "timestamp"), col("message", "string"), col("op", "string"), col("summary", "string")));
         doc.put("sort", Map.of("col", "at", "dir", "desc"));
         return LiveTableSpec.of(doc, Set.of(), null);
     }
@@ -563,7 +563,29 @@ final class WriteGuard {
         m.put("by", e.change().by());
         m.put("at", e.at() == null ? null : e.at().toString());
         m.put("message", e.message());
+        m.put("op", e.change().op());
+        m.put("summary", summary(e.change().op(), e.change().key(), e.change().set()));
         return m;
+    }
+
+    /** A change in words for the tray: the row's key, then what it does ({@code a: qty = 9, status = DONE}); a masked value is not shown. */
+    static String summary(String op, List<Object> key, Map<String, Object> set) {
+        StringBuilder b = new StringBuilder();
+        key.forEach(k -> b.append(b.isEmpty() ? "" : ", ").append(k));
+        b.append(": ");
+        if ("remove".equals(op)) {
+            return b.append("remove").toString();
+        }
+        if ("add".equals(op)) {
+            b.append("add ");
+        }
+        int n = 0;
+        for (Map.Entry<String, Object> e : set.entrySet()) {
+            Object v = e.getValue();
+            b.append(n++ == 0 ? "" : ", ").append(e.getKey()).append(" = ")
+                    .append(v instanceof Map<?, ?> m && Boolean.TRUE.equals(m.get("$masked")) ? "(masked)" : String.valueOf(v));
+        }
+        return b.toString();
     }
 
     /** The tray's source: the sink's pending changes of the base table, read whole. */

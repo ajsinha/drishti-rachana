@@ -319,6 +319,8 @@ public final class SutraBlocks {
         }
 
         private final Set<String> nested = new java.util.LinkedHashSet<>();
+        /** The Sutra's state, id to type, once read (the checks of {@link #checkNested} use it). */
+        Map<String, String> states = Map.of();
         private final List<java.util.function.Consumer<List<SutraProblem>>> checks = new ArrayList<>();
 
         /**
@@ -446,6 +448,22 @@ public final class SutraBlocks {
                         calls.nested.add(bound.state().get(0).owner());
                     }
                 }
+                PNode with = p.map().get("with");
+                t.stateParams().forEach((param, of) -> {               // LIBRARIES 6.3: the handed name is a state the Sutra holds, of that type
+                    PNode v = with != null && with.isMap() && with.map().get(param) != null ? with.map().get(param) : t.params().get(param).dflt();
+                    if (v != null && v.text() != null) {
+                        calls.checks.add(problemsOut -> {
+                            String type = calls.states.get(v.text());
+                            String why = type == null ? "names state '" + v.text() + "', which the Sutra does not hold" + (calls.states.isEmpty() ? " (declare "
+                                    + "it under state:)" : " (it holds " + String.join(", ", calls.states.keySet()) + ")")
+                                    : of != null && !of.equals(type) ? "names state '" + v.text() + "', a " + type + "; it takes a state of type " + of : null;
+                            if (why != null) {
+                                problemsOut.add(TypedFragment.problem(TypedFragment.WRONG_TYPE, "parameter " + param + " of fragment " + b.name() + " " + why,
+                                        file, v));
+                            }
+                        });
+                    }
+                });
                 Set<String> inner = NestedUses.names(typedRoot.map().get("panels"));
                 if (!inner.isEmpty()) {
                     String outer = p.map().get("as") == null ? null : p.map().get("as").text();       // what it reads of its nested uses, checked once every use is bound

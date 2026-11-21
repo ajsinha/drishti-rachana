@@ -60,6 +60,8 @@ public final class TypedFragment {
     public static final Set<String> VALUE_TYPES = Set.of("text", "number", "integer", "decimal", "boolean", "date", "datetime", "duration", "money");
     /** The name types: checked tokens. */
     public static final Set<String> NAME_TYPES = Set.of("id", "format", "tone", "icon", "variant", "area", "palette", "key", "enum", "columns");
+    /** The name types that name the user's state or selection (LIBRARIES.md 6.3), written beside {@link #NAME_TYPES}. */
+    static final Set<String> HANDED_TYPES = Set.of("state", "selection");
     /** The tone words a {@code tone} parameter may take (SPEC 2.6). */
     public static final Set<String> TONES = Set.of("pos", "neg", "ok", "warn", "bad", "link", "accent");
     /** What a slot may accept at this level. */
@@ -216,12 +218,22 @@ public final class TypedFragment {
         }
         Map<String, PNode> m = d.map();
         String type = text(m.get("type"));
-        String kind = "table".equals(type) ? "table" : NAME_TYPES.contains(type) ? "name" : "value";
+        String kind = "table".equals(type) ? "table" : NAME_TYPES.contains(type) || HANDED_TYPES.contains(type) ? "name" : "value";
         if ("value".equals(kind) && !valueType(type)) {
             out.add(problem(SutraBlocks.BLOCK, "parameter " + name + " of fragment " + fragment + " has type '" + type + "': a value type ("
                     + new java.util.TreeSet<>(VALUE_TYPES) + ", list<T>, record{...}, T?, fn(T, ...) -> U with one name or more), a name type (" + new java.util.TreeSet<>(NAME_TYPES)
                     + ") or table", file, m.get("type")));
             return null;
+        }
+        if ("selection".equals(type)) {
+            out.add(problem("RCH-2023", "parameter " + name + " of fragment " + fragment + ": a selection parameter comes with selections "
+                    + "(SUTRA_EXPANSION I2); not at this level", file, m.get("type")));
+            return null;
+        }
+        String of = text(m.get("of"));
+        if ("state".equals(type) && m.get("of") != null && !StateEntry.TYPES.contains(of)) {
+            out.add(problem(SutraBlocks.BLOCK, "parameter " + name + " of fragment " + fragment + ": of is the type of the state it names (one of "
+                    + String.join(", ", StateEntry.TYPES) + ")", file, m.get("of")));
         }
         boolean optional = Boolean.TRUE.equals(m.get("optional") == null ? null : m.get("optional").value());
         boolean required = Boolean.TRUE.equals(m.get("required") == null ? null : m.get("required").value());
@@ -434,6 +446,10 @@ public final class TypedFragment {
             n.map().forEach((k, v) -> {
                 if ("set".equals(k) && v.isMap() && v.map().get("state") != null && v.map().get("state").text() != null) {
                     String target = v.map().get("state").text();
+                    if (handed(target)) {                                    // LIBRARIES 6.3: the user's state, handed over by name
+                        m.put(k, v);
+                        return;
+                    }
                     if (!privateState.containsKey(target)) {
                         out.add(problem(SCOPE, "fragment " + name + " sets state '" + target + "', which is not its own: a fragment writes only its own "
                                 + "state (" + String.join(", ", privateState.keySet()) + ")", sutraFile, v.map().get("state")));
@@ -467,10 +483,24 @@ public final class TypedFragment {
         return new PNode(sb.toString(), n.line(), n.column());
     }
 
+    /** Whether {@code target} is {@code %{p}} of a state parameter {@code p} (LIBRARIES.md 6.3): the one screen state the use hands over. */
+    private boolean handed(String target) {
+        Matcher m = target == null ? null : MASKED.matcher(target);
+        return m != null && m.matches() && params.get(m.group(1)) != null && "state".equals(params.get(m.group(1)).type());
+    }
+
+    /** The state parameters (LIBRARIES.md 6.3), name to the type of the state each names ({@code of}; null for any). */
+    Map<String, String> stateParams() {
+        Map<String, String> out = new LinkedHashMap<>();
+        params.values().stream().filter(p -> "state".equals(p.type())).forEach(p -> out.put(p.name(), text(p.at().map().get("of"))));
+        return out;
+    }
+
     /** A fragment with no private state sets none: any {@code set: { state }} in its panels reaches the screen ({@code RCH-2117}). */
     private void foreignWrites(PNode panel, String sutraFile, List<SutraProblem> out) {
         walk(panel, n -> {
-            if (n.isMap() && n.map().get("set") != null && n.map().get("set").isMap() && n.map().get("set").map().get("state") != null) {
+            if (n.isMap() && n.map().get("set") != null && n.map().get("set").isMap() && n.map().get("set").map().get("state") != null
+                    && !handed(n.map().get("set").map().get("state").text())) {
                 out.add(problem(SCOPE, "fragment " + name + " sets state '" + n.map().get("set").map().get("state").text() + "', which is not its "
                         + "own: a fragment writes only its own state (declare it under state:)", sutraFile, n.map().get("set")));
             }
@@ -480,6 +510,24 @@ public final class TypedFragment {
     /** Every {@code %{x}} names a name parameter, every {@code arg.x} a value or table parameter, every {@code slot:} a slot. */
     private void checkBody() {
         PNode panels = root.map().get("panels");
+        Set<PNode> targets = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        walk(panels, n -> {
+            if (n.isMap() && n.map().get("set") != null && n.map().get("set").isMap() && n.map().get("set").map().get("state") != null) {
+                targets.add(n.map().get("set").map().get("state"));
+            }
+        });
+        walk(panels, n -> {
+            if (n.value() instanceof String s && !targets.contains(n)) {
+                Matcher m = MASKED.matcher(s);
+                while (m.find()) {
+                    Param p = params.get(m.group(1));
+                    if (p != null && "state".equals(p.type())) {
+                        problems.add(problem(SutraBlocks.BLOCK, "fragment " + name + " writes %{" + p.name() + "} outside set: { state: %{" + p.name()
+                                + "} }: a state parameter names the one state it may write; read a value as a value parameter", file, n));
+                    }
+                }
+            }
+        });
         if (panels == null || !panels.isList()) {
             return;
         }
@@ -1539,6 +1587,7 @@ public final class TypedFragment {
                 return switch (base) {
                     case "tone" -> TONES.contains(s) ? null : "is a tone (" + String.join(", ", new java.util.TreeSet<>(TONES)) + "), not '" + s + "'";
                     case "enum" -> p.options().contains(s) ? null : "is one of " + String.join(", ", p.options()) + ", not '" + s + "'";
+                    case "state" -> EffectsReader.ID.matcher(s).matches() ? null : "is the name of a state of the screen, not '" + s + "'";
                     case "key" -> FKEY.matcher(s).matches() ? null : "is a function key (F1-F12), not '" + s + "'";
                     default -> TOKEN.matcher(s).matches() ? null : "is a " + base + " name (a word), not '" + s + "'";
                 };

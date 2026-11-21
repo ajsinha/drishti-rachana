@@ -210,10 +210,11 @@ final class SutraBuilder {
         effects.check(panels, state);
         if (!calls.stateful().isEmpty()) {
             privateState(root, calls.stateful(), calls.nested());
-            calls.checkNested(problems);
         }
         Map<String, String> stateTypes = new LinkedHashMap<>();
         state.forEach(e -> stateTypes.put(e.id(), e.type()));
+        calls.states = stateTypes;
+        calls.checkNested(problems);
         if (!fns.isEmpty() || !lets.isEmpty() || !stateTypes.isEmpty()) {
             extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(fns, lets, stateTypes));
         }

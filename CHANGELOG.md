@@ -26,6 +26,10 @@ Entries are written per release; the regime's unreleased work is listed after th
   is `a-x` (ids `a-x-<id>`, private state `a-x.<name>`, events `@a-x.<event>`); before, two uses of a fragment holding a
   stateful use collided. The outer fragment reads only the inner use's outputs, and the screen no nested instance
   (`RCH-2117`). Cases `sutra/fragments-nested-state` (2), `problem/fragments-nested-state` (3).
+- **State name parameters** (LIBRARIES 4.2, 6.3; SPEC 2.5): `{ type: state, of: text }` hands a fragment one name of the
+  screen's state; the fragment writes only it, as `set: { state: "%{into}" }` (`RCH-2048` elsewhere); the name must be held
+  and of type `of` (`RCH-2116`); `selection` parameters wait for I2 (`RCH-2023`). Cases `sutra/fragments-state-params` (1),
+  `problem/fragments-state-params` (4).
 
 ### Typed fragments, the gaps the core library found (G2 lane A6)
 

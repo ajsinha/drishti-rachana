@@ -261,6 +261,111 @@ cases:
     expr: "sum([0.1, 2e-1])"
     expect: {"value": 0.30000000000000004, "type": "number", "text": "0.30000000000000004"}
 
+  - id: "avg-of-decimals-is-exact"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rules 3 and 7: the exact sum divided as / divides, 34 digits half to even (PROTOCOL 3.1's avg)."
+    tags: ["numeric-tower"]
+    expr: "avg([1, 2, 2])"
+    expect: {"value": {"$dec": "1.666666666666666666666666666666667"}, "type": "decimal", "text": "1.666666666666666666666666666666667"}
+
+  - id: "avg-of-decimals-adds-exactly"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rule 7: 0.1 + 0.2 is 0.3 before the division."
+    tags: ["numeric-tower"]
+    expr: "avg([0.1, 0.2])"
+    expect: {"value": 0.15, "type": "decimal", "text": "0.15"}
+
+  - id: "avg-of-decimals-drops-trailing-zeros"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rule 8: a computed decimal prints no trailing zeros."
+    tags: ["numeric-tower"]
+    expr: "avg([1.25, 2.75])"
+    expect: {"value": 2, "type": "decimal", "text": "2"}
+
+  - id: "avg-of-a-field-is-exact"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rule 7, with a field of each element; an empty value is not counted."
+    tags: ["numeric-tower"]
+    expr: "avg([{'n': 0.1}, {'n': null}, {'n': 0.2}, {'n': 0.6}], 'n')"
+    expect: {"value": 0.3, "type": "decimal", "text": "0.3"}
+
+  - id: "avg-with-a-double-is-a-double"
+    kind: "expr"
+    source: "SPEC 4.16 rule 4"
+    note: "SPEC 4.16 rule 7: then the mean of the compensated double sum."
+    tags: ["numeric-tower"]
+    expr: "avg([0.1, 2e-1])"
+    expect: {"value": 0.15000000000000002, "type": "number", "text": "0.15000000000000002"}
+
+  - id: "avg-of-decimals-at-1-0-is-a-double"
+    kind: "expr"
+    until: "1.0"
+    source: "level 1.0 as recorded (DECISIONS N5); exact from 1.1"
+    tags: ["numeric-tower"]
+    expr: "avg([0.1, 0.2])"
+    expect: {"value": 0.15000000000000002, "type": "number", "text": "0.15000000000000002"}
+
+  - id: "min-of-decimals-is-a-decimal"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rule 7: the element chosen, exact (PROTOCOL 3.1's min); printed as a computed decimal (rule 8)."
+    tags: ["numeric-tower"]
+    expr: "min([0.3, 0.10, 0.2])"
+    expect: {"value": 0.1, "type": "decimal", "text": "0.1"}
+
+  - id: "max-of-decimals-is-a-decimal"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rule 7: the element chosen, exact (PROTOCOL 3.1's max)."
+    tags: ["numeric-tower"]
+    expr: "max([1, 12345678901234567890.5, 2])"
+    expect: {"value": {"$dec": "12345678901234567890.5"}, "type": "decimal", "text": "12345678901234567890.5"}
+
+  - id: "min-with-a-double-is-a-double"
+    kind: "expr"
+    source: "SPEC 4.16 rule 4"
+    note: "SPEC 4.16 rule 7: a double among the elements makes the aggregate a double."
+    tags: ["numeric-tower"]
+    expr: "min([0.3, 2e-1])"
+    expect: {"value": 0.2, "type": "number", "text": "0.2"}
+
+  - id: "avg-of-decimals-is-exact-at-1-2"
+    kind: "expr"
+    since: "1.2"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rules 3 and 7 hold at every level from 1.1."
+    tags: ["numeric-tower"]
+    expr: "avg([1.00, 3.50, 2])"
+    expect: {"value": {"$dec": "2.166666666666666666666666666666667"}, "type": "decimal", "text": "2.166666666666666666666666666666667"}
+
+  - id: "max-of-decimals-is-a-decimal-at-1-2"
+    kind: "expr"
+    since: "1.2"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rule 7 at 1.2."
+    tags: ["numeric-tower"]
+    expr: "max([0.1, 0.25, 0.2])"
+    expect: {"value": 0.25, "type": "decimal", "text": "0.25"}
+
+  - id: "median-of-decimals-is-a-number"
+    kind: "expr"
+    since: "1.1"
+    source: "SPEC 4.16"
+    note: "SPEC 4.16 rule 7: median, percentile and the statistics are real-number aggregates, as a host's median and percentile are (PROTOCOL 6.3)."
+    tags: ["numeric-tower"]
+    expr: "median([0.1, 0.2, 0.4])"
+    expect: {"value": 0.2, "type": "number", "text": "0.2"}
+
   - id: "a-whole-overflow-is-an-error"
     kind: "expr"
     since: "1.1"

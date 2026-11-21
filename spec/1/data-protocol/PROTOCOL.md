@@ -71,7 +71,7 @@ digits after the point as the longest of the values it adds, which is the column
 and `"2.20"` sum to `"3.30"`, never `"3.3"`; over the three rows with `"0.05"` the total is `"3.35"`). `avg` is exact too: that
 sum divided by the count of values as SPEC 4.16 rule 3 divides (decimal128: rounded half to even to 34 significant digits), and,
 being a computed value, sent without trailing zeros after the point (`"1"`, `"2"` and `"2"` average to
-`"1.666666666666666666666666666666667"`; `"1.00"` and `"3.00"` to `"2"`). Every runtime gives the same digits. The values
+`"1.666666666666666666666666666666667"`; `"1.00"` and `"3.00"` to `"2"`). Every runtime gives the same digits, and an expression's `avg` over the same values gives them too from level 1.1 (SPEC 4.16 rule 7). The values
 an aggregate reads are those of its own group, and for `totals` every row after `filter`.
 
 ### 3.2 Masked values

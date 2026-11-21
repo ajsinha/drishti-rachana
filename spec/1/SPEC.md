@@ -781,8 +781,14 @@ Python spelling as the fix; the reserved names are refused there with this secti
 6. **Values from the host** keep the kind the host gives: a JSON number in a record is a double; a column the Data
    Protocol types `decimal` or `integer` arrives exact. `$.qty * 2` with a JSON `qty` of `3` is the double `6`, which
    prints `6`.
-7. **List aggregates** add as `+` does: exact over integers and decimals (`sum([0.1, 0.2])` → `0.3`); once a double is
-   among the elements, the whole sum is the compensated double sum of 5.7.
+7. **List aggregates** add as `+` does: exact over integers and decimals (`sum([0.1, 0.2])` → `0.3`). `avg` is that exact
+   sum divided by the count of values as `/` divides (rule 3: decimal128, half to even to 34 significant digits; a computed
+   value, so no trailing zeros): `avg([1, 2, 2])` → `1.666666666666666666666666666666667`, `avg([1.25, 2.75])` → `2`, the
+   digits a host gives for `avg` of a decimal column (PROTOCOL 3.1). `min(list)` and `max(list)` are the element chosen,
+   exact (`min([0.3, 0.10])` → `0.1`, printed by rule 8). Once a double is among the elements, the whole aggregate is the
+   double one of 5.7 (the sum compensated, the mean that sum over the count). `median`, `percentile` and the statistics of
+   5.7 and 5.8 (`variance`, `stddev`, …) are real-number aggregates at every level: they answer a number, as a host's
+   `median` and `percentile` do (PROTOCOL 6.3). Over no value `sum` is `0` and every other of these empty (5.1).
 8. **Text form**: 4.2. A decimal never prints an exponent, trailing zeros after the point, or a negative zero.
    **One exception, for a cell as the host sent it.** A `decimal` cell of a Data Protocol table is exact and keeps the digits
    after the point it arrived with (PROTOCOL 3.1: the column's `scale`): the cell `"0.10"` prints `0.10`, by itself, joined

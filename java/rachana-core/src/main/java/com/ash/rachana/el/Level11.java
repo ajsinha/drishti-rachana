@@ -11,8 +11,8 @@ import java.util.Map;
 /**
  * What language level 1.1 changes in Core's functions, bound by the parser at that level (level 1.0 keeps the functions as they were):
  * {@code range}, Python's sequence only, and {@code span}, the aggregate max − min that 1.0 spells {@code range} (DECISIONS PY4, EL1-1), positions and orders counted by code point (SPEC 4.13, XD4: {@code left}, {@code right}, {@code mid},
- * {@code find}, {@code search}, {@code pad}, {@code least}, {@code greatest}, {@code sort}), and list sums exact over integers and
- * decimals (SPEC 4.16 rule 7).
+ * {@code find}, {@code search}, {@code pad}, {@code least}, {@code greatest}, {@code sort}), and the list aggregates {@code sum}, {@code avg}, {@code min} and
+ * {@code max} exact over integers and decimals (SPEC 4.16 rule 7).
  */
 final class Level11 {
 
@@ -32,6 +32,9 @@ final class Level11 {
             Map.entry("least", new Fn(1, 64, (a, c) -> pick("least", a, true))),
             Map.entry("greatest", new Fn(1, 64, (a, c) -> pick("greatest", a, false))),
             Map.entry("sum", new Fn(1, 2, Level11::sum)),
+            Map.entry("avg", new Fn(1, 2, Level11::avg)),
+            Map.entry("min", new Fn(1, 8, (a, c) -> pickOne("min", a, c))),
+            Map.entry("max", new Fn(1, 8, (a, c) -> pickOne("max", a, c))),
             Map.entry("standardize", new Fn(3, 3, Level11::standardize)),
             Map.entry("regex_extract", regexAsValueError("regex_extract", 2, 3)),
             Map.entry("regex_replace", regexAsValueError("regex_replace", 3, 3)),
@@ -214,31 +217,79 @@ final class Level11 {
 
     /** {@code sum(list)}: exact over integers and decimals (SPEC 4.16 rule 7); with a double among the elements, the 1.0 sum. */
     private static Object sum(List<Object> a, EvalContext c) {
+        Object xs = exactElements(a);
+        if (xs instanceof List<?> ns && !ns.isEmpty()) {
+            return Exact.held(total(ns));
+        }
+        return Values.masked(xs) ? xs : FunctionTable.core().get("sum").apply(a, c);
+    }
+
+    /**
+     * {@code avg(list)}: over integers and decimals the exact sum divided by the count as {@code /} divides (SPEC 4.16 rules 3 and 7;
+     * decimal128, half to even, the digits PROTOCOL 3.1 gives a host's {@code avg}); with a double among the elements, the 1.0 mean.
+     */
+    private static Object avg(List<Object> a, EvalContext c) {
+        Object xs = exactElements(a);
+        if (xs instanceof List<?> ns && !ns.isEmpty()) {
+            return Exact.divide(total(ns), java.math.BigDecimal.valueOf(ns.size()));
+        }
+        return Values.masked(xs) ? xs : FunctionTable.core().get("avg").apply(a, c);
+    }
+
+    /**
+     * {@code min(list)}, {@code max(list)}: over integers and decimals the exact element chosen, a decimal (SPEC 4.16 rule 7; the value
+     * PROTOCOL 3.1 gives a host's {@code min} and {@code max}, printed as a function's result by rule 8); several arguments, or a
+     * double among the elements, as at level 1.0.
+     */
+    private static Object pickOne(String fn, List<Object> a, EvalContext c) {
+        Object xs = a.size() == 1 ? exactElements(a) : null;
+        if (xs instanceof List<?> ns && !ns.isEmpty()) {
+            java.math.BigDecimal best = null;
+            for (Object o : ns) {
+                java.math.BigDecimal d = (java.math.BigDecimal) o;
+                if (best == null || ("min".equals(fn) ? d.compareTo(best) < 0 : d.compareTo(best) > 0)) {
+                    best = d;
+                }
+            }
+            return Exact.held(best);
+        }
+        return Values.masked(xs) ? xs : FunctionTable.core().get(fn).apply(a, c);
+    }
+
+    private static java.math.BigDecimal total(List<?> ns) {
+        java.math.BigDecimal total = java.math.BigDecimal.ZERO;
+        for (Object o : ns) {
+            total = total.add((java.math.BigDecimal) o);
+        }
+        return total;
+    }
+
+    /**
+     * The elements of {@code f(list)} or {@code f(list, 'FIELD')} when every value present is an integer or a decimal: their exact
+     * values (empties skipped), the mask when one is masked, null when the call is not of that shape or a value is anything else (the
+     * 1.0 function answers it).
+     */
+    private static Object exactElements(List<Object> a) {
         Object v = Values.simplify(a.get(0));
         String field = a.size() > 1 && Values.simplify(a.get(1)) instanceof String f ? f : null;
-        if (a.size() > 1 && field == null) {
-            return FunctionTable.core().get("sum").apply(a, c);
+        if (a.size() > 2 || a.size() > 1 && field == null && Values.simplify(a.get(1)) != null || !(v instanceof com.ash.rachana.api.Node list && list.isArray())) {
+            return null;
         }
-        if (v instanceof com.ash.rachana.api.Node list && list.isArray()) {
-            java.math.BigDecimal total = java.math.BigDecimal.ZERO;
-            boolean any = false;
-            for (int i = 0; i < list.size(); i++) {
-                com.ash.rachana.api.Node at = field == null ? list.get(i) : list.get(i).get(field);
-                Object e = Values.simplify(at);
-                if (e == null || Values.masked(at)) {
-                    if (Values.masked(at)) {
-                        return Values.mask();
-                    }
-                    continue;
-                }
-                if (!(e instanceof java.math.BigDecimal || e instanceof Long || e instanceof Integer)) {
-                    return FunctionTable.core().get("sum").apply(a, c);
-                }
-                total = total.add(e instanceof java.math.BigDecimal d ? d : java.math.BigDecimal.valueOf(((Number) e).longValue()));
-                any = true;
+        List<java.math.BigDecimal> out = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            com.ash.rachana.api.Node at = field == null ? list.get(i) : list.get(i).get(field);
+            if (Values.masked(at)) {
+                return Values.mask();
             }
-            return any ? Exact.held(total) : FunctionTable.core().get("sum").apply(a, c);
+            Object e = Values.simplify(at);
+            if (e == null) {
+                continue;
+            }
+            if (!(e instanceof java.math.BigDecimal || e instanceof Long || e instanceof Integer)) {
+                return null;
+            }
+            out.add(e instanceof java.math.BigDecimal d ? d : java.math.BigDecimal.valueOf(((Number) e).longValue()));
         }
-        return FunctionTable.core().get("sum").apply(a, c);
+        return out;
     }
 }

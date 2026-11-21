@@ -54,8 +54,8 @@ class CoreParamsTest {
     @Test
     void namedArgumentsBindByTheCataloguesNamesFromLevel11() {
         ElCompiler v11 = new ElCompiler(16, ElLimits.DEFAULTS, FunctionTable.core(), "1.1");
-        assertThat(v11.compile("avg([1, 2, 3], field = null)").eval(null)).isEqualTo(2L);
-        assertThat(v11.compile("avg(list = [{'x': 1}, {'x': 3}], field = 'x')").eval(null)).isEqualTo(2L);
+        assertThat(v11.compile("avg([1, 2, 3], field = null)").eval(null)).isEqualTo(java.math.BigDecimal.valueOf(2));   // exact (SPEC 4.16 rule 7)
+        assertThat(v11.compile("avg(list = [{'x': 1}, {'x': 3}], field = 'x')").eval(null)).isEqualTo(java.math.BigDecimal.valueOf(2));
         assertThat(v11.compile("round(x = 2.45, n = 1)").eval(null).toString()).isEqualTo("2.5");
         assertThatThrownBy(() -> v11.compile("avg([1], where = true)")).hasMessageContaining("its arguments: [list, field]");
         assertThatThrownBy(() -> v11.compile("coalesce(values = 1)")).hasMessageContaining("repeatable");

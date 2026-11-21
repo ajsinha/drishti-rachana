@@ -41,7 +41,13 @@ public final class Binder {
     private final PivotBinder pivots;
     private final MapBinder maps;
     private final DatasetBinder datasets;
+    private final MoreKinds more;
     private final PanelLimits limits;
+
+    /** The expression compiler. */
+    ElCompiler el() {
+        return el;
+    }
 
     /** The limits panels are drawn with. */
     public PanelLimits limits() {
@@ -69,6 +75,7 @@ public final class Binder {
         this.pivots = new PivotBinder(el, catalog, this, this.hooks.pivot(), this.hooks.labels());
         this.maps = new MapBinder(el);
         this.datasets = new DatasetBinder(this);
+        this.more = new MoreKinds(this, formats);
     }
 
     /**
@@ -112,7 +119,9 @@ public final class Binder {
                 case PIVOT -> charts.pivot(p, c);
                 case METRIC -> metric(p, c);
                 case MAP -> maps.map(p, c);
-                case GRID, TREE, CHART -> datasets.bind(p, c);                // language 1.1: the rows go into the view's datasets
+                case TREEMAP -> more.treemap(p, c);                           // language 1.2
+                case BULLET -> more.bullet(p, c);
+                case GRID, TREE, CHART, LIVE -> datasets.bind(p, c);          // language 1.1 (1.2: live): the rows go into the view's datasets
                 case FORM -> form(p, c);                                       // language 1.2: a standalone form
             };
             boolean empty = DatasetBinder.reads(p.kind()) ? DatasetBinder.empty(data, c) : com.ash.rachana.view.Emptiness.of(data);
@@ -225,7 +234,7 @@ public final class Binder {
         return java.util.Arrays.copyOf(kept, n);
     }
 
-    private static Node keep(Node all, int[] origin) {
+    static Node keep(Node all, int[] origin) {
         List<Node> kept = new ArrayList<>(origin.length);
         for (int i : origin) {
             kept.add(all.get(i));
@@ -882,6 +891,12 @@ public final class Binder {
                 }
             }
         }
+        List<PanelData.Series> layered = p.options().containsKey("layers") || p.options().containsKey("by")
+                ? layers(p, node(eval(p.option("rows").orElse("points"), data)), data, xs, evs, pointSets.isEmpty() ? null : marks) : null;
+        if (layered != null) {
+            ys.clear();
+            layered.get(0).values().forEach(v -> ys.add(v == null ? Double.NaN : v));
+        }
         String mark = p.option("mark").map(m -> Values.text(eval(m, c.eval()))).filter(s -> !s.isEmpty()).orElse(null);
         String markText = null;
         if (mark != null && xs.contains(mark)) {
@@ -890,8 +905,85 @@ public final class Binder {
             markText = mark + " point " + formats.format(p.option("fmt").orElse(null), Values.normalise(v))
                     + (unit.isEmpty() || unit.equals("%") ? unit : " " + unit);
         }
-        return new PanelData.Chart(xs, List.of(new PanelData.Series(p.title(), ys, "link")), mark, markText, null, null, source,
+        return new PanelData.Chart(xs, layered != null ? layered : List.of(new PanelData.Series(p.title(), ys, "link")), mark, markText, null, null, source,
                 p.option("unit").orElse(null), "true".equals(p.option("step").orElse(null)) ? Boolean.TRUE : null, evs.isEmpty() ? null : evs, marks.isEmpty() ? null : marks, ons.isEmpty() ? null : ons);
+    }
+
+    /**
+     * Level 1.2: the series of a line panel with {@code layers} (wide rows: one series per layer over the same x, each its mark, tone and
+     * axis; ev and set per x as a plain line's) or {@code by} (long rows: one series per value of the field in order of appearance, x the
+     * values of {@code x} in order of appearance, a series' missing points null, and on a panel that emits on point-click each series' ev
+     * beside x). Fills {@code xs} and {@code evs} (the panel's, for layers).
+     */
+    private List<PanelData.Series> layers(Panel p, Node all, EvalContext data, List<String> xs, List<String> evs, List<Map<String, Object>> marks) {
+        xs.clear();
+        evs.clear();
+        boolean clicks = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK);
+        int[] origin = clicks || marks != null ? originals(p, all, data) : null;
+        Node rows = origin == null ? where(p, all, data) : keep(all, origin);
+        String x = p.option("x").orElse("tenor");
+        List<PanelData.Series> out = new ArrayList<>();
+        if (p.options().get("layers") instanceof List<?> list) {
+            List<com.ash.rachana.model.Effects.SetState> pointSets = com.ash.rachana.model.Effects.sets(p, com.ash.rachana.model.Wiring.POINT_CLICK);
+            for (int i = 0; i < rows.size(); i++) {
+                xs.add(rows.get(i).get(x).asText());
+                if (clicks) {
+                    evs.add(String.valueOf(origin == null ? i : origin[i]));
+                }
+                if (marks != null) {
+                    marks.add(sets(pointSets, data.withRow(rows.get(i), origin == null ? i : origin[i])));
+                }
+            }
+            for (Object o : list) {
+                Map<?, ?> m = (Map<?, ?>) o;
+                String field = String.valueOf(m.get("y"));
+                List<Double> values = new ArrayList<>();
+                for (int i = 0; i < rows.size(); i++) {
+                    values.add(number(rows.get(i).get(field)));
+                }
+                out.add(new PanelData.Series(m.get("label") instanceof String l ? l : field, values, m.get("tone") instanceof String t ? t : null,
+                        m.get("mark") instanceof String k && !"line".equals(k) ? k : null, "right".equals(m.get("axis")) ? "right" : null, null));
+            }
+            return out;
+        }
+        if (marks != null) {
+            throw new IllegalArgumentException("RCH-2057 a line split by a field writes no state on point-click (its points are of several series); emit an event");
+        }
+        String by = String.valueOf(p.options().get("by"));
+        String y = p.option("y").orElse("value");
+        java.util.LinkedHashMap<String, Map<String, Integer>> series = new java.util.LinkedHashMap<>();   // series -> x -> row
+        for (int i = 0; i < rows.size(); i++) {
+            String sx = rows.get(i).get(x).asText();
+            if (!xs.contains(sx)) {
+                xs.add(sx);
+            }
+            String name = rows.get(i).get(by).asText();
+            if (!series.containsKey(name) && series.size() == com.ash.rachana.model.PanelOptions.MAX_SERIES) {
+                throw new IllegalArgumentException("RCH-2029 line panel '" + p.id() + "' splits its rows into more than "
+                        + com.ash.rachana.model.PanelOptions.MAX_SERIES + " series by " + by);
+            }
+            series.computeIfAbsent(name, k -> new java.util.LinkedHashMap<>()).putIfAbsent(sx, i);
+        }
+        int k = 0;
+        for (var e : series.entrySet()) {
+            List<Double> values = new ArrayList<>();
+            List<String> ev = clicks ? new ArrayList<>() : null;
+            for (String sx : xs) {
+                Integer i = e.getValue().get(sx);
+                values.add(i == null ? null : number(rows.get(i).get(y)));
+                if (ev != null) {
+                    ev.add(i == null ? null : String.valueOf(origin == null ? i : origin[i]));
+                }
+            }
+            out.add(new PanelData.Series(e.getKey(), values, k++ == 0 ? "link" : null, null, null, ev));
+        }
+        return out.isEmpty() ? List.of(new PanelData.Series(p.title(), List.of(), "link")) : out;
+    }
+
+    /** A point's value: a finite number, else null (no point). */
+    private static Double number(Node v) {
+        double d = v.asDouble();
+        return Double.isFinite(d) ? d : null;
     }
 
     private PanelData area(Panel p, BindContext c) {

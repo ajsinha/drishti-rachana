@@ -281,7 +281,7 @@ public final class RachanaSchema {
             Map<String, Object> props = new LinkedHashMap<>();
             java.util.Set<String> expr = SutraExpressions.expressionOptions(k);
             TreeSet<String> opts = new TreeSet<>(k.required());
-            opts.addAll(k.optional());
+            opts.addAll(grammar.level() == null ? k.optional() : k.optional(grammar.level()));   // a later level's option is not offered
             if (k.readsData()) {
                 opts.add("source");
             }

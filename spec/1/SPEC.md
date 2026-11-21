@@ -148,6 +148,25 @@ contract 1.1, [VIEWMODEL.md](VIEWMODEL.md)) as raw values, which the painter for
   number field that is not one of them is a measure, added up by a node no row names. `chart`: `x`, `by` are field names,
   `y` a field or a list; `agg` and `fmt` apply to every `y`; `top` is the most categories drawn.
 - Field-name options must be names (`[A-Za-z_][A-Za-z0-9_]*`): `RCH-2029` otherwise, as for every wrong option value.
+- **Since 1.2: several series on a `line`.** `layers` (a list of 1 to 12 `{ y, label, mark, tone, axis }`; `mark` `line`, `bar`, `area`
+  or `point`, `axis` `left` or `right`) draws fields of wide rows over one `x`; `by` (a field) splits long rows into one series per value
+  in order of appearance (at most 12), `x` the values of `x` in order of appearance, a series' missing point null. On a panel that
+  emits on `point-click`, a split line's points carry `ev` per series (`Series.ev` beside `x`); a split line writes no state on a click
+  (`RCH-2057`). Both are `RCH-2008` below 1.2.
+- **Since 1.2: `treemap`** (requires `rows`; accepts `label`, `value`, `group`, `color` (field names), `fmt`): a rectangle per row with a
+  positive `value`, nested by `group`, toned `pos` or `neg` by the sign of `color`; `point-click` marks are the cells (`ev`, `set`).
+  **`bullet`** (requires `value`; accepts `label`, `fmt`, `min`, `limit`, `lower`, `upper`, `warnAt` (0 to 1, default 0.8), `tone`,
+  `caption`): one figure on a band against `limit` (one-sided, from `min`, default 0) or between `lower` and `upper`; within `warnAt` of a
+  bound is `warn`, past it `bad`, else `ok` (the figure's tone unless `tone` says otherwise).
+- **Since 1.2: `live`** (requires `rows`; accepts `dataset`, `rowKey`, `group`, `sort`, `search`, `empty`, `window`, `top`, `bars`): a
+  grid over a live host table read a window at a time. `rows` is `$.<entry>` of a `table` entry of `data:` (`RCH-2029`); the entry's
+  `key` or the panel's `rowKey` identifies a row (`RCH-2072` without one); each column reads one field (`bind: "@.qty"`, `RCH-2029`);
+  it is a panel of the screen, not of a tab (`RCH-2023`). The dataset carries the fields (typed from the rows read) and `live`
+  (`table`, `window` 1..5,000, default 200, `top`, and the entry's and the panel's `where` as one filter tree, PROTOCOL 7; a condition
+  outside that subset fails the panel), never rows: the painter reads the first window through the page's data client in the panel's
+  `sort`, subscribes with those keys (PROTOCOL 16) and applies the patches. A table read only by live panels is planned one window at
+  a time (`window` in the plan, FORMAT 5.10). `bars` (also on `grid` from 1.2; `RCH-2008` below it) names number fields drawn with a
+  bar in the cell.
 - At language level 1.0 these kinds are not offered (the `expected` list of `RCH-2021` is the twenty-two of 1.0) and
   using one is `RCH-2008` (section 7.2). Which options hold an expression, a template, a field name or a
 plain word is fixed per kind in `rachana.lang.json` [CS]; TRANSLATION.md section 3 states each one's effect.

@@ -1,0 +1,56 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/series
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  The series options of a line panel (level 1.2, SPEC 2.3): layers is a list of 1 to 12 mappings each with a field y and a known mark
+  and axis; by is a field name (RCH-2029).
+cases:
+  - id: a-layer-needs-a-field-and-a-known-mark
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: l, kind: line, rows: $.daily, x: date, layers: [ { y: pnl, mark: candle } ] }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'layers' of 'line' panels must be a list of 1 to 12 layers, each { y: <field>, label, mark: line | bar | area | point, tone, axis: left | right }; not '{y=pnl, mark=candle}'", "range": {"start": {"line": 6, "column": 58}}}]}
+
+  - id: by-is-a-field-name
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: l, kind: line, rows: $.curves, x: tenor, by: "@.curve" }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'by' of 'line' panels is a field name of the rows whose values split the series (such as curve), not '@.curve'", "range": {"start": {"line": 6, "column": 56}}}]}
+
+  - id: a-treemap-names-fields
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: t, kind: treemap, rows: $.positions, value: "@.exposure" }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'value' of 'treemap' panels is a field name of the rows (such as exposure), not '@.exposure'", "range": {"start": {"line": 6, "column": 55}}}]}
+
+  - id: a-bullets-warning-zone-is-a-share
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: b, kind: bullet, value: "$.used", limit: "$.limit", warnAt: 80 }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'warnAt' of 'bullet' panels is the share of a bound where its warning zone starts, above 0 and at most 1 (such as 0.8), not '80'", "range": {"start": {"line": 6, "column": 71}}}]}

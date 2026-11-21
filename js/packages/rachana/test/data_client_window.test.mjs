@@ -11,7 +11,7 @@ import { spawn } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, delimiter } from 'node:path';
-import { DataClient } from '../src/index.js';
+import { DataClient, liveTables } from '../src/index.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const TARGET = resolve(ROOT, 'java/rachana-live/target');
@@ -99,4 +99,31 @@ test('the bridge: sub carries the window, win moves it, a window\'s gap reaches 
   await moved;
   listener({ rdp: 1, t: 'gap', sub: sub.id, table: 'orders', epoch: 'e1', seq: 3, recoverable: false });
   assert.deepEqual(frames[1], { t: 'gap', epoch: 'e1', seq: 3, recoverable: false });
+});
+
+test('liveTables (the painter\'s options.live): one page, a windowed follow in seq order, the window moved', { skip: !ready && 'build java/rachana-live first' }, async () => {
+  const { p, base } = await startServer();
+  try {
+    assert.equal((await post(base, '/_test/live', { name: 'orders', declaration: DECL,
+      rows: [{ id: 'a', v: 1, qty: 1 }, { id: 'b', v: 1, qty: 2 }, { id: 'c', v: 1, qty: 3 }] })).status, 204);
+    const live = liveTables(new DataClient({ base, origin: new URL(base).origin }))({ table: 'orders', window: 2 });
+    const page = await live.page({ sort: [{ col: 'id' }], limit: 2 });
+    assert.deepEqual(page.rows.map((r) => r.id), ['a', 'b']);
+    assert.ok(page.version && page.version.epoch);
+    const q = queue();
+    const f = live.follow(page.version, [['a'], ['b']], false, (patch) => q.push(patch), (e) => q.push({ gap: e }));
+    try {
+      await post(base, '/_test/stream', { upsert: [{ id: 'a', v: 2, qty: 10 }] });
+      assert.deepEqual((await q.next()).update, [{ id: 'a', v: 2, qty: 10 }]);
+      await post(base, '/_test/stream', { upsert: [{ id: 'c', v: 2, qty: 30 }] });
+      assert.deepEqual(await q.next(), { table: 'orders', total: 3 });
+      await f.window([['c']], false);
+      await post(base, '/_test/stream', { upsert: [{ id: 'c', v: 3, qty: 31 }] });
+      assert.deepEqual((await q.next()).update, [{ id: 'c', v: 3, qty: 31 }]);
+    } finally {
+      f.stop();
+    }
+  } finally {
+    p.kill();
+  }
 });

@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: plan/live
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  A table read only by live panels (level 1.2) is read one window at a time: the plan's query limit is the largest window (or the
+  entry's own limit when smaller) and the table carries window; the painter follows it (FORMAT 5.10).
+given:
+  today: "2026-01-15"
+  schemas:
+    orders:
+      name: orders
+      key: [id]
+      columns: [ { name: id, type: string }, { name: qty, type: integer }, { name: book, type: string } ]
+      can: [page, sort, filter, changes, changes.window]
+cases:
+  - id: a-table-read-by-live-panels-is-windowed
+    kind: plan
+    source: SPEC 2.3; DataPlan
+    sutra: |
+      rachana: 1
+      sutra: plan-live
+      version: 1
+      data:
+        orders: { table: orders, key: id, live: true, where: "@.book == 'RATES-EU'" }
+      panels:
+        - { id: blotter, kind: live, rows: $.orders, window: 300 }
+    expect: {"plan": {"tables": [{"entry": "orders", "name": "orders", "readers": ["blotter"], "live": true, "query": {"filter": {"op": "==", "args": [{"col": "book"}, {"lit": "RATES-EU"}]}, "limit": 300}, "local": [], "window": 300}], "problems": []}}
+
+  - id: another-reader-reads-it-whole
+    kind: plan
+    source: SPEC 2.3; DataPlan
+    sutra: |
+      rachana: 1
+      sutra: plan-live
+      version: 1
+      data:
+        orders: { table: orders, key: id, live: true }
+      panels:
+        - { id: blotter, kind: live, rows: $.orders }
+        - { id: total, kind: metric, value: "sum($.orders, 'qty')" }
+    expect: {"plan": {"tables": [{"entry": "orders", "name": "orders", "readers": ["blotter", "total"], "live": true, "query": {}, "local": []}], "problems": []}}

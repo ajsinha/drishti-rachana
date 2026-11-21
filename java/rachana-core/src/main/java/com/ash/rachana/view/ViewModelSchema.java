@@ -55,7 +55,8 @@ public final class ViewModelSchema {
             Map.entry("DataChart.stack", List.of("sum", "percent")));
 
     /** Components written as a tone ({@link #TONES}); a Series' tone is the author's own word and stays free text. */
-    static final List<String> TONED = List.of("Cell.tone", "Bar.tone", "Step.tone", "Marker.tone", "Event.tone", "Candles.tone", "GeoPoint.tone");
+    static final List<String> TONED = List.of("Cell.tone", "Bar.tone", "Step.tone", "Marker.tone", "Event.tone", "Candles.tone", "GeoPoint.tone",
+            "TreemapCell.tone", "Bullet.tone", "Band.tone");
 
     /** Fields the server always sends although the record would let them be left out. */
     static final Map<String, List<String>> REQUIRED = Map.ofEntries(
@@ -70,7 +71,11 @@ public final class ViewModelSchema {
             Map.entry("SortKey", List.of("field")),
             Map.entry("Measure", List.of("field")),
             Map.entry("Tree", List.of("dataset", "node")),
-            Map.entry("DataChart", List.of("dataset", "type")));
+            Map.entry("DataChart", List.of("dataset", "type")),
+            Map.entry("LiveRef", List.of("table")),
+            Map.entry("Treemap", List.of("cells")),
+            Map.entry("TreemapCell", List.of("label", "value", "text")),
+            Map.entry("Bullet", List.of("text", "min", "max", "bands", "tone")));
 
     /** One line on each record, carried into the schema as its description. */
     static final Map<String, String> ABOUT = Map.ofEntries(
@@ -139,6 +144,9 @@ public final class ViewModelSchema {
         m.put("grid", PanelData.Grid.class);                  // contract 1.1
         m.put("tree", PanelData.Tree.class);
         m.put("chart", PanelData.DataChart.class);
+        m.put("live", PanelData.Grid.class);                  // contract 1.2: a grid over a live table
+        m.put("treemap", PanelData.Treemap.class);
+        m.put("bullet", PanelData.Bullet.class);
         return java.util.Collections.unmodifiableMap(m);
     }
 

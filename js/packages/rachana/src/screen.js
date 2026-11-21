@@ -59,9 +59,10 @@ export class Screen {
     this.plan = call(this.rt, 'plan', { id: this.id, schemas: this.client ? schemas : undefined, ctl: this.ctl, state: this.stateDelta || undefined });
     for (const t of this.plan.tables) {
       if (!schemas[t.name] || this.reads.has(t.name)) continue;
-      const { rows, version } = await this.client.read(t.name, t.query, schemas[t.name]);
+      // a table read only by live panels (plan window, level 1.2): one page types the fields; the painter reads and follows it
+      const { rows, version } = t.window ? await this.client.page(t.name, t.query) : await this.client.read(t.name, t.query, schemas[t.name]);
       call(this.rt, 'table', { id: this.id, name: t.name, schema: schemas[t.name], rows });
-      this.reads.set(t.name, { version, live: !!t.live, schema: schemas[t.name] });
+      this.reads.set(t.name, { version, live: !!t.live && !t.window, schema: schemas[t.name] });
     }
     return this.plan;
   }

@@ -1,0 +1,26 @@
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see LICENSE.
+
+  Rachana dev server (static-sales): rachana dev: serves the example project's pages; open http://localhost:4400.
+  Use it when: you look at the example project in a browser.
+  A Shell Script configuration (IntelliJ Community and PyCharm have the Shell Script plugin; no Node/JavaScript plugin is needed). Node 20+ on the PATH.
+  Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
+-->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Rachana dev server (static-sales)" type="ShConfigurationType" folderName="Rachana JS">
+    <option name="SCRIPT_TEXT" value="node js/packages/rachana-cli/bin/rachana.js dev examples/static-sales --port 4400" />
+    <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+    <option name="SCRIPT_PATH" value="" />
+    <option name="SCRIPT_OPTIONS" value="" />
+    <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+    <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+    <option name="INTERPRETER_PATH" value="" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="EXECUTE_IN_TERMINAL" value="true" />
+    <option name="EXECUTE_SCRIPT_FILE" value="false" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>

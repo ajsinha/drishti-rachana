@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+824d83b,
-// vendored under js/vendor/drishti-elements/3.2.0-dev+824d83b: load drishti-elements.js before this module). The element holds no meaning of its own:
+// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+f8b8619,
+// vendored under js/vendor/drishti-elements/3.2.0-dev+f8b8619: load drishti-elements.js before this module). The element holds no meaning of its own:
 // the bundle compiles, plans, binds and diffs; the DataClient fetches; the painter paints.
 //
-//   <script src="/vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.js"></script>
+//   <script src="/vendor/drishti-elements/3.2.0-dev+f8b8619/drishti-elements.js"></script>
 //   <script type="module" src="/rachana/src/rachana_view.js"></script>
 //   <rachana-view src="/sutras/sales.sutra.yaml" data="/rdp/v1" runtime="/rachana/dist/rachana.runtime.js"
 //                 formats="/spec/1/formats.yaml" live></rachana-view>
@@ -20,7 +20,7 @@
 // the view gets its address only from the host's linkResolver and only when that address is absolute (a relative one would mean
 // something else in every page that embeds the view): otherwise the link is a button that raises elements-view:link for the host.
 // Events: rachana-view:ready {viewModel}, rachana-view:change {frames | viewModel}, rachana-view:error {error}.
-import { DataClient } from './data_client.js';
+import { DataClient, liveTables } from './data_client.js';
 import { Screen, loadRuntime } from './screen.js';
 
 export const RACHANA_VIEW = 'rachana-view';
@@ -89,7 +89,7 @@ export function defineRachanaView(o) {
       const hooks = () => this.host || {};
       const host = { bind: (req) => (this.screen ? this.screen.setState(req.state) : null),
         notify: (e, where) => { if (hooks().notify) hooks().notify(e, where); }, run: (e, where) => { if (hooks().run) hooks().run(e, where); } };
-      painter.options = { complete: this.hasAttribute('complete'), host, links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
+      painter.options = { complete: this.hasAttribute('complete'), host, tables: client ? liveTables(client) : undefined, links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
       painter.viewModel = vm;
       this.emit('ready', { viewModel: vm });
       if (this.hasAttribute('live')) {

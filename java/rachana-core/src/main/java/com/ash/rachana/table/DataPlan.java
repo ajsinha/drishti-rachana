@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
  * <pre>
  * { "entry": "sales", "name": "sales", "readers": ["by-month"], "live": false,
  *   "query": { "columns": [...], "filter": tree, "limit": n },      // what the host is asked (a query document, section 6)
- *   "local": [ { "panel"?: id, "where": text, "reason": words } ] }  // conditions the runtime applies itself
+ *   "local": [ { "panel"?: id, "where": text, "reason": words } ],   // conditions the runtime applies itself
+ *   "window"?: n }                                                  // level 1.2: read only by live panels: one page of n rows, the painter follows
  * </pre>
  * Push-down rules: the entry's own {@code where} goes into {@code filter} when it is in the subset of section 7 and the table can
  * {@code filter}. A panel's {@code where} goes there too when that panel is the entry's only reader and reads it as its rows
@@ -139,8 +140,14 @@ public final class DataPlan {
                 all.put("args", filters);
                 query.put("filter", filters.size() == 1 ? filters.get(0) : all);
             }
-            if (e.limit() != null) {
-                query.put("limit", e.limit());
+            int window = 0;                                              // level 1.2: read only by live panels, the table is read a window at a time
+            if (!readers.isEmpty() && !stripReads && readers.stream().allMatch(p -> p.kind() == com.ash.rachana.model.PanelKind.LIVE)) {
+                for (Panel p : readers) {
+                    window = Math.max(window, p.options().get("window") instanceof Number n ? n.intValue() : com.ash.rachana.model.PanelOptions.WINDOW);
+                }
+            }
+            if (e.limit() != null || window > 0) {
+                query.put("limit", window == 0 ? e.limit() : e.limit() == null ? window : Math.min(e.limit(), window));
             }
             Map<String, Object> t = new LinkedHashMap<>();
             t.put("entry", e.name());
@@ -149,6 +156,9 @@ public final class DataPlan {
             t.put("live", e.live());
             t.put("query", query);
             t.put("local", local);
+            if (window > 0) {
+                t.put("window", window);                                 // the painter follows it; the runtime reads one page to type the fields
+            }
             tables.add(t);
         }
         Map<String, Object> out = new LinkedHashMap<>();

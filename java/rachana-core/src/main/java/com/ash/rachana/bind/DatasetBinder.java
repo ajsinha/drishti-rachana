@@ -54,7 +54,7 @@ final class DatasetBinder {
             c.datasets().put(name, ds);
         }
         return switch (p.kind()) {
-            case GRID -> grid(p, name, ds);
+            case GRID, LIVE -> grid(p, name, ds);
             case TREE -> tree(p, name, ds);
             case CHART -> chart(p, name);
             default -> throw new IllegalArgumentException("not a dataset panel: " + p.kind().id());
@@ -70,6 +70,9 @@ final class DatasetBinder {
             default -> null;
         };
         ViewModel.Dataset ds = name == null ? null : c.datasets().get(name);
+        if (ds != null && ds.live() != null) {
+            return false;                                              // a live table's rows are the host's: never known empty here
+        }
         return ds == null || ds.values() == null || ds.values().isEmpty();
     }
 
@@ -138,7 +141,43 @@ final class DatasetBinder {
             String label = labels.get(k) != null && !labels.get(k).equals(names.get(k)) ? labels.get(k) : null;
             fields.add(new ViewModel.DataField(names.get(k), type(values, k), label, fmts.get(k)));
         }
+        if (p.kind() == PanelKind.LIVE) {                               // language 1.2: the rows read only type the fields; the painter follows the table
+            return new ViewModel.Dataset(liveKey(p, names), fields, null, null, 0, null, null, null, null, live(p, c));
+        }
         return ViewModel.Dataset.of(key(p, names), fields, values, rows.size() - count);
+    }
+
+    /** A live panel's table: the entry the parser put under {@code $live} (its table, key and condition) and the panel's own condition. */
+    private ViewModel.LiveRef live(Panel p, BindContext c) {
+        Map<?, ?> entry = p.options().get(LIVE_ENTRY) instanceof Map<?, ?> m ? m : Map.of();
+        List<Map<String, Object>> trees = new ArrayList<>();
+        for (Object w : new Object[] {entry.get("where"), p.options().get(com.ash.rachana.model.Panel.WHERE)}) {
+            if (w instanceof String text) {
+                Map<String, Object> tree = com.ash.rachana.table.FilterTree.of(binder.el().compile(text), c.eval());
+                if (tree == null) {
+                    throw new IllegalArgumentException("RCH-2029 the condition '" + text + "' of live panel '" + p.id()
+                            + "' is outside the push-down subset of the Data Protocol (PROTOCOL 7): the host filters a live table");
+                }
+                trees.add(tree);
+            }
+        }
+        Map<String, Object> filter = null;
+        if (trees.size() == 1) {
+            filter = trees.get(0);
+        } else if (trees.size() > 1) {
+            filter = new java.util.LinkedHashMap<>();
+            filter.put("op", "&&");
+            filter.put("args", trees);
+        }
+        int window = p.options().get("window") instanceof Number n ? n.intValue() : PanelOptions.WINDOW;
+        return new ViewModel.LiveRef(String.valueOf(entry.get("table")), window, Boolean.TRUE.equals(p.options().get("top")), filter);
+    }
+
+    /** The option the parser hands a live panel's data entry under (SutraBuilder). */
+    private static final String LIVE_ENTRY = "$live";
+
+    private static List<String> liveKey(Panel p, List<String> names) {
+        return words(p.options().get(LIVE_ENTRY) instanceof Map<?, ?> m ? m.get("key") : null);   // the host's rows carry every field
     }
 
     /** A column's field: the field its bind reads ({@code @.notional}), else its label in letters and digits, else {@code c<n>}. */
@@ -216,11 +255,15 @@ final class DatasetBinder {
     private static PanelData.Grid grid(Panel p, String name, ViewModel.Dataset ds) {
         List<PanelData.GridColumn> columns = new ArrayList<>();
         List<Column> cols = p.columns();
+        List<String> bars = words(p.options().get("bars"));            // level 1.2: number fields drawn with a bar in the cell
         for (int i = 0; i < cols.size(); i++) {
             Column col = cols.get(i);
             String tone = col.tone() != null && col.tone().matches("[a-z]+") ? col.tone() : null;
             String field = ds.fields().size() > i ? ds.fields().get(i).name() : fieldName(col, i);
-            columns.add(new PanelData.GridColumn(field, null, null, tone, 0, null, col.total() ? "sum" : null, false));
+            columns.add(new PanelData.GridColumn(field, null, null, tone, 0, null, col.total() ? "sum" : null, false, bars.contains(field)));
+        }
+        if (cols.isEmpty() && !bars.isEmpty()) {                          // fields from the rows: each named, the barred ones marked
+            ds.fields().forEach(f -> columns.add(new PanelData.GridColumn(f.name(), null, null, null, 0, null, null, false, bars.contains(f.name()))));
         }
         List<PanelData.SortKey> sort = new ArrayList<>();
         for (String s : words(p.options().get("sort"))) {
@@ -279,7 +322,7 @@ final class DatasetBinder {
 
     /** A dataset panel's kinds. */
     static boolean reads(PanelKind k) {
-        return k == PanelKind.GRID || k == PanelKind.TREE || k == PanelKind.CHART;
+        return k == PanelKind.GRID || k == PanelKind.TREE || k == PanelKind.CHART || k == PanelKind.LIVE;
     }
 
 }

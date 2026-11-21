@@ -205,7 +205,20 @@ public sealed interface PanelData {
         }
     }
 
-    record Series(String label, List<Double> values, String tone) {}
+    record Series(String label, List<Double> values, String tone, @Include(Include.Rule.NON_NULL) String mark,
+            @Include(Include.Rule.NON_NULL) String axis, @Include(Include.Rule.NON_EMPTY) List<String> ev) {
+
+        /**
+         * A series of contract 1.0: a line on the left axis.
+         *
+         * <p>Contract 1.2 (a line panel's {@code layers} or {@code by}): {@code mark} {@code bar}, {@code area} or {@code point} (none: a
+         * line), {@code axis} {@code right} (none: the left), {@code ev} beside {@code x} each point's row in the data (null where the
+         * series has no point) on a panel split {@code by} a field that emits on point-click.
+         */
+        public Series(String label, List<Double> values, String tone) {
+            this(label, values, tone, null, null, null);
+        }
+    }
 
     /** {@code hbar}: bars scaled to the largest absolute value. */
     @Include(Include.Rule.NON_NULL)
@@ -633,9 +646,17 @@ public sealed interface PanelData {
      * @param agg how a group's figure is made of its rows' ({@code sum}, {@code count}, {@code min}, {@code max}, {@code avg},
      *     {@code first}, {@code last}, {@code distinct}), or none
      * @param hidden whether it starts hidden
+     * @param bar whether each number is drawn with a bar in its cell, as long as the value is large against the column's largest (contract
+     *     1.2; the text still says the value)
      */
     @Include(Include.Rule.NON_DEFAULT)
-    record GridColumn(String field, String label, String fmt, String tone, int width, String pinned, String agg, boolean hidden) {}
+    record GridColumn(String field, String label, String fmt, String tone, int width, String pinned, String agg, boolean hidden, boolean bar) {
+
+        /** A column without a bar (contract 1.1). */
+        public GridColumn(String field, String label, String fmt, String tone, int width, String pinned, String agg, boolean hidden) {
+            this(field, label, fmt, tone, width, pinned, agg, hidden, false);
+        }
+    }
 
     /**
      * One key of an order.
@@ -704,4 +725,56 @@ public sealed interface PanelData {
     @Include(Include.Rule.NON_DEFAULT)
     record DataChart(String dataset, String type, String x, List<Measure> y, String by, String stack, boolean horizontal, String xLabel,
             String yLabel, int bins, int limit) implements PanelData {}
+
+    /**
+     * {@code treemap} (contract 1.2): rectangles sized by a figure, nested by {@code group}.
+     *
+     * @param cells the rows with a positive figure, in their order
+     * @param total the figures' sum, formatted, or none
+     */
+    @Include(Include.Rule.NON_NULL)
+    record Treemap(List<TreemapCell> cells, String total) implements PanelData {}
+
+    /**
+     * One rectangle of a treemap.
+     *
+     * @param label its name
+     * @param group its outer level, or none
+     * @param value its size
+     * @param text the size formatted
+     * @param tone {@code pos} or {@code neg} by the sign of the panel's {@code color} figure, or none
+     * @param ev its row in the panel's data on a panel that emits on point-click, or none
+     * @param set what a point-click on it writes into the state, or none
+     */
+    @Include(Include.Rule.NON_NULL)
+    record TreemapCell(String label, String group, double value, String text, String tone, String ev, Map<String, Object> set) {}
+
+    /**
+     * {@code bullet} (contract 1.2): one figure on a band, against one bound ({@code upper}) or two.
+     *
+     * @param value the figure, or null when it is not a number
+     * @param text the figure formatted
+     * @param label its caption, or none
+     * @param min the scale's start
+     * @param max the scale's end
+     * @param bands the zones behind it ({@code ok}, {@code warn}), in order
+     * @param lower the lower bound, or none
+     * @param lowerText the lower bound formatted, or none
+     * @param upper the upper bound (the limit), or none
+     * @param upperText the upper bound formatted, or none
+     * @param tone the figure's zone: {@code ok}, {@code warn} or {@code bad} (past a bound)
+     * @param caption words under it, or none
+     */
+    @Include(Include.Rule.NON_NULL)
+    record Bullet(Double value, String text, String label, double min, double max, List<Band> bands, Double lower, String lowerText, Double upper,
+            String upperText, String tone, String caption) implements PanelData {}
+
+    /**
+     * A zone of a bullet's band.
+     *
+     * @param from where it starts
+     * @param to where it ends
+     * @param tone {@code ok} or {@code warn}
+     */
+    record Band(double from, double to, String tone) {}
 }

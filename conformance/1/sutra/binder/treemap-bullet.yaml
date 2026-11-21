@@ -1,0 +1,53 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/treemap-bullet
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  The kinds treemap and bullet (level 1.2, SPEC 2.3; contract 1.2): a treemap's cells are the rows with a positive figure, nested by
+  group, toned by the sign of color, each with ev on a panel that emits on point-click; a bullet puts one figure on a band against a
+  limit or between two bounds, with warning zones within warnAt of a bound, toned by its zone. Synthetic data only.
+given:
+  today: "2026-01-15"
+  record:
+    delta: -720000
+    limit: 1000000
+    used: 850000
+    positions:
+      - { sector: Banks, issuer: Alpha Bank, exposure: 4200000, pnl: 12000 }
+      - { sector: Banks, issuer: Beta Bank, exposure: 2100000, pnl: -8000 }
+      - { sector: Energy, issuer: Gamma Oil, exposure: 3300000, pnl: 0 }
+      - { sector: Energy, issuer: Delta Gas, exposure: 0, pnl: 500 }
+cases:
+  - id: a-treemap-nested-by-group-and-toned-by-sign
+    kind: sutra
+    source: SPEC 2.3; VIEWMODEL contract 1.2
+    sutra: |
+      rachana: 1
+      sutra: concentration
+      version: 1
+      panels:
+        - { id: tm, kind: treemap, rows: $.positions, group: sector, label: issuer, value: exposure, color: pnl, fmt: amount0, emits: [ { name: cell, on: point-click, payload: { group: "@.sector", name: "@.issuer" } } ] }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "tm", "kind": "treemap", "area": "main", "inferred": false, "data": {"cells": [{"label": "Alpha Bank", "group": "Banks", "value": 4200000, "text": "4,200,000", "tone": "pos", "ev": "0"}, {"label": "Beta Bank", "group": "Banks", "value": 2100000, "text": "2,100,000", "tone": "neg", "ev": "1"}, {"label": "Gamma Oil", "group": "Energy", "value": 3300000, "text": "3,300,000", "ev": "2"}], "total": "9,600,000"}, "empty": false, "wire": {"emits": [{"name": "cell", "on": "point-click"}]}}], "keys": [], "contract": "1.2"}}
+
+  - id: a-two-sided-bullet-within-its-bounds
+    kind: sutra
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: band
+      version: 1
+      panels:
+        - { id: b, kind: bullet, label: Net delta, value: "$.delta", lower: "-$.limit", upper: "$.limit", fmt: signed0 }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "b", "kind": "bullet", "area": "main", "inferred": false, "data": {"value": -720000, "text": "−720,000", "label": "Net delta", "min": -1200000, "max": 1200000, "bands": [{"from": -1000000, "to": -800000, "tone": "warn"}, {"from": -800000, "to": 800000, "tone": "ok"}, {"from": 800000, "to": 1000000, "tone": "warn"}], "lower": -1000000, "lowerText": "−1,000,000", "upper": 1000000, "upperText": "+1,000,000", "tone": "ok"}, "empty": false}], "keys": [], "contract": "1.2"}}
+
+  - id: a-one-sided-bullet-against-its-limit
+    kind: sutra
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: band
+      version: 1
+      panels:
+        - { id: b, kind: bullet, value: "$.used", limit: "$.limit", warnAt: 0.9, fmt: amount0, caption: Used of the limit }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "b", "kind": "bullet", "area": "main", "inferred": false, "data": {"value": 850000, "text": "850,000", "min": 0, "max": 1100000, "bands": [{"from": 0, "to": 900000, "tone": "ok"}, {"from": 900000, "to": 1000000, "tone": "warn"}], "upper": 1000000, "upperText": "1,000,000", "tone": "ok", "caption": "Used of the limit"}, "empty": false}], "keys": [], "contract": "1.2"}}

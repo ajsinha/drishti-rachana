@@ -46,7 +46,10 @@ public final class PanelOptions {
     /** A field name of the rows (a dataset panel's word options). */
     private static final java.util.regex.Pattern FIELD = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,63}");
     private static final Set<String> FIELD_OPTIONS = Set.of("node", "parent", "path", "label", "x", "by");
-    private static final Set<String> FIELD_LISTS = Set.of("rowKey", "group", "y");
+    private static final Set<String> FIELD_LISTS = Set.of("rowKey", "group", "y", "bars");
+    /** Language 1.2: the rows a live panel reads and follows at a time, and the default. */
+    public static final int MAX_WINDOW = 5_000;
+    public static final int WINDOW = 200;
 
     /** The most bins a histogram may ask for. */
     public static final int MAX_BINS = 200;
@@ -59,7 +62,7 @@ public final class PanelOptions {
             PanelKind.CHART, Map.of("type", CHART_TYPES, "agg", DATASET_AGGREGATIONS, "stack", CHART_STACKS));
     private static final Map<PanelKind, Set<String>> BOOLEANS = Map.of(PanelKind.PIVOT, Set.of("heat", "totals"),
             PanelKind.TABLE, Set.of("search"), PanelKind.LADDER, Set.of("search"), PanelKind.LINE, Set.of("step"),
-            PanelKind.GRID, Set.of("search"), PanelKind.CHART, Set.of("horizontal"));
+            PanelKind.GRID, Set.of("search"), PanelKind.CHART, Set.of("horizontal"), PanelKind.LIVE, Set.of("search", "top"));
     /** Options that name a list (or one object) by an expression: a number, a truth value or a YAML list never is one. */
     private static final Set<String> LIST_EXPRESSIONS = Set.of("rows", "each", "nodes", "edges", "source", "children");
     /** What {@code expand: all} stands for: levels of a tree shown open (more than any tree is deep). */
@@ -126,7 +129,7 @@ public final class PanelOptions {
             return Optional.of("option '" + option + "' of '" + kind.id() + "' panels must be one of " + String.join(", ", allowed)
                     + ", not '" + value + "'");
         }
-        if (kind == PanelKind.GRID || kind == PanelKind.TREE || kind == PanelKind.CHART) {
+        if (kind == PanelKind.GRID || kind == PanelKind.TREE || kind == PanelKind.CHART || kind == PanelKind.LIVE) {
             Optional<String> bad = datasetProblem(kind, what, option, value);
             if (bad.isPresent()) {
                 return bad;
@@ -138,6 +141,22 @@ public final class PanelOptions {
         if (kind == PanelKind.HISTOGRAM && option.equals("bins")
                 && !(value instanceof Long n && n >= 1 && n <= MAX_BINS)) {
             return Optional.of("option 'bins' of 'histogram' panels must be a whole number from 1 to " + MAX_BINS + ", not '" + value + "'");
+        }
+        if (kind == PanelKind.TREEMAP && Set.of("label", "value", "group", "color").contains(option)
+                && !(value instanceof String s && FIELD.matcher(s).matches())) {
+            return Optional.of(what + " is a field name of the rows (such as exposure), not '" + value + "'");
+        }
+        if (kind == PanelKind.BULLET && option.equals("warnAt") && !(value instanceof Number && com.ash.rachana.el.Values.number(value) > 0 && com.ash.rachana.el.Values.number(value) <= 1)) {
+            return Optional.of(what + " is the share of a bound where its warning zone starts, above 0 and at most 1 (such as 0.8), not '" + value + "'");
+        }
+        if (kind == PanelKind.BULLET && Set.of("value", "min", "limit", "lower", "upper").contains(option) && (value instanceof List<?> || value instanceof Map<?, ?>)) {
+            return Optional.of(what + " is one value written as text (an expression), not a list or a mapping");
+        }
+        if (kind == PanelKind.LINE && option.equals("layers")) {
+            return layers(what, value);
+        }
+        if (kind == PanelKind.LINE && option.equals("by") && !(value instanceof String s && FIELD.matcher(s).matches())) {
+            return Optional.of(what + " is a field name of the rows whose values split the series (such as curve), not '" + value + "'");
         }
         if (kind == PanelKind.HISTOGRAM && option.equals("markers")) {
             return markers(value);
@@ -166,10 +185,13 @@ public final class PanelOptions {
             return Optional.of(what + " is a field name, or a list of field names each optionally followed by ' desc' (such as 'notional desc'), not '"
                     + value + "'");
         }
+        if ("window".equals(option) && !(value instanceof Long n && n >= 1 && n <= MAX_WINDOW)) {
+            return Optional.of(what + " must be a whole number of rows from 1 to " + MAX_WINDOW + ", not '" + value + "'");
+        }
         if ("limit".equals(option) && !(value instanceof Long n && n >= 1 && n <= MAX_DATASET_ROWS)) {
             return Optional.of(what + " must be a whole number of rows from 1 to " + MAX_DATASET_ROWS + ", not '" + value + "'");
         }
-        if (("top".equals(option) || "bins".equals(option)) && !(value instanceof Long n && n >= 1 && n <= MAX_BINS)) {
+        if (("top".equals(option) && kind != PanelKind.LIVE || "bins".equals(option)) && !(value instanceof Long n && n >= 1 && n <= MAX_BINS)) {
             return Optional.of(what + " must be a whole number from 1 to " + MAX_BINS + ", not '" + value + "'");
         }
         if ("open".equals(option) && !(value instanceof Long n && n >= -1 && n <= 99)) {
@@ -191,6 +213,31 @@ public final class PanelOptions {
     private static boolean sortList(Object value) {
         List<?> l = value instanceof List<?> x ? x : List.of(value);
         return !l.isEmpty() && l.size() <= 6 && l.stream().allMatch(x -> x instanceof String s && s.matches("[A-Za-z_][A-Za-z0-9_]{0,63}( (asc|desc))?"));
+    }
+
+    /** Language 1.2: the most series of a line panel ({@code layers}, or the values of {@code by}). */
+    public static final int MAX_SERIES = 12;
+    /** Language 1.2: how a layer of a line panel is drawn. */
+    public static final List<String> LAYER_MARKS = List.of("line", "bar", "area", "point");
+    private static final Set<String> LAYER_KEYS = Set.of("y", "label", "mark", "tone", "axis");
+
+    /** {@code layers:} of a line panel: 1 to {@link #MAX_SERIES} mappings, each { y (a field), label, mark, tone, axis (left, right) }. */
+    private static Optional<String> layers(String what, Object value) {
+        String shape = " must be a list of 1 to " + MAX_SERIES + " layers, each { y: <field>, label, mark: " + String.join(" | ", LAYER_MARKS)
+                + ", tone, axis: left | right }";
+        if (!(value instanceof List<?> list) || list.isEmpty() || list.size() > MAX_SERIES) {
+            return Optional.of(what + shape);
+        }
+        for (Object o : list) {
+            if (!(o instanceof Map<?, ?> m) || !(m.get("y") instanceof String y) || !FIELD.matcher(y).matches()
+                    || !m.keySet().stream().allMatch(k -> LAYER_KEYS.contains(String.valueOf(k)))
+                    || m.get("mark") != null && !LAYER_MARKS.contains(String.valueOf(m.get("mark")))
+                    || m.get("axis") != null && !List.of("left", "right").contains(String.valueOf(m.get("axis")))
+                    || m.get("label") != null && !(m.get("label") instanceof String) || m.get("tone") != null && !(m.get("tone") instanceof String)) {
+                return Optional.of(what + shape + "; not '" + o + "'");
+            }
+        }
+        return Optional.empty();
     }
 
     /** The most levels a table's rows may drill into. */

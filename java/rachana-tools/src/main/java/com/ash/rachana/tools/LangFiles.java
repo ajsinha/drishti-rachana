@@ -163,7 +163,7 @@ public final class LangFiles {
             if (!k.at(level)) { continue; }
             Map<String, Object> e = entry(k.id(), Grammar.PROFILE_KINDS.contains(k) ? "drishti" : "core", k.since());
             e.put("required", new TreeSet<>(k.required()));
-            e.put("optional", new TreeSet<>(k.optional()));
+            e.put("optional", new TreeSet<>(k.optional(level)));
             out.add(e);
         }
         out.sort(Comparator.comparing(m -> (String) ((Map<?, ?>) m).get("name")));
@@ -177,12 +177,12 @@ public final class LangFiles {
         TreeSet<String> names = new TreeSet<>(List.of("where", "when", "on-select", "source"));
         for (PanelKind k : kinds) {
             names.addAll(k.required());
-            names.addAll(k.optional());
+            names.addAll(k.optional(level));
         }
         List<Object> out = new ArrayList<>();
         for (String n : names) {
             TreeSet<String> by = new TreeSet<>();
-            for (PanelKind k : kinds) { if (k.accepts(n)) { by.add(k.id()); } }
+            for (PanelKind k : kinds) { if (k.accepts(n) && atLeast(level, k.since(n))) { by.add(k.id()); } }
             Map<String, Object> e = entry(n, "core", "1.0");
             e.put("kinds", by);
             out.add(e);

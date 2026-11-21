@@ -1,0 +1,82 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/live
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  Language 1.2 and ViewModel contract 1.2 (SPEC 2.3, VIEWMODEL "Contract 1.2"): the panel kind live is a grid over a live host table
+  read a window at a time. Its rows name a table entry of data:; the view carries the dataset's fields (typed from the rows read) and
+  a live reference (table, window, top, the condition as a filter tree), never the rows: the painter reads the first window through
+  the page's data client and follows the table by key. bars marks the number fields drawn with a bar in the cell (also on grid at 1.2).
+  Synthetic data only.
+given:
+  today: "2026-01-15"
+  tables:
+    orders:
+      schema:
+        name: orders
+        key: [id]
+        columns:
+          - { name: id, type: string }
+          - { name: book, type: string }
+          - { name: side, type: string }
+          - { name: qty, type: integer }
+          - { name: price, type: number }
+          - { name: status, type: string }
+          - { name: changed, type: timestamp }
+        can: [page, sort, filter, changes, changes.window]
+      rows:
+        - { id: O-1, book: RATES-EU, side: BUY, qty: 500, price: 101.25, status: NEW, changed: "2026-01-15T09:00:00Z" }
+        - { id: O-2, book: RATES-EU, side: SELL, qty: 1200, price: 101.5, status: FILLED, changed: "2026-01-15T09:01:00Z" }
+        - { id: O-3, book: FX-G10, side: BUY, qty: 50, price: 1.0825, status: NEW, changed: "2026-01-15T09:02:00Z" }
+cases:
+  - id: a-live-blotter
+    kind: sutra
+    source: SPEC 2.3; VIEWMODEL contract 1.2
+    sutra: |
+      rachana: 1
+      sutra: blotter
+      version: 1
+      data:
+        orders: { table: orders, key: id, live: true, where: "@.book == 'RATES-EU'" }
+      panels:
+        - kind: live
+          id: blotter
+          rows: $.orders
+          sort: changed desc
+          window: 100
+          top: true
+          bars: [qty]
+          columns:
+            - { label: Order, bind: "@.id" }
+            - { label: Side, bind: "@.side" }
+            - { label: Qty, bind: "@.qty", fmt: amount0 }
+            - { label: Price, bind: "@.price", fmt: number }
+            - { label: Status, bind: "@.status", tone: status }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "blotter", "kind": "live", "area": "main", "inferred": false, "data": {"dataset": "blotter", "columns": [{"field": "id"}, {"field": "side"}, {"field": "qty", "bar": true}, {"field": "price"}, {"field": "status", "tone": "status"}], "sort": [{"field": "changed", "desc": true}], "search": true}, "empty": false}], "keys": [], "contract": "1.2", "datasets": {"blotter": {"key": ["id"], "fields": [{"name": "id", "type": "string", "label": "Order"}, {"name": "side", "type": "string", "label": "Side"}, {"name": "qty", "type": "number", "label": "Qty", "fmt": "amount0"}, {"name": "price", "type": "number", "label": "Price", "fmt": "number"}, {"name": "status", "type": "string", "label": "Status"}], "live": {"table": "orders", "window": 100, "top": true, "filter": {"op": "==", "args": [{"col": "book"}, {"lit": "RATES-EU"}]}}}}}}
+
+  - id: a-live-panel-condition-is-and-ed-with-the-entrys
+    kind: sutra
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: blotter
+      version: 1
+      data:
+        orders: { table: orders, key: id, where: "@.book == 'RATES-EU'" }
+      panels:
+        - { id: open, kind: live, rows: $.orders, where: "@.status == 'NEW'", group: book }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "open", "kind": "live", "area": "main", "inferred": false, "data": {"dataset": "open", "group": ["book"], "search": true}, "empty": false}], "keys": [], "contract": "1.2", "datasets": {"open": {"key": ["id"], "fields": [{"name": "id", "type": "string"}, {"name": "book", "type": "string"}, {"name": "side", "type": "string"}, {"name": "qty", "type": "number"}, {"name": "price", "type": "number"}, {"name": "status", "type": "string"}, {"name": "changed", "type": "datetime"}], "live": {"table": "orders", "window": 200, "filter": {"op": "&&", "args": [{"op": "==", "args": [{"col": "book"}, {"lit": "RATES-EU"}]}, {"op": "==", "args": [{"col": "status"}, {"lit": "NEW"}]}]}}}}}}
+
+  - id: bars-on-a-grid
+    kind: sutra
+    source: SPEC 2.3 (grid bars, level 1.2)
+    sutra: |
+      rachana: 1
+      sutra: bars
+      version: 1
+      data:
+        orders: { table: orders, key: id }
+      panels:
+        - { id: sizes, kind: grid, rows: $.orders, bars: [qty, price], search: false }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "sizes", "kind": "grid", "area": "main", "inferred": false, "data": {"dataset": "sizes", "columns": [{"field": "id"}, {"field": "book"}, {"field": "side"}, {"field": "qty", "bar": true}, {"field": "price", "bar": true}, {"field": "status"}, {"field": "changed"}]}, "empty": false}], "keys": [], "contract": "1.2", "datasets": {"sizes": {"fields": [{"name": "id", "type": "string"}, {"name": "book", "type": "string"}, {"name": "side", "type": "string"}, {"name": "qty", "type": "number"}, {"name": "price", "type": "number"}, {"name": "status", "type": "string"}, {"name": "changed", "type": "datetime"}], "values": [["O-1", "RATES-EU", "BUY", 500, 101.25, "NEW", "2026-01-15T09:00:00Z"], ["O-2", "RATES-EU", "SELL", 1200, 101.5, "FILLED", "2026-01-15T09:01:00Z"], ["O-3", "FX-G10", "BUY", 50, 1.0825, "NEW", "2026-01-15T09:02:00Z"]]}}}}

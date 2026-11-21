@@ -236,7 +236,7 @@ cases:
       ok: false
       problems:
       - code: RCH-2023
-        message: "'hbar' panels do not fire point-click (point-click: area, candlestick, gauge, kv, line, metric, scatter, status, timeline, waterfall)"
+        message: "'hbar' panels do not fire point-click (point-click: area, candlestick, gauge, kv, line, metric, scatter, status, timeline, treemap, waterfall)"
 
   - id: the-general-effects-checked
     kind: problem

@@ -25,12 +25,12 @@
   ],
   "files": {
     "drishti-elements.css": {
-      "bytes": 169685,
-      "integrity": "sha384-OC8yfoPKrxWvS8HXbw9mfm9c5GLcn7Qw7NLKfXr6w8u/tX+jRubTcNUpTOg0aYlt"
+      "bytes": 170994,
+      "integrity": "sha384-t7KxUQzR/nekrM7ZlcBBEdWF1M+0LW8vZTA055I3Qo3bzGmWpHQZ91mkY4dtnTRY"
     },
     "drishti-elements.js": {
-      "bytes": 3081943,
-      "integrity": "sha384-tfgeFGreFWngn2TSq2CsVF+4bccsPtZ6TTDD9dLzvq0FWrKugiMHoyDKMx7xaINR"
+      "bytes": 3097445,
+      "integrity": "sha384-V7haMFFD3R1+FIG5txJFGBjOLQ2bpsp4yRHA0n77BWeWkfe4DckpcOcq1CFKwJa/"
     },
     "vendor/codemirror/LICENSE": {
       "bytes": 1113,

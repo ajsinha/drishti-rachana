@@ -39,7 +39,11 @@ Java 8 must point it at the JDK 21 folder first.
 
 Never `install` a snapshot: only a release tag is installed, for Drishti (see [Installing a release for Drishti](#installing-a-release-for-drishti)).
 
-## Build in IntelliJ IDEA
+## Build and run in the IDE
+
+JetBrains (IntelliJ IDEA for Java, PyCharm for Python) and VS Code; the launchers are checked in. This is the one home of the IDE instructions of Rachana; Lake and Elements link here for the shared parts.
+
+### IntelliJ IDEA
 
 Java only: no Python, no Python plugin. The same Maven runs in the IDE and in a terminal.
 
@@ -58,7 +62,7 @@ Java only: no Python, no Python plugin. The same Maven runs in the IDE and in a 
 3. **Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → JRE**: *Use Project JDK*. Maven in the IDE ignores your
    shell's `JAVA_HOME`. An *invalid target release* or *release version 21 not supported* error means the wrong JDK is set here.
 4. The drop-down at the top right lists the configurations of `java/run-configs/` under the folder **Rachana**: the four Maven launchers
-   below.
+   and the two Java programs below.
 
 ### The Maven launchers
 
@@ -76,6 +80,33 @@ The JavaScript bundles launcher is plain Maven. Copying the bundles to `js/packa
 
 **From a terminal**, the same commands: `./mvnw clean verify -DskipTests` (Windows `mvnw.cmd …`), `./mvnw clean verify`,
 `./mvnw clean install -DskipTests`, `./mvnw clean package -Pjs -DskipTests -pl :rachana-js -am`.
+
+The two Java programs (Application configurations, run **Rachana build all** first): **Rachana CLI (lib)** (`com.ash.rachana.cli.Main`, edit the
+program arguments: `lib build|sign|pack|verify|lock|contracts|check-host`) and **Rachana reference server** (`ReferenceServer` on
+`http://localhost:8099/rdp/v1`). `rachana serve` (the standalone server) is on the `g3/server` branch and has no launcher here until it merges.
+
+### What each IDE runs
+
+| Part | IntelliJ IDEA Community / Ultimate | PyCharm | VS Code |
+|---|---|---|---|
+| Java (`java/`) | `java/run-configs/` (Maven, Application) | no | tasks and launch in `drishti-rachana.code-workspace` |
+| Python SDK (`python/`) | no (no Python plugin needed) | `python/run-configs/` (pytest, lint, Flask, FastAPI, protocol check, JS runtime bundle); open the folder `python/` | the same, as tasks and `debugpy` launches |
+| JavaScript (`js/`) | no Node support in Community: `js/run-configs/` are **Shell Script** configurations (Node tests, Studio, dev server; bash, on Windows use Git Bash, a terminal or VS Code) | the same Shell Script configurations | tasks (Node tests, Studio, dev server) and `node` launches |
+
+Open `java/pom.xml` in IntelliJ and `python/` in PyCharm, never one folder in both (each rewrites the other's `.idea`).
+
+### VS Code
+
+**File, Open Workspace from File**, choose `drishti-rachana.code-workspace` (a visible file at the repository root; no `.vscode` folder). Install the
+recommended extensions (Extension Pack for Java, Python and Pylance, ESLint, YAML). The workspace sets the JDK 21 runtime (edit the path:
+Windows `C:\jdk-21`), a `PYTHONPATH` to `python/src`, and has **Terminal, Run Task** entries mirroring the JetBrains launchers (Maven build, test, install
+release, JS bundles; Node tests; pytest; lint; Studio; dev server) and **Run and Debug** configurations for the Java programs, the Flask and FastAPI
+apps, `rachana lint` and the Node commands.
+
+### Where the artifacts go
+
+An install writes `~/.m2/repository/com/ash/rachana/...` (Windows `C:\Users\<user>\.m2\repository\com\ash\rachana\...`). The install order
+is **Rachana (tag) → Lake (tag) → Drishti**: each one's tag is installed, never a branch, before the next one builds.
 
 ### Windows and company networks: `PKIX path building failed`
 

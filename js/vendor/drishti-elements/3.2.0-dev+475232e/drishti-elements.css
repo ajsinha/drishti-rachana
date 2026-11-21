@@ -906,6 +906,12 @@ th[aria-sort="ascending"] .dv-sort::after { content: " ▲"; } th[aria-sort="des
 .dv-chart { width: 100%; height: calc(var(--dv-rows, 9) * var(--dv-row)); min-height: 180px; }
 .dv-chart-off { color: var(--d-muted); padding: var(--d-sp-8) 0; }
 .dv-data { margin-top: var(--d-sp-4); font-size: var(--d-fs-12); }
+.dv-legend { display: flex; flex-wrap: wrap; gap: var(--d-sp-4) var(--d-sp-10); margin: var(--d-sp-4) 0 0; padding: 0; list-style: none; color: var(--d-muted); font-size: var(--d-fs-12); }
+.dv-legend li { display: inline-flex; align-items: center; gap: var(--d-sp-4); }
+.dv-sw { display: inline-block; width: 12px; height: 2px; background: var(--dv-sw, var(--d-link)); }
+.dv-sw-bar, .dv-sw-area { height: 8px; border-radius: 1px; }
+.dv-sw-area { opacity: 0.5; }
+.dv-sw-point { width: 7px; height: 7px; border-radius: 50%; }
 .dv-data summary { cursor: pointer; color: var(--d-muted); }
 .dv-data summary:focus-visible { outline: 2px solid var(--d-accent); outline-offset: 2px; }
 .dv-bars { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, max-content) minmax(0, 1fr) max-content; gap: var(--d-sp-4) var(--d-sp-8); align-items: center; }

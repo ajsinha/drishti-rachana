@@ -172,27 +172,30 @@ public final class Builtins {
         }
     }
 
-    /** {@code count()} (rows) and {@code count(x)} (values of x). */
-    public static final class Count implements Aggregate<Object> {
-        private final boolean rows;
-
-        public Count(boolean rows) {
-            this.rows = rows;
+    /** A state of doubles as bytes: each eight bytes big-endian, in order. */
+    static byte[] encodeDoubles(double[] s) {
+        ByteBuffer bb = ByteBuffer.allocate(8 * s.length);
+        for (double d : s) {
+            bb.putDouble(d);
         }
+        return bb.array();
+    }
 
-        @Override
-        public String name() {
-            return "count";
+    /** The first {@code n} doubles of a state written by {@link #encodeDoubles}. */
+    static double[] decodeDoubles(byte[] b, int n) {
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        double[] st = new double[n];
+        for (int i = 0; i < n; i++) {
+            st[i] = bb.getDouble();
         }
+        return st;
+    }
 
+    /** Base of the counts (mergeable, a total the sum of its cells): the state is one {@code long}, eight bytes big-endian. */
+    abstract static class Tally implements Aggregate<Object> {
         @Override
         public Kind kind() {
             return Kind.MERGEABLE;
-        }
-
-        @Override
-        public int inputs() {
-            return rows ? 0 : 1;
         }
 
         @Override
@@ -205,20 +208,9 @@ public final class Builtins {
             return new long[1];
         }
 
-        @Override
-        public Object add(Object s, Batch b) {
-            long[] n = (long[]) s;
-            if (rows) {
-                n[0] += b.rows();
-            } else {
-                Object c = b.columns()[0];
-                for (int i = 0; i < b.rows(); i++) {
-                    if (c instanceof double[] d ? !Double.isNaN(d[i]) : ((String[]) c)[i] != null) {
-                        n[0]++;
-                    }
-                }
-            }
-            return n;
+        /** Whether row i of the input column holds a value (not NaN, not null). */
+        static boolean present(Object column, int i) {
+            return column instanceof double[] d ? !Double.isNaN(d[i]) : ((String[]) column)[i] != null;
         }
 
         @Override
@@ -252,13 +244,48 @@ public final class Builtins {
         }
 
         @Override
-        public List<String> sqlState(List<String> in) {
-            return List.of(rows ? "count(*)" : "count(" + in.get(0) + ")");
+        public Object fromSql(Object[] p) {
+            return new long[] {lng(p[0])};
+        }
+    }
+
+    /** {@code count()} (rows) and {@code count(x)} (values of x). */
+    public static final class Count extends Tally {
+        private final boolean rows;
+
+        public Count(boolean rows) {
+            this.rows = rows;
         }
 
         @Override
-        public Object fromSql(Object[] p) {
-            return new long[] {lng(p[0])};
+        public String name() {
+            return "count";
+        }
+
+        @Override
+        public int inputs() {
+            return rows ? 0 : 1;
+        }
+
+        @Override
+        public Object add(Object s, Batch b) {
+            long[] n = (long[]) s;
+            if (rows) {
+                n[0] += b.rows();
+            } else {
+                Object c = b.columns()[0];
+                for (int i = 0; i < b.rows(); i++) {
+                    if (present(c, i)) {
+                        n[0]++;
+                    }
+                }
+            }
+            return n;
+        }
+
+        @Override
+        public List<String> sqlState(List<String> in) {
+            return List.of(rows ? "count(*)" : "count(" + in.get(0) + ")");
         }
     }
 
@@ -576,7 +603,7 @@ public final class Builtins {
     }
 
     /** {@code median(x)}, {@code percentile(x, q)}: exact, from the cell's own values (holistic). */
-    public static final class Quantile implements Aggregate<Object> {
+    public static final class Quantile extends Holistics.OfValues {
         private final double q;
         private final String name;
 
@@ -599,98 +626,13 @@ public final class Builtins {
         }
 
         @Override
-        public Kind kind() {
-            return Kind.HOLISTIC;
-        }
-
-        @Override
-        public int inputs() {
-            return 1;
-        }
-
-        @Override
-        public Object start() {
-            return new Values();
-        }
-
-        @Override
-        public Object add(Object s, Batch b) {
-            Values v = (Values) s;
-            double[] x = b.num(0);
-            for (int i = 0; i < b.rows(); i++) {
-                if (!Double.isNaN(x[i])) {
-                    v.add(x[i]);
-                }
-            }
-            return v;
-        }
-
-        @Override
-        public Object merge(Object a, Object b) {
-            if (a instanceof Final || b instanceof Final) {
-                throw new IllegalStateException(name + " is holistic: a figure computed by the engine is never merged");
-            }
-            return ((Values) a).plus((Values) b);
-        }
-
-        @Override
-        public Double finish(Object s) {
-            if (s instanceof Final f) {
-                return f.value();
-            }
-            Values v = (Values) s;
-            if (v.n == 0) {
-                return null;
-            }
-            double[] x = Arrays.copyOf(v.v, v.n);
-            Arrays.sort(x);
-            double pos = q * (x.length - 1);
-            int lo = CoreMath.toInt(Math.floor(pos));
-            int hi = CoreMath.toInt(Math.ceil(pos));
-            return lo == hi ? x[lo] : x[lo] + (pos - lo) * (x[hi] - x[lo]);
-        }
-
-        @Override
-        public byte[] encode(Object s) {
-            if (s instanceof Final f) {
-                return f.encode();
-            }
-            Values v = (Values) s;
-            ByteBuffer bb = ByteBuffer.allocate(5 + 8 * v.n).put((byte) 0).putInt(v.n);
-            for (int i = 0; i < v.n; i++) {
-                bb.putDouble(v.v[i]);
-            }
-            return bb.array();
-        }
-
-        @Override
-        public Object decode(byte[] b) {
-            if (b[0] == Final.TAG) {
-                return Final.decode(b);
-            }
-            ByteBuffer bb = ByteBuffer.wrap(b, 1, b.length - 1);
-            Values v = new Values();
-            int n = bb.getInt();
-            for (int i = 0; i < n; i++) {
-                v.add(bb.getDouble());
-            }
-            return v;
-        }
-
-        @Override
-        public long bytes(Object s) {
-            return s instanceof Values v ? 32 + 8L * v.v.length : 32;
+        Double of(double[] sorted) {
+            return Holistics.quantile(sorted, q);
         }
 
         @Override
         public List<String> sqlState(List<String> in) {
             return List.of("quantile_cont(" + in.get(0) + ", " + q + ")");
-        }
-
-        @Override
-        public Object fromSql(Object[] p) {
-            double v = num(p[0]);
-            return new Final(Double.isNaN(v) ? null : v);
         }
     }
 

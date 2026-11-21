@@ -7,7 +7,6 @@ package com.ash.rachana.agg;
 import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.agg.Builtins.KSum;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -252,21 +251,12 @@ public final class MoreAggregates {
 
         @Override
         public byte[] encode(Object s) {
-            ByteBuffer bb = ByteBuffer.allocate(40);
-            for (double d : (double[]) s) {
-                bb.putDouble(d);
-            }
-            return bb.array();
+            return Builtins.encodeDoubles((double[]) s);
         }
 
         @Override
         public Object decode(byte[] b) {
-            ByteBuffer bb = ByteBuffer.wrap(b);
-            double[] st = new double[5];
-            for (int i = 0; i < 5; i++) {
-                st[i] = bb.getDouble();
-            }
-            return st;
+            return Builtins.decodeDoubles(b, 5);
         }
 
         @Override

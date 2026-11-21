@@ -12,6 +12,8 @@ import org.teavm.jso.JSExport;
 /**
  * The entry of {@code rachana.tools.js}: the runtime's functions, the editing operations (design/ops), the ViewModel schema, and the
  * conformance harness (one case line in, its results line out), so that a runner checks this bundle against the JVM case by case.
+ * The runtime's functions are declared again here, not inherited from {@link RuntimeMain}: TeaVM exports only the entry class's own
+ * {@code @JSExport} static methods, and each one only hands over to {@link Facade}.
  */
 public final class ToolsMain {
 

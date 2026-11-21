@@ -7,6 +7,7 @@ package com.ash.rachana.table;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.el.EvalContext;
 import com.ash.rachana.el.Expr;
+import com.ash.rachana.el.check.Checker;
 import com.ash.rachana.el.Values;
 import com.ash.rachana.parse.Json;
 import java.math.BigDecimal;
@@ -406,29 +407,12 @@ public final class FilterTree {
     /** {@code rdp.column.unknown} with {@code expected}: the table's columns, nearest first. */
     public static Refused unknownColumn(TableSchema schema, String column) {
         List<String> names = new ArrayList<>(schema.names());
-        names.sort(java.util.Comparator.comparingInt((String x) -> distance(x, column)));
+        names.sort(java.util.Comparator.comparingInt((String x) -> Checker.distance(x, column)));
         Map<String, Object> f = new LinkedHashMap<>();
         f.put("table", schema.name());
         f.put("column", column);
         f.put("expected", names);
         return new Refused("rdp.column.unknown", schema.name() + " has no column '" + column + "'", f);
-    }
-
-    private static int distance(String a, String b) {
-        int[] prev = new int[b.length() + 1], cur = new int[b.length() + 1];
-        for (int j = 0; j <= b.length(); j++) {
-            prev[j] = j;
-        }
-        for (int i = 1; i <= a.length(); i++) {
-            cur[0] = i;
-            for (int j = 1; j <= b.length(); j++) {
-                cur[j] = Math.min(Math.min(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + (a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1));
-            }
-            int[] t = prev;
-            prev = cur;
-            cur = t;
-        }
-        return prev[b.length()];
     }
 
     /** A checked tree as the Rachana-EL condition of the same meaning (section 7: {@code neg} is unary minus, {@code is-null(x)} is {@code x == null}). */

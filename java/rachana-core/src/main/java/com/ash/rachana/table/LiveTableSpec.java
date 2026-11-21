@@ -10,6 +10,7 @@ import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.ElException;
 import com.ash.rachana.el.EvalContext;
 import com.ash.rachana.el.Expr;
+import com.ash.rachana.el.check.Checker;
 import com.ash.rachana.model.Form;
 import com.ash.rachana.model.SourceLocation;
 import com.ash.rachana.parse.PNode;
@@ -597,31 +598,13 @@ public final class LiveTableSpec {
         String best = null;
         int bestD = Integer.MAX_VALUE;
         for (String h : have) {
-            int d = distance(col.toLowerCase(java.util.Locale.ROOT), h.toLowerCase(java.util.Locale.ROOT));
+            int d = Checker.distance(col.toLowerCase(java.util.Locale.ROOT), h.toLowerCase(java.util.Locale.ROOT));
             if (d < bestD) {
                 bestD = d;
                 best = h;
             }
         }
         return best != null && bestD <= Math.max(2, col.length() / 3) ? " (did you mean '" + best + "'?)" : "";
-    }
-
-    private static int distance(String a, String b) {
-        int[] prev = new int[b.length() + 1];
-        int[] cur = new int[b.length() + 1];
-        for (int j = 0; j <= b.length(); j++) {
-            prev[j] = j;
-        }
-        for (int i = 1; i <= a.length(); i++) {
-            cur[0] = i;
-            for (int j = 1; j <= b.length(); j++) {
-                cur[j] = Math.min(Math.min(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + (a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1));
-            }
-            int[] t = prev;
-            prev = cur;
-            cur = t;
-        }
-        return prev[b.length()];
     }
 
     private static boolean whole(Object v) {

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.lib;
 
+import com.ash.rachana.parse.Json;
 import com.ash.rachana.parse.PNode;
 import com.ash.rachana.parse.PositionalYamlReader;
 import java.nio.charset.StandardCharsets;
@@ -164,7 +165,7 @@ public final class LibraryExports {
             for (Map.Entry<?, ?> e : use.entrySet()) {
                 sb.append(first ? "" : ", ");
                 first = false;
-                str(String.valueOf(e.getKey()), sb);
+                Json.quote(String.valueOf(e.getKey()), sb);
                 sb.append(": ");
                 write(e.getValue(), sorted, sb);
             }
@@ -179,29 +180,7 @@ public final class LibraryExports {
         } else if (o instanceof Number || o instanceof Boolean) {
             sb.append(o);
         } else {
-            str(String.valueOf(o), sb);
+            Json.quote(String.valueOf(o), sb);
         }
-    }
-
-    private static void str(String s, StringBuilder sb) {
-        sb.append('"');
-        for (char c : s.toCharArray()) {
-            switch (c) {
-                case '"' -> sb.append("\\\"");
-                case '\\' -> sb.append("\\\\");
-                case '\n' -> sb.append("\\n");
-                case '\r' -> sb.append("\\r");
-                case '\t' -> sb.append("\\t");
-                default -> {
-                    if (c < 0x20) {
-                        String h = Integer.toHexString(c);
-                        sb.append("\\u").append("0000".substring(h.length())).append(h);
-                    } else {
-                        sb.append(c);
-                    }
-                }
-            }
-        }
-        sb.append('"');
     }
 }

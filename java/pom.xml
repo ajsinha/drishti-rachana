@@ -22,6 +22,7 @@
     <module>rachana-conformance</module>
     <module>rachana-conformance-cases</module>
     <module>rachana-compat</module>
+    <module>rachana-js</module>
     <module>rachana-guards</module>
   </modules>
 
@@ -52,11 +53,10 @@
     </dependencies>
   </dependencyManagement>
 
-  <!-- The JavaScript build (split step A15): TeaVM, only with -Pjs, so the JVM build needs no TeaVM. -->
+  <!-- The JavaScript build (split step A15): TeaVM, rachana-js is built with every reactor build so the Node suite of rachana-guards always has its bundles. -->
   <profiles>
     <profile>
-      <id>js</id>
-      <modules><module>rachana-js</module></modules>
+      <id>js</id>      <!-- kept empty so the old -Pjs command lines still work: rachana-js is a module of every build (before rachana-guards, whose Node tests need its bundles) -->
     </profile>
   </profiles>
 

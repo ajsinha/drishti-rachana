@@ -10,6 +10,8 @@
   <name>rachana-guards</name>
   <description>Test-only module: source-scan guards over the whole reactor. Not released.</description>
   <dependencies>
+    <!-- the Node tests need the runtime bundles rachana-js builds (and copies to js/packages/rachana/dist): this keeps it first, whatever the order or parallelism -->
+    <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-js</artifactId><version>${project.version}</version><scope>test</scope></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
   <properties>
@@ -31,7 +33,7 @@
       </plugin>
       <!-- the Node tests of the runtime, the command line and the Studio run with every build (so they cannot rot unseen). The Java-dependent
            ones find the classes of the earlier modules (this module is last); the bundle-dependent ones need js/packages/rachana/dist
-           (python3 tools/js/build_js.py). Node 20+ on the PATH, or -Dnode=/path/to/node; -Drachana.node.skip=true leaves them out. -->
+           (rachana-js builds the bundles and copies them there before this module runs; the run FAILS, never skips quietly, when they are missing or a test was skipped). Node 20+ on the PATH, or -Dnode=/path/to/node; -Drachana.node.skip=true leaves them out. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.6.3</version>
         <executions>

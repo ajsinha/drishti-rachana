@@ -5,8 +5,8 @@
 
   The JavaScript build (split step A15, P1: TeaVM): Core compiled to two bundles, rachana.runtime.js (compile, evaluate, format,
   view) and rachana.tools.js (the runtime and the editing operations, the schemas and the conformance harness). Built only with
-  the js profile of the parent (./mvnw -Pjs package -pl rachana-js -am); never installed. tools/js/build_js.py copies the
-  bundles into js/packages/rachana/dist/ and prints their SHA-256 (recorded in the release notes, decision P1-3).
+  every reactor build (before rachana-guards); never installed. The build copies the bundles into js/packages/rachana/dist/ (git-ignored, for the
+  Node tests of rachana-guards); tools/js/build_js.py also copies them to the Python package, runs the conformance check and prints their SHA-256 (recorded in the release notes, decision P1-3).
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -82,6 +82,16 @@
               <argument>${rachana.js.minify}</argument>
               <argument>${rachana.js.bench}</argument>
             </arguments>
+          </configuration>
+        </execution></executions>
+      </plugin>
+      <!-- the bundles to js/packages/rachana/dist (git-ignored): the Node suite of rachana-guards and the browser runners read them there -->
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions><execution><id>bundles-to-dist</id><phase>process-classes</phase><goals><goal>copy-resources</goal></goals>
+          <configuration>
+            <outputDirectory>${rachana.repo.root}/js/packages/rachana/dist</outputDirectory>
+            <resources><resource><directory>${rachana.js.out}</directory><includes><include>rachana.runtime.js</include><include>rachana.tools.js</include></includes></resource></resources>
           </configuration>
         </execution></executions>
       </plugin>

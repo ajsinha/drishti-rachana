@@ -121,7 +121,7 @@ buffers are transferred, not copied.
 
 ### 4.1a As built (A15, v0.11.0)
 
-`java/rachana-js` builds both bundles with TeaVM 0.16.0 (`python3 tools/js/build_js.py`, or `./mvnw -Pjs package -pl rachana-js
+`java/rachana-js` builds both bundles with TeaVM 0.16.0 (in every reactor build, before `rachana-guards` runs the Node suite on them, which fails when they are missing; `python3 tools/js/build_js.py` adds the conformance check, or `./mvnw package -pl rachana-js
 -am`; JDK 21, nothing installed). Rachana's own classes reach TeaVM unpacked into the module, so three same-named classes of the
 JavaScript build replace Core's: `internal.NumberText` (the engine's shortest digits, Java's layout and number grammar)
 and `internal.Bits` (the words of a double through a `DataView`, no

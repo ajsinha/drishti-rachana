@@ -103,6 +103,7 @@ class public final class com.ash.rachana.table.DataRecord
 class public final class com.ash.rachana.table.FilterTree
 class public final class com.ash.rachana.table.KeyedRows
 class public final class com.ash.rachana.table.LiveScreen
+class public final class com.ash.rachana.table.LiveTableSpec
 class public final class com.ash.rachana.view.Emptiness
 class public final class com.ash.rachana.view.MaskCount
 class public final class com.ash.rachana.view.PhoneView
@@ -315,6 +316,8 @@ class public static final record com.ash.rachana.parse.TypedFragment$Bound
 class public static final record com.ash.rachana.parse.TypedFragment$Param
 class public static final record com.ash.rachana.parse.TypedFragment$Slot
 class public static final record com.ash.rachana.table.DataRecord$Rows
+class public static final record com.ash.rachana.table.LiveTableSpec$Column
+class public static final record com.ash.rachana.table.LiveTableSpec$Retention
 class public static final record com.ash.rachana.table.TableSchema$Column
 class public static final record com.ash.rachana.view.MaskCount$Result
 class public static final record com.ash.rachana.view.PanelData$Bar
@@ -2915,6 +2918,67 @@ com.ash.rachana.table.LiveScreen :: public java.util.List<java.lang.String> com.
 com.ash.rachana.table.LiveScreen :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.LiveScreen.plan(java.util.Map<java.lang.String, com.ash.rachana.table.TableSchema>)
 com.ash.rachana.table.LiveScreen :: public void com.ash.rachana.table.LiveScreen.controls(java.util.Map<java.lang.String, ?>)
 com.ash.rachana.table.LiveScreen :: public void com.ash.rachana.table.LiveScreen.table(java.lang.String,com.ash.rachana.table.TableSchema,java.util.List<java.util.Map<java.lang.String, java.lang.Object>>)
+com.ash.rachana.table.LiveTableSpec :: public boolean com.ash.rachana.table.LiveTableSpec.newestFirst()
+com.ash.rachana.table.LiveTableSpec :: public boolean com.ash.rachana.table.LiveTableSpec.tray()
+com.ash.rachana.table.LiveTableSpec :: public com.ash.rachana.table.LiveTableSpec$Column com.ash.rachana.table.LiveTableSpec.column(java.lang.String)
+com.ash.rachana.table.LiveTableSpec :: public com.ash.rachana.table.LiveTableSpec$Retention com.ash.rachana.table.LiveTableSpec.retention()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.changedAt()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.changedBy()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.file()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.name()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.reason()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.snapshot()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.stream()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.title()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.version()
+com.ash.rachana.table.LiveTableSpec :: public java.lang.String com.ash.rachana.table.LiveTableSpec.where()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<com.ash.rachana.table.LiveTableSpec$Column> com.ash.rachana.table.LiveTableSpec.columns()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<java.lang.String> com.ash.rachana.table.LiveTableSpec.editableColumns()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<java.lang.String> com.ash.rachana.table.LiveTableSpec.groupBy()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<java.lang.String> com.ash.rachana.table.LiveTableSpec.key()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<java.lang.String> com.ash.rachana.table.LiveTableSpec.listColumns()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<java.lang.String> com.ash.rachana.table.LiveTableSpec.narrow()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<java.lang.String> com.ash.rachana.table.LiveTableSpec.subtotals()
+com.ash.rachana.table.LiveTableSpec :: public java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.table.LiveTableSpec.sort()
+com.ash.rachana.table.LiveTableSpec :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.LiveTableSpec.edit()
+com.ash.rachana.table.LiveTableSpec :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.LiveTableSpec.profile()
+com.ash.rachana.table.LiveTableSpec :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.LiveTableSpec.schema()
+com.ash.rachana.table.LiveTableSpec :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.LiveTableSpec.whereTree()
+com.ash.rachana.table.LiveTableSpec :: public static com.ash.rachana.table.LiveTableSpec com.ash.rachana.table.LiveTableSpec.of(java.util.Map<java.lang.String, java.lang.Object>,java.util.Set<java.lang.String>,java.util.function.Predicate<java.lang.String>)
+com.ash.rachana.table.LiveTableSpec :: public static com.ash.rachana.table.LiveTableSpec com.ash.rachana.table.LiveTableSpec.read(java.lang.String,java.lang.String)
+com.ash.rachana.table.LiveTableSpec :: public static com.ash.rachana.table.LiveTableSpec com.ash.rachana.table.LiveTableSpec.read(java.lang.String,java.lang.String,java.util.Set<java.lang.String>,java.util.function.Predicate<java.lang.String>)
+com.ash.rachana.table.LiveTableSpec :: public static final java.lang.String com.ash.rachana.table.LiveTableSpec.EDIT_NEEDS
+com.ash.rachana.table.LiveTableSpec :: public static final java.lang.String com.ash.rachana.table.LiveTableSpec.HEAVY
+com.ash.rachana.table.LiveTableSpec :: public static final java.lang.String com.ash.rachana.table.LiveTableSpec.KEY
+com.ash.rachana.table.LiveTableSpec :: public static final java.lang.String com.ash.rachana.table.LiveTableSpec.NOT_EDITABLE
+com.ash.rachana.table.LiveTableSpec :: public static final java.lang.String com.ash.rachana.table.LiveTableSpec.RETENTION
+com.ash.rachana.table.LiveTableSpec :: public static final java.lang.String com.ash.rachana.table.LiveTableSpec.SUFFIX
+com.ash.rachana.table.LiveTableSpec :: public static final java.util.List<java.lang.String> com.ash.rachana.table.LiveTableSpec.REASONS
+com.ash.rachana.table.LiveTableSpec :: public static final java.util.Set<java.lang.String> com.ash.rachana.table.LiveTableSpec.COLUMN_KEYS
+com.ash.rachana.table.LiveTableSpec :: public static final java.util.Set<java.lang.String> com.ash.rachana.table.LiveTableSpec.CORE_KEYS
+com.ash.rachana.table.LiveTableSpec :: public static final java.util.Set<java.lang.String> com.ash.rachana.table.LiveTableSpec.PROFILE_KEYS
+com.ash.rachana.table.LiveTableSpec :: public static long com.ash.rachana.table.LiveTableSpec.durationMs(java.lang.Object)
+com.ash.rachana.table.LiveTableSpec$Column :: public boolean com.ash.rachana.table.LiveTableSpec$Column.heavy()
+com.ash.rachana.table.LiveTableSpec$Column :: public boolean com.ash.rachana.table.LiveTableSpec$Column.nullable()
+com.ash.rachana.table.LiveTableSpec$Column :: public com.ash.rachana.table.LiveTableSpec$Column(java.lang.String,java.lang.String,java.lang.String,java.lang.Integer,java.lang.String,boolean,java.lang.String,boolean)
+com.ash.rachana.table.LiveTableSpec$Column :: public final boolean com.ash.rachana.table.LiveTableSpec$Column.equals(java.lang.Object)
+com.ash.rachana.table.LiveTableSpec$Column :: public final int com.ash.rachana.table.LiveTableSpec$Column.hashCode()
+com.ash.rachana.table.LiveTableSpec$Column :: public final java.lang.String com.ash.rachana.table.LiveTableSpec$Column.toString()
+com.ash.rachana.table.LiveTableSpec$Column :: public java.lang.Integer com.ash.rachana.table.LiveTableSpec$Column.width()
+com.ash.rachana.table.LiveTableSpec$Column :: public java.lang.String com.ash.rachana.table.LiveTableSpec$Column.fmt()
+com.ash.rachana.table.LiveTableSpec$Column :: public java.lang.String com.ash.rachana.table.LiveTableSpec$Column.items()
+com.ash.rachana.table.LiveTableSpec$Column :: public java.lang.String com.ash.rachana.table.LiveTableSpec$Column.label()
+com.ash.rachana.table.LiveTableSpec$Column :: public java.lang.String com.ash.rachana.table.LiveTableSpec$Column.name()
+com.ash.rachana.table.LiveTableSpec$Column :: public java.lang.String com.ash.rachana.table.LiveTableSpec$Column.type()
+com.ash.rachana.table.LiveTableSpec$Retention :: public boolean com.ash.rachana.table.LiveTableSpec$Retention.hasMaxRows()
+com.ash.rachana.table.LiveTableSpec$Retention :: public boolean com.ash.rachana.table.LiveTableSpec$Retention.hasTtl()
+com.ash.rachana.table.LiveTableSpec$Retention :: public com.ash.rachana.table.LiveTableSpec$Retention(long,java.lang.String,int)
+com.ash.rachana.table.LiveTableSpec$Retention :: public final boolean com.ash.rachana.table.LiveTableSpec$Retention.equals(java.lang.Object)
+com.ash.rachana.table.LiveTableSpec$Retention :: public final int com.ash.rachana.table.LiveTableSpec$Retention.hashCode()
+com.ash.rachana.table.LiveTableSpec$Retention :: public final java.lang.String com.ash.rachana.table.LiveTableSpec$Retention.toString()
+com.ash.rachana.table.LiveTableSpec$Retention :: public int com.ash.rachana.table.LiveTableSpec$Retention.maxRows()
+com.ash.rachana.table.LiveTableSpec$Retention :: public java.lang.String com.ash.rachana.table.LiveTableSpec$Retention.on()
+com.ash.rachana.table.LiveTableSpec$Retention :: public long com.ash.rachana.table.LiveTableSpec$Retention.ttlMs()
 com.ash.rachana.table.TableSchema :: public boolean com.ash.rachana.table.TableSchema.can(java.lang.String)
 com.ash.rachana.table.TableSchema :: public com.ash.rachana.table.TableSchema$Column com.ash.rachana.table.TableSchema.column(java.lang.String)
 com.ash.rachana.table.TableSchema :: public com.ash.rachana.table.TableSchema(java.lang.String,java.util.List<com.ash.rachana.table.TableSchema$Column>,java.util.List<java.lang.String>,java.util.Set<java.lang.String>,java.util.Map<java.lang.String, java.lang.Object>)

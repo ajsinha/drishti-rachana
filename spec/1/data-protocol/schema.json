@@ -15,7 +15,16 @@
     "can": { "$ref": "#/$defs/can" },
     "version": { "$ref": "#/$defs/version" },
     "limits": { "$ref": "#/$defs/limits" },
-    "append": { "$ref": "#/$defs/append" }
+    "append": { "$ref": "#/$defs/append" },
+    "rowVersion": { "type": "string", "description": "A live table (section 16): the column holding each row's record version." },
+    "changedBy": { "type": "string", "description": "A live table: the column naming who made a row's last change." },
+    "changedAt": { "type": "string", "description": "A live table: the column holding when a row last changed." },
+    "live": { "$ref": "#/$defs/live" },
+    "capped": { "type": "boolean", "description": "A live table read whole stopped at its row cap: not every row is held." },
+    "narrow": { "type": "object", "required": ["anyOf"], "properties": { "anyOf": { "type": "array", "minItems": 1, "items": { "type": "string" } } },
+      "description": "A list must filter on one of these columns (can: narrow); a bare list is rdp.query.narrow." },
+    "view": { "$ref": "#/$defs/view" },
+    "write": { "$ref": "#/$defs/write" }
   },
   "$defs": {
     "tableName": { "type": "string", "pattern": "^[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*$", "maxLength": 128 },
@@ -34,7 +43,8 @@
         "grain": { "enum": ["day", "month", "quarter", "year"], "description": "date only." },
         "items": { "$ref": "#/$defs/columnType", "description": "Element type; list only." },
         "hint": { "type": "string" },
-        "masked": { "type": "boolean", "description": "The whole column is masked for this reader." }
+        "masked": { "type": "boolean", "description": "The whole column is masked for this reader." },
+        "heavy": { "type": "boolean", "description": "A live table (section 16): never in a list page or a patch; read by fetching one row by key." }
       },
       "allOf": [
         { "if": { "properties": { "type": { "const": "list" } }, "required": ["type"] }, "then": { "required": ["items"] } }
@@ -42,7 +52,8 @@
     },
     "can": {
       "type": "array", "uniqueItems": true,
-      "items": { "enum": ["page", "offset", "sort", "filter", "group", "count", "snapshot", "arrow", "arrow.lz4", "changes", "changes.filter", "replay"] }
+      "items": { "enum": ["page", "offset", "sort", "filter", "group", "count", "snapshot", "arrow", "arrow.lz4", "changes", "changes.filter", "replay",
+                         "changes.window", "write", "narrow"] }
     },
     "version": {
       "type": "object", "required": ["epoch", "seq"],
@@ -65,6 +76,28 @@
         "patchBytes": { "type": "integer", "minimum": 1 },
         "subscriptions": { "type": "integer", "minimum": 1 },
         "messageBytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "live": {
+      "description": "A live table's stream (section 16): up, or paused (its broker is absent: the snapshot is served).",
+      "type": "object", "required": ["state"], "properties": { "state": { "enum": ["up", "paused"] }, "reason": { "type": "string" } }
+    },
+    "view": {
+      "description": "A live table's own presentation (section 16): its order, grouping, subtotals and column widths.",
+      "type": "object",
+      "properties": {
+        "sort": { "type": "array", "items": { "type": "object", "required": ["col"], "properties": { "col": { "type": "string" }, "dir": { "enum": ["asc", "desc"] } } } },
+        "groupBy": { "type": "array", "items": { "type": "string" } },
+        "subtotals": { "type": "array", "items": { "type": "string" } },
+        "widths": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
+      }
+    },
+    "write": {
+      "description": "For a reader who may edit a live table (section 16, can: write): the columns they may set, each with its form field rules, and whether a reason is asked.",
+      "type": "object", "required": ["columns"],
+      "properties": {
+        "columns": { "type": "object", "additionalProperties": { "type": "object" } },
+        "reason": { "enum": ["none", "optional", "required"] }
       }
     },
     "append": { "type": "object", "required": ["window"], "properties": { "window": { "type": "integer", "minimum": 1 } } },

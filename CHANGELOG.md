@@ -7,6 +7,14 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 
+- **L1, the declaration** (`rachana-core`): `LiveTableSpec` reads and checks `<name>.live.yaml` (`rachana: 1`, `live-table:`, snapshot,
+  stream, `where` pushed down as a filter tree, key, version, `changed-by`, `changed-at`, columns with `width`, `fmt`, `heavy`, order,
+  grouping, subtotals, `narrow`, `retention`, `tray`, `edit:` as a Core form with `reason`), every problem at once in position order;
+  `LiveTableSpec.of` for a host's default declarations in code; `schema()` answers the Data Protocol schema document. New codes
+  `RCH-2080` (edit needs a key and a version), `2081` (not editable), `2082` (heavy column where a list needs it), `2083` (retention).
+  PROTOCOL section 16 (schema fields, windowed subscriptions, patch `total`/`top`, `narrow`, writes, `win`/`write` bridge messages,
+  five error codes) and the JSON schemas; section 14 now says writes travel only under `can: write`. Conformance kind `live`
+  (FORMAT 5.14) with `live/declaration` (9 cases, unverified; JVM and the tools bundle agree). API surface: additions only.
 - **L2, one protocol host over providers** (`rachana-data`): `ProtocolHost` answers the routes of PROTOCOL 4 and the bridge of 12 over
   any number of `TableProvider`s (a table is answered by the first provider that has it; the listing is every provider's) and checks
   every query document (`RowQuery.validate`) before a provider sees it. `RowQuery` is the one evaluation of a query document over rows

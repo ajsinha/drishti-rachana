@@ -182,6 +182,12 @@ A panel's own `source: { table: <name>, where?, limit? }` [today] gives that pan
 `data:` entry or a host table. `source: { kind: … }` is a profile form. There is deliberately no source type for a
 function, REST paging or a topic: a host exposes those as named tables.
 
+**Live tables.** A host table may be a *live table*: declared in its own file `<name>.live.yaml` (`rachana: 1`,
+`live-table: <name>`, its snapshot source, live stream, key, version and change columns, columns, order, `narrow`,
+`retention` and, for a blotter, an `edit:` form; [LIVE_TABLES](../../docs/design/LIVE_TABLES.md) section 2). A Sutra reads it as
+any table (`table: <name>`); it needs no new syntax. A declaration is checked with every problem reported at once
+(`RCH-2080`..`2083` below, and the structure codes of 6.2); its Data Protocol additions are PROTOCOL section 16.
+
 ### 2.5 Controls, events, forms, fragments (summary)
 
 - **Controls** [today]: `{id, kind, label?, options?, from?, default?, remember?, required?, placement?, panel?,
@@ -839,6 +845,7 @@ Core keeps the reference's numbers with the prefix `RCH-` (decision D8; Drishti 
 | `RCH-2070`..`2079` | data | `2070` unknown table, `2071` unknown column (`expected`), `2072` key missing for a live table, `2073` source shape or name clash, `2074` not push-down-able over a server table |
 | `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling, `2091` a sign before a power without parentheses (level 1.1, checked mode: `-x ** n` is `-(x ** n)`; EL1-2) |
 | `RCH-2110`..`2119` | libraries and typed fragments (since 1.2) | `2110` library not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity, `2114` unknown parameter or slot, `2115` required parameter missing, `2116` wrong type or constraint, `2117` reads outside its scope, `2118` slot content; `2119` reserved (a library needs a profile or level the host lacks); `2120` advisory (warning): a column mapping the fragment never reads (L-21) |
+| `RCH-2080`..`2089` | live table declarations (`<name>.live.yaml`) | `2080` `edit` needs a key and a `version` column, `2081` a column that cannot be edited (the key, the version, `changed-by`, `changed-at`) or an edit field that binds none, `2082` a heavy column where a list needs it (key, order, grouping, narrowing), `2083` retention; `2084`..`2089` reserved |
 | `RCH-2101`, `2102` | expressions | `2101` does not compile (syntax, unknown function, arity, literal check, limits); `2102` evaluation error |
 | `RCH-9127`, `9129`, `9152`, `9161` | checked mode | type or scope; not yet available; unknown name; masked field filtered |
 

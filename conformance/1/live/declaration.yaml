@@ -1,0 +1,188 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: live/declaration
+since: "1.2"
+profile: core
+verified: false
+description: "A live table's declaration (LIVE_TABLES section 2, step L1): read and checked as a host loads it, every problem at once; its Data Protocol schema document (section 4)."
+cases:
+
+  - id: blotter-reads-and-gives-its-schema
+    kind: live
+    source: LIVE_TABLES 2, 4 (the design's blotter)
+    declaration: |
+      rachana: 1
+      live-table: trade
+      title: Trade blotter
+      snapshot: trades
+      stream: trades.live
+      where: "@.TRADE_STATUS != 'CANCELLED'"
+      key: TRADE_ID
+      version: TRADE_VERSION
+      changed-by: UPDATED_BY
+      changed-at: SOURCE_UPDATE_TIME
+      columns:
+        - { name: TRADE_ID, label: Trade, type: string, width: 120 }
+        - { name: TRADE_VERSION, type: integer }
+        - { name: TRADE_STATUS, type: string }
+        - { name: PORTFOLIO, type: string }
+        - { name: PRICE, type: decimal }
+        - { name: UPDATED_BY, type: string }
+        - { name: SOURCE_UPDATE_TIME, type: timestamp }
+        - { name: SCENARIO_PVS, type: list, items: decimal, heavy: true }
+      sort: { col: SOURCE_UPDATE_TIME, dir: desc }
+      narrow: { any-of: [PORTFOLIO, TRADE_ID] }
+      retention: { ttl: 1d, on: SOURCE_UPDATE_TIME, max-rows: 50000 }
+      tray: true
+      edit:
+        edit: cells
+        fields:
+          - { id: price, bind: PRICE, type: number, min: 0 }
+        reason: optional
+    expect:
+      ok: true
+      problems: []
+      schema:
+        name: trade
+        title: Trade blotter
+        key: [TRADE_ID]
+        columns:
+          - { name: TRADE_ID, type: string, label: Trade }
+          - { name: TRADE_VERSION, type: integer }
+          - { name: TRADE_STATUS, type: string }
+          - { name: PORTFOLIO, type: string }
+          - { name: PRICE, type: decimal }
+          - { name: UPDATED_BY, type: string }
+          - { name: SOURCE_UPDATE_TIME, type: timestamp }
+          - { name: SCENARIO_PVS, type: list, items: decimal, heavy: true }
+        can: [page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay, narrow]
+        rowVersion: TRADE_VERSION
+        changedBy: UPDATED_BY
+        changedAt: SOURCE_UPDATE_TIME
+        narrow: { anyOf: [PORTFOLIO, TRADE_ID] }
+        view: { sort: [ { col: SOURCE_UPDATE_TIME, dir: desc } ], widths: { TRADE_ID: 120 } }
+
+  - id: read-only-table-with-a-compound-key
+    kind: live
+    source: LIVE_TABLES 2 (no edit is a FORM result; key a list)
+    declaration: |
+      rachana: 1
+      live-table: fx-rates
+      snapshot: rates
+      key: [CCY, TENOR]
+      columns: [ { name: CCY }, { name: TENOR }, { name: RATE, type: number } ]
+    expect:
+      ok: true
+      schema:
+        name: fx-rates
+        key: [CCY, TENOR]
+        columns: [ { name: CCY, type: string }, { name: TENOR, type: string }, { name: RATE, type: number } ]
+        can: [page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay]
+        view: { sort: [] }
+
+  - id: every-problem-at-once-in-position-order
+    kind: live
+    source: LIVE_TABLES 2 (checked at load, every problem reported at once)
+    declaration: |
+      rachana: 1
+      live-table: Bad Id
+      snapshot: trades
+      columns: [ { name: A }, { name: A }, { name: B, type: money } ]
+      sort: { col: C }
+      retention: { ttl: soon }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2072, range: { start: { line: 1, column: 1 } } }
+        - { code: RCH-2020, range: { start: { line: 2, column: 13 } } }
+        - { code: RCH-2024, message: "the column 'A' is declared twice" }
+        - { code: RCH-2023 }
+        - { code: RCH-2071, message: "'sort' names the column 'C', which is not in 'columns' (did you mean 'A'?)" }
+        - { code: RCH-2083, message: "'retention.ttl' is a duration such as 30s, 10m, 2h or 1d" }
+      schema: null
+
+  - id: edit-needs-a-key-and-a-version
+    kind: live
+    source: LIVE_TABLES 1.6, 2 (the version guard)
+    declaration: |
+      rachana: 1
+      live-table: t
+      snapshot: s
+      key: K
+      columns: [ { name: K }, { name: P, type: number } ]
+      edit: { fields: [ { id: p, bind: P, type: number } ] }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2080 } ]
+
+  - id: key-version-and-change-columns-are-not-editable
+    kind: live
+    source: LIVE_TABLES 2 (an editable column is not the key, the version, changed-by or changed-at)
+    declaration: |
+      rachana: 1
+      live-table: t
+      snapshot: s
+      key: K
+      version: V
+      changed-by: BY
+      columns: [ { name: K }, { name: V, type: integer }, { name: BY } ]
+      edit: { fields: [ { id: v, bind: V, type: number }, { id: by, bind: BY, type: text } ] }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2081 }, { code: RCH-2081 } ]
+
+  - id: heavy-column-is-never-in-a-list
+    kind: live
+    source: LIVE_TABLES 2.1 (heavy columns are read one row by key)
+    declaration: |
+      rachana: 1
+      live-table: t
+      snapshot: s
+      key: K
+      columns: [ { name: K }, { name: P, type: list, heavy: true } ]
+      sort: { col: P }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2082 } ]
+
+  - id: profile-keys-without-their-profile
+    kind: live
+    source: LIVE_TABLES 2 (profile keys without their profile)
+    declaration: |
+      rachana: 1
+      live-table: t
+      kind: trade
+      snapshot: s
+      key: K
+      columns: [ { name: K } ]
+    expect:
+      ok: false
+      problems: [ { code: RCH-2060, message: "'kind' comes with a profile that brings it; this host has none" } ]
+
+  - id: profile-keys-with-their-profile
+    kind: live
+    source: LIVE_TABLES 2 (a profile's keys are kept for the host)
+    profileKeys: [kind]
+    declaration: |
+      rachana: 1
+      live-table: t
+      kind: trade
+      snapshot: s
+      key: K
+      columns: [ { name: K } ]
+    expect:
+      ok: true
+
+  - id: unknown-key-and-condition-that-does-not-compile
+    kind: live
+    source: LIVE_TABLES 2; SPEC 6.2 (RCH-2011, RCH-2101)
+    declaration: |
+      rachana: 1
+      live-table: t
+      snapshot: s
+      key: K
+      columns: [ { name: K } ]
+      where: "@.K =="
+      blotter: yes
+    expect:
+      ok: false
+      problems: [ { code: RCH-2101 }, { code: RCH-2011 } ]

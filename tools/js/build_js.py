@@ -30,7 +30,7 @@ def brotli_size(path: Path) -> int:
 def check_bundles(dist: Path, work: Path) -> int:
     """Runs the conformance suite on both bundles at every level. Fails (1) on any error or verified failing case in either bundle,
     on a case the runtime bundle answers differently from the tools bundle, or on a case only the tools bundle answers whose kind
-    the runtime serves (only edit is the tools bundle's alone, by design)."""
+    the runtime serves (only edit and live, the declaration checker of Studio and lint, are the tools bundle's alone, by design)."""
     work.mkdir(parents=True, exist_ok=True)
     bad = 0
     for level in LEVELS:
@@ -59,7 +59,7 @@ def check_bundles(dist: Path, work: Path) -> int:
         rt, tools = res[BUNDLES[0]], res[BUNDLES[1]]
         differ = [c for c, (r, ln) in rt.items() if r["status"] != "unsupported" and (c not in tools or tools[c][1] != ln)]
         missing = [c for c, (r, _) in rt.items() if r["status"] == "unsupported" and tools.get(c, ({},))[0].get("status") != "unsupported"
-                   and r["kind"] != "edit"]
+                   and r["kind"] not in ("edit", "live")]
         for c in differ[:20]:
             print(f"  runtime differs from tools: {c}", file=sys.stderr)
         for c in missing[:20]:

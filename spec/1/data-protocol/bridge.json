@@ -10,7 +10,8 @@
   "oneOf": [
     { "$ref": "#/$defs/hello" }, { "$ref": "#/$defs/welcome" }, { "$ref": "#/$defs/request" }, { "$ref": "#/$defs/res" },
     { "$ref": "#/$defs/resArrow" }, { "$ref": "#/$defs/sub" }, { "$ref": "#/$defs/unsub" }, { "$ref": "#/$defs/msg" },
-    { "$ref": "#/$defs/table" }, { "$ref": "#/$defs/action" }, { "$ref": "#/$defs/control" }, { "$ref": "#/$defs/ping" }, { "$ref": "#/$defs/pong" }
+    { "$ref": "#/$defs/table" }, { "$ref": "#/$defs/action" }, { "$ref": "#/$defs/control" }, { "$ref": "#/$defs/ping" }, { "$ref": "#/$defs/pong" },
+    { "$ref": "#/$defs/win" }, { "$ref": "#/$defs/write" }
   ],
   "$defs": {
     "id": { "type": "string", "minLength": 1, "maxLength": 64 },
@@ -63,7 +64,33 @@
       "properties": {
         "rdp": { "const": 1 }, "t": { "const": "sub" }, "id": { "$ref": "#/$defs/id" }, "table": { "type": "string" },
         "after": { "$ref": "schema.json#/$defs/version" }, "filter": { "$ref": "filter.json#/$defs/node" },
-        "conflate": { "type": "object", "properties": { "everyMs": { "type": "integer", "minimum": 1 } } }
+        "conflate": { "type": "object", "properties": { "everyMs": { "type": "integer", "minimum": 1 } } },
+        "window": { "$ref": "patch.json#/$defs/window" }
+      }
+    },
+    "win": {
+      "description": "view to host (section 16): changes the window of the subscription sub; answered by res with an empty body.",
+      "type": "object", "required": ["rdp", "t", "id", "sub", "keys"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "win" }, "id": { "$ref": "#/$defs/id" }, "sub": { "$ref": "#/$defs/id" },
+        "keys": { "type": "array", "items": { "$ref": "patch.json#/$defs/key" } }, "top": { "type": "boolean" }
+      }
+    },
+    "write": {
+      "description": "view to host (section 16, can: write): one change of one row; answered by res whose body is { change, state, message, version? }.",
+      "type": "object", "required": ["rdp", "t", "id", "table", "body"],
+      "properties": {
+        "rdp": { "const": 1 }, "t": { "const": "write" }, "id": { "$ref": "#/$defs/id" }, "table": { "type": "string" },
+        "body": { "$ref": "#/$defs/change" }
+      }
+    },
+    "change": {
+      "description": "A change (section 16): its client-made id (a ULID), the operation, the row's key, the version it was made on, the columns set, optionally the values seen and a reason.",
+      "type": "object", "required": ["id", "op", "key"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64 }, "op": { "enum": ["update", "add", "remove"] },
+        "key": { "$ref": "patch.json#/$defs/key" }, "basedOn": {}, "set": { "type": "object" }, "from": { "type": "object" },
+        "reason": { "type": "string" }
       }
     },
     "unsub": {

@@ -130,7 +130,7 @@ text anyway.
 
 ## 5. The kinds
 
-Twelve kinds. Every kind is a pure function from the case's inputs to one **actual** document; a runner writes that
+Thirteen kinds. Every kind is a pure function from the case's inputs to one **actual** document; a runner writes that
 document in full on the case's results line (RUNNER section 4) and compares the parts `expect` names (section 7).
 
 | Kind | Area | Input fields | Actual document (all fields always written) | Typical `expect` |
@@ -147,6 +147,7 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 | `edit` | `edit/` | `sutra`, `file`, `operation` | `{text, problems}` | `text`, or `problems` |
 | `protocol` | `protocol/` | `fixture`, `steps` (requests) | `{steps: [{status, body}…]}` | `steps` with `status`, `body` |
 | `lib` | `lib/` | `library`, `files` | `{ok, problems, version, sha384, fragments}` | `ok`, `problems`, `sha384` |
+| `live` | `live/` | `declaration`, `file`, `profileKeys` | `{ok, problems, schema}` | `ok`, `problems`, `schema` |
 
 ### 5.1 `given`: the context
 
@@ -278,6 +279,16 @@ inside it and the scope of its typed fragments. `ok` is `true` when it loads; `p
 `version` (the manifest's), `sha384` (SHA-384 of the canonical `.rlib` archive of the files, 96 hex digits: the
 library's identity in a lock) and `fragments` (its fragment names, sorted) are `null` when it is refused. Signatures are
 not part of this kind (a runtime need not carry Ed25519); they are tested by the JVM tools.
+
+### 5.14 `live`
+
+`declaration` is a live table's declaration (`<name>.live.yaml`, [LIVE_TABLES](../docs/design/LIVE_TABLES.md) section 2), read
+and checked as a host loads it, every problem reported at once, in the order of their positions. `profileKeys` lists the
+profile keys the host reads (`kind`, `query`, `links`, `edit.roles`, `edit.save`, `edit.fields.editable-by`; absent: none, so
+each is a problem). Formats are checked against the runtime's format names. `ok` is `true` when it loads; `problems` as in
+`problem` cases; `schema` is the table's Data Protocol schema document (section 4 of LIVE_TABLES: `rowVersion`, `changedBy`,
+`changedAt`, `narrow`, `view`, column `heavy`), `null` when it is refused. What the engine adds at run time (`live`, `capped`,
+a reader's masks and `write`) is not part of this kind; the `protocol/` suites test it.
 
 ## 6. Matching expected problems
 

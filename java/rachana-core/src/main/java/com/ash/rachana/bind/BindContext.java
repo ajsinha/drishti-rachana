@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+ * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+ */
+package com.ash.rachana.bind;
+
+import com.ash.drishti.api.EntityDocument;
+import com.ash.drishti.api.EntityRef;
+import com.ash.drishti.common.Fingerprint;
+import com.ash.drishti.graph.LinkRef;
+import com.ash.drishti.inference.EffectiveLayout;
+import com.ash.rachana.el.EvalContext;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Everything one view binding needs. Immutable; shared by the panel binders running in parallel.
+ *
+ * @param doc the entity document
+ * @param layout the effective layout
+ * @param fingerprint the document's shape fingerprint
+ * @param eval evaluation context over the document
+ * @param links references discovered in the document
+ * @param linked linked documents fetched within the budget (absent ones are pending or missing)
+ * @param pending linked entities not fetched in time
+ * @param denied sourced entities the caller may not open: never fetched, their panels show "no access"
+ * @param maps per {@code map} panel id, what its link and shade read across a kind
+ */
+public record BindContext(
+        EntityDocument doc,
+        EffectiveLayout layout,
+        Fingerprint fingerprint,
+        EvalContext eval,
+        List<LinkRef> links,
+        Map<EntityRef, EntityDocument> linked,
+        java.util.Set<EntityRef> pending,
+        java.util.Set<EntityRef> denied,
+        Map<String, MapSupport.Lookup> maps) {
+
+    public BindContext {
+        maps = maps == null ? Map.of() : maps;
+    }
+
+    public BindContext(EntityDocument doc, EffectiveLayout layout, Fingerprint fingerprint, EvalContext eval, List<LinkRef> links,
+            Map<EntityRef, EntityDocument> linked, java.util.Set<EntityRef> pending) {
+        this(doc, layout, fingerprint, eval, links, linked, pending, java.util.Set.of(), Map.of());
+    }
+
+    public BindContext(EntityDocument doc, EffectiveLayout layout, Fingerprint fingerprint, EvalContext eval, List<LinkRef> links,
+            Map<EntityRef, EntityDocument> linked, java.util.Set<EntityRef> pending, java.util.Set<EntityRef> denied) {
+        this(doc, layout, fingerprint, eval, links, linked, pending, denied, Map.of());
+    }
+
+    /** The same binding read in another evaluation context (a tab's element is {@code @}). */
+    public BindContext withEval(EvalContext next) {
+        return new BindContext(doc, layout, fingerprint, next, links, linked, pending, denied, maps);
+    }
+}

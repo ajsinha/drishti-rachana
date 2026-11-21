@@ -1,0 +1,7 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see LICENSE.
+# The reviewed path allow-list of split step A13 (git filter-repo --paths-from-file): the binder and its neighbours, over the
+# two paths the engine had in the host's history. The live stream (TopicHub, ViewStream, the differ, metrics, properties), the
+# view pipeline, source routing and the rest of the engine stay in the host; of engine/live only the two wire records move.
+regex:^(kernel/)?drishti-engine/src/main/java/com/ash/drishti/engine/(bind|view|control|wire)/.*\.java$
+regex:^(kernel/)?drishti-engine/src/main/java/com/ash/drishti/engine/live/(Frame|Patch)\.java$
+regex:^(kernel/)?drishti-engine/src/test/java/com/ash/drishti/engine/(bind|view|control|wire)/.*\.java$

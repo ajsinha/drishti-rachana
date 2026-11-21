@@ -21,6 +21,11 @@ Entries are written per release; the regime's unreleased work is listed after th
   - **O6, `-x ^ y` refused at level 1.1** (`RCH-2101`, the message names `-(x ^ n)` and `(-x) ^ n`); `-x ** n` keeps Python's rule and
     the checked-mode hint `RCH-2091`; level 1.0 has no infix `^`. Cases `el/sign-power-1-1`; DECISIONS EL1-2 amended.
   - **O5, `range` rename**: complete since lane B (`span` at 1.1); the SPEC's list of pending pivot names says so.
+  - **F11 / O9, CG5 over all seven modules, removals logged, stability marked**: `ApiSurfaceTest` reads rachana-api, -core, -tools,
+    -data, -live, -server and -cli (Arrow's jars from rachana-data's `runtime-classpath.txt`); each baseline line is `[stable]` (the
+    entry surface of gate 2 section 4) or `[experimental]`. The write flag refuses to drop a line (or demote a stable one) unless
+    `java/api-removals.txt` logs it with a date and a reason; a released `java/api-surface-<minor>.txt` (copied at the tag) is checked on
+    every run and never written. README, the Python SDK and the JavaScript package say what is experimental.
 
 - **Corpus binds no longer flaky**: `CustomerCorpusTest.recordedBindsReplay…` flipped between "differs" and "listed but identical now"
   because both the reference (i7a) and Core wrote some objects from `Map.of`, whose key order is drawn afresh in every JVM run. Core now

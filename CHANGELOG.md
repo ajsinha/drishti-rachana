@@ -24,6 +24,24 @@ Entries are written per release; the regime's unreleased work is listed after th
   1.1; 0 verified failing; `levels.py check`: level 1.0 identical. API baseline: additions only (view records, `Grammar` levels,
   `PanelKind.since/at`, `BindContext.datasets`, `Rachana.language`). `DatasetPanelsTest`. The generated `rachana.lang.json` and
   `sutra.schema.json` still describe level 1.0 (generated from the reference's tables); SPEC lists the 1.1 names.
+## Unreleased (G1 re-check, R1: the runtime bundle)
+
+- **R1, the runtime bundle built at `52e112f` was broken** (named formats not applied, `round`, `shift_date`, `b.ni is not a
+  function`; Node stopped on a null read). Root cause in TeaVM 0.16.0, not in the merge: the precise dependency analysis merges
+  type-set domains (`Transition.mergeDomains`) in an order that varies between runs, and some orders lose types: no `Boolean`
+  reached `Plain.asBoolean`, so `booleanValue()` stayed a virtual call with no implementation emitted. The merge only changed the
+  order. Fix: a second patched TeaVM file, `PreciseDependencyAnalyzer` (`java/rachana-js/src/build/java`, Apache-2.0, marked
+  "Drishti Rachana patch"): no domain merging. The bundles are now the same on every build (three builds, two heap sizes).
+- **The build checks both bundles**: `tools/js/build_js.py` runs the conformance suite in Node on the runtime and tools bundles
+  at levels 1.0 and 1.1 after every build (`--check-only` runs the check alone) and fails on any error or verified failing case,
+  or when the runtime answers a case differently from the tools bundle (the runtime leaves out only the 43 `edit` cases). The Node
+  runner counts a case that throws as that case's error instead of stopping.
+- Results: both bundles 0 errors, 0 verified failing at 1.0 and 1.1; the runtime's 1,954 (1.0) and 2,006 (1.1) answers and the
+  tools bundle's 1,997 and 2,049 are byte-identical to the JVM's. `./mvnw clean verify` (JDK 21): 912 tests, 0 failures, 0 skipped.
+- Bundle SHA-256 (P1-3): `rachana.runtime.js` `45bbfa4a6e99b34627bd86f75d1bcaaf744e4f583630e6de6ddd2fb47388269e` (1,412,427
+  bytes; Brotli 366,858), `rachana.tools.js` `e25dfc97e2b1dbbcc8d756097691fb25ad40b402420078fed0fc33f55c4cfb9e` (1,511,248
+  bytes; Brotli 387,940).
+
 ## Unreleased (G1 gate fixes)
 
 Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).

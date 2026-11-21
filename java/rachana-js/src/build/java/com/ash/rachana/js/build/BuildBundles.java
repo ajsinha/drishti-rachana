@@ -14,8 +14,10 @@ import org.teavm.vm.TeaVMOptimizationLevel;
 
 /**
  * Builds the two bundles with TeaVM's tool API (split step A15), in a JVM whose class path puts this module's classes first: the
- * patched {@code StatementRenderer} (src/build/java, Apache-2.0, TeaVM's file with one fix) then replaces TeaVM's own. Run by the
- * module's build (exec plugin). Arguments: {@code <output folder> <optimisation level> <minify true|false> [bench]}.
+ * patched {@code StatementRenderer} and {@code PreciseDependencyAnalyzer} (src/build/java, Apache-2.0, TeaVM's files with one fix
+ * each: parentheses kept, D15-2; no domain merging, G1 R1) then replace TeaVM's own. Run by the module's build (exec plugin).
+ * Arguments: {@code <output folder> <optimisation level> <minify true|false> [bench]}. tools/js/build_js.py runs the conformance
+ * suite on both bundles after every build.
  */
 public final class BuildBundles {
 

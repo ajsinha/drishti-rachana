@@ -43,7 +43,11 @@ const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
 for await (const line of rl) {
   if (!greeted) { greeted = true; out.push(hello(runtime) + "\n"); flush(); continue; }
   if (!line.trim()) continue;
-  out.push(answer(line) + "\n");
+  // one case's exception is that case's error, not the end of the run (G1 R1: a bundle that throws must still be counted)
+  try { out.push(answer(line) + "\n"); } catch (x) {
+    const id = JSON.parse(line).case;
+    out.push(JSON.stringify({ case: id, error: `JavaScript exception: ${String(x && x.message || x)}` }) + "\n");
+  }
   if (out.length >= 64) flush();
 }
 flush();

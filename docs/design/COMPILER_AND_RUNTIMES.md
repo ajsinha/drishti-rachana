@@ -123,9 +123,11 @@ buffers are transferred, not copied.
 
 `java/rachana-js` builds both bundles with TeaVM 0.16.0 (`python3 tools/js/build_js.py`, or `./mvnw -Pjs package -pl rachana-js
 -am`; JDK 21, nothing installed). Rachana's own classes reach TeaVM unpacked into the module, so three same-named classes of the
-JavaScript build replace Core's: `internal.NumberText` (the engine's shortest digits, Java's layout and number grammar),
-`internal.RegexText` (the JDK's words for a pattern error) and `internal.Bits` (the words of a double through a `DataView`, no
-`BigInt`). One TeaVM file is patched (`StatementRenderer`: the right operand of `+` and `*` keeps its parentheses; DECISIONS D15-2).
+JavaScript build replace Core's: `internal.NumberText` (the engine's shortest digits, Java's layout and number grammar)
+and `internal.Bits` (the words of a double through a `DataView`, no
+`BigInt`). Two TeaVM files are patched (`StatementRenderer`: the right operand of `+` and `*` keeps its parentheses, DECISIONS D15-2;
+`PreciseDependencyAnalyzer`: no domain merging, so the analysis keeps every type and the bundles are the same on every build, G1-4).
+`tools/js/build_js.py` runs the conformance suite on both bundles after every build and fails on any error or verified failure.
 
 | Bundle | Exports (JSON text in and out; answers are the conformance documents of FORMAT 5) |
 |---|---|

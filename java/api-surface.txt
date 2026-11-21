@@ -97,6 +97,7 @@ class public final class com.ash.rachana.parse.BlockUses
 class public final class com.ash.rachana.parse.DeclarationsReader
 class public final class com.ash.rachana.parse.EffectsReader
 class public final class com.ash.rachana.parse.Json
+class public final class com.ash.rachana.parse.KeyTables
 class public final class com.ash.rachana.parse.PositionalYamlReader
 class public final class com.ash.rachana.parse.SutraBlocks
 class public final class com.ash.rachana.parse.SutraDocstring
@@ -1800,6 +1801,7 @@ com.ash.rachana.el.Functions :: public static java.lang.String com.ash.rachana.e
 com.ash.rachana.el.Functions :: public static java.util.List<com.ash.rachana.el.Functions$Entry> com.ash.rachana.el.Functions.catalogue()
 com.ash.rachana.el.Functions :: public static java.util.Map<java.lang.String, int[]> com.ash.rachana.el.Functions.arity()
 com.ash.rachana.el.Functions :: public static java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Functions.oldSpellings()
+com.ash.rachana.el.Functions :: public static java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Functions.sinceLevels()
 com.ash.rachana.el.Functions :: public static java.util.Optional<com.ash.rachana.el.Functions$AggregateCall> com.ash.rachana.el.Functions.aggregateCall(com.ash.rachana.el.Expr)
 com.ash.rachana.el.Functions$AggregateCall :: public com.ash.rachana.el.Expr com.ash.rachana.el.Functions$AggregateCall.input()
 com.ash.rachana.el.Functions$AggregateCall :: public com.ash.rachana.el.Functions$AggregateCall(java.lang.String,com.ash.rachana.el.Expr,java.util.List<java.lang.Object>)
@@ -2327,6 +2329,7 @@ com.ash.rachana.model.Form :: public static final java.util.List<java.lang.Strin
 com.ash.rachana.model.Form :: public static java.math.BigDecimal com.ash.rachana.model.Form.amount(java.lang.Object)
 com.ash.rachana.model.Form :: public static java.util.List<java.lang.String> com.ash.rachana.model.Form.problems(java.lang.Object)
 com.ash.rachana.model.Form :: public static java.util.List<java.lang.String> com.ash.rachana.model.Form.problems(java.lang.Object,boolean)
+com.ash.rachana.model.Form :: public static java.util.Map<java.lang.String, java.util.Set<java.lang.String>> com.ash.rachana.model.Form.keySets()
 com.ash.rachana.model.Form :: public static java.util.Optional<com.ash.rachana.model.Form> com.ash.rachana.model.Form.fromOption(java.lang.Object)
 com.ash.rachana.model.Form :: public static java.util.Optional<com.ash.rachana.model.Form> com.ash.rachana.model.Form.fromOption(java.lang.Object,boolean)
 com.ash.rachana.model.Form$Field :: public boolean com.ash.rachana.model.Form$Field.onNew()
@@ -2523,6 +2526,7 @@ com.ash.rachana.model.PanelOptions :: public static final java.util.List<java.la
 com.ash.rachana.model.PanelOptions :: public static final java.util.Set<java.lang.String> com.ash.rachana.model.PanelOptions.LEVEL_KEYS
 com.ash.rachana.model.PanelOptions :: public static java.util.List<java.lang.String> com.ash.rachana.model.PanelOptions.choices(com.ash.rachana.model.PanelKind,java.lang.String)
 com.ash.rachana.model.PanelOptions :: public static java.util.Optional<java.lang.String> com.ash.rachana.model.PanelOptions.problem(com.ash.rachana.model.PanelKind,java.lang.String,java.lang.Object)
+com.ash.rachana.model.PanelOptions :: public static java.util.Set<java.lang.String> com.ash.rachana.model.PanelOptions.markerKeys()
 com.ash.rachana.model.PivotSpec :: public boolean com.ash.rachana.model.PivotSpec.explicit()
 com.ash.rachana.model.PivotSpec :: public boolean com.ash.rachana.model.PivotSpec.heat()
 com.ash.rachana.model.PivotSpec :: public boolean com.ash.rachana.model.PivotSpec.totals()
@@ -2884,6 +2888,7 @@ com.ash.rachana.parse.Json :: public static void com.ash.rachana.parse.Json.quot
 com.ash.rachana.parse.Json :: public static void com.ash.rachana.parse.Json.write(java.lang.Object,java.lang.StringBuilder)
 com.ash.rachana.parse.Json$JsonException :: public int com.ash.rachana.parse.Json$JsonException.column()
 com.ash.rachana.parse.Json$JsonException :: public int com.ash.rachana.parse.Json$JsonException.line()
+com.ash.rachana.parse.KeyTables :: public static java.util.Map<java.lang.String, java.util.Set<java.lang.String>> com.ash.rachana.parse.KeyTables.byPlace()
 com.ash.rachana.parse.PNode :: public boolean com.ash.rachana.parse.PNode.isList()
 com.ash.rachana.parse.PNode :: public boolean com.ash.rachana.parse.PNode.isMap()
 com.ash.rachana.parse.PNode :: public boolean com.ash.rachana.parse.PNode.isScalar()

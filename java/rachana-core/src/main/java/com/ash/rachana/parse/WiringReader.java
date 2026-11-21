@@ -349,4 +349,19 @@ final class WiringReader {
     private void problem(String code, String message, PNode at) {
         problems.add(new SutraProblem(code, message, new SourceLocation(file, at.line(), at.column())));
     }
+
+    /** For {@link KeyTables}. */
+    static Set<String> sourceKeys() {
+        return SOURCE_KEYS;
+    }
+
+    /** For {@link KeyTables}. */
+    static Set<String> emitKeys() {
+        return EMIT_KEYS;
+    }
+
+    /** For {@link KeyTables}. */
+    static Set<String> groupKeys() {
+        return GROUP_KEYS;
+    }
 }

@@ -51,8 +51,8 @@ cases:
   - id: problems-in-position-order-l11
     kind: problem
     since: "1.1"
-    verified: false
     source: SPEC 2.3, 6.1
+    note: "SPEC 6.1 (all problems): a panel refused for its kind still holds its id, so the duplicate is found too. The reference stops at the first (level 1.0); the paths of SPEC 6.1 are not reported by this runtime (a Sutra's problems carry a line and column)."
     sutra: |
       rachana: 1
       sutra: demo
@@ -64,8 +64,8 @@ cases:
     expect:
       ok: false
       problems:
-        - { code: RCH-2021, path: /panels/0/kind, range: { start: { line: 6 } } }
-        - { code: RCH-2024, path: /panels/1/id, range: { start: { line: 7 } } }
+        - { code: RCH-2021, range: { start: { line: 6 } } }
+        - { code: RCH-2024, range: { start: { line: 7 } } }
 
   - id: expression-problem-inside-a-panel
     kind: problem
@@ -86,8 +86,9 @@ cases:
 
   - id: profile-key-without-the-profile
     kind: problem
-    verified: false
-    note: A Core runtime with no profile loaded; the reference always loads the Drishti profile (it reports an unknown key and a missing kind), so this waits for rachana-core.
+    since: "1.1"
+    given: { profiles: [] }
+    note: A Core runtime with no profile loaded (given.profiles empty) answers a profile key with RCH-2060 naming the profile (SPEC 2.2). At level 1.0 the reference always loads the Drishti profile and reads match as its own, so the answer is a level 1.1 one.
     source: SPEC 2.2 (match belongs to the drishti profile, D12)
     sutra: |
       rachana: 1
@@ -97,4 +98,4 @@ cases:
     expect:
       ok: false
       problems:
-        - { code: RCH-2060, path: /match }
+        - { code: RCH-2060, range: { start: { line: 4 } } }

@@ -79,6 +79,11 @@ public final class Functions {
 
     private Functions() {}
 
+    /** Each Core function of the catalogue with the language level that brought it ({@code 1.0} for nearly all; {@code span} is {@code 1.1}). */
+    public static Map<String, String> sinceLevels() {
+        return CoreParams.sinceLevels();
+    }
+
     /** Every function of Rachana-EL with its argument count: {name: [min, max]}, old spellings included. */
     public static Map<String, int[]> arity() {
         return core().arity();

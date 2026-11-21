@@ -55,6 +55,31 @@ final class CoreParams {
         }
     }
 
+    /** Each Core function with the language level that brought it (the catalogue's {@code since}). */
+    static Map<String, String> sinceLevels() {
+        return Since.BY_NAME;
+    }
+
+    private static final class Since {
+        static final Map<String, String> BY_NAME = loadSince();
+    }
+
+    private static Map<String, String> loadSince() {
+        InputStream own = CoreParams.class.getResourceAsStream("/" + RESOURCE);
+        try (InputStream in = own != null ? own : CoreParams.class.getClassLoader().getResourceAsStream(RESOURCE)) {
+            if (in == null) {
+                throw new IllegalStateException(RESOURCE + " is missing from the class path");
+            }
+            Map<String, String> out = new LinkedHashMap<>();
+            for (Object f : Plain.elements(Plain.path(Plain.yaml(in), "core"))) {
+                out.put(Plain.text(Plain.path(f, "name")), Plain.text(Plain.path(f, "since"), "1.0"));
+            }
+            return java.util.Collections.unmodifiableMap(out);
+        } catch (IOException e) {
+            throw new UncheckedIOException("cannot read " + RESOURCE, e);
+        }
+    }
+
     /** The parameters of Core function {@code name} in call order, or null when it is not one. */
     static List<Param> of(String name) {
         return Loaded.BY_NAME.get(name);

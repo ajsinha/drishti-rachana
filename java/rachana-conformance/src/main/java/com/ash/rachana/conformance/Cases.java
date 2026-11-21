@@ -39,7 +39,7 @@ public final class Cases {
     /** The runtime's greeting line (RUNNER 5) for a runtime name ({@code jvm}, {@code node}, {@code chromium}...). */
     public static String hello(String runtime) {
         return "{\"runtime\":" + str(runtime) + ",\"runtimeVersion\":\"rachana-" + VERSION + "\",\"language\":\"1.0\",\"profiles\":" + jsonList(profiles)
-                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"plan\",\"lib\"]}";
+                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"plan\",\"lib\",\"live\"]}";
     }
 
     /** One case line answered: its results line (RUNNER 4), without the line end. */
@@ -59,6 +59,7 @@ public final class Cases {
                 case "patch" -> patch(c, sb);
                 case "plan" -> plan(c, sb);
                 case "lib" -> lib(c, sb);
+                case "live" -> live(c, sb);
                 default -> throw new IllegalStateException("kind not implemented: " + kind);
             }
         } catch (Throwable t) {
@@ -258,6 +259,29 @@ public final class Cases {
             sb.append(']');
         }
         sb.append('}');
+    }
+
+    /**
+     * FORMAT 5.14: a live table's declaration read and checked ({@code LiveTableSpec}, LIVE_TABLES section 2): {@code {ok, problems,
+     * schema}}, the schema document null when it is refused. {@code profileKeys} names the profile keys the host reads; formats are
+     * the instance's.
+     */
+    public static void live(Map<String, Object> c, StringBuilder sb) {
+        List<com.ash.rachana.SutraProblem> ps = new ArrayList<>();
+        com.ash.rachana.table.LiveTableSpec spec = null;
+        java.util.Set<String> keys = new java.util.LinkedHashSet<>();
+        if (c.get("profileKeys") instanceof List<?> l) {
+            l.forEach(k -> keys.add(text(k)));
+        }
+        try {
+            spec = com.ash.rachana.table.LiveTableSpec.read(text(c.get("declaration")), c.get("file") == null ? "case.live.yaml" : text(c.get("file")),
+                    keys, formats::has);
+        } catch (com.ash.rachana.SutraException e) {
+            ps.addAll(e.problems());
+        }
+        sb.append("{\"ok\":").append(ps.isEmpty()).append(",\"problems\":");
+        problems(ps, sb);
+        sb.append(",\"schema\":").append(spec == null ? "null" : com.ash.rachana.parse.Json.write(spec.schema())).append('}');
     }
 
     static void problems(List<com.ash.rachana.SutraProblem> ps, StringBuilder sb) {

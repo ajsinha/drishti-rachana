@@ -10,7 +10,8 @@
   "$defs": {
     "code": {
       "enum": ["rdp.auth.required", "rdp.forbidden", "rdp.table.unknown", "rdp.column.unknown", "rdp.query.invalid", "rdp.query.unsupported",
-               "rdp.cursor.invalid", "rdp.limit.rows", "rdp.limit.time", "rdp.limit.rate", "rdp.table.no-key", "rdp.unavailable", "rdp.internal"]
+               "rdp.cursor.invalid", "rdp.limit.rows", "rdp.limit.time", "rdp.limit.rate", "rdp.table.no-key", "rdp.unavailable", "rdp.internal",
+               "rdp.query.narrow", "rdp.write.unsupported", "rdp.write.forbidden", "rdp.write.conflict", "rdp.write.invalid"]
     },
     "error": {
       "type": "object", "required": ["code", "message"],
@@ -20,6 +21,12 @@
         "table": { "type": "string" }, "column": { "type": "string" }, "operation": { "type": "string", "description": "rdp.query.unsupported: the operation named." },
         "expected": { "type": "array", "items": { "type": "string" }, "description": "Nearest first." },
         "retry": { "type": "boolean" }, "retryAfterMs": { "type": "integer", "minimum": 0 },
+        "anyOf": { "type": "array", "items": { "type": "string" }, "description": "rdp.query.narrow: the columns a list must filter on one of." },
+        "current": { "type": "object", "properties": { "version": {}, "by": { "type": ["string", "null"] }, "at": { "type": ["string", "null"] } },
+          "description": "rdp.write.conflict: the row's current version, who made it and when." },
+        "fields": { "type": "array", "items": { "type": "object", "required": ["column", "rule", "message"],
+          "properties": { "column": { "type": "string" }, "rule": { "type": "string" }, "message": { "type": "string" } } },
+          "description": "rdp.write.invalid: each broken rule." },
         "rch": { "type": "string", "pattern": "^RCH-[0-9]{4}$", "description": "Optional: the RCH code the runtime reports for this failure (section 10.2)." }
       }
     },

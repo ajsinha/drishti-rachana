@@ -9,6 +9,7 @@ the owner's delegation; the lead accepted them (DECISIONS, "Live tables").
 
 | Step | State |
 |---|---|
+| L1 | **built**: Core `com.ash.rachana.table.LiveTableSpec` (model, checker with every problem at once, `schema()`), codes `RCH-2080`..`2083` (SPEC 6.2; `2084`..`2089` reserved), conformance kind `live` (FORMAT 5.14, suite `live/declaration`, unverified), PROTOCOL section 16 and the JSON schema additions. Profile keys without their profile: `RCH-2060` at the top (as SPEC 6.2 says), `RCH-2058` inside `edit` (the form's code). Not yet: a JavaScript facade entry for Studio and `rachana lint` (the tools bundle answers the `live` kind through the harness only) |
 | L2 | **built**: `ProtocolHost` (routes, bridge, query checks) over `TableProvider`s; `RowQuery` (a query document over rows in memory); `MemoryHost` is a provider; no behaviour change (protocol cases as before) |
 
 A **live table** is a named table of the [Data Protocol](DATA_PROTOCOL.md) that the server keeps current: a snapshot from a durable

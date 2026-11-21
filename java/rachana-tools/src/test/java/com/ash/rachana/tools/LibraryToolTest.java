@@ -123,7 +123,7 @@ class LibraryToolTest {
         LibrarySet set = LibrarySet.of(LibraryResolver.archives(tmp.resolve("out"))).locked(lock).trusting(strict);
         Rachana r = Rachana.core().language("1.2").libraries(set);
         var sutra = r.parser().parse("""
-                rachana: 1
+                rachana: 1.2
                 sutra: demo
                 version: 1
                 libraries: [demo@1]

@@ -11,7 +11,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (row-click on a table with children:)"
     note: "Marks: 0 Book A, 1 Desk A1, 2 Desk A2, 3 Book B. The second node's set reads its own row."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Books'" }
@@ -47,7 +47,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (row-click on a table with levels:, @ the row at its level)"
     note: "Marks: 0 leg L1, 1 flow F1, 2 flow F2. A flow's when sees its own row; the leg has no FLOW_ID so its when leaves the host effect out."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Legs'" }

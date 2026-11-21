@@ -42,7 +42,7 @@ cases:
             label: label
             value: value
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       title: { id: "'Demo'" }
@@ -94,7 +94,7 @@ cases:
           - { id: total, kind: metric, label: Total, value: "arg.totals.sum + sum(map(arg.items, @.value))" }
           - { id: count, kind: metric, label: Count, value: "size(arg.items) + arg.totals.count" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       title: { id: "'Demo'" }
@@ -121,7 +121,7 @@ cases:
     source: LIBRARIES 4.2 (list<record{...}> as an expression; a literal default)
     files: *badges
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       title: { id: "'Demo'" }
@@ -154,7 +154,7 @@ cases:
           - { id: both, kind: markdown, text: "**${arg.heading}**: ${upper(arg.message)}" }
           - { id: size, kind: metric, label: Length, value: "len(arg.message)" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       title: { id: "'Demo'" }
@@ -235,7 +235,7 @@ cases:
             fields: [ { label: Days, bind: "size(arg.rows)" } ]
             emits: [ { name: open, on: point-click } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       title: { id: "'Demo'" }
@@ -264,7 +264,7 @@ cases:
     kind: sutra
     source: SUTRA_EXPANSION I1 (contract 1.2 only when used)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: gaps-demo
       version: 1
       title: { id: "'Demo'" }

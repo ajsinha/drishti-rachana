@@ -48,6 +48,63 @@ public final class SutraParser {
     }
 
     /**
+     * The language level a Sutra's text declares (SPEC 2.1): {@code rachana: 1} is {@code 1.0}, {@code rachana: 1.N} is {@code 1.N}
+     * (written as a number or a text; the minor is read as written, so {@code 1.10} is ten); null when the text does not read as YAML,
+     * has no {@code rachana:} key or another form (another major, a malformed minor). A host reads a Sutra at this level, which may be
+     * one it does not implement ({@link com.ash.rachana.profile.Grammar#LEVELS}).
+     */
+    public static String declaredLevel(String yaml) {
+        try {
+            PNode root = new PositionalYamlReader().read(yaml);
+            return root != null && root.isMap() ? level(root.map().get("rachana"), yaml) : null;
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** The level the {@code rachana:} node declares, read from its text as written; null for none or another form. */
+    static String level(PNode lang, String yaml) {
+        if (lang == null) {
+            return null;
+        }
+        if (lang.value() instanceof Long l) {
+            return l == LANGUAGE ? "1.0" : null;
+        }
+        String written = lang.value() instanceof String t ? t : lang.value() instanceof Double ? raw(yaml, lang) : null;
+        if (written == null || !written.startsWith(LANGUAGE + ".")) {
+            return null;
+        }
+        String minor = written.substring(2);
+        if (minor.isEmpty() || minor.length() > 4 || minor.length() > 1 && minor.charAt(0) == '0') {
+            return null;
+        }
+        for (int i = 0; i < minor.length(); i++) {
+            if (minor.charAt(i) < '0' || minor.charAt(i) > '9') {
+                return null;
+            }
+        }
+        return LANGUAGE + "." + minor;
+    }
+
+    /** A plain scalar's text as written at the node's place (so 1.10 stays ten, not the double 1.1). */
+    private static String raw(String yaml, PNode n) {
+        String[] lines = yaml.split("\n", -1);
+        if (n.line() < 1 || n.line() > lines.length) {
+            return null;
+        }
+        String line = lines[n.line() - 1];
+        int i = n.column() - 1;
+        if (i < 0 || i >= line.length()) {
+            return null;
+        }
+        int j = i;
+        while (j < line.length() && " \t\r,}]#".indexOf(line.charAt(j)) < 0) {
+            j++;
+        }
+        return line.substring(i, j);
+    }
+
+    /**
      * @param yaml the file content: the Sutra YAML
      * @param file the file name used in problem locations
      * @param domain the folder it was read from (the default of a profile's {@code domain} key)
@@ -63,7 +120,11 @@ public final class SutraParser {
             throw new SutraException(places.place(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getMessage(),
                     new SourceLocation(file, e.line(), e.column())))));
         }
-        SutraBuilder b = new SutraBuilder(file, grammar);
+        String declared = root.isMap() ? level(root.map().get("rachana"), yaml) : null;
+        com.ash.rachana.profile.Grammar g = declared != null && com.ash.rachana.profile.Grammar.LEVELS.contains(declared)
+                && SutraBlocks.atLeast(grammar.level(), declared) ? grammar.declaredAt(declared) : grammar;   // SPEC 2.1: read at its own level
+        SutraBuilder b = new SutraBuilder(file, g);
+        b.declared = declared;
         b.places = places;
         Sutra s = b.build(root, domain);
         if (!issues.isEmpty() || !b.problems().isEmpty()) {

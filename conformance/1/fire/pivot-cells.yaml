@@ -10,7 +10,7 @@ cases:
     kind: fire
     source: "SUTRA_EXPANSION I1 (point-click, set: { state, to }); VIEWMODEL contract 1.2 (Cell.ev, set)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Scenarios'" }

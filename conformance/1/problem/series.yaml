@@ -11,7 +11,7 @@ cases:
     kind: problem
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { kind: demo }
@@ -23,7 +23,7 @@ cases:
     kind: problem
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { kind: demo }
@@ -35,7 +35,7 @@ cases:
     kind: problem
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { kind: demo }
@@ -47,7 +47,7 @@ cases:
     kind: problem
     source: SPEC 2.3
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { kind: demo }

@@ -28,7 +28,7 @@ cases:
             on:
               row-click: [ { set: { state: "%{into}", to: "@.id" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: params-demo
       version: 1
       title: { id: "'Demo'" }

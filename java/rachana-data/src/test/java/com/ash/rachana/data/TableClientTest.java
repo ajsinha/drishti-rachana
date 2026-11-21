@@ -31,7 +31,7 @@ class TableClientTest {
                             + "{\"region\":\"East\",\"revenue\":\"7\"}]"), "e1");
             Rachana r = Rachana.with(com.ash.rachana.RachanaOptions.DEFAULTS).language("1.1");
             Sutra sutra = r.parser().parse("""
-                    rachana: 1
+                    rachana: 1.1
                     sutra: live-sales
                     version: 1
                     controls:

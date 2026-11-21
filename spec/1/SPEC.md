@@ -50,7 +50,18 @@ problem codes). A profile MUST NOT change the meaning of anything in Core and MU
    errors (`RCH-2033`). Anchors and aliases are allowed. Every node keeps its line and column.
 3. Every string value that holds an expression or template is a YAML string. Single quotes inside a double-quoted YAML
    string are the usual way to write Rachana text: `value: "sum($.sales, 'revenue')"`.
-4. An unknown key is an error with its position (`RCH-2011`; `RCH-2023` for a panel option), never ignored. A key that
+4. **The level.** The first key, `rachana:`, declares the language level the Sutra is written for: `MAJOR.MINOR`, the minor
+   optional. `rachana: 1` (or `rachana: 1.0`) is level 1.0, so every Sutra written before levels existed keeps its meaning;
+   `rachana: 1.2` (or `"1.2"`) is level 1.2; the minor is read as written (`1.10` is ten). A host reads each Sutra at the level it
+   declares, never at its own when that is higher: the same text means the same on every host that reads it. A level above the host's
+   is `RCH-2008` ("this Sutra is written for Rachana 1.2; this host runs 1.1 (raise the host's language level)"); a minor no level
+   has is `RCH-2009` ("'rachana: 1.7' is a language level this host does not read; the newest it reads is 1.2 (rachana: 1 is 1.0)");
+   another major or form keeps `RCH-2009` ("'rachana: 2' is not a language version this server reads (it reads 1)"). A name of a
+   later level in a Sutra that declares a lower one is `RCH-2008` with the Sutra's words ("'grid' panels need Rachana 1.1; this
+   Sutra is written for 1.0 (declare rachana: 1.1 or later at its top)"). This key is the one place a level is declared: no project
+   file, command-line flag or element attribute sets it. `rachana upgrade` rewrites a Sutra to a later level, keeping its meaning
+   (cases `problem/level-declaration`, `sutra/level-declaration`).
+5. An unknown key is an error with its position (`RCH-2011`; `RCH-2023` for a panel option), never ignored. A key that
    belongs to a profile the implementation does not have is `RCH-2060` with words that name the profile, not "unknown".
 
 ```yaml
@@ -68,7 +79,7 @@ panels:
 
 | Key | Req. | Type | Default | Meaning | State |
 |---|---|---|---|---|---|
-| `rachana` | yes | integer | | language major; MUST be `1` (`RCH-2009` otherwise) | today |
+| `rachana` | yes | `1` or `1.N` | | the language level the Sutra is written for (2.1 rule 4): `1` is 1.0 | level declaration 2026-11-21 |
 | `sutra` | yes | text matching `[a-z][a-z0-9-]{1,63}` | | the screen's name (`RCH-2020`) | today |
 | `version` | today yes | integer 1..2³¹−1 | `1` (1.1) | `name@version` identifies a Sutra | optional: planned (D11) |
 | `profiles` | | list of text | `[core]` | profiles the file needs; the checker verifies the claim (`RCH-2061`, `RCH-2062`) | planned |
@@ -1056,8 +1067,9 @@ less the profile keys. Settled additions ([planned] above: optional `version`, t
 4. A check that would refuse existing files ships as a warning for at least two minors and becomes an error only in the
    next major.
 5. A runtime given something newer than itself says so (`RCH-2008`: "`flash` needs Rachana 1.4; this runtime is 1.2").
-6. **Levels.** A host names the minor it runs (`Rachana.language("1.1")`, `Grammar.atLevel`); every instance starts at
-   1.0. At level L a name with `since` above L is not offered (problem lists, schema) and using it is `RCH-2008`
+6. **Levels.** A host names the newest minor it runs (`Rachana.language("1.1")`, `Grammar.atLevel`); every instance starts at
+   1.0. Each Sutra is read at the level its `rachana:` key declares (2.1 rule 4), at most the host's: a host of 1.2 reads a
+   `rachana: 1` Sutra exactly as a host of 1.0 does. At level L a name with `since` above L is not offered (problem lists, schema) and using it is `RCH-2008`
    ("'grid' panels need Rachana 1.1; this host runs 1.0 (raise the host's language level)"). A conformance case runs at
    the level of its `since`, so a case pins the bytes of the level it was written for. Levels implemented: 1.0, 1.1
    (the dataset kinds of section 2.3), 1.2 (typed fragments, `libraries:`, library uses; section 2.5). The generated `rachana.lang.json` and `sutra.schema.json` still describe 1.0

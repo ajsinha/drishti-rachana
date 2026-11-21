@@ -301,7 +301,7 @@ public final class RachanaServer implements AutoCloseable {
                 return;
             }
             boolean libs = !Project.needed(s.text(), st.libraryFiles()).isEmpty();
-            html(x, 200, Pages.view(s, assets.elementsDir(), config.project().level(), libs, p, csrf, canSignOut));
+            html(x, 200, Pages.view(s, assets.elementsDir(), libs, p, csrf, canSignOut));
             return;
         }
         if ((name = between(path, "/sutras/", Project.SUFFIX)) != null) {

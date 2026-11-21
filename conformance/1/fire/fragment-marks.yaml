@@ -41,7 +41,7 @@ cases:
             value: value
             emits: [ { name: cell, on: point-click, payload: { scenario: "@.row", desk: "@.column", pnl: "@.value" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: marks-demo
       version: 1
       title: { id: "'Scenarios'" }
@@ -99,7 +99,7 @@ cases:
             columns: [ { label: "90", bind: "@.x" }, { label: "110", bind: "@.z" } ]
             emits: [ { name: point, on: point-click, payload: { expiry: "@.y", strike: "@.x", vol: "@.z" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: marks-demo
       version: 1
       title: { id: "'Vols'" }
@@ -154,7 +154,7 @@ cases:
             columns: [ { label: Name, bind: row }, { label: Amount, bind: "@.value" } ]
             emits: [ { name: pick, on: row-click, payload: { name: "@.row", amount: "@.value" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: marks-demo
       version: 1
       title: { id: "'Names'" }

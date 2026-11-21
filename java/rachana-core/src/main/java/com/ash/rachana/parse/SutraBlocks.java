@@ -289,6 +289,8 @@ public final class SutraBlocks {
         private final Map<String, String> events = new LinkedHashMap<>();
         private final List<SutraProblem> advisories = new ArrayList<>();
         private FragmentResolver fragments = FragmentResolver.none();
+        /** The words after "needs Rachana N; " in a level refusal ({@link com.ash.rachana.profile.Grammar#levelWords}); null: the host's. */
+        java.util.function.UnaryOperator<String> levelWords;
 
         /** @param columns the columns (name to type) of the table an expression gives, or null when unknown; null for none known */
         public Calls(java.util.function.Function<String, Map<String, String>> columns) {
@@ -426,7 +428,8 @@ public final class SutraBlocks {
             if (typedRoot != null) {                                   // the typed form: checked parameters, tokens, slots (C1)
                 if (!atLeast(level, TypedFragment.SINCE)) {
                     problems.add(new SutraProblem("RCH-2008", "fragment " + b.ref() + " is in the typed form, which needs Rachana " + TypedFragment.SINCE
-                            + "; this host runs " + level + " (raise the host's language level)", new SourceLocation(file, p.line(), p.column())));
+                            + "; " + (calls != null && calls.levelWords != null ? calls.levelWords.apply(TypedFragment.SINCE)
+                            : "this host runs " + level + " (raise the host's language level)"), new SourceLocation(file, p.line(), p.column())));
                     continue;
                 }
                 TypedFragment t = TypedFragment.read(b.name(), b.file(), typedRoot);

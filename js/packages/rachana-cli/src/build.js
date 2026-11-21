@@ -4,7 +4,7 @@
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { lintFiles, findSutras, libraryFiles, languageLevels } from "./lint.js";
+import { lintFiles, findSutras, libraryFiles, LEVEL_FLAG } from "./lint.js";
 import { UsageError } from "./errors.js";
 import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, tableFiles, viewPage } from "./site.js";
 
@@ -14,7 +14,7 @@ import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, t
  *   out/rachana/rachana.runtime.js, out/rachana/src/ (<rachana-view> and its modules), out/vendor/drishti-elements/3.2.0-dev+b466b87/, out/site.json; for a page that uses libraries (`use:`): out/rachana_libs/<library>/ (the files it needs, from the project, --libs, RACHANA_LIBS and the bundled libraries) and out/libraries/<page>.libraries.json.
  */
 export async function build(src, out, io, flags = {}) {
-  const level = flags.level ?? (await languageLevels()).default;
+  if (flags.level !== undefined) throw new UsageError(LEVEL_FLAG);
   const sutraDir = existsSync(join(src, "sutras")) ? join(src, "sutras") : src;
   const dataDir = existsSync(join(src, "data")) ? join(src, "data") : null;
   const files = findSutras([sutraDir]);
@@ -22,7 +22,7 @@ export async function build(src, out, io, flags = {}) {
   const assets = siteAssets();
   const lib = libraryFiles(src, flags, (m) => io.err(`rachana: ${m}`));
   if (lib.problems.length) return 1;
-  const results = await lintFiles(files, "core", level, lib.files);
+  const results = await lintFiles(files, "core", null, lib.files);
   const errors = results.flatMap((r) => r.problems.map((p) => ({ file: r.file, ...p }))).filter((p) => p.severity === "error");
   if (errors.length) {
     for (const p of errors) io.err(`${p.file}:${p.range?.start?.line ?? 1}: ${p.code}: ${p.message.split("\n")[0]}`);
@@ -49,10 +49,10 @@ export async function build(src, out, io, flags = {}) {
       mkdirSync(join(out, "libraries"), { recursive: true });
       writeFileSync(join(out, manifest), JSON.stringify({ files: needed }, null, 2));
     }
-    writeFileSync(join(out, names[i] + ".html"), viewPage(names[i], `sutras/${names[i]}.sutra.yaml`, "data", "", level, manifest));
+    writeFileSync(join(out, names[i] + ".html"), viewPage(names[i], `sutras/${names[i]}.sutra.yaml`, "data", "", manifest));
   });
   writeFileSync(join(out, "index.html"), `<!doctype html><meta charset=utf-8><title>Sutras</title><h1>Sutras</h1><ul>${names.map((n) => `<li><a href="${esc(n)}.html">${esc(n)}</a></li>`).join("")}</ul>\n`);
-  writeFileSync(join(out, "site.json"), JSON.stringify({ sutras: names, tables, level }, null, 2));
+  writeFileSync(join(out, "site.json"), JSON.stringify({ sutras: names, tables }, null, 2));
   io.out(`built ${out}: ${names.length} Sutra(s), ${tables.length} table file(s)`);
   return 0;
 }

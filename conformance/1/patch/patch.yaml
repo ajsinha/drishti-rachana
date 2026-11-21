@@ -21,7 +21,7 @@ cases:
     kind: patch
     source: PROTOCOL 8.1 (a key is the list of key values)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-live
       version: 1
       data:
@@ -47,7 +47,7 @@ cases:
     kind: patch
     source: PROTOCOL 8.1 (update merges; add of an existing key updates)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-merge
       version: 1
       data:
@@ -70,7 +70,7 @@ cases:
     kind: patch
     source: PROTOCOL 8.1 (reset first)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-reset
       version: 1
       data:
@@ -88,7 +88,7 @@ cases:
     kind: patch
     source: VIEWMODEL (op strip)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-strip
       version: 1
       data:
@@ -108,7 +108,7 @@ cases:
     kind: patch
     source: FORMAT 5.9 (frames [])
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: pnl-quiet
       version: 1
       data:

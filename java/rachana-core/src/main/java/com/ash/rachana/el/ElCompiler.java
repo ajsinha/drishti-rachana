@@ -61,15 +61,20 @@ public final class ElCompiler {
      *     {@linkplain ElLimits limits} (too deeply nested or too long)
      */
     public Expr compile(String source) {
-        String d = Declarations.inForce().id();
-        if (!d.isEmpty()) {                                     // a Sutra's declared names (level 1.2): cached apart from every other Sutra's
+        Declarations in = Declarations.inForce();
+        String d = in.id();
+        boolean v = v11(in);
+        if (!d.isEmpty()) {                                     // a Sutra's declared names (level 1.2) or level: cached apart from every other Sutra's
+            if (!v) {
+                return exprs.get(d + "\u0000" + source, k -> Parser.parse(source, limits, table));
+            }
             try {
-                return exprs.get(d + "\u0000" + source, k -> Parser.parseWithSpans(source, limits, table, v11).expr());
+                return exprs.get(d + "\u0000" + source, k -> Parser.parseWithSpans(source, limits, table, true).expr());
             } catch (ElException e) {
                 throw whole("expression", source, e);
             }
         }
-        if (!v11) {
+        if (!v) {
             return exprs.get(source, s -> Parser.parse(s, limits, table));
         }
         try {
@@ -79,10 +84,18 @@ public final class ElCompiler {
         }
     }
 
+    /** Whether expressions compile at level 1.1 or later: the level of the Sutra in force when it declares one below this compiler's. */
+    private boolean v11(Declarations in) {
+        return in.level() == null ? v11 : !"1.0".equals(in.level());
+    }
+
     /** The expression without level 1.1's prefix on a problem (a template's part: the template words it). */
     Expr bare(String source) {
-        String d = Declarations.inForce().id();
-        return exprs.get(d.isEmpty() ? source : d + "\u0000" + source, s -> Parser.parseWithSpans(source, limits, table, v11).expr());
+        Declarations in = Declarations.inForce();
+        String d = in.id();
+        boolean v = v11(in);
+        return exprs.get(d.isEmpty() ? source : d + "\u0000" + source, s -> v ? Parser.parseWithSpans(source, limits, table, true).expr()
+                : Parser.parse(source, limits, table));
     }
 
     /** Level 1.1's words (SPEC 6.3): {@code expression '<source>': <reason> at <offset>}; an evaluation problem is left as it is. */
@@ -108,19 +121,15 @@ public final class ElCompiler {
 
     /** Compiles text with embedded {@code ${expr}} parts. Text without {@code ${} is returned as is. */
     public Template template(String source) {
-        String d = Declarations.inForce().id();
-        if (!d.isEmpty()) {
-            try {
-                return templates.get(d + "\u0000" + source, k -> Template.parse(source, this));
-            } catch (ElException e) {
-                throw whole("template", source, e);
-            }
-        }
-        if (!v11) {
-            return templates.get(source, s -> Template.parse(s, this));
+        Declarations in = Declarations.inForce();
+        String d = in.id();
+        boolean v = v11(in);
+        String key = d.isEmpty() ? source : d + "\u0000" + source;
+        if (!v) {
+            return templates.get(key, k -> Template.parse(source, this));
         }
         try {
-            return templates.get(source, s -> Template.parse(s, this));
+            return templates.get(key, k -> Template.parse(source, this));
         } catch (ElException e) {
             throw whole("template", source, e);
         }

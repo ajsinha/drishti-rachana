@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 # Synthetic demo content: fictional customers, items and orders.
-rachana: 1
+rachana: 1.2
 sutra: orders-board
 version: 1
 title: { id: "'Orders, live'" }

@@ -11,7 +11,7 @@ cases:
     kind: sutra
     source: SPEC 2.4
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-rows
       version: 1
       data:
@@ -26,7 +26,7 @@ cases:
     kind: sutra
     source: SPEC 2.4
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-record
       version: 1
       data:
@@ -46,7 +46,7 @@ cases:
           - { region: North, revenue: 700 }
           - { region: South, revenue: 400 }
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-table
       version: 1
       data:
@@ -73,7 +73,7 @@ cases:
             - { id: a, fee: "0.10" }
             - { id: b, fee: "0.20" }
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-decimal
       version: 1
       data:
@@ -95,7 +95,7 @@ cases:
           - { region: South, revenue: 400 }
           - { region: South, revenue: 50 }
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-where
       version: 1
       controls:
@@ -115,7 +115,7 @@ cases:
       tables:
         t: [ { v: 1 }, { v: 2 }, { v: 4 } ]
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-limit
       version: 1
       data:
@@ -133,7 +133,7 @@ cases:
       tables:
         latest: [ { price: 101 }, { price: 99 } ]
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-as-record
       version: 1
       data:
@@ -152,7 +152,7 @@ cases:
       tables:
         t: [ { v: 5 } ]
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-host
       version: 1
       data:
@@ -169,7 +169,7 @@ cases:
     kind: sutra
     source: SPEC 2.4
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-missing
       version: 1
       data:

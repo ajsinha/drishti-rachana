@@ -71,8 +71,8 @@ runtime bundle (`rachana.runtime.js`) and paints it with Drishti Elements' paint
 ```
 
 ```yaml
-# sales.sutra.yaml (language level 1.1: data:)
-rachana: 1
+# sales.sutra.yaml (language level 1.1 or later: data:)
+rachana: 1.2
 sutra: sales
 version: 1
 data:
@@ -101,7 +101,7 @@ panels:
 
 ## 3. Python app
 
-`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol (JSON; Arrow IPC for a table whose schema declares `arrow`, with `[arrow]` installed; NDJSON; `GET` or `POST /data/changes` for the SSE stream, filtered by `changes.filter` and conflated by `everyMs`) and the real `<rachana-view>`: the adapter serves the page, the element and its modules (`js/packages/rachana/src`), the vendored Drishti Elements 3.2.0-dev+b466b87 pack and the runtime bundle under its own mount (`/dash/static/...`, shipped as package data of the wheel), so no address is configured. A table offers Arrow with `@rachana.table("t", key=[...], schema={..., "can": ["page", "arrow"]})`; without pyarrow or the declaration the answer is `406`, as on the JVM reference. `rachana lint` takes `--level` (default: the newest built level). Mount Sutras, expose tables, stream changes, and lint in CI.
+`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol (JSON; Arrow IPC for a table whose schema declares `arrow`, with `[arrow]` installed; NDJSON; `GET` or `POST /data/changes` for the SSE stream, filtered by `changes.filter` and conflated by `everyMs`) and the real `<rachana-view>`: the adapter serves the page, the element and its modules (`js/packages/rachana/src`), the vendored Drishti Elements 3.2.0-dev+b466b87 pack and the runtime bundle under its own mount (`/dash/static/...`, shipped as package data of the wheel), so no address is configured. A table offers Arrow with `@rachana.table("t", key=[...], schema={..., "can": ["page", "arrow"]})`; without pyarrow or the declaration the answer is `406`, as on the JVM reference. `rachana lint` reads each Sutra at the level its `rachana:` key declares (SPEC 2.1). Mount Sutras, expose tables, stream changes, and lint in CI.
 
 **Flask** (`examples/live-orders/flask_app.py`):
 

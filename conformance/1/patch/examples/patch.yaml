@@ -23,7 +23,7 @@ cases:
             - { region: North, revenue: 100 }
             - { region: South, revenue: 50 }
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: live-total
       version: 1
       data:

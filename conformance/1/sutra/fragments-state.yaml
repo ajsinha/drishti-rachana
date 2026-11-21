@@ -39,7 +39,7 @@ cases:
     given:
       state: { a.chosen: Y }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Demo'" }
@@ -96,7 +96,7 @@ cases:
             columns: [ { label: Desk, bind: "@.desk" } ]
             emits: [ { name: pick, on: row-click, payload: { desk: "@.desk" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Demo'" }

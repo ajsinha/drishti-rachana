@@ -33,7 +33,7 @@ cases:
             columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 } ]
             emits: [ { name: pick, on: row-click, payload: { desk: "@.desk" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -53,7 +53,7 @@ cases:
     source: L-21 (2)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -71,7 +71,7 @@ cases:
     source: L-21 (6); LIBRARIES 7.2 (as)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -98,7 +98,7 @@ cases:
     note: "@mtm.pick.desk is read as @mtm-list.pick.desk: the panel of the use mtm that raises pick; desk is the fragment's return value."
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -119,7 +119,7 @@ cases:
     source: L-21 (4); LIBRARIES 7.2 (on)
     files: *desk
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -156,7 +156,7 @@ cases:
         panels:
           - { id: bars, kind: hbar, rows: arg.rows, label: desk, value: amount, fmt: amount0 }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -200,7 +200,7 @@ cases:
           - { id: desks, kind: metric, label: Desks, value: "size(group(arg.rows, 'desk', 'amount'))" }
           - { id: note, kind: markdown, text: "Total ${sum(arg.rows, 'amount')} over ${count(arg.rows, 'desk')} desks" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -225,7 +225,7 @@ cases:
     source: L-21 (2, 3)
     files: *figures
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -264,7 +264,7 @@ cases:
           - { id: both, kind: metric, label: Both, value: "count(intersect(arg.rows, arg.rows)[?@.amount > 1000])" }
           - { id: any, kind: metric, label: Any, value: "count(union(arg.rows, arg.rows)[?@.amount > 1000])" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -305,7 +305,7 @@ cases:
           - { id: first, kind: metric, label: First, value: "first(sort(arg.rows, arg.order)).desk", when-bound: order }
           - { id: note, kind: markdown, text: "Top score ${max(map(arg.rows, arg.score(@.amount)))}" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }
@@ -328,7 +328,7 @@ cases:
     source: LIBRARIES 4.2 (fn, default)
     files: *ranked
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: calls-demo
       version: 1
       title: { id: "'Demo'" }

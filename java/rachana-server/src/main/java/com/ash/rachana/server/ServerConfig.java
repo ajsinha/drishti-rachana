@@ -225,16 +225,17 @@ public final class ServerConfig {
                 (int) r.number(s.getOrDefault("max-body", 1_048_576L), "server.max-body", 1024, 64L * 1024 * 1024));
 
         Map<String, Object> p = r.map(m.get("project"), "project");
+        if (p.containsKey("level")) {
+            r.problem("project.level: a Sutra declares its own language level in its rachana: key (rachana: 1 is 1.0, rachana: 1.2 is 1.2;"
+                    + " rachana upgrade raises it); remove project.level");
+        }
         r.keys(p, "project", "dir", "level", "watch");
         Path projectDir = p.get("dir") == null ? null : r.path(p.get("dir"), "project.dir", false);
         if (p.get("dir") == null) {
             r.problem("project.dir: the project folder is needed (it holds sutras/)");
         }
         r.projectDir = projectDir;
-        String level = r.text(p.getOrDefault("level", com.ash.rachana.profile.Grammar.DEFAULT_LEVEL), "project.level");
-        if (level != null && !level.matches("1\\.[0-9]+")) {
-            r.problem("project.level: a language level such as 1.1 or 1.2, not '" + level + "'");
-        }
+        String level = com.ash.rachana.profile.Grammar.DEFAULT_LEVEL;     // the host reads every level it implements; each Sutra its own (SPEC 2.1)
         Project project = new Project(projectDir, level, r.bool(p.getOrDefault("watch", true), "project.watch"));
 
         List<Path> libraries = new ArrayList<>();

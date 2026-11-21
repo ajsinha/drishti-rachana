@@ -138,9 +138,9 @@ test("lib verify runs the jar's LibraryTool (needs the Java classes built)", { s
 });
 
 const examples = resolve(import.meta.dirname, "../../../../examples");
-test("lint takes --level; the examples lint clean at 1.1 and 1.2", { skip: !hasBundle && "bundle not built" }, async () => {
-  for (const lv of ["1.1", "1.2"]) assert.equal(await main(["lint", "--level", lv, join(examples, "static-sales"), join(examples, "live-orders")], io().io), 0, lv);
-  assert.equal(await main(["lint", "--level", "9.9", examples], io().io), 2);
+test("lint reads each Sutra's own level and refuses --level; the examples lint clean", { skip: !hasBundle && "bundle not built" }, async () => {
+  assert.equal(await main(["lint", join(examples, "static-sales"), join(examples, "live-orders")], io().io), 0);
+  assert.equal(await main(["lint", "--level", "1.2", examples], io().io), 2);
 });
 
 test("build static-sales: the real <rachana-view>, Elements pack and runtime are in the site", { skip: !hasBundle && "bundle not built" }, async () => {
@@ -157,9 +157,9 @@ test("build static-sales: the real <rachana-view>, Elements pack and runtime are
 test("build: a page that uses a core fragment gets the library files and a manifest (so the browser can load them)", { skip: !hasBundle && "bundle not built" }, async () => {
   const d = tmp(), src = join(d, "proj"), out = join(d, "site");
   cpSync(join(examples, "static-sales"), src, { recursive: true });
-  writeFileSync(join(src, "ranked.sutra.yaml"), "rachana: 1\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\ndata:\n  sales: { table: sales, key: [region, product, month] }\npanels:\n  - use: core/ranked-bars@1\n    with:\n      rows: { from: $.sales, columns: { label: region, value: revenue } }\n");
+  writeFileSync(join(src, "ranked.sutra.yaml"), "rachana: 1.2\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\ndata:\n  sales: { table: sales, key: [region, product, month] }\npanels:\n  - use: core/ranked-bars@1\n    with:\n      rows: { from: $.sales, columns: { label: region, value: revenue } }\n");
   const { o, io: x } = io();
-  assert.equal(await main(["build", "--src", src, "--out", out, "--level", "1.2"], x), 0, o.err.join("\n"));
+  assert.equal(await main(["build", "--src", src, "--out", out], x), 0, o.err.join("\n"));
   const m = JSON.parse(readFileSync(join(out, "libraries/ranked.libraries.json"), "utf8"));
   assert.ok(m.files.includes("rachana_libs/core/fragments/ranked-bars.v1.fragment.yaml"), m.files.slice(0, 3).join());
   for (const f of m.files) assert.ok(existsSync(join(out, f)), f);
@@ -172,11 +172,11 @@ test("build: a page that uses a core fragment gets the library files and a manif
 test("preview resolves libraries as build does: bundled, --libs and <project>/rachana_libs", { skip: !hasBundle && "bundle not built" }, () => {
   const d = tmp(), src = join(d, "proj");
   cpSync(join(examples, "static-sales"), src, { recursive: true });
-  const sutra = "rachana: 1\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\npanels:\n  - use: core/note@1\n    with: { text: hi }\n";
+  const sutra = "rachana: 1.2\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\npanels:\n  - use: core/note@1\n    with: { text: hi }\n";
   writeFileSync(join(src, "ranked.sutra.yaml"), sutra);
   const lib = libraryFiles(src, {});
   assert.deepEqual(lib.problems, []);
-  const h = handler(new Map([["ranked", join(src, "ranked.sutra.yaml")]]), null, "1.2", lib.files);
+  const h = handler(new Map([["ranked", join(src, "ranked.sutra.yaml")]]), null, lib.files);
   assert.ok(h("/page/ranked")[2].includes('libraries="/libraries/ranked.libraries.json"'));
   const m = JSON.parse(h("/libraries/ranked.libraries.json")[2]);
   assert.ok(m.files.some((f) => f.startsWith("rachana_libs/core/fragments/")));

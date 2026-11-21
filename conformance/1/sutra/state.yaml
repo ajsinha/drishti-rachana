@@ -11,7 +11,7 @@ cases:
     source: "SUTRA_EXPANSION S1 (typed, default; state[] {id, value, url, reads}); decision S1-OPEN b"
     note: "Each type's default as the ViewModel writes it; reads names the panels whose expressions read the state; a state nothing reads has an empty reads; the stamp is the smallest minor that describes the document (1.2)."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Orders'" }
@@ -46,7 +46,7 @@ cases:
     given:
       state: { order: O-7, limit: "ten", compare: "true", desks: [ Credit ], ghost: x }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Orders'" }
@@ -78,7 +78,7 @@ cases:
     given:
       state: { order: B }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Orders'" }
@@ -107,7 +107,7 @@ cases:
     kind: sutra
     source: SUTRA_EXPANSION I1 (bar-click on an hbar)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Desks'" }
@@ -134,7 +134,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (set: <control> keeps its meaning and its output; one mechanism)"
     note: "set: <control> with field: is the panel's on-select: the view lists the select and each row its pick, as on-select writes them."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Orders'" }
@@ -162,7 +162,7 @@ cases:
     given:
       state: { desk: Rates }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       title: { id: "'Desks'" }

@@ -12,6 +12,8 @@ import { projectLibraries, bundleFiles } from "../../rachana-studio/server/libra
 export async function languageLevels(profiles = "core") {
   return JSON.parse((await tools(profiles)).levels());
 }
+/** The answer to --level, which no command takes: a Sutra declares its own level (SPEC 2.1). */
+export const LEVEL_FLAG = "--level is gone: a Sutra declares its language level in its rachana: key (rachana: 1 is 1.0, rachana: 1.2 is 1.2); rachana upgrade raises it";
 export const SUFFIX = ".sutra.yaml";
 export const LIVE_SUFFIX = ".live.yaml";
 /** The profile keys of a live table's declaration that the Drishti profile reads (LIVE_TABLES 2); none in core. */
@@ -84,11 +86,9 @@ export function sarif(results) {
 export async function lint(paths, flags, io) {
   const fmt = flags.format ?? "text";
   if (!["text", "json", "sarif"].includes(fmt)) throw new UsageError("--format is text, json or sarif");
-  const known = await languageLevels();
-  const level = flags.level ?? known.default;
-  if (!known.levels.includes(level)) throw new UsageError(`--level is ${known.levels.join(", ")}`);
+  if (flags.level !== undefined) throw new UsageError(LEVEL_FLAG);
   const lib = libraryFiles(paths[0] && existsSync(paths[0]) && statSync(paths[0]).isDirectory() ? paths[0] : ".", flags, (m) => io.err(`rachana: ${m}`));
-  const results = await lintFiles(findSutras(paths, [SUFFIX, LIVE_SUFFIX]), flags.profiles ?? "core", level, lib.files);
+  const results = await lintFiles(findSutras(paths, [SUFFIX, LIVE_SUFFIX]), flags.profiles ?? "core", null, lib.files);
   const failing = results.flatMap((r) => r.problems).filter((p) => p.severity === "error" || (flags.strict && p.severity === "warning")).length + lib.problems.length;
   if (fmt === "json") io.out(JSON.stringify(results, null, 2));
   else if (fmt === "sarif") io.out(JSON.stringify(sarif(results), null, 2));

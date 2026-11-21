@@ -36,7 +36,7 @@ cases:
             on:
               row-click: [ { set: { state: chosen, to: "@.id" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -57,7 +57,7 @@ cases:
     source: "LIBRARIES 7.2 (outputs: readable, never writable; everything else inside is invisible)"
     files: *picker
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -109,7 +109,7 @@ cases:
             on:
               row-click: [ { set: { state: order, to: "@.id" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -146,7 +146,7 @@ cases:
         panels:
           - { id: m, kind: metric, label: "arg.label", value: "state.query" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }
@@ -189,7 +189,7 @@ cases:
             on:
               row-click: [ { host: order.cancel, with: { id: "@.id" } } ]
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: state-demo
       version: 1
       match: { kind: demo }

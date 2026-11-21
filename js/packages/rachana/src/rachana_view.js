@@ -11,7 +11,7 @@
 //                 formats="/spec/1/formats.yaml" live></rachana-view>
 //
 // Attributes: src (the Sutra's address), data (the Data Protocol base), runtime (the runtime bundle), formats (format tables, comma
-// separated, Core's first), level (language level, default 1.1), today (the as-of date), allow (other data origins, space separated),
+// separated, Core's first), today (the as-of date), allow (other data origins, space separated),
 // live (follow the live tables), form (rows as json, arrow or ndjson; arrow needs js/vendor/apache-arrow's script loaded first and is
 // asked only of tables that declare it). Properties: sutra (the text instead of src), record (the host's record), controls (values),
 // host ({notify(effect, where), run(effect, where)}: the page's own handling of a Sutra's notify and host effects; the painter runs none), linkResolver (link => absolute address or null), fetch (the host's fetch), files (the libraries a Sutra uses: {'rachana_libs/<library>/<path>': text}).
@@ -37,7 +37,7 @@ export function defineRachanaView(o) {
   if (!w || !w.customElements || w.customElements.get(tag)) return false;
 
   class RachanaView extends w.HTMLElement {
-    static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'level', 'today', 'allow', 'live', 'form', 'libraries']; }
+    static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'today', 'allow', 'live', 'form', 'libraries']; }
 
     constructor() { super(); this.client = null; this._sutra = null; this.record = null; this.controls = {}; this.linkResolver = null; this.fetch = null; this.files = null; this.host = null; this.screen = null; this._gen = 0; }
 
@@ -83,7 +83,7 @@ export function defineRachanaView(o) {
         allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null,
         csrf: meta ? meta.getAttribute('content') : null }) : null;
       this.client = client;
-      const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || undefined, today: this.getAttribute('today') || undefined,
+      const screen = new Screen(rt, { sutra: text, today: this.getAttribute('today') || undefined,
         ctl: this.controls, record: this.record, client, files });
       this.screen = screen;
       await screen.load();

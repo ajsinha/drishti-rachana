@@ -25,7 +25,7 @@ cases:
     kind: problem
     source: SPEC 2.4 (exactly one)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-two
       version: 1
       match: { kind: case }
@@ -40,7 +40,7 @@ cases:
     kind: problem
     source: SPEC 2.4 (exactly one)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-none
       version: 1
       match: { kind: case }
@@ -55,7 +55,7 @@ cases:
     kind: problem
     source: SPEC 2.4; PROTOCOL 8.1
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-live
       version: 1
       match: { kind: case }
@@ -70,7 +70,7 @@ cases:
     kind: problem
     source: SPEC 2.4
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-unknown
       version: 1
       match: { kind: case }
@@ -85,7 +85,7 @@ cases:
     kind: problem
     source: SPEC 2.4 (each entry is a field of $)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-name
       version: 1
       match: { kind: case }
@@ -100,7 +100,7 @@ cases:
     kind: problem
     source: SPEC 2.4
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-rows-shape
       version: 1
       match: { kind: case }
@@ -115,7 +115,7 @@ cases:
     kind: problem
     source: SPEC 2.4 (text is shorthand for url)
     sutra: |
-      rachana: 1
+      rachana: 1.1
       sutra: data-url
       version: 1
       match: { kind: case }

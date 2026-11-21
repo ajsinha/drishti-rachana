@@ -26,7 +26,7 @@ cases:
     kind: sutra
     source: SPEC 2.3; VIEWMODEL contract 1.2
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: pnl-var
       version: 1
       panels:
@@ -37,7 +37,7 @@ cases:
     kind: sutra
     source: SPEC 2.3; VIEWMODEL contract 1.2 (Series.ev)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: curves
       version: 1
       panels:

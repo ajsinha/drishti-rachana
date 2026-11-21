@@ -11,7 +11,7 @@ cases:
     source: "SUTRA_EXPANSION I1 (effects, when); LIBRARIES 6.2 (host actions are the host's)"
     note: "Row A is open, so its cancel action is offered; row B is closed, so its when leaves the host effect out. A list with more than plain writes is carried as on, not set."
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Orders'" }
@@ -58,7 +58,7 @@ cases:
     kind: fire
     source: SUTRA_EXPANSION I1 (clear)
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Desks'" }
@@ -88,7 +88,7 @@ cases:
     kind: fire
     source: "SUTRA_EXPANSION I1 (point-click on one mark, host)"
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: fire-demo
       version: 1
       title: { id: "'Limits'" }

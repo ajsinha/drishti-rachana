@@ -57,7 +57,7 @@ cases:
     given:
       state: { a-l.chosen: X, b-r.chosen: Q }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: nested-demo
       version: 1
       title: { id: "'Demo'" }
@@ -136,7 +136,7 @@ cases:
             with: { rows: arg.rows }
           - { id: shown, kind: metric, label: Chosen, value: "state.p.chosen" }
     sutra: |
-      rachana: 1
+      rachana: 1.2
       sutra: nested-demo
       version: 1
       title: { id: "'Demo'" }

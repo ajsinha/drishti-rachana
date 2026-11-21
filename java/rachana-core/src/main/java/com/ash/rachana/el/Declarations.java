@@ -54,6 +54,8 @@ public final class Declarations {
     private final Map<String, String> states;
     private final Set<String> libraries;
     private final String id;
+    /** The language level the Sutra declares below its host's ({@code rachana: 1.N}, SPEC 2.1), or null: the compiler's own. */
+    private final String level;
 
     /**
      * @param functions the functions by name ({@code share}, {@code treasury.carry})
@@ -70,6 +72,11 @@ public final class Declarations {
      *     {@code <as>.<name>}): with any, {@code state.<id>} reads one ({@link Expr.State}) and an undeclared id does not compile
      */
     public Declarations(Map<String, Function> functions, Map<String, String> lets, Map<String, String> states) {
+        this(functions, lets, states, null);
+    }
+
+    private Declarations(Map<String, Function> functions, Map<String, String> lets, Map<String, String> states, String level) {
+        this.level = level;
         this.functions = Collections.unmodifiableMap(new LinkedHashMap<>(functions));
         this.lets = Collections.unmodifiableMap(new LinkedHashMap<>(lets));
         this.states = Collections.unmodifiableMap(new LinkedHashMap<>(states));
@@ -86,7 +93,21 @@ public final class Declarations {
                 .append(f.body()).append('\u001e'));
         this.lets.forEach((k, v) -> sb.append("l\u001f").append(k).append('\u001f').append(v).append('\u001e'));
         this.states.forEach((k, v) -> sb.append("s\u001f").append(k).append('\u001f').append(v).append('\u001e'));
-        this.id = sb.length() == 0 ? "" : Integer.toHexString(sb.toString().hashCode()) + ":" + sb.length();
+        String names = sb.length() == 0 ? "" : Integer.toHexString(sb.toString().hashCode()) + ":" + sb.length();
+        this.id = level == null ? names : "@" + level + (names.isEmpty() ? "" : ":" + names);
+    }
+
+    /**
+     * These declarations read at a Sutra's own language level (SPEC 2.1: {@code rachana: 1.N}; {@code rachana: 1} is 1.0) where it is
+     * below its host's: while they are in force ({@link #within}) every expression compiles at that level, not the compiler's.
+     */
+    public Declarations atLevel(String sutraLevel) {
+        return java.util.Objects.equals(sutraLevel, level) ? this : new Declarations(functions, lets, states, sutraLevel);
+    }
+
+    /** The level of the Sutra these declarations belong to when it is below its host's, else null (the compiler's own level). */
+    public String level() {
+        return level;
     }
 
     public Map<String, Function> functions() {
@@ -168,7 +189,7 @@ public final class Declarations {
      * evaluated at most once per document (one bind). Nested calls with the same declarations keep the outer scope.
      */
     public static <T> T within(Declarations d, Supplier<T> work) {
-        if (d == null || d.isEmpty()) {
+        if (d == null || d.isEmpty() && d.level == null) {
             Scope outer = CURRENT.get();
             if (outer == null) {
                 return work.get();

@@ -27,7 +27,8 @@ public final class SutraWriter {
     /** As {@link #write(Sutra, String, int)} with the given description (a one-line, plain sentence). */
     public String write(Sutra s, String name, int version, String description) {
         StringBuilder y = new StringBuilder();
-        y.append("rachana: ").append(com.ash.rachana.parse.SutraParser.LANGUAGE).append('\n');
+        y.append("rachana: ").append(s.level() == null || "1.0".equals(s.level()) ? String.valueOf(com.ash.rachana.parse.SutraParser.LANGUAGE)
+                : s.level()).append('\n');                          // SPEC 2.1: the level it declares; 1.0 is written rachana: 1
         y.append("sutra: ").append(name).append('\n');
         y.append("version: ").append(version).append('\n');
         y.append("description: ").append(description.matches("[A-Za-z0-9 .,()/-]*") ? description : q(description)).append('\n');

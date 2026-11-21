@@ -129,7 +129,7 @@ class LibrariesCheckTest {
         LibraryResolver all = LibraryResolver.first(List.of(LibraryResolver.folder(repo.resolve("libraries")),
                 LibraryResolver.folder(folders), LibraryResolver.archives(tmp.resolve("rlibs"))));
         String sutra = """
-                rachana: 1
+                rachana: 1.2
                 sutra: mixed
                 version: 1
                 libraries: [core@1, extfolder@1, extpack@1]

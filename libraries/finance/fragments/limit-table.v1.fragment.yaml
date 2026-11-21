@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: limit-table
+version: 1
+doc:
+  summary: Many limits at once - name, limit, used, headroom and the share used, toned at the warning and breach levels.
+  description: >-
+    One row per limit, listed by share used, the largest first, so breaches come first. The state reads Breach over the
+    limit, Warning from the warning share, Within otherwise. A click on a row names the limit.
+  category: limits
+  tags: [limits, utilisation, table]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per limit
+    columns:
+      name:  { type: text,   doc: The limit's name }
+      limit: { type: number, doc: The limit }
+      used:  { type: number, doc: The amount used }
+      owner: { type: text,   optional: true, doc: Who owns the limit }
+  title:   { type: text, default: Limits, doc: The panel's title }
+  warn-at: { type: number, default: 0.8, min: 0, max: 1, doc: The share of the limit from which the state is Warning }
+  fmt:     { type: format, default: amount0, doc: How the amounts are written }
+emits:
+  - { name: open, payload: { name: text }, doc: A limit was chosen }
+panels:
+  - id: limits
+    kind: table
+    title: arg.title
+    rows: "sort(map(arg.rows, {name: @.name, owner: @.owner, limit: @.limit, used: @.used, headroom: @.limit - @.used, share: @.used / @.limit, state: if(@.used > @.limit, 'Breach', if(@.used >= arg.warn-at * @.limit, 'Warning', 'Within'))}), @.share, true)"
+    search: true
+    columns:
+      - { label: Limit, bind: "@.name" }
+      - { label: Owner, bind: "@.owner" }
+      - { label: Limit amount, bind: "@.limit", fmt: "%{fmt}" }
+      - { label: Used, bind: "@.used", fmt: "%{fmt}" }
+      - { label: Headroom, bind: "@.headroom", fmt: "%{fmt}", tone: sign }
+      - { label: Share used, bind: "@.share", fmt: pct0 }
+      - { label: State, bind: "@.state", tone: status }
+    emits: [ { name: open, on: row-click, payload: { name: "@.name" } } ]

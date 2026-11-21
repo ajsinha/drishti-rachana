@@ -1,0 +1,1 @@
+{"contract":"1.0","keys":[],"panels":[{"area":"main","empty":true,"error":"this host has no pivot engine for pivot panels","id":"grid","inferred":false,"kind":"pivot","title":"DV01 by currency and tenor"}],"strip":[],"title":{"id":"Sensitivity heatmap (full)","pill":null,"with":null}}

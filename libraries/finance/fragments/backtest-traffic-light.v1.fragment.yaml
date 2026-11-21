@@ -1,0 +1,48 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: backtest-traffic-light
+version: 1
+doc:
+  summary: A backtest's verdict - the count of exceptions over the window and the zone it falls in, green, amber or red.
+  description: >-
+    One row per day with its P&L and its VaR (positive). A day is an exception when its loss exceeds its VaR; the
+    exceptions of the latest days of the window are counted here and the zone follows the two thresholds. The thresholds
+    are yours to set to a policy; they are shown beside the verdict.
+  category: market-risk
+  tags: [backtest, exceptions, zone]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per day
+    columns:
+      date: { type: date,   doc: The day }
+      pnl:  { type: number, doc: The day's P&L }
+      var:  { type: number, doc: The day's VaR, as a positive loss }
+  amber-from: { type: integer, default: 5, min: 1, max: 1000, doc: The exception count from which the zone is amber }
+  red-from:   { type: integer, default: 10, min: 1, max: 1000, doc: The exception count from which the zone is red }
+  window:     { type: integer, default: 250, min: 1, max: 5000, doc: The number of latest days counted }
+  title:      { type: text, default: Backtest, doc: The panel's title }
+panels:
+  - id: exceptions
+    kind: metric
+    label: arg.title
+    value: "sum(map(take(sort(arg.rows, @.date), -arg.window), if(@.pnl < -@.var, 1, 0)))"
+    fmt: amount0
+    caption: "exceptions in the last ${arg.window} days"
+  - id: green
+    kind: status
+    when: "sum(map(take(sort(arg.rows, @.date), -arg.window), if(@.pnl < -@.var, 1, 0))) < arg.amber-from"
+    fields: [ { label: Zone, bind: "'Green'", tone: ok } ]
+  - id: amber
+    kind: status
+    when: "sum(map(take(sort(arg.rows, @.date), -arg.window), if(@.pnl < -@.var, 1, 0))) >= arg.amber-from && sum(map(take(sort(arg.rows, @.date), -arg.window), if(@.pnl < -@.var, 1, 0))) < arg.red-from"
+    fields: [ { label: Zone, bind: "'Amber'", tone: warn } ]
+  - id: red
+    kind: status
+    when: "sum(map(take(sort(arg.rows, @.date), -arg.window), if(@.pnl < -@.var, 1, 0))) >= arg.red-from"
+    fields: [ { label: Zone, bind: "'Red'", tone: bad } ]
+  - id: note
+    kind: markdown
+    text: "Amber from ${arg.amber-from} exceptions, red from ${arg.red-from}. An exception is a day whose loss exceeds its VaR."

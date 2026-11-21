@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: pnl-waterfall-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Pnl waterfall'" }
+data:
+  fx:
+    rows:
+      - { EFFECT: Open, AMT: 1000000, IS_OPEN: true }
+      - { EFFECT: Rates, AMT: 85000, IS_OPEN: false }
+      - { EFFECT: Spreads, AMT: -32000, IS_OPEN: false }
+panels:
+  - use: finance/pnl-waterfall@1
+    with:
+      rows: { from: $.fx, columns: { effect: EFFECT, amount: AMT, total: IS_OPEN } }

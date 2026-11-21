@@ -1,0 +1,36 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: risk-hierarchy-tree
+version: 1
+doc:
+  summary: A risk measure down a hierarchy - firm, division, desk, book - each node with its figure, its limit and the share used.
+  description: >-
+    One row per node with its id, its parent's id (empty at the root), its name and its figure. The figure of every node
+    is supplied by you: a risk measure does not add up a hierarchy, so none is summed here. The share used is the
+    figure over the limit, shown where a limit is given.
+  category: market-risk
+  tags: [risk, hierarchy, limits]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per node
+    columns:
+      id:     { type: text,   doc: The node's id }
+      parent: { type: text,   doc: The parent node's id; empty at the root }
+      name:   { type: text,   doc: The node's name }
+      value:  { type: number, doc: The node's figure }
+      limit:  { type: number, optional: true, doc: The node's limit }
+  title: { type: text, default: Risk by hierarchy, doc: The panel's title }
+  open:  { type: integer, default: 2, min: 0, max: 8, doc: How many levels start open }
+panels:
+  - id: tree
+    kind: tree
+    title: arg.title
+    rows: "map(arg.rows, {id: @.id, parent: @.parent, name: @.name, value: @.value, limit: @.limit, used: if(is_blank(@.limit), null, @.value / @.limit)})"
+    node: id
+    parent: parent
+    label: name
+    mode: grid
+    open: arg.open

@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: term-structure-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Term structure (full)'" }
+data:
+  fwd:
+    rows:
+      - { TENOR: 3M, FWD3M: 0.0412 }
+      - { TENOR: 6M, FWD3M: 0.0409 }
+      - { TENOR: 1Y, FWD3M: 0.0398 }
+      - { TENOR: 2Y, FWD3M: 0.0391 }
+      - { TENOR: 5Y, FWD3M: 0.0385 }
+      - { TENOR: 10Y, FWD3M: 0.0389 }
+panels:
+  - use: finance/term-structure@1
+    with:
+      title: 3M forwards
+      step: true
+      mark: 2Y
+      rows: { from: $.fwd, columns: { tenor: TENOR, value: FWD3M } }

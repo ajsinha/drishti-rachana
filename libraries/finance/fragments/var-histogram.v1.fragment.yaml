@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: var-histogram
+version: 1
+doc:
+  summary: The distribution of scenario P&L with the VaR and the expected shortfall marked on the loss side.
+  description: >-
+    One row per scenario with its P&L. The VaR and the expected shortfall are given as positive losses and marked at
+    their negatives. Use it beside the figures of finance/var-tiles.
+  category: market-risk
+  tags: [var, distribution, scenarios]
+params:
+  rows:
+    type: table
+    required: true
+    max-rows: 100000
+    doc: One row per scenario
+    columns:
+      pnl: { type: number, doc: The scenario's P&L }
+  var:   { type: number, required: true, doc: The value-at-risk, as a positive loss }
+  es:    { type: number, optional: true, doc: The expected shortfall, as a positive loss }
+  title: { type: text, default: Scenario P&L, doc: The panel's title }
+  bins:  { type: integer, default: 40, min: 2, max: 200, doc: How many bins }
+  fmt:   { type: format, default: compact, doc: How the values are written }
+  unit:  { type: text, default: "", doc: The unit, written beside the values }
+panels:
+  - id: histogram
+    kind: histogram
+    title: arg.title
+    rows: "map(arg.rows, @.pnl)"
+    bins: arg.bins
+    markers:
+      - { label: VaR, value: "-arg.var" }
+      - { label: ES, value: "if(is_blank(arg.es), null, -arg.es)" }
+    fmt: "%{fmt}"
+    unit: arg.unit

@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: pnl-attribution-bars-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Pnl attribution bars'" }
+data:
+  desks:
+    rows:
+      - { DESK: Rates, DESK_PNL: 120000 }
+      - { DESK: Credit, DESK_PNL: -45000 }
+      - { DESK: FX, DESK_PNL: 18000 }
+panels:
+  - use: finance/pnl-attribution-bars@1
+    with:
+      rows: { from: $.desks, columns: { label: DESK, pnl: DESK_PNL } }

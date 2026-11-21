@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: var-contributors-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Var contributors'" }
+data:
+  contrib:
+    rows:
+      - { BOOK: RATES-A, COMP: 820000 }
+      - { BOOK: CREDIT-B, COMP: 640000 }
+      - { BOOK: FX-C, COMP: 210000 }
+panels:
+  - use: finance/var-contributors@1
+    with:
+      rows: { from: $.contrib, columns: { name: BOOK, component: COMP } }

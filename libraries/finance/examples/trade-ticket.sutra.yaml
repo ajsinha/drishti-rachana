@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: trade-ticket-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Trade ticket'" }
+data:
+  t: { record: { TRADE_ID: T-1001, PRODUCT: Interest rate swap } }
+panels:
+  - use: finance/trade-ticket@1
+    with:
+      trade: "{id: $.t.TRADE_ID, product: $.t.PRODUCT}"

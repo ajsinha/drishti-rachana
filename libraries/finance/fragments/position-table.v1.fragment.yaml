@@ -1,0 +1,44 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: position-table
+version: 1
+doc:
+  summary: Positions by instrument - quantity, price, market value, P&L and the share of the total.
+  description: >-
+    One row per instrument. The share is the row's value over the total of the values you give. The price and the P&L
+    are optional. A click on a row names the instrument.
+  category: trading
+  tags: [positions, holdings, value]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    key: required
+    doc: One row per instrument
+    columns:
+      instrument: { type: text,   doc: The instrument }
+      quantity:   { type: number, doc: The quantity held }
+      value:      { type: number, doc: The market value }
+      price:      { type: number, optional: true, doc: The price }
+      pnl:        { type: number, optional: true, doc: The P&L }
+  title:     { type: text, default: Positions, doc: The panel's title }
+  value-fmt: { type: format, default: amount0, doc: How values are written }
+  pnl-fmt:   { type: format, default: signed0, doc: How P&L is written }
+emits:
+  - { name: open, payload: { instrument: text }, doc: An instrument was chosen }
+panels:
+  - id: positions
+    kind: table
+    title: arg.title
+    rows: "map(arg.rows, {instrument: @.instrument, quantity: @.quantity, price: @.price, value: @.value, pnl: @.pnl, share: @.value / sum(arg.rows, 'value')})"
+    search: true
+    columns:
+      - { label: Instrument, bind: "@.instrument" }
+      - { label: Quantity, bind: "@.quantity", fmt: amount0 }
+      - { label: Price, bind: "@.price", fmt: price2 }
+      - { label: Value, bind: "@.value", fmt: "%{value-fmt}", total: true }
+      - { label: P&L, bind: "@.pnl", fmt: "%{pnl-fmt}", tone: sign, total: true }
+      - { label: Share, bind: "@.share", fmt: pct2 }
+    emits: [ { name: open, on: row-click, payload: { instrument: "@.instrument" } } ]

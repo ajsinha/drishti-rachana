@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: var-contributors-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Var contributors (full)'" }
+data:
+  contrib:
+    rows:
+      - { BOOK: RATES-A, COMP: 820000, STANDALONE: 1100000, INCR: 790000 }
+      - { BOOK: CREDIT-B, COMP: 640000, STANDALONE: 900000, INCR: 600000 }
+      - { BOOK: FX-C, COMP: 210000, STANDALONE: 350000, INCR: 180000 }
+      - { BOOK: EQ-D, COMP: 180000, STANDALONE: 420000, INCR: 140000 }
+  risk: { record: { VAR_99: 1850000 } }
+panels:
+  - use: finance/var-contributors@1
+    as: contrib
+    with:
+      top: 3
+      total: "$.risk.VAR_99"
+      rows: { from: $.contrib, columns: { name: BOOK, component: COMP, standalone: STANDALONE, incremental: INCR } }
+  - { id: picked, kind: markdown, text: "Contributor ${@contrib.open.name}", waits: contrib-contributors }

@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: leg-table-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Leg table (full)'" }
+data:
+  legs:
+    rows:
+      - { LEG_NO: "1", SIDE: Pay, NOTL: 25000000, CCY: USD, FIXED: 0.0385, IDX: "", SPRD: null, DCC: 30/360, FREQ: Semi-annual }
+      - { LEG_NO: "2", SIDE: Receive, NOTL: 25000000, CCY: USD, FIXED: null, IDX: Overnight index, SPRD: 0.0012, DCC: ACT/360, FREQ: Quarterly }
+panels:
+  - use: finance/leg-table@1
+    with:
+      title: Swap legs
+      rows:
+        from: $.legs
+        columns: { leg: LEG_NO, direction: SIDE, notional: NOTL, currency: CCY, rate: FIXED, index: IDX, spread: SPRD, day_count: DCC, frequency: FREQ }

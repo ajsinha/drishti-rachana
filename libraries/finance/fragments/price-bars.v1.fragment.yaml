@@ -1,0 +1,39 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: price-bars
+version: 1
+doc:
+  summary: Open, high, low and close per period as candles, with volume under them.
+  description: >-
+    One row per period in date order. Volume is optional. For a plain closing-price line with figures beside it use
+    finance/price-history.
+  category: market-data
+  tags: [candles, ohlc, prices]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per period
+    columns:
+      date:   { type: date, doc: The period }
+      open:   { type: number, doc: The first price }
+      high:   { type: number, doc: The highest price }
+      low:    { type: number, doc: The lowest price }
+      close:  { type: number, doc: The last price }
+      volume: { type: number, optional: true, doc: The quantity traded }
+  title: { type: text, default: Prices, doc: The panel's title }
+  fmt:   { type: format, default: price2, doc: How prices are written }
+panels:
+  - id: bars
+    kind: candlestick
+    title: arg.title
+    rows: arg.rows
+    x: date
+    open: open
+    high: high
+    low: low
+    close: close
+    volume: volume
+    fmt: "%{fmt}"

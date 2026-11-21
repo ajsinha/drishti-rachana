@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: stress-table-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Stress table (full)'" }
+data:
+  stress:
+    rows:
+      - { SCEN: Rates up 100bp, TOTAL_PNL: -510000, NOTE: Parallel shift of all rate curves }
+      - { SCEN: Equity down 10%, TOTAL_PNL: -225000, NOTE: All equity indices fall together }
+      - { SCEN: Credit tightens, TOTAL_PNL: 60000, NOTE: Spreads tighten by 25bp }
+panels:
+  - use: finance/stress-table@1
+    with:
+      title: Standard stress set
+      rows: { from: $.stress, columns: { scenario: SCEN, pnl: TOTAL_PNL, description: NOTE } }

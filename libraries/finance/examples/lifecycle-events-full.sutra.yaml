@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: lifecycle-events-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Lifecycle events (full)'" }
+data:
+  ev:
+    rows:
+      - { EV_DATE: "2025-11-03", EV_NAME: Booked, NOTE: Confirmed with the counterparty, STATE: ok }
+      - { EV_DATE: "2025-12-01", EV_NAME: Amended, NOTE: Notional reduced, STATE: warn }
+      - { EV_DATE: "2026-02-05", EV_NAME: Payment, NOTE: Coupon paid, STATE: ok }
+      - { EV_DATE: "2026-08-05", EV_NAME: Payment, NOTE: Coupon disputed, STATE: dispute }
+panels:
+  - use: finance/lifecycle-events@1
+    with:
+      rows: { from: $.ev, columns: { date: EV_DATE, event: EV_NAME, detail: NOTE, status: STATE } }

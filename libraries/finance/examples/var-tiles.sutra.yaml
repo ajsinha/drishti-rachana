@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: var-tiles-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Var tiles'" }
+data:
+  risk: { record: { VAR_99: 1850000 } }
+panels:
+  - use: finance/var-tiles@1
+    with: { var: "$.risk.VAR_99" }

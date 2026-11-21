@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: pnl-history-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Pnl history (full)'" }
+data:
+  daily:
+    rows:
+      - { BIZ_DATE: "2026-01-09", PNL_USD: 12000 }
+      - { BIZ_DATE: "2026-01-12", PNL_USD: 24000 }
+      - { BIZ_DATE: "2026-01-13", PNL_USD: -9000 }
+      - { BIZ_DATE: "2026-01-14", PNL_USD: 31000 }
+      - { BIZ_DATE: "2026-01-15", PNL_USD: -18000 }
+panels:
+  - use: finance/pnl-history@1
+    with:
+      title: Daily P&L
+      cumulative: false
+      rows: { from: $.daily, columns: { date: BIZ_DATE, pnl: PNL_USD } }

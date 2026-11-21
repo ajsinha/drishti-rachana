@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: trade-blotter-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Trade blotter'" }
+data:
+  trades:
+    rows:
+      - { TRADE_ID: T-1001, PRODUCT: Swap }
+      - { TRADE_ID: T-1002, PRODUCT: Forward }
+panels:
+  - use: finance/trade-blotter@1
+    as: blotter
+    with:
+      rows: { from: $.trades, columns: { id: TRADE_ID, product: PRODUCT } }
+  - { id: picked, kind: markdown, text: "Trade ${@blotter.open.id}", waits: blotter-blotter }

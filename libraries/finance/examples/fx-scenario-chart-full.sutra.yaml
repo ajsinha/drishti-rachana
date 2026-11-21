@@ -1,0 +1,21 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: fx-scenario-chart-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Fx scenario chart (full)'" }
+data:
+  scen:
+    rows:
+      - { SCEN_DATE: "2025-03-03", FX_RATE: 1.0412, SHOCK_PCT: 0.0 }
+      - { SCEN_DATE: "2025-03-04", FX_RATE: 1.0388, SHOCK_PCT: -0.0023 }
+      - { SCEN_DATE: "2025-03-05", FX_RATE: 1.0450, SHOCK_PCT: 0.0060 }
+      - { SCEN_DATE: "2025-03-06", FX_RATE: 1.0301, SHOCK_PCT: -0.0143 }
+panels:
+  - use: finance/fx-scenario-chart@1
+    with:
+      pair: EURUSD
+      fmt: text
+      rows: { from: $.scen, columns: { date: SCEN_DATE, rate: FX_RATE, shock: SHOCK_PCT } }

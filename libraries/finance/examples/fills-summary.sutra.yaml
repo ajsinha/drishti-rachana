@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: fills-summary-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Fills summary'" }
+data:
+  fills:
+    rows:
+      - { EXEC_TS: "2026-01-15T09:31:00", EXEC_QTY: 4000, EXEC_PX: 101.2 }
+      - { EXEC_TS: "2026-01-15T09:44:00", EXEC_QTY: 6000, EXEC_PX: 101.5 }
+panels:
+  - use: finance/fills-summary@1
+    with:
+      ordered: 12000
+      rows: { from: $.fills, columns: { time: EXEC_TS, qty: EXEC_QTY, price: EXEC_PX } }

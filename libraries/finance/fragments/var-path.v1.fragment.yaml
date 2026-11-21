@@ -1,0 +1,50 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: var-path
+version: 1
+doc:
+  summary: Scenario P&L against the scenario's date, with the worst days listed - when in history the losses come from.
+  description: >-
+    One row per scenario, dated by the historical day it replays. The line shows the P&L in date order; the table lists
+    the worst scenarios first. A click on a worst scenario raises an event with its date and P&L. The VaR, when given,
+    is shown as a figure.
+  category: market-risk
+  tags: [var, scenarios, history]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per scenario
+    columns:
+      date: { type: date,   doc: The historical day the scenario replays }
+      pnl:  { type: number, doc: The scenario's P&L }
+  var:   { type: number, optional: true, doc: The value-at-risk, as a positive loss }
+  worst: { type: integer, default: 5, min: 1, max: 100, doc: How many worst scenarios are listed }
+  title: { type: text, default: Scenario P&L by date, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How the P&L is written }
+emits:
+  - { name: scenario, payload: { date: date, pnl: number }, doc: A worst scenario was chosen }
+panels:
+  - id: var
+    kind: metric
+    when: "!is_blank(arg.var)"
+    label: VaR
+    value: arg.var
+    fmt: amount0
+  - id: line
+    kind: line
+    title: arg.title
+    rows: "sort(map(arg.rows, {date: @.date, pnl: @.pnl}), @.date)"
+    x: date
+    y: pnl
+    fmt: "%{fmt}"
+  - id: worst
+    kind: table
+    title: Worst scenarios
+    rows: "take(sort(map(arg.rows, {date: @.date, pnl: @.pnl}), @.pnl), arg.worst)"
+    search: false
+    columns:
+      - { label: Date, bind: "@.date", fmt: date }
+      - { label: P&L, bind: "@.pnl", fmt: "%{fmt}", tone: sign }
+    emits: [ { name: scenario, on: row-click, payload: { date: "@.date", pnl: "@.pnl" } } ]

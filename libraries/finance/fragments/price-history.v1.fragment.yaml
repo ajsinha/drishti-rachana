@@ -1,0 +1,47 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: price-history
+version: 1
+doc:
+  summary: A closing-price line with the period's high, low and return as figures beside it.
+  description: >-
+    One row per period in date order with its close. The figures are read from the rows you give: the highest and
+    lowest close, and the return from the first to the last. Use finance/price-bars for candles.
+  category: market-data
+  tags: [prices, history, return]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per period, in date order
+    columns:
+      date:  { type: date, doc: The period }
+      close: { type: number, doc: The closing price }
+  title: { type: text, default: Price history, doc: The panel's title }
+  fmt:   { type: format, default: price2, doc: How prices are written }
+panels:
+  - id: high
+    kind: metric
+    label: High
+    value: "max(map(arg.rows, @.close))"
+    fmt: "%{fmt}"
+  - id: low
+    kind: metric
+    label: Low
+    value: "min(map(arg.rows, @.close))"
+    fmt: "%{fmt}"
+  - id: change
+    kind: metric
+    label: Return
+    value: "last(arg.rows).close / first(arg.rows).close - 1"
+    fmt: pct2
+    tone: sign
+  - id: line
+    kind: line
+    title: arg.title
+    rows: arg.rows
+    x: date
+    y: close
+    fmt: "%{fmt}"

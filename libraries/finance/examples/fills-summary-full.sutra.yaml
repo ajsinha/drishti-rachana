@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: fills-summary-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Fills summary (full)'" }
+data:
+  fills:
+    rows:
+      - { EXEC_TS: "2026-01-15T09:31:00", EXEC_QTY: 4000, EXEC_PX: 101.2, VENUE: Venue A }
+      - { EXEC_TS: "2026-01-15T09:44:00", EXEC_QTY: 6000, EXEC_PX: 101.5, VENUE: Venue B }
+      - { EXEC_TS: "2026-01-15T10:02:00", EXEC_QTY: 2000, EXEC_PX: 101.9, VENUE: Venue A }
+  order: { record: { QTY: 12000, ARRIVAL_PX: 101.0 } }
+panels:
+  - use: finance/fills-summary@1
+    with:
+      title: Executions
+      ordered: "$.order.QTY"
+      reference: "$.order.ARRIVAL_PX"
+      price-fmt: price2
+      rows: { from: $.fills, columns: { time: EXEC_TS, qty: EXEC_QTY, price: EXEC_PX, venue: VENUE } }

@@ -1,0 +1,45 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: var-tiles
+version: 1
+doc:
+  summary: Value-at-risk and expected shortfall as tiles, with the change on the day and the share of a limit used.
+  description: >-
+    The figures arrive as data; nothing is computed here but the change against the previous VaR and the share of the
+    limit. Name the confidence of each in its label. Use it at the head of a risk screen.
+  category: market-risk
+  tags: [var, expected-shortfall, tiles]
+params:
+  var:          { type: number, required: true, doc: The value-at-risk, as a positive loss }
+  es:           { type: number, optional: true, doc: The expected shortfall, as a positive loss }
+  var-label:    { type: text, default: "VaR 99%", doc: What the VaR figure is called }
+  es-label:     { type: text, default: "ES 97.5%", doc: What the expected shortfall is called }
+  previous-var: { type: number, optional: true, doc: The previous VaR, to give the change }
+  limit:        { type: number, optional: true, doc: The VaR limit, to give the share used }
+  horizon:      { type: text, default: 1d, doc: The holding period, written under the figures }
+  fmt:          { type: format, default: amount0, doc: How the figures are written }
+panels:
+  - id: var
+    kind: metric
+    label: arg.var-label
+    value: arg.var
+    fmt: "%{fmt}"
+    delta: "if(is_blank(arg.previous-var), null, arg.var - arg.previous-var)"
+    deltaFmt: signed0
+    deltaTone: accent
+    caption: "${arg.horizon} horizon"
+  - id: es
+    kind: metric
+    when: "!is_blank(arg.es)"
+    label: arg.es-label
+    value: arg.es
+    fmt: "%{fmt}"
+    caption: "${arg.horizon} horizon"
+  - id: used
+    kind: gauge
+    when: "!is_blank(arg.limit) && arg.limit > 0"
+    value: arg.var
+    max: arg.limit
+    label: Share of limit used
+    fmt: pct0

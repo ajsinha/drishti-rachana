@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: sensitivity-heatmap-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Sensitivity heatmap'" }
+data:
+  dv01:
+    rows:
+      - { CCY: USD, TENOR: 2Y, DV01_USD: 4200 }
+      - { CCY: USD, TENOR: 10Y, DV01_USD: -2100 }
+      - { CCY: EUR, TENOR: 2Y, DV01_USD: 900 }
+      - { CCY: EUR, TENOR: 10Y, DV01_USD: 1600 }
+panels:
+  - use: finance/sensitivity-heatmap@1
+    with:
+      rows: { from: $.dv01, columns: { factor: CCY, bucket: TENOR, value: DV01_USD } }

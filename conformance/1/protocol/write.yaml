@@ -1,0 +1,338 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/write
+since: "1.0"
+profile: core
+verified: false
+description: "Writes to a live table (PROTOCOL 16 Writes, LIVE_TABLES 1.6 and 5): applied, queued and held changes; a repeated change id answers its first answer; the version guard (409 naming the version, who and when); the declaration's rules (422 naming the column and rule); unsupported (405); forbidden for a switch that is off, no right, a column not editable or the host's refusal (403, audited); a row outside the reader's scope (404); the tray <name>.changes lists only the caller's own. The case's writer applies a change to the source and pushes it on the stream, so an edit shows when the source's change arrives (PROTOCOL 15 adapter: edit, /_test/outbox). Run with protocol_check.py --live."
+cases:
+  - id: an-applied-change-shows-when-the-source-sends-it
+    kind: protocol
+    source: "PROTOCOL 16 Writes; LIVE_TABLES 1.6 step 4 (the engine never changes its rows itself)"
+    fixture: &applied
+      name: trades
+      edit: { sink: applied }
+      declaration: &decl |
+        rachana: 1
+        live-table: trades
+        snapshot: trades
+        stream: trades.live
+        key: id
+        version: v
+        changed-by: by
+        changed-at: at
+        tray: true
+        columns: [ { name: id }, { name: v, type: integer }, { name: book }, { name: qty, type: integer }, { name: status }, { name: by }, { name: at, type: timestamp } ]
+        edit:
+          new: drawer
+          fields:
+            - { id: qty, bind: qty, type: number, min: 0, required: true }
+            - { id: status, bind: status, type: enum, options: [NEW, DONE] }
+          reason: optional
+      rows: &rows
+        - { id: a, v: 1, book: A, qty: 1, status: NEW, by: system, at: "2026-11-21T09:00:00Z" }
+        - { id: b, v: 1, book: B, qty: 2, status: NEW, by: system, at: "2026-11-21T09:00:00Z" }
+      readers: &readers
+        alice: { rowFilter: { op: "==", args: [ { col: book }, { lit: A } ] }, editable: [qty, status] }
+        bob: { editable: [qty, status] }
+        viv: {}
+        fred: { editable: [qty, status], mayEdit: "a forged request: the trader's book is closed" }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, op: update, key: [a], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 200, body: { change: c1, state: applied, version: 2 } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, qty, by], filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { values: [ [a, 2, 5, bob] ] } }
+
+  - id: a-queued-change-is-sent-by-the-outbox
+    kind: protocol
+    source: "LIVE_TABLES 1.6 (Outbox: journalled before it is acknowledged, then sent)"
+    fixture: &outbox { name: trades, edit: { sink: outbox }, declaration: *decl, rows: *rows, readers: *readers }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [b], basedOn: 1, set: { status: DONE } } }
+        expect: { status: 200, body: { change: c1, state: queued } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, status], filter: { op: "==", args: [ { col: id }, { lit: b } ] } } }
+        expect: { status: 200, body: { values: [ [b, 1, NEW] ] } }
+      - request: { method: POST, path: /_test/outbox, body: { flush: true } }
+        expect: { status: 200, body: { sent: 1, entries: [] } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, status], filter: { op: "==", args: [ { col: id }, { lit: b } ] } } }
+        expect: { status: 200, body: { values: [ [b, 2, DONE] ] } }
+
+  - id: a-repeated-change-id-answers-the-first-answer
+    kind: protocol
+    source: "PROTOCOL 16 (the same id again answers the first answer); LIVE_TABLES 1.6 exactly once"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 200, body: { change: c1, state: queued } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 200, body: { change: c1, state: queued } }
+      - request: { method: POST, path: /_test/outbox, body: { flush: true } }
+        expect: { status: 200, body: { sent: 1 } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 200, body: { change: c1, state: sent, version: 2 } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, qty], filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { values: [ [a, 2, 7] ] } }
+
+  - id: a-change-id-is-its-makers-only
+    kind: protocol
+    source: "LIVE_TABLES 5 (a forged request): another reader repeating an id is refused and audited"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 200, body: { state: queued } }
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 403, body: { error: { code: rdp.write.forbidden } } }
+
+  - id: a-held-change-waits-for-the-hosts-decision
+    kind: protocol
+    source: "LIVE_TABLES 1.6, LT-9 (four eyes is the host's: held, release)"
+    fixture: &held { name: trades, edit: { sink: outbox, hold: true }, declaration: *decl, rows: *rows, readers: *readers }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 9 }, reason: client asked } }
+        expect: { status: 200, body: { change: c1, state: held, message: waiting for a second person } }
+      - request: { method: POST, path: /_test/outbox, body: { flush: true } }
+        expect: { status: 200, body: { sent: 0, entries: [ { change: c1, state: held } ] } }
+      - request: { method: POST, path: /_test/outbox, body: { release: c1, by: carol, flush: true } }
+        expect: { status: 200, body: { sent: 1, entries: [] } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, qty], filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { values: [ [a, 2, 9] ] } }
+      - request: { method: POST, path: /_test/audit }
+        expect: { status: 200, body: [ { event: write-submitted, caller: bob, change: c1, columns: [qty], from: { qty: 1 }, to: { qty: 9 } }, { event: write-held, caller: bob, change: c1 }, { event: write-released, change: c1, decidedBy: carol }, { event: write-sent, change: c1 } ] }
+
+  - id: a-rejected-change-is-never-sent
+    kind: protocol
+    source: "LIVE_TABLES 1.6, LT-9 (reject)"
+    fixture: *held
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 9 } } }
+        expect: { status: 200, body: { state: held } }
+      - request: { method: POST, path: /_test/outbox, body: { reject: c1, by: carol, reason: limit breached, flush: true } }
+        expect: { status: 200, body: { sent: 0, entries: [] } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, qty], filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { values: [ [a, 1, 1] ] } }
+
+  - id: a-conflict-names-the-version-who-and-when
+    kind: protocol
+    source: "PROTOCOL 16, 10.1 rdp.write.conflict; LIVE_TABLES 1.6 step 3"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, book: A, qty: 3, status: NEW, by: dana, at: "2026-11-21T10:00:00Z" } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 409, body: { error: { code: rdp.write.conflict, current: { version: 2, by: dana, at: "2026-11-21T10:00:00Z" } } } }
+      - request: { method: POST, path: /_test/audit }
+        expect: { status: 200, body: [ { event: write-conflicted, caller: bob, change: c1 } ] }
+
+  - id: an-invalid-change-names-the-column-and-rule
+    kind: protocol
+    source: "PROTOCOL 16, 10.1 rdp.write.invalid (Core's form checker, the code the page ran)"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: -1, status: GONE } } }
+        expect: { status: 422, body: { error: { code: rdp.write.invalid, fields: [ { column: qty, rule: value }, { column: status, rule: value } ] } } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c2, key: [a], set: { qty: 1 } } }
+        expect: { status: 422, body: { error: { code: rdp.write.invalid, fields: [ { rule: basedOn } ] } } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c3, op: add, key: [z], set: { status: NEW } } }
+        expect: { status: 422, body: { error: { code: rdp.write.invalid, fields: [ { column: qty, rule: required } ] } } }
+
+  - id: a-table-without-edits-takes-no-writes
+    kind: protocol
+    source: "PROTOCOL 16, 10.1 rdp.write.unsupported"
+    fixture:
+      name: trades
+      declaration: |
+        rachana: 1
+        live-table: trades
+        snapshot: trades
+        stream: trades.live
+        key: id
+        version: v
+        columns: [ { name: id }, { name: v, type: integer }, { name: qty, type: integer } ]
+      rows: [ { id: a, v: 1, qty: 1 } ]
+      readers: { bob: { editable: [qty] } }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 405, body: { error: { code: rdp.write.unsupported } } }
+
+  - id: the-tray-takes-no-writes
+    kind: protocol
+    source: "PROTOCOL 16 (<name>.changes is read only)"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades.changes/write, body: { id: c1, key: [x], basedOn: 1, set: { state: sent } } }
+        expect: { status: 405, body: { error: { code: rdp.write.unsupported } } }
+
+  - id: forbidden-when-the-switch-is-off
+    kind: protocol
+    source: "LIVE_TABLES 1.6 (the site switch), 5 (audited)"
+    fixture: { name: trades, edit: { sink: outbox, switch: "off" }, declaration: *decl, rows: *rows, readers: *readers }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/trades }
+        expect: { status: 200, body: { name: trades } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 403, body: { error: { code: rdp.write.forbidden } } }
+      - request: { method: POST, path: /_test/audit }
+        expect: { status: 200, body: [ { event: write-refused, caller: bob, change: c1, columns: [qty] } ] }
+
+  - id: forbidden-without-the-right
+    kind: protocol
+    source: "LIVE_TABLES 5 (a reader without the right, a forged request included)"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: viv } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 403, body: { error: { code: rdp.write.forbidden } } }
+      - request: { method: POST, path: /_test/as, body: { reader: fred } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c2, key: [a], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 403, body: { error: { code: rdp.write.forbidden, message: "a forged request: the trader's book is closed" } } }
+      - request: { method: POST, path: /_test/audit }
+        expect: { status: 200, body: [ { event: write-refused, caller: viv, change: c1 }, { event: write-refused, caller: fred, change: c2 } ] }
+
+  - id: forbidden-for-a-column-the-declaration-does-not-edit
+    kind: protocol
+    source: "LIVE_TABLES 1.6 (the declaration has edit: naming the column)"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { book: B } } }
+        expect: { status: 403, body: { error: { code: rdp.write.forbidden } } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c2, key: [a], basedOn: 1, set: { v: 9 } } }
+        expect: { status: 403, body: { error: { code: rdp.write.forbidden } } }
+
+  - id: a-row-outside-the-readers-scope-is-absent
+    kind: protocol
+    source: "LIVE_TABLES 5 (row outside the reader's scope: 404, audited write-refused)"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [b], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 404, body: { error: { code: rdp.table.unknown } } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c2, key: [nope], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 404, body: { error: { code: rdp.table.unknown } } }
+      - request: { method: POST, path: /_test/audit }
+        expect: { status: 200, body: [ { event: write-refused, caller: alice, change: c1 }, { event: write-refused, caller: alice, change: c2 } ] }
+
+  - id: the-tray-lists-only-the-callers-changes
+    kind: protocol
+    source: "PROTOCOL 16, LT-10 (<name>.changes, filtered for the caller)"
+    fixture: *held
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: b1, key: [b], basedOn: 1, set: { qty: 4 } } }
+        expect: { status: 200, body: { state: held } }
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: a1, key: [a], basedOn: 1, set: { status: DONE } } }
+        expect: { status: 200, body: { state: held } }
+      - request: { method: POST, path: /tables/trades.changes/query, body: { columns: [change, state, key, set, by] } }
+        expect: { status: 200, body: { values: [ [a1, held, [a], { status: DONE }, alice] ], total: 1 } }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: trades.changes } }
+        expect: { status: 200, body: { body: { recovered: true } } }
+      - request: { method: POST, path: /_test/outbox, body: { release: a1, by: carol } }
+        expect: { status: 200, body: { entries: [ { change: b1, state: held }, { change: a1, state: queued } ] } }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { update: [ { change: a1, state: queued } ] } } ] }
+      - request: { method: POST, path: /_test/outbox, body: { flush: true } }
+        expect: { status: 200, body: { sent: 1 } }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { remove: [ [a1] ] } } ] }
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades.changes/query, body: { columns: [change, by] } }
+        expect: { status: 200, body: { values: [ [b1, bob] ], total: 1 } }
+
+  - id: a-write-over-the-bridge
+    kind: protocol
+    source: "PROTOCOL 12 (write, answered by res)"
+    fixture: *applied
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: write, id: r1, table: trades, body: { id: c1, key: [a], basedOn: 1, set: { qty: 3 } } } }
+        expect: { status: 200, body: { t: res, re: r1, body: { change: c1, state: applied, version: 2 } } }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: write, id: r2, table: trades, body: { id: c2, key: [a], basedOn: 1, set: { qty: 4 } } } }
+        expect: { status: 200, body: { t: res, re: r2, error: { code: rdp.write.conflict, current: { version: 2, by: bob } } } }
+
+  - id: the-schema-offers-write-to-an-editor-only
+    kind: protocol
+    source: "PROTOCOL 16 schema write { columns, reason }; can: write"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/trades }
+        expect: { status: 200, body: { name: trades, write: { columns: { qty: { type: number, min: 0, required: true }, status: { type: enum, options: [NEW, DONE] } }, reason: optional } } }
+      - request: { method: POST, path: /_test/as, body: { reader: viv } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables } 
+        expect: { status: 200, body: { tables: [ { name: trades, can: [page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay, arrow, write] }, { name: trades.changes } ] } }
+
+  - id: a-sink-that-refuses-answers-refused
+    kind: protocol
+    source: "LIVE_TABLES 1.6 step 4 (the sink answers refused)"
+    fixture: { name: trades, edit: { sink: refuse }, declaration: *decl, rows: *rows, readers: *readers }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 200, body: { change: c1, state: refused, message: the source is closed for the day } }
+
+  - id: a-failed-send-stays-queued-and-is-tried-again
+    kind: protocol
+    source: "LIVE_TABLES 1.6 (the outbox tries again; later changes never overtake)"
+    fixture: { name: trades, edit: { sink: outbox, writerFails: 1 }, declaration: *decl, rows: *rows, readers: *readers }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 200, body: { state: queued } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c2, key: [b], basedOn: 1, set: { qty: 6 } } }
+        expect: { status: 200, body: { state: queued } }
+      - request: { method: POST, path: /_test/outbox, body: { flush: true } }
+        expect: { status: 200, body: { sent: 0, entries: [ { change: c1, state: queued }, { change: c2, state: queued } ] } }
+      - request: { method: POST, path: /_test/outbox, body: { flush: true } }
+        expect: { status: 200, body: { sent: 2, entries: [] } }
+
+  - id: a-paged-table-guards-the-sources-own-row
+    kind: protocol
+    source: "LIVE_TABLES 1.3, 1.6 (a paged table holds the live side only: the guard reads the source's row by key)"
+    fixture: { name: trades, tier: columns, edit: { sink: applied }, declaration: *decl, rows: *rows, readers: *readers }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [b], basedOn: 2, set: { qty: 5 } } }
+        expect: { status: 409, body: { error: { code: rdp.write.conflict, current: { version: 1, by: system } } } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c2, key: [b], basedOn: 1, set: { qty: 5 } } }
+        expect: { status: 200, body: { change: c2, state: applied, version: 2 } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, qty], sort: [ { col: id } ] } }
+        expect: { status: 200, body: { values: [ [a, 1, 1], [b, 2, 5] ], total: 2 } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c3, key: [b], basedOn: 1, set: { qty: 6 } } }
+        expect: { status: 409, body: { error: { code: rdp.write.conflict, current: { version: 2, by: bob } } } }

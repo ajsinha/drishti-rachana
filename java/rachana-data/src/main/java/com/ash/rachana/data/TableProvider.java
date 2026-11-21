@@ -68,4 +68,12 @@ public interface TableProvider {
      * refuses with {@code rdp.query.unsupported}.
      */
     Subscription subscribe(String name, Subscribe request, Consumer<Map<String, Object>> sink, Object caller);
+
+    /**
+     * A write to a table (PROTOCOL 16, {@code can: write}): {@code {id, op, key, basedOn, set, from?, reason?}}, answered {@code {change,
+     * state, message, version?}}. A provider without writes answers {@code 405 rdp.write.unsupported} (the default).
+     */
+    default Map<String, Object> write(String name, Object change, Object caller) {
+        throw ProtocolError.of("rdp.write.unsupported", 405, name + " takes no writes", "table", name);
+    }
 }

@@ -12,6 +12,7 @@ import com.ash.rachana.data.Subscription;
 import com.ash.rachana.data.TableProvider;
 import com.ash.rachana.live.spi.AuditSink;
 import com.ash.rachana.live.spi.Authoriser;
+import com.ash.rachana.live.spi.ChangeSink;
 import com.ash.rachana.live.spi.LiveStream;
 import com.ash.rachana.live.spi.ReaderView;
 import com.ash.rachana.live.spi.SnapshotSource;
@@ -40,8 +41,9 @@ import java.util.function.UnaryOperator;
  * source and live stream ({@link LiveTable}), pages it ({@link StoreOverlay} when the source is paged), and sends each reader the
  * patches of their own window. Rights are the host's: every request asks the {@link Authoriser} for the reader's {@link ReaderView} and
  * keeps to it (row scope pushed down, masks applied before a value can pick, order or filter a row; LIVE_TABLES 3, 5). Without an
- * authoriser every read is refused unless the host says it is a single-application bridge host ({@link #openReads()}); there is no
- * write path here (G3). One {@code LiveTable} per declaration however many readers; tables open on their first read and close when
+ * authoriser every read is refused unless the host says it is a single-application bridge host ({@link #openReads()}). Writes (the
+ * guarded edit path, LIVE_TABLES 1.6) need a declaration with {@code edit:}, an authoriser and a bound {@link ChangeSink} ({@link #sink});
+ * a table with edits and {@code tray: true} also serves its pending changes as {@code <name>.changes}. One {@code LiveTable} per declaration however many readers; tables open on their first read and close when
  * nobody has read them for {@code idleCloseMs}. Mount it on a {@code ProtocolHost}. Thread-safe.
  */
 public final class LiveTables implements TableProvider, AutoCloseable {
@@ -88,7 +90,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
      * redaction), their schema (masked columns marked) and the row filter pushed to the source.
      */
     record Reader(String audience, Predicate<Map<String, Object>> scope, UnaryOperator<Map<String, Object>> shown, TableSchema schema,
-            Object rowFilter, boolean unrestricted) {}
+            Object rowFilter, boolean unrestricted, Set<String> editable, String readOnlyReason) {}
 
     private final Resolver resolver;
     private final Options options;
@@ -101,6 +103,8 @@ public final class LiveTables implements TableProvider, AutoCloseable {
     private volatile AuditSink audit = AuditSink.NONE;
     private volatile boolean openReads;
     private final ScheduledExecutorService upkeep;
+    private final WriteGuard guard = new WriteGuard(this);
+    private final Map<String, String> trays = new ConcurrentHashMap<>();          // a tray's name -> its table's
 
     public LiveTables(Resolver resolver, Options options, Clock clock) {
         this.resolver = resolver;
@@ -139,6 +143,31 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         return this;
     }
 
+    /**
+     * Binds the host's write path (LT-8): its own write-back, or {@link Outbox} for a host without one. Without a sink no table takes
+     * writes ({@code can} has no {@code write}).
+     */
+    public LiveTables sink(ChangeSink s) {
+        guard.sink(s);
+        return this;
+    }
+
+    /** The site switch of a table's edits (on by default): off, every write is refused ({@code 403}) and audited. */
+    public LiveTables edits(String table, boolean on) {
+        guard.edits(table, on);
+        return this;
+    }
+
+    /** The host's decision for a held change (four eyes is the host's, LT-9): send it. Audited {@code write-released}. */
+    public ChangeSink.Outcome release(String table, String changeId, String by) {
+        return guard.release(table, changeId, by);
+    }
+
+    /** The host's decision for a held change: drop it with the reason. Audited {@code write-rejected}. */
+    public ChangeSink.Outcome reject(String table, String changeId, String by, String reason) {
+        return guard.reject(table, changeId, by, reason);
+    }
+
     // ---- declarations ------------------------------------------------------------------------------------------------
 
     /** Adds or replaces a declaration (a file's, or a host's default made in code); an open table of that name is closed. */
@@ -152,6 +181,37 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         if (t != null) {
             t.close();
         }
+        String tray = spec.name() + WriteGuard.TRAY;
+        if (spec.edit() != null && spec.tray()) {
+            specs.put(tray, WriteGuard.traySpec(spec));
+            trays.put(tray, spec.name());
+        } else if (trays.remove(tray) != null) {
+            specs.remove(tray);
+        }
+        LiveTable tt = open.remove(tray);
+        if (tt != null) {
+            tt.close();
+        }
+    }
+
+    boolean isTray(String name) {
+        return trays.containsKey(name);
+    }
+
+    LiveTableSpec spec(String name) {
+        LiveTableSpec spec = specs.get(name);
+        if (spec == null) {
+            throw ProtocolError.of("rdp.table.unknown", 404, "no table '" + name + "'", "table", name);
+        }
+        return spec;
+    }
+
+    Authoriser authoriserOrNull() {
+        return authoriser;
+    }
+
+    Clock clock() {
+        return clock;
     }
 
     /**
@@ -201,8 +261,11 @@ public final class LiveTables implements TableProvider, AutoCloseable {
             synchronized (this) {
                 t = open.get(name);
                 if (t == null) {
-                    LiveTable made = new LiveTable(spec, resolver.snapshot(spec.snapshot()),
-                            spec.stream() == null ? null : resolver.stream(spec.stream()), options, clock, queries);
+                    String base = trays.get(name);
+                    LiveTable made = base != null
+                            ? new LiveTable(spec, guard.traySource(base), guard.trayStream(name), options, clock, queries)
+                            : new LiveTable(spec, resolver.snapshot(spec.snapshot()),
+                                    spec.stream() == null ? null : resolver.stream(spec.stream()), options, clock, queries);
                     try {
                         made.open();
                     } catch (ProtocolError e) {
@@ -262,6 +325,10 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         }
         ReaderView v;
         Authoriser a = authoriser;
+        String base = trays.get(name);
+        if (base != null) {
+            return trayReader(caller, name, base, spec);
+        }
         if (a != null) {
             try {
                 v = a.view(caller, name);
@@ -281,6 +348,19 @@ public final class LiveTables implements TableProvider, AutoCloseable {
             throw ProtocolError.of("rdp.forbidden", 403, "no authoriser is installed: reads are refused", "table", name);
         }
         return reader(spec, v);
+    }
+
+    /** A tray's reader: whoever may read the table reads their own pending changes of it (by their name), nothing else. */
+    private Reader trayReader(Object caller, String name, String base, LiveTableSpec spec) {
+        reader(caller, base);                                           // may they read the table at all (refusals as for it)
+        Authoriser a = authoriser;
+        String who = a == null ? null : a.who(caller);
+        if (who == null) {
+            event(caller, name, "read-refused", "the caller has no name");
+            throw ProtocolError.of("rdp.forbidden", 403, "a tray lists the caller's own changes: this caller has no name", "table", name);
+        }
+        Object mine = Map.of("op", "==", "args", List.of(Map.of("col", "by"), Map.of("lit", who)));
+        return reader(spec, new ReaderView("by:" + who, mine, Set.of(), null, null, Set.of(), "a tray is read only"));
     }
 
     private Reader reader(LiveTableSpec spec, ReaderView v) {
@@ -318,16 +398,22 @@ public final class LiveTables implements TableProvider, AutoCloseable {
             }
             return redact == null ? m : redact.apply(m);
         };
-        return new Reader(v.audience(), scope, shown, schema, v.rowFilter(), v.unrestricted());
+        return new Reader(v.audience(), scope, shown, schema, v.rowFilter(), v.unrestricted(), v.editableColumns(), v.readOnlyReason());
     }
 
     private void event(Object caller, String table, String event, String reason) {
+        event(caller, table, event, reason, Map.of());
+    }
+
+    /** One audit event ({@link AuditSink}): its time, caller, table, name, reason and the edit path's fields. */
+    void event(Object caller, String table, String event, String reason, Map<String, Object> more) {
         Map<String, Object> e = new LinkedHashMap<>();
         e.put("at", clock.instant().toString());
         e.put("caller", caller);
         e.put("table", table);
         e.put("event", event);
         e.put("reason", reason);
+        e.putAll(more);
         audit.record(e);
     }
 
@@ -353,7 +439,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
                 m.put("title", s.title());
             }
             m.put("key", s.key());
-            m.put("can", s.schema().get("can"));
+            m.put("can", can(s));
             out.add(m);
         }
         return out;
@@ -369,7 +455,12 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         Reader r = reader(caller, name);
         LiveTable t = table(name);
         Map<String, Object> doc = new LinkedHashMap<>(r.schema().doc());
-        if (t.stream != null) {
+        doc.put("can", can(t.spec));
+        Map<String, Object> w = guard.schemaWrite(t.spec, r);
+        if (w != null) {
+            doc.put("write", w);
+        }
+        if (t.stream != null && !trays.containsKey(name)) {
             String p = t.pausedReason();
             Map<String, Object> live = new LinkedHashMap<>();
             live.put("state", p == null ? "up" : "paused");
@@ -383,6 +474,26 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         }
         doc.put("version", t.version());
         return doc;
+    }
+
+    /** A table's {@code can}: the declaration's, with {@code write} when it takes writes. */
+    private Object can(LiveTableSpec spec) {
+        Object c = spec.schema().get("can");
+        if (guard.writable(spec) && c instanceof List<?> l) {
+            List<Object> out = new ArrayList<>(l);
+            out.add("write");
+            return out;
+        }
+        return c;
+    }
+
+    /**
+     * A write (PROTOCOL 16; LIVE_TABLES 1.6): {@code {id, op, key, basedOn, set, from?, reason?}} checked by the guard and passed to the bound
+     * sink; answered {@code {change, state, message, version?}}.
+     */
+    @Override
+    public Map<String, Object> write(String name, Object change, Object caller) {
+        return guard.write(name, change, caller);
     }
 
     @Override

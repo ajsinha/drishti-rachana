@@ -19,7 +19,11 @@
 // Portable-view principles: every address the element is given is resolved once, against the page, to an absolute address; a link of
 // the view gets its address only from the host's linkResolver and only when that address is absolute (a relative one would mean
 // something else in every page that embeds the view): otherwise the link is a button that raises elements-view:link for the host.
-// Events: rachana-view:ready {viewModel}, rachana-view:change {frames | viewModel}, rachana-view:error {error}.
+// Live tables' edits (PROTOCOL 16): the painter's live panel saves a cell or record through options.tables(ref).write; the element sends
+// it with its DataClient (the CSRF token from <meta name="rachana-csrf"> when the page has one), asks host.write({table, change}) first
+// when the host has it (false refuses), and raises rachana-view:write {table, change, answer | error} after. element.write(table, change)
+// does the same for a host's own button.
+// Events: rachana-view:ready {viewModel}, rachana-view:change {frames | viewModel}, rachana-view:error {error}, rachana-view:write.
 import { DataClient, liveTables } from './data_client.js';
 import { Screen, loadRuntime } from './screen.js';
 
@@ -35,7 +39,7 @@ export function defineRachanaView(o) {
   class RachanaView extends w.HTMLElement {
     static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'level', 'today', 'allow', 'live', 'form', 'libraries']; }
 
-    constructor() { super(); this._sutra = null; this.record = null; this.controls = {}; this.linkResolver = null; this.fetch = null; this.files = null; this.host = null; this.screen = null; this._gen = 0; }
+    constructor() { super(); this.client = null; this._sutra = null; this.record = null; this.controls = {}; this.linkResolver = null; this.fetch = null; this.files = null; this.host = null; this.screen = null; this._gen = 0; }
 
     set sutra(text) { this._sutra = text; if (this.isConnected) this.refresh(); }
 
@@ -74,8 +78,11 @@ export function defineRachanaView(o) {
       }
       const rt = await loadRuntime(this.abs(this.getAttribute('runtime') || 'rachana.runtime.js'), formats, 'core');
       if (gen !== this._gen) return;
+      const meta = w.document.querySelector && w.document.querySelector('meta[name="rachana-csrf"]');
       const client = this.getAttribute('data') ? new DataClient({ base: this.abs(this.getAttribute('data')), fetch: f, origin: w.location.origin,
-        allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null }) : null;
+        allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null,
+        csrf: meta ? meta.getAttribute('content') : null }) : null;
+      this.client = client;
       const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || '1.1', today: this.getAttribute('today') || undefined,
         ctl: this.controls, record: this.record, client, files });
       this.screen = screen;
@@ -97,7 +104,7 @@ export function defineRachanaView(o) {
         check: (req) => (this.screen ? this.screen.check(req.panel, req.values) : []),      // a form's rules are the runtime's, never the painter's
         confirm: hooks().confirm ? (text) => hooks().confirm(text) : undefined, allowed: hooks().allowed ? (name) => hooks().allowed(name) : undefined,
         notify: (e, where) => { if (hooks().notify) hooks().notify(e, where); }, run: (e, where) => { if (hooks().run) hooks().run(e, where); } };
-      painter.options = { complete: this.hasAttribute('complete'), host, tables: client ? liveTables(client) : undefined, links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
+      painter.options = { complete: this.hasAttribute('complete'), host, tables: client ? liveTables(client, (e) => this.onWrite(e)) : undefined, links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
       painter.viewModel = vm;
       this.emit('ready', { viewModel: vm });
       if (this.hasAttribute('live')) {
@@ -116,6 +123,19 @@ export function defineRachanaView(o) {
       const vm = await this.screen.controls(values);
       if (this.painter) this.painter.viewModel = vm;
       return vm;
+    }
+
+    /** The edit hook of the live panels: the host's write({table, change}) may refuse first; every answer or error is raised. */
+    onWrite(e) {
+      if (e.phase === 'before') return this.host && this.host.write ? this.host.write({ table: e.table, change: e.change }) : true;
+      this.emit('write', e.error ? { table: e.table, change: e.change, error: e.error } : { table: e.table, change: e.change, answer: e.answer });
+      return true;
+    }
+
+    /** A host's own write to a live table of this view's data (PROTOCOL 16), through the same hook. */
+    write(table, change) {
+      if (!this.client) return Promise.reject(new Error('this view has no data address'));
+      return liveTables(this.client, (e) => this.onWrite(e))({ table }).write(change);
     }
 
     fail(error) { this.emit('error', { error }); }

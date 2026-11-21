@@ -336,6 +336,42 @@ final class LiveTable implements LiveStream.Listener {
         }
     }
 
+    /**
+     * The row of a key as the table shows it now, as stored (the edit path's version guard): the held row, or for a paged table the live
+     * side's, else the source's own (fetched by key, or a one-row page of a query-tier source) when it holds the condition; null when
+     * the table has no such row.
+     */
+    Map<String, Object> row(List<Object> key) throws Exception {
+        String k = KeyedRows.keyText(key);
+        synchronized (this) {
+            Row r = rows.get(k);
+            if (r != null) {
+                return r.row();
+            }
+            if (!paged || removed.contains(k)) {
+                return null;
+            }
+        }
+        List<Map<String, Object>> got;
+        try {
+            got = source.fetch(List.of(key));
+        } catch (UnsupportedOperationException e) {
+            List<Object> eq = new ArrayList<>();
+            for (int i = 0; i < spec.key().size(); i++) {
+                eq.add(Map.of("op", "==", "args", List.of(Map.of("col", spec.key().get(i)), Map.of("lit", key.get(i)))));
+            }
+            Map<String, Object> page = source.page(Map.of("filter", eq.size() == 1 ? eq.get(0) : Map.of("op", "&&", "args", eq), "limit", 1L));
+            got = com.ash.rachana.data.TableClient.rows(page);
+        }
+        if (got.isEmpty() || !where.test(got.get(0))) {
+            return null;
+        }
+        synchronized (this) {                                         // it may have arrived on the stream meanwhile
+            Row r = rows.get(k);
+            return r != null ? r.row() : removed.contains(k) ? null : got.get(0);
+        }
+    }
+
     /** A key's row as the table holds it now (the live side's for a paged table; null when not held or removed). */
     synchronized Map<String, Object> current(String keyText) {
         Row r = rows.get(keyText);

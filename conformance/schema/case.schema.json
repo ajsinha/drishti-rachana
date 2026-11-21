@@ -140,7 +140,8 @@
       "type": "object", "additionalProperties": false,
       "properties": {
         "audience": { "type": "string" }, "rowFilter": { "type": "object" },
-        "masked": { "type": "array", "items": { "type": "string" } }, "refuse": { "enum": ["forbidden", "unknown"] }
+        "masked": { "type": "array", "items": { "type": "string" } }, "refuse": { "enum": ["forbidden", "unknown"] },
+        "editable": { "type": "array", "items": { "type": "string" } }, "mayEdit": { "type": "string" }
       }
     },
     "tableSchema": {
@@ -602,7 +603,15 @@
                 },
                 "readers": { "type": "object", "additionalProperties": { "$ref": "#/$defs/readerView" } },
                 "authoriser": { "type": "boolean" },
-                "stream": { "type": "boolean" }
+                "stream": { "type": "boolean" },
+                "edit": {
+                  "description": "The edit path (PROTOCOL 16 Writes): the sink the adapter binds, whether it holds every change, the table's switch, the writer's first failures.",
+                  "type": "object", "additionalProperties": false,
+                  "properties": {
+                    "sink": { "enum": ["outbox", "applied", "refuse", "none"] }, "hold": { "type": "boolean" },
+                    "switch": { "enum": ["on", "off"] }, "writerFails": { "type": "integer", "minimum": 0 }
+                  }
+                }
               }
             }
           ]

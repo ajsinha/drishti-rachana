@@ -50,6 +50,11 @@ import java.util.function.Consumer;
  *       (it starts at 2026-11-21T12:00:00Z) and runs the upkeep
  *       (retention, idle close); answers {@code {open: [names]}}</li>
  *   <li>{@code POST /_test/audit}: the audit events since the last read, as a JSON array (their {@code at} left out)</li>
+ *   <li>The edit path (PROTOCOL 16 Writes): a fixture's {@code edit: {sink?: outbox|applied|refuse|none (default outbox), hold?: bool,
+ *       switch?: on|off, writerFails?: n}}; a reader's view takes {@code editable: [columns]} and {@code mayEdit: <reason to refuse>}. The
+ *       case's writer applies a change to the source (the version plus one, {@code changed-by} the writer, {@code changed-at} the clock) and
+ *       pushes it on the stream, once per change id. {@code POST /_test/outbox} {@code {flush?, release?, reject?, by?, reason?}}: sends the
+ *       outbox's queued changes, or decides a held one as the host; answers {@code {sent, entries: [{change, state}]}}</li>
  * </ul>
  *
  * <p>Usage: {@code java ... -m com.ash.rachana.live/com.ash.rachana.live.LiveReferenceServer [--port 0] [--base /rdp/v1]}; prints
@@ -178,6 +183,10 @@ public final class LiveReferenceServer implements AutoCloseable {
     private volatile TestStream stream;
     private volatile TestClock clock;
     private volatile String name;
+    private volatile Outbox outbox;
+    private volatile LiveTableSpec spec;
+    private final Set<String> written = ConcurrentHashMap.newKeySet();
+    private final AtomicLong failures = new AtomicLong();
 
     public LiveReferenceServer(int port, String base) throws IOException {
         server = new ReferenceServer(port, base, null);
@@ -186,6 +195,7 @@ public final class LiveReferenceServer implements AutoCloseable {
         server.testPath("as", this::as);
         server.testPath("stream", this::stream);
         server.testPath("upkeep", this::upkeep);
+        server.testPath("outbox", this::outbox);
         server.testPath("audit", b -> {
             List<Object> out = new ArrayList<>();
             synchronized (audit) {
@@ -266,7 +276,42 @@ public final class LiveReferenceServer implements AutoCloseable {
                 public ReaderView view(Object caller, String table) throws Refusal {
                     return LiveReferenceServer.this.view(caller);
                 }
+
+                @Override
+                public Decision mayEdit(Object caller, String table, Map<String, Object> change, Map<String, Object> row) {
+                    Map<String, Object> v = caller == null ? null : readers.get(String.valueOf(caller));
+                    return v != null && v.get("mayEdit") != null ? new Decision.Refuse(String.valueOf(v.get("mayEdit"))) : new Decision.Allow();
+                }
             });
+        }
+        written.clear();
+        Map<String, Object> edit = body(b.get("edit"));
+        failures.set(edit.get("writerFails") instanceof Number n ? n.longValue() : 0);
+        Outbox ob = null;
+        String sinkKind = String.valueOf(edit.getOrDefault("sink", "outbox"));
+        boolean hold = Boolean.TRUE.equals(edit.get("hold"));
+        try {
+            switch (sinkKind) {
+                case "outbox" -> ob = new Outbox(new MemoryStore(), this::writeBack, ch -> hold ? "waiting for a second person" : null, c, 3, 1_000);
+                case "applied" -> lt.sink(new com.ash.rachana.live.spi.ChangeSink() {
+                    @Override
+                    public Outcome accept(com.ash.rachana.live.spi.Change ch) throws Exception {
+                        return new Outcome(State.APPLIED, "applied", writeBack(ch));
+                    }
+                });
+                case "refuse" -> lt.sink(ch -> new com.ash.rachana.live.spi.ChangeSink.Outcome(
+                        com.ash.rachana.live.spi.ChangeSink.State.REFUSED, "the source is closed for the day", null));
+                default -> { }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        if (ob != null) {
+            lt.sink(ob);
+        }
+        outbox = ob;
+        if ("off".equals(edit.get("switch"))) {
+            lt.edits(spec.name(), false);
         }
         body(b.get("readers")).forEach((k, v) -> readers.put(k, body(v)));
         try {
@@ -277,6 +322,7 @@ public final class LiveReferenceServer implements AutoCloseable {
         }
         server.host().protocol().add(lt);
         tables = lt;
+        this.spec = spec;
         source = src;
         stream = feed;
         clock = c;
@@ -318,7 +364,94 @@ public final class LiveReferenceServer implements AutoCloseable {
         }
         String audience = v.get("audience") != null ? String.valueOf(v.get("audience"))
                 : com.ash.rachana.parse.Json.write(v.get("rowFilter")) + "|" + masked;
-        return new ReaderView(audience, v.get("rowFilter"), masked, null, null, Set.of(), "read only");
+        Set<String> editable = new LinkedHashSet<>();
+        if (v.get("editable") instanceof List<?> l) {
+            l.forEach(x -> editable.add(String.valueOf(x)));
+        }
+        return new ReaderView(audience, v.get("rowFilter"), masked, null, null, editable, editable.isEmpty() ? "read only" : null);
+    }
+
+    /**
+     * The case's writer (the source system): applies a change once per id to the source's rows (version plus one, {@code changed-by},
+     * {@code changed-at}) and pushes it on the stream, as a source's own change arrives. Fails the first {@code writerFails} times.
+     */
+    private Object writeBack(com.ash.rachana.live.spi.Change ch) throws IOException {
+        if (failures.getAndUpdate(n -> Math.max(0, n - 1)) > 0) {
+            throw new IOException("the source did not answer");
+        }
+        LiveTableSpec sp = spec;
+        TestSource src = source;
+        Map<String, Object> row;
+        synchronized (src) {
+            Map<String, Object> cur = src.rows.get(KeyedRows.keyText(ch.key()));
+            if (!written.add(ch.id())) {                              // applied before: the same change again is already applied
+                return cur == null ? null : cur.get(sp.version());
+            }
+            if (ch.op().equals("remove")) {
+                src.remove(ch.key());
+                row = null;
+            } else {
+                row = new LinkedHashMap<>(cur == null ? Map.of() : cur);
+                for (int i = 0; i < sp.key().size(); i++) {
+                    row.put(sp.key().get(i), ch.key().get(i));
+                }
+                row.putAll(ch.set());
+                Object v = cur == null ? null : cur.get(sp.version());
+                row.put(sp.version(), v instanceof Number n ? n.longValue() + 1 : 1L);
+                if (sp.changedBy() != null) {
+                    row.put(sp.changedBy(), ch.by());
+                }
+                if (sp.changedAt() != null) {
+                    row.put(sp.changedAt(), clock.instant().toString());
+                }
+                src.put(row);
+            }
+        }
+        LiveStream.Listener l = stream == null ? null : stream.listener;
+        if (l != null) {
+            if (row == null) {
+                l.delete(ch.key(), null);
+            } else {
+                l.upsert(row, null);
+            }
+        }
+        return row == null ? null : row.get(sp.version());
+    }
+
+    /** {@code /_test/outbox}: send the queued changes, or decide a held one as the host would. */
+    private ProtocolHost.Answer outbox(Object raw) {
+        Map<String, Object> b = body(raw);
+        Outbox ob = outbox;
+        LiveTables lt = tables;
+        if (ob == null || lt == null) {
+            throw ProtocolError.of("rdp.query.unsupported", 422, "the case's table has no outbox", "operation", "outbox");
+        }
+        String by = b.get("by") == null ? "host" : String.valueOf(b.get("by"));
+        if (b.get("release") != null) {
+            lt.release(name, String.valueOf(b.get("release")), by);
+        }
+        if (b.get("reject") != null) {
+            lt.reject(name, String.valueOf(b.get("reject")), by, b.get("reason") == null ? null : String.valueOf(b.get("reason")));
+        }
+        int sent = Boolean.TRUE.equals(b.get("flush")) ? ob.flush() : 0;
+        List<Object> entries = new ArrayList<>();
+        ob.pending(name).forEach(e -> entries.add(Map.of("change", e.change().id(), "state", e.state().wire())));
+        return new ProtocolHost.Answer(200, Map.of("sent", (long) sent, "entries", entries));
+    }
+
+    /** The outbox's journal in memory (the case's host has no disk to keep). */
+    static final class MemoryStore implements com.ash.rachana.live.spi.OutboxStore {
+        private final List<Map<String, Object>> records = new ArrayList<>();
+
+        @Override
+        public synchronized void append(Map<String, Object> record) {
+            records.add(record);
+        }
+
+        @Override
+        public synchronized List<Map<String, Object>> replay() {
+            return new ArrayList<>(records);
+        }
     }
 
     private ProtocolHost.Answer as(Object raw) {

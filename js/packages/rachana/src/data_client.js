@@ -109,11 +109,13 @@ export class DataClient {
    *   `sub` / `unsub` with `msg` pushed back. Only messages from this channel are read (never from page content or another frame).
    * @param {Object} [o.filter] (follow) a filter tree for every subscription: only matching rows (the table must declare changes.filter)
    * @param {number} [o.everyMs] (follow) ask the host to conflate a table's changes to at most one message per everyMs (PROTOCOL 8.4)
+   * @param {string|function} [o.csrf] (write) the host's CSRF token, sent as X-Rachana-CSRF with every write (a function is asked each time)
    */
   constructor(o) {
     this.form = o.form || 'json';
     this.arrow = o.arrow || null;
     this.everyMs = o.everyMs || 0;
+    this.csrf = o.csrf || null;
     if (o.bridge) { this.bridge = new BridgeChannel(o.bridge); this.base = null; return; }
     const origin = o.origin || (typeof location !== 'undefined' ? location.origin : null);
     const base = new URL(o.base, origin || undefined);
@@ -230,6 +232,27 @@ export class DataClient {
   }
 
   /**
+   * A write to a live table (PROTOCOL 16, a table whose can has write): change = {id?, op?, key, basedOn, set, from?, reason?}; an id is
+   * made when absent (a ULID: sending the same change again answers the first answer, so a retry keeps its id). Resolves to {change,
+   * state: applied | queued | held | refused, message, version?}; a refusal rejects with a DataError (rdp.write.forbidden 403,
+   * rdp.write.conflict 409 with error.current {version, by, at}, rdp.write.invalid 422 with error.fields [{column, rule, message}],
+   * rdp.write.unsupported 405). Over HTTP the CSRF token (o.csrf) goes as X-Rachana-CSRF; over the bridge a `write` message.
+   */
+  async write(table, change) {
+    const body = Object.assign({ op: 'update' }, change || {});
+    if (!body.id) body.id = ulid();
+    if (this.bridge) return this.bridge.write(table, body);
+    const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
+    const token = typeof this.csrf === 'function' ? this.csrf() : this.csrf;
+    if (token) headers['X-Rachana-CSRF'] = token;
+    const r = await this.fetch(`${this.base}/tables/${encodeURIComponent(table)}/write`, { method: 'POST', headers, body: JSON.stringify(body) });
+    const text = await r.text();
+    const doc = text ? JSON.parse(text) : null;
+    if (r.status !== 200) throw new DataError(r.status, doc && doc.error);
+    return doc;
+  }
+
+  /**
    * Changes the window of a windowed subscription (`sub` from its `subd` frame; PROTOCOL 16): the keys the page now shows and whether it
    * starts at the top of the table's own order. Over HTTP `POST {base}/changes/{sub}/window`, over the bridge a `win` message. Only the
    * subscription's own caller may; `rdp.table.unknown` otherwise.
@@ -240,6 +263,20 @@ export class DataClient {
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ keys: keys || [], top: !!top }) });
     if (r.status !== 204 && r.status !== 200) { const t = await r.text(); throw new DataError(r.status, t ? JSON.parse(t).error : null); }
   }
+}
+
+const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+/** A ULID (time, then 80 random bits, Crockford base 32): a change's own id, made by the client (PROTOCOL 16). */
+export function ulid(now) {
+  let t = typeof now === 'number' ? now : Date.now(), head = '';
+  for (let i = 0; i < 10; i++) { head = CROCKFORD[t % 32] + head; t = Math.floor(t / 32); }
+  const r = new Uint8Array(16);
+  if (globalThis.crypto && globalThis.crypto.getRandomValues) globalThis.crypto.getRandomValues(r);
+  else for (let i = 0; i < 16; i++) r[i] = Math.floor(Math.random() * 256);
+  let tail = '';
+  for (let i = 0; i < 16; i++) tail += CROCKFORD[r[i] % 32];
+  return head + tail;
 }
 
 /** Base64 (a bridge res.arrow buffer in JSON) as bytes; a platform's transferable buffer is used as it is. */
@@ -298,6 +335,11 @@ export class BridgeChannel {
     return () => { live = false; if (id) { this.subs.delete(id); this.ch.post({ rdp: 1, t: 'unsub', id }); } };
   }
 
+  /** A write (PROTOCOL 12 `write`, 16): answered by res whose body is {change, state, message, version?}. */
+  write(table, change) {
+    return this.send(() => ({ t: 'write', table, body: change }));
+  }
+
   /** A windowed subscription's window changed (PROTOCOL 16 `win`). */
   window(sub, keys, top) {
     return this.send(() => ({ t: 'win', sub, keys: keys || [], top: !!top })).then(() => undefined);
@@ -308,16 +350,34 @@ export class BridgeChannel {
  * The live tables of a view for Drishti Elements' painter (its options.tables; contract 1.2, panel kind live): for a dataset's live
  * reference {table, window, top, filter}, page(query) reads one page and follow(after, keys, top, onPatch, onGap) subscribes with that
  * window (PROTOCOL 16; a table whose schema has no changes is not followed, one without changes.window gets every patch), passes each patch on in seq order and calls onGap on a gap, another epoch or a skipped seq (the painter reads
- * its page again). The answer's window(keys, top) moves the window; stop() ends it.
+ * its page again). The answer's window(keys, top) moves the window; stop() ends it. write(change) is the live panel's edit (PROTOCOL 16):
+ * the painter calls it when a cell or record is saved, with {key, basedOn, set, reason?} (an id is made); onWrite (the view's hook) sees
+ * every change and its answer or error, and may refuse one first by returning false.
  * @param {DataClient} client
+ * @param {function} [onWrite] ({table, change, answer?, error?, phase: 'before' | 'after'}) => false to refuse a change before it is sent
  * @returns {function(Object): {page: function(Object): Promise<Object>, follow: function(*, Array, boolean, function, function): Object}}
  */
-export function liveTables(client) {
+export function liveTables(client, onWrite) {
   return (ref) => {
     let can = null;                                                  // the table's capabilities: a table without changes is read, never followed
     const caps = () => can || (can = client.schema(ref.table).then((s) => (s && s.can) || [], () => []));
     return {
       page: (query) => client.page(ref.table, query),
+      async write(change) {
+        const c = Object.assign({ op: 'update' }, change);
+        if (!c.id) c.id = ulid();
+        if (onWrite && onWrite({ table: ref.table, change: c, phase: 'before' }) === false) {
+          throw new DataError(0, { code: 'rdp.write.forbidden', message: 'the page refused the change' });
+        }
+        try {
+          const answer = await client.write(ref.table, c);
+          if (onWrite) onWrite({ table: ref.table, change: c, answer, phase: 'after' });
+          return answer;
+        } catch (error) {
+          if (onWrite) onWrite({ table: ref.table, change: c, error, phase: 'after' });
+          throw error;
+        }
+      },
       follow(after, keys, top, onPatch, onGap) {
         let sub = null, last = after, ended = false, stop = () => {}, opened;
         const ready = new Promise((r) => { opened = r; });

@@ -281,8 +281,9 @@ list of `{ request, expect, capture }`:
 A `protocol` case has no top-level `expect`: each step carries its own.
 
 A fixture may instead be a **live table** ([LIVE_TABLES](../docs/design/LIVE_TABLES.md) 9): `{ name, declaration, rows, tier?,
-sourceColumns?, options?, readers?, authoriser?, stream? }`, the declaration's text served from a source holding `rows`, loaded
-through `POST /_test/live` (PROTOCOL 15). Such a case runs only against a host with live tables; another host reports it
+sourceColumns?, options?, readers?, authoriser?, stream?, edit? }`, the declaration's text served from a source holding `rows`, loaded
+through `POST /_test/live` (PROTOCOL 15). `edit: { sink?: outbox | applied | refuse | none, hold?, switch?: on | off, writerFails? }`
+sets up the edit path (PROTOCOL 16 Writes); a reader's view may add `editable: [columns]` and `mayEdit` (the host's refusal). Such a case runs only against a host with live tables; another host reports it
 `unsupported`.
 
 ### 5.13 `lib`

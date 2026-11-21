@@ -259,6 +259,17 @@ public final class TableClient {
         }
     }
 
+    /**
+     * A write to a live table (PROTOCOL 16, {@code can: write}): {@code change} is {@code {id, op?, key, basedOn, set, from?, reason?}} (the
+     * id a ULID the caller made: sending the same change again answers the first answer). Answers {@code {change, state, message,
+     * version?}}; a refusal is a {@link ProtocolError} ({@code rdp.write.forbidden} 403, {@code rdp.write.conflict} 409 with {@code current},
+     * {@code rdp.write.invalid} 422 with {@code fields}, {@code rdp.write.unsupported} 405).
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> write(String table, Map<String, Object> change) throws IOException, InterruptedException {
+        return (Map<String, Object>) send("POST", "/tables/" + enc(table) + "/write", change);
+    }
+
     private Object send(String method, String path, Object body) throws IOException, InterruptedException {
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(base + path)).header("Accept", "application/json");
         b = body == null ? b.GET() : b.header("Content-Type", "application/json").method(method, HttpRequest.BodyPublishers.ofString(Json.write(body)));

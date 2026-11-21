@@ -88,7 +88,7 @@ public final class ProtocolHost {
 
     /**
      * One request below the base: {@code GET /}, {@code GET /tables}, {@code GET /tables/{name}}, {@code GET /tables/{name}/rows},
-     * {@code POST /tables/{name}/query}, {@code GET /changes} (the frames as a JSON array; an HTTP server streams them).
+     * {@code POST /tables/{name}/query}, {@code POST /tables/{name}/write}, {@code GET /changes} (the frames as a JSON array; an HTTP server streams them).
      *
      * @param caller the opaque object the transport attaches to the request (null for none); handed to the providers
      */
@@ -143,6 +143,9 @@ public final class ProtocolHost {
             TableProvider pr = provider(name);
             if (what.equals("rows") && method.equals("GET")) {
                 return rows(pr, name, fromParams(q), q, caller);
+            }
+            if (what.equals("write") && method.equals("POST")) {        // PROTOCOL 16: a write (can: write)
+                return pr.write(name, body, caller);
             }
             if (what.equals("query") && method.equals("POST")) {
                 if (!(body == null || body instanceof Map)) {
@@ -393,6 +396,16 @@ public final class ProtocolHost {
             case "ping" -> {
                 out.put("t", "pong");
                 out.put("ts", m.get("ts"));
+            }
+            case "write" -> {                                   // PROTOCOL 16: answered by res { change, state, message, version? }
+                out.put("t", "res");
+                out.put("re", m.get("id"));
+                Answer a = handle(caller, "POST", "/tables/" + m.get("table") + "/write", Map.of(), m.get("body"));
+                if (a.status() == 200) {
+                    out.put("body", a.body());
+                } else {
+                    out.put("error", ((Map<String, Object>) a.body()).get("error"));
+                }
             }
             case "tables", "schema", "rows", "query" -> {
                 out.put("t", "res");

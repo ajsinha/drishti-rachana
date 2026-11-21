@@ -328,3 +328,5 @@ as `ControlValues` (the host keeps them per reader; `remember: user` is the host
 already knows); (4) fragments: private state ids `<as>.<name>` (a stateful fragment requires `as:`, `RCH-2115` otherwise),
 `outputs: {name: type}` readable by the user as `state.<as>.<name>`, never writable (`RCH-2117`); (5) S4's view-state
 document after that, with `url: true`. Estimate: S1 5 bd + I1's state effect 3 bd + fragments' state/outputs 3 bd.
+
+**S1-OPEN decided (lead, under the owner's delegation, 2026-11-21):** the recommendation is accepted: S1 is built together with I1 in one lane, in the order (1)–(5) above; (a) `StateValues` beside `ControlValues`; (b) ViewModel 1.2 `state[] {id, value, url, reads}`, an older painter ignores it safely; (c) private ids `<as>.<name>`, a stateful fragment requires `as:`; (d) `url: true` and `remember: user` wait for S4's view-state document.

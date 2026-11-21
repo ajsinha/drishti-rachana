@@ -1,0 +1,51 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: collateral-ledger
+version: 1
+doc:
+  summary: Collateral held and posted - asset, direction, nominal, haircut, value after haircut, with totals by direction.
+  description: >-
+    One row per asset and direction. The value after haircut is supplied, not derived. The totals by direction add the
+    values, so give one currency. A click on a row names the asset.
+  category: counterparty
+  tags: [collateral, ledger, haircut]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per asset and direction
+    columns:
+      asset:     { type: text,   doc: The asset }
+      direction: { type: text,   doc: Held or posted }
+      nominal:   { type: number, doc: The nominal amount }
+      currency:  { type: text,   doc: The currency }
+      haircut:   { type: number, optional: true, doc: The haircut, as a fraction }
+      value:     { type: number, doc: The value after haircut }
+  title: { type: text, default: Collateral, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How amounts are written }
+emits:
+  - { name: open, payload: { asset: text }, doc: An asset was chosen }
+panels:
+  - id: ledger
+    kind: table
+    title: arg.title
+    rows: "map(arg.rows, {asset: @.asset, direction: @.direction, nominal: @.nominal, currency: @.currency, haircut: @.haircut, value: @.value})"
+    search: false
+    columns:
+      - { label: Asset, bind: "@.asset" }
+      - { label: Direction, bind: "@.direction" }
+      - { label: Nominal, bind: "@.nominal", fmt: "%{fmt}" }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Haircut, bind: "@.haircut", fmt: pct2 }
+      - { label: Value, bind: "@.value", fmt: "%{fmt}" }
+    emits: [ { name: open, on: row-click, payload: { asset: "@.asset" } } ]
+  - id: totals
+    kind: table
+    title: Totals by direction
+    rows: "group(arg.rows, 'direction', 'value')"
+    search: false
+    columns:
+      - { label: Direction, bind: "@.label" }
+      - { label: Value, bind: "@.value", fmt: "%{fmt}" }
+      - { label: Items, bind: "@.count", fmt: amount0 }

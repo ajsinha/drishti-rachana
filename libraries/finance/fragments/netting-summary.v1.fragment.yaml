@@ -1,0 +1,62 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: netting-summary
+version: 1
+doc:
+  summary: A netting set in four figures - gross positive, gross negative, net, after collateral - with the largest trades as bars.
+  description: >-
+    The figures arrive as data. The after-collateral figure is the net less the collateral you give, shown as it is, so
+    it can be negative; it is only drawn when a collateral figure is given. The trades are drawn largest by size first.
+  category: counterparty
+  tags: [netting, exposure, summary]
+params:
+  gross-positive: { type: number, required: true, doc: The sum of positive trade values }
+  gross-negative: { type: number, required: true, doc: The sum of negative trade values }
+  net:            { type: number, required: true, doc: The net value of the set }
+  collateral:     { type: number, optional: true, doc: The collateral held against the set }
+  trades:
+    type: table
+    optional: true
+    doc: The trades of the set
+    columns:
+      id:    { type: text,   doc: The trade id }
+      value: { type: number, doc: The trade's value }
+  fmt:   { type: format, default: amount0, doc: How the figures are written }
+  top:   { type: integer, default: 8, min: 1, max: 50, doc: The most trades drawn }
+  title: { type: text, default: Largest trades, doc: The panel's title }
+emits:
+  - { name: bar, payload: { id: text }, doc: A trade bar was chosen }
+panels:
+  - id: positive
+    kind: metric
+    label: Gross positive
+    value: arg.gross-positive
+    fmt: "%{fmt}"
+  - id: negative
+    kind: metric
+    label: Gross negative
+    value: arg.gross-negative
+    fmt: "%{fmt}"
+  - id: net
+    kind: metric
+    label: Net
+    value: arg.net
+    fmt: "%{fmt}"
+  - id: after
+    kind: metric
+    when: "!is_blank(arg.collateral)"
+    label: Net less collateral
+    value: "arg.net - arg.collateral"
+    fmt: "%{fmt}"
+    caption: "${fmt(arg.collateral, '%{fmt}')} collateral"
+  - id: bars
+    kind: hbar
+    when: "size(arg.trades) > 0"
+    title: arg.title
+    rows: "take(sort(map(arg.trades, {id: @.id, value: @.value}), abs(@.value), true), arg.top)"
+    label: id
+    value: value
+    fmt: "%{fmt}"
+    tone: sign
+    emits: [ { name: bar, on: bar-click, payload: { id: "@.id" } } ]

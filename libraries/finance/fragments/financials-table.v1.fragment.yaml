@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: financials-table
+version: 1
+doc:
+  summary: Reported figures with periods across and line items down.
+  description: >-
+    Rows in long form, one per line item and period. The latest periods are shown, by period text in order, so write
+    periods that sort (such as 2025 or 2025-Q4). Rows with the same item and period are added. Growth is not computed:
+    give it as its own line item.
+  category: funds
+  tags: [financials, statements, periods]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per line item and period
+    columns:
+      item:   { type: text,   doc: The line item }
+      period: { type: text,   doc: The period, written so that periods sort in order }
+      value:  { type: number, doc: The reported figure }
+  title:   { type: text, default: Financials, doc: The panel's title }
+  fmt:     { type: format, default: compact, doc: How the figures are written }
+  periods: { type: integer, default: 5, min: 1, max: 40, doc: How many of the latest periods are shown }
+panels:
+  - id: statement
+    kind: pivot
+    title: arg.title
+    rows: arg.rows
+    where: "is_member(@.period, take(sort(unique(map(arg.rows, @.period))), -arg.periods))"
+    by: item
+    across: period
+    value: value
+    agg: sum
+    fmt: "%{fmt}"
+    totals: false

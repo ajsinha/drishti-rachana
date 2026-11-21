@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: allocation-donut
+version: 1
+doc:
+  summary: A portfolio's split by asset class, sector or currency, as a donut, in weights or in amounts.
+  description: >-
+    One row per slice. By default the slices are shown as weights, each slice's share of the whole; turn as-weights off
+    to show the amounts. A click on a slice raises an event with its label.
+  category: funds
+  tags: [allocation, donut, weights]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per slice
+    columns:
+      label: { type: text,   doc: The slice's label }
+      value: { type: number, doc: The slice's amount }
+  title:      { type: text, default: Allocation, doc: The panel's title }
+  fmt:        { type: format, default: pct2, doc: "How the slices are written: percentages for weights, an amount format when as-weights is off" }
+  as-weights: { type: boolean, default: true, doc: Whether the slices are shown as shares of the whole }
+emits:
+  - { name: slice, payload: { label: text }, doc: A slice was chosen }
+panels:
+  - id: slices
+    kind: hbar
+    title: arg.title
+    rows: "if(arg.as-weights, map(arg.rows, {label: @.label, value: @.value / sum(arg.rows, 'value')}), map(arg.rows, {label: @.label, value: @.value}))"
+    label: label
+    value: value
+    fmt: "%{fmt}"
+    shape: donut
+    emits: [ { name: slice, on: bar-click, payload: { label: "@.label" } } ]

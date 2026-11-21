@@ -1,0 +1,41 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: holdings-table
+version: 1
+doc:
+  summary: Holdings of a portfolio, or holders of a security - name, quantity, value, weight, change since the last report.
+  description: >-
+    One row per holding, listed by value, the largest first. The weight is the one you give, or the row's share of the
+    values listed when you give none. A click on a row names the holding.
+  category: funds
+  tags: [holdings, portfolio, weights]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per holding
+    columns:
+      name:     { type: text,   doc: The holding's name }
+      value:    { type: number, doc: The market value }
+      quantity: { type: number, optional: true, doc: The quantity held }
+      weight:   { type: number, optional: true, doc: The weight in the portfolio, as a fraction }
+      change:   { type: number, optional: true, doc: The change in quantity since the last report }
+  title: { type: text, default: Holdings, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How values are written }
+  top:   { type: integer, default: 50, min: 1, max: 1000, doc: The most holdings listed }
+emits:
+  - { name: open, payload: { name: text }, doc: A holding was chosen }
+panels:
+  - id: holdings
+    kind: table
+    title: arg.title
+    rows: "take(sort(map(arg.rows, {name: @.name, quantity: @.quantity, value: @.value, weight: coalesce(@.weight, @.value / sum(arg.rows, 'value')), change: @.change}), @.value, true), arg.top)"
+    search: true
+    columns:
+      - { label: Name, bind: "@.name" }
+      - { label: Quantity, bind: "@.quantity", fmt: amount0 }
+      - { label: Value, bind: "@.value", fmt: "%{fmt}" }
+      - { label: Weight, bind: "@.weight", fmt: pct2 }
+      - { label: Change, bind: "@.change", fmt: signed0, tone: sign }
+    emits: [ { name: open, on: row-click, payload: { name: "@.name" } } ]

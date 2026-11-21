@@ -1,0 +1,16 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: netting-summary-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Netting summary'" }
+data:
+  ns: { record: { GROSS_POS: 6500000, GROSS_NEG: -2100000, NET_VAL: 4400000 } }
+panels:
+  - use: finance/netting-summary@1
+    with:
+      gross-positive: "$.ns.GROSS_POS"
+      gross-negative: "$.ns.GROSS_NEG"
+      net: "$.ns.NET_VAL"

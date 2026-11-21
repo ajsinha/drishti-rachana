@@ -3,7 +3,7 @@
 library: finance
 version: 1.0.0
 summary: Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
-fragments: 35
+fragments: 47
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
 
-35 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+47 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Market data
 
@@ -510,4 +510,175 @@ Many limits at once - name, limit, used, headroom and the share used, toned at t
 Events: `open`
 
 Example: `examples/limit-table.sutra.yaml`.
+
+## Counterparty and collateral
+
+### `finance/addon-breakdown@1`
+
+A regulatory exposure built up - replacement cost, add-on by asset class, the multiplier, the exposure at default.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(asset_class, addon) | required. One row per asset class |
+| `replacement-cost` | number | required. The replacement cost |
+| `multiplier` | number | optional. The multiplier applied to the add-ons |
+| `exposure` | number | required. The exposure at default |
+| `title` | text | default 'Add-on by asset class'. The panel's title |
+| `fmt` | format | default 'amount0'. How amounts are written |
+
+Example: `examples/addon-breakdown.sutra.yaml`.
+
+### `finance/agreement-terms@1`
+
+The terms of a collateral agreement - thresholds, minimum transfer amounts, independent amounts, currency, frequency.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `terms` | record{type: text, threshold_us: number, threshold_them: number, mta_us: number, mta_them: number, independent_amount: number, currency: text, frequency: text} | required. The terms: type, threshold_us, threshold_them, mta_us, mta_them, independent_amount, currency, frequency |
+| `title` | text | default 'Agreement terms'. The panel's title |
+| `fmt` | format | default 'amount0'. How amounts are written |
+
+Example: `examples/agreement-terms.sutra.yaml`.
+
+### `finance/collateral-ledger@1`
+
+Collateral held and posted - asset, direction, nominal, haircut, value after haircut, with totals by direction.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(asset, direction, nominal, currency, haircut, value) | required. One row per asset and direction |
+| `title` | text | default 'Collateral'. The panel's title |
+| `fmt` | format | default 'amount0'. How amounts are written |
+
+Events: `open`
+
+Example: `examples/collateral-ledger.sutra.yaml`.
+
+### `finance/counterparty-card@1`
+
+A counterparty at a glance - name, rating, country, sector, current exposure, limit and the share used.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `counterparty` | record{name: text, rating: text, country: text, sector: text, exposure: number, limit: number} | required. The counterparty: name, and optionally rating, country, sector, exposure, limit |
+| `fmt` | format | default 'amount0'. How exposure and limit are written |
+
+Slots: `footer`
+
+Example: `examples/counterparty-card.sutra.yaml`.
+
+### `finance/exposure-profile@1`
+
+Exposure through time - expected and potential future exposure by date, against a limit, with the peak called out.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(date, expected, potential) | required. One row per date |
+| `limit` | number | optional. A horizontal limit drawn across the profile |
+| `title` | text | default 'Exposure profile'. The panel's title |
+| `fmt` | format | default 'amount0'. How the peak is written |
+
+Example: `examples/exposure-profile.sutra.yaml`.
+
+### `finance/margin-call-ladder@1`
+
+Margin calls by date - direction, amount, status issued, agreed, disputed or settled - with the open total.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(date, direction, amount, currency, status) | required. One row per call |
+| `title` | text | default 'Margin calls'. The panel's title |
+| `fmt` | format | default 'amount0'. How amounts are written |
+
+Example: `examples/margin-call-ladder.sutra.yaml`.
+
+### `finance/netting-set-tree@1`
+
+Group, counterparty, netting set and trade as a tree, with gross value, net value and collateral at each node.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(id, parent, name, level, gross, net, collateral) | required. One row per node |
+| `title` | text | default 'Netting sets'. The panel's title |
+| `open` | integer | default 2. How many levels start open |
+
+Example: `examples/netting-set-tree.sutra.yaml`.
+
+### `finance/netting-summary@1`
+
+A netting set in four figures - gross positive, gross negative, net, after collateral - with the largest trades as bars.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `gross-positive` | number | required. The sum of positive trade values |
+| `gross-negative` | number | required. The sum of negative trade values |
+| `net` | number | required. The net value of the set |
+| `collateral` | number | optional. The collateral held against the set |
+| `trades` | table(id, value) | optional. The trades of the set |
+| `fmt` | format | default 'amount0'. How the figures are written |
+| `top` | integer | default 8. The most trades drawn |
+| `title` | text | default 'Largest trades'. The panel's title |
+
+Events: `bar`
+
+Example: `examples/netting-summary.sutra.yaml`.
+
+### `finance/valuation-adjustments@1`
+
+Valuation adjustments per counterparty or netting set - credit, debit, funding - with totals and the change on the day.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(name, credit, debit, funding, change) | required. One row per counterparty or netting set |
+| `title` | text | default 'Valuation adjustments'. The panel's title |
+| `fmt` | format | default 'signed0'. How amounts are written |
+
+Events: `open`
+
+Example: `examples/valuation-adjustments.sutra.yaml`.
+
+## Funds and equities
+
+### `finance/allocation-donut@1`
+
+A portfolio's split by asset class, sector or currency, as a donut, in weights or in amounts.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(label, value) | required. One row per slice |
+| `title` | text | default 'Allocation'. The panel's title |
+| `fmt` | format | default 'pct2'. How the slices are written: percentages for weights, an amount format when as-weights is off |
+| `as-weights` | boolean | default True. Whether the slices are shown as shares of the whole |
+
+Events: `slice`
+
+Example: `examples/allocation-donut.sutra.yaml`.
+
+### `finance/financials-table@1`
+
+Reported figures with periods across and line items down.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(item, period, value) | required. One row per line item and period |
+| `title` | text | default 'Financials'. The panel's title |
+| `fmt` | format | default 'compact'. How the figures are written |
+| `periods` | integer | default 5. How many of the latest periods are shown |
+
+Example: `examples/financials-table.sutra.yaml`.
+
+### `finance/holdings-table@1`
+
+Holdings of a portfolio, or holders of a security - name, quantity, value, weight, change since the last report.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(name, value, quantity, weight, change) | required. One row per holding |
+| `title` | text | default 'Holdings'. The panel's title |
+| `fmt` | format | default 'amount0'. How values are written |
+| `top` | integer | default 50. The most holdings listed |
+
+Events: `open`
+
+Example: `examples/holdings-table.sutra.yaml`.
 

@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: financials-table-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Financials table'" }
+data:
+  inc:
+    rows:
+      - { LINE: Revenue, FY: "2024", AMT: 4100000 }
+      - { LINE: Revenue, FY: "2025", AMT: 4600000 }
+      - { LINE: Net income, FY: "2024", AMT: 310000 }
+      - { LINE: Net income, FY: "2025", AMT: 380000 }
+panels:
+  - use: finance/financials-table@1
+    with:
+      rows: { from: $.inc, columns: { item: LINE, period: FY, value: AMT } }

@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: valuation-adjustments-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Valuation adjustments'" }
+data:
+  adj:
+    rows:
+      - { CP: Birch Bank, CVA_AMT: -42000 }
+      - { CP: Cedar Fund, CVA_AMT: -18000 }
+panels:
+  - use: finance/valuation-adjustments@1
+    as: adj
+    with:
+      rows: { from: $.adj, columns: { name: CP, credit: CVA_AMT } }
+  - { id: picked, kind: markdown, text: "Row ${@adj.open.name}", waits: adj-adjustments }

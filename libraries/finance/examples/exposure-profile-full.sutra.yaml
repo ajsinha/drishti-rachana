@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: exposure-profile-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Exposure profile (full)'" }
+data:
+  prof:
+    rows:
+      - { DT: "2026-06-30", EE: 2100000, PFE: 4200000 }
+      - { DT: "2027-06-30", EE: 3400000, PFE: 6900000 }
+      - { DT: "2028-06-30", EE: 2600000, PFE: 5300000 }
+      - { DT: "2029-06-30", EE: 1400000, PFE: 3100000 }
+  lim: { record: { PFE_LIMIT: 7500000 } }
+panels:
+  - use: finance/exposure-profile@1
+    with:
+      title: Exposure to Birch Bank
+      limit: "$.lim.PFE_LIMIT"
+      rows: { from: $.prof, columns: { date: DT, expected: EE, potential: PFE } }

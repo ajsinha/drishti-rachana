@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { main } from "../src/index.js";
 import { handler } from "../src/serve.js";
+import { libraryFiles } from "../src/lint.js";
 import { libCommand } from "../src/lib.js";
 import { distDir } from "../src/bundle.js";
 
@@ -148,6 +149,26 @@ test("build: a page that uses a core fragment gets the library files and a manif
   assert.ok(readFileSync(join(out, "ranked.html"), "utf8").includes('libraries="libraries/ranked.libraries.json"'));
   assert.ok(!existsSync(join(out, "libraries/overview.libraries.json")), "a page without use: gets no manifest");
   assert.ok(!readFileSync(join(out, "overview.html"), "utf8").includes("libraries="));
+  rmSync(d, { recursive: true });
+});
+
+test("preview resolves libraries as build does: bundled, --libs and <project>/rachana_libs", { skip: !hasBundle && "bundle not built" }, () => {
+  const d = tmp(), src = join(d, "proj");
+  cpSync(join(examples, "static-sales"), src, { recursive: true });
+  const sutra = "rachana: 1\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\npanels:\n  - use: core/note@1\n    with: { text: hi }\n";
+  writeFileSync(join(src, "ranked.sutra.yaml"), sutra);
+  const lib = libraryFiles(src, {});
+  assert.deepEqual(lib.problems, []);
+  const h = handler(new Map([["ranked", join(src, "ranked.sutra.yaml")]]), null, "1.2", lib.files);
+  assert.ok(h("/page/ranked")[2].includes('libraries="/libraries/ranked.libraries.json"'));
+  const m = JSON.parse(h("/libraries/ranked.libraries.json")[2]);
+  assert.ok(m.files.some((f) => f.startsWith("rachana_libs/core/fragments/")));
+  for (const f of m.files) { assert.equal(h("/page/" + f)[0], 200, f); assert.equal(h("/" + f)[0], 200, f); }
+  assert.equal(h("/rachana_libs/nope/x")[0], 404);
+  // a project library beside the bundled one
+  mkdirSync(join(src, "rachana_libs", "mine", "fragments"), { recursive: true });
+  const ml = libraryFiles(src, {});
+  assert.ok(Object.keys(ml.files).length >= Object.keys(lib.files).length);
   rmSync(d, { recursive: true });
 });
 

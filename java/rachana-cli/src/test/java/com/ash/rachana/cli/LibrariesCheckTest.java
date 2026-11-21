@@ -42,11 +42,67 @@ class LibrariesCheckTest {
         assertEquals(0, p.waitFor(), out);
     }
 
+    /** The quality gates LG1 to LG5 and LG8 (LIBRARIES.md 15.2) hold for every bundled library, by the one implementation `rachana lib gate` runs. */
+    @Test
+    void everyBundledLibraryPassesTheQualityGates() throws Exception {
+        Path libs = Paths.get(System.getProperty("rachana.repo.root")).toAbsolutePath().normalize().resolve("libraries");
+        for (String name : com.ash.rachana.tools.LibraryGates.libraries(libs)) {
+            for (var r : com.ash.rachana.tools.LibraryGates.run(libs, name, false)) {
+                assertEquals(List.of(), r.failures(), name + " " + r.gate() + " " + r.title());
+            }
+        }
+    }
+
+    /** A released library is protected: an edited golden (LG2), a removed parameter or column (LG5) and a size regression (LG8) each fail. */
+    @Test
+    void theFrozenBaselineCatchesBreakingChanges(@TempDir Path tmp) throws Exception {
+        Path repo = Paths.get(System.getProperty("rachana.repo.root")).toAbsolutePath().normalize();
+        Path root = tmp.resolve("libs");
+        Path core = root.resolve("core");
+        copyTree(repo.resolve("libraries/core"), core);
+        assertEquals(0, Main.run(new String[] {"lib", "build", core.toString()}));
+        assertEquals(0, Main.run(new String[] {"lib", "freeze", core.toString()}));
+        assertEquals(0, Main.run(new String[] {"lib", "build", core.toString()}));
+        assertEquals(0, Main.run(new String[] {"lib", "gate", core.toString()}));
+        assertTrue(Files.isRegularFile(core.resolve("FROZEN.sha384")) && Files.isRegularFile(core.resolve("released/ranked-bars.v1.interface.json")));
+        // LG5: the contract column "value" of ranked-bars is renamed
+        Path f = core.resolve("fragments/ranked-bars.v1.fragment.yaml");
+        String original = Files.readString(f);
+        Files.writeString(f, original.replace("      value: { type: number, doc: The bar's value }", "      amount: { type: number, doc: The bar's value }"));
+        assertEquals(0, Main.run(new String[] {"lib", "build", core.toString()}));
+        var lg5 = com.ash.rachana.tools.LibraryGates.run(root, "core", false).stream().filter(r -> r.gate().equals("LG5")).findFirst().orElseThrow();
+        assertTrue(lg5.failures().stream().anyMatch(m -> m.contains("ranked-bars") && m.contains("value")), lg5.failures().toString());
+        Files.writeString(f, original);
+        // LG2: a released golden is edited
+        Path g = core.resolve("goldens/key-figure.viewmodel.json");
+        String golden = Files.readString(g);
+        Files.writeString(g, golden + " ");
+        assertEquals(0, Main.run(new String[] {"lib", "build", core.toString()}));
+        var lg2 = com.ash.rachana.tools.LibraryGates.run(root, "core", false).stream().filter(r -> r.gate().equals("LG2")).findFirst().orElseThrow();
+        assertTrue(lg2.failures().stream().anyMatch(m -> m.contains("key-figure") && m.contains("edited")), lg2.failures().toString());
+        Files.writeString(g, golden);
+        // LG8: a declared budget the example exceeds
+        Path k = core.resolve("fragments/key-figure.v1.fragment.yaml");
+        Files.writeString(k, Files.readString(k) + "budget: { panels: 0 }\n");
+        assertEquals(0, Main.run(new String[] {"lib", "build", core.toString()}));
+        var lg8 = com.ash.rachana.tools.LibraryGates.run(root, "core", false).stream().filter(r -> r.gate().equals("LG8")).findFirst().orElseThrow();
+        assertTrue(lg8.failures().stream().anyMatch(m -> m.contains("key-figure") && m.contains("budget")), lg8.failures().toString());
+    }
+
+    /** `lib build` writes the whole interface of each fragment into `exports`. */
+    @Test
+    void exportsCarryTheFragmentMetadata() throws Exception {
+        Path repo = Paths.get(System.getProperty("rachana.repo.root")).toAbsolutePath().normalize();
+        String m = Files.readString(repo.resolve("libraries/core/core.rachana-lib.yaml"));
+        assertTrue(m.contains("\"summary\"") && m.contains("\"params\"") && m.contains("\"events\"") && m.contains("\"contract\""), "exports lack metadata");
+    }
+
     /** The Rachana classes of this build, from where they were loaded (the surefire class path may be a manifest-only jar). */
     private static String classpath() throws Exception {
         java.util.Set<String> out = new java.util.LinkedHashSet<>();
         for (Class<?> c : List.of(com.ash.rachana.api.Node.class, Rachana.class, com.ash.rachana.view.ViewJson.class, LiveScreen.class, LibraryResolver.class,
-                com.ash.rachana.SutraException.class, com.ash.rachana.el.ElCompiler.class)) {
+                com.ash.rachana.SutraException.class, com.ash.rachana.el.ElCompiler.class,
+                com.ash.rachana.tools.LibraryGates.class)) {
             out.add(Paths.get(c.getProtectionDomain().getCodeSource().getLocation().toURI()).toString());
         }
         return String.join(java.io.File.pathSeparator, out);

@@ -97,7 +97,7 @@ class LibraryToolTest {
         String[] keys = Ed25519.newKeyPair();
         Path dir = library(tmp.resolve("src"), keys[0]);
         LibraryTool.build(dir);
-        assertTrue(Files.readString(dir.resolve("demo.rachana-lib.yaml")).contains("- { name: figure, majors: [1] }"));
+        assertTrue(Files.readString(dir.resolve("demo.rachana-lib.yaml")).contains("- {\"name\": \"figure\", \"majors\": [1]"));
         assertEquals(List.of(), LibraryTool.verify(dir, Library.Trust.NONE));
 
         Library.Trust strict = new Library.Trust(Ed25519.VERIFIER, Set.of(keys[0]), true);

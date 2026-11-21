@@ -5,6 +5,8 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **Studio on the new Drishti Elements widgets**: the vendored pack is now `js/vendor/drishti-elements/3.2.0-dev+475232e/` (packed from drishti-elements commit 475232e, SHA-384 manifest kept). Studio's frame is `SplitPane` (palette | preview | a vertical split of source, properties and changes), the palette a `NavList` grouped by library, the column mapping the `columnmap` form field; `<rachana-view complete>` asks the painter to complete the view, so the console no longer warns that `ref` is missing. No hand-rolled widget is left in Studio.
+- **`rachana build` sites load libraries in the browser**: a page that uses `use:` gets the files of the libraries it names (project, `--libs`, `RACHANA_LIBS`, bundled) copied to `rachana_libs/<library>/` and a `libraries/<page>.libraries.json` manifest that `<rachana-view libraries="...">` reads (a Sutra with `libraries:` builds at `--level 1.2`); tested in Node and by the Chromium `paint_check.py`.
 - **Fragment libraries moved into this repository** (owner decision, L-12 superseded): `libraries/<name>/` by domain, `libraries/README.md`
   the index, `tools/libraries/` the build and check (`build.py`, `LibCheck.java`; the jars come from this repository's own build);
   `LibrariesCheckTest` runs the check in `./mvnw verify` (and proves an external folder and an `.rlib` beside bundled `core`); Studio, `lint` and `build` (`--libs`, `RACHANA_LIBS`) and the Python `lint` take extra library paths beside the bundled ones; a same-name conflict is refused (`LibraryResolver.first` too). The old repository's history is merged in.

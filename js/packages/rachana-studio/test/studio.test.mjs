@@ -66,7 +66,10 @@ test("formSpec: a table parameter is a table choice plus a column mapping; names
   const { schema, values } = formSpec(frag, tables);
   assert.deepEqual(schema.required, ["rows"]);
   assert.deepEqual(schema.properties.rows.properties.from.enum, ["sales"]);
-  assert.deepEqual(schema.properties.rows.properties.columns.properties.label.enum, ["region", "revenue", "units"]);
+  const cm = schema.properties.rows.properties.columns;
+  assert.equal(cm.type, "columnmap");
+  assert.deepEqual(cm.options.targets.map((t) => [t.name, t.type, t.required]), [["label", "string", true], ["value", "number", true], ["note", "string", false]]);
+  assert.deepEqual(cm.options.columns.map((c) => c.name), ["region", "revenue", "units"]);
   assert.deepEqual(values.rows, { from: "sales", columns: { label: "region", value: "revenue" } });
   assert.deepEqual(schema.properties.by.enum, ["region", "revenue", "units"]);
   assert.equal(schema.properties.tone.widget, "select");

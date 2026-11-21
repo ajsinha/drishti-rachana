@@ -1920,7 +1920,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           "module": "core"
         },
         "drishti-inputs": {
-          "title": "Inputs: business-date and range pickers with holiday calendars, the on/off switch, the tree picker, the multi-select, the combobox with server type-ahead (on its own field or a page's), forms from a schema (live or embedded, steps, named fields, hooks, custom widgets, time, date-and-time and money) with four eyes, the time and date-and-time pickers, the filter bar, the code editor over CodeMirror, and a page's own date fields and checkbox lists upgraded in place",
+          "title": "Inputs: business-date and range pickers with holiday calendars, the on/off switch, the tree picker, the multi-select, the combobox with server type-ahead (on its own field or a page's), forms from a schema (live or embedded, steps, named fields, hooks, custom widgets, time, date-and-time and money) with four eyes, the time and date-and-time pickers, the filter bar, the code editor over CodeMirror, a resizable split pane, tabs, a searchable grouped list and tree, a column-mapping table, and a page's own date fields and checkbox lists upgraded in place",
           "bundle": "drishti-inputs/drishti_inputs.js",
           "entry": "drishti-inputs/src/drishti_index.js",
           "global": "inputs",
@@ -3488,6 +3488,178 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     }
     return { "LIMITS": LIMITS, "FORBIDDEN_KEYS": FORBIDDEN_KEYS, "validate": validate, "formatIssue": formatIssue };
   })();
+  /* ---- src/drishti_views-build.js ---- */
+  __m["src/drishti_views-build.js"] = (function () {
+    var SCHEMA = __m["src/drishti_views-schema.js"].SCHEMA, CONTRACT = __m["src/drishti_views-schema.js"].CONTRACT;
+    var validate = __m["src/drishti_views-validate.js"].validate, formatIssue = __m["src/drishti_views-validate.js"].formatIssue;
+    const KIND_DATA = Object.freeze({ kv: 'Fields', status: 'Fields', provenance: 'Fields', table: 'Table', ladder: 'Table', tabs: 'Tabs', line: 'Chart',
+      area: 'Chart', hbar: 'Bars', links: 'Links', markdown: 'Text', gauge: 'Gauge', surface: 'Surface', waterfall: 'Waterfall', histogram: 'Histogram',
+      scatter: 'Scatter', candlestick: 'Candles', graph: 'Graph', timeline: 'Timeline', pivot: 'Pivot', metric: 'Metric', map: 'GeoMap',
+      grid: 'Grid', tree: 'Tree', chart: 'DataChart' });
+    const KINDS_1_1 = ['grid', 'tree', 'chart'];
+    function stampOf(vm) {
+      const uses = (panels) => (panels || []).some((p) => p && (KINDS_1_1.indexOf(p.kind) >= 0 || (p.kind === 'map' && p.data && Array.isArray(p.data.points) && p.data.points.length)
+        || (p.kind === 'tabs' && p.data && Array.isArray(p.data.tabs) && p.data.tabs.some((t) => t && uses(t.panels)))));
+      return (vm.datasets && Object.keys(vm.datasets).length) || uses(vm.panels) ? '1.1' : '1.0';
+    }
+    const TYPE = (v) => (typeof v === 'number' ? 'number' : typeof v === 'boolean' ? 'boolean' : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? 'date'
+      : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v) ? 'datetime' : 'string');
+    class ViewError extends Error {
+      constructor(message, issues) {
+        super(message);
+        this.name = 'ViewError';
+        /** @type {Object[]} */ this.issues = issues || [];
+      }
+    }
+    const DEFS = SCHEMA.$defs;
+    const copy = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
+    function defOf(node, value) {
+      if (!node) { return null; }
+      if (node.$ref) { return DEFS[node.$ref.slice('#/$defs/'.length)] || null; }
+      if (node.allOf && node.allOf.length === 1) { return defOf(node.allOf[0], value); }
+      if (node.anyOf) {
+        const want = Array.isArray(value) ? 'array' : value === null ? 'null' : typeof value === 'object' ? 'object' : null;
+        const b = node.anyOf.find((x) => (want === 'array' ? x.type === 'array' : want === 'object' ? (x.$ref || x.type === 'object') : false));
+        return b ? defOf(b, value) : null;
+      }
+      return node;
+    }
+    function nullable(node) { return !!(node && node.anyOf && node.anyOf.some((x) => x.type === 'null')); }
+    function emptyOf(node) {
+      if (nullable(node)) { return null; }
+      const d = node && (node.$ref || (node.allOf && node.allOf.length === 1)) ? defOf(node, {}) : null;   // a record behind a $ref or an allOf (ref, provenance): its own required fields filled in
+      if (d && d.properties) { return fill({}, d); }
+      const t = node && node.type;
+      return t === 'array' ? [] : t === 'boolean' ? false : t === 'integer' || t === 'number' ? 0 : t === 'string' ? '' : t === 'object' ? {} : null;
+    }
+    function complete(value, def) { return fill(value, { $ref: '#/$defs/' + def }); }
+    function fill(v, node) {
+      if (Array.isArray(v)) {
+        const d = defOf(node, v);
+        return d && d.items ? v.map((x) => fill(x, d.items)) : v;
+      }
+      if (!v || typeof v !== 'object') { return v; }
+      const d = defOf(node, v);
+      if (!d || !d.properties) { return v; }
+      (d.required || []).forEach((k) => { if (v[k] === undefined && d.properties[k]) { v[k] = emptyOf(d.properties[k]); } });
+      Object.keys(v).forEach((k) => {
+        if (k === 'data' && d === DEFS.PanelView && KIND_DATA[v.kind]) { v.data = fill(v.data, { $ref: '#/$defs/' + KIND_DATA[v.kind] }); return; }
+        if (d.properties[k]) { v[k] = fill(v[k], d.properties[k]); }
+      });
+      return v;
+    }
+    function refuse(what, issues) {
+      const errors = issues.filter((i) => i.level === 'error');
+      if (errors.length) { throw new ViewError(what + ': ' + errors.slice(0, 5).map(formatIssue).join('; '), errors); }
+    }
+    function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'panel'; }
+    class ViewBuilder {
+      constructor(title) {
+        this.vm = { contract: '1.0', ref: { kind: null, id: null }, title: { pill: null, id: title ? String(title) : null, with: null }, strip: [], panels: [], keys: [],
+          provenance: {}, timings: {} };
+        this.ids = new Set();
+      }
+      ref(kind, id) { this.vm.ref = { kind: kind === undefined ? null : kind, id: id === undefined ? null : String(id) }; return this; }
+      title(pill, id, withCell) { this.vm.title = { pill: pill === undefined ? null : pill, id: id === undefined ? this.vm.title.id : id, with: withCell || null }; return this; }
+      mnemonic(m) { this.vm.mnemonic = String(m); return this; }
+      strip(cells) { this.vm.strip = copy(cells || []); return this; }
+      key(k) { this.vm.keys.push(copy(k)); return this; }
+      provenance(p) { this.vm.provenance = Object.assign({}, this.vm.provenance, copy(p)); return this; }
+      layout(l) { this.vm.layout = copy(l); return this; }
+      dataset(name, rows, o) {
+        o = o || {};
+        const d = {};
+        if (o.key) { d.key = [].concat(o.key).map(String); }
+        if (Array.isArray(rows)) {
+          let fields = o.fields ? copy(o.fields) : null;
+          if (!fields) {
+            const names = [];
+            rows.slice(0, 50).forEach((r) => Object.keys(r || {}).forEach((k) => { if (names.indexOf(k) < 0) { names.push(k); } }));
+            fields = names.map((n) => {
+              const v = rows.map((r) => r && r[n]).find((x) => x !== null && x !== undefined);
+              const f = { name: n, type: v === undefined ? 'string' : TYPE(v) };
+              if (o.labels && o.labels[n]) { f.label = o.labels[n]; }
+              if (o.formats && o.formats[n]) { f.fmt = o.formats[n]; }
+              return f;
+            });
+          }
+          d.fields = fields;
+          d.values = rows.map((r) => fields.map((f) => (r && r[f.name] !== undefined ? r[f.name] : null)));
+          if (o.more > 0) { d.more = o.more; }
+        } else {
+          ['name', 'arrow', 'pages', 'server'].forEach((k) => { if (o[k] !== undefined) { d[k] = copy(o[k]); } });
+          if (o.fields) { d.fields = copy(o.fields); }
+        }
+        this.vm.datasets = Object.assign(this.vm.datasets || {}, { [String(name)]: d });
+        return this;
+      }
+      panel(p) {
+        const panel = copy(p) || {};
+        if (!panel.id) { let id = slug(panel.title || panel.kind), n = 2; while (this.ids.has(id)) { id = slug(panel.title || panel.kind) + '-' + n++; } panel.id = id; }
+        if (this.ids.has(String(panel.id))) { throw new ViewError('panel ' + panel.id + ': another panel has this id; ids are unique in a view', []); }
+        complete(panel, 'PanelView');
+        const probe = complete({ contract: CONTRACT, datasets: this.vm.datasets, ref: this.vm.ref, title: this.vm.title, strip: [], panels: [panel], keys: [], provenance: {}, timings: {} }, 'ViewModel');
+        const at = 'panels[' + this.vm.panels.length + ']';
+        refuse('panel ' + panel.id, validate(probe).issues.filter((i) => String(i.path).indexOf('panels[0]') === 0)
+          .map((i) => Object.assign({}, i, { path: at + String(i.path).slice('panels[0]'.length) })));
+        this.ids.add(String(panel.id));
+        this.vm.panels.push(panel);
+        return this;
+      }
+      toJSON() {
+        const vm = complete(copy(this.vm), 'ViewModel');
+        vm.contract = stampOf(vm);
+        refuse('the view', validate(vm).issues);
+        return vm;
+      }
+    }
+    Object.keys(KIND_DATA).forEach((kind) => {
+      ViewBuilder.prototype[kind === 'provenance' ? 'provenancePanel' : kind] = function (title, data, more) { return this.panel(Object.assign({ kind: kind, title: title, data: data }, more || {})); };
+    });
+    function view(title) { return new ViewBuilder(title); }
+    class FrameBuilder {
+      constructor(seq) { this.f = { seq: Number.isInteger(seq) ? seq : 0, generation: 0, patches: [], latencyMs: null, p99Ms: null }; }
+      generation(g) { this.f.generation = g; return this; }
+      strip(index, cell) { this.f.patches.push({ op: 'strip', index: index, cell: copy(cell) }); return this; }
+      panel(panel) { this.f.patches.push({ op: 'panel', panel: complete(copy(panel), 'PanelView') }); return this; }
+      provenance(p) { this.f.patches.push({ op: 'provenance', provenance: complete(copy(p), 'Provenance') }); return this; }
+      deleted(at) { this.f.patches.push(at ? { op: 'deleted', at: at } : { op: 'deleted' }); return this; }
+      restored() { this.f.patches.push({ op: 'restored' }); return this; }
+      rows(dataset, o) {
+        const p = { op: 'rows', dataset: String(dataset) };
+        ['reset', 'remove', 'update', 'add'].forEach((k) => { if (o && Array.isArray(o[k]) && o[k].length) { p[k] = copy(o[k]); } });
+        this.f.patches.push(p);
+        return this;
+      }
+      toJSON() {
+        const f = copy(this.f);
+        refuse('the frame', validate(f, { as: 'frame' }).issues);
+        return f;
+      }
+    }
+    function frame(seq) { return new FrameBuilder(seq); }
+    function sse(write, o) {
+      o = Object.assign({ topic: 'views.view', raw: false, epoch: 'e1', session: 's1', heartbeatMs: 15000, now: () => Date.now() }, o);
+      let seq = 0;
+      const event = (name, data, id) => write((id !== undefined ? 'id: ' + id + '\n' : '') + 'event: ' + name + '\ndata: ' + JSON.stringify(data) + '\n\n');
+      if (!o.raw) {
+        event('welcome', { t: 'welcome', v: 1, session: o.session, time: o.now(), heartbeatMs: o.heartbeatMs, can: [], limits: {}, resumed: false });
+        event('subd', { t: 'subd', id: 1, streams: { [o.topic]: { epoch: o.epoch, seq: 0 } }, recovered: true });
+      }
+      const send = (kind, data) => {
+        seq++;
+        if (o.raw) { event(kind === 'view' ? 'view' : 'frame', kind === 'view.piece' ? { seq: seq, generation: 0, patches: [data], latencyMs: null, p99Ms: null } : data, String(seq)); return; }
+        event('msg', { t: 'msg', id: o.session + '-' + seq, topic: o.topic, stream: o.topic, seq: seq, kind: kind, time: o.now(), source: 'views', data: data }, String(seq));
+      };
+      return {
+        view: (vm) => send('view', vm),
+        frame: (f) => send('view.frame', f),
+        piece: (p) => send('view.piece', p),
+        beat: () => write(': hb\n\n')
+      };
+    }
+    return { "KIND_DATA": KIND_DATA, "stampOf": stampOf, "ViewError": ViewError, "complete": complete, "ViewBuilder": ViewBuilder, "view": view, "FrameBuilder": FrameBuilder, "frame": frame, "sse": sse };
+  })();
   /* ---- src/drishti_views-cells.js ---- */
   __m["src/drishti_views-cells.js"] = (function () {
     var h = __lib("drishti-core").h, safeUrl = __lib("drishti-core").safeUrl;
@@ -4460,6 +4632,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var h = __lib("drishti-core").h, manifest = __lib("drishti-core").manifest, staticUrl = __lib("drishti-core").staticUrl, loadStyle = __lib("drishti-core").loadStyle, load = __lib("drishti-core").load, loaded = __lib("drishti-core").loaded, loadPart = __lib("drishti-core").loadPart;
     var CONTRACT = __m["src/drishti_views-schema.js"].CONTRACT;
     var validate = __m["src/drishti_views-validate.js"].validate, formatIssue = __m["src/drishti_views-validate.js"].formatIssue;
+    var complete = __m["src/drishti_views-build.js"].complete;
     var MESSAGES = __m["src/drishti_views-cells.js"].MESSAGES, say = __m["src/drishti_views-cells.js"].say, safeHref = __m["src/drishti_views-cells.js"].safeHref;
     var PanelFrame = __m["src/drishti_views-panels.js"].PanelFrame;
     var arrange = __m["src/drishti_views-layout.js"].arrange, Layout = __m["src/drishti_views-layout.js"].Layout;
@@ -4607,6 +4780,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           this.emit('error', { code: 'view.version', contract: vm.contract });
           return this.settle();
         }
+        if (this.options.complete) { vm = complete(JSON.parse(JSON.stringify(vm)), 'ViewModel'); }
         if (this.options.validate !== 'off') {
           const r = validate(vm);
           if (r.issues.length) {
@@ -4823,7 +4997,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
   __m["src/drishti_views-element.js"] = (function () {
     var paint = __m["src/drishti_views-paint.js"].paint;
     const VIEW_ELEMENT = 'elements-view';
-    const VIEW_ATTRIBUTES = Object.freeze(['src', 'density', 'header', 'panels', 'locale', 'validate', 'label', 'live']);
+    const VIEW_ATTRIBUTES = Object.freeze(['src', 'density', 'header', 'panels', 'locale', 'validate', 'label', 'live', 'complete']);
     function define(o) {
       o = o || {};
       const w = o.window || (typeof window !== 'undefined' ? window : null), tag = o.tag || VIEW_ELEMENT;
@@ -4848,6 +5022,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           if (!source) { return; }
           const o = Object.assign({}, this._options);
           ['density', 'header', 'locale', 'validate', 'label'].forEach((a) => { if (this.hasAttribute(a)) { o[a] = this.getAttribute(a); } });
+          if (this.hasAttribute('complete')) { o.complete = true; }
           if (this.hasAttribute('panels')) { o.panels = this.getAttribute('panels').split(',').map((s) => s.trim()).filter(Boolean); }
           if (this.getAttribute('live')) { o.live = Object.assign({}, o.live || {}, { url: this.getAttribute('live') }); }
           this.handle = paint(this, source, o);
@@ -5594,176 +5769,6 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     defineKind('tree', tree);
     defineKind('chart', chart);
     return { "DATASET_KINDS": DATASET_KINDS, "gridColumns": gridColumns, "chartSpec": chartSpec };
-  })();
-  /* ---- src/drishti_views-build.js ---- */
-  __m["src/drishti_views-build.js"] = (function () {
-    var SCHEMA = __m["src/drishti_views-schema.js"].SCHEMA, CONTRACT = __m["src/drishti_views-schema.js"].CONTRACT;
-    var validate = __m["src/drishti_views-validate.js"].validate, formatIssue = __m["src/drishti_views-validate.js"].formatIssue;
-    const KIND_DATA = Object.freeze({ kv: 'Fields', status: 'Fields', provenance: 'Fields', table: 'Table', ladder: 'Table', tabs: 'Tabs', line: 'Chart',
-      area: 'Chart', hbar: 'Bars', links: 'Links', markdown: 'Text', gauge: 'Gauge', surface: 'Surface', waterfall: 'Waterfall', histogram: 'Histogram',
-      scatter: 'Scatter', candlestick: 'Candles', graph: 'Graph', timeline: 'Timeline', pivot: 'Pivot', metric: 'Metric', map: 'GeoMap',
-      grid: 'Grid', tree: 'Tree', chart: 'DataChart' });
-    const KINDS_1_1 = ['grid', 'tree', 'chart'];
-    function stampOf(vm) {
-      const uses = (panels) => (panels || []).some((p) => p && (KINDS_1_1.indexOf(p.kind) >= 0 || (p.kind === 'map' && p.data && Array.isArray(p.data.points) && p.data.points.length)
-        || (p.kind === 'tabs' && p.data && Array.isArray(p.data.tabs) && p.data.tabs.some((t) => t && uses(t.panels)))));
-      return (vm.datasets && Object.keys(vm.datasets).length) || uses(vm.panels) ? '1.1' : '1.0';
-    }
-    const TYPE = (v) => (typeof v === 'number' ? 'number' : typeof v === 'boolean' ? 'boolean' : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? 'date'
-      : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v) ? 'datetime' : 'string');
-    class ViewError extends Error {
-      constructor(message, issues) {
-        super(message);
-        this.name = 'ViewError';
-        /** @type {Object[]} */ this.issues = issues || [];
-      }
-    }
-    const DEFS = SCHEMA.$defs;
-    const copy = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
-    function defOf(node, value) {
-      if (!node) { return null; }
-      if (node.$ref) { return DEFS[node.$ref.slice('#/$defs/'.length)] || null; }
-      if (node.allOf && node.allOf.length === 1) { return defOf(node.allOf[0], value); }
-      if (node.anyOf) {
-        const want = Array.isArray(value) ? 'array' : value === null ? 'null' : typeof value === 'object' ? 'object' : null;
-        const b = node.anyOf.find((x) => (want === 'array' ? x.type === 'array' : want === 'object' ? (x.$ref || x.type === 'object') : false));
-        return b ? defOf(b, value) : null;
-      }
-      return node;
-    }
-    function nullable(node) { return !!(node && node.anyOf && node.anyOf.some((x) => x.type === 'null')); }
-    function emptyOf(node) {
-      if (nullable(node)) { return null; }
-      const t = node && node.type;
-      return t === 'array' ? [] : t === 'boolean' ? false : t === 'integer' || t === 'number' ? 0 : t === 'string' ? '' : t === 'object' ? {} : null;
-    }
-    function complete(value, def) { return fill(value, { $ref: '#/$defs/' + def }); }
-    function fill(v, node) {
-      if (Array.isArray(v)) {
-        const d = defOf(node, v);
-        return d && d.items ? v.map((x) => fill(x, d.items)) : v;
-      }
-      if (!v || typeof v !== 'object') { return v; }
-      const d = defOf(node, v);
-      if (!d || !d.properties) { return v; }
-      (d.required || []).forEach((k) => { if (v[k] === undefined && d.properties[k]) { v[k] = emptyOf(d.properties[k]); } });
-      Object.keys(v).forEach((k) => {
-        if (k === 'data' && d === DEFS.PanelView && KIND_DATA[v.kind]) { v.data = fill(v.data, { $ref: '#/$defs/' + KIND_DATA[v.kind] }); return; }
-        if (d.properties[k]) { v[k] = fill(v[k], d.properties[k]); }
-      });
-      return v;
-    }
-    function refuse(what, issues) {
-      const errors = issues.filter((i) => i.level === 'error');
-      if (errors.length) { throw new ViewError(what + ': ' + errors.slice(0, 5).map(formatIssue).join('; '), errors); }
-    }
-    function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'panel'; }
-    class ViewBuilder {
-      constructor(title) {
-        this.vm = { contract: '1.0', ref: { kind: null, id: null }, title: { pill: null, id: title ? String(title) : null, with: null }, strip: [], panels: [], keys: [],
-          provenance: {}, timings: {} };
-        this.ids = new Set();
-      }
-      ref(kind, id) { this.vm.ref = { kind: kind === undefined ? null : kind, id: id === undefined ? null : String(id) }; return this; }
-      title(pill, id, withCell) { this.vm.title = { pill: pill === undefined ? null : pill, id: id === undefined ? this.vm.title.id : id, with: withCell || null }; return this; }
-      mnemonic(m) { this.vm.mnemonic = String(m); return this; }
-      strip(cells) { this.vm.strip = copy(cells || []); return this; }
-      key(k) { this.vm.keys.push(copy(k)); return this; }
-      provenance(p) { this.vm.provenance = Object.assign({}, this.vm.provenance, copy(p)); return this; }
-      layout(l) { this.vm.layout = copy(l); return this; }
-      dataset(name, rows, o) {
-        o = o || {};
-        const d = {};
-        if (o.key) { d.key = [].concat(o.key).map(String); }
-        if (Array.isArray(rows)) {
-          let fields = o.fields ? copy(o.fields) : null;
-          if (!fields) {
-            const names = [];
-            rows.slice(0, 50).forEach((r) => Object.keys(r || {}).forEach((k) => { if (names.indexOf(k) < 0) { names.push(k); } }));
-            fields = names.map((n) => {
-              const v = rows.map((r) => r && r[n]).find((x) => x !== null && x !== undefined);
-              const f = { name: n, type: v === undefined ? 'string' : TYPE(v) };
-              if (o.labels && o.labels[n]) { f.label = o.labels[n]; }
-              if (o.formats && o.formats[n]) { f.fmt = o.formats[n]; }
-              return f;
-            });
-          }
-          d.fields = fields;
-          d.values = rows.map((r) => fields.map((f) => (r && r[f.name] !== undefined ? r[f.name] : null)));
-          if (o.more > 0) { d.more = o.more; }
-        } else {
-          ['name', 'arrow', 'pages', 'server'].forEach((k) => { if (o[k] !== undefined) { d[k] = copy(o[k]); } });
-          if (o.fields) { d.fields = copy(o.fields); }
-        }
-        this.vm.datasets = Object.assign(this.vm.datasets || {}, { [String(name)]: d });
-        return this;
-      }
-      panel(p) {
-        const panel = copy(p) || {};
-        if (!panel.id) { let id = slug(panel.title || panel.kind), n = 2; while (this.ids.has(id)) { id = slug(panel.title || panel.kind) + '-' + n++; } panel.id = id; }
-        if (this.ids.has(String(panel.id))) { throw new ViewError('panel ' + panel.id + ': another panel has this id; ids are unique in a view', []); }
-        complete(panel, 'PanelView');
-        const probe = complete({ contract: CONTRACT, datasets: this.vm.datasets, ref: this.vm.ref, title: this.vm.title, strip: [], panels: [panel], keys: [], provenance: {}, timings: {} }, 'ViewModel');
-        const at = 'panels[' + this.vm.panels.length + ']';
-        refuse('panel ' + panel.id, validate(probe).issues.filter((i) => String(i.path).indexOf('panels[0]') === 0)
-          .map((i) => Object.assign({}, i, { path: at + String(i.path).slice('panels[0]'.length) })));
-        this.ids.add(String(panel.id));
-        this.vm.panels.push(panel);
-        return this;
-      }
-      toJSON() {
-        const vm = complete(copy(this.vm), 'ViewModel');
-        vm.contract = stampOf(vm);
-        refuse('the view', validate(vm).issues);
-        return vm;
-      }
-    }
-    Object.keys(KIND_DATA).forEach((kind) => {
-      ViewBuilder.prototype[kind === 'provenance' ? 'provenancePanel' : kind] = function (title, data, more) { return this.panel(Object.assign({ kind: kind, title: title, data: data }, more || {})); };
-    });
-    function view(title) { return new ViewBuilder(title); }
-    class FrameBuilder {
-      constructor(seq) { this.f = { seq: Number.isInteger(seq) ? seq : 0, generation: 0, patches: [], latencyMs: null, p99Ms: null }; }
-      generation(g) { this.f.generation = g; return this; }
-      strip(index, cell) { this.f.patches.push({ op: 'strip', index: index, cell: copy(cell) }); return this; }
-      panel(panel) { this.f.patches.push({ op: 'panel', panel: complete(copy(panel), 'PanelView') }); return this; }
-      provenance(p) { this.f.patches.push({ op: 'provenance', provenance: complete(copy(p), 'Provenance') }); return this; }
-      deleted(at) { this.f.patches.push(at ? { op: 'deleted', at: at } : { op: 'deleted' }); return this; }
-      restored() { this.f.patches.push({ op: 'restored' }); return this; }
-      rows(dataset, o) {
-        const p = { op: 'rows', dataset: String(dataset) };
-        ['reset', 'remove', 'update', 'add'].forEach((k) => { if (o && Array.isArray(o[k]) && o[k].length) { p[k] = copy(o[k]); } });
-        this.f.patches.push(p);
-        return this;
-      }
-      toJSON() {
-        const f = copy(this.f);
-        refuse('the frame', validate(f, { as: 'frame' }).issues);
-        return f;
-      }
-    }
-    function frame(seq) { return new FrameBuilder(seq); }
-    function sse(write, o) {
-      o = Object.assign({ topic: 'views.view', raw: false, epoch: 'e1', session: 's1', heartbeatMs: 15000, now: () => Date.now() }, o);
-      let seq = 0;
-      const event = (name, data, id) => write((id !== undefined ? 'id: ' + id + '\n' : '') + 'event: ' + name + '\ndata: ' + JSON.stringify(data) + '\n\n');
-      if (!o.raw) {
-        event('welcome', { t: 'welcome', v: 1, session: o.session, time: o.now(), heartbeatMs: o.heartbeatMs, can: [], limits: {}, resumed: false });
-        event('subd', { t: 'subd', id: 1, streams: { [o.topic]: { epoch: o.epoch, seq: 0 } }, recovered: true });
-      }
-      const send = (kind, data) => {
-        seq++;
-        if (o.raw) { event(kind === 'view' ? 'view' : 'frame', kind === 'view.piece' ? { seq: seq, generation: 0, patches: [data], latencyMs: null, p99Ms: null } : data, String(seq)); return; }
-        event('msg', { t: 'msg', id: o.session + '-' + seq, topic: o.topic, stream: o.topic, seq: seq, kind: kind, time: o.now(), source: 'views', data: data }, String(seq));
-      };
-      return {
-        view: (vm) => send('view', vm),
-        frame: (f) => send('view.frame', f),
-        piece: (p) => send('view.piece', p),
-        beat: () => write(': hb\n\n')
-      };
-    }
-    return { "KIND_DATA": KIND_DATA, "stampOf": stampOf, "ViewError": ViewError, "complete": complete, "ViewBuilder": ViewBuilder, "view": view, "FrameBuilder": FrameBuilder, "frame": frame, "sse": sse };
   })();
   /* ---- src/drishti_index.js ---- */
   __m["src/drishti_index.js"] = (function () {
@@ -9654,13 +9659,14 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
       const words = String(q || '').toLowerCase().split(/\s+/).filter(Boolean);
       if (!words.length) { return items.slice(); }
       const scored = [];
-      items.forEach((it, i) => {
+      items.forEach((raw, i) => {
+        const it = raw !== null && typeof raw === 'object' && typeof raw.label === 'string' ? raw : normalizeOptions([raw])[0];   // a string, a number or {value} alone is a label too
         const l = it.label.toLowerCase(), d = (it.detail || '').toLowerCase();
         let score = 0;
         for (const w of words) {
           if (l === w) { score += 5; } else if (l.indexOf(w) === 0) { score += 4; } else if (new RegExp('[\\s\\-_./(]' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(l)) { score += 3; } else if (l.indexOf(w) >= 0) { score += 2; } else if (d.indexOf(w) >= 0) { score += 1; } else { return; }
         }
-        scored.push({ it: it, score: score, i: i });
+        scored.push({ it: raw, score: score, i: i });
       });
       return scored.sort((a, b) => b.score - a.score || a.i - b.i).map((x) => x.it);
     }
@@ -9959,6 +9965,304 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     }
     const CODE_AREA_SELECTOR = SELECTOR;
     return { "upgradeCodeArea": upgradeCodeArea, "upgradeCodeAreas": upgradeCodeAreas, "CODE_AREA_SELECTOR": CODE_AREA_SELECTOR };
+  })();
+  /* ---- src/drishti_column-map-rules.js ---- */
+  __m["src/drishti_column-map-rules.js"] = (function () {
+    function asColumn(c) { return c !== null && typeof c === 'object' ? { name: String(c.name), type: c.type || '' } : { name: String(c), type: '' }; }
+    const loose = (s) => String(s).toLowerCase().replace(/[\s_\-.]+/g, '');
+    function typesFit(want, have) {
+      if (!want || !have || want === have || want === 'string') { return true; }
+      if (want === 'number') { return have === 'integer'; }
+      if (want === 'datetime') { return have === 'date'; }
+      return false;
+    }
+    function identityMap(targets, columns) {
+      const cols = (columns || []).map(asColumn), out = {};
+      (targets || []).forEach((t) => {
+        const exact = cols.find((c) => c.name === t.name);
+        if (exact) { out[t.name] = exact.name; return; }
+        const near = cols.filter((c) => loose(c.name) === loose(t.name));
+        if (near.length === 1) { out[t.name] = near[0].name; }
+      });
+      return out;
+    }
+    function mapProblems(spec, value) {
+      const cols = new Map((spec.columns || []).map(asColumn).map((c) => [c.name, c])), v = value || {}, out = [], used = new Map();
+      (spec.targets || []).forEach((t) => {
+        const name = t.label || t.name, got = v[t.name];
+        if (got === undefined || got === null || got === '') {
+          if (t.required) { out.push({ name: t.name, message: name + ' is required: pick the column that holds it' }); }
+          return;
+        }
+        const c = cols.get(got);
+        if (!c) { out.push({ name: t.name, message: name + ': "' + got + '" is not one of your columns' }); return; }
+        if (!typesFit(t.type, c.type)) { out.push({ name: t.name, message: name + ' expects ' + (t.type === 'integer' ? 'a whole number' : 'a ' + t.type) + ', but ' + c.name + ' is ' + c.type }); }
+        if (spec.unique) {
+          if (used.has(got)) { out.push({ name: t.name, message: got + ' is already used for ' + used.get(got) }); } else { used.set(got, name); }
+        }
+      });
+      return out;
+    }
+    return { "asColumn": asColumn, "typesFit": typesFit, "identityMap": identityMap, "mapProblems": mapProblems };
+  })();
+  /* ---- src/drishti_select.js ---- */
+  __m["src/drishti_select.js"] = (function () {
+    var announce = __lib("drishti-core").announce;
+    var InputBase = __m["src/drishti_inputs-dom.js"].InputBase, Listbox = __m["src/drishti_inputs-dom.js"].Listbox, Popover = __m["src/drishti_inputs-dom.js"].Popover, normalizeOptions = __m["src/drishti_inputs-dom.js"].normalizeOptions, searchOptions = __m["src/drishti_inputs-dom.js"].searchOptions, uid = __m["src/drishti_inputs-dom.js"].uid;
+    const TYPE_AHEAD_MS = 500;
+    const same = (a, b) => a === b || (a !== null && a !== undefined && b !== null && b !== undefined && String(a) === String(b));
+    function fromMarkup(host) {
+      const out = [], picked = [];
+      const take = (o, group) => {
+        out.push({ value: o.hasAttribute('value') ? o.getAttribute('value') : o.textContent.trim(), label: o.textContent.trim(), group: group || '',
+          disabled: o.hasAttribute('disabled'), detail: o.getAttribute('title') || '' });
+        if (o.hasAttribute('selected')) { picked.push(out[out.length - 1].value); }
+      };
+      Array.prototype.slice.call(host.children).forEach((c) => {
+        const t = c.tagName.toLowerCase();
+        if (t === 'option') { take(c, ''); } else if (t === 'optgroup') { Array.prototype.forEach.call(c.querySelectorAll('option'), (o) => take(o, c.getAttribute('label'))); }
+        if (t === 'option' || t === 'optgroup') { c.remove(); }
+      });
+      return { options: out, value: picked.length ? picked[0] : undefined };
+    }
+    class Select extends InputBase {
+      constructor(host, options) {
+        super(host, options, 'di-select');
+        const o = this.o = Object.assign({ search: 'auto', searchMin: 8 }, this.o);
+        const marked = o.options === undefined ? fromMarkup(host) : null;
+        this.options = normalizeOptions(marked ? marked.options : o.options);
+        this.value = null;
+        this.typed = '';
+        this.typedAt = 0;
+        this.list = new Listbox(this.doc, { label: o.label || 'Options', render: o.renderOption, onPick: (it) => this.pick(it) });
+        this.pop = new Popover(this.doc, { cls: 'di-select-pop', role: 'presentation', theme: host, onClose: () => this.closed() });
+        this.query = this.el('input', { cls: 'di-field di-select-search', attrs: { type: 'text', role: 'combobox', 'aria-expanded': 'true', 'aria-autocomplete': 'list',
+          'aria-label': 'Search ' + (o.label || 'the options'), placeholder: 'Type to search', autocomplete: 'off', spellcheck: 'false', id: uid('sel-q') } });
+        this.query.addEventListener('input', () => this.filter(true));
+        this.query.addEventListener('keydown', (e) => this.onListKey(e, this.query));
+        this.status = this.el('div', { cls: 'di-select-status', attrs: { role: 'status', 'aria-live': 'polite' } });
+        this.panel = this.el('div', { cls: 'di-select-panel' });
+        this.text = this.el('span', { cls: 'di-select-text' });
+        this.control = this.el('div', { cls: 'di-control di-select-control', attrs: { role: 'combobox', tabindex: '0', 'aria-haspopup': 'listbox', 'aria-expanded': 'false',
+          'aria-label': o.label || null, id: uid('sel') } }, [this.text, this.el('span', { cls: 'di-caret', text: '▾', attrs: { 'aria-hidden': 'true' } })]);
+        host.appendChild(this.control);
+        if (o.name) {
+          this.hidden = this.el('input', { attrs: { type: 'hidden', name: o.name } });
+          const sel = this;
+          Object.defineProperty(this.hidden, 'value', { configurable: true, get() { return this.getAttribute('value') || ''; }, set(v) { sel.setValue(v === '' && !sel.options.some((x) => same(x.value, '')) ? null : v); } });
+          host.appendChild(this.hidden);
+        }
+        this.control.addEventListener('mousedown', (e) => { e.preventDefault(); if (this.o.disabled) { return; } this.control.focus(); if (this.pop.isOpen()) { this.close(); } else { this.open(); } });
+        this.control.addEventListener('keydown', (e) => this.onKey(e));
+        this.control.addEventListener('blur', () => { if (this.pop.isOpen() && !this.searching()) { this.close(); } });
+        this.setDisabled(!!o.disabled);
+        const first = o.value !== undefined ? o.value : marked && marked.value !== undefined ? marked.value : undefined;
+        if (first !== undefined && first !== null) { this.setValue(first); } else if (!o.placeholder) { const f = this.options.find((x) => !x.disabled); this.setValue(f ? f.value : null); } else { this.show(); }
+      }
+      searching() { const s = this.o.search; return s === true || (s === 'auto' && this.options.length > this.o.searchMin); }
+      show() {
+        const it = this.getOption();
+        this.text.textContent = it ? it.label : this.value !== null ? String(this.value) : (this.o.placeholder || '');
+        this.control.classList.toggle('di-placeholder', this.value === null);
+        if (this.hidden) { this.hidden.setAttribute('value', this.value === null ? '' : String(this.value)); }
+      }
+      open(at) {
+        if (this.o.disabled) { return; }
+        const search = this.searching();
+        this.query.value = '';
+        this.panel.textContent = '';
+        if (search) { this.panel.appendChild(this.query); }
+        this.panel.append(this.list.el, this.status);
+        this.filter(false);
+        this.pop.open(this.control, this.panel, { focus: false });
+        const owner = search ? this.query : this.control;
+        owner.setAttribute('aria-controls', this.list.id);
+        this.control.setAttribute('aria-controls', this.list.id);
+        this.control.setAttribute('aria-expanded', 'true');
+        const cur = this.matches.findIndex((x) => same(x.value, this.value));
+        this.list.setActive(at !== undefined ? at : cur >= 0 ? cur : 0, owner);
+        if (search) { this.query.focus(); }
+        this.emit('open');
+      }
+      close(refocus) { const had = this.doc.activeElement === this.query; this.pop.close(); if ((refocus || had) && this.control.isConnected) { this.control.focus(); } }
+      closed() {
+        this.control.setAttribute('aria-expanded', 'false');
+        this.control.removeAttribute('aria-activedescendant');
+        this.control.removeAttribute('aria-controls');
+        this.query.removeAttribute('aria-activedescendant');
+        this.emit('close');
+      }
+      filter(typed) {
+        const q = this.searching() ? this.query.value : '';
+        this.matches = searchOptions(this.options, q);
+        this.list.render(this.matches, (it) => same(it.value, this.value), { empty: q ? 'Nothing matches "' + q + '"' : 'Nothing to pick' });
+        this.status.textContent = q ? this.matches.length + (this.matches.length === 1 ? ' match' : ' matches') : '';
+        if (typed) { this.list.setActive(this.matches.length ? 0 : -1, this.query); }
+        if (this.pop.isOpen()) { this.pop.place(); }
+      }
+      onKey(e) {
+        if (this.o.disabled) { return; }
+        const k = e.key;
+        if (this.pop.isOpen()) { this.onListKey(e, this.control); return; }
+        if (k === 'ArrowDown' || k === 'ArrowUp' || k === 'Enter' || k === ' ') { e.preventDefault(); this.open(); return; }
+        if (k === 'Home' || k === 'End') { e.preventDefault(); this.open(); this.list.setActive(k === 'Home' ? 0 : this.matches.length - 1, this.control); return; }
+        if (this.printable(e)) {
+          e.preventDefault();
+          if (this.searching()) { this.open(); this.query.value = k; this.filter(true); return; }
+          this.open();
+          this.typeAhead(k);
+        }
+      }
+      printable(e) { return e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey; }
+      onListKey(e, owner) {
+        const k = e.key;
+        if (k === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(true); return; }
+        if (k === 'Tab') { this.close(); return; }
+        if (k === 'ArrowUp' && e.altKey) { e.preventDefault(); const it = this.matches[this.list.active]; if (it && !it.disabled) { this.pick(it); } else { this.close(true); } return; }
+        if ((k === 'Home' || k === 'End') && owner === this.control) { e.preventDefault(); this.list.setActive(k === 'Home' ? 0 : this.matches.length - 1, owner); return; }
+        if (k === ' ' && owner === this.control) { e.preventDefault(); const it = this.matches[this.list.active]; if (it && !it.disabled) { this.pick(it); } return; }
+        if (this.list.key(e, owner)) { return; }
+        if (owner === this.control && this.printable(e)) { e.preventDefault(); this.typeAhead(k); }
+      }
+      typeAhead(ch) {
+        const now = Date.now();
+        this.typed = now - this.typedAt > TYPE_AHEAD_MS ? ch : this.typed + ch;
+        this.typedAt = now;
+        const t = this.typed.toLowerCase(), n = this.matches.length;
+        const repeat = t.length > 1 && t.split('').every((c) => c === t[0]);
+        const word = repeat ? t[0] : t, start = repeat || t.length === 1 ? this.list.active + 1 : this.list.active;
+        for (let i = 0; i < n; i++) {
+          const j = (Math.max(0, start) + i) % n;
+          if (this.matches[j].label.toLowerCase().indexOf(word) === 0) { this.list.setActive(j, this.control); return; }
+        }
+      }
+      pick(it) {
+        if (!it || it.disabled) { return; }
+        this.close(true);
+        this.setValue(it.value, true);
+        this.emit('pick', { value: this.value, option: this.getOption() });      // every pick, the same value too (a cell editor saves on it)
+      }
+      getValue() { return this.value; }
+      getOption() { const v = this.value; return v === null ? null : this.options.find((x) => same(x.value, v)) || null; }
+      setValue(v, emit) {
+        const before = this.value;
+        const it = v === null || v === undefined ? null : this.options.find((x) => same(x.value, v));
+        this.value = it ? it.value : v === undefined ? null : v;
+        this.show();
+        if (emit && !same(before, this.value)) {
+          announce((it ? it.label : String(this.value)) + ' picked');
+          this.emit('change', { value: this.value, option: this.getOption() });
+          if (this.o.native) { ['input', 'change'].forEach((t) => this.host.dispatchEvent(new this.win.Event(t, { bubbles: true }))); }
+        }
+      }
+      setOptions(list, value) {
+        this.options = normalizeOptions(list);
+        const want = value !== undefined ? value : this.value;
+        const keep = want !== null && this.options.some((x) => same(x.value, want));
+        if (keep || (want !== null && value !== undefined)) { this.setValue(want); } else if (this.o.placeholder) { this.setValue(null); } else { const f = this.options.find((x) => !x.disabled); this.setValue(f ? f.value : null); }
+        if (this.pop.isOpen()) { this.filter(false); }
+      }
+      setDisabled(off) {
+        this.o.disabled = !!off;
+        this.control.setAttribute('aria-disabled', off ? 'true' : 'false');
+        this.control.setAttribute('tabindex', off ? '-1' : '0');
+        this.host.classList.toggle('di-disabled', !!off);
+        if (off) { this.close(); }
+      }
+      focus() { this.control.focus(); }
+    }
+    function selectElement(doc, options, attrs) {
+      const box = doc.createElement('drishti-select'), o = Object.assign({ native: true }, options);
+      if (Array.isArray(o.options)) { o.options = o.options.map((x) => (Array.isArray(x) ? { value: x[0], label: String(x[1]) } : x)); }
+      Object.keys(attrs || {}).forEach((k) => { const v = attrs[k]; if (v !== null && v !== undefined && v !== false) { box.setAttribute(k, v === true ? '' : String(v)); } });
+      box.component = new Select(box, o);                           // made here: the element does not make a second one when it joins the page
+      if (!('value' in box)) { selectProperties(box); }             // no custom elements here (a test's document): the same properties
+      return box;
+    }
+    function selectProperties(box) {
+      Object.defineProperty(box, 'value', { configurable: true, get() { return this.component ? this.component.getValue() : null; }, set(v) { if (this.component) { this.component.setValue(v); } } });
+      box.focus = function () { if (this.component) { this.component.focus(); } };
+      Object.defineProperty(box, 'disabled', { configurable: true, get() { return !!(this.component && this.component.o.disabled); }, set(v) { if (this.component) { this.component.setDisabled(!!v); } } });
+    }
+    return { "Select": Select, "selectElement": selectElement, "selectProperties": selectProperties };
+  })();
+  /* ---- src/drishti_column-map.js ---- */
+  __m["src/drishti_column-map.js"] = (function () {
+    var InputBase = __m["src/drishti_inputs-dom.js"].InputBase;
+    var Select = __m["src/drishti_select.js"].Select;
+    var identityMap = __m["src/drishti_column-map-rules.js"].identityMap, mapProblems = __m["src/drishti_column-map-rules.js"].mapProblems, asColumn = __m["src/drishti_column-map-rules.js"].asColumn;
+    class ColumnMap extends InputBase {
+      constructor(host, options) {
+        super(host, Object.assign({ autoMatch: true, emptyLabel: '(not mapped)' }, options), 'di-colmap');
+        const o = this.o;
+        this.targets = (o.targets || []).map((t) => (typeof t === 'string' ? { name: t } : t));
+        this.cols = (o.columns || []).map(asColumn);
+        this.value = Object.assign({}, o.autoMatch ? identityMap(this.targets, this.cols) : {}, o.value || {});
+        this.table = this.el('table', { cls: 'di-colmap-table', attrs: { 'aria-label': o.label || 'Column mapping' } });
+        this.table.appendChild(this.el('thead', {}, [this.el('tr', {}, ['Column', 'Type', 'Your column'].map((t) => this.el('th', { text: t, attrs: { scope: 'col' } })))]));
+        this.body = this.el('tbody');
+        this.table.appendChild(this.body);
+        this.summary = this.el('div', { cls: 'di-msg di-colmap-summary', attrs: { 'aria-live': 'polite' } });
+        this.match = this.el('button', { cls: 'di-btn di-colmap-match', text: 'Match by name', attrs: { type: 'button' }, data: { act: 'match' }, on: { click: () => this.matchByName() } });
+        host.append(this.el('div', { cls: 'di-colmap-tools' }, [this.match]), this.table, this.summary);
+        this.selects = new Map();
+        this.draw();
+      }
+      choices() {
+        return [{ value: '', label: this.o.emptyLabel }].concat(this.cols.map((c) => ({ value: c.name, label: c.name, detail: c.type })));
+      }
+      draw() {
+        this.body.textContent = '';
+        this.selects.clear();
+        this.targets.forEach((t, i) => {
+          const hostCell = this.el('div', { cls: 'di-colmap-select' });
+          const sel = new Select(hostCell, { options: this.choices(), value: this.value[t.name] === undefined ? '' : this.value[t.name], label: (t.label || t.name) + ': your column', disabled: !!this.o.disabled });
+          sel.control.id = this.uidOf(i);
+          sel.on('change', (d) => { this.setOne(t.name, d.value); });
+          this.selects.set(t.name, sel);
+          const msg = this.el('div', { cls: 'di-msg', attrs: { id: this.uidOf(i) + '-msg', 'aria-live': 'polite' } });
+          sel.control.setAttribute('aria-describedby', msg.id);
+          const name = this.el('td', { cls: 'di-colmap-name' }, [this.el('label', { text: t.label || t.name, attrs: { for: sel.control.id } }),
+            t.required ? this.el('span', { cls: 'di-req', text: ' *', attrs: { title: 'Required', 'aria-label': 'required' } }) : null]);
+          if (t.description) { name.appendChild(this.el('div', { cls: 'di-help', text: t.description })); }
+          this.body.appendChild(this.el('tr', { data: { local: t.name } }, [name, this.el('td', { cls: 'di-colmap-type', text: t.type || '' }), this.el('td', {}, [hostCell, msg])]));
+        });
+        this.check();
+      }
+      uidOf(i) { return (this.idBase || (this.idBase = 'di-colmap-' + (++ColumnMap.n || (ColumnMap.n = 1)))) + '-' + i; }
+      check() {
+        const bad = mapProblems(this.o, this.value), by = new Map(bad.map((b) => [b.name, b.message]));
+        this.targets.forEach((t, i) => {
+          const row = this.body.children[i], msg = row && row.querySelector('.di-msg'), sel = this.selects.get(t.name);
+          if (!row) { return; }
+          msg.textContent = by.get(t.name) || '';
+          row.classList.toggle('di-invalid', by.has(t.name));
+          if (sel) { sel.control.setAttribute('aria-invalid', by.has(t.name) ? 'true' : 'false'); }
+        });
+        const mapped = this.targets.filter((t) => this.value[t.name]).length;
+        this.summary.textContent = bad.length ? bad.length + (bad.length === 1 ? ' problem' : ' problems') + ' in the mapping' : mapped + ' of ' + this.targets.length + ' mapped';
+        this.summary.classList.toggle('di-colmap-ok', !bad.length);
+        return bad;
+      }
+      setOne(name, col) {
+        if (col === '' || col === null || col === undefined) { delete this.value[name]; } else { this.value[name] = col; }
+        this.emit('change', { value: this.getValue(), problems: this.check() });
+      }
+      matchByName() {
+        const m = identityMap(this.targets, this.cols);
+        Object.keys(m).forEach((k) => { this.value[k] = m[k]; this.selects.get(k).setValue(m[k]); });
+        this.emit('change', { value: this.getValue(), problems: this.check() });
+      }
+      getValue() { return Object.assign({}, this.value); }
+      setValue(v) {
+        this.value = Object.assign({}, v || {});
+        this.targets.forEach((t) => this.selects.get(t.name).setValue(this.value[t.name] === undefined ? '' : this.value[t.name]));
+        this.check();
+      }
+      problems() { return mapProblems(this.o, this.value); }
+      setColumns(columns) { this.o.columns = columns; this.cols = (columns || []).map(asColumn); this.draw(); }
+    }
+    return { "ColumnMap": ColumnMap };
   })();
   /* ---- src/drishti_combobox.js ---- */
   __m["src/drishti_combobox.js"] = (function () {
@@ -10777,187 +11081,6 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     }
     return { "acceptedName": acceptedName, "FileDrop": FileDrop };
   })();
-  /* ---- src/drishti_select.js ---- */
-  __m["src/drishti_select.js"] = (function () {
-    var announce = __lib("drishti-core").announce;
-    var InputBase = __m["src/drishti_inputs-dom.js"].InputBase, Listbox = __m["src/drishti_inputs-dom.js"].Listbox, Popover = __m["src/drishti_inputs-dom.js"].Popover, normalizeOptions = __m["src/drishti_inputs-dom.js"].normalizeOptions, searchOptions = __m["src/drishti_inputs-dom.js"].searchOptions, uid = __m["src/drishti_inputs-dom.js"].uid;
-    const TYPE_AHEAD_MS = 500;
-    const same = (a, b) => a === b || (a !== null && a !== undefined && b !== null && b !== undefined && String(a) === String(b));
-    function fromMarkup(host) {
-      const out = [], picked = [];
-      const take = (o, group) => {
-        out.push({ value: o.hasAttribute('value') ? o.getAttribute('value') : o.textContent.trim(), label: o.textContent.trim(), group: group || '',
-          disabled: o.hasAttribute('disabled'), detail: o.getAttribute('title') || '' });
-        if (o.hasAttribute('selected')) { picked.push(out[out.length - 1].value); }
-      };
-      Array.prototype.slice.call(host.children).forEach((c) => {
-        const t = c.tagName.toLowerCase();
-        if (t === 'option') { take(c, ''); } else if (t === 'optgroup') { Array.prototype.forEach.call(c.querySelectorAll('option'), (o) => take(o, c.getAttribute('label'))); }
-        if (t === 'option' || t === 'optgroup') { c.remove(); }
-      });
-      return { options: out, value: picked.length ? picked[0] : undefined };
-    }
-    class Select extends InputBase {
-      constructor(host, options) {
-        super(host, options, 'di-select');
-        const o = this.o = Object.assign({ search: 'auto', searchMin: 8 }, this.o);
-        const marked = o.options === undefined ? fromMarkup(host) : null;
-        this.options = normalizeOptions(marked ? marked.options : o.options);
-        this.value = null;
-        this.typed = '';
-        this.typedAt = 0;
-        this.list = new Listbox(this.doc, { label: o.label || 'Options', render: o.renderOption, onPick: (it) => this.pick(it) });
-        this.pop = new Popover(this.doc, { cls: 'di-select-pop', role: 'presentation', theme: host, onClose: () => this.closed() });
-        this.query = this.el('input', { cls: 'di-field di-select-search', attrs: { type: 'text', role: 'combobox', 'aria-expanded': 'true', 'aria-autocomplete': 'list',
-          'aria-label': 'Search ' + (o.label || 'the options'), placeholder: 'Type to search', autocomplete: 'off', spellcheck: 'false', id: uid('sel-q') } });
-        this.query.addEventListener('input', () => this.filter(true));
-        this.query.addEventListener('keydown', (e) => this.onListKey(e, this.query));
-        this.status = this.el('div', { cls: 'di-select-status', attrs: { role: 'status', 'aria-live': 'polite' } });
-        this.panel = this.el('div', { cls: 'di-select-panel' });
-        this.text = this.el('span', { cls: 'di-select-text' });
-        this.control = this.el('div', { cls: 'di-control di-select-control', attrs: { role: 'combobox', tabindex: '0', 'aria-haspopup': 'listbox', 'aria-expanded': 'false',
-          'aria-label': o.label || null, id: uid('sel') } }, [this.text, this.el('span', { cls: 'di-caret', text: '▾', attrs: { 'aria-hidden': 'true' } })]);
-        host.appendChild(this.control);
-        if (o.name) {
-          this.hidden = this.el('input', { attrs: { type: 'hidden', name: o.name } });
-          const sel = this;
-          Object.defineProperty(this.hidden, 'value', { configurable: true, get() { return this.getAttribute('value') || ''; }, set(v) { sel.setValue(v === '' && !sel.options.some((x) => same(x.value, '')) ? null : v); } });
-          host.appendChild(this.hidden);
-        }
-        this.control.addEventListener('mousedown', (e) => { e.preventDefault(); if (this.o.disabled) { return; } this.control.focus(); if (this.pop.isOpen()) { this.close(); } else { this.open(); } });
-        this.control.addEventListener('keydown', (e) => this.onKey(e));
-        this.control.addEventListener('blur', () => { if (this.pop.isOpen() && !this.searching()) { this.close(); } });
-        this.setDisabled(!!o.disabled);
-        const first = o.value !== undefined ? o.value : marked && marked.value !== undefined ? marked.value : undefined;
-        if (first !== undefined && first !== null) { this.setValue(first); } else if (!o.placeholder) { const f = this.options.find((x) => !x.disabled); this.setValue(f ? f.value : null); } else { this.show(); }
-      }
-      searching() { const s = this.o.search; return s === true || (s === 'auto' && this.options.length > this.o.searchMin); }
-      show() {
-        const it = this.getOption();
-        this.text.textContent = it ? it.label : this.value !== null ? String(this.value) : (this.o.placeholder || '');
-        this.control.classList.toggle('di-placeholder', this.value === null);
-        if (this.hidden) { this.hidden.setAttribute('value', this.value === null ? '' : String(this.value)); }
-      }
-      open(at) {
-        if (this.o.disabled) { return; }
-        const search = this.searching();
-        this.query.value = '';
-        this.panel.textContent = '';
-        if (search) { this.panel.appendChild(this.query); }
-        this.panel.append(this.list.el, this.status);
-        this.filter(false);
-        this.pop.open(this.control, this.panel, { focus: false });
-        const owner = search ? this.query : this.control;
-        owner.setAttribute('aria-controls', this.list.id);
-        this.control.setAttribute('aria-controls', this.list.id);
-        this.control.setAttribute('aria-expanded', 'true');
-        const cur = this.matches.findIndex((x) => same(x.value, this.value));
-        this.list.setActive(at !== undefined ? at : cur >= 0 ? cur : 0, owner);
-        if (search) { this.query.focus(); }
-        this.emit('open');
-      }
-      close(refocus) { const had = this.doc.activeElement === this.query; this.pop.close(); if ((refocus || had) && this.control.isConnected) { this.control.focus(); } }
-      closed() {
-        this.control.setAttribute('aria-expanded', 'false');
-        this.control.removeAttribute('aria-activedescendant');
-        this.control.removeAttribute('aria-controls');
-        this.query.removeAttribute('aria-activedescendant');
-        this.emit('close');
-      }
-      filter(typed) {
-        const q = this.searching() ? this.query.value : '';
-        this.matches = searchOptions(this.options, q);
-        this.list.render(this.matches, (it) => same(it.value, this.value), { empty: q ? 'Nothing matches "' + q + '"' : 'Nothing to pick' });
-        this.status.textContent = q ? this.matches.length + (this.matches.length === 1 ? ' match' : ' matches') : '';
-        if (typed) { this.list.setActive(this.matches.length ? 0 : -1, this.query); }
-        if (this.pop.isOpen()) { this.pop.place(); }
-      }
-      onKey(e) {
-        if (this.o.disabled) { return; }
-        const k = e.key;
-        if (this.pop.isOpen()) { this.onListKey(e, this.control); return; }
-        if (k === 'ArrowDown' || k === 'ArrowUp' || k === 'Enter' || k === ' ') { e.preventDefault(); this.open(); return; }
-        if (k === 'Home' || k === 'End') { e.preventDefault(); this.open(); this.list.setActive(k === 'Home' ? 0 : this.matches.length - 1, this.control); return; }
-        if (this.printable(e)) {
-          e.preventDefault();
-          if (this.searching()) { this.open(); this.query.value = k; this.filter(true); return; }
-          this.open();
-          this.typeAhead(k);
-        }
-      }
-      printable(e) { return e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey; }
-      onListKey(e, owner) {
-        const k = e.key;
-        if (k === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(true); return; }
-        if (k === 'Tab') { this.close(); return; }
-        if (k === 'ArrowUp' && e.altKey) { e.preventDefault(); const it = this.matches[this.list.active]; if (it && !it.disabled) { this.pick(it); } else { this.close(true); } return; }
-        if ((k === 'Home' || k === 'End') && owner === this.control) { e.preventDefault(); this.list.setActive(k === 'Home' ? 0 : this.matches.length - 1, owner); return; }
-        if (k === ' ' && owner === this.control) { e.preventDefault(); const it = this.matches[this.list.active]; if (it && !it.disabled) { this.pick(it); } return; }
-        if (this.list.key(e, owner)) { return; }
-        if (owner === this.control && this.printable(e)) { e.preventDefault(); this.typeAhead(k); }
-      }
-      typeAhead(ch) {
-        const now = Date.now();
-        this.typed = now - this.typedAt > TYPE_AHEAD_MS ? ch : this.typed + ch;
-        this.typedAt = now;
-        const t = this.typed.toLowerCase(), n = this.matches.length;
-        const repeat = t.length > 1 && t.split('').every((c) => c === t[0]);
-        const word = repeat ? t[0] : t, start = repeat || t.length === 1 ? this.list.active + 1 : this.list.active;
-        for (let i = 0; i < n; i++) {
-          const j = (Math.max(0, start) + i) % n;
-          if (this.matches[j].label.toLowerCase().indexOf(word) === 0) { this.list.setActive(j, this.control); return; }
-        }
-      }
-      pick(it) {
-        if (!it || it.disabled) { return; }
-        this.close(true);
-        this.setValue(it.value, true);
-        this.emit('pick', { value: this.value, option: this.getOption() });      // every pick, the same value too (a cell editor saves on it)
-      }
-      getValue() { return this.value; }
-      getOption() { const v = this.value; return v === null ? null : this.options.find((x) => same(x.value, v)) || null; }
-      setValue(v, emit) {
-        const before = this.value;
-        const it = v === null || v === undefined ? null : this.options.find((x) => same(x.value, v));
-        this.value = it ? it.value : v === undefined ? null : v;
-        this.show();
-        if (emit && !same(before, this.value)) {
-          announce((it ? it.label : String(this.value)) + ' picked');
-          this.emit('change', { value: this.value, option: this.getOption() });
-          if (this.o.native) { ['input', 'change'].forEach((t) => this.host.dispatchEvent(new this.win.Event(t, { bubbles: true }))); }
-        }
-      }
-      setOptions(list, value) {
-        this.options = normalizeOptions(list);
-        const want = value !== undefined ? value : this.value;
-        const keep = want !== null && this.options.some((x) => same(x.value, want));
-        if (keep || (want !== null && value !== undefined)) { this.setValue(want); } else if (this.o.placeholder) { this.setValue(null); } else { const f = this.options.find((x) => !x.disabled); this.setValue(f ? f.value : null); }
-        if (this.pop.isOpen()) { this.filter(false); }
-      }
-      setDisabled(off) {
-        this.o.disabled = !!off;
-        this.control.setAttribute('aria-disabled', off ? 'true' : 'false');
-        this.control.setAttribute('tabindex', off ? '-1' : '0');
-        this.host.classList.toggle('di-disabled', !!off);
-        if (off) { this.close(); }
-      }
-      focus() { this.control.focus(); }
-    }
-    function selectElement(doc, options, attrs) {
-      const box = doc.createElement('drishti-select'), o = Object.assign({ native: true }, options);
-      if (Array.isArray(o.options)) { o.options = o.options.map((x) => (Array.isArray(x) ? { value: x[0], label: String(x[1]) } : x)); }
-      Object.keys(attrs || {}).forEach((k) => { const v = attrs[k]; if (v !== null && v !== undefined && v !== false) { box.setAttribute(k, v === true ? '' : String(v)); } });
-      box.component = new Select(box, o);                           // made here: the element does not make a second one when it joins the page
-      if (!('value' in box)) { selectProperties(box); }             // no custom elements here (a test's document): the same properties
-      return box;
-    }
-    function selectProperties(box) {
-      Object.defineProperty(box, 'value', { configurable: true, get() { return this.component ? this.component.getValue() : null; }, set(v) { if (this.component) { this.component.setValue(v); } } });
-      box.focus = function () { if (this.component) { this.component.focus(); } };
-      Object.defineProperty(box, 'disabled', { configurable: true, get() { return !!(this.component && this.component.o.disabled); }, set(v) { if (this.component) { this.component.setDisabled(!!v); } } });
-    }
-    return { "Select": Select, "selectElement": selectElement, "selectProperties": selectProperties };
-  })();
   /* ---- src/drishti_filter-bar.js ---- */
   __m["src/drishti_filter-bar.js"] = (function () {
     var sharedBus = __lib("drishti-core").bus, filterTopic = __lib("drishti-core").filterTopic, filterWords = __lib("drishti-core").filterWords, formatDateRange = __lib("drishti-core").formatDateRange, announce = __lib("drishti-core").announce, parseNumberText = __lib("drishti-core").parseNumberText;
@@ -11267,6 +11390,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
   __m["src/drishti_schema.js"] = (function () {
     var formatNumber = __lib("drishti-core").formatNumber, formatDate = __lib("drishti-core").formatDate, isoDate = __lib("drishti-core").isoDate, parseNumberText = __lib("drishti-core").parseNumberText;
     var parseTime = __m["src/drishti_time-picker.js"].parseTime, parseDateTime = __m["src/drishti_time-picker.js"].parseDateTime;
+    var identityMap = __m["src/drishti_column-map-rules.js"].identityMap, mapProblems = __m["src/drishti_column-map-rules.js"].mapProblems;
     function words(key) {
       const s = String(key).replace(/[_-]+/g, ' ').replace(/([a-z0-9])([A-Z])/g, '$1 $2').trim().toLowerCase();
       return s.charAt(0).toUpperCase() + s.slice(1);
@@ -11322,6 +11446,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         case 'object': { const o = {}; fieldsOf(schema).forEach((f) => { const d = defaults(f.field); if (d !== undefined) { o[f.key] = d; } }); return o; }
         case 'array': return Array.from({ length: schema.minItems || 0 }, () => defaults(schema.items || { type: 'string' }));
         case 'boolean': return false;
+        case 'columnmap': return schema.options && schema.options.targets ? identityMap(schema.options.targets, schema.options.columns) : {};
         default: return undefined;
       }
     }
@@ -11331,6 +11456,10 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     function enumLabel(field, v) { const i = (field.enum || []).indexOf(v); return field.enumLabels && i >= 0 ? field.enumLabels[i] : String(v); }
     function fieldProblem(field, v, c) {
       const L = c.label;
+      if (field.type === 'columnmap') {                 // a mapping of local columns on the caller's: its own rules (options.targets, columns, unique)
+        const bad = mapProblems(field.options || {}, v);
+        return bad.length ? bad[0].message + (bad.length > 1 ? ' (and ' + (bad.length - 1) + ' more)' : '') : null;
+      }
       if ((blank(v) && !(Array.isArray(v) && field.minItems)) || (field.type === 'boolean' && v === false && c.required && field.widget === 'checkbox')) {
         if (!c.required) { return null; }
         return field.type === 'array' || field.widget === 'multiselect' ? 'Pick at least one for ' + L.toLowerCase() : field.enum || field.widget === 'combobox' || field.widget === 'tree' ? 'Pick ' + L.toLowerCase() : L + ' is required';
@@ -11897,12 +12026,14 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var TreePicker = __m["src/drishti_tree-picker.js"].TreePicker;
     var CodeEditor = __m["src/drishti_code-editor.js"].CodeEditor;
     var Select = __m["src/drishti_select.js"].Select;
+    var ColumnMap = __m["src/drishti_column-map.js"].ColumnMap;
     var upgradeCodeArea = __m["src/drishti_code-upgrade.js"].upgradeCodeArea;
     const WIDGETS = new Map();
     function defineWidget(name, factory) { WIDGETS.set(name, factory); }
     function defaultWidget(fs) {
       if (fs.enum) { return fs.enum.length <= 3 ? 'radio' : 'select'; }
       if (fs.type === 'boolean') { return 'checkbox'; }
+      if (fs.type === 'columnmap') { return 'columnmap'; }
       if (fs.type === 'date' || fs.type === 'time' || fs.type === 'datetime' || fs.type === 'daterange' || fs.type === 'money') { return fs.type; }
       if (fs.type === 'array' && fs.items && fs.items.enum) { return 'multiselect'; }
       if (fs.format === 'textarea') { return 'textarea'; }
@@ -12022,6 +12153,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         case 'daterange': control = mount(DateRangePicker, { value: v }); break;
         case 'multiselect': control = mount(MultiSelect, { options: fs.items && fs.items.enum ? opts() : (fs.options || {}).options, value: v || [] }); break;
         case 'combobox': control = mount(Combobox, { value: v === undefined || v === null ? null : { value: v, label: String(v) } }); break;
+        case 'columnmap': control = mount(ColumnMap, { value: v, disabled: ro }); break;
         case 'tree': control = mount(TreePicker, { value: v || [] }); break;
         case 'code': control = mount(CodeEditor, { value: v || '', readOnly: ro, height: (fs.options && fs.options.height) || 120 }); break;
         case 'formula': {                                         // a one-line code editor; the input holds the value (upgradeCodeArea)
@@ -12486,6 +12618,391 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     }
     return { "Switch": Switch };
   })();
+  /* ---- src/drishti_split-pane.js ---- */
+  __m["src/drishti_split-pane.js"] = (function () {
+    var InputBase = __m["src/drishti_inputs-dom.js"].InputBase;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    function recall(win, key) {
+      try { const v = JSON.parse(win.localStorage.getItem('drishti.split.' + key)); return Array.isArray(v) ? v : null; } catch (e) { return null; }
+    }
+    class SplitPane extends InputBase {
+      constructor(host, options) {
+        super(host, options, 'di-split');
+        const o = this.o;
+        if (!Array.isArray(o.panes) || o.panes.length < 2) { throw new Error('a split pane needs at least two panes'); }
+        this.vertical = o.direction === 'vertical';
+        host.classList.add(this.vertical ? 'di-split-v' : 'di-split-h');
+        host.setAttribute('role', 'group');
+        if (o.label) { host.setAttribute('aria-label', o.label); }
+        this.defs = o.panes.map((p, i) => ({ id: p.id || 'pane' + (i + 1), min: p.min === undefined ? 80 : p.min, max: p.max === undefined ? Infinity : p.max, label: p.label }));
+        this.start = this.normal(o.panes.map((p) => (typeof p.size === 'number' && p.size > 0 ? p.size : 1)));
+        const kept = o.persistKey ? recall(this.win, o.persistKey) : null;
+        this.shares = kept && kept.length === this.defs.length ? this.normal(kept) : this.start.slice();
+        this.panes = [];
+        this.bars = [];
+        this.defs.forEach((d, i) => {
+          const content = o.panes[i].content;
+          const pane = this.el('div', { cls: 'di-split-pane', data: { pane: d.id }, attrs: { id: 'di-split-' + d.id + '-' + this.uidn() } });
+          if (typeof content === 'string') { pane.textContent = content; } else if (content) { pane.appendChild(content); }
+          this.panes.push(pane);
+          host.appendChild(pane);
+          if (i < this.defs.length - 1) {
+            const bar = this.el('div', { cls: 'di-split-bar', data: { bar: String(i) }, attrs: { role: 'separator', tabindex: '0', 'aria-orientation': this.vertical ? 'horizontal' : 'vertical',
+              'aria-controls': pane.id, 'aria-label': d.label || o.panes[i + 1].label || 'Resize ' + d.id + ' and ' + this.defs[i + 1].id } });
+            bar.addEventListener('keydown', (e) => this.onKey(e, i));
+            bar.addEventListener('dblclick', () => this.reset(i));
+            bar.addEventListener('pointerdown', (e) => this.drag(e, i));
+            this.bars.push(bar);
+            host.appendChild(bar);
+          }
+        });
+        this.paint();
+        if (this.win.ResizeObserver) { this.watch = new this.win.ResizeObserver(() => this.paint()); this.watch.observe(host); }
+      }
+      uidn() { return (SplitPane.n = (SplitPane.n || 0) + 1); }
+      normal(a) { const t = a.reduce((x, y) => x + y, 0) || 1; return a.map((x) => x / t); }
+      room() {
+        const r = this.host.getBoundingClientRect(), len = this.vertical ? r.height : r.width;
+        return Math.max(0, len - this.bars.reduce((t, b) => t + (this.vertical ? b.offsetHeight : b.offsetWidth) || 0, 0));
+      }
+      paint() {
+        this.panes.forEach((p, i) => {
+          const d = this.defs[i];
+          p.style.flex = (this.shares[i] * 1000).toFixed(3) + ' 1 0px';
+          p.style[this.vertical ? 'minHeight' : 'minWidth'] = d.min + 'px';
+          p.style[this.vertical ? 'maxHeight' : 'maxWidth'] = d.max === Infinity ? '' : d.max + 'px';
+        });
+        const px = this.pixels();
+        this.bars.forEach((b, i) => {
+          b.setAttribute('aria-valuenow', String(Math.round(px[i])));
+          b.setAttribute('aria-valuemin', String(this.defs[i].min));
+          if (this.defs[i].max !== Infinity) { b.setAttribute('aria-valuemax', String(this.defs[i].max)); }
+        });
+      }
+      pixels() {
+        return this.panes.map((p) => { const r = p.getBoundingClientRect(); return this.vertical ? r.height : r.width; });
+      }
+      move(i, delta, from) {
+        const room = this.room();
+        if (room <= 0) { return false; }
+        const base = from || this.pixels(), a = this.defs[i], b = this.defs[i + 1];
+        const total = base[i] + base[i + 1];
+        let na = clamp(base[i] + delta, Math.max(a.min, total - b.max), Math.min(a.max, total - b.min));
+        if (!(na >= 0)) { return false; }
+        const next = base.slice();
+        next[i] = na; next[i + 1] = total - na;
+        const sum = next.reduce((x, y) => x + y, 0) || 1;
+        this.shares = next.map((x) => x / sum);
+        this.paint();
+        return true;
+      }
+      onKey(e, i) {
+        const step = (this.o.step || 10) * (e.shiftKey ? 5 : 1), fwd = this.vertical ? 'ArrowDown' : 'ArrowRight', back = this.vertical ? 'ArrowUp' : 'ArrowLeft';
+        let moved = null;
+        if (e.key === fwd) { moved = this.move(i, step); } else if (e.key === back) { moved = this.move(i, -step); }
+        else if (e.key === 'Home') { moved = this.move(i, -1e9); } else if (e.key === 'End') { moved = this.move(i, 1e9); }
+        else if (e.key === 'Enter') { this.reset(i); moved = true; }
+        if (moved === null) { return; }
+        e.preventDefault();
+        if (moved) { this.settle(); }
+      }
+      drag(e, i) {
+        if (e.button !== undefined && e.button !== 0) { return; }
+        e.preventDefault();
+        const bar = this.bars[i], from = this.pixels(), at = this.vertical ? e.clientY : e.clientX;
+        this.host.classList.add('di-split-dragging');
+        try { bar.setPointerCapture(e.pointerId); } catch (x) { /* a synthetic pointer has none to capture */ }
+        const onMove = (m) => { if (this.move(i, (this.vertical ? m.clientY : m.clientX) - at, from)) { this.announce(); } };
+        const done = () => {
+          bar.removeEventListener('pointermove', onMove); bar.removeEventListener('pointerup', done); bar.removeEventListener('pointercancel', done);
+          this.host.classList.remove('di-split-dragging');
+          this.settle();
+        };
+        bar.addEventListener('pointermove', onMove); bar.addEventListener('pointerup', done); bar.addEventListener('pointercancel', done);
+      }
+      announce() { this.emit('resize', { sizes: this.getSizes(), px: this.sizesPx() }); }
+      settle() {
+        if (this.o.persistKey) { try { this.win.localStorage.setItem('drishti.split.' + this.o.persistKey, JSON.stringify(this.shares)); } catch (e) { /* no storage: sizes are not remembered */ } }
+        this.announce();
+        this.emit('resized', { sizes: this.getSizes(), px: this.sizesPx() });
+      }
+      reset(i) {
+        const keep = this.shares[i] + this.shares[i + 1], pair = this.start[i] + this.start[i + 1] || 1;
+        this.shares[i] = keep * this.start[i] / pair; this.shares[i + 1] = keep * this.start[i + 1] / pair;
+        this.paint();
+        this.settle();
+      }
+      getSizes() { const r = {}; this.defs.forEach((d, i) => { r[d.id] = this.shares[i]; }); return r; }
+      sizesPx() { const r = {}, px = this.pixels(); this.defs.forEach((d, i) => { r[d.id] = px[i]; }); return r; }
+      setSizes(sizes) {
+        const next = this.defs.map((d, i) => (typeof sizes[d.id] === 'number' && sizes[d.id] > 0 ? sizes[d.id] : this.shares[i]));
+        this.shares = this.normal(next);
+        this.paint();
+      }
+      pane(id) { return this.panes[this.defs.findIndex((d) => d.id === id)] || null; }
+      getValue() { return this.getSizes(); }
+      setValue(v) { this.setSizes(v || {}); }
+      destroy() { if (this.watch) { this.watch.disconnect(); } super.destroy(); }
+    }
+    return { "SplitPane": SplitPane };
+  })();
+  /* ---- src/drishti_tabs.js ---- */
+  __m["src/drishti_tabs.js"] = (function () {
+    var InputBase = __m["src/drishti_inputs-dom.js"].InputBase, uid = __m["src/drishti_inputs-dom.js"].uid;
+    class Tabs extends InputBase {
+      constructor(host, options) {
+        super(host, options, 'di-tabs');
+        const o = this.o;
+        this.vertical = o.orientation === 'vertical';
+        host.classList.add(this.vertical ? 'di-tabs-v' : 'di-tabs-h');
+        this.uid = uid('tabs');
+        this.list = this.el('div', { cls: 'di-tablist', attrs: { role: 'tablist', 'aria-orientation': this.vertical ? 'vertical' : 'horizontal', 'aria-label': o.label || null } });
+        this.body = this.el('div', { cls: 'di-tabpanels' });
+        host.append(this.list, this.body);
+        this.tabs = [];
+        (o.tabs || []).forEach((t) => this.add(t));
+        const first = this.tabs.find((t) => !t.def.disabled);
+        this.value = this.has(o.value) ? o.value : first ? first.def.id : null;
+        this.paint();
+      }
+      has(id) { return this.tabs.some((t) => t.def.id === id && !t.def.disabled); }
+      add(def) {
+        const n = this.tabs.length, tid = this.uid + '-t-' + def.id.replace(/[^\w-]/g, '_'), pid = this.uid + '-p-' + def.id.replace(/[^\w-]/g, '_');
+        const btn = this.el('button', { cls: 'di-tab', data: { tab: def.id }, attrs: { type: 'button', role: 'tab', id: tid, 'aria-controls': pid, tabindex: '-1', disabled: def.disabled || null } });
+        btn.appendChild(this.el('span', { cls: 'di-tab-label', text: def.label }));
+        if (def.badge !== undefined && def.badge !== null && def.badge !== '') { btn.appendChild(this.el('span', { cls: 'di-tab-badge', text: String(def.badge) })); }
+        if (def.closable) { btn.appendChild(this.el('span', { cls: 'di-tab-x', text: '×', attrs: { role: 'button', 'aria-label': 'Close ' + def.label, title: 'Close ' + def.label } })); }
+        const panel = this.el('div', { cls: 'di-tabpanel', data: { panel: def.id }, attrs: { role: 'tabpanel', id: pid, 'aria-labelledby': tid, tabindex: '0', hidden: true } });
+        btn.addEventListener('click', (e) => {
+          if (e.target.closest('.di-tab-x')) { this.close(def.id); return; }
+          this.setValue(def.id, true);
+        });
+        btn.addEventListener('keydown', (e) => this.onKey(e, def.id));
+        this.list.appendChild(btn);
+        this.body.appendChild(panel);
+        this.tabs.push({ def: def, btn: btn, panel: panel, made: false, n: n });
+      }
+      fill(t) {
+        if (t.made) { return; }
+        t.made = true;
+        const c = typeof t.def.content === 'function' ? t.def.content() : t.def.content;
+        if (typeof c === 'string') { t.panel.textContent = c; } else if (c) { t.panel.appendChild(c); }
+      }
+      paint() {
+        this.tabs.forEach((t) => {
+          const on = t.def.id === this.value;
+          t.btn.setAttribute('aria-selected', String(on));
+          t.btn.tabIndex = on ? 0 : -1;
+          t.btn.classList.toggle('di-active', on);
+          t.panel.hidden = !on;
+          if (on) { this.fill(t); }
+        });
+        if (!this.tabs.some((t) => t.def.id === this.value) && this.tabs.length) { this.tabs[0].btn.tabIndex = 0; }
+      }
+      onKey(e, id) {
+        const enabled = this.tabs.filter((t) => !t.def.disabled), at = enabled.findIndex((t) => t.def.id === id), n = enabled.length;
+        const next = this.vertical ? 'ArrowDown' : 'ArrowRight', prev = this.vertical ? 'ArrowUp' : 'ArrowLeft';
+        let to = -1;
+        if (e.key === next) { to = (at + 1) % n; } else if (e.key === prev) { to = (at - 1 + n) % n; } else if (e.key === 'Home') { to = 0; } else if (e.key === 'End') { to = n - 1; }
+        else if ((e.key === 'Enter' || e.key === ' ') && this.o.manual) { e.preventDefault(); this.setValue(id, true); return; }
+        else if (e.key === 'Delete') { const t = enabled[at]; if (t && t.def.closable) { e.preventDefault(); this.close(id); } return; }
+        if (to < 0) { return; }
+        e.preventDefault();
+        const t = enabled[to];
+        t.btn.focus();
+        if (!this.o.manual) { this.setValue(t.def.id, true); }
+      }
+      getValue() { return this.value; }
+      setValue(id, tell) {
+        if (!this.has(id) || id === this.value) { return; }
+        const previous = this.value;
+        this.value = id;
+        this.paint();
+        if (tell) { this.emit('change', { value: id, previous: previous }); }
+      }
+      panel(id) { const t = this.tabs.find((x) => x.def.id === id); return t ? t.panel : null; }
+      addTab(def, open) {
+        this.removeTab(def.id, true);
+        this.add(def);
+        if (this.value === null && !def.disabled) { this.value = def.id; }
+        if (open) { this.setValue(def.id, true); } else { this.paint(); }
+      }
+      removeTab(id, quiet) {
+        const i = this.tabs.findIndex((t) => t.def.id === id);
+        if (i < 0) { return; }
+        const [t] = this.tabs.splice(i, 1);
+        t.btn.remove(); t.panel.remove();
+        if (this.value === id) {
+          const near = this.tabs.slice(i).concat(this.tabs.slice(0, i).reverse()).find((x) => !x.def.disabled);
+          const previous = this.value;
+          this.value = near ? near.def.id : null;
+          this.paint();
+          if (!quiet && this.value !== null) { this.emit('change', { value: this.value, previous: previous }); }
+        }
+      }
+      close(id) { this.emit('close', { value: id }); this.removeTab(id); }
+      setBadge(id, badge) {
+        const t = this.tabs.find((x) => x.def.id === id);
+        if (!t) { return; }
+        t.def.badge = badge;
+        const old = t.btn.querySelector('.di-tab-badge');
+        if (old) { old.remove(); }
+        if (badge !== undefined && badge !== null && badge !== '') { t.btn.insertBefore(this.el('span', { cls: 'di-tab-badge', text: String(badge) }), t.btn.querySelector('.di-tab-x')); }
+      }
+    }
+    return { "Tabs": Tabs };
+  })();
+  /* ---- src/drishti_nav-list.js ---- */
+  __m["src/drishti_nav-list.js"] = (function () {
+    var InputBase = __m["src/drishti_inputs-dom.js"].InputBase, normalizeOptions = __m["src/drishti_inputs-dom.js"].normalizeOptions, searchOptions = __m["src/drishti_inputs-dom.js"].searchOptions, uid = __m["src/drishti_inputs-dom.js"].uid;
+    class NavList extends InputBase {
+      constructor(host, options) {
+        super(host, options, 'di-navlist');
+        const o = this.o;
+        this.id = uid('nav');
+        this.value = o.value === undefined ? null : o.value;
+        this.open = new Set();
+        this.byItem = new Map();
+        this.flat = [];                                          // every item with its parent and depth
+        this.index(o.items || [], null, 0);
+        if (o.expanded) { this.flat.forEach((n) => { if (n.item.children && n.item.children.length) { this.open.add(n.item.id); } }); }
+        this.active = -1;
+        this.rows = [];
+        this.query = this.el('input', { cls: 'di-field di-nav-search', attrs: { type: 'search', placeholder: o.placeholder || 'Search', 'aria-label': (o.label || 'List') + ': search',
+          role: 'searchbox', autocomplete: 'off', spellcheck: 'false', 'aria-controls': this.id } });
+        this.tree = this.el('div', { cls: 'di-nav-tree', attrs: { role: 'tree', id: this.id, tabindex: o.search === false ? '0' : '-1', 'aria-label': o.label || 'List' } });
+        if (o.search !== false) { host.appendChild(this.query); }
+        host.appendChild(this.tree);
+        this.keyed = o.search === false ? this.tree : this.query;
+        this.query.addEventListener('input', () => { this.paint(); this.emit('search', { query: this.query.value, count: this.rows.filter((r) => !r.heading).length }); });
+        this.tree.addEventListener('mousedown', (e) => { if (e.target.closest('.di-nav-row')) { e.preventDefault(); this.keyed.focus(); } });
+        this.tree.addEventListener('click', (e) => this.onClick(e));
+        [this.query, this.tree].forEach((el) => el.addEventListener('keydown', (e) => this.onKey(e)));
+        this.paint();
+      }
+      index(items, parent, depth) {
+        items.forEach((item) => {
+          const n = { item: item, parent: parent, depth: depth, group: parent ? parent.group : item.group || '' };
+          this.flat.push(n);
+          this.byItem.set(item, n);
+          if (item.children) { this.index(item.children, n, depth + 1); }
+        });
+      }
+      matching() {
+        const q = this.query.value.trim();
+        if (!q) { return null; }
+        const opts = this.flat.map((n) => Object.assign(normalizeOptions([{ value: n.item.id, label: n.item.label, detail: (n.item.detail || '') + ' ' + n.group }])[0], { n: n }));
+        const keep = new Set();
+        searchOptions(opts, q).forEach((x) => { for (let n = x.n; n; n = n.parent) { keep.add(n); } });
+        return keep;
+      }
+      paint() {
+        const keep = this.matching(), t = this.tree, d = this.doc;
+        t.textContent = '';
+        this.rows = [];
+        let group = null, box = t;
+        const walk = (n) => {
+          if (keep && !keep.has(n)) { return; }
+          const kids = n.item.children || [], branch = kids.length > 0, open = branch && (keep ? true : this.open.has(n.item.id));
+          const i = this.rows.length, sel = n.item.id === this.value;
+          const row = this.el('div', { cls: 'di-nav-row' + (sel ? ' di-selected' : '') + (n.item.disabled ? ' di-disabled' : ''), data: { id: n.item.id },
+            attrs: { role: 'treeitem', id: this.id + '-' + i, 'aria-level': String(n.depth + 1), 'aria-selected': String(sel), 'aria-expanded': branch ? String(open) : null, 'aria-disabled': n.item.disabled ? 'true' : null } });
+          row.style.paddingLeft = (8 + n.depth * 16) + 'px';
+          row.appendChild(this.el('span', { cls: 'di-nav-twist', text: branch ? (open ? '▾' : '▸') : '', attrs: { 'aria-hidden': 'true' }, data: branch ? { twist: '1' } : {} }));
+          row.appendChild(this.el('span', { cls: 'di-nav-label', text: n.item.label }));
+          if (n.item.detail) { row.appendChild(this.el('span', { cls: 'di-nav-detail', text: n.item.detail })); }
+          this.rows.push({ n: n, el: row });
+          box.appendChild(row);
+          if (open) { kids.forEach((k) => walk(this.byItem.get(k))); }
+        };
+        this.flat.filter((n) => n.depth === 0).forEach((n) => {
+          if (keep && !keep.has(n)) { return; }
+          if (n.group !== group) {
+            group = n.group;
+            if (group) {
+              const hid = this.id + '-g' + t.children.length;
+              const head = this.el('div', { cls: 'di-nav-group', text: group, attrs: { id: hid } });
+              box = this.el('div', { cls: 'di-nav-section', attrs: { role: 'group', 'aria-labelledby': hid } });
+              t.append(head, box);
+            } else { box = t; }
+          }
+          walk(n);
+        });
+        if (!this.rows.length) { t.appendChild(this.el('div', { cls: 'di-nav-empty', text: this.o.empty || 'Nothing matches', attrs: { role: 'presentation' } })); }
+        const keepActive = this.rows.findIndex((r) => r.n.item.id === this.value);
+        this.active = this.rows.length ? Math.max(0, Math.min(this.active < 0 ? (keepActive >= 0 ? keepActive : 0) : this.active, this.rows.length - 1)) : -1;
+        this.markActive(false);
+      }
+      markActive(scroll) {
+        this.rows.forEach((r, i) => r.el.classList.toggle('di-active', i === this.active));
+        const cur = this.rows[this.active];
+        [this.query, this.tree].forEach((el) => { if (cur) { el.setAttribute('aria-activedescendant', cur.el.id); } else { el.removeAttribute('aria-activedescendant'); } });
+        if (cur && scroll) {                                      // the list's own scroll only: the page never moves
+          const t = this.tree, top = cur.el.offsetTop, bottom = top + cur.el.offsetHeight;
+          if (top < t.scrollTop) { t.scrollTop = top; } else if (bottom > t.scrollTop + t.clientHeight) { t.scrollTop = bottom - t.clientHeight; }
+        }
+      }
+      onClick(e) {
+        const el = e.target.closest('.di-nav-row');
+        if (!el) { return; }
+        const i = this.rows.findIndex((r) => r.el === el);
+        if (i < 0) { return; }
+        this.active = i;
+        if (e.target.closest('[data-twist]')) { this.toggle(this.rows[i].n.item.id); return; }
+        this.pick(i);
+      }
+      pick(i) {
+        const r = this.rows[i];
+        if (!r || r.n.item.disabled) { return; }
+        this.value = r.n.item.id;
+        this.paint();
+        this.emit('change', { value: this.value, item: r.n.item });
+      }
+      onKey(e) {
+        const n = this.rows.length, cur = this.rows[this.active], inSearch = e.target === this.query;
+        let handled = true;
+        if (e.key === 'ArrowDown') { this.active = n ? Math.min(n - 1, this.active + 1) : -1; this.markActive(true); }
+        else if (e.key === 'ArrowUp') { this.active = n ? Math.max(0, this.active - 1) : -1; this.markActive(true); }
+        else if (e.key === 'Home' && !inSearch) { this.active = n ? 0 : -1; this.markActive(true); }
+        else if (e.key === 'End' && !inSearch) { this.active = n ? n - 1 : -1; this.markActive(true); }
+        else if (e.key === 'ArrowRight' && cur && (!inSearch || !this.query.value)) { if (cur.n.item.children && cur.n.item.children.length) { this.toggle(cur.n.item.id, true); } else { handled = false; } }
+        else if (e.key === 'ArrowLeft' && cur && (!inSearch || !this.query.value)) {
+          if (cur.n.item.children && cur.n.item.children.length && this.open.has(cur.n.item.id)) { this.toggle(cur.n.item.id, false); }
+          else if (cur.n.parent) { this.active = this.rows.findIndex((r) => r.n === cur.n.parent); this.markActive(true); } else { handled = false; }
+        }
+        else if (e.key === 'Enter' && cur) { this.pick(this.active); }
+        else if (e.key === 'Escape' && inSearch && this.query.value) { this.query.value = ''; this.paint(); }
+        else if (!inSearch && this.o.search !== false && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { this.query.focus(); handled = false; }
+        else { handled = false; }
+        if (handled) { e.preventDefault(); }
+      }
+      toggle(id, open) {
+        const on = open === undefined ? !this.open.has(id) : open;
+        if (on) { this.open.add(id); } else { this.open.delete(id); }
+        this.paint();
+        this.emit('expand', { id: id, open: on });
+      }
+      getValue() { return this.value; }
+      setValue(id) {
+        this.value = id === undefined ? null : id;
+        const n = this.flat.find((f) => f.item.id === id);
+        for (let p = n && n.parent; p; p = p.parent) { this.open.add(p.item.id); }
+        this.active = -1;
+        this.paint();
+      }
+      setItems(items) {
+        this.o.items = items;
+        this.flat = [];
+        this.byItem = new Map();
+        this.index(items || [], null, 0);
+        this.active = -1;
+        this.paint();
+      }
+      setQuery(q) { this.query.value = q || ''; this.paint(); }
+      focus() { this.keyed.focus(); }
+    }
+    return { "NavList": NavList };
+  })();
   /* ---- src/drishti_inputs-element.js ---- */
   __m["src/drishti_inputs-element.js"] = (function () {
     var DatePicker = __m["src/drishti_date-picker.js"].DatePicker;
@@ -12498,12 +13015,16 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var Form = __m["src/drishti_form.js"].Form;
     var FileDrop = __m["src/drishti_file-drop.js"].FileDrop;
     var Switch = __m["src/drishti_switch.js"].Switch;
+    var SplitPane = __m["src/drishti_split-pane.js"].SplitPane;
+    var Tabs = __m["src/drishti_tabs.js"].Tabs;
+    var NavList = __m["src/drishti_nav-list.js"].NavList;
+    var ColumnMap = __m["src/drishti_column-map.js"].ColumnMap;
     var FilterBar = __m["src/drishti_filter-bar.js"].FilterBar;
     var CodeEditor = __m["src/drishti_code-editor.js"].CodeEditor, CodeDiff = __m["src/drishti_code-editor.js"].CodeDiff;
     const INPUT_ELEMENTS = Object.freeze({
       'drishti-date': DatePicker, 'drishti-date-range': DateRangePicker, 'drishti-time': TimePicker, 'drishti-datetime': DateTimePicker, 'drishti-tree-picker': TreePicker, 'drishti-multiselect': MultiSelect,
       'drishti-combobox': Combobox, 'drishti-select': Select, 'drishti-form': Form, 'drishti-file-drop': FileDrop, 'drishti-filter-bar': FilterBar, 'drishti-code': CodeEditor, 'drishti-code-diff': CodeDiff,
-      'drishti-switch': Switch
+      'drishti-switch': Switch, 'drishti-split': SplitPane, 'drishti-tabs': Tabs, 'drishti-nav-list': NavList, 'drishti-column-map': ColumnMap
     });
     const ATTRS = ['label', 'calendar', 'mode', 'value', 'readonly', 'as-of', 'placeholder', 'name', 'disabled', 'help'];
     function fromAttributes(el) {
@@ -12837,7 +13358,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
       if (doc.readyState === 'loading') { doc.addEventListener('DOMContentLoaded', go); } else { go(); }
       if (root.MutationObserver) { new root.MutationObserver(() => { if (doc.querySelector(CODE_AREA_SELECTOR)) { go(); } }).observe(doc.documentElement, { childList: true, subtree: true }); }
     }
-    return { "install": install, "CALENDAR_RULES": __m["src/drishti_calendar.js"].CALENDAR_RULES, "easterSunday": __m["src/drishti_calendar.js"].easterSunday, "ruleDate": __m["src/drishti_calendar.js"].ruleDate, "HolidayCalendar": __m["src/drishti_calendar.js"].HolidayCalendar, "defineCalendar": __m["src/drishti_calendar.js"].defineCalendar, "calendar": __m["src/drishti_calendar.js"].calendar, "DATE_PRESETS": __m["src/drishti_calendar.js"].DATE_PRESETS, "resolvePreset": __m["src/drishti_calendar.js"].resolvePreset, "parseDateInput": __m["src/drishti_calendar.js"].parseDateInput, "monthGrid": __m["src/drishti_calendar.js"].monthGrid, "shiftDate": __m["src/drishti_calendar.js"].shiftDate, "uid": __m["src/drishti_inputs-dom.js"].uid, "debounce": __m["src/drishti_inputs-dom.js"].debounce, "InputBase": __m["src/drishti_inputs-dom.js"].InputBase, "Popover": __m["src/drishti_inputs-dom.js"].Popover, "Listbox": __m["src/drishti_inputs-dom.js"].Listbox, "normalizeOptions": __m["src/drishti_inputs-dom.js"].normalizeOptions, "searchOptions": __m["src/drishti_inputs-dom.js"].searchOptions, "CalendarView": __m["src/drishti_date-picker.js"].CalendarView, "DatePicker": __m["src/drishti_date-picker.js"].DatePicker, "DateRangePicker": __m["src/drishti_date-range.js"].DateRangePicker, "parseTime": __m["src/drishti_time-picker.js"].parseTime, "parseDateTime": __m["src/drishti_time-picker.js"].parseDateTime, "timeSlots": __m["src/drishti_time-picker.js"].timeSlots, "TimePicker": __m["src/drishti_time-picker.js"].TimePicker, "DateTimePicker": __m["src/drishti_time-picker.js"].DateTimePicker, "TreeModel": __m["src/drishti_tree.js"].TreeModel, "TreePicker": __m["src/drishti_tree-picker.js"].TreePicker, "FieldPicker": __m["src/drishti_field-picker.js"].FieldPicker, "MultiSelect": __m["src/drishti_multiselect.js"].MultiSelect, "TypeAhead": __m["src/drishti_combobox.js"].TypeAhead, "Combobox": __m["src/drishti_combobox.js"].Combobox, "Select": __m["src/drishti_select.js"].Select, "selectElement": __m["src/drishti_select.js"].selectElement, "selectProperties": __m["src/drishti_select.js"].selectProperties, "words": __m["src/drishti_schema.js"].words, "pathParts": __m["src/drishti_schema.js"].pathParts, "getPath": __m["src/drishti_schema.js"].getPath, "setPath": __m["src/drishti_schema.js"].setPath, "conditionHolds": __m["src/drishti_schema.js"].conditionHolds, "fieldsOf": __m["src/drishti_schema.js"].fieldsOf, "defaults": __m["src/drishti_schema.js"].defaults, "fieldProblem": __m["src/drishti_schema.js"].fieldProblem, "validate": __m["src/drishti_schema.js"].validate, "visibleValue": __m["src/drishti_schema.js"].visibleValue, "changes": __m["src/drishti_schema.js"].changes, "parseField": __m["src/drishti_schema.js"].parseField, "currencyOf": __m["src/drishti_schema.js"].currencyOf, "offeredValues": __m["src/drishti_schema.js"].offeredValues, "FileDrop": __m["src/drishti_file-drop.js"].FileDrop, "acceptedName": __m["src/drishti_file-drop.js"].acceptedName, "Switch": __m["src/drishti_switch.js"].Switch, "Form": __m["src/drishti_form.js"].Form, "WhatIf": __m["src/drishti_what-if.js"].WhatIf, "QUERY_OPS": __m["src/drishti_query-builder.js"].QUERY_OPS, "queryText": __m["src/drishti_query-builder.js"].queryText, "parseQuery": __m["src/drishti_query-builder.js"].parseQuery, "QueryBuilder": __m["src/drishti_query-builder.js"].QueryBuilder, "FORM_HOST_SELECTOR": __m["src/drishti_form-host.js"].FORM_HOST_SELECTOR, "formOf": __m["src/drishti_form-host.js"].formOf, "upgradeForms": __m["src/drishti_form-host.js"].upgradeForms, "defineWidget": __m["src/drishti_form-fields.js"].defineWidget, "defaultWidget": __m["src/drishti_form-fields.js"].defaultWidget, "applyHook": __m["src/drishti_form-fields.js"].applyHook, "FilterModelBar": __m["src/drishti_filter-bar.js"].FilterModelBar, "FilterBar": __m["src/drishti_filter-bar.js"].FilterBar, "upgradeDateInput": __m["src/drishti_native.js"].upgradeDateInput, "upgradeTimeInput": __m["src/drishti_native.js"].upgradeTimeInput, "upgradeDateTimeInput": __m["src/drishti_native.js"].upgradeDateTimeInput, "upgradeCheckboxes": __m["src/drishti_native.js"].upgradeCheckboxes, "upgradeFields": __m["src/drishti_native.js"].upgradeFields, "rachanaMode": __m["src/drishti_code-modes.js"].rachanaMode, "yamlMode": __m["src/drishti_code-modes.js"].yamlMode, "MODES": __m["src/drishti_code-modes.js"].MODES, "defineModes": __m["src/drishti_code-modes.js"].defineModes, "MiniStream": __m["src/drishti_code-modes.js"].MiniStream, "tokens": __m["src/drishti_code-modes.js"].tokens, "wordAt": __m["src/drishti_code-text.js"].wordAt, "completions": __m["src/drishti_code-text.js"].completions, "insertText": __m["src/drishti_code-text.js"].insertText, "lineDiff": __m["src/drishti_code-text.js"].lineDiff, "sideBySide": __m["src/drishti_code-text.js"].sideBySide, "diffStats": __m["src/drishti_code-text.js"].diffStats, "ensureCodeMirror": __m["src/drishti_code-editor.js"].ensureCodeMirror, "yamlIndentAfter": __m["src/drishti_code-editor.js"].yamlIndentAfter, "CodeEditor": __m["src/drishti_code-editor.js"].CodeEditor, "CodeDiff": __m["src/drishti_code-editor.js"].CodeDiff, "upgradeCodeArea": __m["src/drishti_code-upgrade.js"].upgradeCodeArea, "upgradeCodeAreas": __m["src/drishti_code-upgrade.js"].upgradeCodeAreas, "CODE_AREA_SELECTOR": __m["src/drishti_code-upgrade.js"].CODE_AREA_SELECTOR, "INPUT_ELEMENTS": __m["src/drishti_inputs-element.js"].INPUT_ELEMENTS, "defineInputElements": __m["src/drishti_inputs-element.js"].defineInputElements };
+    return { "install": install, "CALENDAR_RULES": __m["src/drishti_calendar.js"].CALENDAR_RULES, "easterSunday": __m["src/drishti_calendar.js"].easterSunday, "ruleDate": __m["src/drishti_calendar.js"].ruleDate, "HolidayCalendar": __m["src/drishti_calendar.js"].HolidayCalendar, "defineCalendar": __m["src/drishti_calendar.js"].defineCalendar, "calendar": __m["src/drishti_calendar.js"].calendar, "DATE_PRESETS": __m["src/drishti_calendar.js"].DATE_PRESETS, "resolvePreset": __m["src/drishti_calendar.js"].resolvePreset, "parseDateInput": __m["src/drishti_calendar.js"].parseDateInput, "monthGrid": __m["src/drishti_calendar.js"].monthGrid, "shiftDate": __m["src/drishti_calendar.js"].shiftDate, "uid": __m["src/drishti_inputs-dom.js"].uid, "debounce": __m["src/drishti_inputs-dom.js"].debounce, "InputBase": __m["src/drishti_inputs-dom.js"].InputBase, "Popover": __m["src/drishti_inputs-dom.js"].Popover, "Listbox": __m["src/drishti_inputs-dom.js"].Listbox, "normalizeOptions": __m["src/drishti_inputs-dom.js"].normalizeOptions, "searchOptions": __m["src/drishti_inputs-dom.js"].searchOptions, "CalendarView": __m["src/drishti_date-picker.js"].CalendarView, "DatePicker": __m["src/drishti_date-picker.js"].DatePicker, "DateRangePicker": __m["src/drishti_date-range.js"].DateRangePicker, "parseTime": __m["src/drishti_time-picker.js"].parseTime, "parseDateTime": __m["src/drishti_time-picker.js"].parseDateTime, "timeSlots": __m["src/drishti_time-picker.js"].timeSlots, "TimePicker": __m["src/drishti_time-picker.js"].TimePicker, "DateTimePicker": __m["src/drishti_time-picker.js"].DateTimePicker, "TreeModel": __m["src/drishti_tree.js"].TreeModel, "TreePicker": __m["src/drishti_tree-picker.js"].TreePicker, "FieldPicker": __m["src/drishti_field-picker.js"].FieldPicker, "MultiSelect": __m["src/drishti_multiselect.js"].MultiSelect, "TypeAhead": __m["src/drishti_combobox.js"].TypeAhead, "Combobox": __m["src/drishti_combobox.js"].Combobox, "Select": __m["src/drishti_select.js"].Select, "selectElement": __m["src/drishti_select.js"].selectElement, "selectProperties": __m["src/drishti_select.js"].selectProperties, "SplitPane": __m["src/drishti_split-pane.js"].SplitPane, "Tabs": __m["src/drishti_tabs.js"].Tabs, "NavList": __m["src/drishti_nav-list.js"].NavList, "ColumnMap": __m["src/drishti_column-map.js"].ColumnMap, "identityMap": __m["src/drishti_column-map-rules.js"].identityMap, "mapProblems": __m["src/drishti_column-map-rules.js"].mapProblems, "typesFit": __m["src/drishti_column-map-rules.js"].typesFit, "words": __m["src/drishti_schema.js"].words, "pathParts": __m["src/drishti_schema.js"].pathParts, "getPath": __m["src/drishti_schema.js"].getPath, "setPath": __m["src/drishti_schema.js"].setPath, "conditionHolds": __m["src/drishti_schema.js"].conditionHolds, "fieldsOf": __m["src/drishti_schema.js"].fieldsOf, "defaults": __m["src/drishti_schema.js"].defaults, "fieldProblem": __m["src/drishti_schema.js"].fieldProblem, "validate": __m["src/drishti_schema.js"].validate, "visibleValue": __m["src/drishti_schema.js"].visibleValue, "changes": __m["src/drishti_schema.js"].changes, "parseField": __m["src/drishti_schema.js"].parseField, "currencyOf": __m["src/drishti_schema.js"].currencyOf, "offeredValues": __m["src/drishti_schema.js"].offeredValues, "FileDrop": __m["src/drishti_file-drop.js"].FileDrop, "acceptedName": __m["src/drishti_file-drop.js"].acceptedName, "Switch": __m["src/drishti_switch.js"].Switch, "Form": __m["src/drishti_form.js"].Form, "WhatIf": __m["src/drishti_what-if.js"].WhatIf, "QUERY_OPS": __m["src/drishti_query-builder.js"].QUERY_OPS, "queryText": __m["src/drishti_query-builder.js"].queryText, "parseQuery": __m["src/drishti_query-builder.js"].parseQuery, "QueryBuilder": __m["src/drishti_query-builder.js"].QueryBuilder, "FORM_HOST_SELECTOR": __m["src/drishti_form-host.js"].FORM_HOST_SELECTOR, "formOf": __m["src/drishti_form-host.js"].formOf, "upgradeForms": __m["src/drishti_form-host.js"].upgradeForms, "defineWidget": __m["src/drishti_form-fields.js"].defineWidget, "defaultWidget": __m["src/drishti_form-fields.js"].defaultWidget, "applyHook": __m["src/drishti_form-fields.js"].applyHook, "FilterModelBar": __m["src/drishti_filter-bar.js"].FilterModelBar, "FilterBar": __m["src/drishti_filter-bar.js"].FilterBar, "upgradeDateInput": __m["src/drishti_native.js"].upgradeDateInput, "upgradeTimeInput": __m["src/drishti_native.js"].upgradeTimeInput, "upgradeDateTimeInput": __m["src/drishti_native.js"].upgradeDateTimeInput, "upgradeCheckboxes": __m["src/drishti_native.js"].upgradeCheckboxes, "upgradeFields": __m["src/drishti_native.js"].upgradeFields, "rachanaMode": __m["src/drishti_code-modes.js"].rachanaMode, "yamlMode": __m["src/drishti_code-modes.js"].yamlMode, "MODES": __m["src/drishti_code-modes.js"].MODES, "defineModes": __m["src/drishti_code-modes.js"].defineModes, "MiniStream": __m["src/drishti_code-modes.js"].MiniStream, "tokens": __m["src/drishti_code-modes.js"].tokens, "wordAt": __m["src/drishti_code-text.js"].wordAt, "completions": __m["src/drishti_code-text.js"].completions, "insertText": __m["src/drishti_code-text.js"].insertText, "lineDiff": __m["src/drishti_code-text.js"].lineDiff, "sideBySide": __m["src/drishti_code-text.js"].sideBySide, "diffStats": __m["src/drishti_code-text.js"].diffStats, "ensureCodeMirror": __m["src/drishti_code-editor.js"].ensureCodeMirror, "yamlIndentAfter": __m["src/drishti_code-editor.js"].yamlIndentAfter, "CodeEditor": __m["src/drishti_code-editor.js"].CodeEditor, "CodeDiff": __m["src/drishti_code-editor.js"].CodeDiff, "upgradeCodeArea": __m["src/drishti_code-upgrade.js"].upgradeCodeArea, "upgradeCodeAreas": __m["src/drishti_code-upgrade.js"].upgradeCodeAreas, "CODE_AREA_SELECTOR": __m["src/drishti_code-upgrade.js"].CODE_AREA_SELECTOR, "INPUT_ELEMENTS": __m["src/drishti_inputs-element.js"].INPUT_ELEMENTS, "defineInputElements": __m["src/drishti_inputs-element.js"].defineInputElements };
   })();
   return Object.freeze(Object.assign({ library: "drishti-inputs", version: "3.1.0" }, __m["src/drishti_index.js"]));
 });

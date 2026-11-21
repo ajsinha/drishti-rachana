@@ -17,12 +17,15 @@
     <module>rachana-tools</module>
     <module>rachana-data</module>
     <module>rachana-live</module>
+    <!-- rachana-js builds the runtime bundles into js/packages/rachana/dist (git-ignored): rachana-server puts rachana.runtime.js in its jar and its tests
+         start servers with it, rachana-guards runs the Node suite on it. So it comes after the one module it needs (rachana-conformance) and before
+         those two; the reactor keeps the declared order of modules that do not depend on each other (a parallel build, -T, may not). -->
+    <module>rachana-conformance</module>
+    <module>rachana-js</module>
     <module>rachana-server</module>
     <module>rachana-cli</module>
-    <module>rachana-conformance</module>
     <module>rachana-conformance-cases</module>
     <module>rachana-compat</module>
-    <module>rachana-js</module>
     <module>rachana-guards</module>
   </modules>
 
@@ -56,7 +59,7 @@
   <!-- The JavaScript build (split step A15): TeaVM, rachana-js is built with every reactor build so the Node suite of rachana-guards always has its bundles. -->
   <profiles>
     <profile>
-      <id>js</id>      <!-- kept empty so the old -Pjs command lines still work: rachana-js is a module of every build (before rachana-guards, whose Node tests need its bundles) -->
+      <id>js</id>      <!-- kept empty so the old -Pjs command lines still work: rachana-js is a module of every build (before rachana-server and rachana-guards, which need its bundles) -->
     </profile>
   </profiles>
 

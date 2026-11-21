@@ -1,3 +1,8 @@
 # Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
-# Names Core takes from a customer profile, each with the level that takes it (CG6). Empty: nothing is promoted yet.
-promotions: []
+# Names Core takes from a customer profile, each with the level that takes it (CG6). A promoted format keeps the customer's definition
+# exactly (ReservedNamesTest compares Core's with tools/conformance/profile/drishti-formats.yaml), so the customer's screens print the same.
+promotions:
+  - { category: formats, name: "pct4", level: "1.2" }
+  - { category: formats, name: "bp1", level: "1.2" }
+  - { category: formats, name: "df4", level: "1.2" }
+  - { category: formats, name: "price4", level: "1.2" }

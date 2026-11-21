@@ -95,6 +95,37 @@ class ReservedNamesTest {
         assertEquals(List.of(), clashes(reserved, core, Set.of("functions:fx")));
     }
 
+    /**
+     * A promoted format is the customer's definition, unchanged: Core's table at the promotion's level prints every probe value exactly
+     * as the customer's profile file does (so a Drishti screen reads the same whichever defines it), and below that level Core does
+     * not know the name (it prints the text form, SPEC 4.2).
+     */
+    @Test
+    void aPromotedFormatIsTheCustomersDefinitionAndUnknownBelowItsLevel() throws Exception {
+        String profile = Corpus.repoRoot().resolve("tools/conformance/profile/drishti-formats.yaml").toString();
+        com.ash.rachana.format.Formats theirs = com.ash.rachana.format.Formats.load(null, List.of(profile));
+        com.ash.rachana.format.Formats core = com.ash.rachana.format.Formats.defaults();
+        Object[] probes = {0, 1, -1, 0.5, -0.04, 0.0012345, 0.0123456, 12.34, -12.36, 0.987654, 1234.56789, -98765.4321, 1e9, "abc", "12.5", null};
+        Pattern p = Pattern.compile("^\\s*- \\{ category: formats, name: \"([^\"]+)\", level: \"(\\d+\\.\\d+)\" \\}\\s*$");
+        int promoted = 0;
+        for (String l : Files.readAllLines(compat().resolve("promotions.yaml"))) {
+            Matcher m = p.matcher(l);
+            if (!m.matches()) continue;
+            promoted++;
+            String name = m.group(1), level = m.group(2);
+            assertTrue(theirs.has(name), name + " is not the customer's format");
+            assertEquals(level, core.since(name), name + ": Core's table does not bring it at " + level);
+            assertTrue(core.atLevel(level).has(name), name + " unknown at " + level);
+            for (Object v : probes) assertEquals(theirs.format(name, v), core.atLevel(level).format(name, v), name + " of " + v);
+            for (String below : com.ash.rachana.profile.Grammar.LEVELS) {
+                if (com.ash.rachana.model.PanelKind.compareLevels(below, level) >= 0) break;
+                assertFalse(core.atLevel(below).has(name), name + " known at " + below);
+                assertEquals(String.valueOf(12.34), core.atLevel(below).format(name, 12.34), name + " at " + below + " is text");
+            }
+        }
+        assertTrue(promoted > 0, "promotions.yaml names no format");
+    }
+
     @Test
     void everyLevelSwitchCarriesTheOwnersApproval() throws Exception {
         Path f = compat().resolve("level-switches.yaml");

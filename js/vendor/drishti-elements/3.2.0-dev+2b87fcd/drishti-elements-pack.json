@@ -24,13 +24,21 @@
     "vendor/echarts/echarts.min.js"
   ],
   "files": {
+    "data/formats.yaml": {
+      "bytes": 1759,
+      "integrity": "sha384-FVVMnL8eKQCBcdYL2nX1SNERkyiJA8HOOSWVwwD72iJll8TIhjihhxPsnqgSaSO3"
+    },
+    "data/world-regions.yaml": {
+      "bytes": 4304,
+      "integrity": "sha384-kpZwpA7EaAwT79FkrPeAXmakxie1lecbdFtAoqBOEGKmp8hIqNMiaPfQJj3mPts5"
+    },
     "drishti-elements.css": {
       "bytes": 172126,
       "integrity": "sha384-eSyyOlYKsybwB7hjoze59kUP/+KeT8AzIyFFY8s6u13u2qoNr2rU32sVL96BC0q/"
     },
     "drishti-elements.js": {
-      "bytes": 3112663,
-      "integrity": "sha384-V4kPSpfpBJ6cuAYRYs9e4BTrX4dxTQcDDOM7dsTCYISNuOSvqMquobsSN9OrRn0U"
+      "bytes": 3113539,
+      "integrity": "sha384-hI2sQxE3fF4tonCdH5p3YgGhhE3ex3dilqNiPdXkq7rBoeHNOhoH5omlsGHwZEI1"
     },
     "vendor/codemirror/LICENSE": {
       "bytes": 1113,

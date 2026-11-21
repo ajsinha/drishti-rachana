@@ -1,0 +1,70 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: format/promoted
+since: "1.2"
+profile: core
+verified: true
+description: "The formats Core takes from Drishti's profile at level 1.2 (pct4, bp1, df4, price4), with Drishti's definitions unchanged (below 1.2 Core alone does not know them: ReservedNamesTest)."
+cases:
+
+  - id: "pct4-0-0123456"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: 0.0123456
+    format: "pct4"
+    expect: {"text": "1.2346%", "tone": null}
+
+  - id: "pct4-m0-5"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: -0.5
+    format: "pct4"
+    expect: {"text": "−50.0000%", "tone": null}
+
+  - id: "bp1-12-34"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: 12.34
+    format: "bp1"
+    expect: {"text": "+12.3 bp", "tone": null}
+
+  - id: "bp1-m0-04"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: -0.04
+    format: "bp1"
+    expect: {"text": "0.0 bp", "tone": null}
+
+  - id: "bp1-m7-25"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: -7.25
+    format: "bp1"
+    expect: {"text": "−7.3 bp", "tone": null}
+
+  - id: "df4-0-987654"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: 0.987654
+    format: "df4"
+    expect: {"text": "0.9877", "tone": null}
+
+  - id: "df4-1"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: 1
+    format: "df4"
+    expect: {"text": "1.0000", "tone": null}
+
+  - id: "price4-1234-56789"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: 1234.56789
+    format: "price4"
+    expect: {"text": "1,234.5679", "tone": null}
+
+  - id: "price4-m5e-05"
+    kind: "format"
+    source: "compat/promotions.yaml (level 1.2)"
+    value: -5e-05
+    format: "price4"
+    expect: {"text": "−0.0001", "tone": null}

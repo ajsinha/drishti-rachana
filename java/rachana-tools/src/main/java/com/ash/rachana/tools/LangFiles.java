@@ -54,7 +54,7 @@ public final class LangFiles {
     /** The Drishti profile's names (CORE_AND_PROFILES section 2): its keys, its panel kinds, its source form and the form's save. */
     private static final Set<String> PROFILE_KEYS = Set.of("form.save", "sutra.match", "sutra.domain", "source.kind", "source.id", "source.search", "source.pack",
             "source.params", "source.as-of", "source.model");
-    /** The format names Drishti's core pack adds to Core's (spec/1/formats.yaml header). */
+    /** The format names Drishti's core pack adds to Core's (spec/1/formats.yaml header); from level 1.2 Core bundles pct4, bp1, df4 and price4 too. */
     private static final Set<String> PROFILE_FORMATS = Set.of("pct4", "rate5", "pips1", "df4", "bp1", "price4");
 
     private final String level;
@@ -112,9 +112,9 @@ public final class LangFiles {
         lang.put("controlKinds", controlKinds());
         lang.put("functions", functions());
         List<Object> formats = new ArrayList<>();
-        Set<String> all = new TreeSet<>(Formats.defaults().names());
-        all.stream().filter(f -> !PROFILE_FORMATS.contains(f)).forEach(f -> formats.add(entry(f, "core", "1.0")));
-        PROFILE_FORMATS.stream().sorted().forEach(f -> formats.add(entry(f, "drishti", "1.0")));
+        Formats core = Formats.defaults().atLevel(level);                // a promoted name (compat/promotions.yaml) is Core's from its level
+        new TreeSet<>(core.names()).forEach(f -> formats.add(entry(f, "core", core.since(f))));
+        PROFILE_FORMATS.stream().filter(f -> !core.has(f)).sorted().forEach(f -> formats.add(entry(f, "drishti", "1.0")));
         lang.put("formats", formats);
         List<Object> tones = new ArrayList<>();
         Tones.NAMES.forEach(t -> tones.add(entry(t, "core", "1.0")));
@@ -279,8 +279,7 @@ public final class LangFiles {
     /** {@link RachanaSchema} over Core's grammar at the level and Core's formats, with the specification's address and the level's functions. */
     @SuppressWarnings("unchecked")
     private Map<String, Object> schema() {
-        Set<String> coreFormats = new TreeSet<>(Formats.defaults().names());
-        coreFormats.removeAll(PROFILE_FORMATS);
+        Set<String> coreFormats = new TreeSet<>(Formats.defaults().atLevel(level).names());
         Map<String, Object> m = (Map<String, Object>) strip(new LinkedHashMap<>(RachanaSchema.build(coreFormats, Grammar.core().atLevel(level))));
         m.put("$id", "https://ajsinha.github.io/drishti-rachana/spec/1/sutra.schema.json");
         m.put("title", "Rachana Sutra, language 1 (Core)");

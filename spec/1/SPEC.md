@@ -132,7 +132,7 @@ contract 1.1, [VIEWMODEL.md](VIEWMODEL.md)) as raw values, which the painter for
 | Kind | Requires | Accepts |
 |---|---|---|
 | `grid` | `rows` | `dataset`, `rowKey`, `group`, `sort`, `limit`, `search`, `empty` |
-| `tree` | `rows`, `node` | `parent`, `path`, `label`, `mode` (`grid`, `org`, `sunburst`, `icicle`), `open`, `dataset`, `rowKey`, `limit` |
+| `tree` | `rows`, `node` | `parent`, `path`, `label`, `mode` (`grid`, `org`, `sunburst`, `icicle`), `open`, `dataset`, `rowKey`, `limit`, `fmt` (1.2) |
 | `chart` | `rows`, `x`, `y` | `type` (`bar`, `line`, `area`, `scatter`, `pie`, `donut`, `heatmap`, `histogram`), `by`, `agg` (`sum`, `count`, `min`, `max`, `avg`, `first`, `last`, `distinct`), `stack` (`sum`, `percent`), `horizontal`, `xLabel`, `yLabel`, `bins`, `top`, `fmt`, `dataset`, `rowKey`, `limit` |
 
 - The dataset's fields are the panel's `columns` (each column's `bind` read per row, raw; its name the field the bind
@@ -145,7 +145,8 @@ contract 1.1, [VIEWMODEL.md](VIEWMODEL.md)) as raw values, which the painter for
   sent (default 10,000, at most 50,000); the rows left out are counted in the dataset's `more`. `where` filters first.
 - `grid`: `group` (fields), `sort` (`field` or `field desc`, a list of up to six), a column's `total: true` is its group
   figure `sum`, a column's word `tone` (`sign`) is kept. `tree`: `node`, `parent`, `path`, `label` are field names; every
-  number field that is not one of them is a measure, added up by a node no row names. `chart`: `x`, `by` are field names,
+  number field that is not one of them is a measure, added up by a node no row names; a measure prints with its column's
+  `fmt`, else (level 1.2) the panel's `fmt`. `chart`: `x`, `by` are field names,
   `y` a field or a list; `agg` and `fmt` apply to every `y`; `top` is the most categories drawn.
 - Field-name options must be names (`[A-Za-z_][A-Za-z0-9_]*`): `RCH-2029` otherwise, as for every wrong option value.
 - **Since 1.2: several series on a `line`.** `layers` (a list of 1 to 12 `{ y, label, mark, tone, axis }`; `mark` `line`, `bar`, `area`
@@ -257,7 +258,8 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   `RCH-2118`. Below level 1.2 a use of a typed fragment is `RCH-2008`. **Fragments are functions** (decision L-21): a
   table parameter names its local columns (`columns:`) or a published contract (`contract: <name>`, the file
   `contracts/<name>.json` of its library or host, Data Protocol schema form); the use binds it to the caller's table,
-  `rows: $.t` (identity) or `rows: { from: $.t, columns: { <local>: <caller column> } }`, and the compiler renames the
+  `rows: $.t` (identity) or `rows: { from: $.t, columns: { <local>: <caller column> } }` (a caller column may hold `-`:
+  `@.<local>` and a `bind` become `@['bid-size']`; such a name in a field-name option is `RCH-2121`), and the compiler renames the
   local columns to the caller's at compile time: in the panels that read the table its field-name options and `bind`s (a panel
   reads the table when its `rows` gives the table's own rows: `arg.<t>`, filtered, through `sort`, `take`, `drop`, `unique`,
   `difference`, `intersect` or a pipe of them; over `map(arg.<t>, {k: …})`, a record literal, the panel reads the fixed names `k`

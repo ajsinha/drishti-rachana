@@ -125,7 +125,7 @@ public final class Cases {
 
     public static void expr(Map<String, Object> c, StringBuilder sb) {
         Map<String, Object> given = obj(c.get("given"));
-        EvalContext ctx = context(given);
+        EvalContext ctx = context(given, at(c).formats());              // fmt(...) knows the case's level's names
         Object v;
         List<String> reads = new ArrayList<>();
         try {
@@ -175,7 +175,7 @@ public final class Cases {
     public static void format(Map<String, Object> c, StringBuilder sb) {
         Object v = c.containsKey("value") ? plain(c.get("value")) : new LinkedHashMap<String, Object>();
         Object node = v instanceof Node ? v : (v == null ? null : v);
-        String text = c.containsKey("format") ? formats.format(text(c.get("format")), node) : Values.text(node);
+        String text = c.containsKey("format") ? at(c).formats().format(text(c.get("format")), node) : Values.text(node);   // the case's level's names
         String tone = c.containsKey("tone") && !Values.masked(node) ? com.ash.rachana.format.Tones.resolve(text(c.get("tone")), v) : null;
         sb.append("{\"text\":").append(str(text)).append(",\"tone\":").append(tone == null ? "null" : str(tone)).append('}');
     }
@@ -511,8 +511,12 @@ public final class Cases {
     // ---- context -------------------------------------------------------------------------------------------------
 
     static EvalContext context(Map<String, Object> g) {
+        return context(g, formats);
+    }
+
+    static EvalContext context(Map<String, Object> g, Formats names) {
         Node root = node(g.containsKey("record") ? g.get("record") : new LinkedHashMap<String, Object>());
-        EvalContext c = EvalContext.of(root, formats);
+        EvalContext c = EvalContext.of(root, names);
         if (g.containsKey("today")) { c = c.withToday(LocalDate.parse(text(g.get("today")))); }
         Map<String, Object> ctl = new LinkedHashMap<>();
         // a multi-valued control (multi-select, the choices of oneOf/within) reaches the evaluator as a document list, as the host's

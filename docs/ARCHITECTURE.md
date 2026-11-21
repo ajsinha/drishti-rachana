@@ -175,7 +175,7 @@ flowchart LR
 | `rachana-tools`, `rachana-data`, `rachana-cli` | skeletons | `rachana-core` |
 
 The editing operations are still in `rachana-core`; they move to `rachana-tools` when the public API is reviewed. `rachana-core`
-reads the format table and world regions from the pinned Drishti Elements data (`js/vendor/drishti-elements/2.4.0/data`).
+reads the format table and world regions from the pinned Drishti Elements data (`js/vendor/drishti-elements/<pack>/data`, the folder `drishti.elements.version` names).
 
 ## Design documents
 

@@ -705,7 +705,7 @@ public final class TypedFragment {
     }
 
     /** Whether a caller's column type serves a local column type (the numbers serve each other; an undeclared type serves anything). */
-    static boolean fits(String local, String theirs) {
+    public static boolean fits(String local, String theirs) {
         String l = elType(local).replace("?", "");
         String t = elType(theirs).replace("?", "");
         Set<String> numbers = Set.of("number", "integer", "decimal", "money");

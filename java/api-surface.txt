@@ -1947,6 +1947,7 @@ com.ash.rachana.lib.Library :: public java.util.Optional<com.ash.rachana.parse.S
 com.ash.rachana.lib.Library :: public java.util.Optional<java.lang.String> com.ash.rachana.lib.Library.contract(java.lang.String)
 com.ash.rachana.lib.Library :: public java.util.Set<java.lang.String> com.ash.rachana.lib.Library.contractNames()
 com.ash.rachana.lib.Library :: public java.util.Set<java.lang.String> com.ash.rachana.lib.Library.fragmentNames()
+com.ash.rachana.lib.Library :: public java.util.SortedSet<java.lang.Integer> com.ash.rachana.lib.Library.majors(java.lang.String)
 com.ash.rachana.lib.Library :: public static com.ash.rachana.lib.Library com.ash.rachana.lib.Library.load(com.ash.rachana.lib.LibraryBundle,com.ash.rachana.lib.Library$Trust)
 com.ash.rachana.lib.Library :: public static final int com.ash.rachana.lib.Library.MAX_FRAGMENTS
 com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.HASHES
@@ -2758,6 +2759,7 @@ com.ash.rachana.parse.TypedFragment :: public java.util.List<com.ash.rachana.par
 com.ash.rachana.parse.TypedFragment :: public java.util.List<java.lang.String> com.ash.rachana.parse.TypedFragment.declaredEvents()
 com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Param> com.ash.rachana.parse.TypedFragment.params()
 com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Slot> com.ash.rachana.parse.TypedFragment.slots()
+com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.parse.TypedFragment.fits(java.lang.String,java.lang.String)
 com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.parse.TypedFragment.isTyped(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.TypedFragment :: public static com.ash.rachana.parse.TypedFragment com.ash.rachana.parse.TypedFragment.of(com.ash.rachana.parse.SutraBlocks$Block)
 com.ash.rachana.parse.TypedFragment :: public static final int com.ash.rachana.parse.TypedFragment.MAX_PARAMS

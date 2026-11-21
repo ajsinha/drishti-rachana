@@ -62,6 +62,13 @@ Entries are written per release; the regime's unreleased work is listed after th
   `default`); the count of names and a body free of `@`, `^`, `#index` are checked (`RCH-2116`); inside, `arg.f(x)` becomes
   `let(fn_f = <lambda>, ... fn_f(x) ...)` around the expression (around each `${...}` in a template) and `arg.f` passed whole
   to `map`/`sort`/`reduce`/`group` becomes the lambda. Cases: `sutra/fragments-calls` (+2), `problem/fragments-calls` (+4).
+- **`rachana lib contracts` and `rachana lib check-host`** (LIBRARIES 5.2, 22; `java/rachana-cli` `Main` over `LibraryTool`, the
+  one implementation; the npm launcher passes them through): `contracts <dir|rlib> [--json]` lists each published contract
+  (title, grain, key, columns with type and required/optional) and the fragments (`name@N`) whose table parameters name it;
+  `check-host <dir|rlib> --base <url> [--table CONTRACT=TABLE]... [--json]` reads each table's schema from a Data Protocol host
+  (`GET <base>/tables/<name>`, the JDK's HTTP client) and reports every column `ok`, `type`, `missing`, `absent` (optional),
+  `masked` or the table `no-table`, the rows of `ops/contract-fit`; exit 1 when a column breaks a fragment or the host does not
+  answer. `LibraryTool.contracts`, `checkHost`, `report`; `Library.majors(fragment)`; `TypedFragment.fits` public. MainTest.
 - **Conformance**: `sutra/fragments-calls` (+2: every renamed form, identity), `problem/fragments-calls` (+4: one per refusal),
   verified; the `sutra` kind now builds the view at the case's level (it built at 1.0, so 1.1 syntax in a 1.2 case did not
   read). `FragmentColumnsTest` checks the Java table of column parameters equals the role marks. API additions only

@@ -60,6 +60,7 @@ class public final class com.ash.rachana.el.BusinessCalendar
 class public final class com.ash.rachana.el.Calendars
 class public final class com.ash.rachana.el.CheckedMode
 class public final class com.ash.rachana.el.DatePartFunctions
+class public final class com.ash.rachana.el.Declarations
 class public final class com.ash.rachana.el.ElCompiler
 class public final class com.ash.rachana.el.FormRules
 class public final class com.ash.rachana.el.FragmentColumns
@@ -88,6 +89,7 @@ class public final class com.ash.rachana.model.ModelVersion
 class public final class com.ash.rachana.model.PanelOptions
 class public final class com.ash.rachana.parse.BlockLibrary
 class public final class com.ash.rachana.parse.BlockUses
+class public final class com.ash.rachana.parse.DeclarationsReader
 class public final class com.ash.rachana.parse.Json
 class public final class com.ash.rachana.parse.PositionalYamlReader
 class public final class com.ash.rachana.parse.SutraBlocks
@@ -232,6 +234,7 @@ class public static final record com.ash.rachana.control.ControlResolver$Resolve
 class public static final record com.ash.rachana.control.RelativeDates$Range
 class public static final record com.ash.rachana.design.ops.AddPanel$At
 class public static final record com.ash.rachana.el.CheckedMode$Parsed
+class public static final record com.ash.rachana.el.Declarations$Function
 class public static final record com.ash.rachana.el.EvalContext$Locals
 class public static final record com.ash.rachana.el.EvalContext$Scope
 class public static final record com.ash.rachana.el.Expr$Absent
@@ -271,7 +274,9 @@ class public static final record com.ash.rachana.el.Expr$RowOrRoot
 class public static final record com.ash.rachana.el.Expr$Slice
 class public static final record com.ash.rachana.el.Expr$Spread
 class public static final record com.ash.rachana.el.Expr$Src
+class public static final record com.ash.rachana.el.Expr$SutraLet
 class public static final record com.ash.rachana.el.Expr$Ternary
+class public static final record com.ash.rachana.el.Expr$UserCall
 class public static final record com.ash.rachana.el.FragmentColumns$ColumnParam
 class public static final record com.ash.rachana.el.FunctionProvider$Group
 class public static final record com.ash.rachana.el.FunctionProvider$Provided
@@ -1266,6 +1271,27 @@ com.ash.rachana.el.CheckedMode$Parsed :: public java.util.Map<com.ash.rachana.el
 com.ash.rachana.el.DatePartFunctions :: public static final java.util.Set<java.lang.String> com.ash.rachana.el.DatePartFunctions.UNITS
 com.ash.rachana.el.DatePartFunctions :: public static java.lang.String com.ash.rachana.el.DatePartFunctions.unit(java.lang.String)
 com.ash.rachana.el.DatePartFunctions :: public static java.time.LocalDate com.ash.rachana.el.DatePartFunctions.shift(java.time.LocalDate,int,java.lang.String,com.ash.rachana.el.Calendars$Calendar)
+com.ash.rachana.el.Declarations :: public boolean com.ash.rachana.el.Declarations.isEmpty()
+com.ash.rachana.el.Declarations :: public com.ash.rachana.el.Declarations(java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function>,java.util.Map<java.lang.String, java.lang.String>)
+com.ash.rachana.el.Declarations :: public java.lang.String com.ash.rachana.el.Declarations.id()
+com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function> com.ash.rachana.el.Declarations.functions()
+com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations.lets()
+com.ash.rachana.el.Declarations :: public java.util.Set<java.lang.String> com.ash.rachana.el.Declarations.libraries()
+com.ash.rachana.el.Declarations :: public static <T> T com.ash.rachana.el.Declarations.within(com.ash.rachana.el.Declarations,java.util.function.Supplier<T>)
+com.ash.rachana.el.Declarations :: public static boolean com.ash.rachana.el.Declarations.coreName(java.lang.String)
+com.ash.rachana.el.Declarations :: public static boolean com.ash.rachana.el.Declarations.reserved(java.lang.String)
+com.ash.rachana.el.Declarations :: public static com.ash.rachana.el.Declarations com.ash.rachana.el.Declarations.inForce()
+com.ash.rachana.el.Declarations :: public static final com.ash.rachana.el.Declarations com.ash.rachana.el.Declarations.NONE
+com.ash.rachana.el.Declarations$Function :: public com.ash.rachana.el.Declarations$Function(java.lang.String,java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.el.Declarations$Function :: public final boolean com.ash.rachana.el.Declarations$Function.equals(java.lang.Object)
+com.ash.rachana.el.Declarations$Function :: public final int com.ash.rachana.el.Declarations$Function.hashCode()
+com.ash.rachana.el.Declarations$Function :: public final java.lang.String com.ash.rachana.el.Declarations$Function.toString()
+com.ash.rachana.el.Declarations$Function :: public java.lang.String com.ash.rachana.el.Declarations$Function.body()
+com.ash.rachana.el.Declarations$Function :: public java.lang.String com.ash.rachana.el.Declarations$Function.doc()
+com.ash.rachana.el.Declarations$Function :: public java.lang.String com.ash.rachana.el.Declarations$Function.name()
+com.ash.rachana.el.Declarations$Function :: public java.lang.String com.ash.rachana.el.Declarations$Function.returns()
+com.ash.rachana.el.Declarations$Function :: public java.util.List<java.lang.String> com.ash.rachana.el.Declarations$Function.paramNames()
+com.ash.rachana.el.Declarations$Function :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations$Function.params()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long)
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long,com.ash.rachana.el.ElLimits)
@@ -1610,6 +1636,14 @@ com.ash.rachana.el.Expr$Src :: public final boolean com.ash.rachana.el.Expr$Src.
 com.ash.rachana.el.Expr$Src :: public final int com.ash.rachana.el.Expr$Src.hashCode()
 com.ash.rachana.el.Expr$Src :: public final java.lang.String com.ash.rachana.el.Expr$Src.toString()
 com.ash.rachana.el.Expr$Src :: public java.lang.Object com.ash.rachana.el.Expr$Src.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$SutraLet :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$SutraLet.value()
+com.ash.rachana.el.Expr$SutraLet :: public com.ash.rachana.el.Expr$SutraLet(java.lang.String,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$SutraLet :: public final boolean com.ash.rachana.el.Expr$SutraLet.equals(java.lang.Object)
+com.ash.rachana.el.Expr$SutraLet :: public final int com.ash.rachana.el.Expr$SutraLet.hashCode()
+com.ash.rachana.el.Expr$SutraLet :: public final java.lang.String com.ash.rachana.el.Expr$SutraLet.toString()
+com.ash.rachana.el.Expr$SutraLet :: public java.lang.Object com.ash.rachana.el.Expr$SutraLet.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$SutraLet :: public java.lang.String com.ash.rachana.el.Expr$SutraLet.name()
+com.ash.rachana.el.Expr$SutraLet :: public void com.ash.rachana.el.Expr$SutraLet.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Ternary :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Ternary.cond()
 com.ash.rachana.el.Expr$Ternary :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Ternary.otherwise()
 com.ash.rachana.el.Expr$Ternary :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Ternary.then()
@@ -1619,6 +1653,16 @@ com.ash.rachana.el.Expr$Ternary :: public final int com.ash.rachana.el.Expr$Tern
 com.ash.rachana.el.Expr$Ternary :: public final java.lang.String com.ash.rachana.el.Expr$Ternary.toString()
 com.ash.rachana.el.Expr$Ternary :: public java.lang.Object com.ash.rachana.el.Expr$Ternary.eval(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Expr$Ternary :: public void com.ash.rachana.el.Expr$Ternary.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$UserCall :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$UserCall.body()
+com.ash.rachana.el.Expr$UserCall :: public com.ash.rachana.el.Expr$UserCall(java.lang.String,java.util.List<java.lang.String>,java.util.List<com.ash.rachana.el.Expr>,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$UserCall :: public final boolean com.ash.rachana.el.Expr$UserCall.equals(java.lang.Object)
+com.ash.rachana.el.Expr$UserCall :: public final int com.ash.rachana.el.Expr$UserCall.hashCode()
+com.ash.rachana.el.Expr$UserCall :: public final java.lang.String com.ash.rachana.el.Expr$UserCall.toString()
+com.ash.rachana.el.Expr$UserCall :: public java.lang.Object com.ash.rachana.el.Expr$UserCall.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$UserCall :: public java.lang.String com.ash.rachana.el.Expr$UserCall.name()
+com.ash.rachana.el.Expr$UserCall :: public java.util.List<com.ash.rachana.el.Expr> com.ash.rachana.el.Expr$UserCall.args()
+com.ash.rachana.el.Expr$UserCall :: public java.util.List<java.lang.String> com.ash.rachana.el.Expr$UserCall.params()
+com.ash.rachana.el.Expr$UserCall :: public void com.ash.rachana.el.Expr$UserCall.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.FormRules :: public static boolean com.ash.rachana.el.FormRules.holds(java.lang.Object)
 com.ash.rachana.el.FormRules :: public static com.ash.rachana.el.FormRules$Compiled com.ash.rachana.el.FormRules.compile(java.lang.String)
 com.ash.rachana.el.FormRules :: public static final int com.ash.rachana.el.FormRules.MAX_LENGTH
@@ -1945,6 +1989,7 @@ com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Libra
 com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.source()
 com.ash.rachana.lib.Library :: public java.lang.String com.ash.rachana.lib.Library.version()
 com.ash.rachana.lib.Library :: public java.util.List<java.lang.String> com.ash.rachana.lib.Library.profiles()
+com.ash.rachana.lib.Library :: public java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function> com.ash.rachana.lib.Library.functions()
 com.ash.rachana.lib.Library :: public java.util.Map<java.lang.String, java.lang.Integer> com.ash.rachana.lib.Library.depends()
 com.ash.rachana.lib.Library :: public java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.lib.Library.fragment(java.lang.String,int)
 com.ash.rachana.lib.Library :: public java.util.Optional<java.lang.String> com.ash.rachana.lib.Library.contract(java.lang.String)
@@ -2504,6 +2549,7 @@ com.ash.rachana.model.StripItem :: public java.lang.String com.ash.rachana.model
 com.ash.rachana.model.StripItem :: public java.lang.String com.ash.rachana.model.StripItem.fmt()
 com.ash.rachana.model.StripItem :: public java.lang.String com.ash.rachana.model.StripItem.label()
 com.ash.rachana.model.StripItem :: public java.lang.String com.ash.rachana.model.StripItem.tone()
+com.ash.rachana.model.Sutra :: public com.ash.rachana.el.Declarations com.ash.rachana.model.Sutra.declarations()
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Match com.ash.rachana.model.Sutra.match()
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.ScreenLayout com.ash.rachana.model.Sutra.layout()
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.ScreenPhone com.ash.rachana.model.Sutra.phone()
@@ -2536,6 +2582,7 @@ com.ash.rachana.model.Sutra :: public java.util.Optional<com.ash.rachana.model.C
 com.ash.rachana.model.Sutra :: public java.util.Optional<com.ash.rachana.model.DataEntry> com.ash.rachana.model.Sutra.data(java.lang.String)
 com.ash.rachana.model.Sutra :: public static final int com.ash.rachana.model.Sutra.MAX_STRIP
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.ADVISORIES
+com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.DECLARATIONS
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.LIBRARIES
 com.ash.rachana.model.Title :: public com.ash.rachana.model.Title(java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.model.Title :: public final boolean com.ash.rachana.model.Title.equals(java.lang.Object)
@@ -2670,6 +2717,13 @@ com.ash.rachana.parse.BlockUses$Use :: public java.util.List<com.ash.rachana.Sut
 com.ash.rachana.parse.BlockUses$Use :: public java.util.List<com.ash.rachana.parse.BlockUses$Brought> com.ash.rachana.parse.BlockUses$Use.panels()
 com.ash.rachana.parse.BlockUses$Use :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.BlockUses$Use.params()
 com.ash.rachana.parse.BlockUses$Use :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.BlockUses$Use.with()
+com.ash.rachana.parse.DeclarationsReader :: public com.ash.rachana.parse.DeclarationsReader(java.lang.String,java.util.List<com.ash.rachana.SutraProblem>,java.util.List<com.ash.rachana.SutraProblem>)
+com.ash.rachana.parse.DeclarationsReader :: public java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function> com.ash.rachana.parse.DeclarationsReader.functions(com.ash.rachana.parse.PNode,java.lang.String)
+com.ash.rachana.parse.DeclarationsReader :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.DeclarationsReader.lets(com.ash.rachana.parse.PNode,java.util.Set<java.lang.String>)
+com.ash.rachana.parse.DeclarationsReader :: public static final int com.ash.rachana.parse.DeclarationsReader.MAX
+com.ash.rachana.parse.DeclarationsReader :: public static final java.lang.String com.ash.rachana.parse.DeclarationsReader.RESERVED
+com.ash.rachana.parse.DeclarationsReader :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.DeclarationsReader.FUNCTION_KEYS
+com.ash.rachana.parse.DeclarationsReader :: public static final java.util.regex.Pattern com.ash.rachana.parse.DeclarationsReader.NAME
 com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Collection<java.lang.String> com.ash.rachana.parse.FragmentResolver.names()
 com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.FragmentResolver.find(java.lang.String)
 com.ash.rachana.parse.FragmentResolver :: public default java.util.Optional<java.lang.String> com.ash.rachana.parse.FragmentResolver.contract(com.ash.rachana.parse.SutraBlocks$Block,java.lang.String)

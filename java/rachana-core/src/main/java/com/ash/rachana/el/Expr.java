@@ -760,4 +760,59 @@ public interface Expr {
             args.forEach(a -> a.paths(sink));
         }
     }
+
+    // ---- level 1.2: a Sutra's declared names (EL_EXPANSION X41, X42; SUTRA_EXPANSION S2) ---------------------------------------------
+
+    /** The context a declared name is evaluated in: the document, controls, date and events, with no current row and no outer names. */
+    private static EvalContext bare(EvalContext c) {
+        return c == null ? null : new EvalContext(c.root(), null, -1, c.formats(), c.ctl(), c.today(), c.scope(), null);
+    }
+
+    /** A Sutra's {@code let:} name: its value over the document, evaluated at most once per bind ({@link Declarations#within}). */
+    record SutraLet(String name, Expr value) implements Expr {
+        public Object eval(EvalContext c) {
+            Declarations.Scope scope = Declarations.current();
+            if (scope == null || c == null) {
+                return value.eval(bare(c));
+            }
+            Object[] held = scope.memo.get(name);
+            if (held != null && held[0] == c.root() && held[1] == c.ctl() && java.util.Objects.equals(held[2], c.today())) {
+                return held[3];
+            }
+            Object v = value.eval(bare(c));
+            scope.memo.put(name, new Object[] {c.root(), c.ctl(), c.today(), v});
+            return v;
+        }
+
+        public void paths(Consumer<String> sink) {
+            value.paths(sink);
+        }
+    }
+
+    /** A call of a declared function: the arguments evaluated where the call is, the body in a scope of its own with the parameters. */
+    record UserCall(String name, List<String> params, List<Expr> args, Expr body) implements Expr {
+        public UserCall {
+            params = List.copyOf(params);
+            args = List.copyOf(args);
+        }
+
+        public Object eval(EvalContext c) {
+            List<Object> values = new ArrayList<>(args.size());
+            for (Expr a : args) {
+                values.add(a.eval(c));
+            }
+            EvalContext inner = bare(c);
+            if (inner == null) {
+                inner = new EvalContext(null, null, -1, null);
+            }
+            for (int i = 0; i < params.size(); i++) {
+                inner = inner.withLocal(params.get(i), values.get(i));
+            }
+            return body.eval(inner);
+        }
+
+        public void paths(Consumer<String> sink) {
+            args.forEach(a -> a.paths(sink));
+        }
+    }
 }

@@ -80,6 +80,8 @@ panels:
 | `data` | | mapping name → source | `{}` | the screen's tables and records, each a field of `$` (2.4) | planned (D10) |
 | `panels` | | list of panels and `{use: …}` entries | `[]` | the body | today |
 | `libraries` | | list of `name@major` | `[]` | the libraries whose fragments the Sutra uses (2.5, LIBRARIES 7.1); the exact version comes from the host's lock | since 1.2 |
+| `let` | | mapping name → expression | `{}` | named values (2.7): read as the bare name in every expression; each may read the ones written before it | since 1.2 |
+| `functions` | | mapping name → `{params, is, doc?, returns?, examples?}` | `{}` | pure functions (2.7), called `name(...)`; a library's are called `<library>.<name>(...)` | since 1.2 |
 | `layout` | | mapping | panels flow | 12-column grid: `areas`, `columns`, `split`, `tabs`, `sections`, `sticky`, `arrange`, `phone`, `tablet` | today |
 | `phone` | | mapping | | phone order, default tier, summary | today |
 | `keys` | | mapping `F1`..`F12` → action | `{}` | function keys (TRANSLATION 2.5) | today |
@@ -265,6 +267,25 @@ An unknown format name formats as plain text (`Values.text`) [today, CS]. Core t
 number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text containing *fail*, *reject*, *dispute*,
 *breach*; `warn` for *pending*, *unmatched*, *warn*; else `ok`; none for empty text), and the fixed tones `pos`, `neg`,
 `link`, `accent`, `ok`, `warn`, `bad`. Any other tone word gives no tone [today, CS].
+
+### 2.7 Declared names: `let` and `functions` [since 1.2]
+
+1. **`let:`** maps a name (letters, digits, `_`, starting with a letter) to an expression. In every expression of the
+   Sutra the bare name reads that value; a name bound inside the expression (`let(...)`, a lambda's) hides it. A value
+   reads the document, the controls and the lets written **before** it (a later one, or itself, is `RCH-2101`); it has
+   no current row (`@`, `^`, `#index` outside a list it walks are `RCH-2101`). It is evaluated at most once per bind.
+   A let named like a control or a `data:` entry is `RCH-2024`.
+2. **`functions:`** maps a name to `{params: {name: type}, is: <expression>, doc?, returns?, examples?}`. A call
+   `f(a, b)` (by place or by the parameters' names, exactly as many as declared; piped `a |> f(b)`) evaluates the
+   arguments where the call is written, then the body with the parameters bound. A body reads only its parameters
+   and other functions: `$`, a bare field, `ctl.`, `@<panel>`, `$src`, a let, or a current row is `RCH-2101`. The
+   call graph has no cycle (`RCH-2101`). A Core function's name is `RCH-2020`; a name a later level reserves is an
+   advisory (`RCH-2092`) and the local one wins.
+3. **Library functions (X42)**: a library declares functions in its manifest's `functions:` and in
+   `functions/<file>.yaml` (each a mapping of functions, the same shape). A Sutra naming the library in `libraries:`,
+   and every fragment of a loaded library, calls them as `<library>.<name>(...)`; a library function calls only
+   library functions, by their library's name.
+4. Both are compile-time: the ViewModel never shows them.
 
 ## 3. Where expressions appear
 
@@ -849,7 +870,7 @@ Core keeps the reference's numbers with the prefix `RCH-` (decision D8; Drishti 
 | `RCH-2048`..`2059` | reuse, docstring, wiring, forms, layout | `2048` fragment not found, `2055` docstring, `2056` children depth, `2057` event or source read, `2058` form, `2059` layout |
 | `RCH-2060`..`2069` | profiles | `2060` key, kind or function of a profile not loaded, `2061` profile claimed but unused, `2062` unknown profile |
 | `RCH-2070`..`2079` | data | `2070` unknown table, `2071` unknown column (`expected`), `2072` key missing for a live table, `2073` source shape or name clash, `2074` not push-down-able over a server table |
-| `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling, `2091` a sign before a power without parentheses (level 1.1, checked mode: `-x ** n` is `-(x ** n)`; EL1-2) |
+| `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling, `2091` a sign before a power without parentheses (level 1.1, checked mode: `-x ** n` is `-(x ** n)`; EL1-2), `2092` a declared name a later level reserves (the local one wins; 2.7) |
 | `RCH-2110`..`2119` | libraries and typed fragments (since 1.2) | `2110` library not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity, `2114` unknown parameter or slot, `2115` required parameter missing, `2116` wrong type or constraint, `2117` reads outside its scope, `2118` slot content; `2119` reserved (a library needs a profile or level the host lacks); `2120` advisory (warning): a column mapping the fragment never reads (L-21) |
 | `RCH-2080`..`2089` | live table declarations (`<name>.live.yaml`) | `2080` `edit` needs a key and a `version` column, `2081` a column that cannot be edited (the key, the version, `changed-by`, `changed-at`) or an edit field that binds none, `2082` a heavy column where a list needs it (key, order, grouping, narrowing), `2083` retention; `2084`..`2089` reserved |
 | `RCH-2101`, `2102` | expressions | `2101` does not compile (syntax, unknown function, arity, literal check, limits); `2102` evaluation error |

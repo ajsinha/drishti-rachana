@@ -129,6 +129,14 @@ final class Parser {
 
     private Set<String> macros = Set.of();
     private FunctionTable table = FunctionTable.core();
+    /** The Sutra's declared names in force (level 1.2, X41, X42, S2); {@link Declarations#NONE} elsewhere. */
+    private Declarations decls = Declarations.NONE;
+    /** The let names a let value may read (the ones written before it); null: all. */
+    private List<String> visibleLets;
+    /** The declared function whose body is read, or null. */
+    private String inFunction;
+    /** The declared functions being inlined, outermost first (a call graph with a cycle is refused). */
+    private java.util.Deque<String> inlining = new java.util.ArrayDeque<>();
 
     static Parsed parseWithSpans(String src, ElLimits limits) {
         return parseWithSpans(src, limits, FunctionTable.core());
@@ -146,6 +154,7 @@ final class Parser {
         }
         Parser parser = new Parser(src, Lexer.tokens(src, v11), limits, v11);
         parser.table = table;
+        parser.decls = Declarations.inForce();
         Expr e = parser.expr();
         if (parser.peek().type() != Type.EOF) {
             throw new ElException("unexpected '" + parser.peek().text() + "'", parser.peek().pos());
@@ -588,9 +597,24 @@ final class Parser {
         if (peek().type() != Type.LPAREN && letFns.containsKey(t.text()) && letNames.contains(t.text())) {
             throw new ElException("'" + t.text() + "' is a function: call it, " + t.text() + "(...)", t.pos());
         }
+        if (!decls.isEmpty() && decls.libraries().contains(t.text()) && peek().type() == Type.DOT && tokens.get(p + 1).type() == Type.IDENT
+                && tokens.get(p + 2).type() == Type.LPAREN && !letNames.contains(t.text())) {
+            next();
+            Token f = next();
+            next();
+            String full = t.text() + "." + f.text();
+            if (!decls.functions().containsKey(full)) {
+                throw new ElException("the library " + t.text() + " has no function '" + f.text() + "'; it has: "
+                        + String.join(", ", decls.functions().keySet().stream().filter(n -> n.startsWith(t.text() + ".")).sorted().toList()), f.pos());
+            }
+            return userCall(full, t, null);
+        }
         if (peek().type() != Type.LPAREN) {
             if (letNames.contains(t.text())) {
                 return at(new Expr.Local(t.text()), s);            // a name let(...) bound: it hides a field of the same name
+            }
+            if (!decls.isEmpty() && decls.lets().containsKey(t.text())) {
+                return at(sutraLet(t), s);
             }
             Expr row = at(new Expr.RowOrRoot(), s);
             return at(new Expr.Field(row, t.text(), null), s);
@@ -611,6 +635,9 @@ final class Parser {
         String name = t.text();
         if (letFns.containsKey(name) && letNames.contains(name)) {
             return localCall(t, piped);
+        }
+        if (!decls.isEmpty() && decls.functions().containsKey(name)) {
+            return userCall(name, t, piped);
         }
         int[] arity = macros.contains(name) ? new int[] {0, 64} : v11 && Level11.has(name) ? Level11.arity(name) : table.arityOf(name);
         if (arity == null && v11 && ReservedNames.contains(name)) {
@@ -903,6 +930,140 @@ final class Parser {
             args.set(place, e.getValue());
             named.remove(e.getKey());
         }
+    }
+
+    /** A Sutra {@code let:} name (S2): its value, read once per bind; only the lets written before a let value are visible to it. */
+    private Expr sutraLet(Token t) {
+        String name = t.text();
+        if (inFunction != null) {
+            throw new ElException(inFunction + ": reads the let '" + name + "'; a function reads only its parameters and other functions", t.pos());
+        }
+        if (visibleLets != null && !visibleLets.contains(name)) {
+            throw new ElException("reads the let '" + name + "', which is not written before it: a let reads only the ones before it (no cycles)",
+                    t.pos());
+        }
+        Parser inner = nested(decls.lets().get(name));
+        inner.visibleLets = decls.before(name);
+        Expr value;
+        try {
+            value = inner.whole();
+        } catch (ElException e) {
+            throw new ElException("the let '" + name + "' ('" + decls.lets().get(name) + "'): " + reason(e), t.pos());
+        }
+        String wrong = DeclChecks.let(value);
+        if (wrong != null) {
+            throw new ElException("the let '" + name + "' " + wrong, t.pos());
+        }
+        return new Expr.SutraLet(name, value);
+    }
+
+    /**
+     * A call of a declared function (X41) or a library's ({@code lib.f(...)}, X42), its opening parenthesis read; {@code piped} is the
+     * left side of {@code |>}: the arguments by place or by the parameters' names, exactly as many as it has; the body read in its own
+     * scope with the parameters as names, inlined at the call.
+     */
+    private Expr userCall(String name, Token t, Expr piped) {
+        Declarations.Function f = decls.functions().get(name);
+        List<String> params = f.paramNames();
+        List<Expr> args = new ArrayList<>();
+        if (piped != null) {
+            args.add(piped);
+        }
+        Map<String, Expr> named = new LinkedHashMap<>();
+        if (peek().type() != Type.RPAREN) {
+            do {
+                if (peek().type() == Type.RPAREN) {
+                    break;
+                }
+                if (peek().type() == Type.IDENT && tokens.get(p + 1).is(Type.OP, "=")) {
+                    Token n = next();
+                    next();
+                    if (!params.contains(n.text())) {
+                        throw new ElException(name + " has no argument named " + n.text() + "; its arguments: " + params, n.pos());
+                    }
+                    if (named.put(n.text(), expr()) != null) {
+                        throw new ElException(name + ": " + n.text() + " is named twice", n.pos());
+                    }
+                    continue;
+                }
+                if (!named.isEmpty()) {
+                    throw new ElException(name + ": a value without a name follows a named one; write the named arguments last", peek().pos());
+                }
+                args.add(expr());
+            } while (peek().type() == Type.COMMA && next() != null);
+        }
+        expect(Type.RPAREN, "')'");
+        for (Map.Entry<String, Expr> e : named.entrySet()) {
+            int place = params.indexOf(e.getKey());
+            if (place < args.size() && args.get(place) != null) {
+                throw new ElException(name + ": " + e.getKey() + " is given twice (by place and by name)", t.pos());
+            }
+            while (args.size() < place) {
+                args.add(null);
+            }
+            if (args.size() == place) {
+                args.add(e.getValue());
+            } else {
+                args.set(place, e.getValue());
+            }
+        }
+        if (args.size() != params.size() || args.contains(null)) {
+            throw new ElException(name + " takes " + params.size() + " argument(s) " + params + ", got " + args.stream().filter(a -> a != null).count(),
+                    t.pos());
+        }
+        if (inFunction != null && inFunction.indexOf('.') > 0 && name.indexOf('.') < 0) {
+            throw new ElException(inFunction + " calls " + name + ", a Sutra's function: a library function calls only library functions, by"
+                    + " their library's name", t.pos());
+        }
+        if (inlining.contains(name)) {
+            throw new ElException(name + " calls itself (through " + String.join(" -> ", inlining) + "): functions have no recursion", t.pos());
+        }
+        Parser inner = nested(f.body());
+        inner.inFunction = name;
+        inner.visibleLets = List.of();
+        params.forEach(inner.letNames::push);
+        inner.inlining.addLast(name);
+        Expr body;
+        try {
+            body = inner.whole();
+        } catch (ElException e) {
+            throw new ElException("in " + name + " ('" + f.body() + "'): " + reason(e), t.pos());
+        } finally {
+            inner.inlining.removeLast();
+        }
+        String wrong = DeclChecks.function(body);
+        if (wrong != null) {
+            throw new ElException(name + " " + wrong, t.pos());
+        }
+        return at(node(new Expr.UserCall(name, params, args, body), args.toArray(Expr[]::new)), t.pos());
+    }
+
+    /** A nested problem's words without its code and offset (they belong to the declared text, not to the expression being read). */
+    private static String reason(ElException e) {
+        String m = e.getMessage();
+        String code = e.code() == null ? "" : e.code().code() + " ";
+        if (m.startsWith(code)) {
+            m = m.substring(code.length());
+        }
+        return m.replaceFirst(" at [0-9]+$", "");
+    }
+
+    /** A parser of a declared text (a body or a let value) with this one's table, level and declarations. */
+    private Parser nested(String src) {
+        Parser inner = new Parser(src, Lexer.tokens(src, v11), limits, v11);
+        inner.table = table;
+        inner.decls = decls;
+        inner.inlining = inlining;
+        return inner;
+    }
+
+    /** The whole text as one expression. */
+    private Expr whole() {
+        Expr e = expr();
+        if (peek().type() != Type.EOF) {
+            throw new ElException("unexpected '" + peek().text() + "'", peek().pos());
+        }
+        return e;
     }
 
     /** {@code ifs(c1, a1, c2, a2, ..., [else])}: the conditional {@code c1 ? a1 : c2 ? a2 : ... : else} (else empty). */

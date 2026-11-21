@@ -31,7 +31,8 @@ public final class Grammar {
      * {@code RCH-2008}. {@code data} (SPEC 2.4, decision D10, level 1.1); {@code libraries} (the libraries a Sutra uses, each with its
      * major, {@code libraries: [finance@1]}, LIBRARIES.md 7.1, level 1.2).
      */
-    public static final Map<String, String> LEVEL_KEYS = Map.of(com.ash.rachana.model.DataEntry.KEY, "1.1", "libraries", "1.2");
+    public static final Map<String, String> LEVEL_KEYS = Map.of(com.ash.rachana.model.DataEntry.KEY, "1.1", "libraries", "1.2",
+            "let", "1.2", "functions", "1.2");
 
     /** The panel kinds of the grammar that a profile brings (the rest are Core's). */
     public static final Set<PanelKind> PROFILE_KINDS = Collections.unmodifiableSet(EnumSet.of(PanelKind.LINKS, PanelKind.PROVENANCE));

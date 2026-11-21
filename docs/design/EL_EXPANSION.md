@@ -521,7 +521,8 @@ access (CORE_AND_PROFILES 3.5); the rule language is simply the same one.
 | X42 | Libraries | P1 | 12 bd | R2 | Core + `LibraryResolver` hook | new case kind `lib`; ≈ 80 cases |
 | X43 | Tests in Sutras and libraries | P2 | 4 bd | R2 | Core tools | the runner reuses the `expr` case format |
 
-**X41.** Two new top-level keys.
+**X41.** Two new top-level keys. *(Built at level 1.2, G2 lane A4, with X42's library functions and S2: SPEC 2.7.
+Examples are not yet run as tests (X43).)*
 
 ```yaml
 let:                                   # named values; each is evaluated at most once per scope

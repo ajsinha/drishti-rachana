@@ -61,6 +61,14 @@ public final class ElCompiler {
      *     {@linkplain ElLimits limits} (too deeply nested or too long)
      */
     public Expr compile(String source) {
+        String d = Declarations.inForce().id();
+        if (!d.isEmpty()) {                                     // a Sutra's declared names (level 1.2): cached apart from every other Sutra's
+            try {
+                return exprs.get(d + "\u0000" + source, k -> Parser.parseWithSpans(source, limits, table, v11).expr());
+            } catch (ElException e) {
+                throw whole("expression", source, e);
+            }
+        }
         if (!v11) {
             return exprs.get(source, s -> Parser.parse(s, limits, table));
         }
@@ -73,7 +81,8 @@ public final class ElCompiler {
 
     /** The expression without level 1.1's prefix on a problem (a template's part: the template words it). */
     Expr bare(String source) {
-        return exprs.get(source, s -> Parser.parseWithSpans(s, limits, table, v11).expr());
+        String d = Declarations.inForce().id();
+        return exprs.get(d.isEmpty() ? source : d + "\u0000" + source, s -> Parser.parseWithSpans(source, limits, table, v11).expr());
     }
 
     /** Level 1.1's words (SPEC 6.3): {@code expression '<source>': <reason> at <offset>}; an evaluation problem is left as it is. */
@@ -99,6 +108,14 @@ public final class ElCompiler {
 
     /** Compiles text with embedded {@code ${expr}} parts. Text without {@code ${} is returned as is. */
     public Template template(String source) {
+        String d = Declarations.inForce().id();
+        if (!d.isEmpty()) {
+            try {
+                return templates.get(d + "\u0000" + source, k -> Template.parse(source, this));
+            } catch (ElException e) {
+                throw whole("template", source, e);
+            }
+        }
         if (!v11) {
             return templates.get(source, s -> Template.parse(s, this));
         }

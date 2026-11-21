@@ -39,6 +39,10 @@ public final class DataRecord {
      * @param ctx controls and today, for {@code where}
      */
     public static Node record(Sutra sutra, Object host, Map<String, Rows> read, ElCompiler el, EvalContext ctx) {
+        return com.ash.rachana.el.Declarations.within(sutra.declarations(), () -> recordDeclared(sutra, host, read, el, ctx));   // level 1.2: the Sutra's let and functions in force
+    }
+
+    private static Node recordDeclared(Sutra sutra, Object host, Map<String, Rows> read, ElCompiler el, EvalContext ctx) {
         Map<String, Object> out = new LinkedHashMap<>();
         Node h = host instanceof Node n ? n : Node.of(host == null ? new LinkedHashMap<String, Object>() : host);
         if (h.fields() != null) {

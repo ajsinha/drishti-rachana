@@ -75,9 +75,13 @@ final class SutraBuilder {
             }
         });
         List<com.ash.rachana.model.UsedLibrary> used = new ArrayList<>();
+        Map<String, com.ash.rachana.el.Declarations.Function> libraryFunctions = new LinkedHashMap<>();
         fragments = SutraBlocks.atLeast(grammar.level(), TypedFragment.SINCE)     // level 1.2: libraries: and library uses (LIBRARIES.md 7)
                 ? grammar.libraries().fragments(grammar.fragments(), root, file, problems,
-                        l -> used.add(new com.ash.rachana.model.UsedLibrary(l.name(), l.version(), l.sha384()))) : grammar.fragments();
+                        l -> {
+                            used.add(new com.ash.rachana.model.UsedLibrary(l.name(), l.version(), l.sha384()));
+                            libraryFunctions.putAll(l.functions());                 // X42: called <library>.<function>(...)
+                        }) : grammar.fragments();
         PNode lang = m.get("rachana");
         if (lang == null) {
             problem("RCH-2009", "missing 'rachana: " + LANGUAGE + "' (the Rachana language version) at the top", root);
@@ -172,14 +176,36 @@ final class SutraBuilder {
                 });
             }
         }
+        List<SutraProblem> declAdvisories = new ArrayList<>();
+        if ((m.containsKey("let") || m.containsKey("functions")) && grammar.hasKey("let")) {   // level 1.2: X41, S2
+            Set<String> taken = new HashSet<>();
+            controls.forEach(c -> taken.add(c.id()));
+            if (extensions.get(com.ash.rachana.model.DataEntry.KEY) instanceof List<?> entries) {
+                entries.forEach(e -> taken.add(((com.ash.rachana.model.DataEntry) e).name()));
+            }
+            DeclarationsReader reader = new DeclarationsReader(file, problems, declAdvisories);
+            Map<String, com.ash.rachana.el.Declarations.Function> fns = new LinkedHashMap<>(libraryFunctions);
+            fns.putAll(reader.functions(m.get("functions"), ""));
+            Map<String, String> lets = reader.lets(m.get("let"), taken);
+            for (String l : lets.keySet()) {
+                if (fns.containsKey(l)) {
+                    problem("RCH-2024", "'" + l + "' is both a let and a function of this Sutra", m.get("let").map().get(l));
+                }
+            }
+            extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(fns, lets));
+        } else if (!libraryFunctions.isEmpty()) {
+            extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(libraryFunctions, Map.of()));
+        }
         if (!problems.isEmpty()) {
             return null;
         }
         if (!used.isEmpty()) {
             extensions.put(Sutra.LIBRARIES, List.copyOf(used));
         }
-        if (!calls.advisories().isEmpty()) {
-            extensions.put(Sutra.ADVISORIES, List.copyOf(calls.advisories()));
+        if (!calls.advisories().isEmpty() || !declAdvisories.isEmpty()) {
+            List<SutraProblem> all = new ArrayList<>(declAdvisories);
+            all.addAll(calls.advisories());
+            extensions.put(Sutra.ADVISORIES, List.copyOf(all));
         }
         return new Sutra(name, version, title, strip, panels, keyMap, loc(root), text(m.get("description"), null), controls, layout, phone,
                 extensions);

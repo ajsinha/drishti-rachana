@@ -62,6 +62,10 @@ public final class DataPlan {
      * @param level the Sutra's language level (null: not checked)
      */
     public static Map<String, Object> plan(Sutra sutra, Map<String, TableSchema> schemas, ElCompiler el, EvalContext ctx, String level) {
+        return com.ash.rachana.el.Declarations.within(sutra.declarations(), () -> planDeclared(sutra, schemas, el, ctx, level));   // level 1.2: the Sutra's let and functions in force
+    }
+
+    private static Map<String, Object> planDeclared(Sutra sutra, Map<String, TableSchema> schemas, ElCompiler el, EvalContext ctx, String level) {
         boolean checked = level != null && schemas != null && com.ash.rachana.parse.SutraBlocks.atLeast(level, CHECKED_SINCE);
         List<Object> tables = new ArrayList<>();
         List<Object> problems = new ArrayList<>();

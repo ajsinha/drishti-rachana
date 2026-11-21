@@ -69,10 +69,12 @@ public final class Library {
     private final String signedBy;
     private final Map<String, TreeMap<Integer, SutraBlocks.Block>> fragments;
     private final Map<String, String> contracts;
+    private final Map<String, com.ash.rachana.el.Declarations.Function> functions;
 
     private Library(String name, String version, String scope, List<String> profiles, Map<String, Integer> depends, String publisherKey,
             String licence, String sha384, String source, String signedBy, Map<String, TreeMap<Integer, SutraBlocks.Block>> fragments,
-            Map<String, String> contracts) {
+            Map<String, String> contracts, Map<String, com.ash.rachana.el.Declarations.Function> functions) {
+        this.functions = functions;
         this.name = name;
         this.version = version;
         this.scope = scope;
@@ -176,9 +178,28 @@ public final class Library {
                 depends.put(dm.group(1), Integer.parseInt(dm.group(2)));
             }
         }
-        if (m.get("functions") != null || m.get("exports") != null && m.get("exports").map().get("functions") != null
-                && !m.get("exports").map().get("functions").list().isEmpty()) {
-            out.add(problem(INVALID, "library functions arrive with Sutra functions (X41); this level holds fragments", mfile, 1));
+        // X42: the library's functions, in the manifest and in functions/<file>.yaml (each a mapping of functions), called <library>.<f>(...)
+        List<SutraProblem> fnAdvice = new ArrayList<>();
+        Map<String, com.ash.rachana.el.Declarations.Function> functions = new TreeMap<>(
+                new com.ash.rachana.parse.DeclarationsReader(mfile, out, fnAdvice).functions(m.get("functions"), name + "."));
+        for (Map.Entry<String, byte[]> f : b.files().entrySet()) {
+            if (f.getKey().startsWith("functions/")) {
+                String path = name + "/" + f.getKey();
+                if (!f.getKey().endsWith(".yaml")) {
+                    out.add(problem(INVALID, "a file under functions/ is <name>.yaml (a mapping of functions): " + f.getKey(), path, 1));
+                    continue;
+                }
+                try {
+                    PNode fr = new PositionalYamlReader().read(new String(f.getValue(), StandardCharsets.UTF_8));
+                    new com.ash.rachana.parse.DeclarationsReader(path, out, fnAdvice).functions(fr, name + ".").forEach((k, v) -> {
+                        if (functions.put(k, v) != null) {
+                            out.add(problem(INVALID, "the function " + k + " is declared twice", path, 1));
+                        }
+                    });
+                } catch (YamlSyntaxException e) {
+                    out.add(problem(INVALID, "YAML syntax: " + e.getMessage(), path, e.line()));
+                }
+            }
         }
         PNode publisher = m.get("publisher");
         String key = publisher == null ? null : text(publisher.map().get("key"));
@@ -229,7 +250,7 @@ public final class Library {
         Map<String, TreeMap<Integer, SutraBlocks.Block>> fixed = new TreeMap<>();
         frags.forEach((k, v) -> fixed.put(k, new TreeMap<>(v)));
         return new Library(name, version, scope, List.copyOf(profiles), Collections.unmodifiableMap(depends), key, text(m.get("licence")), b.sha384(),
-                b.source(), signedBy, Collections.unmodifiableMap(fixed), Collections.unmodifiableMap(contracts));
+                b.source(), signedBy, Collections.unmodifiableMap(fixed), Collections.unmodifiableMap(contracts), Collections.unmodifiableMap(functions));
     }
 
     /** Checks {@code MANIFEST.sha384} against every file and the signature against the trust; the key that signed, or null. */
@@ -420,6 +441,11 @@ public final class Library {
     }
 
     /** Its fragment names. */
+    /** The library's functions (X42) by their called name, {@code <library>.<function>}. */
+    public Map<String, com.ash.rachana.el.Declarations.Function> functions() {
+        return functions;
+    }
+
     public Set<String> fragmentNames() {
         return fragments.keySet();
     }

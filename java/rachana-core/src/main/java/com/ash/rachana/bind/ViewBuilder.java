@@ -105,6 +105,10 @@ public final class ViewBuilder {
     }
 
     public ViewModel build(Request r) {
+        return com.ash.rachana.el.Declarations.within(r.sutra().declarations(), () -> built(r));   // level 1.2: its let and functions
+    }
+
+    private ViewModel built(Request r) {
         Sutra s = r.sutra();
         Masker viewer = r.viewer();
         Node raw = r.doc() == null ? Node.missing() : r.doc().data();

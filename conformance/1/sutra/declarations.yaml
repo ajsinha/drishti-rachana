@@ -1,0 +1,111 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/declarations
+since: "1.2"
+profile: core
+verified: true
+description: "A Sutra's let: and functions: (EL_EXPANSION X41, SUTRA_EXPANSION S2), level 1.2: named values read once per bind, pure functions inlined at the call."
+cases:
+
+  - id: let-and-functions
+    kind: sutra
+    source: EL_EXPANSION X41; SUTRA_EXPANSION S2
+    note: "fx reads the document; total reads fx (a let reads the ones before it); share is a function; a table's column reads a let and calls a function per row; a template calls one."
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      title: { id: "'Desks'" }
+      data:
+        trades: { rows: [ { desk: FX, notional: 100 }, { desk: FX, notional: 300 }, { desk: Rates, notional: 600 } ] }
+      let:
+        fx: "$.trades[?@.desk == 'FX']"
+        total: "sum($.trades, 'notional')"
+        fx_total: "sum(fx, 'notional')"
+      functions:
+        share:
+          doc: The part as a share of the whole; empty when the whole is zero.
+          params: { part: decimal, whole: decimal }
+          returns: decimal
+          is: "if(whole == 0, null, part / whole)"
+        pct:
+          params: { part: decimal, whole: decimal }
+          is: "round(share(part, whole) * 100, 1)"
+      panels:
+        - { id: fx-share, kind: metric, label: FX share, value: "pct(fx_total, total)" }
+        - { id: by-name, kind: metric, label: Named, value: "share(whole = total, part = fx_total)" }
+        - { id: piped, kind: metric, label: Piped, value: "fx_total |> pct(total)" }
+        - id: rows
+          kind: table
+          rows: $.trades
+          columns:
+            - { label: Desk, bind: "@.desk" }
+            - { label: Share, bind: "pct(@.notional, total)" }
+        - { id: note, kind: markdown, text: "FX is ${pct(fx_total, total)}% of ${size(fx)} trades' desks" }
+    expect:
+      at:
+        /panels/0/data/value/text: "40"
+        /panels/1/data/value/text: "0.4"
+        /panels/2/data/value/text: "40"
+        /panels/3/data/rows/0/cells/1/text: "10"
+        /panels/3/data/rows/2/cells/1/text: "60"
+        /panels/4/data/text: "FX is 40% of 2 trades' desks"
+
+  - id: library-functions
+    kind: sutra
+    source: EL_EXPANSION X42; LIBRARIES 3.1 (functions/), 7.1
+    note: "A library's functions, in its manifest and in functions/, are called <library>.<function>(...); one calls another by its library's name."
+    files:
+      rachana_libs/fin/LICENSE: |
+        Test material for the conformance suite only.
+      rachana_libs/fin/MANIFEST.sha384: |
+        db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
+        37a8aeb54bf07e1b10c17e6b95de371f6c87c5e894ac195cf346f4506da6cd97fc36f07287b149f91aa88061b1a911d5  fin.rachana-lib.yaml
+        7faeedc7c498df8f710f94bf5962e8ff4502b71d2a0d1736878e01095c77bfa24036f6b51b3228313151fc9925b9292f  fragments/carry-figure.v1.fragment.yaml
+        e6fb42724369644d1d98dda4ee6c45fb249de01c2ab035e9624441d7af93c5066abde41ab0b055cea2f8e90cddd50982  functions/carry.yaml
+      rachana_libs/fin/fin.rachana-lib.yaml: |
+        rachana: 1
+        library: fin
+        version: 1.0.0
+        title: Fin
+        summary: A tiny synthetic library of functions for the conformance suite.
+        publisher: { name: Rachana conformance }
+        licence: LicenseRef-Rachana-Test
+        scope: public
+        profiles: []
+        depends: []
+        functions:
+          bp:
+            doc: A rate in basis points.
+            params: { rate: decimal }
+            is: "rate * 10000"
+      rachana_libs/fin/functions/carry.yaml: |
+        carry:
+          doc: Carry over a period, in basis points of the notional.
+          params: { notional: decimal, rate: decimal, days: integer }
+          is: "round(notional * fin.bp(rate) / 10000 * days / 360, 2)"
+      rachana_libs/fin/fragments/carry-figure.v1.fragment.yaml: |
+        rachana: 1
+        fragment: carry-figure
+        version: 1
+        doc:
+          summary: The carry of a notional over a period.
+        params:
+          notional: { type: number, required: true, doc: The notional }
+          rate: { type: number, required: true, doc: The rate }
+        panels:
+          - { id: carry, kind: metric, label: Carry, value: "fin.carry(arg.notional, arg.rate, 90)" }
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      title: { id: "'Carry'" }
+      libraries: [fin@1]
+      panels:
+        - { id: bp, kind: metric, label: Rate, value: "fin.bp(0.0125)" }
+        - { id: carry, kind: metric, label: Carry, value: "fin.carry(1000000, 0.0125, 90)" }
+        - { use: fin/carry-figure@1, as: cf, with: { notional: 2000000, rate: 0.0125 } }
+    expect:
+      at:
+        /panels/0/data/value/text: "125"
+        /panels/1/data/value/text: "3125"
+        /panels/2/data/value/text: "6250"

@@ -107,6 +107,17 @@ public record Sutra(
 
     /** The compile result's key for {@link #libraries()}. */
     public static final String LIBRARIES = "$libraries";
+    /** The compile result's key for {@link #declarations()}. */
+    public static final String DECLARATIONS = "$declarations";
+
+    /**
+     * Its declared names (level 1.2): its {@code let:} values and {@code functions:} (X41, S2) and its libraries' functions (X42);
+     * {@link com.ash.rachana.el.Declarations#NONE} when it declares none. Its expressions are compiled with them in force.
+     */
+    public com.ash.rachana.el.Declarations declarations() {
+        return extension(DECLARATIONS) instanceof com.ash.rachana.el.Declarations d ? d : com.ash.rachana.el.Declarations.NONE;
+    }
+
     /** The compile result's key for {@link #advisories()}. */
     public static final String ADVISORIES = "$advisories";
 

@@ -5,6 +5,14 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Product documentation**: the README describes the built product (parts, ways to use it, build, install order Rachana → tools →
+  Lake → Drishti from release tags, IDE support) with front matter. One guide per major feature under `docs/guides/` (the language at
+  level 1.2 with fragments as functions, libraries and `rachana lib`, the Data Protocol, live tables with editing and approvals, the
+  server, Studio, the command line and SDKs, `rachana upgrade`) and four tutorials under `docs/tutorials/` (first dashboard, a library,
+  live edits with approvals, a Flask live board), each run against the build. The planning pages `docs/OVERVIEW.md`, `MODES.md`,
+  `ROADMAP.md`, `AI.md` and `ARCHITECTURE.md` are removed (the designs stay in `docs/design/`); module and example READMEs describe
+  what is built.
+
 - **Known duplicates folded** (i7b G3, I7B_DUPLICATES Q1 to Q3): the library manifest's exports and the `list` format write their
   JSON strings through `Json.quote` (a control character other than tab, newline and return is now written `\b`, `\f` or `\u00XX`;
   no committed file holds one); `median`/`percentile` share `Holistics.OfValues` with the other holistic functions, `count` and `nmiss`

@@ -5,6 +5,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Live tables, the edit path (L7, L8 client, L10 writes; experimental)**: writes are Data Protocol v1 additions under `can: write`
+  (`POST {base}/tables/{name}/write`, bridge `write`): a change `{id, op, key, basedOn, set, from?, reason?}` is answered `{change,
+  state: applied | queued | held | refused, message, version?}`; refusals `405 rdp.write.unsupported`, `403 rdp.write.forbidden`
+  (audited), `404` for a row outside the reader's scope, `409 rdp.write.conflict` with `current {version, by, at}`, `422
+  rdp.write.invalid` with `fields [{column, rule, message}]` from the declaration's form rules (Core's checker). The host's
+  `ChangeSink` takes checked changes (Drishti binds its write-back, LT-8); `Outbox` + `FileOutboxStore` give exactly-once for hosts
+  without one; `held` and `release`/`reject` are the host's decisions; the tray `<name>.changes` lists the caller's pending changes.
+  `TableClient.write`, `DataClient.write`, the `<rachana-view>` edit hook. `rachana-server`: CSRF, Origin and Host checks on writes,
+  `access.tables.<name>.edit`, `edits:`, `tables.<name>.write` (JDBC, change id journal table). Suite `protocol/write` (20, unverified).
+
 - **Gate 2 fixes A (compiler and engine)**:
   - **F4 / O7, the `check` and `grammar` kinds run**: the 49 frozen cases no runtime answered are answered on the JVM, both JavaScript
     bundles (facade `checked`, `grammar`; the tools bundle's harness) and Python on V8. Corrected cases that had never run: checked

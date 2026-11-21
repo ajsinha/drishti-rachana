@@ -387,8 +387,9 @@ that need the live parts use three conventions of the adapter (the cases' paths,
 A host with live tables (section 16) adds: `POST /_test/live` (a live-table fixture, FORMAT 5.12: a declaration and its source's
 rows; the table's epoch is the host's own), `POST /_test/as` `{ reader, view? }` (later requests are made as that reader; one bridge
 channel per reader), `POST /_test/stream` (change the source, push the stream's upserts, deletes, gap or state), `POST /_test/upkeep`
-`{ waitMs?, advanceMs? }` (move the host's clock, run retention and idle close) and `POST /_test/audit` (the audit events since the
-last read).
+`{ waitMs?, advanceMs? }` (move the host's clock, run retention and idle close), `POST /_test/audit` (the audit events since the
+last read) and, for writes, `POST /_test/outbox` `{ flush?, release?, reject?, by?, reason? }` (send the queued changes, or decide a
+held one as the host; answers `{ sent, entries }`); a fixture's `edit` names the sink and a reader's view its `editable` columns.
 
 The adapter's paths exist only under test and are not part of the protocol.
 

@@ -20,6 +20,7 @@ flask = ["flask>=3"]
 fastapi = ["fastapi>=0.110"]
 arrow = ["pyarrow>=15"]
 polars = ["polars>=1"]
+v8 = ["mini-racer>=0.14.1"]           # drishti_rachana.engine: the JavaScript bundle on V8 (W-1)
 test = ["pytest>=8", "pyyaml>=6", "jsonschema>=4"]
 
 [project.scripts]
@@ -27,6 +28,7 @@ rachana = "drishti_rachana.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/drishti_rachana"]
+artifacts = ["src/drishti_rachana/bundle/*.js"]   # built by tools/js/build_js.py, git-ignored
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

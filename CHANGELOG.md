@@ -5,6 +5,18 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### The `rachana` command and the Python SDK basics (G2, CLI and SDK lane)
+
+- **CLI (Node, `js/packages/rachana-cli`)**: `rachana new` (starter project), `lint` (compile and problems; `--format text|json|sarif`,
+  `--strict`; exit 0 / 1 errors / 2 usage), `build` (lints, then a static site: pages, Sutras, data files, protocol index,
+  runtime bundle), `preview` and `dev` (local server). `lib build|sign|keygen|pack|verify|lock` is the Java `LibraryTool` behind
+  `com.ash.rachana.cli.Main` (the jar launcher; the Node launcher spawns it: one implementation). Not yet: the painter step of
+  `build` and `preview` (`<rachana-view>` is on g2/data), live reload, `fix`, `fmt`, `explain`.
+- **Python SDK**: `python -m drishti_rachana lint` / `rachana lint` on V8 (`drishti-rachana[v8]`), same output formats and exit
+  codes; `drishti_rachana.server.DataHost`, a minimal Data Protocol v1 host (JSON; schema, rows, query filter tree, cursor paging,
+  keyed patches, SSE changes); `RachanaBlueprint` (Flask) and `RachanaRouter` (FastAPI) replace the stubs; the live-orders example
+  uses them. Reuse of lane C's server shapes is pending the g2/data merge; the host follows DATA_PROTOCOL.md directly.
+
 ### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
 
 - **Typed fragments** (SPEC 2.5, LIBRARIES 4): `TypedFragment`; a fragment whose `params:` are declarations with a `type` is

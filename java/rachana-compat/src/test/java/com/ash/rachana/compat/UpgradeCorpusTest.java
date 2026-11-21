@@ -91,7 +91,7 @@ class UpgradeCorpusTest {
             // idempotent: the upgraded text upgrades to itself
             List<String> notIdempotent = new ArrayList<>();
             for (Map.Entry<String, Upgrade.Result> e : results.entrySet()) {
-                Upgrade.Result again = Upgrade.upgrade(e.getKey(), e.getValue().text(), TO, TO, null);
+                Upgrade.Result again = Upgrade.upgrade(e.getKey(), e.getValue().text(), TO, null);
                 if (again.changed() || !again.changes().isEmpty() || again.refused() != null) {
                     notIdempotent.add(e.getKey());
                 }
@@ -140,7 +140,7 @@ class UpgradeCorpusTest {
                     continue;
                 }
                 String rel = scratch.relativize(f).toString().replace('\\', '/');
-                Upgrade.Result r = Upgrade.upgrade(rel, Files.readString(f, StandardCharsets.UTF_8), "1.0", TO, null);
+                Upgrade.Result r = Upgrade.upgrade(rel, Files.readString(f, StandardCharsets.UTF_8), TO, null);
                 results.put(rel, r);
                 if (r.writable() && r.changed()) {
                     Files.writeString(f, r.text(), StandardCharsets.UTF_8);

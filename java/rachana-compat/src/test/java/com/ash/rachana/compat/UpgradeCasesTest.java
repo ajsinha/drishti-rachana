@@ -39,7 +39,7 @@ class UpgradeCasesTest {
             String id = (String) c.get("id");
             String before = (String) c.get("before");
             String file = c.get("file") instanceof String f ? f : id + ".sutra.yaml";
-            Upgrade.Result r = Upgrade.upgrade(file, before, "1.0", UpgradeCorpusTest.TO, null);
+            Upgrade.Result r = Upgrade.upgrade(file, before, UpgradeCorpusTest.TO, null);
             n++;
             if (c.get("refused") instanceof String why) {
                 if (r.refused() == null || !r.refused().contains(why)) {
@@ -68,7 +68,7 @@ class UpgradeCasesTest {
             if (c.get("after") instanceof String after && !after.equals(r.text())) {
                 failures.add(id + ": wrote\n" + r.text());
             }
-            Upgrade.Result again = Upgrade.upgrade(file, r.text(), UpgradeCorpusTest.TO, UpgradeCorpusTest.TO, null);
+            Upgrade.Result again = Upgrade.upgrade(file, r.text(), UpgradeCorpusTest.TO, null);
             if (!again.text().equals(r.text()) || !again.changes().isEmpty()) {
                 failures.add(id + ": upgrading again changed it");
             }

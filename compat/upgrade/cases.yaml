@@ -195,7 +195,7 @@ cases:
     flags: []
     same: true
 
-  - id: a-fragment-is-rewritten-without-a-declaration
+  - id: a-fragment-declares-its-level-as-a-sutra-does
     file: spread.v1.fragment.yaml
     before: |
       rachana: 1
@@ -206,14 +206,14 @@ cases:
       panels:
         - { id: s, kind: metric, label: Spread, value: "range(%{rows}, 'p')" }
     after: |
-      rachana: 1
+      rachana: 1.2
       fragment: spread
       version: 1
       params:
         rows: $.rows
       panels:
         - { id: s, kind: metric, label: Spread, value: "span(%{rows}, 'p')" }
-    changes: [span]
+    changes: [declare, span]
     flags: []
 
   - id: an-expression-that-does-not-compile-is-refused

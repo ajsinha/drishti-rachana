@@ -34,6 +34,6 @@ inserts a `use:` block (tables and column mapping from the folder's data files),
 
 **Language level.** Each Sutra declares its level in its `rachana:` key (SPEC 2.1: `rachana: 1` is 1.0, `rachana: 1.2` is 1.2); `lint`,
 `build`, `preview`, Studio and `<rachana-view>` read every Sutra at its own level, and `rachana new` writes the newest. No command takes
-`--level`. `rachana upgrade` rewrites a level-1.0 Sutra to a later level with the same meaning (needs a JVM, as `lib` does).
+`--level`. `rachana upgrade` rewrites a level-1.0 Sutra or fragment to a later level with the same meaning, reading each file's level from its own `rachana:` key (needs a JVM, as `lib` does).
 
 **Not done yet:** `dev` is `preview` of a folder without live reload. `fix`, `fmt`, `explain`, `schema`, `migrate` are not written.

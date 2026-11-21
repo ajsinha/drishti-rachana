@@ -10,7 +10,9 @@ import com.ash.rachana.live.spi.SnapshotSource;
 import com.ash.rachana.parse.Json;
 import com.ash.rachana.table.KeyedRows;
 import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,21 +32,96 @@ import java.util.function.Predicate;
  */
 final class StoreOverlay {
 
-    /** One order of the source's rows for one audience and filter. */
+    /** An order: the query's sort entries (column, descending, nulls first), then the key. */
+    record Order(List<String> cols, boolean[] desc, boolean[] nullsFirst) {
+
+        static final Order NONE = new Order(List.of(), new boolean[0], new boolean[0]);
+
+        /** The sort list of a query document ({@code [{col, dir?, nulls?}]}). */
+        static Order of(Object sort) {
+            if (!(sort instanceof List<?> l) || l.isEmpty()) {
+                return NONE;
+            }
+            List<String> cols = new ArrayList<>();
+            boolean[] desc = new boolean[l.size()];
+            boolean[] first = new boolean[l.size()];
+            for (Object o : l) {
+                if (o instanceof Map<?, ?> m && m.get("col") != null) {
+                    desc[cols.size()] = "desc".equals(m.get("dir"));
+                    first[cols.size()] = "first".equals(m.get("nulls"));
+                    cols.add(String.valueOf(m.get("col")));
+                }
+            }
+            return new Order(List.copyOf(cols), Arrays.copyOf(desc, cols.size()), Arrays.copyOf(first, cols.size()));
+        }
+
+        int width() {
+            return cols.size();
+        }
+
+        /** The text an index is kept under. */
+        String text() {
+            StringBuilder b = new StringBuilder();
+            for (int i = 0; i < cols.size(); i++) {
+                b.append(cols.get(i)).append(desc[i] ? '-' : '+').append(nullsFirst[i] ? 'f' : 'l').append(',');
+            }
+            return b.toString();
+        }
+
+        /** Two entries in this order: each sort value (absent or masked last, unless nulls first), then the key values, then the key text. */
+        int compare(Object[] va, int ia, List<?> kva, String ka, Object[] vb, int ib, List<?> kvb, String kb) {
+            for (int i = 0; i < cols.size(); i++) {
+                Object x = va == null ? null : va[ia + i];
+                Object y = vb == null ? null : vb[ib + i];
+                boolean xn = x == null || isMasked(x), yn = y == null || isMasked(y);
+                if (xn || yn) {
+                    if (!(xn && yn)) {
+                        return xn == nullsFirst[i] ? -1 : 1;
+                    }
+                    continue;
+                }
+                int c = RowQuery.compare(x, y);
+                if (c != 0) {
+                    return desc[i] ? -c : c;
+                }
+            }
+            for (int i = 0; i < kva.size() && i < kvb.size(); i++) {
+                Object x = kva.get(i), y = kvb.get(i);
+                if (x == null || y == null) {
+                    if (x != y) {
+                        return x == null ? 1 : -1;
+                    }
+                    continue;
+                }
+                int c = RowQuery.compare(x, y);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return ka.compareTo(kb);
+        }
+    }
+
+    /**
+     * One order of the source's rows for one audience and filter: key texts, key values and the sort values ({@code width} per row,
+     * flat), in order.
+     */
     static final class Index {
         final String version;
         final long builtAt;
         final String[] keys;
         final List<List<Object>> keyValues;
         final Object[] values;
+        final int width;
         final Map<String, Integer> position = new HashMap<>();
 
-        Index(String version, long builtAt, String[] keys, List<List<Object>> keyValues, Object[] values) {
+        Index(String version, long builtAt, String[] keys, List<List<Object>> keyValues, Object[] values, int width) {
             this.version = version;
             this.builtAt = builtAt;
             this.keys = keys;
             this.keyValues = keyValues;
             this.values = values;
+            this.width = width;
             for (int i = 0; i < keys.length; i++) {
                 position.put(keys[i], i);
             }
@@ -54,13 +131,29 @@ final class StoreOverlay {
             return keys.length;
         }
 
-        Object value(int pos) {
-            return values == null ? null : values[pos];
+        /** The order of the entry at {@code pos} against another entry. */
+        int compare(Order o, int pos, Object[] v, int iv, List<?> kv, String k) {
+            return o.compare(values, pos * width, keyValues.get(pos), keys[pos], v, iv, kv, k);
+        }
+
+        /** The first position whose entry is after ({@code strictly}) or not before the given one, by binary search. */
+        int seek(Order o, Object[] v, List<?> kv, String k, boolean strictly) {
+            int lo = 0, hi = keys.length;
+            while (lo < hi) {
+                int mid = (lo + hi) >>> 1;
+                int c = compare(o, mid, v, 0, kv, k);
+                if (c < 0 || (strictly && c == 0)) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            return lo;
         }
     }
 
-    /** One row of the live side as a page merges it: its key, its sort value as the reader sees it, and its row. */
-    record Live(String key, Object value, Map<String, Object> row) {}
+    /** One row of the live side as a page merges it: its key, its key values, its sort values as the reader sees them, and its row. */
+    record Live(String key, List<Object> keyValues, Object[] values, Map<String, Object> row) {}
 
     private final LiveTable table;
     private final Map<String, Index> indexes = new LinkedHashMap<>(16, 0.75f, true);
@@ -82,24 +175,6 @@ final class StoreOverlay {
         return indexes.size();
     }
 
-    /** The order of two entries: the sort value (absent last, also when descending), then the key text. */
-    static int compare(Object va, String ka, Object vb, String kb, boolean sorted, boolean desc) {
-        if (sorted) {
-            boolean an = va == null || isMasked(va), bn = vb == null || isMasked(vb);
-            if (an || bn) {
-                if (!(an && bn)) {
-                    return an ? 1 : -1;
-                }
-            } else {
-                int c = RowQuery.compare(va, vb);
-                if (c != 0) {
-                    return desc ? -c : c;
-                }
-            }
-        }
-        return ka.compareTo(kb);
-    }
-
     private static boolean isMasked(Object v) {
         return v instanceof Map<?, ?> m && Boolean.TRUE.equals(m.get("$masked"));
     }
@@ -118,7 +193,10 @@ final class StoreOverlay {
     // ---- pages -----------------------------------------------------------------------------------------------------
 
     /**
-     * One page for a checked query document: {@code {table, version, columns, values, total, next?}}.
+     * One page for a checked query document: {@code {table, version, columns, values, total, next?}}, in the order of its whole sort list
+     * (then the key). The start of a page is found without reading the rows before it: a cursor names the last row sent (keyset paging:
+     * a binary search of the index and of the live side, so rows that change meanwhile are neither repeated nor skipped); an
+     * {@code offset} is placed by counting the live side's rows and the shadowed positions before it.
      *
      * @param filter the query's filter as a predicate on the row as the reader sees it, or null
      */
@@ -127,14 +205,8 @@ final class StoreOverlay {
         if (table.source.tier() == SnapshotSource.Tier.QUERY) {
             return queryPage(doc, columns, reader);
         }
-        String sortCol = null;
-        boolean desc = false;
-        if (doc.get("sort") instanceof List<?> sl && !sl.isEmpty() && sl.get(0) instanceof Map<?, ?> s0) {
-            sortCol = String.valueOf(s0.get("col"));
-            desc = "desc".equals(s0.get("dir"));
-        }
-        Index idx = index(sortCol, desc, doc.get("filter"), reader, filter);
-        boolean sorted = idx.values != null;
+        Order order = Order.of(doc.get("sort"));
+        Index idx = index(order, doc.get("filter"), reader, filter);
         Object[] side = table.liveSide();
         Map<String, Map<String, Object>> liveRows = (Map<String, Map<String, Object>>) side[0];
         Set<String> removed = (Set<String>) side[1];
@@ -148,39 +220,68 @@ final class StoreOverlay {
             if (filter != null && !filter.test(seen)) {
                 continue;
             }
-            l.add(new Live(e.getKey(), sortCol == null ? null : seen.get(sortCol), raw));
+            Object[] v = new Object[order.width()];
+            for (int i = 0; i < v.length; i++) {
+                v[i] = seen.get(order.cols().get(i));
+            }
+            List<Object> kv = new ArrayList<>();
+            table.spec.key().forEach(c -> kv.add(raw.get(c)));
+            l.add(new Live(e.getKey(), kv, v, raw));
         }
-        final boolean d = desc;
-        l.sort((a, b) -> compare(a.value(), a.key(), b.value(), b.key(), sorted, d));
+        l.sort((a, b) -> order.compare(a.values(), 0, a.keyValues(), a.key(), b.values(), 0, b.keyValues(), b.key()));
         int[] shadow = shadowed(idx, liveRows.keySet(), removed);
         int n = idx.size();
         int total = n - shadow.length + l.size();
-        int offset = 0;
-        if (doc.get("cursor") != null) {
-            offset = RowQuery.offsetOf(table.spec.name(), table.epoch(), doc, String.valueOf(doc.get("cursor")));
-        } else if (doc.get("offset") instanceof Number o) {
-            offset = (int) Math.max(0, o.longValue());
+        String query = queryOf(doc);
+        int p;
+        int j;
+        if (doc.get("cursor") != null) {                                 // keyset: the first entries after the last one sent
+            Map<String, Object> mark = mark(String.valueOf(doc.get("cursor")), query);
+            Object[] v = ((List<Object>) mark.get("v")).toArray();
+            List<Object> kv = (List<Object>) mark.get("kv");
+            String k = String.valueOf(mark.get("k"));
+            p = idx.seek(order, v, kv, k, true);
+            j = upper(l, order, v, kv, k);
+        } else {
+            int offset = doc.get("offset") instanceof Number o ? (int) Math.max(0, Math.min(Integer.MAX_VALUE, o.longValue())) : 0;
+            int lo = 0, hi = l.size();                                   // the live rows before the offset: a live row's rank in the merged
+            while (lo < hi) {                                            // order is its place in the live side plus the source entries
+                int mid = (lo + hi) >>> 1;                               // before it that are not shadowed (it grows with the place)
+                Live lv = l.get(mid);
+                int q = idx.seek(order, lv.values(), lv.keyValues(), lv.key(), false);
+                if (mid + q - below(shadow, q) < offset) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            int j0 = lo;
+            p = Math.max(0, offset - j0);                                // then the (offset - j0)th source entry not shadowed
+            for (int sh : shadow) {
+                if (sh <= p) {
+                    p++;
+                } else {
+                    break;
+                }
+            }
+            p = Math.min(p, n);
+            j = j0;
         }
         int limit = RowQuery.limit(doc);
-        int p = 0;
-        int j = 0;
-        long m = 0;
         List<Object> picked = new ArrayList<>();                     // an Integer: a source position; a Live: a live row
-        while (picked.size() < limit) {
+        while (true) {
             while (p < n && Arrays.binarySearch(shadow, p) >= 0) {
                 p++;
             }
             boolean storeLeft = p < n;
             boolean liveLeft = j < l.size();
-            if (!storeLeft && !liveLeft) {
+            if (!storeLeft && !liveLeft || picked.size() >= limit) {
                 break;
             }
-            boolean fromStore = storeLeft && (!liveLeft || compare(idx.value(p), idx.keys[p], l.get(j).value(), l.get(j).key(), sorted, desc) < 0);
-            Object next = fromStore ? (Object) p++ : l.get(j++);
-            if (m++ >= offset) {
-                picked.add(next);
-            }
+            boolean fromStore = storeLeft && (!liveLeft || idx.compare(order, p, l.get(j).values(), 0, l.get(j).keyValues(), l.get(j).key()) < 0);
+            picked.add(fromStore ? (Object) p++ : l.get(j++));
         }
+        boolean more = p < n || j < l.size();
         List<List<Object>> want = new ArrayList<>();
         for (Object o : picked) {
             if (o instanceof Integer pos) {
@@ -215,13 +316,71 @@ final class StoreOverlay {
         out.put("columns", columns);
         out.put("values", values);
         out.put("total", (long) total);
-        if (offset + picked.size() < total) {
-            out.put("next", RowQuery.cursorOf(table.spec.name(), table.epoch(), doc, offset + picked.size()));
+        if (more && !picked.isEmpty()) {
+            Object last = picked.get(picked.size() - 1);
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("q", query);
+            if (last instanceof Integer pos) {
+                m.put("v", idx.values == null ? List.of() : Arrays.asList(Arrays.copyOfRange(idx.values, pos * idx.width, pos * idx.width + idx.width)));
+                m.put("kv", idx.keyValues.get(pos));
+                m.put("k", idx.keys[pos]);
+            } else {
+                Live lv = (Live) last;
+                m.put("v", Arrays.asList(lv.values()));
+                m.put("kv", lv.keyValues());
+                m.put("k", lv.key());
+            }
+            out.put("next", Base64.getUrlEncoder().withoutPadding().encodeToString(Json.write(m).getBytes(StandardCharsets.UTF_8)));
         }
         synchronized (this) {
             lastTotals.put(totalKey(doc.get("filter"), reader), (long) total);
         }
         return out;
+    }
+
+    /** What a cursor belongs to: the table, its epoch and the query less its cursor, limit and offset (its fields in any order). */
+    private String queryOf(Map<String, Object> doc) {
+        Map<String, Object> k = new java.util.TreeMap<>(doc);
+        k.remove("cursor");
+        k.remove("limit");
+        k.remove("offset");
+        return Integer.toHexString((table.spec.name() + "|" + table.epoch() + "|" + Json.write(k)).hashCode());
+    }
+
+    /** The number of shadowed positions before {@code pos}. */
+    private static int below(int[] shadow, int pos) {
+        int i = Arrays.binarySearch(shadow, pos);
+        return i >= 0 ? i : -i - 1;
+    }
+
+    /** The first live row after the given entry. */
+    private static int upper(List<Live> l, Order o, Object[] v, List<?> kv, String k) {
+        int lo = 0, hi = l.size();
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            Live x = l.get(mid);
+            if (o.compare(x.values(), 0, x.keyValues(), x.key(), v, 0, kv, k) <= 0) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
+    /** A page cursor's last entry; {@code rdp.cursor.invalid} when it is not one of this query's (another query, table or epoch). */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> mark(String cursor, String query) {
+        try {
+            Object m = Json.read(new String(Base64.getUrlDecoder().decode(cursor), StandardCharsets.UTF_8));
+            if (m instanceof Map<?, ?> mm && query.equals(mm.get("q")) && mm.get("v") instanceof List<?> && mm.get("kv") instanceof List<?>
+                    && mm.get("k") instanceof String) {
+                return (Map<String, Object>) mm;
+            }
+        } catch (RuntimeException e) {
+            // not one of this host's cursors
+        }
+        throw ProtocolError.of("rdp.cursor.invalid", 410, "the cursor is not one of this query's");
     }
 
     private static String totalKey(Object filter, LiveTables.Reader reader) {
@@ -273,7 +432,7 @@ final class StoreOverlay {
     /** Makes sure an unsorted index of this filter and audience is kept (a subscription's totals read it). */
     void prepare(Object filterTree, LiveTables.Reader reader, Predicate<Map<String, Object>> filter) {
         if (table.source.tier() == SnapshotSource.Tier.COLUMNS) {
-            index(null, false, filterTree, reader, filter);
+            index(Order.NONE, filterTree, reader, filter);
         }
     }
 
@@ -293,9 +452,9 @@ final class StoreOverlay {
     }
 
     /** The index of an order, filter and audience: kept, or read now from the source. */
-    private Index index(String sortCol, boolean desc, Object filterTree, LiveTables.Reader reader, Predicate<Map<String, Object>> filter) {
+    private Index index(Order order, Object filterTree, LiveTables.Reader reader, Predicate<Map<String, Object>> filter) {
         String version = table.source.version();
-        String key = String.join("\u001f", version == null ? "" : version, sortCol == null ? "" : sortCol + (desc ? "-" : "+"),
+        String key = String.join("\u001f", version == null ? "" : version, order.text(),
                 filterTree == null ? "" : Json.write(filterTree), reader.audience());
         synchronized (this) {
             Index got = indexes.get(key);
@@ -304,7 +463,7 @@ final class StoreOverlay {
                 return got;
             }
             indexes.keySet().removeIf(k -> !k.startsWith((version == null ? "" : version) + "\u001f"));
-            Index built = build(version, sortCol, desc, reader, filter);
+            Index built = build(version, order, reader, filter);
             indexes.put(key, built);
             while (indexes.size() > table.options.maxIndexes()) {
                 indexes.remove(indexes.keySet().iterator().next());
@@ -313,17 +472,21 @@ final class StoreOverlay {
         }
     }
 
-    private Index build(String version, String sortCol, boolean desc, LiveTables.Reader reader, Predicate<Map<String, Object>> filter) {
+    private Index build(String version, Order order, LiveTables.Reader reader, Predicate<Map<String, Object>> filter) {
         List<String> cols = new ArrayList<>(table.spec.key());
         for (String c : table.spec.listColumns()) {
             if (!cols.contains(c)) {
                 cols.add(c);
             }
         }
-        boolean ordered = sortCol != null && table.source.column(sortCol);
+        int w = order.width();
+        boolean[] kept = new boolean[w];                              // a column the source does not give orders as absent (after the live rows)
+        for (int i = 0; i < w; i++) {
+            kept[i] = table.source.column(order.cols().get(i));
+        }
         List<String> keys = new ArrayList<>();
         List<List<Object>> keyValues = new ArrayList<>();
-        List<Object> values = sortCol == null ? null : new ArrayList<>();
+        List<Object> values = new ArrayList<>();
         KeyedRows kr = new KeyedRows(table.spec.key(), List.of(), 0);
         try {
             table.source.scan(cols, and(table.spec.whereTree(), reader.rowFilter()), v -> {
@@ -342,8 +505,8 @@ final class StoreOverlay {
                 List<Object> kv = new ArrayList<>();
                 table.spec.key().forEach(c -> kv.add(raw.get(c)));
                 keyValues.add(kv);
-                if (values != null) {
-                    values.add(ordered ? seen.get(sortCol) : null);       // not a column of the source: after the live rows that carry it
+                for (int i = 0; i < w; i++) {
+                    values.add(kept[i] ? seen.get(order.cols().get(i)) : null);
                 }
             });
         } catch (Exception e) {
@@ -351,23 +514,22 @@ final class StoreOverlay {
                     table.spec.name(), "retry", true);
         }
         int n = keys.size();
-        Integer[] order = new Integer[n];
+        Object[] flat = values.toArray();
+        Integer[] sorted = new Integer[n];
         for (int i = 0; i < n; i++) {
-            order[i] = i;
+            sorted[i] = i;
         }
-        boolean sorted = values != null;
-        Arrays.sort(order, (a, b) -> compare(sorted ? values.get(a) : null, keys.get(a), sorted ? values.get(b) : null, keys.get(b), sorted, desc));
+        Arrays.sort(sorted, (a, b) -> order.compare(flat, a * w, keyValues.get(a), keys.get(a), flat, b * w, keyValues.get(b), keys.get(b)));
         String[] k = new String[n];
         List<List<Object>> kv = new ArrayList<>(n);
-        Object[] v = sorted ? new Object[n] : null;
+        Object[] v = new Object[n * w];
         for (int i = 0; i < n; i++) {
-            k[i] = keys.get(order[i]);
-            kv.add(keyValues.get(order[i]));
-            if (v != null) {
-                v[i] = values.get(order[i]);
-            }
+            int from = sorted[i];
+            k[i] = keys.get(from);
+            kv.add(keyValues.get(from));
+            System.arraycopy(flat, from * w, v, i * w, w);
         }
-        return new Index(version, table.clock.millis(), k, kv, v);
+        return new Index(version, table.clock.millis(), k, kv, w == 0 ? null : v, w);
     }
 
     // ---- the query tier ------------------------------------------------------------------------------------------------

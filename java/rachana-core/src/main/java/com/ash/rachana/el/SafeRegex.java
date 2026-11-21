@@ -20,13 +20,14 @@ import java.util.List;
  * care), the anchors {@code ^} and {@code $}, and a leading {@code (?i)} or {@code (?-i)}. Back-references, look-around,
  * atomic groups, possessive quantifiers and word boundaries are refused with {@link RachanaCode#REGEX_REFUSED}, as are
  * patterns over {@link Limits#maxPattern()} characters or whose expanded program passes {@link Limits#maxProgram()}.
- * A match that takes more than {@link Limits#maxSteps()} steps (a step is one thread of the simulation at one position of
- * the value: a count, not a clock, so every runtime stops at the same place) raises {@link RachanaCode#REGEX_TIMEOUT}; a value is cut to
+ * A call that takes more than {@link Limits#maxSteps()} steps (a step is one thread of the simulation at one position of
+ * the value: a count, not a clock, so every runtime stops at the same place; one budget for all the matches of a
+ * {@link #replaceAll}) raises {@link RachanaCode#REGEX_TIMEOUT}; a value is cut to
  * {@link Limits#maxInput()} characters. A compiled pattern is immutable and may be shared between threads.
  */
 public final class SafeRegex {
 
-    /** The caps: the longest pattern, the largest expanded program, the longest value read and the step budget of one match. */
+    /** The caps: the longest pattern, the largest expanded program, the longest value read and the step budget of one call. */
     public record Limits(int maxPattern, int maxProgram, int maxInput, long maxSteps) {
         /** The caps Core uses unless a host's {@code RachanaOptions} say otherwise: 200, 4000, 8192 characters and 20 million steps. */
         public static final Limits DEFAULTS = new Limits(200, 4000, 8192, 20_000_000L);
@@ -217,7 +218,7 @@ public final class SafeRegex {
         if (group < 0 || group > groups) {
             throw refused("the pattern '" + source + "' has " + groups + " group(s); group " + group + " was asked for");
         }
-        int[] matched = match(text, 0);
+        int[] matched = match(text, 0, new long[1]);
         if (matched == null || matched[2 * group] < 0 || matched[2 * group + 1] < 0) {
             return null;
         }
@@ -227,14 +228,16 @@ public final class SafeRegex {
     /**
      * Every match of the pattern replaced, left to right and not overlapping, by {@code replacement}, in which {@code $0} is the whole match
      * and {@code $1} … {@code $9} a group's text (a group that took no part: nothing; {@code $$} a dollar sign). Linear time per match, as
-     * {@link #extract}; an empty match moves on by one character.
+     * {@link #extract}; an empty match moves on by one character. The step budget is the whole call's: every match of it draws on one
+     * {@link Limits#maxSteps()}, so a pattern that rescans the value for each match stops as one match would.
      */
     public String replaceAll(CharSequence text, String replacement) {
         int n = Math.min(text.length(), limits.maxInput());
         StringBuilder out = new StringBuilder();
         int from = 0;
+        long[] spent = new long[1];                                    // one budget for the call, not one per match
         while (from <= n) {
-            int[] m = match(text, from);
+            int[] m = match(text, from, spent);
             if (m == null) {
                 break;
             }
@@ -277,8 +280,11 @@ public final class SafeRegex {
         return out.toString();
     }
 
-    /** The leftmost match at or after {@code from}: the capture positions (start and end of the match, then of each group), or null. */
-    private int[] match(CharSequence text, int from) {
+    /**
+     * The leftmost match at or after {@code from}: the capture positions (start and end of the match, then of each group), or null.
+     * {@code spent[0]} is the steps the call has taken so far, this match's added; past {@link Limits#maxSteps()} it stops.
+     */
+    private int[] match(CharSequence text, int from, long[] spent) {
         int n = Math.min(text.length(), limits.maxInput());
         int m = op.length;
         int slots = 2 * (groups + 1);
@@ -292,10 +298,9 @@ public final class SafeRegex {
         int[][] stackCaps = new int[m * 2 + 2][];
         int curN = 0;
         int[] matched = null;
-        long steps = 0;
         for (int i = from; i <= n; i++) {
-            steps += curN + 1;
-            if (steps > limits.maxSteps()) {
+            spent[0] += curN + 1;
+            if (spent[0] > limits.maxSteps()) {
                 throw overBudget();
             }
             if (matched == null) {                                     // a later start has the lowest priority, so it comes last

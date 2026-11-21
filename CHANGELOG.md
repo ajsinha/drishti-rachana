@@ -22,6 +22,10 @@ Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).
   compared. A runtime that cannot run fails the test (it was skipped). The reference bridge runs only with
   `-Drachana.compat.runtime=bridge`. The Drishti profile's formats are not loaded: no format enters these documents. Not yet: the
   corpus's recorded ViewModels (`binds/`, F13), before G4.
+- **F2, one regex budget per call**: `SafeRegex.replaceAll` draws every match on one `maxSteps` budget (it was one budget per match,
+  so a pattern that rescans the value for each match cost the value's length times the budget: 0.6 to 1.7 s for one call on 8 KB).
+  The review's three 8 KB cases now stop at `RCH-4011` within one budget (`SafeRegexBudgetTest`). `find` and `extract` were already
+  one scan. A `regex_replace` over many matches can now reach the budget where it did not.
 
 ## v0.11.0 ready (untagged): the JavaScript build
 

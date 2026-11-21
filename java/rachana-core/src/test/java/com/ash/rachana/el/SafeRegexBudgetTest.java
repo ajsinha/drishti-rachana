@@ -27,4 +27,22 @@ class SafeRegexBudgetTest {
         }
         assertTrue(SafeRegex.compile("(a|b)*c(a|b)*d", false, SafeRegex.Limits.DEFAULTS).find("ab".repeat(4000) + "cd"));
     }
+
+    /** Gate finding F2: one budget per call. The review's 8 KB case: each match rescans the rest of the value, n x n steps in all. */
+    @Test
+    void aReplaceAllDrawsOnOneBudgetForAllItsMatches() {
+        String value = "a".repeat(8192);
+        for (String p : new String[] {"a(.*b)?", "(a|aa)*c|a", "a(a|b)*c|a"}) {
+            SafeRegex re = SafeRegex.compile(p, false, SafeRegex.Limits.DEFAULTS);
+            long t0 = System.nanoTime();
+            RachanaException e = assertThrows(RachanaException.class, () -> re.replaceAll(value, "x"), p);
+            assertEquals(RachanaCode.REGEX_TIMEOUT, e.code(), p);
+            assertTrue(System.nanoTime() - t0 < 1_500_000_000L, p + ": one call is bounded by one budget");   // was 0.6 to 1.7 s per call, unbounded in n
+        }
+        SafeRegex.Limits small = new SafeRegex.Limits(200, 4000, 8192, 1_000);
+        SafeRegex one = SafeRegex.compile("a", false, small);
+        assertEquals("x".repeat(200), one.replaceAll("a".repeat(200), "x"));                       // about 400 steps: under the budget
+        assertEquals(RachanaCode.REGEX_TIMEOUT, assertThrows(RachanaException.class, () -> one.replaceAll("a".repeat(800), "x")).code());
+        assertEquals("b".repeat(800), SafeRegex.compile("a", false, small).replaceAll("b".repeat(800), "x"));   // no match: one scan, the call's budget
+    }
 }

@@ -252,6 +252,9 @@ here. What Drishti must do when the migration starts, in this order:
       `SutraBlocks.Contribution` → `BlockLibrary.Contribution`; `FragmentResolver.folders()` → the library itself. A parser built without
       the library (`new SutraParser()`, or a profile without it) now refuses every `use:` as unknown. Tests: `SutraBlocksTest`,
       `SutraFragmentsTest`, `UiKitBlocksTest`, `PackSutrasTest`, `ModuleHostServerTest`.
+      **Regex budget per call (G1 F2)**: Core's `SafeRegex.Limits.maxSteps` now bounds a whole `replaceAll` (every match of
+      one call), not each match; a Sutra's `regex_replace` over a long value with many matches can now answer `RCH-4011`
+      (Drishti `DRS-4011`) where it did not. Nothing to change in Drishti's code; the API reference's `DRS-4011` row says "per call".
 
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 

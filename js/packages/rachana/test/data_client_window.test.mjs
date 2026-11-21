@@ -113,6 +113,7 @@ test('liveTables (the painter\'s options.live): one page, a windowed follow in s
     const q = queue();
     const f = live.follow(page.version, [['a'], ['b']], false, (patch) => q.push(patch), (e) => q.push({ gap: e }));
     try {
+      await f.ready;                       // a change before the host opened the window's subscription is a gap (PROTOCOL 16)
       await post(base, '/_test/stream', { upsert: [{ id: 'a', v: 2, qty: 10 }] });
       assert.deepEqual((await q.next()).update, [{ id: 'a', v: 2, qty: 10 }]);
       await post(base, '/_test/stream', { upsert: [{ id: 'c', v: 2, qty: 30 }] });

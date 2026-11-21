@@ -308,7 +308,8 @@ export class BridgeChannel {
  * The live tables of a view for Drishti Elements' painter (its options.tables; contract 1.2, panel kind live): for a dataset's live
  * reference {table, window, top, filter}, page(query) reads one page and follow(after, keys, top, onPatch, onGap) subscribes with that
  * window (PROTOCOL 16), passes each patch on in seq order and calls onGap on a gap, another epoch or a skipped seq (the painter reads
- * its page again). The answer's window(keys, top) moves the window; stop() ends it.
+ * its page again). The answer's window(keys, top) moves the window; stop() ends it; ready resolves when the host
+ * has opened the subscription (a change made before that is a gap for a window: PROTOCOL 16, so a caller that makes changes waits for it).
  * @param {DataClient} client
  * @returns {function(Object): {page: function(Object): Promise<Object>, follow: function(*, Array, boolean, function, function): Object}}
  */
@@ -316,15 +317,17 @@ export function liveTables(client) {
   return (ref) => ({
     page: (query) => client.page(ref.table, query),
     follow(after, keys, top, onPatch, onGap) {
-      let sub = null, last = after, ended = false;
+      let sub = null, last = after, ended = false, opened;
+      const ready = new Promise((ok) => { opened = ok; });
       const gap = (e) => { if (!ended) { ended = true; stop(); onGap(e); } };
       const stop = client.follow(ref.table, after, (f) => {
-        if (f.t === 'subd') { sub = f.sub; return; }
+        if (f.t === 'subd') { sub = f.sub; opened(); return; }
         if (f.t === 'msg' && f.epoch === last.epoch && (f.first || f.seq) === last.seq + 1) { last = { epoch: f.epoch, seq: f.seq }; onPatch(f.data); return; }
         if (f.t === 'msg' && f.epoch === last.epoch && f.seq <= last.seq) return;
         gap(f);
       }, gap, { window: { keys, top: !!top } });
       return {
+        ready,
         window(k, t) { return sub ? client.window(sub, k, !!t) : Promise.resolve(); },
         stop() { ended = true; stop(); }
       };

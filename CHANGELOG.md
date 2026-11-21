@@ -5,6 +5,12 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Node tests in the build**: the Node suite (`js/packages/*/test`, 33 tests) now runs in the Maven reactor: `rachana-guards` runs
+  `node tools/js/node_tests.mjs js/packages/*/test` in its `test` phase (exec-maven-plugin; `-Dnode=<path>` names Node, `-Drachana.node.skip=true`
+  leaves it out), so `./mvnw verify` fails when they do. Fixed: the CLI tests named an old Elements pack folder (they use `ELEMENTS_VERSION`
+  now), the Studio test did not count the bundled `finance` library, and the `liveTables` follow answer has `ready` (resolves when the host
+  opened the subscription): a change made before that is a gap for a window (PROTOCOL 16), which made the windowed follow test flaky.
+
 - **IDE launchers**: IntelliJ Java programs (`Rachana CLI (lib)`, `Rachana reference server`, `Rachana server serve|check (server-demo)`, `Rachana server hash-password`), Maven launchers for the JavaScript side (`js/pom.xml`, exec-maven-plugin: runtime bundle, Node tests, Studio, dev server; no bash, so IntelliJ Community on Windows runs them), PyCharm configurations (`python/run-configs/`) and `drishti-rachana.code-workspace` for VS Code; the server example `examples/server-demo` (CSV and JSON tables, a users file with the development-only user `dev`); [java/README, Build and run in the IDE](java/README.md#build-and-run-in-the-ide).
 
 - **Kinds batch** (level 1.2, contract 1.2 appended; SPEC 2.3, VIEWMODEL; API additions only):

@@ -329,7 +329,8 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    fit its type, is ignored and the default stands. The ViewModel lists every value (contract 1.2, VIEWMODEL.md): `state[]
    {id, value, url, reads}`, `reads` naming the parts whose expressions read it, directly or through a `let`.
 4. **`on:`** (I1) on a panel maps a trigger to a list of effects, run in order. Built at this level: the triggers
-   `row-click` (table, ladder), `bar-click` (hbar) and `point-click` (`line`, `area`, `scatter`, `waterfall`, `timeline`,
+   `row-click` (table, ladder; on a tree, `children:`, and a drill table, `levels:`, every node at every level, `@`
+   that node), `bar-click` (hbar) and `point-click` (`line`, `area`, `scatter`, `waterfall`, `timeline`,
    `candlestick`: the mark's row; `metric`, `gauge`, `kv`, `status`: one mark, read in the panel's context), and the effect
    `set` in two forms: `set: { state: <id>, to: <expression> }` writes a state value, the expression read with `@` the
    clicked row and evaluated per row when the panel binds (the mark's `set` in the ViewModel; a value that fails or does

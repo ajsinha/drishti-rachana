@@ -1,0 +1,78 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/trees
+since: "1.2"
+profile: core
+verified: true
+description: "Trees and drill tables write state (SUTRA_EXPANSION I1, level 1.2): every node carries what a row-click on it writes, @ the node at its level; a click counts the rows depth first (FORMAT 5.15)."
+cases:
+
+  - id: a-tree-node-writes-state
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (row-click on a table with children:)"
+    note: "Marks: 0 Book A, 1 Desk A1, 2 Desk A2, 3 Book B. The second node's set reads its own row."
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Books'" }
+      data:
+        books: { rows: [ { name: Book A, children: [ { name: Desk A1 }, { name: Desk A2 } ] }, { name: Book B } ] }
+      state:
+        node: { type: text, default: none }
+      panels:
+        - id: tree
+          kind: table
+          rows: $.books
+          children: "@.children"
+          columns: [ { label: Name, bind: "@.name" } ]
+          on:
+            row-click: [ { set: { state: node, to: "@.name" } } ]
+        - { id: chosen, kind: metric, label: Node, value: "state.node" }
+    steps:
+      - { panel: tree, trigger: row-click, mark: 2 }
+      - { panel: tree, trigger: row-click, mark: 3 }
+    expect:
+      at:
+        /panels/0/data/rows/0/set: { node: Book A }
+        /panels/0/data/rows/0/children/1/set: { node: Desk A2 }
+      steps:
+        - state: { node: Desk A2 }
+          effects: [ { do: set, state: node, value: Desk A2 } ]
+          at:
+            /panels/1/data/value/text: "Desk A2"
+        - { state: { node: Book B }, effects: [ { do: set, state: node, value: Book B } ] }
+
+  - id: a-drill-level-writes-state
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (row-click on a table with levels:, @ the row at its level)"
+    note: "Marks: 0 leg L1, 1 flow F1, 2 flow F2. A flow's when sees its own row; the leg has no FLOW_ID so its when leaves the host effect out."
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Legs'" }
+      data:
+        legs: { rows: [ { LEG_ID: L1, FLOWS: [ { FLOW_ID: F1 }, { FLOW_ID: F2 } ] } ] }
+      state:
+        leg: { type: text }
+      panels:
+        - id: legs
+          kind: table
+          rows: $.legs
+          columns: [ { label: Leg, bind: "@.LEG_ID" } ]
+          levels:
+            - rows: "@.FLOWS"
+              title: Flows
+              columns: [ { label: Flow, bind: "@.FLOW_ID" } ]
+          on:
+            row-click:
+              - { set: { state: leg, to: "@.LEG_ID ?? @.FLOW_ID" } }
+              - { host: flow.open, with: { id: "@.FLOW_ID" }, when: "@.FLOW_ID != null" }
+    steps:
+      - { panel: legs, trigger: row-click }
+      - { panel: legs, trigger: row-click, mark: 2 }
+    expect:
+      steps:
+        - { state: { leg: L1 }, effects: [ { do: set, state: leg, value: L1 } ] }
+        - state: { leg: F2 }
+          effects: [ { do: set, state: leg, value: F2 }, { do: host, action: flow.open, with: { id: F2 } } ]

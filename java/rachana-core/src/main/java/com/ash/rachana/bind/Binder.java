@@ -464,7 +464,7 @@ public final class Binder {
             }
             String rowPath = rowsPath == null ? null : rowsPath + "[" + (origin == null ? i : origin[i]) + "]";
             if (childrenExpr != null) {
-                PanelData.Row tree = treeRow(cols, rc, rowPath, childrenExpr, highlight, totals, masked, i < limit, 0, budget);
+                PanelData.Row tree = treeRow(p, cols, rc, rowPath, childrenExpr, highlight, totals, masked, i < limit, 0, budget);
                 if (tree != null) {
                     out.add(tree);
                 }
@@ -551,7 +551,7 @@ public final class Binder {
             }
             String rowPath = rowsPath == null ? null : rowsPath + "[" + (origin == null ? i : origin[i]) + "]";
             boolean hl = highlight != null && Values.truthy(eval(highlight, rc));
-            out.add(drillRow(cols, crumb, levels, 0, rc, rowPath, hl, budget));
+            out.add(drillRow(p, cols, crumb, levels, 0, rc, rowPath, hl, budget));
         }
         PanelData.Row total = totalRow(cols, shown, p.option("totalLabel").orElse("Total"));
         String more = rows.size() > limit
@@ -570,7 +570,7 @@ public final class Binder {
         return new PanelData.Table(headers, numeric, out, total, more, search, null, null, heads, root, p.option("empty").orElse(null));
     }
 
-    private PanelData.Row drillRow(List<Column> cols, String crumbExpr, List<LevelSpec> levels, int depth, EvalContext rc, String path,
+    private PanelData.Row drillRow(Panel p, List<Column> cols, String crumbExpr, List<LevelSpec> levels, int depth, EvalContext rc, String path,
             boolean highlight, int[] budget) {
         List<Cell> cells = new ArrayList<>(cols.size());
         for (Column col : cols) {
@@ -597,11 +597,12 @@ public final class Binder {
                 budget[0]--;
                 EvalContext kc = rc.withRow(kid, j);
                 contexts.add(kc);
-                kids.add(drillRow(level.columns(), level.crumb(), levels, depth + 1, kc, null, false, budget));
+                kids.add(drillRow(p, level.columns(), level.crumb(), levels, depth + 1, kc, null, false, budget));
             }
             kidsTotal = totalRow(level.columns(), contexts, "Total");
         }
-        return new PanelData.Row(cells, highlight, path, kids, null, crumb, kidsTotal);
+        return new PanelData.Row(cells, highlight, path, kids, null, crumb, kidsTotal, null,   // level 1.2, I1: @ the row at its level
+                sets(com.ash.rachana.model.Effects.sets(p, "row-click"), rc), on(p, "row-click", rc));
     }
 
     /** The total row of {@code total: true} columns over these rows; null when no column is totalled. A masked value is never added up. */
@@ -640,7 +641,7 @@ public final class Binder {
      * @param budget rows left to build in all (at the front), so a deep or cyclic document stays bounded
      * @return the row, or null when {@code emit} is false
      */
-    private PanelData.Row treeRow(List<Column> cols, EvalContext rc, String path, String childrenExpr, String highlight, double[] totals,
+    private PanelData.Row treeRow(Panel p, List<Column> cols, EvalContext rc, String path, String childrenExpr, String highlight, double[] totals,
             boolean[] masked, boolean emit, int depth, int[] budget) {
         List<PanelData.Row> sub = new ArrayList<>();
         Node kids = depth < limits.treeDepth() ? node(eval(childrenExpr, rc)) : Node.missing();
@@ -654,7 +655,7 @@ public final class Binder {
             }
             budget[0]--;
             walked++;
-            PanelData.Row child = treeRow(cols, rc.withRow(kid, j), null, childrenExpr, highlight, totals, masked, emit, depth + 1, budget);
+            PanelData.Row child = treeRow(p, cols, rc.withRow(kid, j), null, childrenExpr, highlight, totals, masked, emit, depth + 1, budget);
             if (child != null) {
                 sub.add(child);
             }
@@ -677,7 +678,8 @@ public final class Binder {
             cells.add(cell(col, rc, null));
         }
         boolean hl = highlight != null && Values.truthy(eval(highlight, rc));
-        return new PanelData.Row(cells, hl, path, sub);
+        return new PanelData.Row(cells, hl, path, sub, null, null, null, null,     // level 1.2, I1: a click on any node writes state, @ the node
+                sets(com.ash.rachana.model.Effects.sets(p, "row-click"), rc), on(p, "row-click", rc));
     }
 
     /** Where the total label goes: the column just before the first totalled column, else the first. */

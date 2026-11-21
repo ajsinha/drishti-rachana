@@ -32,7 +32,7 @@ inserts a `use:` block (tables and column mapping from the folder's data files),
 `js/packages/rachana-studio`; `uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py` (uses the repository's libraries/
 `RACHANA_LIBS` adds more).
 
-**`--level`** (default `1.1`, the newest built level; `1.2` when typed fragments or libraries are used) is the language level of
+**`--level`** (default: the newest built level, which Core's `Grammar.DEFAULT_LEVEL` names) is the language level of
 `lint` (`since` in the bundle's `check`) and of the pages' `<rachana-view level>`.
 
 **Not done yet:** `dev` is `preview` of a folder without live reload. `fix`, `fmt`, `explain`, `schema`, `migrate` are not written.

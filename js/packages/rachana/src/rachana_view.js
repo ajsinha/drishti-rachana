@@ -76,7 +76,7 @@ export function defineRachanaView(o) {
       if (gen !== this._gen) return;
       const client = this.getAttribute('data') ? new DataClient({ base: this.abs(this.getAttribute('data')), fetch: f, origin: w.location.origin,
         allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null }) : null;
-      const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || '1.1', today: this.getAttribute('today') || undefined,
+      const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || undefined, today: this.getAttribute('today') || undefined,
         ctl: this.controls, record: this.record, client, files });
       this.screen = screen;
       await screen.load();

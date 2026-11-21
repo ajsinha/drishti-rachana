@@ -114,14 +114,18 @@ def compare(lv, then_file, now_file, moved_file, suites):
             wrong.append(f"{c}: listed as withdrawn, but the suite still has it")
         skipped.add(c)
     changed = [c for c, x in then.items() if c not in skipped and now.get(c) != x and json.loads(x)["status"] != "unsupported"]
-    answered = [c for c, x in then.items() if c not in skipped and now.get(c) != x and json.loads(x)["status"] == "unsupported"]
+    answered = [c for c, x in then.items() if c in now and c not in skipped and now[c] != x and json.loads(x)["status"] == "unsupported"]
+    # a recorded unsupported case the suite no longer has is a deletion, never "newly answered": it must be listed as withdrawn
+    gone = [c for c, x in then.items() if c not in now and c not in skipped and json.loads(x)["status"] == "unsupported"]
     added = len(set(now) - set(then))
     for c in changed:
         print(f"  changed: {c}" + ("" if c in now and json.loads(now[c])["status"] != "unsupported"
                                    else " (no longer run at this level: list it in compat/levels/moved-cases.yaml)"))
     for w in wrong:
         print(f"  moved-cases.yaml: {w}")
-    bad = len(changed) + len(wrong)
+    for c in gone:
+        print(f"  deleted: {c} (a case that is gone must be listed as withdrawn in compat/levels/moved-cases.yaml)")
+    bad = len(changed) + len(wrong) + len(gone)
     print(f"level {lv}: {'DIFFERENT' if bad else 'identical'} ({len(then) - len(changed) - len(answered) - len(skipped)} identical, "
           f"{len(answered)} newly answered, {len(skipped)} listed as moved or withdrawn, {added} cases added since)")
     return bad

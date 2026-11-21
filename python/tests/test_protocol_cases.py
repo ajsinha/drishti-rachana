@@ -25,12 +25,10 @@ def _cases():
             c = merged(doc, c)
             cid = f"{suite}#{c['id']}"
             if c["kind"] == "protocol":
-                marks = []
                 if pc.is_live(c):
-                    marks.append(pytest.mark.skip(reason="a live table's case: the Python host serves no live tables (LIVE_TABLES LT-14)"))
-                if not HAS_ARROW and "arrow" in json.dumps(c, default=str).lower():
-                    marks.append(pytest.mark.skip(reason="the Arrow cases need pyarrow (pip install 'drishti-rachana[arrow]')"))
-                out.append(pytest.param(c, id=cid, marks=marks))
+                    continue      # a live table's case: the Python host serves no live tables (LIVE_TABLES LT-14); the Java hosts run it (protocol_check.py --live)
+                assert HAS_ARROW or "arrow" not in json.dumps(c, default=str).lower(), "the Arrow cases need pyarrow (pip install 'drishti-rachana[arrow]')"
+                out.append(pytest.param(c, id=cid))
     return out
 
 

@@ -49,14 +49,14 @@ export function tableFiles(dir) {
 
 /** The page of one Sutra: Drishti Elements, then <rachana-view> over the Sutra file and the data folder. `base` is the path prefix
  * of the site root ("" for a page at the root, "/" for a server). */
-export function viewPage(name, src, data, base = "", level = "1.1", libraries = "") {
+export function viewPage(name, src, data, base = "", level = "", libraries = "") {
   const u = (p) => esc(base + p);
   return `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
 <title>${esc(name)}</title>
 <link rel=stylesheet href="${u(`${ELEMENTS_URL}/drishti-elements.css`)}">
 <script src="${u(`${ELEMENTS_URL}/drishti-elements.js`)}"></script>
 <script type=module>import "${esc(base || "./")}rachana/src/static_files_host.js"; import "${esc(base || "./")}rachana/src/rachana_view.js";</script>
-<rachana-view src="${esc(src)}" data="${esc(data)}" runtime="${u("rachana/rachana.runtime.js")}" level="${esc(level)}"${libraries ? ` libraries="${esc(libraries)}"` : ""}></rachana-view>
+<rachana-view src="${esc(src)}" data="${esc(data)}" runtime="${u("rachana/rachana.runtime.js")}"${level ? ` level="${esc(level)}"` : ""}${libraries ? ` libraries="${esc(libraries)}"` : ""}></rachana-view>
 `;
 }
 

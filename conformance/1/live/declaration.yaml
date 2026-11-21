@@ -54,7 +54,7 @@ cases:
           - { name: UPDATED_BY, type: string }
           - { name: SOURCE_UPDATE_TIME, type: timestamp }
           - { name: SCENARIO_PVS, type: list, items: decimal, heavy: true }
-        can: [page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay, narrow]
+        can: [page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay, arrow, narrow]
         rowVersion: TRADE_VERSION
         changedBy: UPDATED_BY
         changedAt: SOURCE_UPDATE_TIME
@@ -76,7 +76,7 @@ cases:
         name: fx-rates
         key: [CCY, TENOR]
         columns: [ { name: CCY, type: string }, { name: TENOR, type: string }, { name: RATE, type: number } ]
-        can: [page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay]
+        can: [page, sort, filter, count, group, offset, changes, changes.filter, changes.window, replay, arrow]
         view: { sort: [] }
 
   - id: every-problem-at-once-in-position-order

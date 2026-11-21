@@ -208,7 +208,7 @@ public final class ServerConfig {
             r.problem("project.dir: the project folder is needed (it holds sutras/)");
         }
         r.projectDir = projectDir;
-        String level = r.text(p.getOrDefault("level", "1.1"), "project.level");
+        String level = r.text(p.getOrDefault("level", com.ash.rachana.profile.Grammar.DEFAULT_LEVEL), "project.level");
         if (level != null && !level.matches("1\\.[0-9]+")) {
             r.problem("project.level: a language level such as 1.1 or 1.2, not '" + level + "'");
         }

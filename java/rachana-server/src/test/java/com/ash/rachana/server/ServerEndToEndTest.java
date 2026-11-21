@@ -16,7 +16,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -43,7 +42,7 @@ class ServerEndToEndTest {
     @Test
     void aReaderSignsInSeesTheViewPaintAndALiveChangeArrive() throws Exception {
         Path uv = uv();
-        Assumptions.assumeTrue(uv != null, "uv is not installed");
+        org.junit.jupiter.api.Assertions.assertNotNull(uv, "uv is a prerequisite of the build (it runs the browser lane); nothing is skipped");
         Path script = Path.of(System.getProperty("rachana.repo.root"), "java/rachana-server/src/test/python/server_paint.py").normalize();
         Fixture fx = new Fixture(tmp);
         try (RachanaServer server = RachanaServer.start(ServerConfig.read(fx.users("")), fx.log)) {

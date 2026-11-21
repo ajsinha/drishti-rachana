@@ -203,7 +203,7 @@ public final class ReferenceServer implements AutoCloseable {
 
     private void file(HttpExchange x, String path) throws IOException {
         Path root = statics == null ? null : statics.toAbsolutePath().normalize();
-        Path f = root == null ? null : root.resolve(URLDecoder.decode(path, StandardCharsets.UTF_8).substring(1)).normalize();
+        Path f = root == null ? null : root.resolve(URLDecoder.decode(path.replace("+", "%2B"), StandardCharsets.UTF_8).substring(1)).normalize();
         if (f == null || !f.startsWith(root) || !Files.isRegularFile(f)) {
             x.sendResponseHeaders(404, -1);
             return;

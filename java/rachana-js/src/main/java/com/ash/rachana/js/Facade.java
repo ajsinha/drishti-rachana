@@ -87,4 +87,33 @@ final class Facade {
     static String plan(String json) {
         return Cases.run(Cases::plan, json);
     }
+
+    /** The language levels this runtime reads and the default of the tools: {@code {"default": "1.2", "levels": ["1.0", ...]}} (Grammar.DEFAULT_LEVEL, the one place). */
+    static String levels() {
+        return Json.write(java.util.Map.of("default", com.ash.rachana.profile.Grammar.DEFAULT_LEVEL, "levels", com.ash.rachana.profile.Grammar.LEVELS));
+    }
+
+    /**
+     * A Data Protocol query over rows the page holds (the static-files host, MODES 1): {@code {schema, rows, query, epoch, version}} ->
+     * {@code {status, doc}}, the document of PROTOCOL 7 from Core's own {@code RowQuery} (the one evaluator of the filter tree), or the
+     * protocol's error document with its status. The static host evaluates nothing itself.
+     */
+    static String query(String json) {
+        return Cases.run((c, sb) -> {
+            com.ash.rachana.table.TableSchema schema = com.ash.rachana.table.TableSchema.of(c.get("schema"));
+            java.util.Map<String, Object> doc = Cases.obj(c.get("query"));
+            @SuppressWarnings("unchecked")
+            java.util.List<java.util.Map<String, Object>> rows = (java.util.List<java.util.Map<String, Object>>) c.get("rows");
+            try {
+                com.ash.rachana.data.RowQuery.validate(schema, doc);
+                java.util.Map<String, Object> page = new com.ash.rachana.data.RowQuery().page(schema, rows == null ? java.util.List.of() : rows, doc,
+                        String.valueOf(c.get("epoch")), Cases.obj(c.get("version")));
+                sb.append("{\"status\":200,\"doc\":").append(Json.write(page)).append('}');
+            } catch (com.ash.rachana.data.ProtocolError e) {
+                sb.append("{\"status\":").append(e.status()).append(",\"doc\":").append(Json.write(e.body())).append('}');
+            } catch (com.ash.rachana.table.FilterTree.Refused e) {
+                sb.append("{\"status\":422,\"doc\":").append(Json.write(new com.ash.rachana.data.ProtocolError(e.code(), 422, e.getMessage(), e.fields()).body())).append('}');
+            }
+        }, json);
+    }
 }

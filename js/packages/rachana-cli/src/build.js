@@ -4,7 +4,7 @@
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { lintFiles, findSutras, libraryFiles, DEFAULT_LEVEL } from "./lint.js";
+import { lintFiles, findSutras, libraryFiles, languageLevels } from "./lint.js";
 import { UsageError } from "./errors.js";
 import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, tableFiles, viewPage } from "./site.js";
 
@@ -14,7 +14,7 @@ import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, t
  *   out/rachana/rachana.runtime.js, out/rachana/src/ (<rachana-view> and its modules), out/vendor/drishti-elements/3.2.0-dev+2b87fcd/, out/site.json; for a page that uses libraries (`use:`): out/rachana_libs/<library>/ (the files it needs, from the project, --libs, RACHANA_LIBS and the bundled libraries) and out/libraries/<page>.libraries.json.
  */
 export async function build(src, out, io, flags = {}) {
-  const level = flags.level ?? DEFAULT_LEVEL;
+  const level = flags.level ?? (await languageLevels()).default;
   const sutraDir = existsSync(join(src, "sutras")) ? join(src, "sutras") : src;
   const dataDir = existsSync(join(src, "data")) ? join(src, "data") : null;
   const files = findSutras([sutraDir]);

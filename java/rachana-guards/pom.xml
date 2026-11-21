@@ -15,7 +15,22 @@
   <properties>
     <node>node</node>
     <rachana.node.skip>false</rachana.node.skip>
+    <rachana.lanes.skip>false</rachana.lanes.skip>
+    <uv>uv</uv>
   </properties>
+  <profiles>
+    <!-- -DskipTests (or -Dmaven.test.skip=true) leaves out every test of this module: the Node tests and the lanes below (exec-maven-plugin does not read skipTests). -->
+    <profile>
+      <id>skip-tests</id>
+      <activation><property><name>skipTests</name><value>true</value></property></activation>
+      <properties><rachana.node.skip>true</rachana.node.skip><rachana.lanes.skip>true</rachana.lanes.skip></properties>
+    </profile>
+    <profile>
+      <id>skip-maven-test</id>
+      <activation><property><name>maven.test.skip</name><value>true</value></property></activation>
+      <properties><rachana.node.skip>true</rachana.node.skip><rachana.lanes.skip>true</rachana.lanes.skip></properties>
+    </profile>
+  </profiles>
   <build>
     <plugins>
       <plugin><artifactId>maven-jar-plugin</artifactId><configuration><skipIfEmpty>true</skipIfEmpty></configuration></plugin>
@@ -31,7 +46,9 @@
       </plugin>
       <!-- the Node tests of the runtime, the command line and the Studio run with every build (so they cannot rot unseen). The Java-dependent
            ones find the classes of the earlier modules (this module is last); the bundle-dependent ones need js/packages/rachana/dist
-           (rachana-js builds the bundles and copies them there before this module runs; the run FAILS, never skips quietly, when they are missing or a test was skipped). Node 20+ on the PATH, or -Dnode=/path/to/node; -Drachana.node.skip=true leaves them out. -->
+           (rachana-js builds the bundles and copies them there before this module runs; the run FAILS, never skips quietly, when they are missing or a test was skipped). Node 20+ on the PATH, or -Dnode=/path/to/node; -Drachana.node.skip=true leaves them out.
+           The lanes (phase verify, tools/gate/verify_lanes.py: conformance at every level on the JVM and Node, the protocol cases on all hosts, the Python SDK tests, a Chromium
+           lane) need uv and run with nothing skipped; -Drachana.lanes.skip=true or -DskipTests leaves them out. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.6.3</version>
         <executions>
@@ -40,6 +57,46 @@
             <executable>${node}</executable>
             <workingDirectory>${rachana.repo.root}</workingDirectory>
             <arguments><argument>tools/js/node_tests.mjs</argument><argument>js/packages/*/test</argument></arguments>
+          </configuration></execution>
+          <execution><id>lane-conformance</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
+            <skip>${rachana.lanes.skip}</skip>
+            <executable>${uv}</executable>
+            <workingDirectory>${rachana.repo.root}</workingDirectory>
+            <arguments>
+              <argument>run</argument><argument>-q</argument><argument>--with</argument><argument>pyyaml&gt;=6</argument><argument>--with</argument><argument>jsonschema&gt;=4</argument>
+              <argument>--with</argument><argument>pyarrow&gt;=15</argument><argument>python</argument><argument>tools/gate/verify_lanes.py</argument>
+              <argument>conformance</argument><argument>--java-home</argument><argument>${java.home}</argument>
+            </arguments>
+          </configuration></execution>
+          <execution><id>lane-protocol</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
+            <skip>${rachana.lanes.skip}</skip>
+            <executable>${uv}</executable>
+            <workingDirectory>${rachana.repo.root}</workingDirectory>
+            <arguments>
+              <argument>run</argument><argument>-q</argument><argument>--with</argument><argument>pyyaml&gt;=6</argument><argument>--with</argument><argument>jsonschema&gt;=4</argument>
+              <argument>--with</argument><argument>pyarrow&gt;=15</argument><argument>python</argument><argument>tools/gate/verify_lanes.py</argument>
+              <argument>protocol</argument><argument>--java-home</argument><argument>${java.home}</argument>
+            </arguments>
+          </configuration></execution>
+          <execution><id>lane-pytest</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
+            <skip>${rachana.lanes.skip}</skip>
+            <executable>${uv}</executable>
+            <workingDirectory>${rachana.repo.root}</workingDirectory>
+            <arguments>
+              <argument>run</argument><argument>-q</argument><argument>--with</argument><argument>pyyaml&gt;=6</argument><argument>--with</argument><argument>jsonschema&gt;=4</argument>
+              <argument>--with</argument><argument>pyarrow&gt;=15</argument><argument>python</argument><argument>tools/gate/verify_lanes.py</argument>
+              <argument>pytest</argument><argument>--java-home</argument><argument>${java.home}</argument>
+            </arguments>
+          </configuration></execution>
+          <execution><id>lane-browser</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
+            <skip>${rachana.lanes.skip}</skip>
+            <executable>${uv}</executable>
+            <workingDirectory>${rachana.repo.root}</workingDirectory>
+            <arguments>
+              <argument>run</argument><argument>-q</argument><argument>--with</argument><argument>pyyaml&gt;=6</argument><argument>--with</argument><argument>jsonschema&gt;=4</argument>
+              <argument>--with</argument><argument>pyarrow&gt;=15</argument><argument>python</argument><argument>tools/gate/verify_lanes.py</argument>
+              <argument>browser</argument><argument>--java-home</argument><argument>${java.home}</argument>
+            </arguments>
           </configuration></execution>
         </executions>
       </plugin>

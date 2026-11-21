@@ -196,7 +196,7 @@ test("the server: the project, the file, the save; Host, header, path and size r
   try {
     const proj = await (await fetch(url + "api/project")).json();
     assert.deepEqual(proj.sutras, ["a.sutra.yaml"]);
-    assert.equal(proj.level, "1.2");
+    assert.equal(proj.level, undefined, "the level is the runtime's default, written in Core only");
     assert.equal(proj.tables[0].columns[1].type, "number");
     assert.equal(proj.libraries[0].name, "demolib");
     assert.equal((await fetch(url + "api/file?path=a.sutra.yaml")).status, 200);

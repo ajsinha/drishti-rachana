@@ -5,6 +5,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **G2 gate fixes (B)**: `./mvnw verify` runs what G2 built (`tools/gate/verify_lanes.py`, four executions of `rachana-guards`, nothing skipped):
+  conformance at every language level on the JVM and on the Node bundle with identical bytes, the protocol cases on the JVM reference, the
+  Python host and the live server, the Python SDK tests (the case reader takes the `fire` and `live` kinds), and a Chromium lane
+  (`<rachana-view>` live, forms, state, a built site, the Studio); `-DskipTests` leaves them out, `rachana-guards` honours it. The two
+  `arrow` expectations of the live declaration cases (F5). The static-files host evaluates through the runtime bundle's `query` (Core's
+  `RowQuery`), with no filter evaluator of its own (F6). The server answers only its own `Host` names (bind address, `localhost`,
+  `server.origins`) in every auth mode, and a link in `static/` cannot leave it (F8). `levels.py` refuses a deleted recorded case that
+  is not a listed withdrawal (F9). One default language level, `Grammar.DEFAULT_LEVEL`, handed out by the bundles' `levels()` (F12;
+  guard `DefaultLevelGuardTest`). One Elements pin (`ElementsPinGuardTest`). The reference server serves a path with a `+`.
+
 - **Tree formats, promoted formats, hyphenated column names** (level 1.2): a `tree` takes `fmt`, the format of every measure whose
   column names none (a column's own `fmt` still wins; `fmt` at 1.1 is `RCH-2008`). Core bundles `pct4`, `bp1`, `df4` and `price4`
   from level 1.2: reserved Drishti names promoted in `compat/promotions.yaml` with Drishti's definitions unchanged

@@ -280,3 +280,9 @@ Alternatives stay recorded in the table above; the owner may override any of the
 ### R-1: where Drishti gets the released jars (owner, 2026-11-21)
 
 **Decided (owner):** released Rachana jars go into the **local Maven repository (`~/.m2`)** of each build machine; Drishti's parent POM pins `drishti.rachana.version`. A release is installed from its **tag** only (`git checkout vX.Y.Z && ./mvnw clean install`), never from a branch or a snapshot. Builders and gates never install snapshots. G4 adds the step "build and install Rachana at the pinned tag" to Drishti's build guides (Linux and Windows), and Drishti's build fails with a clear message naming that step when the pinned version is missing. The alternatives (a file repository inside Drishti, GitHub Packages) stay open if machines multiply.
+
+### LT: live tables (design, 2026-11-21)
+
+The owner approved live tables ("design and do it", 2026-11-21): Drishti's live result set engine becomes a Rachana feature.
+The placement verdict, the design and the decisions **LT-1 to LT-19** with their recommendations are in
+[LIVE_TABLES.md](LIVE_TABLES.md) (sections 0 and 13); the lead decides them under the owner's delegation.

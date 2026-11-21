@@ -1,7 +1,7 @@
 {
   "$comment": "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). Transcribed by reading; replaced by the generated schema in R0 step H4.",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://drishti.local/schema/viewmodel.json",
+  "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json",
   "title": "ViewModel",
   "description": "The JSON a Rachana runtime returns for every screen (contract 1.x; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
   "x-contract": "1.0",

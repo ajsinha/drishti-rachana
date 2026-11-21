@@ -12,6 +12,8 @@ module com.ash.rachana.core {
     requires transitive com.ash.rachana.api;
 
     exports com.ash.rachana;
+    exports com.ash.rachana.bind;
+    exports com.ash.rachana.control;
     exports com.ash.rachana.design.ops;
     exports com.ash.rachana.el;
     exports com.ash.rachana.el.check;
@@ -19,5 +21,7 @@ module com.ash.rachana.core {
     exports com.ash.rachana.model;
     exports com.ash.rachana.parse;
     exports com.ash.rachana.profile;
+    exports com.ash.rachana.view;
+    exports com.ash.rachana.wire;
 
 }

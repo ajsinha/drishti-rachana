@@ -186,6 +186,35 @@ here. What Drishti must do when the migration starts, in this order:
       version, and holds what it reads in Core's `SutraStore`. Tests: `PackSutrasTest`, `SutraRegistryTest`, `SutraBlocksTest`,
       `UiKitBlocksTest`, the schema snapshot with the `drishti` profile loaded, the goldens.
 
+- [ ] 8.3e **The binder behind hooks (A13)**: `kernel/drishti-engine/.../engine/{bind,view,control,wire}` and `engine/live/{Frame,Patch}`
+      moved here with history (allow-list `tools/split/a13-paths.txt`; packages `com.ash.rachana.{bind,view,control,wire}`, `Frame` and
+      `Patch` in `view`). Drishti deletes its copy and builds the binder with its hooks, in its profile module:
+      `new Binder(el, formats, hooks, pivotEngine)` with `BindHooks.core().withLinks(...)` — a `LinkResolver` over `ReferenceCatalog.kindOf`
+      and `Mnemonics.codeFor`; `.withPanel(LINKS, ...)` (the old `links(c)`: `LinkRef`s, `BadgeRenderer`, resolved/pending/missing) and
+      `.withPanel(PROVENANCE, ...)` (layout label, `Fingerprint.shortForm()`, source and generation), both reading what Drishti puts in
+      `BindContext.host()` (its `LinkRef` list, fingerprint, `EntityDocument`); `.withLabels(Semantics::humanize)`; `.withLimits(...)`
+      and `.withPivot(new PivotLimits(enabled, maxRecords, "drishti.pivot.enabled"))` from its own `drishti.panels` / `drishti.pivot`
+      settings (Core's `PanelLimits` lost its Spring annotations); a `PivotEngine` over `PivotCore` (the old `engineCells`: `RowsProvider`,
+      `StateCache.none()`, the same `Settings`, `PivotView.parse`) whose `key` is `CellKey.of(m).canonical()`. A `TableProvider` over
+      `SourceRouter` (`search`, `list(...).hits()`, `listAcross(...).hits()`, `fetchAll` with failures, `freshness` from
+      `SourceRegistry.Freshness`, `partition()`; `computedId` is `ComputeRef.format`'s algorithm, keep them equal), handing
+      `Entity(ref, data, deleted, Origin(source, fetchedAt), the EntityDocument)`; a `Masker` over `ViewerContext` (`mask` = `redact`,
+      `mayOpen`), which `TableRows.rows` hands back (cast it to read the viewer); `BusinessDays` over `BusinessDates`
+      (`today(asOf)` = `resolve(asOf).businessDate()`); `RelativeDates` is now Core's copy in `control` (delete Drishti's or keep them
+      equal). `EffectiveLayout` becomes `Layout(label, inferred, explanations)`; `BindContext` is `(doc, layout, eval, linked, pending,
+      denied, maps, host)`; `MapSupport.resolve` takes the `Masker`; `ScreenWire.Screen` takes a `Masker`, `Pair.from` is an
+      `Entity.Origin`. Error codes at the edge: `RCH-5001`/`RCH-5002` (bad request, forbidden) and the panel's `RCH-2102` map to
+      `DRS-` by the number. Changed answers to review: the too-deep panel message names "the expression depth limit" (was the setting
+      name; reached only when the depth limit is lifted); the ViewModel schema's `$id` is
+      `https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json`; Core alone binds `links`/`provenance` to an error and a
+      pivot panel without a `PivotEngine` to an error. The ViewModel records carry Core's `@Include` instead of Jackson's `@JsonInclude`:
+      until A14's writer answers the API, Drishti's `ObjectMapper` needs an annotation introspector that reads `@Include` as
+      `@JsonInclude` (same rules), or the bytes change (nulls written). The ViewModel keeps contract 1.x's shape (`ref`, `mnemonic`,
+      `provenance` top level); C17's `meta.<profile>` is not done (A14 or contract 2). About 73 files' imports of
+      `engine.{bind,view,control,wire,live.Frame,live.Patch}` are rewritten (scripted with 8.3). Tests: the goldens byte-identical,
+      `ChartPanelsTest`, `DeepTradeViewTest`, `DrillPanelTest`, `MetricPanelTest`, `MapPanelTest`, `SutraNextEquivalenceTest`,
+      `ViewPipelineTest`, `LiveTest`, `ViewModelSchemaTest`.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

@@ -75,5 +75,5 @@ Other things the transcription found:
 - `Chart.step` and `PivotRow.group` are boxed booleans in Java (optional, never null); `ViewModel.layout`, `phone`,
   `PanelView.form`, `PanelCompute.progress`/`stamp` and `Table.pivot` are open objects whose inner shape is described in prose
   in the reference's VIEWMODEL.md, not as records.
-- The schema's `$id` is `https://drishti.local/schema/viewmodel.json` in the reference; it will change to this
-  specification's address when the schema is generated here.
+- The schema's `$id` is this specification's address, `https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json`
+  (the reference's was a host address; it changed at split step A13, when the generator moved here).

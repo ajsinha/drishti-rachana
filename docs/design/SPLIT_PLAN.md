@@ -39,7 +39,8 @@ migration's proof (step 11).
 | 7b FormExpr into Rachana-EL | A7b | here | **next** | |
 | 8 own YAML and JSON | A8a, A8b | here, the other Opus lane | **done** | `tools/yaml-diff`: 168,923 inputs identical to the reference's reader (but the new anchor issue); conformance results byte-identical before and after A8b; Jackson and SnakeYAML gone |
 | 9 aggregate kernel | A9 | here, the other Opus lane | planned | |
-| 13, 14 binder | A13, A14 | here | planned; `v0.10.0` | |
+| 13 binder behind hooks | A13 | here | **done** (moved with history from Drishti `c6bc1d1bc` under `tools/split/a13-paths.txt`, 84 commits; `com.ash.rachana.{bind,view,control,wire}`; hooks `LinkResolver`, `TableProvider`, `Masker`, `PanelBinder` (profile kinds `links`, `provenance`), `PivotEngine`, `BusinessDays`, labels; `BindHooks`; Core `@Include` and `ViewJson` replace Jackson; `TtlCache` replaces Caffeine. Not done: C17 `meta.<profile>`, the ViewModel keeps contract 1.x's shape) | 2,110 identical, the 2 known; `BindHooksTest`; the moved unit tests; Drishti's goldens wait for the migration (DRISHTI_MIGRATION_TODO 8.3e) |
+| 14 binder API, writer, cases | A14 | here | planned; `v0.10.0` | |
 | 1, 11, 12 guards and the pin in Drishti | H3, A11, A12 | Drishti | **held** (DRISHTI_MIGRATION_TODO 8) | |
 
 Sizes are from the Drishti i7a tree: `compute/drishti-rachana` has about 22,300 lines of Java (main) and about 7,000

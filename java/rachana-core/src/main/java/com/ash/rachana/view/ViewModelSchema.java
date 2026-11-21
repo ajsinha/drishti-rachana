@@ -4,14 +4,7 @@
  */
 package com.ash.rachana.view;
 
-import com.ash.rachana.model.PanelKind;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.RecordComponent;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.ash.rachana.parse.Json;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +13,7 @@ import java.util.Map;
  * The JSON Schema (draft 2020-12) of the ViewModel, its panels' {@code data} and the live stream's frames
  * ({@code GET /api/v1/viewmodel/schema}, docs/architecture/VIEWMODEL.md section 9).
  *
- * <p>Generated from the records themselves, so a field added to {@link ViewModel}, {@link PanelData}, {@link Frame} or
+ * <p>Generated from the records themselves at build time ({@code ViewCodeGenerator}, checked fresh by a test), so a field added to {@link ViewModel}, {@link PanelData}, {@link Frame} or
  * {@link Patch} is in the schema at once. Each record's {@link Include} rule decides what is required and what may be null:
  * a component that is always written is required, and nullable when it is a reference; one left out when null, empty or
  * default is optional and never null. On top of the generated shape sit the few rules the types cannot say: the panel
@@ -30,7 +23,7 @@ import java.util.Map;
  */
 public final class ViewModelSchema {
 
-    /** The record that carries a panel's {@code data}, per panel kind: every {@link PanelKind}, and every {@link PanelData} record. */
+    /** The record that carries a panel's {@code data}, per panel kind: every {@code PanelKind}, and every {@link PanelData} record. */
     public static final Map<String, Class<? extends PanelData>> DATA_BY_KIND = dataByKind();
 
     /** The tones a value may carry ({@code Cell.tone} and the tones of bars, steps, markers, events and candles). */
@@ -59,7 +52,7 @@ public final class ViewModelSchema {
             "Patch", List.of("op"));
 
     /** One line on each record, carried into the schema as its description. */
-    private static final Map<String, String> ABOUT = Map.ofEntries(
+    static final Map<String, String> ABOUT = Map.ofEntries(
             Map.entry("ViewModel", "A bound view: everything a client renders, and nothing it must compute"),
             Map.entry("Cell", "One formatted value: text, an optional label, tone, link and the document path it came from"),
             Map.entry("LinkView", "A navigable link to another entity"),
@@ -118,148 +111,12 @@ public final class ViewModelSchema {
         return java.util.Collections.unmodifiableMap(m);
     }
 
-    /** The schema: a ViewModel at the root, every record under {@code $defs} ({@code Frame} for the live stream's events). */
-    public static Map<String, Object> build() {
-        Map<String, Object> defs = new LinkedHashMap<>();
-        record(ViewModel.class, defs);
-        record(Frame.class, defs);
-        for (Class<?> c : PanelData.class.getPermittedSubclasses()) {
-            record(c, defs);
-        }
-        defs.put("Tone", Map.of("enum", TONES, "description", "A theme tone; the console maps each to a colour token and pairs it with a sign or glyph"));
-        defs.put("PanelData", Map.of("description", "A panel's kind-specific content; which record depends on the panel's kind",
-                "anyOf", Arrays.stream(PanelData.class.getPermittedSubclasses()).map(c -> ref(c.getSimpleName())).toList()));
-        Map<String, Object> s = new LinkedHashMap<>();
-        s.put("$schema", "https://json-schema.org/draft/2020-12/schema");
-        s.put("$id", ID);
-        s.put("title", "ViewModel");
-        s.put("description", "The JSON the server returns for every entity screen (GET /api/v1/views/{kind}/{id}, and the view event of its "
-                + "stream). $defs.Frame is a frame event of the stream. See docs/architecture/VIEWMODEL.md.");
-        s.put("$ref", "#/$defs/ViewModel");
-        s.put("$defs", defs);
-        return s;
-    }
-
-    private static Map<String, Object> ref(String name) {
-        return Map.of("$ref", "#/$defs/" + name);
-    }
-
-    /** Adds {@code c}'s definition, and those of the records it holds, to {@code defs}. */
-    private static void record(Class<?> c, Map<String, Object> defs) {
-        String name = c.getSimpleName();
-        if (defs.containsKey(name)) {
-            return;
-        }
-        Map<String, Object> def = new LinkedHashMap<>();
-        defs.put(name, def);                             // reserved first: records may hold themselves (Row.children)
-        if (ABOUT.containsKey(name)) {
-            def.put("description", ABOUT.get(name));
-        }
-        def.put("type", "object");
-        Map<String, Object> props = new LinkedHashMap<>();
-        List<String> required = new ArrayList<>(REQUIRED.getOrDefault(name, List.of()));
-        for (RecordComponent rc : c.getRecordComponents()) {
-            boolean always = ViewJson.rule(c, rc) == Include.Rule.ALWAYS;
-            String key = name + "." + rc.getName();
-            Map<String, Object> type;
-            if (ENUMS.containsKey(key)) {
-                type = new LinkedHashMap<>(Map.of("enum", ENUMS.get(key)));
-            } else if (TONED.contains(key)) {
-                type = new LinkedHashMap<>(ref("Tone"));
-            } else {
-                type = type(rc.getGenericType(), defs);
-            }
-            boolean primitive = rc.getType().isPrimitive();
-            if (always && !primitive) {
-                type = nullable(type);
-            }
-            props.put(rc.getName(), type);
-            if (always && !required.contains(rc.getName())) {
-                required.add(rc.getName());
-            }
-        }
-        def.put("properties", props);
-        if (!required.isEmpty()) {
-            def.put("required", required);
-        }
-        def.put("additionalProperties", false);
-        if (c == ViewModel.PanelView.class) {
-            def.put("properties", panelProperties(props));
-            def.put("allOf", DATA_BY_KIND.entrySet().stream().map(e -> Map.of(
-                    "if", Map.of("properties", Map.of("kind", Map.of("const", e.getKey())), "required", List.of("kind")),
-                    "then", Map.of("properties", Map.of("data", nullable(ref(e.getValue().getSimpleName()))))))
-                    .toList());
-        }
-    }
-
-    /** A panel's kind: one of the grammar's kinds; its data: the record that kind carries (null when the panel failed or is denied). */
-    private static Map<String, Object> panelProperties(Map<String, Object> props) {
-        Map<String, Object> out = new LinkedHashMap<>(props);
-        out.put("kind", Map.of("enum", Arrays.stream(PanelKind.values()).map(PanelKind::id).toList()));
-        return out;
-    }
-
     /**
-     * A number: the server writes NaN and the infinities (a gauge whose document lacks the value, imperfect source data) as null
-     * ({@code JsonConfiguration}), so every number, a primitive one too, may be null.
+     * The schema: a ViewModel at the root, every record under {@code $defs} ({@code Frame} for the live stream's events). Built from the
+     * records at build time by {@code ViewCodeGenerator} (test sources) into {@code ViewModelSchemaText}; Core reads no record by reflection.
      */
-    private static Map<String, Object> number() {
-        return new LinkedHashMap<>(Map.of("anyOf", List.of(Map.of("type", "number"), Map.of("type", "null"))));
-    }
-
-    private static Map<String, Object> nullable(Map<String, Object> type) {
-        if (type.isEmpty() || type.equals(number())) {
-            return type;                                  // anything, or a number: null included already
-        }
-        return new LinkedHashMap<>(Map.of("anyOf", List.of(type, Map.of("type", "null"))));
-    }
-
-    private static Map<String, Object> type(Type t, Map<String, Object> defs) {
-        if (t instanceof WildcardType w) {
-            return type(w.getUpperBounds()[0], defs);
-        }
-        if (t instanceof ParameterizedType p) {
-            Class<?> raw = (Class<?>) p.getRawType();
-            Type[] args = p.getActualTypeArguments();
-            if (List.class.isAssignableFrom(raw)) {
-                Map<String, Object> item = type(args[0], defs);
-                boolean boxedNumber = args[0] == Integer.class || args[0] == Long.class;
-                boolean nested = args[0] instanceof ParameterizedType;
-                return new LinkedHashMap<>(Map.of("type", "array", "items", boxedNumber || nested ? nullable(item) : item));
-            }
-            if (Map.class.isAssignableFrom(raw)) {
-                Map<String, Object> value = type(args[1], defs);
-                return value.isEmpty() ? new LinkedHashMap<>(Map.of("type", "object"))
-                        : new LinkedHashMap<>(Map.of("type", "object", "additionalProperties", value));
-            }
-            return type(raw, defs);
-        }
-        Class<?> c = (Class<?>) t;
-        if (c == String.class) {
-            return new LinkedHashMap<>(Map.of("type", "string"));
-        }
-        if (c == boolean.class || c == Boolean.class) {
-            return new LinkedHashMap<>(Map.of("type", "boolean"));
-        }
-        if (c == int.class || c == Integer.class || c == long.class || c == Long.class) {
-            return new LinkedHashMap<>(Map.of("type", "integer"));
-        }
-        if (c == double.class || c == Double.class) {
-            return number();
-        }
-        if (c == Instant.class) {
-            return new LinkedHashMap<>(Map.of("type", "string", "format", "date-time"));
-        }
-        if (c == Object.class) {
-            return new LinkedHashMap<>();
-        }
-        if (c == PanelData.class) {
-            return new LinkedHashMap<>(ref("PanelData"));
-        }
-        if (c.isRecord()) {
-            record(c, defs);
-            return new LinkedHashMap<>(ref(c.getSimpleName()));
-        }
-        throw new IllegalStateException("no JSON type for " + c);
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> build() {
+        return (Map<String, Object>) Json.read(ViewModelSchemaText.JSON);
     }
 }

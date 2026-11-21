@@ -6,24 +6,21 @@ package com.ash.rachana.view;
 
 import com.ash.rachana.api.Node;
 import com.ash.rachana.parse.Json;
-import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Core's canonical writer of the ViewModel (split steps A13, A14): a record is an object of its fields in declaration order, each
  * written unless its {@link Include} rule leaves the value out; lists and maps as they are (map entries in their order); an enum by its
  * name; a {@link Node} as its plain value. {@link #tree} gives the plain tree (maps, lists, texts, numbers, booleans, null),
- * {@link #write} the compact JSON text.
+ * {@link #write} the compact JSON text. Records are read by the generated, non-reflective writers of {@code ViewRecords} (split step A15:
+ * the JavaScript build takes no reflection), written by {@code ViewCodeGenerator} in the test sources.
  */
 public final class ViewJson {
-
-    private static final Map<Class<?>, RecordComponent[]> COMPONENTS = new ConcurrentHashMap<>();
 
     private ViewJson() {}
 
@@ -73,36 +70,18 @@ public final class ViewJson {
             }
             return out;
         }
-        Class<?> c = value.getClass();
-        if (c.isRecord()) {
-            Map<String, Object> out = new LinkedHashMap<>();
-            for (RecordComponent rc : COMPONENTS.computeIfAbsent(c, Class::getRecordComponents)) {
-                Object v;
-                try {
-                    v = rc.getAccessor().invoke(value);
-                } catch (ReflectiveOperationException e) {
-                    throw new IllegalStateException("cannot read " + c.getSimpleName() + "." + rc.getName(), e);
-                }
-                if (!leftOut(rule(c, rc), v)) {
-                    out.put(rc.getName(), tree(v));
-                }
-            }
-            return out;
+        Map<String, Object> record = ViewRecords.tree(value);
+        if (record != null) {
+            return record;
         }
-        throw new IllegalArgumentException("not a ViewModel value: " + c.getName());
+        throw new IllegalArgumentException("not a ViewModel value: " + value.getClass().getName());
     }
 
-    /** The rule of a record's field: its own, else the record's, else {@link Include.Rule#ALWAYS}. */
-    static Include.Rule rule(Class<?> record, RecordComponent rc) {
-        Include own = rc.getAccessor().getAnnotation(Include.class);
-        if (own == null) {
-            own = rc.getAnnotation(Include.class);
+    /** Puts a record's field into its object unless the field's {@link Include} rule leaves the value out (the generated writers). */
+    static void put(Map<String, Object> out, String name, Object v, Include.Rule rule) {
+        if (!leftOut(rule, v)) {
+            out.put(name, tree(v));
         }
-        if (own != null) {
-            return own.value();
-        }
-        Include all = record.getAnnotation(Include.class);
-        return all == null ? Include.Rule.ALWAYS : all.value();
     }
 
     private static boolean leftOut(Include.Rule rule, Object v) {

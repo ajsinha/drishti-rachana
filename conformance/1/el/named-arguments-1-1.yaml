@@ -1,0 +1,73 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Language level 1.1: named arguments of Core functions bind by the function catalogue's parameter names (SPEC 4.10 rule 3), written 2026-11-21.
+suite: el/named-arguments-1-1
+since: "1.1"
+profile: core
+verified: true
+description: "A Core function's arguments given by the catalogue's names: by place and by name agree; an unknown name, a repeatable parameter by name, and a name given twice are refused."
+given: {"record": {"rows": [{"x": 1, "y": 10}, {"x": 3, "y": 30}]}}
+cases:
+
+  - id: "avg-field-by-name"
+    kind: "expr"
+    source: "functions.yaml avg(list, field?)"
+    expr: "avg($.rows, field = 'x')"
+    expect: {"value": 2}
+
+  - id: "avg-list-and-field-by-name"
+    kind: "expr"
+    source: "functions.yaml avg(list, field?)"
+    expr: "avg(list = $.rows, field = 'y')"
+    expect: {"value": 20}
+
+  - id: "sum-field-by-name"
+    kind: "expr"
+    source: "functions.yaml sum(list, field?)"
+    expr: "sum($.rows, field = 'y')"
+    expect: {"value": 40}
+
+  - id: "percentile-p-by-name-skips-field"
+    kind: "expr"
+    source: "functions.yaml percentile(list, field?, p)"
+    expr: "percentile([1, 2, 3, 4, 5], p = 0.5)"
+    expect: {"value": 3}
+
+  - id: "round-all-by-name"
+    kind: "expr"
+    source: "functions.yaml round(x, n?)"
+    expr: "round(n = 1, x = 2.45)"
+    expect: {"value": 2.5}
+
+  - id: "if-by-name"
+    kind: "expr"
+    source: "functions.yaml if(cond, then, else?)"
+    expr: "if(1 > 0, then = 'yes', else = 'no')"
+    expect: {"value": "yes"}
+
+  - id: "avg-old-kernel-name-refused"
+    kind: "expr-error"
+    source: "functions.yaml avg(list, field?): the catalogue is the contract"
+    note: "Message contains: 'avg has no argument named x; its arguments: [list, field]'."
+    expr: "avg(x = $.rows)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "avg-where-refused"
+    kind: "expr-error"
+    source: "functions.yaml avg(list, field?)"
+    note: "Message contains: 'avg has no argument named where'."
+    expr: "avg($.rows, where = true)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "repeatable-by-name-refused"
+    kind: "expr-error"
+    source: "functions.yaml coalesce(...values)"
+    note: "Message contains: 'values is repeatable; give its values by place'."
+    expr: "coalesce(values = 1)"
+    expect: {"problems": [{"code": "RCH-2101"}]}
+
+  - id: "by-place-and-by-name-refused"
+    kind: "expr-error"
+    source: "functions.yaml sum(list, field?)"
+    note: "Message contains: 'list is given twice (by place and by name)'."
+    expr: "sum($.rows, list = $.rows)"
+    expect: {"problems": [{"code": "RCH-2101"}]}

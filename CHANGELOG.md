@@ -5,6 +5,17 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Named arguments by the catalogue; stable wire keys (G2 lane A4)
+
+- **The function catalogue is the one source of Core's parameter names** (lead's decision): `spec/1/functions.yaml` is built into
+  the jar and both bundles (`rachana/el/functions.yaml`); `CoreParams` reads names, repeatable parameters and `role: column` from
+  it (`FragmentColumns.COLUMN_PARAMS` too). From level 1.1 named arguments bind by those names (`avg($.p, field = 'x')`; the old
+  kernel names `x, where` are refused; a repeatable parameter only by place). Level 1.0 unchanged. `CoreParamsTest` guards that
+  every implemented function has a catalogue entry and vice versa; `el/named-arguments-1-1` (10 cases). Bundles grow by the
+  catalogue (Brotli runtime 463 KB, tools 483 KB).
+- **Deterministic ViewModel bytes**: an event's `wire.emits` keys (`name`, `on`) and a child group's keys in declaration order (were
+  `Map.of`'s, varying from run to run); the same for a plan's `&&` filter and the chart binder's engine view. `ScreenWireOrderTest`.
+
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 
 - **L2, one protocol host over providers** (`rachana-data`): `ProtocolHost` answers the routes of PROTOCOL 4 and the bridge of 12 over

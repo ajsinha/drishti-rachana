@@ -41,22 +41,20 @@ public final class FragmentColumns {
      */
     public record ColumnParam(String function, int place, String name, boolean textOnly) { }
 
-    /** Every Core parameter of role {@code column}, in catalogue order (checked against {@code spec/1/functions.yaml} by a test). */
-    public static final List<ColumnParam> COLUMN_PARAMS = List.of(
-            new ColumnParam("group", 1, "key", false), new ColumnParam("group", 2, "aggregate", false),
-            new ColumnParam("sum", 1, "field", true), new ColumnParam("count", 1, "field", true), new ColumnParam("avg", 1, "field", true),
-            new ColumnParam("median", 1, "field", true), new ColumnParam("variance", 1, "field", true), new ColumnParam("stddev", 1, "field", true),
-            new ColumnParam("variance_pop", 1, "field", true), new ColumnParam("stddev_pop", 1, "field", true),
-            new ColumnParam("distinct", 1, "field", true), new ColumnParam("percentile", 1, "field", true),
-            new ColumnParam("wavg", 1, "b", false), new ColumnParam("wavg", 2, "c", true), new ColumnParam("span", 1, "field", true));
+    /** Every Core parameter of role {@code column}, in catalogue order: the {@code role: column} marks of the catalogue itself ({@link CoreParams}). */
+    public static final List<ColumnParam> COLUMN_PARAMS = columnParams();
 
-    /** The parameter names of the functions this pass reads, in call order (for named arguments). */
-    private static final Map<String, List<String>> PARAMS = Map.ofEntries(
-            Map.entry("group", List.of("list", "key", "aggregate", "by")), Map.entry("map", List.of("list", "expr")),
-            Map.entry("reduce", List.of("list", "init", "expr")), Map.entry("sort", List.of("list")),
-            Map.entry("percentile", List.of("list", "field", "p")), Map.entry("wavg", List.of("a", "b", "c")),
-            Map.entry("count", List.of("list", "field")), Map.entry("take", List.of("list", "n")), Map.entry("drop", List.of("list", "n")),
-            Map.entry("unique", List.of("list")));
+    private static List<ColumnParam> columnParams() {
+        List<ColumnParam> out = new java.util.ArrayList<>();
+        CoreParams.all().forEach((f, params) -> {
+            for (int i = 0; i < params.size(); i++) {
+                if (params.get(i).column()) {
+                    out.add(new ColumnParam(f, i, params.get(i).name(), params.get(i).text()));
+                }
+            }
+        });
+        return List.copyOf(out);
+    }
 
     /** The functions whose result is rows of their first argument (a column of it is a column of them). */
     private static final Set<String> SAME_ROWS = Set.of("sort", "take", "drop", "unique");
@@ -430,7 +428,7 @@ public final class FragmentColumns {
             List<int[]> args = args(lp);
             boolean piped = i > s && tok(i - 1).is(Type.OP, "|>");
             String list = piped ? rows(stage == i ? lastStage(i, s) : stage, i - 1, row) : args.isEmpty() ? null : rows(args.get(0)[0], args.get(0)[1], row);
-            List<String> names = PARAMS.getOrDefault(f, List.of("list", "field"));
+            List<String> names = CoreParams.of(f) != null ? CoreParams.names(f) : List.of("list", "field");
             for (int k = 0; k < args.size(); k++) {
                 int as = args.get(k)[0];
                 int ae = args.get(k)[1];

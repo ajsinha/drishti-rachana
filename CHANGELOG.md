@@ -5,6 +5,14 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (toward v0.10.0, the untangling)
 
+- **A7b, form expressions in Rachana-EL**: `and`, `or` and `not` are Rachana-EL operators (DECISIONS PY1; `not` reads below the
+  comparisons, as in Python); a form's rules, hints and `=` defaults are read by Rachana-EL's parser and evaluated by the `form`
+  profile (`el/FormRules`): exact decimals with their written scale, `/` to 16 digits, `+` joining a text, empty values, three-valued
+  `and`/`or`, a rule that cannot be told holds. `FormExpr` keeps its API; its own lexer and parser are gone. Every answer equals the old
+  evaluator's (`FormRulesTest`, the old one kept in the tests); changed: the words of a syntax error, Rachana-EL's spellings read too,
+  `_` separators taken out by the profile (DECISIONS A7b-1 to A7b-4, for review). Conformance: `el/python-words` (6 cases, unverified,
+  known: the reference refuses the words); 2,095 of 2,123 identical to the reference, 28 known, 0 verified failing. The reference's
+  `sutra` program is now `RefBridgeSutra.java` (the engine class path changes other kinds' answers). API: `el.FormRules`.
 - **A14, the binder's API, writer and cases**: `rachana.binder(hooks, pivots)` and `rachana.views(hooks, pivots, tables, dates,
   budget)`: `ViewBuilder`, Core's view pipeline (controls, the date, panel sources through the `TableProvider`, map lookups, `when`,
   wired panels, strip, title, keys, controls and selects, screen grid, phone; a host's reference, mnemonic, provenance and timings left

@@ -12,11 +12,12 @@ python3 tools/conformance/rachana_conformance.py --classpath-file CP.txt     # C
 `CP.txt` holds the class path of `drishti-rachana`, `drishti-api` and `drishti-common` (a release's jars) and their libraries
 (Jackson, Caffeine, SLF4J, Spring core). Drishti is read, never changed. Run `java` 21 or later.
 
-Since A14 the bridge also answers `sutra` cases: the reference's view pipeline steps (`ViewPipeline.assemble`) over its binder,
+Since A14 a second program, `RefBridgeSutra.java`, answers `sutra` cases: the reference's view pipeline steps (`ViewPipeline.assemble`) over its binder,
 controls, wiring and ViewModel records, with no sources, links or masks, written by a plain `ObjectMapper`. That needs the engine's
 class path (`mvn -o package dependency:build-classpath -pl kernel/drishti-engine -am -DskipTests -Dmdep.outputFile=cp-engine.txt
--Dmdep.includeScope=runtime`, then the engine jar and `cp-engine.txt`). Run only the `sutra` cases over it (`--kinds sutra`): the
-engine's jars bring the pivot engine's function providers, which change the answers of other cases; the other kinds keep the
+-Dmdep.includeScope=runtime`, then the engine jar and `cp-engine.txt`), run with `--kinds sutra --cmd "java -cp <engine class path>
+tools/reference-bridge/RefBridgeSutra.java spec/1/formats.yaml <drishti formats.yaml>"`. It is a program of its own because the
+engine's jars bring the pivot engine's function providers, which change the answers of other kinds; `RefBridge.java` keeps the
 compiler-only class path.
 
 `LangDump.java` (plan H4) reads the reference's tables by reflection (the parser's key sets, `PanelKind`, `ControlKind`, the function

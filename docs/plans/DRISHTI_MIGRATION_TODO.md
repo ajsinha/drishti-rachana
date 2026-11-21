@@ -230,6 +230,10 @@ here. What Drishti must do when the migration starts, in this order:
       goldens before the switch. `ViewModelSchemaController` serves `ViewModelSchema` (its `$id` changed, 8.3e). Tests: the goldens,
       `ViewModelSchemaTest`, the conformance run with the `drishti` profile.
 
+- [ ] 8.3g **Form expressions (A7b)**: `FormExpr` keeps its API (parse, names, eval, holds, number); the form check endpoint
+      needs no change. `rachana migrate` is not needed for `and`/`or`/`not` (PY1). Review the lint words of the forms' syntax errors
+      (DECISIONS A7b-1) in Drishti's form tests and any UI text that quotes them. Tests: `FormTest` (Drishti half), the forms check API.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

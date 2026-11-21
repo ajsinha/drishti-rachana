@@ -70,7 +70,8 @@ public final class ViewModelSchema {
             Map.entry("SortKey", List.of("field")),
             Map.entry("Measure", List.of("field")),
             Map.entry("Tree", List.of("dataset", "node")),
-            Map.entry("DataChart", List.of("dataset", "type")));
+            Map.entry("DataChart", List.of("dataset", "type")),
+            Map.entry("LiveRef", List.of("table")));
 
     /** One line on each record, carried into the schema as its description. */
     static final Map<String, String> ABOUT = Map.ofEntries(
@@ -139,6 +140,7 @@ public final class ViewModelSchema {
         m.put("grid", PanelData.Grid.class);                  // contract 1.1
         m.put("tree", PanelData.Tree.class);
         m.put("chart", PanelData.DataChart.class);
+        m.put("live", PanelData.Grid.class);                  // contract 1.2: a grid over a live table
         return java.util.Collections.unmodifiableMap(m);
     }
 

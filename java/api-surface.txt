@@ -390,6 +390,7 @@ class public static final record com.ash.rachana.view.ViewModel$DataField
 class public static final record com.ash.rachana.view.ViewModel$Dataset
 class public static final record com.ash.rachana.view.ViewModel$KeyView
 class public static final record com.ash.rachana.view.ViewModel$LinkView
+class public static final record com.ash.rachana.view.ViewModel$LiveRef
 class public static final record com.ash.rachana.view.ViewModel$Opt
 class public static final record com.ash.rachana.view.ViewModel$PagesRef
 class public static final record com.ash.rachana.view.ViewModel$PanelCompute
@@ -2447,6 +2448,7 @@ com.ash.rachana.model.PanelKind :: public boolean com.ash.rachana.model.PanelKin
 com.ash.rachana.model.PanelKind :: public boolean com.ash.rachana.model.PanelKind.readsData()
 com.ash.rachana.model.PanelKind :: public java.lang.String com.ash.rachana.model.PanelKind.id()
 com.ash.rachana.model.PanelKind :: public java.lang.String com.ash.rachana.model.PanelKind.since()
+com.ash.rachana.model.PanelKind :: public java.lang.String com.ash.rachana.model.PanelKind.since(java.lang.String)
 com.ash.rachana.model.PanelKind :: public java.util.Set<java.lang.String> com.ash.rachana.model.PanelKind.optional()
 com.ash.rachana.model.PanelKind :: public java.util.Set<java.lang.String> com.ash.rachana.model.PanelKind.required()
 com.ash.rachana.model.PanelKind :: public static com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.valueOf(java.lang.String)
@@ -2463,6 +2465,7 @@ com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.Pan
 com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.LADDER
 com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.LINE
 com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.LINKS
+com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.LIVE
 com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.MAP
 com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.MARKDOWN
 com.ash.rachana.model.PanelKind :: public static final com.ash.rachana.model.PanelKind com.ash.rachana.model.PanelKind.METRIC
@@ -2485,6 +2488,8 @@ com.ash.rachana.model.PanelOptions :: public static final int com.ash.rachana.mo
 com.ash.rachana.model.PanelOptions :: public static final int com.ash.rachana.model.PanelOptions.MAX_BY
 com.ash.rachana.model.PanelOptions :: public static final int com.ash.rachana.model.PanelOptions.MAX_DATASET_ROWS
 com.ash.rachana.model.PanelOptions :: public static final int com.ash.rachana.model.PanelOptions.MAX_LEVELS
+com.ash.rachana.model.PanelOptions :: public static final int com.ash.rachana.model.PanelOptions.MAX_WINDOW
+com.ash.rachana.model.PanelOptions :: public static final int com.ash.rachana.model.PanelOptions.WINDOW
 com.ash.rachana.model.PanelOptions :: public static final java.util.List<java.lang.String> com.ash.rachana.model.PanelOptions.AGGREGATIONS
 com.ash.rachana.model.PanelOptions :: public static final java.util.List<java.lang.String> com.ash.rachana.model.PanelOptions.BAR_SHAPES
 com.ash.rachana.model.PanelOptions :: public static final java.util.List<java.lang.String> com.ash.rachana.model.PanelOptions.CHART_STACKS
@@ -3411,8 +3416,10 @@ com.ash.rachana.view.PanelData$Grid :: public java.lang.String com.ash.rachana.v
 com.ash.rachana.view.PanelData$Grid :: public java.util.List<com.ash.rachana.view.PanelData$GridColumn> com.ash.rachana.view.PanelData$Grid.columns()
 com.ash.rachana.view.PanelData$Grid :: public java.util.List<com.ash.rachana.view.PanelData$SortKey> com.ash.rachana.view.PanelData$Grid.sort()
 com.ash.rachana.view.PanelData$Grid :: public java.util.List<java.lang.String> com.ash.rachana.view.PanelData$Grid.group()
+com.ash.rachana.view.PanelData$GridColumn :: public boolean com.ash.rachana.view.PanelData$GridColumn.bar()
 com.ash.rachana.view.PanelData$GridColumn :: public boolean com.ash.rachana.view.PanelData$GridColumn.hidden()
 com.ash.rachana.view.PanelData$GridColumn :: public com.ash.rachana.view.PanelData$GridColumn(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,java.lang.String,boolean)
+com.ash.rachana.view.PanelData$GridColumn :: public com.ash.rachana.view.PanelData$GridColumn(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,java.lang.String,boolean,boolean)
 com.ash.rachana.view.PanelData$GridColumn :: public final boolean com.ash.rachana.view.PanelData$GridColumn.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$GridColumn :: public final int com.ash.rachana.view.PanelData$GridColumn.hashCode()
 com.ash.rachana.view.PanelData$GridColumn :: public final java.lang.String com.ash.rachana.view.PanelData$GridColumn.toString()
@@ -3738,6 +3745,7 @@ com.ash.rachana.view.ViewModel :: public java.util.Map<java.lang.String, java.la
 com.ash.rachana.view.ViewModel :: public static final java.lang.String com.ash.rachana.view.ViewModel.CONTRACT
 com.ash.rachana.view.ViewModel :: public static final java.lang.String com.ash.rachana.view.ViewModel.NEWEST
 com.ash.rachana.view.ViewModel :: public static final java.util.List<java.lang.String> com.ash.rachana.view.ViewModel.KINDS_1_1
+com.ash.rachana.view.ViewModel :: public static final java.util.List<java.lang.String> com.ash.rachana.view.ViewModel.KINDS_1_2
 com.ash.rachana.view.ViewModel$ArrowRef :: public com.ash.rachana.view.ViewModel$ArrowRef(java.lang.String,java.lang.String)
 com.ash.rachana.view.ViewModel$ArrowRef :: public final boolean com.ash.rachana.view.ViewModel$ArrowRef.equals(java.lang.Object)
 com.ash.rachana.view.ViewModel$ArrowRef :: public final int com.ash.rachana.view.ViewModel$ArrowRef.hashCode()
@@ -3786,6 +3794,8 @@ com.ash.rachana.view.ViewModel$DataField :: public java.lang.String com.ash.rach
 com.ash.rachana.view.ViewModel$DataField :: public java.lang.String com.ash.rachana.view.ViewModel$DataField.type()
 com.ash.rachana.view.ViewModel$Dataset :: public com.ash.rachana.view.ViewModel$ArrowRef com.ash.rachana.view.ViewModel$Dataset.arrow()
 com.ash.rachana.view.ViewModel$Dataset :: public com.ash.rachana.view.ViewModel$Dataset(java.util.List<java.lang.String>,java.util.List<com.ash.rachana.view.ViewModel$DataField>,java.util.List<java.util.List<java.lang.Object>>,java.util.List<java.util.Map<java.lang.String, java.lang.Object>>,int,java.lang.String,com.ash.rachana.view.ViewModel$ArrowRef,com.ash.rachana.view.ViewModel$PagesRef,com.ash.rachana.view.ViewModel$ServerRef)
+com.ash.rachana.view.ViewModel$Dataset :: public com.ash.rachana.view.ViewModel$Dataset(java.util.List<java.lang.String>,java.util.List<com.ash.rachana.view.ViewModel$DataField>,java.util.List<java.util.List<java.lang.Object>>,java.util.List<java.util.Map<java.lang.String, java.lang.Object>>,int,java.lang.String,com.ash.rachana.view.ViewModel$ArrowRef,com.ash.rachana.view.ViewModel$PagesRef,com.ash.rachana.view.ViewModel$ServerRef,com.ash.rachana.view.ViewModel$LiveRef)
+com.ash.rachana.view.ViewModel$Dataset :: public com.ash.rachana.view.ViewModel$LiveRef com.ash.rachana.view.ViewModel$Dataset.live()
 com.ash.rachana.view.ViewModel$Dataset :: public com.ash.rachana.view.ViewModel$PagesRef com.ash.rachana.view.ViewModel$Dataset.pages()
 com.ash.rachana.view.ViewModel$Dataset :: public com.ash.rachana.view.ViewModel$ServerRef com.ash.rachana.view.ViewModel$Dataset.server()
 com.ash.rachana.view.ViewModel$Dataset :: public final boolean com.ash.rachana.view.ViewModel$Dataset.equals(java.lang.Object)
@@ -3814,6 +3824,14 @@ com.ash.rachana.view.ViewModel$LinkView :: public final java.lang.String com.ash
 com.ash.rachana.view.ViewModel$LinkView :: public java.lang.String com.ash.rachana.view.ViewModel$LinkView.id()
 com.ash.rachana.view.ViewModel$LinkView :: public java.lang.String com.ash.rachana.view.ViewModel$LinkView.kind()
 com.ash.rachana.view.ViewModel$LinkView :: public java.lang.String com.ash.rachana.view.ViewModel$LinkView.mnemonic()
+com.ash.rachana.view.ViewModel$LiveRef :: public boolean com.ash.rachana.view.ViewModel$LiveRef.top()
+com.ash.rachana.view.ViewModel$LiveRef :: public com.ash.rachana.view.ViewModel$LiveRef(java.lang.String,int,boolean,java.util.Map<java.lang.String, java.lang.Object>)
+com.ash.rachana.view.ViewModel$LiveRef :: public final boolean com.ash.rachana.view.ViewModel$LiveRef.equals(java.lang.Object)
+com.ash.rachana.view.ViewModel$LiveRef :: public final int com.ash.rachana.view.ViewModel$LiveRef.hashCode()
+com.ash.rachana.view.ViewModel$LiveRef :: public final java.lang.String com.ash.rachana.view.ViewModel$LiveRef.toString()
+com.ash.rachana.view.ViewModel$LiveRef :: public int com.ash.rachana.view.ViewModel$LiveRef.window()
+com.ash.rachana.view.ViewModel$LiveRef :: public java.lang.String com.ash.rachana.view.ViewModel$LiveRef.table()
+com.ash.rachana.view.ViewModel$LiveRef :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.ViewModel$LiveRef.filter()
 com.ash.rachana.view.ViewModel$Opt :: public com.ash.rachana.view.ViewModel$Opt(java.lang.String,java.lang.String)
 com.ash.rachana.view.ViewModel$Opt :: public final boolean com.ash.rachana.view.ViewModel$Opt.equals(java.lang.Object)
 com.ash.rachana.view.ViewModel$Opt :: public final int com.ash.rachana.view.ViewModel$Opt.hashCode()

@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The twenty-two panel kinds of the grammar. Each declares which options it requires and which it accepts,
+ * The panel kinds of the grammar (twenty-two at level 1.0). Each declares which options it requires and which it accepts,
  * so the validator can reject a Sutra before it ever meets data.
  */
 public enum PanelKind {
@@ -63,15 +63,31 @@ public enum PanelKind {
      * of the rows. {@code dataset} names it (panels naming one dataset share it), {@code rowKey} the fields that identify a row,
      * {@code group} and {@code sort} the grouping and order, {@code limit} the most rows sent (10,000; at most 50,000).
      */
-    GRID(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "limit", "search", "empty")),
+    GRID(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "limit", "search", "empty", "bars")),
     /** Language 1.1: a hierarchy of the rows ({@code node} names a row's node, {@code parent} its parent or {@code path} its path). */
     TREE(Set.of("rows", "node"), Set.of("parent", "path", "label", "mode", "open", "dataset", "rowKey", "limit")),
     /** Language 1.1: a chart of the rows: {@code x}, the figures {@code y} (a field or a list), {@code by}, {@code agg}, {@code type}. */
     CHART(Set.of("rows", "x", "y"), Set.of("type", "by", "agg", "stack", "horizontal", "xLabel", "yLabel", "bins", "top", "fmt", "dataset",
-            "rowKey", "limit"));
+            "rowKey", "limit")),
+    /**
+     * Language 1.2: a live table read a window at a time ({@code rows} names a {@code table} entry of {@code data:}). The view carries no
+     * rows: the painter reads the first {@code window} rows (200; at most 5,000) in the panel's {@code sort} through the page's data client,
+     * subscribes with that window and applies the patches as they come; {@code top} inserts new rows on top (a newest-first order).
+     * {@code columns} each read one field ({@code bind: "@.qty"}); {@code bars} names the number fields drawn with a bar in the cell.
+     */
+    LIVE(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "search", "empty", "window", "top", "bars"));
 
     /** The language level that brought each kind not of level 1.0 (SUTRA_EXPANSION 6.2). */
-    private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1");
+    private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1", LIVE, "1.2");
+
+    /** The options a later level added to a kind of an earlier one, with that level: used below it they are {@code RCH-2008}. */
+    private static final java.util.Map<PanelKind, java.util.Map<String, String>> OPTION_SINCE = java.util.Map.of(
+            GRID, java.util.Map.of("bars", "1.2"));
+
+    /** The language level that brought an option of this kind ({@link #since()} for the kind's own options). */
+    public String since(String option) {
+        return OPTION_SINCE.getOrDefault(this, java.util.Map.of()).getOrDefault(option, since());
+    }
 
     /** The language level that brought this kind: {@code 1.0}, or {@code 1.1} for {@code grid}, {@code tree} and {@code chart}. */
     public String since() {

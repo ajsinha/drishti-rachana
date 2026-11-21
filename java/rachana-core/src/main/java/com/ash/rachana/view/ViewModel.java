@@ -64,6 +64,9 @@ public record ViewModel(
     /** The panel kinds contract 1.1 adds: panels that read a dataset. */
     public static final List<String> KINDS_1_1 = List.of("grid", "tree", "chart");
 
+    /** The panel kinds contract 1.2 adds. */
+    public static final List<String> KINDS_1_2 = List.of("live");
+
     /** A view with its datasets and no state. */
     public ViewModel(Ref ref, String mnemonic, TitleView title, List<Cell> strip, List<PanelView> panels, List<KeyView> keys,
             Provenance provenance, Map<String, Double> timings, List<ControlView> controls, List<SelectView> selects, Map<String, Object> layout,
@@ -134,6 +137,12 @@ public record ViewModel(
             Object d = p == null ? null : p.data();
             if (d == null) {
                 continue;
+            }
+            if (d instanceof PanelData.Tabs t && t.tabs() != null && t.tabs().stream().anyMatch(tab -> tab != null && uses12(tab.panels()))) {
+                return true;
+            }
+            if (KINDS_1_2.contains(p.kind()) || d instanceof PanelData.Grid g && g.columns().stream().anyMatch(PanelData.GridColumn::bar)) {
+                return true;
             }
             boolean ev = switch (d) {
                 case PanelData.Metric m -> m.ev() != null;
@@ -536,10 +545,17 @@ public record ViewModel(
      * @param arrow an Arrow IPC stream or file
      * @param pages REST pages read as the reader scrolls
      * @param server a server-side row model (sort, filter, group and pivot answered by the server)
+     * @param live a live table of the Data Protocol read a window at a time and followed by key (contract 1.2, panel kind {@code live})
      */
     @Include(Include.Rule.NON_DEFAULT)
     public record Dataset(List<String> key, List<DataField> fields, List<List<Object>> values, List<Map<String, Object>> rows, int more,
-            String name, ArrowRef arrow, PagesRef pages, ServerRef server) {
+            String name, ArrowRef arrow, PagesRef pages, ServerRef server, LiveRef live) {
+
+        /** A dataset of contract 1.1 (no live table). */
+        public Dataset(List<String> key, List<DataField> fields, List<List<Object>> values, List<Map<String, Object>> rows, int more,
+                String name, ArrowRef arrow, PagesRef pages, ServerRef server) {
+            this(key, fields, values, rows, more, name, arrow, pages, server, null);
+        }
 
         /** Inline rows in the order of their fields. */
         public static Dataset of(List<String> key, List<DataField> fields, List<List<Object>> values, int more) {
@@ -588,4 +604,17 @@ public record ViewModel(
      */
     @Include(Include.Rule.NON_DEFAULT)
     public record ServerRef(String url) {}
+
+    /**
+     * A live table of the Data Protocol (contract 1.2, PROTOCOL 16): the painter reads the first {@code window} rows of the query (the
+     * panel's order, this filter) through the data client the page hands it, subscribes with those keys as its window ({@code top}: new rows
+     * of a newest-first order inserted on top) and applies the patches; a gap reads the page again.
+     *
+     * @param table the host's table
+     * @param window the rows read and followed at a time
+     * @param top whether new rows are inserted on top
+     * @param filter the rows' condition as a filter tree (PROTOCOL 7), or none
+     */
+    @Include(Include.Rule.NON_DEFAULT)
+    public record LiveRef(String table, int window, boolean top, Map<String, Object> filter) {}
 }

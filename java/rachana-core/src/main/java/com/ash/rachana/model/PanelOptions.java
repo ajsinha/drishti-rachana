@@ -46,7 +46,10 @@ public final class PanelOptions {
     /** A field name of the rows (a dataset panel's word options). */
     private static final java.util.regex.Pattern FIELD = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]{0,63}");
     private static final Set<String> FIELD_OPTIONS = Set.of("node", "parent", "path", "label", "x", "by");
-    private static final Set<String> FIELD_LISTS = Set.of("rowKey", "group", "y");
+    private static final Set<String> FIELD_LISTS = Set.of("rowKey", "group", "y", "bars");
+    /** Language 1.2: the rows a live panel reads and follows at a time, and the default. */
+    public static final int MAX_WINDOW = 5_000;
+    public static final int WINDOW = 200;
 
     /** The most bins a histogram may ask for. */
     public static final int MAX_BINS = 200;
@@ -59,7 +62,7 @@ public final class PanelOptions {
             PanelKind.CHART, Map.of("type", CHART_TYPES, "agg", DATASET_AGGREGATIONS, "stack", CHART_STACKS));
     private static final Map<PanelKind, Set<String>> BOOLEANS = Map.of(PanelKind.PIVOT, Set.of("heat", "totals"),
             PanelKind.TABLE, Set.of("search"), PanelKind.LADDER, Set.of("search"), PanelKind.LINE, Set.of("step"),
-            PanelKind.GRID, Set.of("search"), PanelKind.CHART, Set.of("horizontal"));
+            PanelKind.GRID, Set.of("search"), PanelKind.CHART, Set.of("horizontal"), PanelKind.LIVE, Set.of("search", "top"));
     /** Options that name a list (or one object) by an expression: a number, a truth value or a YAML list never is one. */
     private static final Set<String> LIST_EXPRESSIONS = Set.of("rows", "each", "nodes", "edges", "source", "children");
     /** What {@code expand: all} stands for: levels of a tree shown open (more than any tree is deep). */
@@ -121,7 +124,7 @@ public final class PanelOptions {
             return Optional.of("option '" + option + "' of '" + kind.id() + "' panels must be one of " + String.join(", ", allowed)
                     + ", not '" + value + "'");
         }
-        if (kind == PanelKind.GRID || kind == PanelKind.TREE || kind == PanelKind.CHART) {
+        if (kind == PanelKind.GRID || kind == PanelKind.TREE || kind == PanelKind.CHART || kind == PanelKind.LIVE) {
             Optional<String> bad = datasetProblem(kind, what, option, value);
             if (bad.isPresent()) {
                 return bad;
@@ -161,10 +164,13 @@ public final class PanelOptions {
             return Optional.of(what + " is a field name, or a list of field names each optionally followed by ' desc' (such as 'notional desc'), not '"
                     + value + "'");
         }
+        if ("window".equals(option) && !(value instanceof Long n && n >= 1 && n <= MAX_WINDOW)) {
+            return Optional.of(what + " must be a whole number of rows from 1 to " + MAX_WINDOW + ", not '" + value + "'");
+        }
         if ("limit".equals(option) && !(value instanceof Long n && n >= 1 && n <= MAX_DATASET_ROWS)) {
             return Optional.of(what + " must be a whole number of rows from 1 to " + MAX_DATASET_ROWS + ", not '" + value + "'");
         }
-        if (("top".equals(option) || "bins".equals(option)) && !(value instanceof Long n && n >= 1 && n <= MAX_BINS)) {
+        if (("top".equals(option) && kind != PanelKind.LIVE || "bins".equals(option)) && !(value instanceof Long n && n >= 1 && n <= MAX_BINS)) {
             return Optional.of(what + " must be a whole number from 1 to " + MAX_BINS + ", not '" + value + "'");
         }
         if ("open".equals(option) && !(value instanceof Long n && n >= -1 && n <= 99)) {

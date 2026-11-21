@@ -72,7 +72,7 @@ Drishti's screens, at level 1.0, stay byte-identical.
 ## Contract 1.2
 
 Appended to 1.1 by the same rules (optional, after the fields of its record, left out when unused; new definitions carry
-`x-since: "1.2"`). `contract` is `"1.2"` only when the document has `state` or a mark's `ev` of the table below; otherwise as for 1.1. A painter that knows only
+`x-since: "1.2"`). `contract` is `"1.2"` only when the document has `state`, a mark's `ev`, a `live` panel or a column `bar` of the table below; otherwise as for 1.1. A painter that knows only
 1.0 or 1.1 ignores what 1.2 adds (decision S1-OPEN b): the screen still draws, and a click simply writes no state.
 
 | Addition | Where | What |
@@ -80,6 +80,9 @@ Appended to 1.1 by the same rules (optional, after the fields of its record, lef
 | `state` | ViewModel, after `datasets` | the screen's state values (SUTRA_EXPANSION S1), in declared order, a fragment use's private state as `<as>.<name>` |
 | `StateView` | new | `id`; `value` (text, a number, `true`/`false`, an ISO date text, a list of text, or `null`: always written); `url` (the host keeps it in the address; `false` until the view-state document, S4); `reads` (the panels, `strip` or `title` whose expressions read it, directly or through a `let`: only those are rebuilt when it changes) |
 | `ev` | `Point`, `Step`, `Event`, `Candle` (after their fields); `Chart.ev` (a list beside `x`); `Metric`, `Gauge`, `Fields` | on a panel that emits on `point-click` (I1): a mark's row in the panel's data (before `where`), sent back by a click as a row's `ev` is; `"0"` on a figure or a record, the panel one mark (its payload reads the panel's context, no row); absent otherwise |
+| kind `live` | PanelView | data `Grid` (as `grid`) over a dataset whose source is `live`; drawn by reading and following the table, never from `values` |
+| `Dataset.live` | Dataset, after `server` | `LiveRef`: `table`, `window` (rows read and followed at a time), `top` (new rows of a newest-first order inserted on top), `filter` (a filter tree, PROTOCOL 7): the painter asks the page's data client for the first window in the panel's `sort`, subscribes with its keys and applies the patches; a gap reads the page again |
+| `GridColumn.bar` | grid and live columns, after `hidden` | `true`: each number drawn with a bar in its cell against the column's largest; the text still says the value |
 | `Row.set`, `Bar.set` | table and ladder rows, hbar bars, after `ev` | what a click writes into the state (I1 `set: { state, to }`): state id to the value, already evaluated for that row or bar and in the state's type; absent when the panel's `on:` writes no state |
 | `set` (point-click) | `Point`, `Step`, `Event`, `Candle`, `Metric`, `Gauge`, `Fields` after `ev`; `Chart.set` (a list beside `x`, `null` for a point whose effects failed) | what a `point-click` on the mark writes into the state (I1 `on: { point-click: [ { set: { state, to } } ] }`), evaluated as `Row.set` is: `@` the mark's row, `#index` its place before `where`; a figure or a record in the panel's context; absent when the panel's `on: point-click` writes no state |
 

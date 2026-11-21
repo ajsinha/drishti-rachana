@@ -43,6 +43,11 @@ public final class Binder {
     private final DatasetBinder datasets;
     private final PanelLimits limits;
 
+    /** The expression compiler. */
+    ElCompiler el() {
+        return el;
+    }
+
     /** The limits panels are drawn with. */
     public PanelLimits limits() {
         return limits;
@@ -112,7 +117,7 @@ public final class Binder {
                 case PIVOT -> charts.pivot(p, c);
                 case METRIC -> metric(p, c);
                 case MAP -> maps.map(p, c);
-                case GRID, TREE, CHART -> datasets.bind(p, c);                // language 1.1: the rows go into the view's datasets
+                case GRID, TREE, CHART, LIVE -> datasets.bind(p, c);          // language 1.1 (1.2: live): the rows go into the view's datasets
             };
             boolean empty = DatasetBinder.reads(p.kind()) ? DatasetBinder.empty(data, c) : com.ash.rachana.view.Emptiness.of(data);
             return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer() || explanation != null,

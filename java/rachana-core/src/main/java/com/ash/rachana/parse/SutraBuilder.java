@@ -145,6 +145,7 @@ final class SutraBuilder {
                 panels.add(panel);
             }
         }
+        panels.replaceAll(p -> p.kind() == PanelKind.LIVE ? live(p, extensions.get(com.ash.rachana.model.DataEntry.KEY)) : p);
         if (screenRefresh != null) {
             panels.replaceAll(p -> p.options().containsKey(com.ash.rachana.model.Refresh.KEY) ? p : withOption(p, com.ash.rachana.model.Refresh.KEY, screenRefresh));
         }
@@ -353,6 +354,10 @@ final class SutraBuilder {
             problem("RCH-2021", "unknown panel kind '" + kindText + "'; expected one of " + kinds(), m.get("kind"));
             return null;
         }
+        if (nested && kind == PanelKind.LIVE) {
+            problem("RCH-2023", "a live panel is a panel of the screen, not of a tab", m.get("kind"));
+            return null;
+        }
         String id = nested ? text(m.get("id"), "body") : requiredText(m, "id", n);
         String key = text(m.get("key"), null);
         if (key != null && !FKEY.matcher(key).matches()) {
@@ -459,7 +464,10 @@ final class SutraBuilder {
                 if (PANEL.contains(opt) || WiringReader.isWiring(opt, val) || on && com.ash.rachana.model.Effects.KEY.equals(opt)) {
                     return;
                 }
-                if (!kind.accepts(opt)) {
+                if (kind.accepts(opt) && !SutraBlocks.atLeast(grammar.level(), kind.since(opt))) {   // a later level's option of an older kind
+                    problem("RCH-2008", "option '" + opt + "' of '" + kind.id() + "' panels needs Rachana " + kind.since(opt) + "; this host runs "
+                            + grammar.level() + " (raise the host's language level)", val);
+                } else if (!kind.accepts(opt)) {
                     problem("RCH-2023", "search".equals(opt) || Panel.PIVOT.equals(opt)
                             ? "option '" + opt + "' applies only to panels that show a table (table, ladder), not '" + kind.id() + "'"
                             : "option '" + opt + "' is not valid for '" + kind.id() + "' panels", val);
@@ -568,6 +576,50 @@ final class SutraBuilder {
         }
         return com.ash.rachana.model.Refresh.fromOption(raw).map(com.ash.rachana.model.Refresh::asOption).orElse(null);
     }
+
+    /**
+     * Language 1.2: a {@code live} panel's {@code rows} names a {@code table} entry of {@code data:} ({@code $.<entry>}) and each column reads
+     * one field; the entry's table, key and condition go with the panel under {@link #LIVE_ENTRY} for the binder (which sees no entries).
+     */
+    private Panel live(Panel p, Object entries) {
+        String rows = p.option("rows").map(String::trim).orElse("");
+        java.util.regex.Matcher m = Pattern.compile("\\$\\.([A-Za-z_][A-Za-z0-9_]*)").matcher(rows);
+        com.ash.rachana.model.DataEntry entry = null;
+        if (m.matches() && entries instanceof List<?> l) {
+            for (Object o : l) {
+                if (o instanceof com.ash.rachana.model.DataEntry e && e.name().equals(m.group(1)) && e.form() == com.ash.rachana.model.DataEntry.Form.TABLE) {
+                    entry = e;
+                }
+            }
+        }
+        if (entry == null) {
+            problems.add(new SutraProblem("RCH-2029", "option 'rows' of 'live' panels names a table entry of data: ($.<entry> with { table: <name> }), not '"
+                    + rows + "'", p.location()));
+            return p;
+        }
+        List<String> key = p.options().get("rowKey") instanceof String k ? List.of(k)
+                : p.options().get("rowKey") instanceof List<?> kl ? kl.stream().map(String::valueOf).toList() : entry.key();
+        if (key == null || key.isEmpty()) {
+            problems.add(new SutraProblem("RCH-2072", "live panel '" + p.id() + "' reads data '" + entry.name() + "', which has no key: a live table is "
+                    + "followed by key (give the entry a key, or the panel a rowKey)", p.location()));
+        }
+        for (Column c : p.columns()) {
+            if (c.bind() == null || !Pattern.compile("@\\.[A-Za-z_][A-Za-z0-9_]*").matcher(c.bind().trim()).matches()) {
+                problems.add(new SutraProblem("RCH-2029", "a column of live panel '" + p.id() + "' reads one field of the row (such as @.qty), not '"
+                        + c.bind() + "': the painter shows the rows the host sends", p.location()));
+            }
+        }
+        Map<String, Object> ref = new LinkedHashMap<>();
+        ref.put("table", entry.table());
+        ref.put("key", key == null ? List.of() : key);
+        if (entry.where() != null) {
+            ref.put("where", entry.where());
+        }
+        return withOption(p, LIVE_ENTRY, ref);
+    }
+
+    /** The option a live panel's entry travels under (never written by an author: not a name). */
+    static final String LIVE_ENTRY = "$live";
 
     private static Panel withOption(Panel p, String key, Object value) {
         Map<String, Object> o = new LinkedHashMap<>(p.options());

@@ -219,6 +219,7 @@ final class ViewRecords {
                 ViewJson.put(m, "pinned", r.pinned(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "agg", r.agg(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "hidden", r.hidden(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "bar", r.bar(), Rule.NON_DEFAULT);
                 yield m;
             }
             case PanelData.GridPivot r -> {
@@ -549,6 +550,7 @@ final class ViewRecords {
                 ViewJson.put(m, "arrow", r.arrow(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "pages", r.pages(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "server", r.server(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "live", r.live(), Rule.NON_DEFAULT);
                 yield m;
             }
             case ViewModel.KeyView r -> {
@@ -565,6 +567,14 @@ final class ViewRecords {
                 ViewJson.put(m, "kind", r.kind(), Rule.ALWAYS);
                 ViewJson.put(m, "id", r.id(), Rule.ALWAYS);
                 ViewJson.put(m, "mnemonic", r.mnemonic(), Rule.ALWAYS);
+                yield m;
+            }
+            case ViewModel.LiveRef r -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                ViewJson.put(m, "table", r.table(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "window", r.window(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "top", r.top(), Rule.NON_DEFAULT);
+                ViewJson.put(m, "filter", r.filter(), Rule.NON_DEFAULT);
                 yield m;
             }
             case ViewModel.Opt r -> {

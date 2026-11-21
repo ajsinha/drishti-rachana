@@ -174,6 +174,15 @@ export class DataClient {
   }
 
   /**
+   * One page of a query, never the next ones (a live panel's window, SPEC 2.3): its rows, version, total (when the host counts) and next.
+   * @returns {Promise<{rows: Object[], version: ?{epoch: string, seq: number}, total: ?number, next: ?string}>}
+   */
+  async page(table, query) {
+    const page = await this.json('POST', `/tables/${encodeURIComponent(table)}/query`, Object.assign({}, query || {}));
+    return { rows: pageRows(page), version: page.version || null, total: typeof page.total === 'number' ? page.total : null, next: page.next || null };
+  }
+
+  /**
    * Follows a table's changes after a position. onFrame receives each `msg` or `gap` frame parsed; the rules of PROTOCOL 8.3 (drop a
    * seq not above the last, resync on a gap or another epoch) are the caller's. Returns a function that stops.
    * opts.window ({keys: [[...key values]], top?}, a table whose can has changes.window; PROTOCOL 16): only the patches of the keys the
@@ -293,4 +302,32 @@ export class BridgeChannel {
   window(sub, keys, top) {
     return this.send(() => ({ t: 'win', sub, keys: keys || [], top: !!top })).then(() => undefined);
   }
+}
+
+/**
+ * The live tables of a view for Drishti Elements' painter (its options.tables; contract 1.2, panel kind live): for a dataset's live
+ * reference {table, window, top, filter}, page(query) reads one page and follow(after, keys, top, onPatch, onGap) subscribes with that
+ * window (PROTOCOL 16), passes each patch on in seq order and calls onGap on a gap, another epoch or a skipped seq (the painter reads
+ * its page again). The answer's window(keys, top) moves the window; stop() ends it.
+ * @param {DataClient} client
+ * @returns {function(Object): {page: function(Object): Promise<Object>, follow: function(*, Array, boolean, function, function): Object}}
+ */
+export function liveTables(client) {
+  return (ref) => ({
+    page: (query) => client.page(ref.table, query),
+    follow(after, keys, top, onPatch, onGap) {
+      let sub = null, last = after, ended = false;
+      const gap = (e) => { if (!ended) { ended = true; stop(); onGap(e); } };
+      const stop = client.follow(ref.table, after, (f) => {
+        if (f.t === 'subd') { sub = f.sub; return; }
+        if (f.t === 'msg' && f.epoch === last.epoch && (f.first || f.seq) === last.seq + 1) { last = { epoch: f.epoch, seq: f.seq }; onPatch(f.data); return; }
+        if (f.t === 'msg' && f.epoch === last.epoch && f.seq <= last.seq) return;
+        gap(f);
+      }, gap, { window: { keys, top: !!top } });
+      return {
+        window(k, t) { return sub ? client.window(sub, k, !!t) : Promise.resolve(); },
+        stop() { ended = true; stop(); }
+      };
+    }
+  });
 }

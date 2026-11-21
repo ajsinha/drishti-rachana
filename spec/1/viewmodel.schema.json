@@ -1683,7 +1683,8 @@
             "map",
             "grid",
             "tree",
-            "chart"
+            "chart",
+            "live"
           ],
           "description": "panel kind: one of the grammar's kinds; decides which record data carries"
         },
@@ -2425,6 +2426,32 @@
                 "anyOf": [
                   {
                     "$ref": "#/$defs/DataChart"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Grid"
                   },
                   {
                     "type": "null"
@@ -3890,6 +3917,11 @@
             }
           ],
           "description": "a server-side row model"
+        },
+        "live": {
+          "$ref": "#/$defs/LiveRef",
+          "description": "a live table read a window at a time and followed by key (contract 1.2, panel kind live); values are absent",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -4108,6 +4140,11 @@
         "hidden": {
           "type": "boolean",
           "description": "whether it starts hidden"
+        },
+        "bar": {
+          "type": "boolean",
+          "description": "each number drawn with a bar in its cell against the column's largest (contract 1.2); the text still says the value",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -4405,6 +4442,33 @@
       "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#GeoPoint",
       "x-include": "NON_DEFAULT (lat and lon ALWAYS)",
       "x-since": "1.1"
+    },
+    "LiveRef": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "type": "string",
+          "description": "the host's table"
+        },
+        "window": {
+          "type": "integer",
+          "description": "the rows read and followed at a time"
+        },
+        "top": {
+          "type": "boolean",
+          "description": "whether new rows of a newest-first order are inserted on top"
+        },
+        "filter": {
+          "type": "object",
+          "description": "the rows' condition as a filter tree (PROTOCOL 7)"
+        }
+      },
+      "required": [
+        "table"
+      ],
+      "additionalProperties": false,
+      "description": "A live table of the Data Protocol read a window at a time (contract 1.2, panel kind live): the painter reads the first window rows of the query through the page's data client, subscribes with their keys and applies the patches",
+      "x-since": "1.2"
     }
   }
 }

@@ -20,7 +20,7 @@
 // the view gets its address only from the host's linkResolver and only when that address is absolute (a relative one would mean
 // something else in every page that embeds the view): otherwise the link is a button that raises elements-view:link for the host.
 // Events: rachana-view:ready {viewModel}, rachana-view:change {frames | viewModel}, rachana-view:error {error}.
-import { DataClient } from './data_client.js';
+import { DataClient, liveTables } from './data_client.js';
 import { Screen, loadRuntime } from './screen.js';
 
 export const RACHANA_VIEW = 'rachana-view';
@@ -85,7 +85,7 @@ export function defineRachanaView(o) {
       let painter = this.painter;
       if (!painter) { painter = w.document.createElement('elements-view'); this.appendChild(painter); }
       const resolver = this.linkResolver;
-      painter.options = { complete: this.hasAttribute('complete'), links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
+      painter.options = { complete: this.hasAttribute('complete'), tables: client ? liveTables(client) : undefined, links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
       painter.viewModel = vm;
       this.emit('ready', { viewModel: vm });
       if (this.hasAttribute('live')) {

@@ -1,0 +1,77 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/live
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  The live panel kind (SPEC 2.3, level 1.2): its rows name a table entry of data: (RCH-2029), the entry or the panel gives a key
+  (RCH-2072), each column reads one field (RCH-2029), window is 1 to 5,000 rows (RCH-2029), it is a panel of the screen, not of a tab
+  (RCH-2023).
+cases:
+  - id: rows-must-name-a-table-entry
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: l, kind: live, rows: $.orders }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'rows' of 'live' panels names a table entry of data: ($.<entry> with { table: <name> }), not '$.orders'", "range": {"start": {"line": 6, "column": 5}}}]}
+
+  - id: a-live-table-needs-a-key
+    kind: problem
+    source: SPEC 2.3; PROTOCOL 8.1
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      data:
+        orders: { table: orders }
+      panels:
+        - { id: l, kind: live, rows: $.orders }
+    expect: {"ok": false, "problems": [{"code": "RCH-2072", "severity": "error", "message": "live panel 'l' reads data 'orders', which has no key: a live table is followed by key (give the entry a key, or the panel a rowKey)", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: a-column-reads-one-field
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      data:
+        orders: { table: orders, key: id }
+      panels:
+        - { id: l, kind: live, rows: $.orders, columns: [ { label: Value, bind: "@.qty * @.price" } ] }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "a column of live panel 'l' reads one field of the row (such as @.qty), not '@.qty * @.price': the painter shows the rows the host sends", "range": {"start": {"line": 8, "column": 5}}}]}
+
+  - id: window-is-bounded
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      data:
+        orders: { table: orders, key: id }
+      panels:
+        - { id: l, kind: live, rows: $.orders, window: 6000 }
+    expect: {"ok": false, "problems": [{"code": "RCH-2029", "severity": "error", "message": "option 'window' of 'live' panels must be a whole number of rows from 1 to 5000, not '6000'", "range": {"start": {"line": 8, "column": 50}}}]}
+
+  - id: not-inside-a-tab
+    kind: problem
+    source: SPEC 2.3
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      data:
+        orders: { table: orders, key: id }
+      panels:
+        - { id: t, kind: tabs, each: "$.books", body: { kind: live, rows: $.orders } }
+    expect: {"ok": false, "problems": [{"code": "RCH-2023", "severity": "error", "message": "a live panel is a panel of the screen, not of a tab", "range": {"start": {"line": 8, "column": 57}}}]}

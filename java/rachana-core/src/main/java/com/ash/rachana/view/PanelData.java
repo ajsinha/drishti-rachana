@@ -563,9 +563,17 @@ public sealed interface PanelData {
      * @param agg how a group's figure is made of its rows' ({@code sum}, {@code count}, {@code min}, {@code max}, {@code avg},
      *     {@code first}, {@code last}, {@code distinct}), or none
      * @param hidden whether it starts hidden
+     * @param bar whether each number is drawn with a bar in its cell, as long as the value is large against the column's largest (contract
+     *     1.2; the text still says the value)
      */
     @Include(Include.Rule.NON_DEFAULT)
-    record GridColumn(String field, String label, String fmt, String tone, int width, String pinned, String agg, boolean hidden) {}
+    record GridColumn(String field, String label, String fmt, String tone, int width, String pinned, String agg, boolean hidden, boolean bar) {
+
+        /** A column without a bar (contract 1.1). */
+        public GridColumn(String field, String label, String fmt, String tone, int width, String pinned, String agg, boolean hidden) {
+            this(field, label, fmt, tone, width, pinned, agg, hidden, false);
+        }
+    }
 
     /**
      * One key of an order.

@@ -67,7 +67,7 @@ a catalogue from which the prompt kit, the editor support and the conformance su
 9. **Promotion, not duplication.** When Core gains something a profile already has (`lag`, `rank`, `ytd`, `convert`),
    the profile's function **becomes** the Core function with the same meaning; the host's engine is then one more
    executor of it, proven by parity cases.
-10. **Size discipline.** The JavaScript runtime budget is 365 KB (restated at the G1 gate; the 150 KB first aimed at was not reachable). Core keeps a base (operators, logic, text, dates,
+10. **Size discipline.** The JavaScript runtime budget is 385 KB (restated at the G1 close as measured + ~5%; bigger bundles acceptable (owner); the 150 KB first aimed at was not reachable). Core keeps a base (operators, logic, text, dates,
     lists, aggregates); the larger families (`statistics`, `finance`, `timeseries`, `geo`, `quant`, `units`) are Core
     libraries, linked only when a Sutra uses a function of theirs. The compiler knows this at compile time.
 

@@ -158,6 +158,20 @@ waits for level 1.1), so the decimals are the profile's. Changed answers:
 | A7b-4 | `and`, `or`, `not` were FormExpr's only | they are Rachana-EL's (PY1): 6 conformance cases `el/python-words`, unverified (the reference refuses the words) |
 
 
+### EL phase 1: level 1.1 as built (G2 lane B, 2026-11-21), for the owner's review
+
+The syntax batch, exact numbers and code points are built at level 1.1 (SPEC 4.16, 4.17; EBNF part D); level 1.0 is unchanged
+(replay identical). Choices made in building, each open to the owner:
+
+| # | Decision as built | Alternative |
+|---|---|---|
+| EL1-1 | **`range` collides**: Core already has the aggregate `range(list, field?)` (max − min, split step A9); PY4 makes `range(start, stop, step)` Python's. At 1.1 the first argument decides: a list (or a field name as second argument) keeps the aggregate, numbers give Python's range. Recommendation: rename the aggregate in a later minor (`spread` or `value_range`) with a `rachana migrate` rule | refuse one of the two at 1.1 |
+| EL1-2 | `**` and infix `^` share Python's precedence: right-associative and tighter than a sign on the left, so `-2 ^ 2` is `-4` (Excel gives `4`) | give `^` Excel's precedence (two rules for one operator), or refuse `-x ^ y` without parentheses with a fix |
+| EL1-3 | A whole JSON number a host hands over as an integer is exact at 1.1 (`$.b * 0.5` with `b: 2` is the decimal `1`); a fractional JSON number is a double, as SPEC 4.16 rule 6 says. Only the kind differs, never the digits. Recommendation: amend rule 6 to say so | every JSON number a double |
+| EL1-4 | The F8 cases that failed at 1.0 (26 `numbers-exact`, 9 `text-code-points`, 11 `reserved`) pin level 1.1 (`since: "1.1"`) and are verified there; 9 reserved-token cases are withdrawn because 1.1 defines the tokens, and two `**` message cases because PY6 made `**` the power. At 1.0 a 1.1 construct is refused with the reference's words (`el/syntax-at-1-0`), not `RCH-2008`: N5 and the byte-identical replay come first. `levels.py check` does not count a case recorded failing that moved to a later level or was withdrawn | re-record level 1.0 with the reserved-token words (the replay would change) |
+| EL1-5 | Number-like text read by an operator at 1.1 follows the literal grammar (P2-2's decimal-only grammar): hexadecimal, `Infinity`, `NaN` and `d`/`f` suffixes are not numbers there; level 1.0 keeps Java's (D5-2) | keep Java's grammar at 1.1 |
+| EL1-6 | Lambdas are taken by `map`, `sort` (each key), `reduce` (two names) and `group` (the key), and by `let`; a filter `[?p]` keeps `@`. The X45 budgets are not built (only the literal, record and `range` caps); the printer does not keep comments; X11's catalogue mark for functions whose first argument is not the subject is not built | build X45 and the comment-keeping printer in the next lane |
+
 ### A5: the same bytes on every runtime (2026-11-21)
 
 | # | Decision |
@@ -226,6 +240,20 @@ waits for level 1.1), so the decimals are the profile's. Changed answers:
 | G1-3 | The block library is per instance (`BlockLibrary`, F4): Core alone has no block; a host's library reaches the parser through its profile. The customer corpus is compiled on Core by default with the conformance suite's `drishti` profile (F1); the corpus's ViewModels (`binds/`) are recorded later, before G4 (F13) |
 | G1-4 | TeaVM 0.16.0's precise dependency analysis merges type-set domains in an order that varies between runs, and some orders lose types (the runtime bundle at `52e112f`: no `Boolean` reached `Plain.asBoolean`, named formats failed; gate re-check R1). The build carries a second patched TeaVM file, `PreciseDependencyAnalyzer` (Apache-2.0, `java/rachana-js/src/build/java`): no domain merging; the bundles are the same on every build. `tools/js/build_js.py` runs the conformance suite on both bundles at every level after each build and fails on any error, verified failing case, or runtime answer that differs from the tools bundle's |
 
+### L-21: fragments are functions (owner, 2026-11-21)
+
+"Fragments should behave like functions. Outside callers supply data and attribute names, which map to whatever local names
+the fragment has." The governing rule of the typed form (LIBRARIES 4 to 7; SPEC 2.5, level 1.2):
+
+| # | Rule | As built |
+|---|---|---|
+| 1 | A fragment declares its **local names**: parameters, table parameters and each table's local columns (written, or a published contract); its body uses only those | `columns:` or `contract:` (`contracts/<name>.json`, Data Protocol schema form) on a table parameter |
+| 2 | The caller **binds** them at the use like named arguments: value ← expression or literal; table ← the caller's table; each local column ← the caller's column, identity when the names already match | `with: { rows: { from: $.positions, columns: { amount: MTM_USD, desk: BOOK_DESK } } }`, or `rows: $.t` |
+| 3 | The mapping is resolved at **compile time**: a rename in the expanded Sutra, so no run-time cost and the plan pushes down the caller's real names | field-name options, `bind:` and `@.<column>` of the panels that read the table are renamed; a bare name or a column named as text (`sum(t, 'amount')`) is not, so a fragment reads columns as `@.<name>` or by a field option |
+| 4 | **Hermetic**: no reading of the caller's screen except through parameters; events are the fragment's return values, which the caller names (`as:`) and wires (`on:`) | `RCH-2117` for every typed fragment; `emits: [{ name, payload, doc }]` declared, raised by one inner panel; the caller reads `@<as>.<event>.<payload name>`; `on: { <event>: { set: <control>, field: <name> } }` (Core's one effect; host actions wait for I1) |
+| 5 | Problems at the call site name **both sides** | unknown local column `RCH-2114`; required column missing `RCH-2115`; unknown caller column or type mismatch `RCH-2116`; a mapping the fragment never reads: advisory `RCH-2120` (severity warning) |
+| 6 | Two uses with different mappings are **two instances** | `as: <name>` scopes every id the fragment brings (`<as>-<id>`, a dot is not an id character); without `as:` a second use collides (`RCH-2024`) |
+
 ### G2 mock-up choices (lead, under the owner's delegation, 2026-11-21)
 
 The owner delegated mock-up choices to the lead's recommendation; the alternatives stay in docs/mockups/g2/ so the owner can override.
@@ -235,3 +263,20 @@ The owner delegated mock-up choices to the lead's recommendation; the alternativ
 | MK-1 | Rachana Studio | **A, the three-pane editor** (fragment palette · live `<rachana-view>` preview · Sutra/properties) **with B's command bar** for the AI "describe a screen" prompt on top; C's prose cell later as a documentation mode | B canvas-first, C notebook |
 | MK-2 | Workspace document (L4) | **A, docked tiles**, extended with tabs of docks; channels link tiles | B tabs, C floating windows (later, in the desktop hosts only) |
 | MK-3 | Docs site front page | **A, task-first**, with B's search box and contents tree on the inner pages | B reference-first |
+
+### EL1 decisions taken (lead, under the owner's delegation, 2026-11-21)
+
+| # | Decision | Why |
+|---|---|---|
+| EL1-1 | At level 1.1 `range(...)` is only Python's sequence. The A9 aggregate is renamed **`span(list, field?)`** (max − min) at 1.1; level 1.0 keeps the old `range` aggregate unchanged. No dispatch on the first argument's type. | One meaning per name (Python-like, owner PY4); choosing by argument type is fragile and surprises authors and the AI |
+| EL1-2 | Accepted: `**` and `^` share Python's precedence (`-2 ^ 2` is `-4`); the Excel difference is documented in the SPEC and flagged by a lint hint when `-x ^ n` is written without parentheses | One rule for both spellings; Python first (owner) |
+| EL1-3 | Accepted: whole JSON numbers from a host are exact at 1.1; fractional ones stay doubles | Exact where it is safe without changing host contracts |
+| EL1-4 | Accepted, with a condition: the level replay may skip a 1.0 case only when it is listed (moved with `since`, or withdrawn with a reason) in `compat/levels/moved-cases.yaml`; the G2 gate checks the list | Keeps "replay identical" auditable |
+| EL1-5 | Accepted: number-like text at 1.1 follows the decimal-only literal grammar | One number grammar |
+| EL1-6 | Accepted: lambdas in `map`, `sort`, `reduce`, `group`, `let`; second class, no recursion | Safe and bounded |
+
+Alternatives stay recorded in the table above; the owner may override any of them.
+
+### R-1: where Drishti gets the released jars (owner, 2026-11-21)
+
+**Decided (owner):** released Rachana jars go into the **local Maven repository (`~/.m2`)** of each build machine; Drishti's parent POM pins `drishti.rachana.version`. A release is installed from its **tag** only (`git checkout vX.Y.Z && ./mvnw clean install`), never from a branch or a snapshot. Builders and gates never install snapshots. G4 adds the step "build and install Rachana at the pinned tag" to Drishti's build guides (Linux and Windows), and Drishti's build fails with a clear message naming that step when the pinned version is missing. The alternatives (a file repository inside Drishti, GitHub Packages) stay open if machines multiply.

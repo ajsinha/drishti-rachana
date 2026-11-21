@@ -131,6 +131,12 @@ public final class LibrarySet {
      * are reported at the entry or the use that asked. With nothing to load the host's resolver itself is returned.
      */
     public FragmentResolver fragments(FragmentResolver host, PNode root, String file, List<SutraProblem> problems) {
+        return fragments(host, root, file, problems, l -> { });
+    }
+
+    /** As {@link #fragments(FragmentResolver, PNode, String, List)}, telling {@code loaded} each library loaded (dependencies too), once. */
+    public FragmentResolver fragments(FragmentResolver host, PNode root, String file, List<SutraProblem> problems,
+            java.util.function.Consumer<Library> loaded) {
         Map<String, Library> byName = new LinkedHashMap<>();
         Map<String, Library> byLong = new LinkedHashMap<>();
         PNode declared = root == null ? null : root.map().get("libraries");
@@ -163,6 +169,9 @@ public final class LibrarySet {
                 }
             }
         }
+        Map<String, Library> all = new java.util.TreeMap<>(byName);
+        byLong.values().forEach(l -> all.putIfAbsent(l.name(), l));
+        all.values().forEach(loaded);
         if (byName.isEmpty() && byLong.isEmpty()) {
             return host;
         }
@@ -184,6 +193,17 @@ public final class LibrarySet {
                     return l.fragment(sm.group(2), Integer.parseInt(sm.group(4)));
                 }
                 return host.find(ref);
+            }
+
+            @Override
+            public Optional<String> contract(SutraBlocks.Block fragment, String name) {
+                String path = fragment == null || fragment.path() == null ? "" : fragment.path();
+                int slash = path.indexOf('/');
+                Library l = slash < 0 ? null : byName.get(path.substring(0, slash));
+                if (l == null) {
+                    l = byLong.values().stream().filter(x -> path.startsWith(x.name() + "/")).findFirst().orElse(null);
+                }
+                return l == null ? host.contract(fragment, name) : l.contract(name);
             }
 
             @Override

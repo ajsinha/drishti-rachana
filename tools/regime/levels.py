@@ -1,16 +1,54 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
 """Language levels (CG2, SUTRA_EXPANSION 6.5): compat/levels/<L>/{results.jsonl, rachana.lang.json, sutra.schema.json, functions.yaml}.
-`write L` is run by the release that creates level L: it writes the folder once and refuses an existing one (no re-record flag).
+`write L` is run by the release that creates level L: it writes the folder once and refuses an existing one (no re-record flag); its
+functions.yaml is spec/1's less the Core entries of a later `since`.
 `check [L]` replays the conformance suite of Rachana's JVM runtime at --language L and compares each case recorded in results.jsonl
 byte for byte; it exits 1 on a difference. Cases added after the level was written are not part of it, and a case recorded as
-`unsupported` (a kind the runtime did not run yet) may be answered now: both are reported, neither is a difference. Build first: cd java && ./mvnw clean package -DskipTests."""
-import argparse, shutil, subprocess, sys, tempfile
+`unsupported` (a kind the runtime did not run yet) may be answered now: both are reported, neither is a difference. A recorded case the
+suite no longer runs at L is skipped ONLY when compat/levels/moved-cases.yaml lists it (DECISIONS EL1-4): moved to a later level (`since`;
+the suite holds it with that since) or withdrawn (with the reason; the suite no longer has it). Any other difference fails, and so does
+an entry that is not a moved case: the list stays exact.
+`compare L THEN NOW` is the comparison alone, over two results files (the check's second half; its test).
+Build first: cd java && ./mvnw clean package -DskipTests."""
+import argparse, glob, json, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 LEVELS = ROOT / "compat" / "levels"
+MOVED = LEVELS / "moved-cases.yaml"
+SUITES = ROOT / "conformance" / "1"
 DEFS = ["rachana.lang.json", "sutra.schema.json", "functions.yaml"]
+
+
+def minor(v):
+    return tuple(int(x) for x in str(v).split("."))
+
+
+def functions_at(text, level):
+    """spec/1/functions.yaml at a level: the Core entries (`- name:` blocks) whose `since` is later than the level are left out."""
+    out, block = [], None
+    for line in text.splitlines(keepends=True):
+        if line.startswith("- ") or not line.startswith(" "):     # a new list item, a comment or a key ends the block
+            if block is not None and keep(block, level):
+                out += block
+            block = [line] if line.startswith("- name: ") else None
+            if block is None:
+                out.append(line)
+        elif block is not None:
+            block.append(line)
+        else:
+            out.append(line)
+    if block is not None and keep(block, level):
+        out += block
+    return "".join(out)
+
+
+def keep(block, level):
+    m = next((re.match(r'  since: "([0-9.]+)"', b) for b in block if b.startswith("  since: ")), None)
+    return m is None or minor(m.group(1)) <= minor(level)
 
 
 def replay(level, out):
@@ -20,10 +58,69 @@ def replay(level, out):
         sys.exit(f"the JVM runtime did not write results for level {level}:\n{r.stdout[-2000:]}{r.stderr[-2000:]}")
 
 
+def suite_since(suites):
+    """Every case of the suite: suite#id -> its since (the case's own, else its file's)."""
+    found = {}
+    for p in glob.glob(str(Path(suites) / "**" / "*.yaml"), recursive=True):
+        try:
+            d = yaml.safe_load(Path(p).read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            continue
+        if isinstance(d, dict) and isinstance(d.get("cases"), list) and "suite" in d:
+            for c in d["cases"]:
+                found[f"{d['suite']}#{c['id']}"] = str(c.get("since", d.get("since", "1.0")))
+    return found
+
+
+def compare(lv, then_file, now_file, moved_file, suites):
+    """Prints the comparison of one level; returns the number of failures (unlisted differences and wrong list entries)."""
+    def lines(f):
+        return {json.loads(x)["case"]: x for x in Path(f).read_text(encoding="utf-8").splitlines() if x}
+    now, then = lines(now_file), lines(then_file)
+    listed = []
+    if Path(moved_file).is_file():
+        listed = ((yaml.safe_load(Path(moved_file).read_text(encoding="utf-8")) or {}).get("levels") or {}).get(lv) or []
+    since = suite_since(suites)
+    wrong, skipped = [], set()
+    for e in listed:
+        c = e.get("case")
+        if c in skipped:
+            wrong.append(f"{c}: listed twice")
+        elif c not in then:
+            wrong.append(f"{c}: not recorded at level {lv}")
+        elif ("since" in e) == ("withdrawn" in e):
+            wrong.append(f"{c}: an entry has exactly one of since or withdrawn")
+        elif "since" in e and not (minor(e["since"]) > minor(lv) and since.get(c) == str(e["since"])
+                                   and c in now and json.loads(now[c])["status"] == "unsupported"):
+            wrong.append(f"{c}: listed as moved to {e['since']}, but the suite has it at {since.get(c, 'no level (absent)')}")
+        elif "withdrawn" in e and (c in now or c in since):
+            wrong.append(f"{c}: listed as withdrawn, but the suite still has it")
+        skipped.add(c)
+    changed = [c for c, x in then.items() if c not in skipped and now.get(c) != x and json.loads(x)["status"] != "unsupported"]
+    answered = [c for c, x in then.items() if c not in skipped and now.get(c) != x and json.loads(x)["status"] == "unsupported"]
+    added = len(set(now) - set(then))
+    for c in changed:
+        print(f"  changed: {c}" + ("" if c in now and json.loads(now[c])["status"] != "unsupported"
+                                   else " (no longer run at this level: list it in compat/levels/moved-cases.yaml)"))
+    for w in wrong:
+        print(f"  moved-cases.yaml: {w}")
+    bad = len(changed) + len(wrong)
+    print(f"level {lv}: {'DIFFERENT' if bad else 'identical'} ({len(then) - len(changed) - len(answered) - len(skipped)} identical, "
+          f"{len(answered)} newly answered, {len(skipped)} listed as moved or withdrawn, {added} cases added since)")
+    return bad
+
+
 ap = argparse.ArgumentParser(description=__doc__)
-ap.add_argument("cmd", choices=["write", "check"])
+ap.add_argument("cmd", choices=["write", "check", "compare"])
 ap.add_argument("level", nargs="?")
+ap.add_argument("files", nargs="*", help="compare: THEN.jsonl NOW.jsonl")
+ap.add_argument("--moved", default=str(MOVED), help="the moved-cases list (compare)")
+ap.add_argument("--suites", default=str(SUITES), help="the conformance suite folder (compare)")
 a = ap.parse_args()
+if a.cmd == "compare":
+    if not a.level or len(a.files) != 2:
+        ap.error("compare needs a level and two results files")
+    sys.exit(1 if compare(a.level, a.files[0], a.files[1], a.moved, a.suites) else 0)
 with tempfile.TemporaryDirectory(prefix="rachana-levels-") as tmp:
     if a.cmd == "write":
         if not a.level:
@@ -35,22 +132,13 @@ with tempfile.TemporaryDirectory(prefix="rachana-levels-") as tmp:
         d.mkdir(parents=True)
         shutil.copy(Path(tmp) / "results.jsonl", d / "results.jsonl")
         for f in DEFS:
-            shutil.copy(ROOT / "spec/1" / f, d / f)
+            text = (ROOT / "spec/1" / f).read_text(encoding="utf-8")
+            (d / f).write_text(functions_at(text, a.level) if f == "functions.yaml" else text, encoding="utf-8")
         print(f"wrote {d}")
     else:
         levels = [a.level] if a.level else sorted(p.name for p in LEVELS.iterdir() if p.is_dir())
         bad = 0
         for lv in levels:
             replay(lv, Path(tmp) / f"{lv}.jsonl")
-            import json
-            now = {json.loads(x)["case"]: x for x in (Path(tmp) / f"{lv}.jsonl").read_text(encoding="utf-8").splitlines() if x}
-            then = {json.loads(x)["case"]: x for x in (LEVELS / lv / "results.jsonl").read_text(encoding="utf-8").splitlines() if x}
-            changed = [c for c, x in then.items() if now.get(c) != x and json.loads(x)["status"] != "unsupported"]
-            answered = [c for c, x in then.items() if now.get(c) != x and json.loads(x)["status"] == "unsupported"]
-            added = len(set(now) - set(then))
-            for c in changed:
-                print(f"  changed: {c}")
-            print(f"level {lv}: {'DIFFERENT' if changed else 'identical'} ({len(then) - len(changed) - len(answered)} identical, "
-                  f"{len(answered)} newly answered, {added} cases added since)")
-            bad += bool(changed)
+            bad += bool(compare(lv, LEVELS / lv / "results.jsonl", Path(tmp) / f"{lv}.jsonl", MOVED, SUITES))
         sys.exit(1 if bad else 0)

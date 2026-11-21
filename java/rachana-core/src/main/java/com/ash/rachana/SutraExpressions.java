@@ -53,6 +53,12 @@ public final class SutraExpressions {
     }
 
     /** The message without its leading RCH-nnnn: the problem carries the code itself. */
+    /** The problem's words with the source in front, once (a compiler at level 1.1 has put it there already). */
+    private static String whole(String what, String src, ElException e) {
+        String words = withoutCode(e.getMessage());
+        return words.startsWith(what + " '" + src + "': ") ? words : what + " '" + src + "': " + words;
+    }
+
     private static String withoutCode(String message) {
         return message == null ? "" : message.replaceFirst("^RCH-\\d+\\s*:?\\s*", "");
     }
@@ -199,7 +205,7 @@ public final class SutraExpressions {
         try {
             compiler.compile(src);
         } catch (ElException e) {
-            out.add(new SutraProblem("RCH-2101", "expression '" + src + "': " + withoutCode(e.getMessage()), at));
+            out.add(new SutraProblem("RCH-2101", whole("expression", src, e), at));
         }
     }
 
@@ -211,7 +217,7 @@ public final class SutraExpressions {
         try {
             compiler.template(src);
         } catch (ElException e) {
-            out.add(new SutraProblem("RCH-2101", "template '" + src + "': " + withoutCode(e.getMessage()), at));
+            out.add(new SutraProblem("RCH-2101", whole("template", src, e), at));
         }
     }
 }

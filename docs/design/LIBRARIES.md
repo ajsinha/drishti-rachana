@@ -10,8 +10,13 @@ memory, folder and archive (10; classpath and package wait for the carriers of 1
 `.rlib` with SHA-384 per file and per archive, Ed25519 signatures with a trust list and `require-signed` (12; verified
 on the JVM by `rachana-tools`), the hermetic check of a public library's typed fragments (4.4, `RCH-2117`) and the
 `FragmentResolver` adapter (10). One choice made while building: a `text` parameter takes its text as written at the
-use (a label, a title), not as an expression. Not built yet: `as:`, `emits`/`on:`, private state, `let`, outputs,
-overlays, `fn` parameters, the `{from, columns}` mapping and contract files (5), library functions (X41), section 14 to
+use (a label, a title), not as an expression. Built next (G2 lane A2), under the owner's rule **fragments are
+functions** (decision L-21): `as:` (instance-scoped ids `<as>-<id>`), declared `emits` with payloads read as
+`@<as>.<event>.<field>`, `on:` setting a control (host actions wait for I1), the `{from, columns}` mapping renamed at
+compile time with problems naming both sides (`RCH-2114`..`2116`, advisory `RCH-2120`), contract files
+(`contracts/<name>.json`, 5.2), the hermetic check for every typed fragment, and the library hashes in the compile
+result (`Sutra.libraries()`). Not built yet: private state, `let`, outputs, overlays, `fn` parameters, `rachana lib
+check-host`, library functions (X41), section 14 to
 17 (documents, gates LG1 to LG9 beyond what `lib` cases check, the AI kit, Studio), the CLI commands of 22 (the work is in
 `LibraryTool`). Per L-12 no library content lives here: the conformance suite carries a tiny synthetic `demo` library.
 The rest of this document is the design; syntax not listed above is settled only when it enters `spec/1/SPEC.md` with a
@@ -332,6 +337,10 @@ with: { rows: "$.vectors |> select(date: r => r.SCEN_DATE, pnl: r => r.PNL_USD *
 - An unmapped optional column is absent; `when-bound: <column>` on a panel, column or layer leaves that part out.
 - A computed column is made by the user, upstream (`let:`, X20 verbs, a derived table D3). A mapping takes a
   column name only: one way to compute, and it stays in the user's file where a reviewer sees it.
+- The rename covers the panels that read the table (`rows: arg.<table>`): their field-name options (`x`, `y`, `label`,
+  `value`, `by`, ...), column `bind`s and every `@.<column>`. A bare name or a column named as text (`sum(t, 'pnl')`)
+  is not renamed: a fragment reads its columns as `@.<name>` or by a field option (L-21, rule 3).
+- A mapping the fragment never reads is an advisory (`RCH-2120`, severity warning), never a refusal.
 - Misfit is a problem at the use: `RCH-2116` "`rows` of `finance/var-histogram@1` needs column `pnl` (number);
   `$.vectors` has `PNL_USD`, `SCEN_DATE`, `DESK`", with the fix "map it: `columns: { pnl: PNL_USD }`".
 
@@ -469,8 +478,9 @@ panels:
     select: [ { set: { cpty: "event.key" } } ]
 ```
 
-- `as:` is required when a fragment with state, events or more than one panel is used twice on a screen, and
-  always inside a library. Without `as:`, a typed fragment's ids are prefixed by the fragment's name.
+- `as:` names one use, like a variable holding a call's result (L-21): every id the fragment brings becomes
+  `<as>-<id>` (a dot is not an id character), its events are read as `@<as>.<event>.<field>`. Two uses of one fragment
+  are two instances only with `as:`; without it the second use's ids collide (`RCH-2024`).
 - `with:` is checked against the parameter declarations: an unknown key is `RCH-2114` with the valid names; a
   missing required one `RCH-2115`; a wrong type `RCH-2116`.
 - A fragment may publish **outputs**: `outputs: { query: text }` names private state the user may read (never

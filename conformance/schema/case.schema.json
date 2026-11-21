@@ -413,7 +413,14 @@
           "type": "object", "additionalProperties": false, "minProperties": 1,
           "properties": {
             "ok": { "type": "boolean" },
-            "problems": { "$ref": "#/$defs/problems" }
+            "problems": { "$ref": "#/$defs/problems" },
+            "libraries": {
+              "type": "array",
+              "items": {
+                "type": "object", "required": ["name", "version", "sha384"], "additionalProperties": false,
+                "properties": { "name": { "type": "string" }, "version": { "type": "string" }, "sha384": { "type": "string", "pattern": "^[0-9a-f]{96}$" } }
+              }
+            }
           }
         }
       }

@@ -18,12 +18,27 @@ reserved_version: 1
 language: "1.0"
 status: draft
 
+# Level 1.1 (2026-11-21, the syntax batch, SPEC 4.17) defines |>, ??, ..., {, }, /* */ and the digit separator: they are listed
+# under `defined` below with the construct, and refused only at level 1.0. =>, .. and a stray */ stay reserved; at 1.1 their
+# reasons name the Python spelling (DECISIONS PY3, PY4). `range` (X18) is Core's aggregate since split step A9 at 1.0, and only
+# Python's range at 1.1 (PY4), where the aggregate is `span` (EL1-1).
+
+defined:
+  - { token: "|>", since: "1.1", as: "the pipe (X11)" }
+  - { token: "??", since: "1.1", as: "the first non-empty value (X12)" }
+  - { token: "...", since: "1.1", as: "spread in list and record literals (X6)" }
+  - { token: "{", since: "1.1", as: "record literals (X6)" }
+  - { token: "}", since: "1.1", as: "record literals (X6)" }
+  - { token: "/*", since: "1.1", as: "comments (X14)" }
+  - { token: "*/", since: "1.1", as: "comments (X14); a stray one is '*/' closes no comment" }
+  - { token: "_", since: "1.1", as: "digit separators, between two digits (X14)" }
+
 tokens:
   - { token: "|>", for: "X11 the pipe", reason: "'|>' is reserved for a later version of Rachana: write the call, f(x, ...)" }
   - { token: "??", for: "X12 the empty-default operator", reason: "'??' is reserved for a later version of Rachana: write coalesce(a, b)" }
-  - { token: "=>", for: "X13 lambdas", reason: "'=>' is reserved for a later version of Rachana" }
+  - { token: "=>", for: "X13 lambdas (written lambda x: ... from 1.1, PY3)", reason: "'=>' is reserved for a later version of Rachana", reason_1_1: "'=>' is reserved for a later version of Rachana: write lambda x: ..." }
   - { token: "...", for: "X6 spread in record and list literals", reason: "'...' is reserved for a later version of Rachana" }
-  - { token: "..", for: "X7 ranges and slices", reason: "'..' is reserved for a later version of Rachana: write sequence(...) or a list" }
+  - { token: "..", for: "X7 ranges and slices (range() and t[a:b] from 1.1, PY4)", reason: "'..' is reserved for a later version of Rachana: write sequence(...) or a list", reason_1_1: "'..' is reserved for a later version of Rachana: write range(start, stop)" }
   - { token: "{", for: "X6 record literals", reason: "'{' is reserved for a later version of Rachana" }
   - { token: "}", for: "X6 record literals", reason: "'}' is reserved for a later version of Rachana" }
   - { token: "/*", for: "X14 comments", reason: "'/*' is reserved for a later version of Rachana" }

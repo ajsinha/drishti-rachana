@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
-# Written by hand from the 1.0 decisions of 2026-11-19 (EL_EXPANSION XD2 to XD4); verified: false until the reference changes after v0.10.0 is pinned (SPLIT_PLAN rule 4; el/KNOWN_DIFFERENCES.md).
+# Written by hand from the 1.0 decisions of 2026-11-19 (EL_EXPANSION XD2 to XD4); built and verified at language level 1.1 (2026-11-21, EL phase 1); level 1.0 keeps the reference's answers (decision N5).
 suite: el/text-code-points
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Text measured and ordered by code point (SPEC 4.13, decision XD4, EL_EXPANSION X31); source positions stay in UTF-16 units."
 cases:
 
@@ -25,6 +25,7 @@ cases:
 
   - id: "mid-takes-whole-code-points"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13"
     note: "Position 2 is the emoji."
     tags: ["code-point", "non-bmp"]
@@ -33,6 +34,7 @@ cases:
 
   - id: "left-takes-a-whole-code-point"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13"
     tags: ["code-point", "non-bmp"]
     expr: "left('😀x', 1)"
@@ -40,6 +42,7 @@ cases:
 
   - id: "right-takes-a-whole-code-point"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13"
     tags: ["code-point", "non-bmp"]
     expr: "right('x😀', 1)"
@@ -47,6 +50,7 @@ cases:
 
   - id: "find-counts-code-points"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13"
     tags: ["code-point", "non-bmp"]
     expr: "find('b', 'a😀b')"
@@ -84,6 +88,7 @@ cases:
 
   - id: "pad-counts-code-points"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13"
     note: "Left by default."
     tags: ["code-point", "non-bmp"]
@@ -92,6 +97,7 @@ cases:
 
   - id: "ordering-by-code-point"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13 rule 2; 4.7"
     note: "U+FF61 before U+1F600; by UTF-16 unit the emoji (D83D) would sort first."
     tags: ["code-point", "non-bmp"]
@@ -100,6 +106,7 @@ cases:
 
   - id: "sort-by-code-point"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13 rule 2"
     tags: ["code-point", "non-bmp"]
     expr: "sort(['😀', '｡'])"
@@ -107,6 +114,7 @@ cases:
 
   - id: "least-of-texts-by-code-point"
     kind: "expr"
+    since: "1.1"
     source: "SPEC 4.13 rule 2"
     tags: ["code-point", "non-bmp"]
     expr: "least('😀', '｡')"
@@ -130,6 +138,7 @@ cases:
 
   - id: "source-offsets-stay-in-utf-16-units"
     kind: "expr-error"
+    since: "1.1"
     source: "SPEC 4.13 rule 4"
     note: "The '&' is the fifth code point but at UTF-16 offset 5."
     tags: ["code-point", "non-bmp"]

@@ -5,6 +5,61 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
+
+- **Binding like a call** (SPEC 2.5, LIBRARIES 5 to 7, DECISIONS L-21): a table parameter names its local columns or a
+  published contract (`contract: <name>`; `contracts/<name>.json` in a library, `Library.contract`, or served by the host,
+  `FragmentResolver.contract`); the use binds it as `rows: $.t` (identity) or `{ from, columns: { <local>: <caller> } }`,
+  renamed at compile time in the panels that read it (field options, `bind`, `@.<column>`). With the caller's columns known
+  (`data:` `fields` or written rows) problems name both sides: `RCH-2114` unknown local column, `RCH-2115` required column
+  missing, `RCH-2116` unknown caller column or type misfit; `RCH-2120` advisory for a mapping never read (severity warning,
+  `Sutra.advisories()`). Every typed fragment is hermetic (`RCH-2117`).
+- **Instances and return values**: `as:` scopes ids (`<as>-<id>`); `emits: [{name, payload, doc}]` declared and checked
+  against the inner panel that raises it; the screen reads `@<as>.<event>.<field>`; `on: {<event>: {set, field}}` sets a
+  control from the event's row (`on-select`). `TypedFragment.bind`, `TypedFragment.Caller`, `SutraBlocks.Calls`.
+- **Compile result records library hashes**: `Sutra.libraries()` (`UsedLibrary`: name, exact version, SHA-384), from
+  `LibrarySet.fragments(..., Consumer<Library>)`; the `problem` case output carries `libraries` (FORMAT 5.8, schema).
+- **Conformance**: `sutra/fragments-calls` (6), `problem/fragments-calls` (11), verified; JVM and both JavaScript bundles
+  agree at 1.0, 1.1, 1.2; level-1.0 replay and the customer corpus unchanged. API additions only (`api-surface.txt`).
+
+### IntelliJ launchers and installing a release
+
+- **Build launchers**: `java/run-configs/` holds four IntelliJ Maven configurations in the folder **Rachana** (build all, test, install release for a release tag only, JS bundles), the build guide is [java/README](java/README.md#build-in-intellij-idea), and a release is installed into `~/.m2` for Drishti from its tag only (decision R-1).
+
+### Rachana-EL level 1.1: the syntax batch and exact numbers (lane B: EL phase 1)
+
+- **Syntax at language level 1.1** (SPEC 4.17, EBNF part D; EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY1 to PY8): record literals
+  `{a: 1, 'k-2': x, ...r}` and list spread `[...a, b]`; Python slices `t[a:b:c]` and `range(start, stop, step)` (end-exclusive; `..` stays
+  reserved; `range` is only the sequence at 1.1, the aggregate max − min is `span`, EL1-1); the pipe `x |> f(a)`; `a ?? b`; `a if c else b`; lambdas `lambda x: …`,
+  second class (map, sort, reduce, group, `let`; no recursion; `=>` stays reserved); `**` and infix `^` (right-associative, `-2 ** 2` is
+  `-4`); comments `/* … */`; digit separators `1_000_000`. Reserved names are refused by name at 1.1.
+- **Numbers built at 1.1** (SPEC 4.16, X2, XD3): literals without an exponent are exact integers and decimals (34 digits), `+ - * %`
+  exact, `/` half-even to 34 digits, a double on either side a double, overflow of the integer part `RCH-2102`; `sum` exact over
+  integers and decimals. **Texts by code point** at 1.1 (SPEC 4.13, XD4): `left`, `right`, `mid`, `find`, `search`, `pad`, ordering,
+  `sort`, `least`, `greatest`. The N5 level-1.1 variants: problem messages `expression '<source>': …` with the token's end,
+  `standardize` a number, a refused pattern at evaluation `RCH-2102`.
+- **Level 1.0 unchanged**: the replay of `compat/levels/1.0` is identical; the level is the compiler's (`ElCompiler(…, level)`,
+  `Rachana.language`). API additions only (`Expr.Op`, `Minus`, `Power`, `Coalesce`, `RecordLit`, `Pair`, `Spread`, `Slice`,
+  `Lambda`, `FnRef`, `LocalCall`; `Printer.print(e, v11)`; level-aware `CheckedMode.check`/`parse` and `Checker.check`;
+  `ElException.end()`). The checker types `??`, `**` and the exact operators (X8, first part). `FilterTree` reads level 1.1 trees.
+- **Conformance**: `el/syntax-1-1` (114 cases) and `el/syntax-at-1-0` (13), verified; `el/numbers-exact`, `el/text-code-points`,
+  `el/reserved` and `el/messages-level-1-1` verified, their cases that failed at 1.0 moved to `since: "1.1"` (9 reserved-token
+  cases withdrawn: 1.1 defines the tokens; two `**` message cases withdrawn: PY6). `tools/regime/levels.py check` skips a recorded
+  case that moved to a later level or was withdrawn only when `compat/levels/moved-cases.yaml` lists it (EL1-4, below). JVM, both JavaScript bundles
+  and the Python V8 engine agree.
+
+### The EL1 decisions built (DECISIONS "EL1 decisions taken")
+
+- **EL1-1**: at level 1.1 `range(...)` is only Python's sequence (the dispatch on the first argument is gone); the aggregate max − min is
+  `span(list, field?)` (functions.yaml, `since: "1.1"`; Core's `range` kernel); a list or a text written as `range`'s argument does not
+  compile (`RCH-2101`), one met at evaluation is `RCH-2102`, both naming `span`; a masked argument masks. Level 1.0 keeps the `range`
+  aggregate and has no `span`. Cases in `el/syntax-1-1` and `el/syntax-at-1-0`.
+- **EL1-4**: `compat/levels/moved-cases.yaml` lists every recorded 1.0 case that moved to a later level (46, with `since`) or was withdrawn
+  (9, with the reason); `tools/regime/levels.py check` skips only those and fails on any other difference and on a wrong entry
+  (`levels.py compare`, tested by `LevelReplayTest`). A level's `functions.yaml` is spec/1's less the entries of a later `since`.
+- **EL1-2**: checked mode at 1.1 warns `RCH-2091` on `-x ** n` or `-x ^ n` without parentheses (`-(x ** n)` by Python's rule, `(-x) ^ n`
+  in Excel), with both spellings as the fix (SPEC 4.17, 6.2).
+
 ### `data:` and the Data Protocol; `<rachana-view>` (lane C: SPLIT_PLAN steps 15 and 16, B1 to B3)
 
 - **`data:`** at language level 1.1 (SPEC 2.4, D10): entries `{ table }`, `{ url }` (or an address), `{ rows }`, `{ record }`, each a
@@ -63,6 +118,18 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **Chart panels in `<rachana-view>`**: the vendored Elements 3.1.0 pack now has `drishti-chart` (with `drishti-inputs`, Apache
   ECharts in the script, and its run-time files under `vendor/`), packed from the `v3.1.0` tag with its SHA-384 manifest. The browser
   test's Sutra has a line panel; `runners/view_browser.py` passes in Chromium 156, Firefox 157 and WebKit 27.2 (Playwright 1.64.0).
+
+### The `rachana` command and the Python SDK basics (G2, CLI and SDK lane)
+
+- **CLI (Node, `js/packages/rachana-cli`)**: `rachana new` (starter project), `lint` (compile and problems; `--format text|json|sarif`,
+  `--strict`; exit 0 / 1 errors / 2 usage), `build` (lints, then a static site: pages, Sutras, data files, protocol index,
+  runtime bundle), `preview` and `dev` (local server). `lib build|sign|keygen|pack|verify|lock` is the Java `LibraryTool` behind
+  `com.ash.rachana.cli.Main` (the jar launcher; the Node launcher spawns it: one implementation). Not yet: the painter step of
+  `build` and `preview` (`<rachana-view>` is on g2/data), live reload, `fix`, `fmt`, `explain`.
+- **Python SDK**: `python -m drishti_rachana lint` / `rachana lint` on V8 (`drishti-rachana[v8]`), same output formats and exit
+  codes; `drishti_rachana.server.DataHost`, a minimal Data Protocol v1 host (JSON; schema, rows, query filter tree, cursor paging,
+  keyed patches, SSE changes); `RachanaBlueprint` (Flask) and `RachanaRouter` (FastAPI) replace the stubs; the live-orders example
+  uses them. Reuse of lane C's server shapes is pending the g2/data merge; the host follows DATA_PROTOCOL.md directly.
 
 ### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
 

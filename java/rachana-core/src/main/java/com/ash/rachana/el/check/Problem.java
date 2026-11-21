@@ -29,6 +29,11 @@ public record Problem(String code, String level, String message, String fix, int
     public static final String NAME = "RCH-9152";
     /** A filter, sort, {@code in} or grouping on a masked field. */
     public static final String MASKED = "RCH-9161";
+    /**
+     * A style hint at level 1.1 (DECISIONS EL1-2, a warning): {@code -x ** n} or {@code -x ^ n} without parentheses, which is
+     * {@code -(x ** n)} by Python's rule where Excel reads {@code (-x) ^ n}.
+     */
+    public static final String SIGN_POWER = "RCH-2091";
 
     public boolean error() {
         return ERROR.equals(level);

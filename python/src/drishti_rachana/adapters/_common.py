@@ -1,0 +1,90 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+"""What the Flask and FastAPI adapters share: the Sutra folder, the page that hosts ``<rachana-view>``, table registration."""
+from __future__ import annotations
+
+import html
+import inspect
+import json
+import threading
+from pathlib import Path
+from typing import Any, Callable, Iterator, Optional, Union
+
+from ..server import DataHost
+
+SUFFIX = ".sutra.yaml"
+# <rachana-view> and the data client are built on branch g2/data (lane C). Until they are merged and shipped with the wheel the
+# page references this URL and the browser shows the problem; a host may pass its own (``view_script=``).
+DEFAULT_VIEW_SCRIPT = "https://localhost/rachana-view.js"   # TODO(G2 merge): serve js/packages/rachana/dist/rachana-view.js from the package
+
+
+def rows_of(value: Any) -> list[dict]:
+    """A table function's result as a list of dicts: a list of dicts, an Arrow table, a Polars or pandas frame."""
+    if hasattr(value, "to_pylist"):
+        return value.to_pylist()
+    if hasattr(value, "to_dicts"):
+        return value.to_dicts()
+    if hasattr(value, "to_dict") and hasattr(value, "columns"):
+        return value.to_dict("records")
+    return list(value)
+
+
+class SutraFolder:
+    def __init__(self, root: Union[str, Path, None]) -> None:
+        self.roots: list[Path] = [Path(root)] if root else []
+
+    def mount(self, path: Union[str, Path]) -> None:
+        self.roots.append(Path(path))
+
+    def files(self) -> dict[str, Path]:
+        out: dict[str, Path] = {}
+        for r in self.roots:
+            for f in ([r] if r.is_file() else sorted(r.rglob("*" + SUFFIX))):
+                out.setdefault(f.name[: -len(SUFFIX)], f)
+        return out
+
+    def text(self, name: str) -> Optional[str]:
+        f = self.files().get(name)
+        return f.read_text(encoding="utf-8") if f else None
+
+
+def index_page(names: list[str], base: str) -> str:
+    items = "".join(f'<li><a href="{base}/page/{html.escape(n)}">{html.escape(n)}</a></li>' for n in names)
+    return f"<!doctype html><meta charset=utf-8><title>Sutras</title><h1>Sutras</h1><ul>{items}</ul>"
+
+
+def view_page(name: str, base: str, view_script: str) -> str:
+    n = html.escape(name)
+    return ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+            f"<title>{n}</title><script type=module src='{html.escape(view_script)}'></script>"
+            f"<rachana-view src='{base}/sutras/{n}{SUFFIX}' data='{base}/data'></rachana-view>")
+
+
+def start_async_live(fn: Callable[[], Any]) -> Callable[[], Iterator]:
+    """Wrap a (sync or async) generator function as the sync iterator factory the host wants."""
+    if not inspect.isasyncgenfunction(fn):
+        return fn
+
+    def run() -> Iterator:
+        import asyncio
+        import queue
+        q: queue.Queue = queue.Queue()
+        done = object()
+
+        def pump() -> None:
+            async def go() -> None:
+                async for item in fn():
+                    q.put(item)
+            asyncio.run(go())
+            q.put(done)
+        threading.Thread(target=pump, daemon=True).start()
+        while True:
+            item = q.get()
+            if item is done:
+                return
+            yield item
+    return run
+
+
+def stop_message(e: Exception) -> str:
+    return json.dumps({"error": str(e)})

@@ -33,7 +33,80 @@ cd java
 ./mvnw clean verify                 # every module, its unit tests and the guards (JDK 21)
 ```
 
-Never `install`: nothing outside this reactor consumes a snapshot.
+Windows: `mvnw.cmd clean verify`. The wrapper needs `JAVA_HOME` (or `java` on the PATH) to be JDK 21: a shell whose `JAVA_HOME` is
+Java 8 must point it at the JDK 21 folder first.
+
+Never `install` a snapshot: only a release tag is installed, for Drishti (see [Installing a release for Drishti](#installing-a-release-for-drishti)).
+
+## Build in IntelliJ IDEA
+
+Java only: no Python, no Python plugin. The same Maven runs in the IDE and in a terminal.
+
+### Prerequisites
+
+| You need | How |
+|---|---|
+| **A JDK 21** | Linux `/usr/lib/jvm/java-21-openjdk-amd64`, Windows `C:\jdk-21`, macOS `/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home` |
+| **IntelliJ IDEA** (Community or Ultimate) | its bundled Maven builds everything; `./mvnw` is the same Maven for a terminal |
+
+### Open the project
+
+1. **File → Open**, choose `java/pom.xml`, **Open as Project**. Wait for the Maven import and the indexing; the Maven tool window lists
+   the `rachana-*` modules.
+2. **File → Project Structure → Project → SDK**: **Add SDK → JDK…**, choose the JDK 21 folder; **Language level** *SDK default*.
+3. **Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → JRE**: *Use Project JDK*. Maven in the IDE ignores your
+   shell's `JAVA_HOME`. An *invalid target release* or *release version 21 not supported* error means the wrong JDK is set here.
+4. The drop-down at the top right lists the configurations of `java/run-configs/` under the folder **Rachana**: the four Maven launchers
+   below.
+
+### The Maven launchers
+
+Open a configuration and press **Run** (Shift+F10). All of them run from `java/`.
+
+| Run configuration | What it runs | Use it when |
+|---|---|---|
+| **Rachana build all** | `clean verify -DskipTests`: every module compiles, the jars are packaged, the guards run | after a clone or a pull |
+| **Rachana test** | `clean verify`: the build with the unit tests, the guards and the compatibility regime | before a commit or a push |
+| **Rachana install release** | `clean install -DskipTests`: the jars into the local Maven repository (`~/.m2`) for Drishti | **only on a checkout of a release tag**, see below |
+| **Rachana JS bundles** | `clean package -Pjs -DskipTests -pl :rachana-js -am`: the TeaVM JavaScript bundles into `java/rachana-js/target/js/` | you changed the compiler or the runtime and want the JavaScript bundles |
+
+The JavaScript bundles launcher is plain Maven. Copying the bundles to `js/packages/rachana/dist/` and the Node conformance check are
+`tools/js/build_js.py` (Python) and are not part of the launcher.
+
+**From a terminal**, the same commands: `./mvnw clean verify -DskipTests` (Windows `mvnw.cmd …`), `./mvnw clean verify`,
+`./mvnw clean install -DskipTests`, `./mvnw clean package -Pjs -DskipTests -pl :rachana-js -am`.
+
+### Windows and company networks: `PKIX path building failed`
+
+A company network that re-signs HTTPS with its own root certificate makes Maven stop on its first download with
+`unable to find valid certification path`. Windows trusts that root; the JDK does not. The fix is one VM option, no file change and no
+administrator rights:
+
+```
+-Djavax.net.ssl.trustStoreType=Windows-ROOT
+```
+
+1. **File → Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → VM Options**: paste the option.
+2. **Maven → Importing → VM options for importer**: paste it too (the import downloads as well).
+3. **Apply**, then run **Rachana build all** again.
+4. A terminal: `setx MAVEN_OPTS "-Djavax.net.ssl.trustStoreType=Windows-ROOT"`, then open a new terminal.
+
+Other ways, if your company prefers them: the company's Maven mirror in `%USERPROFILE%\.m2\settings.xml` (Linux `~/.m2/settings.xml`;
+IntelliJ reads the same file), or the company root certificate added to the JDK with `keytool -importcert -cacerts` (needs write access
+to the JDK folder).
+
+## Installing a release for Drishti
+
+Drishti's parent POM pins the Rachana version it builds against, and that version must be in the local Maven repository (decision R-1 in
+[docs/design/DECISIONS.md](../docs/design/DECISIONS.md)). Only a release is installed, and only from its tag:
+
+```text
+git checkout vX.Y.Z                              # the release tag, never a branch
+cd java && ./mvnw clean install -DskipTests      # Windows: mvnw.cmd clean install -DskipTests
+```
+
+In IntelliJ, on that same tag's checkout: **Rachana install release**. Then build Drishti. A branch or a snapshot is never installed:
+Drishti would then build against unreleased code. Run **Rachana test** before the tag is made.
 
 ## Conformance over this code
 

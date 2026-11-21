@@ -119,7 +119,7 @@ final class MathFunctions {
      * {@code power(x, y)}: x to the power y; a whole y up to ±{@value #MAX_EXACT_EXPONENT} in decimal (34 significant digits),
      * any other in real numbers. Empty for 0 to a negative power (a division by zero); a problem when there is no real result.
      */
-    private static Object power(List<Object> a) {
+    static Object power(List<Object> a) {
         BigDecimal x = Args.decimal("power", a.get(0));
         BigDecimal y = Args.decimal("power", a.get(1));
         if (x == null || y == null) {

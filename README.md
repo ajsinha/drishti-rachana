@@ -45,12 +45,13 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | `conformance/1/` | 2,112 cases; [driver](tools/conformance/README.md) in Python | harvested (R0) |
 | `java/` | the Maven reactor ([java/README](java/README.md)): `rachana-core` is the compiler, moved with history; the JVM conformance runtime; the guards; the compatibility regime | **built**: `./mvnw clean verify` |
 | `java/rachana-js`, `js/packages/rachana` | the JavaScript build (TeaVM): `rachana.runtime.js` and `rachana.tools.js`, the Node and browser runners | **built** (A15): every conformance case byte-identical to the JVM in Node, Chromium, Firefox, WebKit |
-| `python/` | `drishti_rachana.engine` (the JavaScript bundle on V8), the protocol types, the conformance runner; the web adapters are stubs | engine **built** (A15); the rest skeleton |
+| `python/` | `drishti_rachana.engine` (the JavaScript bundle on V8), the protocol types, the conformance runner; `lint`, a minimal Data Protocol host, Flask and FastAPI adapters | engine, lint, adapters **built**; the rest skeleton |
 | `js/vendor/` | the two Drishti Elements data files Core bundles | vendored |
 | `tools/` | conformance driver, reference bridge (until the migration), split tools, regime and release tools | built |
 
 Build and prove: `cd java && ./mvnw clean verify`, then `python3 tools/conformance/rachana_conformance.py --jvm` (every
-verified case passes; see [java/README](java/README.md)).
+verified case passes; see [java/README](java/README.md)). Building in IntelliJ IDEA (the **Rachana** run configurations, Windows
+notes) and installing a release for Drishti: [java/README, Build in IntelliJ IDEA](java/README.md#build-in-intellij-idea).
 
 ## Use from JavaScript or Python
 

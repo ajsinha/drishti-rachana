@@ -1,39 +1,83 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""Flask adapter: STUB of the planned API (docs/MODES.md 3, "subject to change"). Real work is plan B5.
+"""Flask adapter (docs/MODES.md 3): a blueprint that serves Sutras and the Data Protocol v1 resources.
 
     from drishti_rachana.adapters.flask import RachanaBlueprint
     rachana = RachanaBlueprint(sutras="sutras/")
 
-    @rachana.table("sales")
-    def sales(): ...                       # list of dicts, or an Arrow table
+    @rachana.table("sales", key=["region", "month"])
+    def sales(): ...                       # list of dicts, or an Arrow / Polars / pandas table
 
-    @rachana.live("orders")                # keyed patches over SSE (DATA_PROTOCOL 6)
+    @rachana.live("orders")                # a generator of (key, row) changes; row None removes
     def orders(): ...
 
     app.register_blueprint(rachana, url_prefix="/dash")
 
-TODO(B5): serve the Data Protocol v1 resources and the change stream; the page that hosts ``<rachana-view>``.
-The import name will move to ``rachana.flask`` only if it can be done without shadowing the ``flask`` package.
+Routes under the prefix: ``/`` (list of Sutras), ``/page/<name>`` (the page hosting ``<rachana-view>``), ``/sutras/<name>.sutra.yaml``,
+``/data/...`` (the Data Protocol, JSON only; see drishti_rachana.server for what it does and does not answer).
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Callable, Optional, Union
 
+from flask import Blueprint, Response, abort, request
 
-class RachanaBlueprint:
-    def __init__(self, sutras: Union[str, Path, None] = None, *, name: str = "rachana") -> None:
-        raise NotImplementedError("drishti_rachana.adapters.flask is a stub of the planned API (plan B5)")
+from ..protocol import ProtocolError
+from ..server import DataHost
+from ._common import DEFAULT_VIEW_SCRIPT, SUFFIX, SutraFolder, index_page, rows_of, start_async_live, view_page
 
-    def table(self, name: str, *, key: Optional[list[str]] = None) -> Callable:
-        """Decorator: expose ``name`` as a Data Protocol table."""
-        raise NotImplementedError
+
+class RachanaBlueprint(Blueprint):
+    def __init__(self, sutras: Union[str, Path, None] = None, *, name: str = "rachana", view_script: str = DEFAULT_VIEW_SCRIPT) -> None:
+        super().__init__(name, __name__)
+        self.host = DataHost()
+        self.folder = SutraFolder(sutras)
+        self._script = view_script
+        self.add_url_rule("/", "index", self._index)
+        self.add_url_rule("/page/<name>", "page", self._page)
+        self.add_url_rule(f"/sutras/<name>{SUFFIX}", "sutra", self._sutra)
+        self.add_url_rule("/data", "data_root", self._data, defaults={"sub": ""}, methods=["GET"])
+        self.add_url_rule("/data/<path:sub>", "data", self._data, methods=["GET", "POST"])
+
+    def table(self, name: str, *, key: Optional[list[str]] = None, title: Optional[str] = None) -> Callable:
+        def deco(fn: Callable) -> Callable:
+            self.host.add_table(name, lambda: rows_of(fn()), key, title)
+            return fn
+        return deco
 
     def live(self, name: str) -> Callable:
-        """Decorator: the function yields ``(key, row)`` changes for table ``name``."""
-        raise NotImplementedError
+        def deco(fn: Callable) -> Callable:
+            self.host.set_live(name, start_async_live(fn))
+            return fn
+        return deco
 
     def mount(self, path: Union[str, Path]) -> None:
-        """Mount a Sutra file or folder."""
-        raise NotImplementedError
+        self.folder.mount(path)
+
+    def _index(self):
+        return Response(index_page(sorted(self.folder.files()), request.script_root + request.path.rstrip("/")), mimetype="text/html")
+
+    def _page(self, name: str):
+        if name not in self.folder.files():
+            abort(404)
+        base = request.script_root + request.path[: -len("/page/" + name)]
+        return Response(view_page(name, base, self._script), mimetype="text/html")
+
+    def _sutra(self, name: str):
+        t = self.folder.text(name)
+        if t is None:
+            abort(404)
+        return Response(t, mimetype="application/yaml")
+
+    def _data(self, sub: str):
+        sub = "/" + sub
+        if sub == "/changes":
+            try:
+                stream = self.host.changes(request.args.get("table", ""), request.args.get("after"))
+            except ProtocolError as e:
+                return Response(json.dumps(e.to_json()), status=404 if e.code == "rdp.table.unknown" else 422, mimetype="application/json")
+            return Response(stream, mimetype="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
+        r = self.host.handle(request.method, sub, request.args.to_dict(), request.get_data(), request.headers.get("Accept", "application/json"))
+        return Response(r.body, status=r.status, mimetype=r.content_type)

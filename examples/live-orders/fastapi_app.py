@@ -1,19 +1,18 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 # Synthetic demo content: fictional customers, items and orders.
-"""The live orders board under FastAPI. PLANNED API; runs once B5 lands. Not runnable today.
+"""The live orders board under FastAPI (drishti_rachana.adapters.fastapi).
 
-    pip install drishti-rachana[fastapi] uvicorn     # planned
-    uvicorn fastapi_app:app                          # planned: then open http://127.0.0.1:8000/dash/
+    pip install drishti-rachana[fastapi] uvicorn
+    uvicorn fastapi_app:app                          # then open http://127.0.0.1:8000/dash/
 
-Same board, same Sutra, same data and the same changes as flask_app.py. docs/MODES.md spells the change decorator
-``changes``, the stubs ``live``: B5 settles one name. A change of (key, None) is assumed to remove the row.
+Same board, same Sutra, same data and the same changes as flask_app.py. The decorator is ``live``. A change of (key, None) removes the row.
 """
 import asyncio
 from pathlib import Path
 
 from fastapi import FastAPI
-from drishti_rachana.adapters.fastapi import RachanaRouter    # planned API
+from drishti_rachana.adapters.fastapi import RachanaRouter 
 
 from gen_orders import OrderBook
 

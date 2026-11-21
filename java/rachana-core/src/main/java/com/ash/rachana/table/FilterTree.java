@@ -110,6 +110,9 @@ public final class FilterTree {
             case Expr.And a -> chain("&&", a, ctx);
             case Expr.Or o -> chain("||", o, ctx);
             case Expr.Binary b when BINARY.contains(b.op()) -> isNullTest(b, ctx);
+            case Expr.Op b when BINARY.contains(b.op()) -> isNullTest(new Expr.Binary(b.op(), b.l(), b.r()), ctx);   // language level 1.1
+            case Expr.Minus n -> op("neg", node(n.e(), ctx));
+            case Expr.Coalesce c -> op("coalesce", node(c.l(), ctx), node(c.r(), ctx));
             case Expr.In i -> op(i.negated() ? "not-in" : "in", node(i.value(), ctx), list(i.list(), ctx));
             case Expr.Call c when FUNCTIONS.contains(c.name()) && c.named().isEmpty() && arity(c.name(), c.args().size()) -> {
                 List<Object> args = new ArrayList<>();
@@ -134,6 +137,9 @@ public final class FilterTree {
 
     private static void flatten(String op, Expr e, List<Object> args, EvalContext ctx) {
         if (e instanceof Expr.Binary b && b.op().equals(op) && readsRow(b)) {
+            flatten(op, b.l(), args, ctx);
+            args.add(node(b.r(), ctx));
+        } else if (e instanceof Expr.Op b && b.op().equals(op) && readsRow(b)) {
             flatten(op, b.l(), args, ctx);
             args.add(node(b.r(), ctx));
         } else {
@@ -224,6 +230,9 @@ public final class FilterTree {
             case Expr.And a -> readsRow(a.l()) || readsRow(a.r());
             case Expr.Or o -> readsRow(o.l()) || readsRow(o.r());
             case Expr.Binary b -> readsRow(b.l()) || readsRow(b.r());
+            case Expr.Op b -> readsRow(b.l()) || readsRow(b.r());
+            case Expr.Minus n -> readsRow(n.e());
+            case Expr.Coalesce c -> readsRow(c.l()) || readsRow(c.r());
             case Expr.Ternary t -> readsRow(t.cond()) || readsRow(t.then()) || readsRow(t.otherwise());
             case Expr.In i -> readsRow(i.value()) || readsRow(i.list());
             case Expr.ListLit l -> l.items().stream().anyMatch(FilterTree::readsRow);
@@ -249,6 +258,9 @@ public final class FilterTree {
             case Expr.And a -> { collect(a.l(), out); collect(a.r(), out); }
             case Expr.Or o -> { collect(o.l(), out); collect(o.r(), out); }
             case Expr.Binary b -> { collect(b.l(), out); collect(b.r(), out); }
+            case Expr.Op b -> { collect(b.l(), out); collect(b.r(), out); }
+            case Expr.Minus n -> collect(n.e(), out);
+            case Expr.Coalesce c -> { collect(c.l(), out); collect(c.r(), out); }
             case Expr.Ternary t -> { collect(t.cond(), out); collect(t.then(), out); collect(t.otherwise(), out); }
             case Expr.In i -> { collect(i.value(), out); collect(i.list(), out); }
             case Expr.ListLit l -> l.items().forEach(x -> collect(x, out));
@@ -276,7 +288,9 @@ public final class FilterTree {
             l.forEach(x -> items.add(literal(x)));
             return Map.of("list", items);
         }
-        if (v instanceof BigDecimal d) {
+        if (v instanceof BigDecimal d && d.stripTrailingZeros().scale() <= 0 && d.abs().compareTo(BigDecimal.valueOf(9007199254740991L)) <= 0) {
+            m.put("lit", d.longValueExact());                         // an exact integer (level 1.1's literals) that a JSON number holds
+        } else if (v instanceof BigDecimal d) {
             m.put("lit", d.toPlainString());
             m.put("type", "decimal");
         } else if (v instanceof java.time.LocalDate d) {

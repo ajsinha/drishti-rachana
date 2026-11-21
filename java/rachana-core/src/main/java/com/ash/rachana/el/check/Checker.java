@@ -79,7 +79,18 @@ public final class Checker {
 
     public static Checked check(Signatures catalog, Expr tree, Map<Expr, int[]> spans, String text, Scope scope, Fields fields,
             Spelling spelling) {
+        return check(catalog, tree, spans, text, scope, fields, spelling, false);
+    }
+
+    /**
+     * {@link #check(Signatures, Expr, Map, String, Scope, Fields, Spelling)} for a tree parsed at language level 1.1 when {@code v11}
+     * (EL_EXPANSION X8, first part): a literal with an exponent is a {@code number}; {@code ??}, {@code **} and the exact operators are
+     * typed; records, spreads, slices and lambdas are not yet in a table or a model.
+     */
+    public static Checked check(Signatures catalog, Expr tree, Map<Expr, int[]> spans, String text, Scope scope, Fields fields,
+            Spelling spelling, boolean v11) {
         Checker c = new Checker(catalog, scope, fields, spans, text, spelling);
+        c.v11 = v11;
         ElType t = c.visit(tree);
         c.top(tree, t);
         return new Checked(t, List.copyOf(c.problems), Set.copyOf(c.functions), Set.copyOf(c.usedFields), Set.copyOf(c.usedMeasures));
@@ -129,10 +140,66 @@ public final class Checker {
         return s == null || s[1] > text.length() ? "" : text.substring(s[0], s[1]);
     }
 
+    /**
+     * EL1-2: {@code -x ** n} (or {@code ^}) written without parentheses is {@code -(x ** n)}, Python's rule, where Excel reads
+     * {@code (-x) ^ n}: a warning with both spellings. Parentheses around the power or around the sign say which is meant.
+     */
+    private void signBeforePower(Expr.Minus x) {
+        if (!(x.e() instanceof Expr.Power w)) {
+            return;
+        }
+        int[] minus = spans.get(x);
+        int[] power = spans.get(w);
+        if (minus == null || power == null || power[0] <= minus[0] || power[1] > text.length()) {
+            return;
+        }
+        if (!CoreText.strip(text.substring(minus[0] + 1, power[0])).isEmpty()) {
+            return;                                                 // -(x ** n): the parentheses say it
+        }
+        String p = text.substring(power[0], power[1]);
+        int[] exp = spans.get(w.r());
+        String head = exp == null || exp[0] < power[0] ? "" : CoreText.strip(text.substring(power[0], exp[0]));
+        String op = head.endsWith("**") ? "**" : head.endsWith("^") ? "^" : null;
+        String fix = op == null ? "write -(" + p + ")"
+                : "write -(" + p + ") to keep this meaning, or (-" + CoreText.strip(head.substring(0, head.length() - op.length())) + ") " + op + " "
+                        + text.substring(exp[0], power[1]) + " for the power of the negative";
+        warn(Problem.SIGN_POWER, "'-" + p + "' is -(" + p + "): a power binds tighter than the sign before it (Python's rule; Excel "
+                + "reads (-x) ^ n)", fix, x);
+    }
+
     // ---- visiting ----------------------------------------------------------------------------------------------------
+
+    /** Checking a tree of language level 1.1. */
+    private boolean v11;
 
     ElType visit(Expr n) {
         return switch (n) {
+            case Expr.Op b -> COMPARISONS.contains(b.op()) ? compare(b, b.op(), b.l(), b.r()) : arithmetic(b, b.op(), b.l(), b.r());
+            case Expr.Minus x -> {
+                signBeforePower(x);
+                ElType t = visit(x.e());
+                yield t.fits(ElType.NUMBER) ? t : err(Problem.LANGUAGE, "'-' needs a number; this is a " + t.word(), null, x);
+            }
+            case Expr.Power w -> {
+                ElType a = visit(w.l());
+                ElType b = visit(w.r());
+                yield a.fits(ElType.NUMBER) && b.fits(ElType.NUMBER) ? ElType.arithmetic(a, b)
+                        : err(Problem.LANGUAGE, "'**' needs numbers; it has a " + a.word() + " and a " + b.word(), null, w);
+            }
+            case Expr.Coalesce x -> {
+                ElType a = visit(x.l());
+                ElType b = visit(x.r());
+                if (!a.comparable(b)) {
+                    err(Problem.LANGUAGE, "the two values of '??' have different types (" + a.word() + " and " + b.word() + ")",
+                            "make both numbers, or both texts", x);
+                }
+                yield a == ElType.NONE ? b : a;
+            }
+            case Expr.RecordLit r -> err(Problem.LATER, "a record is not yet in a table or a model", null, r);
+            case Expr.Slice x -> err(Problem.LATER, "a slice is not yet in a table or a model", null, x);
+            case Expr.Lambda l -> err(Problem.LATER, "a lambda is not yet in a table or a model", null, l);
+            case Expr.LocalCall l -> err(Problem.LATER, "a lambda is not yet in a table or a model", null, l);
+            case Expr.FnRef l -> err(Problem.LATER, "a lambda is not yet in a table or a model", null, l);
             case Expr.Lit l -> literal(l);
             case Expr.Absent a -> ElType.ANY;
             case Expr.ListLit l -> err(Problem.LANGUAGE, "a list is only the right side of in (x in ['A', 'B']) or the value of "
@@ -180,7 +247,7 @@ public final class Checker {
                 }
                 yield a == ElType.NONE ? b : a;
             }
-            case Expr.Binary b -> COMPARISONS.contains(b.op()) ? compare(b) : arithmetic(b);
+            case Expr.Binary b -> COMPARISONS.contains(b.op()) ? compare(b, b.op(), b.l(), b.r()) : arithmetic(b, b.op(), b.l(), b.r());
             case Expr.In i -> in(i);
             case Expr.Call c -> call(c, c.name(), c.args(), c.named());
             case Expr.Form f -> call(f, f.name(), f.args(), Map.of());
@@ -200,9 +267,12 @@ public final class Checker {
             return ElType.STRING;
         }
         if (v instanceof Double) {
-            return ElType.DECIMAL;
+            return v11 ? ElType.NUMBER : ElType.DECIMAL;                        // level 1.1: only a literal with an exponent is a double
         }
         String w = written(l);
+        if (v11) {
+            return w.contains(".") ? ElType.DECIMAL : ElType.INTEGER;
+        }
         return w.contains(".") || w.contains("e") || w.contains("E") ? ElType.DECIMAL : ElType.INTEGER;
     }
 
@@ -361,10 +431,9 @@ public final class Checker {
 
     // ---- operators ---------------------------------------------------------------------------------------------------
 
-    private ElType arithmetic(Expr.Binary b) {
-        ElType l = visit(b.l());
-        ElType r = visit(b.r());
-        String op = b.op();
+    private ElType arithmetic(Expr b, String op, Expr left, Expr right) {
+        ElType l = visit(left);
+        ElType r = visit(right);
         if ("-".equals(op) && l.temporal() && r.temporal()) {
             return ElType.INTEGER;                                              // date - date: days
         }
@@ -380,19 +449,21 @@ public final class Checker {
         return "/".equals(op) ? ElType.DECIMAL : ElType.arithmetic(l, r);
     }
 
-    private ElType compare(Expr.Binary c) {
-        if (c.l() instanceof Expr.Binary inner && COMPARISONS.contains(inner.op())) {
-            String a = written(inner);
-            String rest = written(c.r());
-            String middle = written(inner.r());
+    private ElType compare(Expr c, String op, Expr cl, Expr cr) {
+        Expr innerR = cl instanceof Expr.Binary ib && COMPARISONS.contains(ib.op()) ? ib.r()
+                : cl instanceof Expr.Op io && COMPARISONS.contains(io.op()) ? io.r() : null;
+        if (innerR != null) {
+            String a = written(cl);
+            String rest = written(cr);
+            String middle = written(innerR);
             return err(Problem.LANGUAGE, "a chained comparison compares a condition with a value",
-                    a.isEmpty() ? "write each comparison and join them with &&" : "write " + a + " && " + middle + " " + c.op() + " " + rest, c);
+                    a.isEmpty() ? "write each comparison and join them with &&" : "write " + a + " && " + middle + " " + op + " " + rest, c);
         }
-        masked(c.l(), c.op());
-        masked(c.r(), c.op());
-        ElType lt = visit(c.l());
-        ElType rt = visit(c.r());
-        if (!comparable(lt, rt, c.l(), c.r())) {
+        masked(cl, op);
+        masked(cr, op);
+        ElType lt = visit(cl);
+        ElType rt = visit(cr);
+        if (!comparable(lt, rt, cl, cr)) {
             err(Problem.LANGUAGE, "cannot compare a " + lt.word() + " with a " + rt.word() + " (checked mode has no implicit casts)",
                     lt.temporal() || rt.temporal() ? "write the date as date('YYYY-MM-DD')" : null, c);
         }
@@ -656,7 +727,7 @@ public final class Checker {
         String what = shown + "(): " + p.name();
         switch (p.type()) {
             case "integer-literal", "number-literal" -> {
-                Expr lit = a instanceof Expr.Neg u ? u.e() : a;
+                Expr lit = a instanceof Expr.Neg u ? u.e() : a instanceof Expr.Minus m ? m.e() : a;
                 if (!(lit instanceof Expr.Lit n && n.value() instanceof Number num)) {
                     return err(Problem.LANGUAGE, what + " is a " + ("integer-literal".equals(p.type()) ? "whole number" : "number")
                             + " written in the expression", null, a);

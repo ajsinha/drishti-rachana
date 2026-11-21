@@ -105,6 +105,29 @@ public record Sutra(
         return extension("match") instanceof Match m ? m : null;
     }
 
+    /** The compile result's key for {@link #libraries()}. */
+    public static final String LIBRARIES = "$libraries";
+    /** The compile result's key for {@link #advisories()}. */
+    public static final String ADVISORIES = "$advisories";
+
+    /**
+     * The libraries it was compiled from (level 1.2): each with its exact version and archive hash, sorted by name; empty when it uses
+     * none.
+     */
+    @SuppressWarnings("unchecked")
+    public List<UsedLibrary> libraries() {
+        return extension(LIBRARIES) instanceof List<?> l ? (List<UsedLibrary>) l : List.of();
+    }
+
+    /**
+     * Advisories found while compiling: never a reason to refuse (a column mapping a fragment never reads, {@code RCH-2120}); empty when
+     * there are none.
+     */
+    @SuppressWarnings("unchecked")
+    public List<com.ash.rachana.SutraProblem> advisories() {
+        return extension(ADVISORIES) instanceof List<?> l ? (List<com.ash.rachana.SutraProblem>) l : List.of();
+    }
+
     /** The {@code data:} entries (SPEC 2.4, level 1.1), in the order written; empty when there are none. */
     @SuppressWarnings("unchecked")
     public List<DataEntry> data() {

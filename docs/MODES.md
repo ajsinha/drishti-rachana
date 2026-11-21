@@ -46,12 +46,12 @@ my-dashboard/
 ```
 
 ```bash
-# planned CLI, subject to change
+# the Node CLI (js/packages/rachana-cli): new, lint, build, preview exist; dev is preview without live reload
 rachana new my-dashboard
 cd my-dashboard
-rachana dev          # live preview while you edit
-rachana lint         # check every Sutra
-rachana build        # writes ./site: HTML, the painter, the data
+rachana preview sutras/sales.sutra.yaml   # one screen in the browser (dev: a folder)
+rachana lint         # check every Sutra: exit 1 on errors
+rachana build        # writes ./site: pages, Sutras, data (the painter is added when <rachana-view> lands from g2/data)
 ```
 
 ## 2. Embedded
@@ -101,13 +101,13 @@ panels:
 
 ## 3. Python app
 
-`pip install drishti-rachana` (planned). Mount Sutras, expose tables, stream changes, and lint in CI.
+`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol's JSON resources; the page that paints needs `<rachana-view>` (g2/data). Mount Sutras, expose tables, stream changes, and lint in CI.
 
-**Flask** (planned API, subject to change):
+**Flask** (`examples/live-orders/flask_app.py`):
 
 ```python
 from flask import Flask
-from drishti_rachana.flask import RachanaBlueprint
+from drishti_rachana.adapters.flask import RachanaBlueprint
 
 app = Flask(__name__)
 rachana = RachanaBlueprint(sutras="sutras/")
@@ -119,11 +119,11 @@ def sales():
 app.register_blueprint(rachana, url_prefix="/dash")
 ```
 
-**FastAPI** (planned API, subject to change):
+**FastAPI** (`examples/live-orders/fastapi_app.py`):
 
 ```python
 from fastapi import FastAPI
-from drishti_rachana.fastapi import RachanaRouter
+from drishti_rachana.adapters.fastapi import RachanaRouter
 
 app = FastAPI()
 rachana = RachanaRouter(sutras="sutras/")
@@ -132,7 +132,7 @@ rachana = RachanaRouter(sutras="sutras/")
 async def sales():
     return await load_sales_rows()
 
-@rachana.changes("sales")             # streamed as keyed patches over SSE
+@rachana.live("sales")                # streamed as keyed patches over SSE
 async def sales_changes():
     async for key, row in watch_sales():
         yield key, row
@@ -140,10 +140,11 @@ async def sales_changes():
 app.include_router(rachana, prefix="/dash")
 ```
 
-**Lint in CI** (planned; uses the WebAssembly compiler, no JVM needed):
+**Lint in CI** (built; the JavaScript bundle on V8 through `mini-racer`, no JVM):
 
 ```bash
-rachana lint sutras/
+pip install 'drishti-rachana[v8]'
+python -m drishti_rachana lint sutras/ --format sarif --strict      # exit 1 on problems
 ```
 
 ## 4. Small standalone server

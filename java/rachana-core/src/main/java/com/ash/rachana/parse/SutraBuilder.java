@@ -49,6 +49,7 @@ final class SutraBuilder {
     private final com.ash.rachana.profile.Grammar grammar;
     private final List<SutraProblem> problems = new ArrayList<>();
     private FragmentResolver fragments;
+    private SutraBlocks.Calls calls = new SutraBlocks.Calls(null);
 
     SutraBuilder(String file, com.ash.rachana.profile.Grammar grammar) {
         this.file = file;
@@ -73,8 +74,10 @@ final class SutraBuilder {
                 problem("RCH-2011", "unknown key '" + k + "' in top level", v);
             }
         });
+        List<com.ash.rachana.model.UsedLibrary> used = new ArrayList<>();
         fragments = SutraBlocks.atLeast(grammar.level(), TypedFragment.SINCE)     // level 1.2: libraries: and library uses (LIBRARIES.md 7)
-                ? grammar.libraries().fragments(grammar.fragments(), root, file, problems) : grammar.fragments();
+                ? grammar.libraries().fragments(grammar.fragments(), root, file, problems,
+                        l -> used.add(new com.ash.rachana.model.UsedLibrary(l.name(), l.version(), l.sha384()))) : grammar.fragments();
         PNode lang = m.get("rachana");
         if (lang == null) {
             problem("RCH-2009", "missing 'rachana: " + LANGUAGE + "' (the Rachana language version) at the top", root);
@@ -112,6 +115,7 @@ final class SutraBuilder {
         if (m.containsKey(com.ash.rachana.model.DataEntry.KEY) && grammar.hasKey(com.ash.rachana.model.DataEntry.KEY)) {   // level 1.1 (D10)
             extensions.put(com.ash.rachana.model.DataEntry.KEY, new DataReader(file, problems).read(m.get(com.ash.rachana.model.DataEntry.KEY)));
         }
+        calls = new SutraBlocks.Calls(callerColumns(extensions.get(com.ash.rachana.model.DataEntry.KEY)));
         Title title = title(m.get("title"));
         List<StripItem> strip = strip(m.get("strip"));
         List<Panel> panels = new ArrayList<>();
@@ -121,7 +125,7 @@ final class SutraBuilder {
         grammar.keys().forEach((keyName, key) -> {                               // the panels a key brings (match: the sections modules contribute)
             List<PNode> brought = key.panels(extensions.get(keyName));
             if (!brought.isEmpty()) {
-                own.addAll(SutraBlocks.expand(brought, file, problems, fragments(), grammar.level()));
+                own.addAll(SutraBlocks.expand(brought, file, problems, fragments(), grammar.level(), calls));
             }
         });
         for (PNode p : own) {
@@ -170,6 +174,12 @@ final class SutraBuilder {
         }
         if (!problems.isEmpty()) {
             return null;
+        }
+        if (!used.isEmpty()) {
+            extensions.put(Sutra.LIBRARIES, List.copyOf(used));
+        }
+        if (!calls.advisories().isEmpty()) {
+            extensions.put(Sutra.ADVISORIES, List.copyOf(calls.advisories()));
         }
         return new Sutra(name, version, title, strip, panels, keyMap, loc(root), text(m.get("description"), null), controls, layout, phone,
                 extensions);
@@ -528,7 +538,55 @@ final class SutraBuilder {
             problem("RCH-2012", "'" + what + "' must be a list", n);
             return List.of();
         }
-        return "panels".equals(what) ? SutraBlocks.expand(n.list(), file, problems, fragments(), grammar.level()) : n.list();   // { use: <block> } brings a block's panels
+        return "panels".equals(what) ? SutraBlocks.expand(n.list(), file, problems, fragments(), grammar.level(), calls) : n.list();   // { use: <block> } brings a block's panels
+    }
+
+    /**
+     * What a fragment's caller knows of its tables (decision L-21): for {@code $.<name>} of a {@code data:} entry, its declared
+     * {@code fields} with their types, else the fields of its written rows with the types their values have; unknown otherwise.
+     */
+    private static java.util.function.Function<String, Map<String, String>> callerColumns(Object data) {
+        if (!(data instanceof List<?> entries) || entries.isEmpty()) {
+            return null;
+        }
+        return expr -> {
+            if (!expr.startsWith("$.")) {
+                return null;
+            }
+            for (Object o : entries) {
+                com.ash.rachana.model.DataEntry e = (com.ash.rachana.model.DataEntry) o;
+                if (!e.name().equals(expr.substring(2))) {
+                    continue;
+                }
+                Map<String, String> out = new LinkedHashMap<>();
+                if (!e.fields().isEmpty()) {
+                    e.fields().forEach((f, d) -> out.put(f, d instanceof Map<?, ?> dm && dm.get("type") != null ? String.valueOf(dm.get("type")) : ""));
+                    return out;
+                }
+                if (e.rows() != null && !e.rows().isEmpty() && e.rows().get(0) instanceof Map<?, ?> first) {
+                    first.forEach((f, v) -> out.put(String.valueOf(f), typeOf(v)));
+                    return out;
+                }
+                return null;
+            }
+            return null;
+        };
+    }
+
+    private static String typeOf(Object v) {
+        if (v instanceof Boolean) {
+            return "boolean";
+        }
+        if (v instanceof Long || v instanceof Integer || v instanceof java.math.BigInteger) {
+            return "integer";
+        }
+        if (v instanceof Number) {
+            return "number";
+        }
+        if (v instanceof String s) {
+            return s.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") ? "date" : s.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}T.*") ? "datetime" : "text";
+        }
+        return "";
     }
 
     /** The resolver this Sutra's uses read through (its libraries' adapter from level 1.2, else the host's). */

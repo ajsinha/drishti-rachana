@@ -46,5 +46,8 @@ and after each step). So:
 | `el/text-code-points` (17) | lengths, positions and order by code point; source offsets in UTF-16 units | `verified: false`; the reference counts UTF-16 units |
 | 22 cases tagged `changes-with-xd3` in `el/examples/arithmetic` and `el/paths-operators` | the reference's doubles for literal arithmetic (`0.1 + 0.2` → `0.30000000000000004`, `0.0001 * 1` → `1.0E-4`, `type: number`) | **kept verified and unchanged** as the split's proof; rewritten, ids kept, in the commit that changes the compiler (expected kind `decimal`, the text of SPEC 4.2) |
 
-Until that commit the suite holds both answers for literal arithmetic, and a runner on the reference exits with code 3
+**Built at level 1.1 (2026-11-21, EL phase 1).** The three changes are the compiler's at level 1.1 (SPEC 4.16, 4.17, 4.13): the cases of
+`el/reserved`, `el/numbers-exact` and `el/text-code-points` that the reference failed carry `since: "1.1"` and are verified there;
+those it passed stay at 1.0; the 22 `changes-with-xd3` cases stay verified at 1.0 (the reference's doubles), since a case runs at its own
+level. Until that commit the suite holds both answers for literal arithmetic, and a runner on the reference exits with code 3
 (only unverified cases fail). No case pinned UTF-16 lengths or a reserved token's old words, so nothing else changes.

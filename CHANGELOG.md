@@ -17,6 +17,9 @@ Entries are written per release; the regime's unreleased work is listed after th
   - **`treemap`** (cells sized by a figure, nested by `group`, toned by the sign of `color`; `point-click` cells with `ev` and `set`) and
     **`bullet`** (one figure on a band against a `limit` or between `lower` and `upper`, warning zones within `warnAt`). Case
     `sutra/binder/treemap-bullet`; problems in `problem/series`. `control.Fire` reads a treemap's `cells`.
+  - The vendored Elements pack is re-packed from drishti-elements f8b8619 (folder `3.2.0-dev+f8b8619`, replacing `3.2.0-dev+824d83b`):
+    the live kind through `options.tables`, cell bars, series marks with a right axis and a legend, treemap and bullet panels, the
+    `point` event with a mark's row.
 
 - **Server, second step**: live tables answer Arrow pages (`can` gains `arrow`; the one `ArrowRows` of rachana-data); `*.live.yaml` declarations in the project
   folder (or its `live/` folder) are served, each `snapshot` naming a configured table (a declaration that does not is listed with the pending tables);

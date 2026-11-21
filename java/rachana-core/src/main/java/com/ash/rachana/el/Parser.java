@@ -62,13 +62,37 @@ final class Parser {
     private int accDepth;
 
     private Parser(String src, List<Token> tokens, ElLimits limits) {
+        this(src, tokens, limits, false);
+    }
+
+    private Parser(String src, List<Token> tokens, ElLimits limits, boolean v11) {
         this.src = src;
         this.tokens = tokens;
         this.limits = limits;
+        this.v11 = v11;
     }
+
+    /** Language level 1.1 or later: the syntax batch (EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY2 to PY6) and exact numbers (X2). */
+    private final boolean v11;
+
+    /** The {@code let} names bound to a lambda around the part being parsed, with the lambda's count of parameters. */
+    private final Map<String, Integer> letFns = new LinkedHashMap<>();
 
     /** The most values a list written in an expression holds. */
     static final int MAX_LIST_ITEMS = 1_000;
+
+    /** The most fields a record holds (EL_EXPANSION X6). */
+    static final int MAX_RECORD_FIELDS = 1_000;
+
+    /** The forms a lambda may be passed to, with the argument places that take one and its count of parameters (X13). */
+    private static int lambdaParams(String form, int place) {
+        return switch (form) {
+            case "map", "group" -> place == 1 ? 1 : -1;
+            case "sort" -> place % 2 == 1 ? 1 : -1;
+            case "reduce" -> place == 2 ? 2 : -1;
+            default -> -1;
+        };
+    }
 
     /** The message when the expression stops where a value is still needed ({@code $.mtm >}). */
     static final String ENDS_EARLY = "the expression ends early: a value is missing";
@@ -111,11 +135,16 @@ final class Parser {
     }
 
     static Parsed parseWithSpans(String src, ElLimits limits, FunctionTable table) {
+        return parseWithSpans(src, limits, table, false);
+    }
+
+    /** {@link #parseWithSpans(String, ElLimits, FunctionTable)} at language level 1.1 when {@code v11}. */
+    static Parsed parseWithSpans(String src, ElLimits limits, FunctionTable table, boolean v11) {
         if (src.length() > limits.maxLength()) {
             throw new ElException("expression is longer than " + limits.maxLength()
                     + " characters (drishti.rachana.max-expression-length)", limits.maxLength());
         }
-        Parser parser = new Parser(src, Lexer.tokens(src), limits);
+        Parser parser = new Parser(src, Lexer.tokens(src, v11), limits, v11);
         parser.table = table;
         Expr e = parser.expr();
         if (parser.peek().type() != Type.EOF) {
@@ -184,6 +213,9 @@ final class Parser {
     }
 
     private Expr expr() {
+        if (v11) {
+            return pipe();
+        }
         descend();
         int s = peek().pos();
         try {
@@ -199,6 +231,74 @@ final class Parser {
         } finally {
             nesting--;
         }
+    }
+
+    /** Level 1.1: {@code x |> f(a)} is {@code f(x, a)} (X11), the lowest precedence; the right side is a call. */
+    private Expr pipe() {
+        descend();
+        int s = peek().pos();
+        try {
+            Expr l = conditional();
+            while (peek().is(Type.OP, "|>")) {
+                Token bar = next();
+                Token name = peek();
+                if (name.type() != Type.IDENT || tokens.get(p + 1).type() != Type.LPAREN || "let".equals(name.text())
+                        || "lambda".equals(name.text())) {
+                    throw new ElException("the right side of '|>' is a call, as in x |> round(2)", name.type() == Type.EOF ? bar.pos() : name.pos());
+                }
+                next();
+                l = at(call(name, l), s);
+            }
+            return l;
+        } finally {
+            nesting--;
+        }
+    }
+
+    /** Level 1.1: {@code c ? a : b} and Python's {@code a if c else b} (PY2) over {@code ??}. */
+    private Expr conditional() {
+        descend();
+        int s = peek().pos();
+        try {
+            Expr c = coalesce();
+            if (peek().type() == Type.QUESTION) {
+                next();
+                Expr a = expr();
+                expect(Type.COLON, "':'");
+                Expr b = expr();
+                return at(node(new Expr.Ternary(c, a, b), c, a, b), s);
+            }
+            if (peek().is(Type.IDENT, "if")) {
+                next();
+                Expr test = coalesce();
+                if (!peek().is(Type.IDENT, "else")) {
+                    throw new ElException("expected 'else'" + (peek().type() == Type.EOF ? " but the expression ends" : " but found '" + peek().text() + "'")
+                            + ": write a if c else b", peek().pos());
+                }
+                next();
+                Expr b = conditional();
+                return at(node(new Expr.Ternary(test, c, b), test, c, b), s);
+            }
+            return c;
+        } finally {
+            nesting--;
+        }
+    }
+
+    /** Level 1.1: {@code a ?? b} (X12), between the conditional and {@code ||}. */
+    private Expr coalesce() {
+        int s = peek().pos();
+        Expr l = or();
+        while (accept(Type.OP, "??")) {
+            Expr r = or();
+            l = at(node(new Expr.Coalesce(l, r), l, r), s);
+        }
+        return l;
+    }
+
+    /** A binary operator: level 1.0's {@link Expr.Binary}, level 1.1's {@link Expr.Op} (exact numbers, code point order). */
+    private Expr binary(String op, Expr l, Expr r) {
+        return v11 ? new Expr.Op(op, l, r) : new Expr.Binary(op, l, r);
     }
 
     private Expr or() {
@@ -243,7 +343,7 @@ final class Parser {
         while (peek().is(Type.OP, "==") || peek().is(Type.OP, "!=")) {
             String op = next().text();
             Expr r = compare();
-            l = at(node(new Expr.Binary(op, l, r), l, r), s);
+            l = at(node(binary(op, l, r), l, r), s);
         }
         return l;
     }
@@ -255,7 +355,7 @@ final class Parser {
             if (peek().type() == Type.OP && List.of("<", "<=", ">", ">=").contains(peek().text())) {
                 String op = next().text();
                 Expr r = sum();
-                l = at(node(new Expr.Binary(op, l, r), l, r), s);
+                l = at(node(binary(op, l, r), l, r), s);
             } else if (peek().is(Type.IDENT, "in")) {
                 next();
                 Expr r = sum();
@@ -276,7 +376,7 @@ final class Parser {
         while (peek().is(Type.OP, "+") || peek().is(Type.OP, "-")) {
             String op = next().text();
             Expr r = product();
-            l = at(node(new Expr.Binary(op, l, r), l, r), s);
+            l = at(node(binary(op, l, r), l, r), s);
         }
         return l;
     }
@@ -287,7 +387,7 @@ final class Parser {
         while (peek().is(Type.OP, "*") || peek().is(Type.OP, "/") || peek().is(Type.OP, "%")) {
             String op = next().text();
             Expr r = unary();
-            l = at(node(new Expr.Binary(op, l, r), l, r), s);
+            l = at(node(binary(op, l, r), l, r), s);
         }
         return l;
     }
@@ -296,15 +396,32 @@ final class Parser {
         int s = peek().pos();
         boolean not = accept(Type.OP, "!");
         if (!not && !accept(Type.OP, "-")) {
-            return postfix();
+            return v11 ? power() : postfix();
         }
         descend();
         try {
             Expr e = unary();
-            return at(node(not ? new Expr.Not(e) : new Expr.Neg(e), e), s);
+            return at(node(not ? new Expr.Not(e) : v11 ? new Expr.Minus(e) : new Expr.Neg(e), e), s);
         } finally {
             nesting--;
         }
+    }
+
+    /** Level 1.1: {@code a ** b} and {@code a ^ b} (PY6), right-associative, tighter than a sign on its left. */
+    private Expr power() {
+        int s = peek().pos();
+        Expr e = postfix();
+        if (peek().is(Type.OP, "**") || peek().type() == Type.CARET) {
+            next();
+            descend();
+            try {
+                Expr r = unary();
+                return at(node(new Expr.Power(e, r), e, r), s);
+            } finally {
+                nesting--;
+            }
+        }
+        return e;
     }
 
     private Expr postfix() {
@@ -321,6 +438,24 @@ final class Parser {
             } else if (t.type() == Type.LBRACKET && tokens.get(p + 1).is(Type.OP, "*") && tokens.get(p + 2).type() == Type.RBRACKET) {
                 p += 3;                                          // [*]: every element; a field after it is that field of each
                 e = node(new Expr.Each(e), e);
+                path = null;
+            } else if (v11 && t.type() == Type.LBRACKET && (tokens.get(p + 1).type() == Type.COLON || sliceAhead())) {
+                next();                                          // level 1.1: t[a:b], t[a:b:c], parts optional (PY4)
+                Expr a = peek().type() == Type.COLON ? null : expr();
+                expect(Type.COLON, "':'");
+                Expr b = peek().type() == Type.COLON || peek().type() == Type.RBRACKET ? null : expr();
+                Expr step = null;
+                if (accept(Type.COLON, ":")) {
+                    step = peek().type() == Type.RBRACKET ? null : expr();
+                }
+                expect(Type.RBRACKET, "']'");
+                List<Expr> parts = new ArrayList<>(List.of(e));
+                for (Expr x : new Expr[] {a, b, step}) {
+                    if (x != null) {
+                        parts.add(x);
+                    }
+                }
+                e = node(new Expr.Slice(e, a, b, step), parts.toArray(Expr[]::new));
                 path = null;
             } else if (t.type() == Type.LBRACKET) {
                 next();
@@ -346,6 +481,20 @@ final class Parser {
         int s = t.pos();
         switch (t.type()) {
             case NUMBER:
+                if (v11) {
+                    if (t.text().indexOf('e') < 0 && t.text().indexOf('E') < 0) {
+                        try {
+                            return at(new Expr.Lit(Exact.literal(t.text(), t.pos(), t.pos() + t.length())), s);    // X2: exact, as written
+                        } catch (NumberFormatException e) {
+                            throw new ElException("bad number '" + t.text() + "'", t.pos());
+                        }
+                    }
+                    try {
+                        return at(new Expr.Lit(NumberText.parse(t.text())), s);             // an exponent: a double
+                    } catch (NumberFormatException e) {
+                        throw new ElException("bad number '" + t.text() + "'", t.pos());
+                    }
+                }
                 try {
                     double d = NumberText.parse(t.text());
                     return at(new Expr.Lit(Values.normalise(d)), s);
@@ -377,6 +526,8 @@ final class Parser {
                 return at(new Expr.Index(), s);
             case LBRACKET:
                 return list(s);
+            case LBRACE:
+                return record(s);
             case LPAREN: {
                 Expr e = expr();
                 expect(Type.RPAREN, "')'");
@@ -395,7 +546,13 @@ final class Parser {
     private Expr list(int s) {
         List<Expr> items = new ArrayList<>();
         while (peek().type() != Type.RBRACKET) {
-            items.add(expr());
+            if (peek().type() == Type.SPREAD) {
+                int at = next().pos();
+                Expr e = expr();
+                items.add(at(node(new Expr.Spread(e), e), at));
+            } else {
+                items.add(expr());
+            }
             if (peek().type() != Type.COMMA) {
                 break;
             }
@@ -425,6 +582,12 @@ final class Parser {
             next();                                              // ctl.<id>: the value of a control, never a field of the data
             return at(new Expr.Ctl(next().text()), s);
         }
+        if (v11 && "lambda".equals(t.text())) {
+            throw new ElException("a lambda is passed to map, sort, reduce or group, or bound by let(...); it is not a value", t.pos());
+        }
+        if (peek().type() != Type.LPAREN && letFns.containsKey(t.text()) && letNames.contains(t.text())) {
+            throw new ElException("'" + t.text() + "' is a function: call it, " + t.text() + "(...)", t.pos());
+        }
         if (peek().type() != Type.LPAREN) {
             if (letNames.contains(t.text())) {
                 return at(new Expr.Local(t.text()), s);            // a name let(...) bound: it hides a field of the same name
@@ -433,16 +596,40 @@ final class Parser {
             return at(new Expr.Field(row, t.text(), null), s);
         }
         next();
+        return call(t, null);
+    }
+
+    /**
+     * The call {@code t(...)}, the opening parenthesis read; {@code piped} is the left side of {@code |>}, its first argument (null when
+     * not piped).
+     */
+    private Expr call(Token t, Expr piped) {
+        int s = t.pos();
+        if (piped != null) {
+            next();                                              // the '(' after the name
+        }
         String name = t.text();
-        int[] arity = macros.contains(name) ? new int[] {0, 64} : table.arityOf(name);
+        if (letFns.containsKey(name) && letNames.contains(name)) {
+            return localCall(t, piped);
+        }
+        int[] arity = macros.contains(name) ? new int[] {0, 64} : v11 && Level11.has(name) ? Level11.arity(name) : table.arityOf(name);
+        if (arity == null && v11 && ReservedNames.contains(name)) {
+            throw new ElException("'" + name + "' is reserved for a later version of Rachana", t.pos(), t.pos() + name.length());
+        }
         if (arity == null) {
             throw new ElException("unknown function '" + name + "'; known: " + String.join(", ", new java.util.TreeSet<>(table.arity().keySet())),
                     t.pos());
         }
         if ("let".equals(name)) {
+            if (piped != null) {
+                throw new ElException("let cannot be piped into", t.pos());
+            }
             return at(let(t, arity), s);
         }
         List<Expr> args = new ArrayList<>();
+        if (piped != null) {
+            args.add(piped);
+        }
         Map<String, Expr> named = new LinkedHashMap<>();
         List<Token> names = new ArrayList<>();
         if (peek().type() != Type.RPAREN) {
@@ -462,6 +649,25 @@ final class Parser {
                 }
                 if (!named.isEmpty()) {
                     throw new ElException(name + ": a value without a name follows a named one; write the named arguments last", peek().pos());
+                }
+                int fnParams = v11 ? lambdaParams(name, args.size()) : -1;
+                if (v11 && peek().is(Type.IDENT, "lambda")) {
+                    if (fnParams < 0) {
+                        throw new ElException("a lambda is passed to map, sort, reduce or group, or bound by let(...); " + name
+                                + " takes none here", peek().pos());
+                    }
+                    args.add(lambda(fnParams, name));
+                    continue;
+                }
+                if (fnParams > 0 && peek().type() == Type.IDENT && letFns.containsKey(peek().text()) && letNames.contains(peek().text())
+                        && (tokens.get(p + 1).type() == Type.COMMA || tokens.get(p + 1).type() == Type.RPAREN)) {
+                    Token f = next();
+                    if (letFns.get(f.text()) != fnParams) {
+                        throw new ElException(name + ": '" + f.text() + "' takes " + letFns.get(f.text()) + " value(s); here a function of "
+                                + fnParams + " is needed", f.pos());
+                    }
+                    args.add(at(new Expr.FnRef(f.text()), f.pos()));
+                    continue;
                 }
                 boolean accumulator = "reduce".equals(name) && args.size() == 2;
                 accDepth += accumulator ? 1 : 0;
@@ -504,14 +710,129 @@ final class Parser {
             default:
                 break;
         }
-        ElForm form = table.form(name);
+        ElForm form = v11 && Level11.form(name) != null && table.form(name) != null ? Level11.form(name) : table.form(name);
         if (form != null) {
             if (!named.isEmpty()) {
                 throw new ElException(name + " takes no named arguments", t.pos());
             }
             return at(node(new Expr.Form(name, form, List.copyOf(args)), parts), s);
         }
-        return at(node(new Expr.Call(name, table.get(name), List.copyOf(args), named), parts), s);
+        ElFunction fn = v11 && Level11.has(name) ? Level11.function(name) : table.get(name);
+        return at(node(new Expr.Call(name, fn, List.copyOf(args), named), parts), s);
+    }
+
+    /**
+     * {@code lambda a, b: body} (X13 in Python's spelling, PY3), the word {@code lambda} next: {@code params} names, for the form
+     * {@code fn}; inside the body the names are read as {@code let}'s are.
+     */
+    private Expr lambda(int params, String fn) {
+        Token word = next();
+        List<String> names = new ArrayList<>();
+        while (peek().type() == Type.IDENT) {
+            Token n = next();
+            if (RESERVED.contains(n.text()) || "lambda".equals(n.text())) {
+                throw new ElException("lambda: '" + n.text() + "' cannot be a name", n.pos());
+            }
+            if (names.contains(n.text()) || letFns.containsKey(n.text()) && letNames.contains(n.text())) {
+                throw new ElException("lambda: '" + n.text() + "' is " + (names.contains(n.text()) ? "named twice" : "already a function here"), n.pos());
+            }
+            names.add(n.text());
+            if (!accept(Type.COMMA, ",")) {
+                break;
+            }
+        }
+        expect(Type.COLON, "':' after the lambda's names");
+        if (params >= 0 && names.size() != params) {
+            throw new ElException((fn == null ? "this" : fn) + " needs a lambda of " + params + " name" + (params == 1 ? "" : "s") + " (lambda "
+                    + (params == 1 ? "x" : "acc, x") + ": ...); this one has " + names.size(), word.pos());
+        }
+        names.forEach(letNames::push);
+        try {
+            Expr body = expr();
+            return at(node(new Expr.Lambda(names, body), body), word.pos());
+        } finally {
+            for (int i = 0; i < names.size(); i++) {
+                letNames.pop();
+            }
+        }
+    }
+
+    /** {@code f(a, ...)} where {@code let} bound {@code f} to a lambda (the {@code (} read). */
+    private Expr localCall(Token t, Expr piped) {
+        List<Expr> args = new ArrayList<>();
+        if (piped != null) {
+            args.add(piped);
+        }
+        while (peek().type() != Type.RPAREN) {
+            args.add(expr());
+            if (!accept(Type.COMMA, ",")) {
+                break;
+            }
+        }
+        expect(Type.RPAREN, "')'");
+        int want = letFns.get(t.text());
+        if (args.size() != want) {
+            throw new ElException(t.text() + " takes " + want + " value(s), got " + args.size(), t.pos());
+        }
+        return at(node(new Expr.LocalCall(t.text(), args), args.toArray(Expr[]::new)), t.pos());
+    }
+
+    /** True when the bracket ahead holds a slice: a ':' at its own depth before its closing ']'. */
+    private boolean sliceAhead() {
+        int depth = 0;
+        for (int k = p + 1; k < tokens.size(); k++) {
+            Type ty = tokens.get(k).type();
+            if (ty == Type.LBRACKET || ty == Type.FILTER || ty == Type.LPAREN || ty == Type.LBRACE) {
+                depth++;
+            } else if (ty == Type.RPAREN || ty == Type.RBRACE) {
+                depth--;
+            } else if (ty == Type.RBRACKET) {
+                if (depth == 0) {
+                    return false;
+                }
+                depth--;
+            } else if (ty == Type.QUESTION && depth == 0) {
+                return false;                                    // a conditional's ':' is not a slice's
+            } else if (ty == Type.COLON && depth == 0) {
+                return true;
+            } else if (ty == Type.EOF) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /** <code>{ key: value, ...r }</code> (the brace read): a record literal (X6). */
+    private Expr record(int s) {
+        List<Expr> entries = new ArrayList<>();
+        java.util.Set<String> keys = new java.util.HashSet<>();
+        while (peek().type() != Type.RBRACE) {
+            if (peek().type() == Type.SPREAD) {
+                int at = next().pos();
+                Expr e = expr();
+                entries.add(at(node(new Expr.Spread(e), e), at));
+            } else {
+                Token k = next();
+                if (k.type() != Type.IDENT && k.type() != Type.STRING) {
+                    throw new ElException(k.type() == Type.EOF ? "the record is not closed: '}' is missing"
+                            : "a record's key is a name or a quoted text, not '" + k.text() + "'", k.pos());
+                }
+                if (!keys.add(k.text())) {
+                    throw new ElException("the record names '" + k.text() + "' twice", k.pos());
+                }
+                expect(Type.COLON, "':' after the key '" + k.text() + "'");
+                Expr v = expr();
+                entries.add(at(node(new Expr.Pair(k.text(), v), v), k.pos()));
+            }
+            if (entries.size() > MAX_RECORD_FIELDS) {
+                throw new ElException("a record written in an expression holds at most " + MAX_RECORD_FIELDS + " fields", s);
+            }
+            if (!accept(Type.COMMA, ",")) {
+                break;
+            }
+        }
+        expect(Type.RBRACE, "'}' to close the record");
+        return at(node(new Expr.RecordLit(entries), entries.toArray(Expr[]::new)), s);
     }
 
     /**
@@ -566,6 +887,9 @@ final class Parser {
         if (e instanceof Expr.Binary b && ("+".equals(b.op()) || "-".equals(b.op()))) {
             return isAcc(b.l()) || isAcc(b.r()) || addsUp(b.l()) || addsUp(b.r());
         }
+        if (e instanceof Expr.Op b && ("+".equals(b.op()) || "-".equals(b.op()))) {
+            return isAcc(b.l()) || isAcc(b.r()) || addsUp(b.l()) || addsUp(b.r());
+        }
         if (e instanceof Expr.Ternary t) {
             return addsUp(t.then()) || addsUp(t.otherwise());
         }
@@ -585,6 +909,8 @@ final class Parser {
     private Expr let(Token t, int[] arity) {
         List<String> names = new ArrayList<>();
         List<Expr> values = new ArrayList<>();
+        List<Integer> shadowed = new ArrayList<>();
+        List<String> fnNames = new ArrayList<>();
         int bound = 0;
         try {
             while (peek().type() == Type.IDENT && tokens.get(p + 1).is(Type.OP, "=")) {
@@ -599,7 +925,15 @@ final class Parser {
                 if (names.size() + 1 >= arity[1]) {
                     throw new ElException("let takes at most " + (arity[1] - 1) + " names", n.pos());
                 }
-                values.add(expr());
+                if (v11 && peek().is(Type.IDENT, "lambda")) {
+                    Expr.Lambda f = (Expr.Lambda) lambda(-1, null);
+                    values.add(f);
+                    shadowed.add(letFns.put(n.text(), f.params().size()));
+                } else {
+                    values.add(expr());
+                    shadowed.add(letFns.remove(n.text()));
+                }
+                fnNames.add(n.text());
                 names.add(n.text());
                 letNames.push(n.text());
                 bound++;
@@ -619,6 +953,13 @@ final class Parser {
         } finally {
             for (int i = 0; i < bound; i++) {
                 letNames.pop();
+            }
+            for (int i = fnNames.size() - 1; i >= 0; i--) {
+                if (shadowed.get(i) == null) {
+                    letFns.remove(fnNames.get(i));
+                } else {
+                    letFns.put(fnNames.get(i), shadowed.get(i));
+                }
             }
         }
     }

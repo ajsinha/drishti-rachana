@@ -83,7 +83,7 @@ final class GroupForm {
             if (keyPath != null) {
                 k = e.at(keyPath).asText();
             } else {
-                Object kv = keyExpr.eval(c.withRow(e, i));
+                Object kv = Closure.each(keyExpr, c, e, i);
                 if (Values.masked(kv)) {
                     return Values.mask();                            // a grouping by a hidden value would tell it
                 }

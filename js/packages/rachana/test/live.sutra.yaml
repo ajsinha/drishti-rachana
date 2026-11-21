@@ -1,0 +1,10 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+rachana: 1
+sutra: live-sales
+version: 1
+title: { id: "'Live sales'" }
+data:
+  sales: { table: sales, key: [region, desk], live: true }
+panels:
+  - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+  - { id: list, kind: table, rows: "$.sales", columns: [ { label: Desk, bind: desk }, { label: Revenue, bind: revenue } ] }

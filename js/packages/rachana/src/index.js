@@ -3,9 +3,10 @@
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
 /**
- * The browser and Node runtime: the compiler built from the Java reference (TeaVM, no hand-written logic), the facade, <rachana-view>, the Data Protocol client and the desktop bridge
- *
- * Status: the compiler bundles are built (A15: dist/rachana.runtime.js and dist/rachana.tools.js by tools/js/build_js.py; import them
- * directly). The facade over them, the data client and <rachana-view> are planned (B2, B3).
+ * The browser and Node runtime: the compiler built from the Java reference (TeaVM, no hand-written logic: dist/rachana.runtime.js and
+ * dist/rachana.tools.js, built by tools/js/build_js.py), the Data Protocol client (data_client.js: transport only), a Sutra bound to its
+ * tables (screen.js: the bundle's screen functions) and <rachana-view> (rachana_view.js: import it in a page that loaded Drishti Elements).
  */
-export const STATUS = "bundles built; facade planned";
+export { DataClient, DataError, pageRows } from './data_client.js';
+export { Screen, loadRuntime } from './screen.js';
+export const STATUS = "bundles built; data client and <rachana-view> (B2, B3)";

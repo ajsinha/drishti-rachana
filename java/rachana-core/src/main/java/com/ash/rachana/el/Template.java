@@ -33,7 +33,7 @@ public final class Template {
             if (end < 0) {
                 throw new ElException("unclosed '${'", start);
             }
-            parts.add(compiler.compile(src.substring(start + 2, end)));
+            parts.add(compiler.bare(src.substring(start + 2, end)));
             i = end + 1;
         }
         return new Template(parts);

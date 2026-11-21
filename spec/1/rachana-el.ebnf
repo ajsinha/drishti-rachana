@@ -16,6 +16,8 @@
 (*           white space may stand between any two tokens and is otherwise ignored.                               *)
 (*   Part B, syntactic: how tokens form an expression. Operator precedence is encoded by the rule nesting.        *)
 (*   Part C, templates: text with ${ expression } parts.                                                          *)
+(*   Part D, language level 1.1 (the syntax batch, EL_EXPANSION X6 X7 X11-X14, DECISIONS PY1-PY8): the rules that  *)
+(*           replace or extend parts A and B at that level. Level 1.0 reads parts A to C exactly (decision N5).      *)
 
 
 (* ================================================================================================================ *)
@@ -297,4 +299,85 @@ template-part = "${", balanced-text, "}" ;
 (* Text whose braces balance. Its content must be an `expression-source` (Part A). *)
 balanced-text = { ( any-char - ( "{" | "}" ) ) | "{", balanced-text, "}" } ;
 
-(* End of grammar: 60 rules (25 lexical, 31 syntactic, 4 template). *)
+
+(* ================================================================================================================ *)
+(* Part D. Language level 1.1                                                                                       *)
+(* ================================================================================================================ *)
+(* A host that runs level 1.1 reads expressions with these rules; a rule named here REPLACES the rule of the same     *)
+(* name in parts A and B; every other rule stays. Precedence at 1.1, lowest first:                                  *)
+(*   |>  ·  ?: and `if else`  ·  ??  ·  || or  ·  && and  ·  not  ·  == !=  ·  < <= > >= in not-in  ·  + -  ·          *)
+(*   * / %  ·  unary ! -  ·  ** ^  ·  postfix.                                                                        *)
+
+(* ---- D.1 lexical ------------------------------------------------------------------------------------------------ *)
+
+(* A comment stands wherever white space may (X14). It is not nested; an unclosed one is "a comment '/*' is not       *)
+(* closed"; inside a quoted text it is only characters. A printer does not keep it (it is not part of the tree).     *)
+expression-source = { white-space | comment }, { token, { white-space | comment } } ;
+comment = "/*", { any-char - "*/" }, "*/" ;
+
+(* The tokens of 1.1: the reserved tokens that 1.1 defines leave `reserved-token`; `**` leaves `refused-pair`.       *)
+token = number | string | identifier | reserved-token | refused-pair | operator | filter-open | event-ref | src-ref
+      | index-ref | punctuator ;
+reserved-token = "=>" | ".." | "*/" ;      (* "'=>' is reserved ...: write lambda x: ...", "'..' is reserved ...:        *)
+                                           (* write range(start, stop)", a stray "*/" is "'*/' closes no comment"       *)
+refused-pair = "//" ;
+operator = "&&" | "||" | "==" | "!=" | "<=" | ">=" | "|>" | "??" | "**" | "..." ;
+punctuator = "$" | "@" | "^" | "(" | ")" | "[" | "]" | "{" | "}" | "." | "," | "?" | ":"
+           | "+" | "-" | "*" | "/" | "%" | "<" | ">" | "!" | "=" ;
+
+(* A number may hold "_" between two ASCII digits (X14): 1_000_000, 1_000.000_1. Any other "_" in the run is "'_' in   *)
+(* a number stands only between two digits". MEANING (SPEC 4.16, now built): without an exponent an exact integer or  *)
+(* decimal (more than 34 significant digits does not compile); with one a double.                                   *)
+number = digits, [ ".", [ digits ] ], [ exponent ]
+       | ".", digits, [ exponent ] ;
+digits = digit, { [ "_" ], digit } ;
+
+(* ---- D.2 syntactic ---------------------------------------------------------------------------------------------- *)
+
+(* The pipe (X11): x |> f(a) is f(x, a), rewritten by the parser before anything else; the right side is a call of a  *)
+(* function or of a let-bound lambda ("the right side of '|>' is a call, as in x |> round(2)").                        *)
+expression = conditional, { "|>", pipe-call } ;
+pipe-call = identifier, "(", [ arguments ], ")" ;
+
+(* The conditional: c ? a : b, and Python's a if c else b (PY2): `if` and `else` are words in operator position only; *)
+(* if(c, a, b) stays a function.                                                                                     *)
+conditional = coalesce, [ "?", expression, ":", expression | "if", coalesce, "else", conditional ] ;
+
+(* a ?? b (X12): a unless it is empty, else b, evaluated only then; '' and 0 are values. Groups left.                  *)
+coalesce = logical-or, { "??", logical-or } ;
+
+(* Unary signs, then the power (PY6): a ** b and a ^ b, right-associative, tighter than a sign on its left            *)
+(* (-2 ** 2 is -4). "^" before an operand is still the parent reference.                                             *)
+unary = ( "!" | "-" ), unary
+      | power ;
+power = postfix, [ ( "**" | "^" ), unary ] ;
+
+(* A slice (PY4): t[a:b] and t[a:b:c], each part optional, end-exclusive, negative ends from the end, clamped; a list *)
+(* gives a list, a text a text (by code point). A ":" that belongs to a conditional inside the brackets is not a slice's. *)
+selector = field-selector | each-selector | filter-selector | slice-selector | index-selector ;
+slice-selector = "[", [ expression ], ":", [ expression ], [ ":", [ expression ] ], "]" ;
+
+primary = literal | context-ref | control-ref | list-literal | record-literal | group | let-form | call | name ;
+
+(* Lists and records with spread (X6). A record's keys are names or quoted texts, in written order; a key written twice *)
+(* does not compile; a later key or spread replaces an earlier one in its place; at most 1,000 fields. Spreading empty   *)
+(* adds nothing; a list into a record, or a record into a list, is RCH-2102.                                          *)
+list-literal = "[", [ list-item, { ",", list-item }, [ "," ] ], "]" ;
+list-item = "...", expression | expression ;
+record-literal = "{", [ record-item, { ",", record-item }, [ "," ] ], "}" ;
+record-item = "...", expression | ( identifier | string ), ":", expression ;
+
+(* Lambdas (X13 in Python's spelling, PY3), second class: an argument of map (place 2, one name), sort (each key, one   *)
+(* name), reduce (place 3, two names: the value so far and the element) or group (the key, one name), or a let value;   *)
+(* anywhere else "a lambda is passed to map, sort, reduce or group, or bound by let(...)". The names are read as let's; *)
+(* "@", "^" and "#index" keep their outer meaning; a let name is not in scope in its own value (no recursion).          *)
+argument = named-argument | lambda | expression ;
+binding = identifier, "=", ( lambda | expression ) ;
+lambda = "lambda", [ identifier, { ",", identifier } ], ":", expression ;
+
+(* A call of a let name bound to a lambda: as many values as the lambda has names; the name alone is refused, except as *)
+(* an argument where a lambda may stand ("'f' is a function: call it, f(...)").                                        *)
+call = identifier, "(", [ arguments ], ")" ;
+
+(* End of grammar: 60 rules of level 1.0 (25 lexical, 31 syntactic, 4 template); level 1.1 replaces 16 of them and     *)
+(* adds 11 (part D).                                                                                                  *)

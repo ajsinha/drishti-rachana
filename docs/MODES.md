@@ -46,33 +46,65 @@ my-dashboard/
 ```
 
 ```bash
-# planned CLI, subject to change
+# the Node CLI (js/packages/rachana-cli): new, lint, build, preview exist; dev is preview without live reload
 rachana new my-dashboard
 cd my-dashboard
-rachana dev          # live preview while you edit
-rachana lint         # check every Sutra
-rachana build        # writes ./site: HTML, the painter, the data
+rachana preview sutras/sales.sutra.yaml   # one screen in the browser (dev: a folder)
+rachana lint         # check every Sutra: exit 1 on errors
+rachana build        # writes ./site: pages, Sutras, data (the painter is added when <rachana-view> lands from g2/data)
 ```
 
 ## 2. Embedded
 
-A web app you already have draws a compiled Sutra with one element and reads data from its own API.
+A web app you already have draws a Sutra with one element and reads its tables from its own Data Protocol host
+([spec/1/data-protocol](../spec/1/data-protocol/PROTOCOL.md)). The element compiles and binds the Sutra in the page with the
+runtime bundle (`rachana.runtime.js`) and paints it with Drishti Elements' painter (`<elements-view>`, Elements 3.1.0, vendored under
+`js/vendor/drishti-elements/3.1.0`, never from a CDN):
 
 ```html
-<!-- planned API, subject to change -->
-<rachana-view sutra="/sutras/sales.sutra.yaml"
-              data="/api/tables"></rachana-view>
+<link rel="stylesheet" href="/vendor/drishti-elements/3.1.0/drishti-elements.css">
+<script src="/vendor/drishti-elements/3.1.0/drishti-elements.js"></script>
+<script type="module" src="/vendor/drishti-rachana/src/rachana_view.js"></script>
+
+<rachana-view src="/sutras/sales.sutra.yaml" data="/dash/data/v1" runtime="/vendor/drishti-rachana/dist/rachana.runtime.js"
+              formats="/vendor/drishti-rachana/spec/formats.yaml" live></rachana-view>
 ```
+
+```yaml
+# sales.sutra.yaml (language level 1.1: data:)
+rachana: 1
+sutra: sales
+version: 1
+data:
+  sales: { table: sales, key: [region, month], live: true }     # a table of the host, by name
+panels:
+  - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')", fmt: amount0 }
+```
+
+- **What it asks.** The Sutra's plan (`rachana explain`'s document; `DataPlan`) says what each table is asked: a row condition in the
+  push-down subset of the protocol travels as a filter tree with the controls' values in it, never as text; anything else is applied
+  in the page. The rows are read page by page (`next` cursors).
+- **Live.** With `live`, each live table follows its change stream (the minimal SSE form, or a host's drishti-events client through
+  the `DataClient`'s `subscribe` hook); every keyed patch is applied by Core and only the parts of the view that changed are repainted
+  (ViewModel frames). A gap or a new epoch reads the table again.
+- **Properties and events.** `sutra` (the text instead of `src`), `record` (the host's own record, beside the `data:` fields of `$`),
+  `controls`, `setControls(values)`, `linkResolver` and `fetch` (the host's, so its cookies and headers are used; the element adds
+  none). Events `rachana-view:ready`, `rachana-view:change`, `rachana-view:error`.
+- **Portable views.** Every address the element is given is resolved once against the page to an absolute one; the data address must
+  be on the page's origin or listed in `allow`. A link of the view gets an address only from the host's `linkResolver`, and only an
+  absolute one: otherwise it is a button that raises `elements-view:link` for the host to handle.
+- **A host to try it.** `java/rachana-data`'s `ReferenceServer` is a small in-memory host (HTTP, the SSE stream, a test adapter);
+  `TableClient` is the same client for a JVM host.
 
 ## 3. Python app
 
-`pip install drishti-rachana` (planned). Mount Sutras, expose tables, stream changes, and lint in CI.
+`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol's JSON resources; the page that paints needs `<rachana-view>` (g2/data). Mount Sutras, expose tables, stream changes, and lint in CI.
 
-**Flask** (planned API, subject to change):
+**Flask** (`examples/live-orders/flask_app.py`):
 
 ```python
 from flask import Flask
-from drishti_rachana.flask import RachanaBlueprint
+from drishti_rachana.adapters.flask import RachanaBlueprint
 
 app = Flask(__name__)
 rachana = RachanaBlueprint(sutras="sutras/")
@@ -84,11 +116,11 @@ def sales():
 app.register_blueprint(rachana, url_prefix="/dash")
 ```
 
-**FastAPI** (planned API, subject to change):
+**FastAPI** (`examples/live-orders/fastapi_app.py`):
 
 ```python
 from fastapi import FastAPI
-from drishti_rachana.fastapi import RachanaRouter
+from drishti_rachana.adapters.fastapi import RachanaRouter
 
 app = FastAPI()
 rachana = RachanaRouter(sutras="sutras/")
@@ -97,7 +129,7 @@ rachana = RachanaRouter(sutras="sutras/")
 async def sales():
     return await load_sales_rows()
 
-@rachana.changes("sales")             # streamed as keyed patches over SSE
+@rachana.live("sales")                # streamed as keyed patches over SSE
 async def sales_changes():
     async for key, row in watch_sales():
         yield key, row
@@ -105,10 +137,11 @@ async def sales_changes():
 app.include_router(rachana, prefix="/dash")
 ```
 
-**Lint in CI** (planned; uses the WebAssembly compiler, no JVM needed):
+**Lint in CI** (built; the JavaScript bundle on V8 through `mini-racer`, no JVM):
 
 ```bash
-rachana lint sutras/
+pip install 'drishti-rachana[v8]'
+python -m drishti_rachana lint sutras/ --format sarif --strict      # exit 1 on problems
 ```
 
 ## 4. Small standalone server

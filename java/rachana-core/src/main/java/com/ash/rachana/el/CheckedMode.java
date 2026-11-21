@@ -41,18 +41,30 @@ public final class CheckedMode {
         return new Parsed(text, p.expr(), p.spans());
     }
 
+    /** Parses with spans at a language level ({@code 1.0}, {@code 1.1}). */
+    public static Parsed parse(String text, String level) {
+        Parser.Parsed p = Parser.parseWithSpans(text, ElLimits.DEFAULTS, FunctionTable.core(), !"1.0".equals(level));
+        return new Parsed(text, p.expr(), p.spans());
+    }
+
     /** Parses and checks; a text that does not parse is one {@code RCH-9127} problem at the place it stops. */
     public static Checker.Checked check(String text, Scope scope, Fields fields) {
+        return check(text, scope, fields, "1.0");
+    }
+
+    /** {@link #check(String, Scope, Fields)} at a language level ({@code 1.0}, {@code 1.1}). */
+    public static Checker.Checked check(String text, Scope scope, Fields fields, String level) {
         Parsed p;
         try {
-            p = parse(text);
+            p = parse(text, level);
         } catch (ElException e) {
             int at = Math.max(0, e.position());
             return new Checker.Checked(com.ash.rachana.el.check.ElType.ANY,
                     List.of(new Problem(Problem.LANGUAGE, Problem.ERROR, e.getMessage(), null, at, Math.min(text.length(), at + 1))),
                     Set.of(), Set.of(), Set.of());
         }
-        return Checker.check(p.expr(), p.spans(), text, scope, fields, Spelling.RACHANA);
+        return Checker.check(com.ash.rachana.el.check.Signatures.get(), p.expr(), p.spans(), text, scope, fields, Spelling.RACHANA,
+                !"1.0".equals(level));
     }
 
     /**

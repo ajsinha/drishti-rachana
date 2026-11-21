@@ -18,12 +18,30 @@ public final class ElCompiler {
     private final Lru<String, Template> templates;
     private final ElLimits limits;
     private final FunctionTable table;
+    private final String level;
+    private final boolean v11;
 
     public ElCompiler(long maxEntries, ElLimits limits, FunctionTable table) {
+        this(maxEntries, limits, table, "1.0");
+    }
+
+    /**
+     * A compiler at a language level (SUTRA_EXPANSION 6.2): {@code 1.0} reads what the reference read; {@code 1.1} adds the syntax batch
+     * (records, spread, slices, {@code range}, the pipe, {@code ??}, lambdas, comments, digit separators, {@code **}, {@code a if c else b}),
+     * exact numbers (SPEC 4.16), texts by code point (SPEC 4.13), and words its problems as {@code expression '<source>': <reason>}.
+     */
+    public ElCompiler(long maxEntries, ElLimits limits, FunctionTable table, String level) {
         this.exprs = new Lru<>(maxEntries);
         this.templates = new Lru<>(maxEntries);
         this.limits = limits;
         this.table = table == null ? FunctionTable.core() : table;
+        this.level = level == null ? "1.0" : level;
+        this.v11 = !"1.0".equals(this.level);
+    }
+
+    /** The language level this compiler reads. */
+    public String level() {
+        return level;
     }
 
     public ElCompiler(long maxEntries, ElLimits limits) {
@@ -43,7 +61,30 @@ public final class ElCompiler {
      *     {@linkplain ElLimits limits} (too deeply nested or too long)
      */
     public Expr compile(String source) {
-        return exprs.get(source, s -> Parser.parse(s, limits, table));
+        if (!v11) {
+            return exprs.get(source, s -> Parser.parse(s, limits, table));
+        }
+        try {
+            return bare(source);
+        } catch (ElException e) {
+            throw whole("expression", source, e);
+        }
+    }
+
+    /** The expression without level 1.1's prefix on a problem (a template's part: the template words it). */
+    Expr bare(String source) {
+        return exprs.get(source, s -> Parser.parseWithSpans(s, limits, table, v11).expr());
+    }
+
+    /** Level 1.1's words (SPEC 6.3): {@code expression '<source>': <reason> at <offset>}; an evaluation problem is left as it is. */
+    private static ElException whole(String what, String source, ElException e) {
+        if (e.position() < 0) {
+            return e;
+        }
+        String m = e.getMessage();
+        String code = e.code() == null ? "" : e.code().code();
+        String words = m.startsWith(code + " ") ? m.substring(code.length() + 1) : m;
+        return new ElException(e.position(), e.end(), what + " '" + source + "': " + words);
     }
 
     /** The function table expressions are compiled against. */
@@ -58,7 +99,14 @@ public final class ElCompiler {
 
     /** Compiles text with embedded {@code ${expr}} parts. Text without {@code ${} is returned as is. */
     public Template template(String source) {
-        return templates.get(source, s -> Template.parse(s, this));
+        if (!v11) {
+            return templates.get(source, s -> Template.parse(s, this));
+        }
+        try {
+            return templates.get(source, s -> Template.parse(s, this));
+        } catch (ElException e) {
+            throw whole("template", source, e);
+        }
     }
 
     public long size() {

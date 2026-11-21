@@ -1,0 +1,87 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Language level 1.1, the syntax batch (EL_EXPANSION X2, X6, X7, X11 to X14; DECISIONS PY1 to PY8), written 2026-11-21 with the build (EL phase 1).
+suite: el/syntax-at-1-0
+since: "1.0"
+profile: core
+verified: true
+description: "Level 1.0 keeps the reference's grammar: each construct of the 1.1 syntax batch is refused there with the words the reference gave (decision N5; level 1.0 is replayed byte for byte)."
+given: {"record": {"a": 3.14159, "b": 2, "s": "x", "e": "", "z": 0, "r": {"b": 2, "c": 3}, "l1": [1, 2], "l2": [3], "rows": [{"m": "2027-01-01", "n": 2}, {"m": "2026-06-01", "n": 1}], "legs": [{"n": 10, "ccy": "USD"}, {"n": 20, "ccy": "CAD"}], "masked": {"$masked": true}}}
+cases:
+
+  - id: "record-literal-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "{a: 1}"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected character '{' at 0", "expr": {"source": "{a: 1}", "start": 0, "end": 1}}]}
+
+  - id: "list-spread-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "[...$.l1]"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected '.' at 1", "expr": {"source": "[...$.l1]", "start": 1, "end": 2}}]}
+
+  - id: "slice-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "$.l1[0:1]"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expected ']' but found ':' at 6", "expr": {"source": "$.l1[0:1]", "start": 6, "end": 7}}]}
+
+  - id: "range-at-1-0"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "range(3)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "pipe-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "$.a |> round(2)"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected character '|' at 4", "expr": {"source": "$.a |> round(2)", "start": 4, "end": 5}}]}
+
+  - id: "coalesce-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "$.a ?? 0"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected '?' at 5", "expr": {"source": "$.a ?? 0", "start": 5, "end": 6}}]}
+
+  - id: "lambda-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "map($.l1, lambda x: x)"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expected ')' but found 'x' at 17", "expr": {"source": "map($.l1, lambda x: x)", "start": 17, "end": 18}}]}
+
+  - id: "python-conditional-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "1 if true else 2"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected 'if' at 2", "expr": {"source": "1 if true else 2", "start": 2, "end": 3}}]}
+
+  - id: "power-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "2 ** 3"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "'**' is not Rachana: write power(x, y) at 2", "expr": {"source": "2 ** 3", "start": 2, "end": 3}}]}
+
+  - id: "caret-power-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "2 ^ 3"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected '^' at 2", "expr": {"source": "2 ^ 3", "start": 2, "end": 3}}]}
+
+  - id: "comment-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "1 /* c */ + 2"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected '*' at 3", "expr": {"source": "1 /* c */ + 2", "start": 3, "end": 4}}]}
+
+  - id: "digit-separator-at-1-0"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "1_000"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "unexpected '_000' at 1", "expr": {"source": "1_000", "start": 1, "end": 2}}]}
+
+  - id: "reserved-name-at-1-0-is-unknown"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS level 1.0"
+    expr: "group_by($.legs, 'ccy')"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "expr": {"source": "group_by($.legs, 'ccy')", "start": 0, "end": 1}, "messageStart": "unknown function 'group_by'; known: "}]}

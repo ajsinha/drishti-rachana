@@ -1,0 +1,694 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Language level 1.1, the syntax batch (EL_EXPANSION X2, X6, X7, X11 to X14; DECISIONS PY1 to PY8), written 2026-11-21 with the build (EL phase 1).
+suite: el/syntax-1-1
+since: "1.1"
+profile: core
+verified: true
+description: "Every construct of the level 1.1 syntax batch: records and spread, ranges and slices, the pipe, ??, lambdas, the Python conditional, **, comments and digit separators, exact numbers in the operators; with each refusal."
+given: {"record": {"a": 3.14159, "b": 2, "s": "x", "e": "", "z": 0, "r": {"b": 2, "c": 3}, "l1": [1, 2], "l2": [3], "rows": [{"m": "2027-01-01", "n": 2}, {"m": "2026-06-01", "n": 1}], "legs": [{"n": 10, "ccy": "USD"}, {"n": 20, "ccy": "CAD"}], "masked": {"$masked": true}}}
+cases:
+
+  - id: "record-literal"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1, b: 'x'}"
+    expect: {"value": {"a": 1, "b": "x"}, "type": "object"}
+
+  - id: "record-quoted-key"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{'day-count': 'ACT/360', id: 7}"
+    expect: {"value": {"day-count": "ACT/360", "id": 7}, "type": "object"}
+
+  - id: "record-empty"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{}"
+    expect: {"value": {}, "type": "object"}
+
+  - id: "record-field-of-a-literal"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1, b: 2}.b"
+    expect: {"value": 2, "type": "decimal"}
+
+  - id: "record-nested"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: [1, {b: true}], c: null}"
+    expect: {"value": {"a": [1, {"b": true}], "c": null}, "type": "object"}
+
+  - id: "record-trailing-comma"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1,}"
+    expect: {"value": {"a": 1}, "type": "object"}
+
+  - id: "record-spread-adds-the-fields"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1, ...$.r}"
+    expect: {"value": {"a": 1, "b": 2, "c": 3}, "type": "object"}
+
+  - id: "record-later-key-replaces-in-place"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{...$.r, b: 9}"
+    expect: {"value": {"b": 9, "c": 3}, "type": "object"}
+
+  - id: "record-later-spread-replaces"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{b: 0, x: 1, ...$.r}"
+    expect: {"value": {"b": 2, "x": 1, "c": 3}, "type": "object"}
+
+  - id: "record-spread-of-empty-adds-nothing"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1, ...$.missing}"
+    expect: {"value": {"a": 1}, "type": "object"}
+
+  - id: "record-spread-of-a-masked-value-is-masked"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1, ...$.masked}"
+    expect: {"value": {"$masked": true}, "type": "masked"}
+
+  - id: "record-spread-of-a-list-is-an-error"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1, ...$.l1}"
+    expect: {"error": {"code": "RCH-2102", "message": "spread: a list is not a record (a record spreads into a record)"}}
+
+  - id: "record-key-written-twice"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1, a: 2}"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '{a: 1, a: 2}': the record names 'a' twice at 7", "expr": {"source": "{a: 1, a: 2}", "start": 7, "end": 8}}]}
+
+  - id: "record-key-must-be-a-name-or-text"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{1: 2}"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '{1: 2}': a record's key is a name or a quoted text, not '1' at 1", "expr": {"source": "{1: 2}", "start": 1, "end": 2}}]}
+
+  - id: "record-not-closed"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{a: 1"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '{a: 1': expected '}' to close the record but the expression ends at 5", "expr": {"source": "{a: 1", "start": 5, "end": 5}}]}
+
+  - id: "record-keeps-a-masked-value-in-place"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "{m: $.masked, n: 1}"
+    expect: {"value": {"m": {"$masked": true}, "n": 1}, "type": "object"}
+
+  - id: "list-spread"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "[...$.l1, ...$.l2, 4]"
+    expect: {"value": [1, 2, 3, 4], "type": "list"}
+
+  - id: "list-spread-of-empty-adds-nothing"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "[...$.missing, 1]"
+    expect: {"value": [1], "type": "list"}
+
+  - id: "list-spread-of-a-scalar-is-an-error"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    expr: "[...$.b]"
+    expect: {"error": {"code": "RCH-2102", "message": "spread: 2 is not a list (a list spreads into a list)"}}
+
+  - id: "record-in-a-template-part"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X6"
+    template: "Total ${ {a: 1, b: 2}.b + 1 } units"
+    expect: {"value": "Total 3 units"}
+
+  - id: "range-to-a-stop"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range(5)"
+    expect: {"value": [0, 1, 2, 3, 4], "type": "list"}
+
+  - id: "range-from-a-start"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range(2, 5)"
+    expect: {"value": [2, 3, 4], "type": "list"}
+
+  - id: "range-with-a-negative-step"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range(10, 0, -3)"
+    expect: {"value": [10, 7, 4, 1], "type": "list"}
+
+  - id: "range-empty"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range(0)"
+    expect: {"value": [], "type": "list"}
+
+  - id: "range-end-is-excluded"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "5 in range(5)"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "range-membership"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "3 in range(5)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "range-not-in"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "2 not in range(2)"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "range-at-the-limit"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "size(range(10000))"
+    expect: {"value": 10000, "type": "number"}
+
+  - id: "range-beyond-the-limit"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range(10001)"
+    expect: {"error": {"code": "RCH-2102", "message": "range: gives at most 10000 values; this range has 10001"}}
+
+  - id: "range-step-zero"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range(1, 5, 0)"
+    expect: {"error": {"code": "RCH-2102", "message": "range: the step is 0"}}
+
+  - id: "range-not-whole"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range(1.5)"
+    expect: {"error": {"code": "RCH-2102", "message": "range: 1.5 is not a whole number"}}
+
+  - id: "range-of-a-list-stays-the-aggregate"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    note: "Core's aggregate range (max - min, split step A9) keeps its meaning over a list: level 1.1 only adds."
+    expr: "range([3, 9, 4])"
+    expect: {"value": 6, "type": "number"}
+
+  - id: "range-of-empty-is-empty"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "range($.missing)"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "slice-of-a-list"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20, 30, 40][1:3]"
+    expect: {"value": [20, 30], "type": "list"}
+
+  - id: "slice-from-the-start"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20, 30, 40][:2]"
+    expect: {"value": [10, 20], "type": "list"}
+
+  - id: "slice-to-the-end"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20, 30, 40][1:]"
+    expect: {"value": [20, 30, 40], "type": "list"}
+
+  - id: "slice-negative-start"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20, 30, 40][-2:]"
+    expect: {"value": [30, 40], "type": "list"}
+
+  - id: "slice-with-a-step"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20, 30, 40][::2]"
+    expect: {"value": [10, 30], "type": "list"}
+
+  - id: "slice-reversed"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20, 30, 40][::-1]"
+    expect: {"value": [40, 30, 20, 10], "type": "list"}
+
+  - id: "slice-out-of-range-is-clamped"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20][5:9]"
+    expect: {"value": [], "type": "list"}
+
+  - id: "slice-of-a-text"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "'abcdef'[1:4]"
+    expect: {"value": "bcd", "type": "text"}
+
+  - id: "slice-of-a-text-by-code-point"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "'a😀b'[1:2]"
+    expect: {"value": "😀", "type": "text"}
+
+  - id: "slice-of-empty-is-empty"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "$.missing[0:1]"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "slice-of-a-path"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "$.legs[0:1][0].ccy"
+    expect: {"value": "USD", "type": "text"}
+
+  - id: "slice-step-zero"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[1, 2][0:1:0]"
+    expect: {"error": {"code": "RCH-2102", "message": "a slice's step is 0"}}
+
+  - id: "index-with-a-conditional-is-not-a-slice"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "[10, 20][true ? 1 : 0]"
+    expect: {"value": 20, "type": "decimal"}
+
+  - id: "double-dot-stays-reserved"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY4"
+    expr: "$.l1[0..1]"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '$.l1[0..1]': '..' is reserved for a later version of Rachana: write range(start, stop) at 6", "expr": {"source": "$.l1[0..1]", "start": 6, "end": 8}}]}
+
+  - id: "pipe-into-a-call"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X11"
+    expr: "$.a |> round(2)"
+    expect: {"value": 3.14, "type": "decimal"}
+
+  - id: "pipe-chain"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X11"
+    expr: "$.legs |> map(lambda l: l.n) |> sum()"
+    expect: {"value": 30, "type": "decimal"}
+
+  - id: "pipe-is-the-lowest"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X11"
+    expr: "1 + 2 |> round(0)"
+    expect: {"value": 3, "type": "number"}
+
+  - id: "pipe-into-a-form"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X11"
+    expr: "[3, 1, 2] |> sort()"
+    expect: {"value": [1, 2, 3], "type": "list"}
+
+  - id: "pipe-into-a-let-function"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X11"
+    expr: "let(f = lambda x: x * 2, 5 |> f())"
+    expect: {"value": 10, "type": "decimal"}
+
+  - id: "pipe-right-side-must-be-a-call"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X11"
+    expr: "$.a |> $.b"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '$.a |> $.b': the right side of '|>' is a call, as in x |> round(2) at 7", "expr": {"source": "$.a |> $.b", "start": 7, "end": 8}}]}
+
+  - id: "pipe-into-a-bare-name"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X11"
+    expr: "$.a |> round"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '$.a |> round': the right side of '|>' is a call, as in x |> round(2) at 7", "expr": {"source": "$.a |> round", "start": 7, "end": 8}}]}
+
+  - id: "coalesce-empty"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "$.missing ?? 'n/a'"
+    expect: {"value": "n/a", "type": "text"}
+
+  - id: "coalesce-empty-text-is-a-value"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "$.e ?? 'n/a'"
+    expect: {"value": "", "type": "text"}
+
+  - id: "coalesce-zero-is-a-value"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "$.z ?? 5"
+    expect: {"value": 0, "type": "number"}
+
+  - id: "coalesce-chain"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "$.missing ?? $.nothing ?? 3"
+    expect: {"value": 3, "type": "decimal"}
+
+  - id: "coalesce-binds-looser-than-plus"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "$.missing ?? 1 + 1"
+    expect: {"value": 2, "type": "decimal"}
+
+  - id: "coalesce-binds-looser-than-or"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "false || false ?? 'x'"
+    expect: {"value": false, "type": "boolean"}
+
+  - id: "coalesce-masked-is-passed-on"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "$.masked ?? 1"
+    expect: {"value": {"$masked": true}, "type": "masked"}
+
+  - id: "coalesce-right-side-is-lazy"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X12"
+    expr: "1 ?? 1 / $.missing.x"
+    expect: {"value": 1, "type": "decimal"}
+
+  - id: "lambda-in-map"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "map([1, 2, 3], lambda x: x * 2)"
+    expect: {"value": [2, 4, 6], "type": "list"}
+
+  - id: "lambda-in-sort"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "map(sort($.rows, lambda r: r.m), lambda r: r.n)"
+    expect: {"value": [1, 2], "type": "list"}
+
+  - id: "lambda-in-reduce"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "reduce([1, 2, 3], '', lambda acc, x: concat(acc, x))"
+    expect: {"value": "123", "type": "text"}
+
+  - id: "lambda-bound-by-let"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "let(bp = lambda x: x * 10000, bp(0.0125))"
+    expect: {"value": 125, "type": "decimal"}
+
+  - id: "lambda-of-two-names"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "let(f = lambda a, b: a + b, f(1, 2))"
+    expect: {"value": 3, "type": "decimal"}
+
+  - id: "lambda-passed-by-name"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "let(f = lambda x: x * 3, map([1, 2], f))"
+    expect: {"value": [3, 6], "type": "list"}
+
+  - id: "lambda-nested"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "map([1, 2], lambda x: map([10, 20], lambda y: x + y))"
+    expect: {"value": [[11, 21], [12, 22]], "type": "list"}
+
+  - id: "lambda-row-keeps-its-outer-meaning"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "map($.legs, map([1, 2], lambda k: @.n * k))"
+    expect: {"value": [[10, 20], [20, 40]], "type": "list"}
+
+  - id: "lambda-closes-over-let"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "let(k = 2, f = lambda x: x * k, f(5))"
+    expect: {"value": 10, "type": "decimal"}
+
+  - id: "lambda-is-not-a-value"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "lambda x: x"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'lambda x: x': a lambda is passed to map, sort, reduce or group, or bound by let(...); it is not a value at 0", "expr": {"source": "lambda x: x", "start": 0, "end": 1}}]}
+
+  - id: "lambda-in-a-list-is-refused"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "[lambda x: x]"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '[lambda x: x]': a lambda is passed to map, sort, reduce or group, or bound by let(...); it is not a value at 1", "expr": {"source": "[lambda x: x]", "start": 1, "end": 2}}]}
+
+  - id: "lambda-to-a-function-that-takes-none"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "upper(lambda x: x)"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'upper(lambda x: x)': a lambda is passed to map, sort, reduce or group, or bound by let(...); upper takes none here at 6", "expr": {"source": "upper(lambda x: x)", "start": 6, "end": 7}}]}
+
+  - id: "lambda-with-the-wrong-count"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "map([1], lambda a, b: a)"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'map([1], lambda a, b: a)': map needs a lambda of 1 name (lambda x: ...); this one has 2 at 9", "expr": {"source": "map([1], lambda a, b: a)", "start": 9, "end": 10}}]}
+
+  - id: "lambda-function-name-is-not-a-value"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "let(f = lambda x: x, f)"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'let(f = lambda x: x, f)': 'f' is a function: call it, f(...) at 21", "expr": {"source": "let(f = lambda x: x, f)", "start": 21, "end": 22}}]}
+
+  - id: "lambda-called-with-the-wrong-count"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "let(f = lambda x: x, f(1, 2))"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'let(f = lambda x: x, f(1, 2))': f takes 1 value(s), got 2 at 21", "expr": {"source": "let(f = lambda x: x, f(1, 2))", "start": 21, "end": 22}}]}
+
+  - id: "lambda-no-recursion"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "let(f = lambda x: f(x), 1)"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "expr": {"source": "let(f = lambda x: f(x), 1)", "start": 18, "end": 19}, "messageStart": "expression 'let(f = lambda x: f(x), 1)': unknown function 'f'; known: "}]}
+
+  - id: "arrow-stays-reserved"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY3"
+    expr: "map($.l1, x => x)"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression 'map($.l1, x => x)': '=>' is reserved for a later version of Rachana: write lambda x: ... at 12", "expr": {"source": "map($.l1, x => x)", "start": 12, "end": 14}}]}
+
+  - id: "python-conditional"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY2"
+    expr: "'big' if 5 > 3 else 'small'"
+    expect: {"value": "big", "type": "text"}
+
+  - id: "python-conditional-chain"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY2"
+    expr: "1 if false else 2 if true else 3"
+    expect: {"value": 2, "type": "decimal"}
+
+  - id: "python-conditional-needs-else"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS PY2"
+    expr: "1 if true"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '1 if true': expected 'else' but the expression ends: write a if c else b at 9", "expr": {"source": "1 if true", "start": 9, "end": 9}}]}
+
+  - id: "excel-if-stays"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY2"
+    expr: "if(true, 1, 2)"
+    expect: {"value": 1, "type": "decimal"}
+
+  - id: "question-colon-stays"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY2"
+    expr: "true ? 1 : 2"
+    expect: {"value": 1, "type": "decimal"}
+
+  - id: "power"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "2 ** 3"
+    expect: {"value": 8, "type": "decimal"}
+
+  - id: "power-caret"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "2 ^ 3"
+    expect: {"value": 8, "type": "decimal"}
+
+  - id: "power-is-right-associative"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "2 ** 3 ** 2"
+    expect: {"value": 512, "type": "decimal"}
+
+  - id: "power-binds-tighter-than-a-sign"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "-2 ** 2"
+    expect: {"value": -4, "type": "decimal"}
+
+  - id: "power-of-a-negative"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "(-2) ** 2"
+    expect: {"value": 4, "type": "decimal"}
+
+  - id: "power-negative-exponent"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "2 ** -1"
+    expect: {"value": 0.5, "type": "decimal"}
+
+  - id: "power-of-a-decimal-is-exact"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "1.1 ** 2"
+    expect: {"value": 1.21, "type": "decimal"}
+
+  - id: "power-fractional-is-a-number"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "2 ** 0.5"
+    expect: {"value": 1.4142135623730951, "type": "number"}
+
+  - id: "power-of-empty-is-empty"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "$.missing ** 2"
+    expect: {"value": null, "type": "empty"}
+
+  - id: "caret-is-still-the-parent"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS PY6"
+    expr: "map($.legs, size(map([1], lambda k: ^.s)))"
+    expect: {"value": [1, 1], "type": "list"}
+
+  - id: "comment"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1 /* one */ + 2"
+    expect: {"value": 3, "type": "decimal"}
+
+  - id: "comment-at-the-end"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "$.b /* the count */"
+    expect: {"value": 2, "type": "number"}
+
+  - id: "comment-not-closed"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1 + /* note"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '1 + /* note': a comment '/*' is not closed at 4", "expr": {"source": "1 + /* note", "start": 4, "end": 5}}]}
+
+  - id: "comment-inside-a-text-is-text"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "'/* no */'"
+    expect: {"value": "/* no */", "type": "text"}
+
+  - id: "stray-comment-closer"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1 */ 2"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '1 */ 2': '*/' closes no comment at 2", "expr": {"source": "1 */ 2", "start": 2, "end": 4}}]}
+
+  - id: "digit-separator"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1_000_000 + 1"
+    expect: {"value": 1000001, "type": "decimal"}
+
+  - id: "digit-separator-in-a-fraction"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1_000.000_1"
+    expect: {"value": 1000.0001, "type": "decimal"}
+
+  - id: "digit-separator-twice"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1__0"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '1__0': '_' in a number stands only between two digits: '1__0' at 0", "expr": {"source": "1__0", "start": 0, "end": 4}}]}
+
+  - id: "digit-separator-at-the-end"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1_"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '1_': '_' in a number stands only between two digits: '1_' at 0", "expr": {"source": "1_", "start": 0, "end": 2}}]}
+
+  - id: "digit-separator-before-the-point"
+    kind: "expr-error"
+    source: "EL_EXPANSION / DECISIONS X14"
+    expr: "1_.5"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '1_.5': '_' in a number stands only between two digits: '1_.5' at 0", "expr": {"source": "1_.5", "start": 0, "end": 4}}]}
+
+  - id: "exact-times"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "0.1 * 3 == 0.3"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "exact-minus"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "-0.1 + 0.3"
+    expect: {"value": 0.2, "type": "decimal"}
+
+  - id: "exact-index-arithmetic"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "map([5, 6], #index + 0.5)"
+    expect: {"value": [0.5, 1.5], "type": "list"}
+
+  - id: "exact-text-order-by-code-point"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS XD4"
+    expr: "sort(['b', 'B', 'a'])"
+    expect: {"value": ["B", "a", "b"], "type": "list"}
+
+  - id: "exact-double-stays-double"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "1e-1 + 0.2"
+    expect: {"value": 0.30000000000000004, "type": "number"}
+
+  - id: "exact-host-double"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "$.a * 2"
+    expect: {"value": 6.28318, "type": "number"}
+
+  - id: "exact-host-integer"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "$.b * 0.5"
+    expect: {"value": 1, "type": "decimal"}
+
+  - id: "exact-comparison"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "0.3 >= 0.1 + 0.2"
+    expect: {"value": true, "type": "boolean"}
+
+  - id: "exact-remainder-negative"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2"
+    expr: "-5.5 % 2"
+    expect: {"value": -1.5, "type": "decimal"}
+
+  - id: "exact-sum-of-a-field"
+    kind: "expr"
+    source: "EL_EXPANSION / DECISIONS X2 (SPEC 4.16 rule 7)"
+    expr: "sum([{v: 0.1}, {v: 0.2}, {v: null}], 'v')"
+    expect: {"value": 0.3, "type": "decimal"}

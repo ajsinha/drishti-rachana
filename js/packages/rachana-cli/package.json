@@ -2,9 +2,12 @@
   "name": "drishti-rachana-cli",
   "version": "0.11.0-snapshot",
   "private": true,
-  "description": "The command line: rachana new / dev / build / lint / preview",
+  "description": "The command line: rachana new / dev / build / lint / preview / lib",
   "license": "SEE LICENSE IN ../../../LICENSE",
   "author": "Ashutosh Sinha",
   "type": "module",
-  "main": "src/index.js"
+  "main": "src/index.js",
+  "bin": { "rachana": "bin/rachana.js" },
+  "scripts": { "test": "node --test test/cli.test.mjs" },
+  "engines": { "node": ">=20" }
 }

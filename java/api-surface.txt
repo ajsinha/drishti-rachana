@@ -236,26 +236,37 @@ class public static final record com.ash.rachana.el.Expr$And
 class public static final record com.ash.rachana.el.Expr$At
 class public static final record com.ash.rachana.el.Expr$Binary
 class public static final record com.ash.rachana.el.Expr$Call
+class public static final record com.ash.rachana.el.Expr$Coalesce
 class public static final record com.ash.rachana.el.Expr$Ctl
 class public static final record com.ash.rachana.el.Expr$Each
 class public static final record com.ash.rachana.el.Expr$Event
 class public static final record com.ash.rachana.el.Expr$Field
 class public static final record com.ash.rachana.el.Expr$Filter
+class public static final record com.ash.rachana.el.Expr$FnRef
 class public static final record com.ash.rachana.el.Expr$Form
 class public static final record com.ash.rachana.el.Expr$In
 class public static final record com.ash.rachana.el.Expr$Index
+class public static final record com.ash.rachana.el.Expr$Lambda
 class public static final record com.ash.rachana.el.Expr$Let
 class public static final record com.ash.rachana.el.Expr$ListLit
 class public static final record com.ash.rachana.el.Expr$Lit
 class public static final record com.ash.rachana.el.Expr$Local
+class public static final record com.ash.rachana.el.Expr$LocalCall
+class public static final record com.ash.rachana.el.Expr$Minus
 class public static final record com.ash.rachana.el.Expr$Neg
 class public static final record com.ash.rachana.el.Expr$Not
+class public static final record com.ash.rachana.el.Expr$Op
 class public static final record com.ash.rachana.el.Expr$Or
+class public static final record com.ash.rachana.el.Expr$Pair
 class public static final record com.ash.rachana.el.Expr$Parent
 class public static final record com.ash.rachana.el.Expr$Pluck
+class public static final record com.ash.rachana.el.Expr$Power
+class public static final record com.ash.rachana.el.Expr$RecordLit
 class public static final record com.ash.rachana.el.Expr$Root
 class public static final record com.ash.rachana.el.Expr$Row
 class public static final record com.ash.rachana.el.Expr$RowOrRoot
+class public static final record com.ash.rachana.el.Expr$Slice
+class public static final record com.ash.rachana.el.Expr$Spread
 class public static final record com.ash.rachana.el.Expr$Src
 class public static final record com.ash.rachana.el.Expr$Ternary
 class public static final record com.ash.rachana.el.FunctionProvider$Group
@@ -1233,8 +1244,10 @@ com.ash.rachana.el.Calendars$Calendar :: public abstract java.time.LocalDate com
 com.ash.rachana.el.Calendars$Calendar :: public abstract java.time.LocalDate com.ash.rachana.el.Calendars$Calendar.previous(java.time.LocalDate)
 com.ash.rachana.el.Calendars$Resolver :: public abstract com.ash.rachana.el.Calendars$Calendar com.ash.rachana.el.Calendars$Resolver.resolve(java.lang.String)
 com.ash.rachana.el.CheckedMode :: public static com.ash.rachana.el.CheckedMode$Parsed com.ash.rachana.el.CheckedMode.parse(java.lang.String)
+com.ash.rachana.el.CheckedMode :: public static com.ash.rachana.el.CheckedMode$Parsed com.ash.rachana.el.CheckedMode.parse(java.lang.String,java.lang.String)
 com.ash.rachana.el.CheckedMode :: public static com.ash.rachana.el.Expr com.ash.rachana.el.CheckedMode.require(java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields)
 com.ash.rachana.el.CheckedMode :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.CheckedMode.check(java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields)
+com.ash.rachana.el.CheckedMode :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.CheckedMode.check(java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields,java.lang.String)
 com.ash.rachana.el.CheckedMode$Parsed :: public com.ash.rachana.el.CheckedMode$Parsed(java.lang.String,com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>)
 com.ash.rachana.el.CheckedMode$Parsed :: public com.ash.rachana.el.Expr com.ash.rachana.el.CheckedMode$Parsed.expr()
 com.ash.rachana.el.CheckedMode$Parsed :: public final boolean com.ash.rachana.el.CheckedMode$Parsed.equals(java.lang.Object)
@@ -1250,13 +1263,16 @@ com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long)
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long,com.ash.rachana.el.ElLimits)
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long,com.ash.rachana.el.ElLimits,com.ash.rachana.el.FunctionTable)
+com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElCompiler(long,com.ash.rachana.el.ElLimits,com.ash.rachana.el.FunctionTable,java.lang.String)
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.ElLimits com.ash.rachana.el.ElCompiler.limits()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.Expr com.ash.rachana.el.ElCompiler.compile(java.lang.String)
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.FunctionTable com.ash.rachana.el.ElCompiler.functions()
 com.ash.rachana.el.ElCompiler :: public com.ash.rachana.el.Template com.ash.rachana.el.ElCompiler.template(java.lang.String)
+com.ash.rachana.el.ElCompiler :: public java.lang.String com.ash.rachana.el.ElCompiler.level()
 com.ash.rachana.el.ElCompiler :: public long com.ash.rachana.el.ElCompiler.size()
 com.ash.rachana.el.ElException :: public com.ash.rachana.el.ElException(com.ash.rachana.RachanaCode,java.lang.String)
 com.ash.rachana.el.ElException :: public com.ash.rachana.el.ElException(java.lang.String,int)
+com.ash.rachana.el.ElException :: public int com.ash.rachana.el.ElException.end()
 com.ash.rachana.el.ElException :: public int com.ash.rachana.el.ElException.position()
 com.ash.rachana.el.ElFunction :: public abstract java.lang.Object com.ash.rachana.el.ElFunction.apply(java.util.List<java.lang.Object>,com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.ElLimits :: public com.ash.rachana.el.ElLimits(int,int)
@@ -1356,6 +1372,14 @@ com.ash.rachana.el.Expr$Call :: public java.lang.String com.ash.rachana.el.Expr$
 com.ash.rachana.el.Expr$Call :: public java.util.List<com.ash.rachana.el.Expr> com.ash.rachana.el.Expr$Call.args()
 com.ash.rachana.el.Expr$Call :: public java.util.Map<java.lang.String, com.ash.rachana.el.Expr> com.ash.rachana.el.Expr$Call.named()
 com.ash.rachana.el.Expr$Call :: public void com.ash.rachana.el.Expr$Call.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$Coalesce :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Coalesce.l()
+com.ash.rachana.el.Expr$Coalesce :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Coalesce.r()
+com.ash.rachana.el.Expr$Coalesce :: public com.ash.rachana.el.Expr$Coalesce(com.ash.rachana.el.Expr,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Coalesce :: public final boolean com.ash.rachana.el.Expr$Coalesce.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Coalesce :: public final int com.ash.rachana.el.Expr$Coalesce.hashCode()
+com.ash.rachana.el.Expr$Coalesce :: public final java.lang.String com.ash.rachana.el.Expr$Coalesce.toString()
+com.ash.rachana.el.Expr$Coalesce :: public java.lang.Object com.ash.rachana.el.Expr$Coalesce.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Coalesce :: public void com.ash.rachana.el.Expr$Coalesce.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Ctl :: public com.ash.rachana.el.Expr$Ctl(java.lang.String)
 com.ash.rachana.el.Expr$Ctl :: public final boolean com.ash.rachana.el.Expr$Ctl.equals(java.lang.Object)
 com.ash.rachana.el.Expr$Ctl :: public final int com.ash.rachana.el.Expr$Ctl.hashCode()
@@ -1392,6 +1416,12 @@ com.ash.rachana.el.Expr$Filter :: public final int com.ash.rachana.el.Expr$Filte
 com.ash.rachana.el.Expr$Filter :: public final java.lang.String com.ash.rachana.el.Expr$Filter.toString()
 com.ash.rachana.el.Expr$Filter :: public java.lang.Object com.ash.rachana.el.Expr$Filter.eval(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Expr$Filter :: public void com.ash.rachana.el.Expr$Filter.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$FnRef :: public com.ash.rachana.el.Expr$FnRef(java.lang.String)
+com.ash.rachana.el.Expr$FnRef :: public final boolean com.ash.rachana.el.Expr$FnRef.equals(java.lang.Object)
+com.ash.rachana.el.Expr$FnRef :: public final int com.ash.rachana.el.Expr$FnRef.hashCode()
+com.ash.rachana.el.Expr$FnRef :: public final java.lang.String com.ash.rachana.el.Expr$FnRef.toString()
+com.ash.rachana.el.Expr$FnRef :: public java.lang.Object com.ash.rachana.el.Expr$FnRef.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$FnRef :: public java.lang.String com.ash.rachana.el.Expr$FnRef.name()
 com.ash.rachana.el.Expr$Form :: public com.ash.rachana.el.ElForm com.ash.rachana.el.Expr$Form.fn()
 com.ash.rachana.el.Expr$Form :: public com.ash.rachana.el.Expr$Form com.ash.rachana.el.Expr$Form.withArgs(java.util.List<com.ash.rachana.el.Expr>)
 com.ash.rachana.el.Expr$Form :: public com.ash.rachana.el.Expr$Form(java.lang.String,com.ash.rachana.el.ElForm,java.util.List<com.ash.rachana.el.Expr>)
@@ -1416,6 +1446,14 @@ com.ash.rachana.el.Expr$Index :: public final boolean com.ash.rachana.el.Expr$In
 com.ash.rachana.el.Expr$Index :: public final int com.ash.rachana.el.Expr$Index.hashCode()
 com.ash.rachana.el.Expr$Index :: public final java.lang.String com.ash.rachana.el.Expr$Index.toString()
 com.ash.rachana.el.Expr$Index :: public java.lang.Object com.ash.rachana.el.Expr$Index.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Lambda :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Lambda.body()
+com.ash.rachana.el.Expr$Lambda :: public com.ash.rachana.el.Expr$Lambda(java.util.List<java.lang.String>,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Lambda :: public final boolean com.ash.rachana.el.Expr$Lambda.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Lambda :: public final int com.ash.rachana.el.Expr$Lambda.hashCode()
+com.ash.rachana.el.Expr$Lambda :: public final java.lang.String com.ash.rachana.el.Expr$Lambda.toString()
+com.ash.rachana.el.Expr$Lambda :: public java.lang.Object com.ash.rachana.el.Expr$Lambda.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Lambda :: public java.util.List<java.lang.String> com.ash.rachana.el.Expr$Lambda.params()
+com.ash.rachana.el.Expr$Lambda :: public void com.ash.rachana.el.Expr$Lambda.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Let :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Let.body()
 com.ash.rachana.el.Expr$Let :: public com.ash.rachana.el.Expr$Let(java.util.List<java.lang.String>,java.util.List<com.ash.rachana.el.Expr>,com.ash.rachana.el.Expr)
 com.ash.rachana.el.Expr$Let :: public final boolean com.ash.rachana.el.Expr$Let.equals(java.lang.Object)
@@ -1444,6 +1482,21 @@ com.ash.rachana.el.Expr$Local :: public final int com.ash.rachana.el.Expr$Local.
 com.ash.rachana.el.Expr$Local :: public final java.lang.String com.ash.rachana.el.Expr$Local.toString()
 com.ash.rachana.el.Expr$Local :: public java.lang.Object com.ash.rachana.el.Expr$Local.eval(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Expr$Local :: public java.lang.String com.ash.rachana.el.Expr$Local.name()
+com.ash.rachana.el.Expr$LocalCall :: public com.ash.rachana.el.Expr$LocalCall(java.lang.String,java.util.List<com.ash.rachana.el.Expr>)
+com.ash.rachana.el.Expr$LocalCall :: public final boolean com.ash.rachana.el.Expr$LocalCall.equals(java.lang.Object)
+com.ash.rachana.el.Expr$LocalCall :: public final int com.ash.rachana.el.Expr$LocalCall.hashCode()
+com.ash.rachana.el.Expr$LocalCall :: public final java.lang.String com.ash.rachana.el.Expr$LocalCall.toString()
+com.ash.rachana.el.Expr$LocalCall :: public java.lang.Object com.ash.rachana.el.Expr$LocalCall.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$LocalCall :: public java.lang.String com.ash.rachana.el.Expr$LocalCall.name()
+com.ash.rachana.el.Expr$LocalCall :: public java.util.List<com.ash.rachana.el.Expr> com.ash.rachana.el.Expr$LocalCall.args()
+com.ash.rachana.el.Expr$LocalCall :: public void com.ash.rachana.el.Expr$LocalCall.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$Minus :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Minus.e()
+com.ash.rachana.el.Expr$Minus :: public com.ash.rachana.el.Expr$Minus(com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Minus :: public final boolean com.ash.rachana.el.Expr$Minus.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Minus :: public final int com.ash.rachana.el.Expr$Minus.hashCode()
+com.ash.rachana.el.Expr$Minus :: public final java.lang.String com.ash.rachana.el.Expr$Minus.toString()
+com.ash.rachana.el.Expr$Minus :: public java.lang.Object com.ash.rachana.el.Expr$Minus.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Minus :: public void com.ash.rachana.el.Expr$Minus.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Neg :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Neg.e()
 com.ash.rachana.el.Expr$Neg :: public com.ash.rachana.el.Expr$Neg(com.ash.rachana.el.Expr)
 com.ash.rachana.el.Expr$Neg :: public final boolean com.ash.rachana.el.Expr$Neg.equals(java.lang.Object)
@@ -1458,6 +1511,15 @@ com.ash.rachana.el.Expr$Not :: public final int com.ash.rachana.el.Expr$Not.hash
 com.ash.rachana.el.Expr$Not :: public final java.lang.String com.ash.rachana.el.Expr$Not.toString()
 com.ash.rachana.el.Expr$Not :: public java.lang.Object com.ash.rachana.el.Expr$Not.eval(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Expr$Not :: public void com.ash.rachana.el.Expr$Not.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$Op :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Op.l()
+com.ash.rachana.el.Expr$Op :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Op.r()
+com.ash.rachana.el.Expr$Op :: public com.ash.rachana.el.Expr$Op(java.lang.String,com.ash.rachana.el.Expr,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Op :: public final boolean com.ash.rachana.el.Expr$Op.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Op :: public final int com.ash.rachana.el.Expr$Op.hashCode()
+com.ash.rachana.el.Expr$Op :: public final java.lang.String com.ash.rachana.el.Expr$Op.toString()
+com.ash.rachana.el.Expr$Op :: public java.lang.Object com.ash.rachana.el.Expr$Op.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Op :: public java.lang.String com.ash.rachana.el.Expr$Op.op()
+com.ash.rachana.el.Expr$Op :: public void com.ash.rachana.el.Expr$Op.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Or :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Or.l()
 com.ash.rachana.el.Expr$Or :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Or.r()
 com.ash.rachana.el.Expr$Or :: public com.ash.rachana.el.Expr$Or(com.ash.rachana.el.Expr,com.ash.rachana.el.Expr)
@@ -1466,6 +1528,14 @@ com.ash.rachana.el.Expr$Or :: public final int com.ash.rachana.el.Expr$Or.hashCo
 com.ash.rachana.el.Expr$Or :: public final java.lang.String com.ash.rachana.el.Expr$Or.toString()
 com.ash.rachana.el.Expr$Or :: public java.lang.Object com.ash.rachana.el.Expr$Or.eval(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Expr$Or :: public void com.ash.rachana.el.Expr$Or.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$Pair :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Pair.value()
+com.ash.rachana.el.Expr$Pair :: public com.ash.rachana.el.Expr$Pair(java.lang.String,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Pair :: public final boolean com.ash.rachana.el.Expr$Pair.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Pair :: public final int com.ash.rachana.el.Expr$Pair.hashCode()
+com.ash.rachana.el.Expr$Pair :: public final java.lang.String com.ash.rachana.el.Expr$Pair.toString()
+com.ash.rachana.el.Expr$Pair :: public java.lang.Object com.ash.rachana.el.Expr$Pair.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Pair :: public java.lang.String com.ash.rachana.el.Expr$Pair.key()
+com.ash.rachana.el.Expr$Pair :: public void com.ash.rachana.el.Expr$Pair.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Parent :: public com.ash.rachana.el.Expr$Parent(int)
 com.ash.rachana.el.Expr$Parent :: public final boolean com.ash.rachana.el.Expr$Parent.equals(java.lang.Object)
 com.ash.rachana.el.Expr$Parent :: public final int com.ash.rachana.el.Expr$Parent.hashCode()
@@ -1480,6 +1550,21 @@ com.ash.rachana.el.Expr$Pluck :: public final java.lang.String com.ash.rachana.e
 com.ash.rachana.el.Expr$Pluck :: public java.lang.Object com.ash.rachana.el.Expr$Pluck.eval(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Expr$Pluck :: public java.lang.String com.ash.rachana.el.Expr$Pluck.name()
 com.ash.rachana.el.Expr$Pluck :: public void com.ash.rachana.el.Expr$Pluck.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$Power :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Power.l()
+com.ash.rachana.el.Expr$Power :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Power.r()
+com.ash.rachana.el.Expr$Power :: public com.ash.rachana.el.Expr$Power(com.ash.rachana.el.Expr,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Power :: public final boolean com.ash.rachana.el.Expr$Power.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Power :: public final int com.ash.rachana.el.Expr$Power.hashCode()
+com.ash.rachana.el.Expr$Power :: public final java.lang.String com.ash.rachana.el.Expr$Power.toString()
+com.ash.rachana.el.Expr$Power :: public java.lang.Object com.ash.rachana.el.Expr$Power.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Power :: public void com.ash.rachana.el.Expr$Power.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$RecordLit :: public com.ash.rachana.el.Expr$RecordLit(java.util.List<com.ash.rachana.el.Expr>)
+com.ash.rachana.el.Expr$RecordLit :: public final boolean com.ash.rachana.el.Expr$RecordLit.equals(java.lang.Object)
+com.ash.rachana.el.Expr$RecordLit :: public final int com.ash.rachana.el.Expr$RecordLit.hashCode()
+com.ash.rachana.el.Expr$RecordLit :: public final java.lang.String com.ash.rachana.el.Expr$RecordLit.toString()
+com.ash.rachana.el.Expr$RecordLit :: public java.lang.Object com.ash.rachana.el.Expr$RecordLit.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$RecordLit :: public java.util.List<com.ash.rachana.el.Expr> com.ash.rachana.el.Expr$RecordLit.entries()
+com.ash.rachana.el.Expr$RecordLit :: public void com.ash.rachana.el.Expr$RecordLit.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Root :: public com.ash.rachana.el.Expr$Root()
 com.ash.rachana.el.Expr$Root :: public final boolean com.ash.rachana.el.Expr$Root.equals(java.lang.Object)
 com.ash.rachana.el.Expr$Root :: public final int com.ash.rachana.el.Expr$Root.hashCode()
@@ -1496,6 +1581,23 @@ com.ash.rachana.el.Expr$RowOrRoot :: public final boolean com.ash.rachana.el.Exp
 com.ash.rachana.el.Expr$RowOrRoot :: public final int com.ash.rachana.el.Expr$RowOrRoot.hashCode()
 com.ash.rachana.el.Expr$RowOrRoot :: public final java.lang.String com.ash.rachana.el.Expr$RowOrRoot.toString()
 com.ash.rachana.el.Expr$RowOrRoot :: public java.lang.Object com.ash.rachana.el.Expr$RowOrRoot.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Slice :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Slice.start()
+com.ash.rachana.el.Expr$Slice :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Slice.step()
+com.ash.rachana.el.Expr$Slice :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Slice.stop()
+com.ash.rachana.el.Expr$Slice :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Slice.target()
+com.ash.rachana.el.Expr$Slice :: public com.ash.rachana.el.Expr$Slice(com.ash.rachana.el.Expr,com.ash.rachana.el.Expr,com.ash.rachana.el.Expr,com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Slice :: public final boolean com.ash.rachana.el.Expr$Slice.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Slice :: public final int com.ash.rachana.el.Expr$Slice.hashCode()
+com.ash.rachana.el.Expr$Slice :: public final java.lang.String com.ash.rachana.el.Expr$Slice.toString()
+com.ash.rachana.el.Expr$Slice :: public java.lang.Object com.ash.rachana.el.Expr$Slice.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Slice :: public void com.ash.rachana.el.Expr$Slice.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.Expr$Spread :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$Spread.e()
+com.ash.rachana.el.Expr$Spread :: public com.ash.rachana.el.Expr$Spread(com.ash.rachana.el.Expr)
+com.ash.rachana.el.Expr$Spread :: public final boolean com.ash.rachana.el.Expr$Spread.equals(java.lang.Object)
+com.ash.rachana.el.Expr$Spread :: public final int com.ash.rachana.el.Expr$Spread.hashCode()
+com.ash.rachana.el.Expr$Spread :: public final java.lang.String com.ash.rachana.el.Expr$Spread.toString()
+com.ash.rachana.el.Expr$Spread :: public java.lang.Object com.ash.rachana.el.Expr$Spread.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$Spread :: public void com.ash.rachana.el.Expr$Spread.paths(java.util.function.Consumer<java.lang.String>)
 com.ash.rachana.el.Expr$Src :: public com.ash.rachana.el.Expr$Src()
 com.ash.rachana.el.Expr$Src :: public final boolean com.ash.rachana.el.Expr$Src.equals(java.lang.Object)
 com.ash.rachana.el.Expr$Src :: public final int com.ash.rachana.el.Expr$Src.hashCode()
@@ -1591,6 +1693,7 @@ com.ash.rachana.el.MeasureFunctions$Def :: public final java.lang.String com.ash
 com.ash.rachana.el.MeasureFunctions$Def :: public java.lang.String com.ash.rachana.el.MeasureFunctions$Def.expr()
 com.ash.rachana.el.MeasureFunctions$Def :: public java.util.List<java.lang.String> com.ash.rachana.el.MeasureFunctions$Def.params()
 com.ash.rachana.el.Printer :: public static java.lang.String com.ash.rachana.el.Printer.print(com.ash.rachana.el.Expr)
+com.ash.rachana.el.Printer :: public static java.lang.String com.ash.rachana.el.Printer.print(com.ash.rachana.el.Expr,boolean)
 com.ash.rachana.el.SafeRegex :: public boolean com.ash.rachana.el.SafeRegex.find(java.lang.CharSequence)
 com.ash.rachana.el.SafeRegex :: public boolean com.ash.rachana.el.SafeRegex.matches(java.lang.CharSequence)
 com.ash.rachana.el.SafeRegex :: public int com.ash.rachana.el.SafeRegex.groups()
@@ -1631,6 +1734,7 @@ com.ash.rachana.el.Values :: public static java.lang.String com.ash.rachana.el.V
 com.ash.rachana.el.check.Checker :: public static boolean com.ash.rachana.el.check.Checker.isoDate(java.lang.String)
 com.ash.rachana.el.check.Checker :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.check.Checker.check(com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>,java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields,com.ash.rachana.el.check.Spelling)
 com.ash.rachana.el.check.Checker :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.check.Checker.check(com.ash.rachana.el.check.Signatures,com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>,java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields,com.ash.rachana.el.check.Spelling)
+com.ash.rachana.el.check.Checker :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.check.Checker.check(com.ash.rachana.el.check.Signatures,com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>,java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields,com.ash.rachana.el.check.Spelling,boolean)
 com.ash.rachana.el.check.Checker :: public static int com.ash.rachana.el.check.Checker.distance(java.lang.String,java.lang.String)
 com.ash.rachana.el.check.Checker :: public static java.util.List<java.lang.String> com.ash.rachana.el.check.Checker.parts(com.ash.rachana.el.Expr)
 com.ash.rachana.el.check.Checker$Checked :: public boolean com.ash.rachana.el.check.Checker$Checked.ok()

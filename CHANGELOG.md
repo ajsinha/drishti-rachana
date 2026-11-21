@@ -5,6 +5,11 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **Rachana Studio, first slice** (`js/packages/rachana-studio`, `rachana studio <folder> [--libs ...]`; decision MK-1): three panes (the fragments of the
+  project's libraries, the live `<rachana-view>`, the Sutra source with its live problems, the parameter form of the chosen fragment and the
+  unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
+  placeholder. Built from Drishti Elements 3.1.0 widgets only; `<rachana-view>` takes a `files` property (the libraries). Vendored js-yaml 4.1.0.
+
 ### Named arguments by the catalogue; stable wire keys; Sutra let and functions, library functions (G2 lane A4)
 
 - **X41 + S2 + X42, level 1.2** (SPEC 2.7): a Sutra's `let:` (named values, each reading the ones before it, no current
@@ -30,6 +35,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 
+- **L3 to L6, the engine** (new JVM module `rachana-live`, never in Core or the bundles: `LiveModuleGuardTest`): `LiveTables` is a
+  Data Protocol provider over `SnapshotSource` (whole, columns, query tiers) and `LiveStream`; merge by key and record version
+  (`KeyedRows.versionOrder`), new epoch on a gap, paused streams, retention, `PollingDiff`; `StoreOverlay` pages columns-tier sources
+  through kept indexes merged with the live side; `narrow` and heavy columns; `Subscription` gains key windows (`top`, `total`,
+  coalescing, capacity gap), redaction and a lookup-based offer, and the bridge `win`; `Authoriser`/`ReaderView`/`AuditSink` keep every
+  page, total and patch to the reader (fail closed). `LiveTablesTest` ports the liveset scenarios (merge, snapshot race, burst, paged
+  window, newest-first top, retention, merged pages, two audiences).
 - **L1, the declaration** (`rachana-core`): `LiveTableSpec` reads and checks `<name>.live.yaml` (`rachana: 1`, `live-table:`, snapshot,
   stream, `where` pushed down as a filter tree, key, version, `changed-by`, `changed-at`, columns with `width`, `fmt`, `heavy`, order,
   grouping, subtotals, `narrow`, `retention`, `tray`, `edit:` as a Core form with `reason`), every problem at once in position order;

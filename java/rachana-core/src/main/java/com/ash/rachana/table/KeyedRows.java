@@ -71,6 +71,35 @@ public final class KeyedRows {
         return b.toString();
     }
 
+    /**
+     * The version rule of a live table (LIVE_TABLES 1.3): how a whole row arriving with version {@code arriving} compares with the one
+     * held at {@code held}: above 0 when it is newer (it replaces the row), 0 or below when it is the same or older (it is dropped: no
+     * duplicates, no going back). Versions compare as numbers when both read as numbers (a number, or a text of one), else as text;
+     * an absent version on either side compares as newer (the latest arrival wins).
+     */
+    public static int versionOrder(Object held, Object arriving) {
+        if (held == null || arriving == null) {
+            return 1;
+        }
+        java.math.BigDecimal a = number(held);
+        java.math.BigDecimal b = number(arriving);
+        if (a != null && b != null) {
+            return b.compareTo(a);
+        }
+        return String.valueOf(arriving).compareTo(String.valueOf(held));
+    }
+
+    private static java.math.BigDecimal number(Object v) {
+        if (!(v instanceof Number) && !(v instanceof String)) {
+            return null;
+        }
+        try {
+            return new java.math.BigDecimal(String.valueOf(v).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     /** Replaces every row. */
     public void reset(List<Map<String, Object>> next) {
         rows.clear();

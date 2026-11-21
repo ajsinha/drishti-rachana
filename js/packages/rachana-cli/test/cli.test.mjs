@@ -120,3 +120,15 @@ test("build static-sales: the real <rachana-view>, Elements pack and runtime are
   assert.ok(page.includes('./rachana/src/rachana_view.js') && page.includes("<rachana-view") && page.includes('runtime="rachana/rachana.runtime.js"'));
   rmSync(d, { recursive: true });
 });
+
+test("studio: usage errors, and a start that prints its address and the libraries found", async () => {
+  assert.equal(await main(["studio", join(tmpdir(), "no-such-folder-xyz")], io().io), 2);
+  const d = tmp();
+  mkdirSync(join(d, "rachana_libs", "demo"), { recursive: true });
+  writeFileSync(join(d, "rachana_libs", "demo", "demo.rachana-lib.yaml"), "library: demo\nversion: 0.1.0\n");
+  writeFileSync(join(d, "a.sutra.yaml"), GOOD);
+  const { o, io: x } = io();
+  assert.equal(await main(["studio", d, "--test-once"], x), 0);
+  assert.match(o.out[0], /^studio http:\/\/127\.0\.0\.1:\d+\/ .*demo 0\.1\.0/);
+  rmSync(d, { recursive: true });
+});

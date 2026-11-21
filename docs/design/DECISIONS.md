@@ -302,3 +302,7 @@ The Rachana AI kit (prompt kit, validate-and-fix loop, evaluation harness) and t
 ### Desktop hosts deferred (owner, 2026-11-21)
 
 The desktop hosts (Electron, Java Swing over JCEF or JavaFX WebView, .NET WebView2) leave i7b and are **parked with no release assigned** (owner, final). The in-process bridge transport of the Data Protocol stays (built in G2), so a host can be added later without protocol changes. If revived, the first candidate is Swing over JavaFX WebView (jars only, no executable), after a painting spike.
+
+### L-12 superseded: the libraries live inside Rachana (owner, 2026-11-21)
+
+The owner does not want a separate library dependency: the fragment libraries (`core`, `finance`, `genomics`, `economy`, `geo`, `ops`, `ai`) move **into this repository** under `libraries/<name>/`, organised by domain, built and released **with Rachana on one version train** (each library keeps its own major in its manifest for `use: lib/frag@N`; the `.rlib` packaging and signing stay, for libraries that other teams write). Drishti then has one dependency (the Rachana pin). The `drishti-rachana-libraries` repository is moved here with its history and then **archived** (read-only); deleting it waits for the GitHub cleanup release. L-11 stands: the libraries are proprietary, under this repository's licence. The public synthetic test library stays where it is.

@@ -3,7 +3,7 @@
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
 /**
- * The command line: rachana new / dev / build / lint / preview / lib. Each command is a function over the compiler bundle
+ * The command line: rachana new / dev / build / lint / preview / studio / lib. Each command is a function over the compiler bundle
  * (the tools bundle, generated from the Java reference); no language logic is written here. `lib` hands over to the jar,
  * which holds the one library implementation (LibraryTool).
  */
@@ -12,19 +12,21 @@ import { scaffold } from "./scaffold.js";
 import { build } from "./build.js";
 import { preview } from "./serve.js";
 import { lib } from "./lib.js";
+import { studio } from "./studio.js";
 
-export const STATUS = "lint, new, build, painter included, preview, lib";
+export const STATUS = "lint, new, build, painter included, preview, studio, lib";
 
 const HELP = `rachana <command>
   new <dir> [--template <name>]                 a starter folder: a Sutra, sample data, rachana.yaml
   lint [paths] [--format text|json|sarif] [--strict] [--level 1.1|1.2]   compile and lint; exit 1 on errors
   build [--src <dir>] [--out site] [--level 1.1]            a static site: Sutras, data, runtime bundle, pages
   preview <file> [--data <dir>] [--port <n>]    one screen in the browser (dev <dir> serves a folder)
+  studio [folder] [--libs <path>,...] [--data <dir>] [--port <n>]   Rachana Studio: edit the folder's Sutras with a live preview and a fragment palette
   lib build|sign|keygen|pack|verify|lock|contracts|check-host ...   libraries (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)
 `;
 
 /** Splits argv into positional arguments and --flags (a flag takes a value unless it is a known switch). */
-export function parseArgs(argv, switches = ["strict", "help"]) {
+export function parseArgs(argv, switches = ["strict", "help", "test-once"]) {
   const pos = [], flags = {};
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -52,6 +54,7 @@ export async function main(argv, io = { out: (s) => process.stdout.write(s + "\n
       case "new": return scaffold(pos[0], flags.template, io);
       case "lint": return await lint(pos.length ? pos : ["."], flags, io);
       case "build": return await build(flags.src ?? pos[0] ?? ".", flags.out ?? "site", io, flags);
+      case "studio": return await studio(pos[0] ?? ".", flags, io);
       case "preview": case "dev": return await preview(pos[0] ?? ".", flags, io);
       default: io.err(`rachana: unknown command '${cmd}'\n${HELP}`); return 2;
     }

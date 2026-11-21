@@ -106,6 +106,14 @@ public final class FragmentColumns {
 
     /** The parts {@code ${...}} of a template rendered through {@link #rename}; the text between them kept. */
     public static String template(String text, String row, Tables tables, List<String> problems) {
+        return parts(text, part -> {
+            String inner = rename(part, row, true, tables, problems);
+            return inner == null ? part : inner;
+        });
+    }
+
+    /** A template with each part {@code ${...}} (its braces balanced, its texts skipped) replaced by {@code f} of it; the rest kept. */
+    public static String parts(String text, java.util.function.UnaryOperator<String> f) {
         StringBuilder out = new StringBuilder();
         int copied = 0;
         int i = text.indexOf("${");
@@ -114,8 +122,7 @@ public final class FragmentColumns {
             if (end < 0) {
                 break;
             }
-            String inner = rename(text.substring(i + 2, end), row, true, tables, problems);
-            out.append(text, copied, i + 2).append(inner == null ? text.substring(i + 2, end) : inner);
+            out.append(text, copied, i + 2).append(f.apply(text.substring(i + 2, end)));
             copied = end;
             i = text.indexOf("${", end);
         }

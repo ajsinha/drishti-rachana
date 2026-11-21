@@ -1625,6 +1625,7 @@ com.ash.rachana.el.FormRules$Compiled :: public java.lang.String com.ash.rachana
 com.ash.rachana.el.FormRules$Compiled :: public void com.ash.rachana.el.FormRules$Compiled.names(java.util.Set<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static final java.lang.String com.ash.rachana.el.FragmentColumns.CODE
 com.ash.rachana.el.FragmentColumns :: public static final java.util.List<com.ash.rachana.el.FragmentColumns$ColumnParam> com.ash.rachana.el.FragmentColumns.COLUMN_PARAMS
+com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.parts(java.lang.String,java.util.function.UnaryOperator<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.rename(java.lang.String,java.lang.String,boolean,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.template(java.lang.String,java.lang.String,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public boolean com.ash.rachana.el.FragmentColumns$ColumnParam.textOnly()

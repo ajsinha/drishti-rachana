@@ -76,6 +76,11 @@ public final class TypedFragment {
     private static final Pattern MASKED = Pattern.compile("pXq\\{([a-z][a-z0-9-]*)}");
     private static final Pattern ARG = Pattern.compile("(?<![A-Za-z0-9_.$@])arg\\.([a-z][a-z0-9-]*)");
     private static final Pattern VALUE_TYPE = Pattern.compile("(list<)?([a-z]+)(>)?\\??|record\\{[^}]*}\\??");
+    /** A function type (EL_EXPANSION X8, X13): {@code fn(T, ...) -> U}. */
+    private static final Pattern FN_TYPE = Pattern.compile("fn\\(([^()]*)\\)\\s*->\\s*(.+)");
+    /** A lambda as a use writes it: its names, then its body. */
+    private static final Pattern LAMBDA = Pattern.compile("\\s*lambda\\s+([A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*)*)\\s*:(.*)",
+            Pattern.DOTALL);
 
     /** One declared parameter. {@code dflt} is the default node (null for none). */
     public record Param(String name, String kind, String type, boolean required, PNode dflt, String doc, Number min, Number max,
@@ -203,7 +208,7 @@ public final class TypedFragment {
         String kind = "table".equals(type) ? "table" : NAME_TYPES.contains(type) ? "name" : "value";
         if ("value".equals(kind) && !valueType(type)) {
             out.add(problem(SutraBlocks.BLOCK, "parameter " + name + " of fragment " + fragment + " has type '" + type + "': a value type ("
-                    + new java.util.TreeSet<>(VALUE_TYPES) + ", list<T>, record{...}, T?), a name type (" + new java.util.TreeSet<>(NAME_TYPES)
+                    + new java.util.TreeSet<>(VALUE_TYPES) + ", list<T>, record{...}, T?, fn(T, ...) -> U with one name or more), a name type (" + new java.util.TreeSet<>(NAME_TYPES)
                     + ") or table", file, m.get("type")));
             return null;
         }
@@ -247,6 +252,18 @@ public final class TypedFragment {
     }
 
     private static boolean valueType(String type) {
+        Matcher fn = type == null ? null : FN_TYPE.matcher(type);
+        if (fn != null && fn.matches()) {
+            if (fn.group(1).isBlank()) {
+                return false;                                   // a lambda has at least one name
+            }
+            for (String t : fn.group(1).split(",")) {
+                if (!t.isBlank() && !"any".equals(t.strip()) && !valueType(t.strip())) {
+                    return false;
+                }
+            }
+            return "any".equals(fn.group(2).strip()) || valueType(fn.group(2).strip());
+        }
         Matcher vm = type == null ? null : VALUE_TYPE.matcher(type);
         if (vm == null || !vm.matches()) {
             return false;
@@ -458,7 +475,7 @@ public final class TypedFragment {
             switch (p.kind()) {
                 case "name" -> tokens.put(p.name(), v);
                 default -> {
-                    if (v.value() instanceof String s && !fromDefault && !isText(p)) {
+                    if (v.value() instanceof String s && (!fromDefault || isFn(p)) && !isText(p)) {
                         exprs.put(p.name(), s);
                         if ("table".equals(p.kind())) {
                             fit(p, s, locals.get(p.name()), Map.of(), caller, sutraFile, v, out);
@@ -983,23 +1000,138 @@ public final class TypedFragment {
         }
         sb.append(s, copied, s.length());
         String text = sb.toString();
+        String done = args(text, exprs, literals);
+        return new PNode(done, n.line(), n.column());
+    }
+
+    /**
+     * {@code text} with every {@code arg.x} put in: a value's expression in parentheses or its literal as EL text; a function parameter
+     * (X13) as the lambda itself where it is a whole argument ({@code map(arg.rows, arg.f)}), and where the fragment calls it
+     * ({@code arg.f(x)}) as a {@code let}-bound name around the expression ({@code let(fn_f = lambda v: ..., ... fn_f(x) ...)}; in a
+     * template, around each {@code ${...}} that calls it).
+     */
+    private String args(String text, Map<String, String> exprs, Map<String, PNode> literals) {
+        if (text.contains("${") && callsFunction(text)) {
+            return com.ash.rachana.el.FragmentColumns.parts(text, part -> args(part, exprs, literals));
+        }
         StringBuilder done = new StringBuilder();
+        Map<String, String> called = new LinkedHashMap<>();
         Matcher a = ARG.matcher(text);
-        copied = 0;
+        int copied = 0;
         while (a.find()) {
             String p = longest(a.group(1));
             if (p == null) {
                 continue;
             }
             done.append(text, copied, a.start());
-            done.append(exprs.containsKey(p) ? "(" + exprs.get(p) + ")" : literals.containsKey(p) ? el(literals.get(p)) : "null");
-            copied = a.start() + 4 + p.length();
+            int end = a.start() + 4 + p.length();
+            if (isFn(params.get(p)) && exprs.containsKey(p)) {
+                int k = end;
+                while (k < text.length() && text.charAt(k) == ' ') {
+                    k++;
+                }
+                if (k < text.length() && text.charAt(k) == '(') {
+                    done.append(fnName(p));
+                    called.put(fnName(p), exprs.get(p).strip());
+                } else {
+                    done.append(exprs.get(p).strip());
+                }
+            } else {
+                done.append(exprs.containsKey(p) ? "(" + exprs.get(p) + ")" : literals.containsKey(p) ? el(literals.get(p)) : "null");
+            }
+            copied = end;
         }
         done.append(text, copied, text.length());
-        return new PNode(done.toString(), n.line(), n.column());
+        if (called.isEmpty()) {
+            return done.toString();
+        }
+        StringBuilder let = new StringBuilder("let(");
+        called.forEach((k, v) -> let.append(k).append(" = ").append(v).append(", "));
+        return let.append(done).append(')').toString();
+    }
+
+    /** Whether {@code text} calls a function parameter ({@code arg.f(}). */
+    private boolean callsFunction(String text) {
+        Matcher a = ARG.matcher(text);
+        while (a.find()) {
+            String p = longest(a.group(1));
+            int k = p == null ? -1 : a.start() + 4 + p.length();
+            while (k >= 0 && k < text.length() && text.charAt(k) == ' ') {
+                k++;
+            }
+            if (p != null && isFn(params.get(p)) && k < text.length() && text.charAt(k) == '(') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Whether a parameter takes text: its value at a use is the text as written (a literal), not an expression. */
+    private static boolean isFn(Param p) {
+        return p != null && "value".equals(p.kind()) && FN_TYPE.matcher(p.type()).matches();
+    }
+
+    /** The count of names a function type takes ({@code fn(number, text) -> number}: 2). */
+    private static int arity(String type) {
+        Matcher m = FN_TYPE.matcher(type);
+        if (!m.matches() || m.group(1).isBlank()) {
+            return 0;
+        }
+        return m.group(1).split(",").length;
+    }
+
+    /**
+     * What is wrong with a function argument, or null: a lambda written in the user's context (a text {@code lambda a, b: body}) with the
+     * type's count of names, whose body reads its names and the user's screen but not {@code @}, {@code ^} or {@code #index} (inside the
+     * fragment they would be the fragment's row, not the user's).
+     */
+    private static String function(Param p, PNode v) {
+        int n = arity(p.type());
+        String names = n == 1 ? "lambda x: ..." : "lambda " + String.join(", ", List.of("a", "b", "c", "d", "e", "f", "g", "h").subList(0, Math.min(n, 8)))
+                + ": ...";
+        if (!(v.value() instanceof String s)) {
+            return "is a function (" + p.type() + "): write " + names + ", not " + shown(v);
+        }
+        Matcher m = LAMBDA.matcher(s);
+        if (!m.matches()) {
+            return "is a function (" + p.type() + "): write " + names + ", not '" + s + "'";
+        }
+        int got = m.group(1).split(",").length;
+        if (got != n) {
+            return "is a function of " + n + (n == 1 ? " name" : " names") + " (" + p.type() + "); this lambda has " + got;
+        }
+        if (rowReads(m.group(2))) {
+            return "is a function: its body reads its names and the screen, not @, ^ or #index (inside the fragment they are the fragment's"
+                    + " rows, not yours): '" + s + "'";
+        }
+        return null;
+    }
+
+    /** Whether an expression reads {@code @} (a row or element), {@code ^} or {@code #index} outside its texts; {@code @<panel>} is fine. */
+    private static boolean rowReads(String s) {
+        char quote = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (quote != 0) {
+                if (c == '\\') {
+                    i++;
+                } else if (c == quote) {
+                    quote = 0;
+                }
+            } else if (c == '\'' || c == '"') {
+                quote = c;
+            } else if (c == '^' || c == '#' || c == '@' && (i + 1 >= s.length() || !Character.isLetter(s.charAt(i + 1)))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The {@code let} name a function parameter is bound to where the fragment calls it ({@code arg.warn-at(x)}: {@code fn_warn_at}). */
+    private static String fnName(String param) {
+        return "fn_" + param.replace('-', '_');
+    }
+
     private static boolean isText(Param p) {
         return "text".equals(p.type()) || "text?".equals(p.type());
     }
@@ -1045,6 +1177,9 @@ public final class TypedFragment {
                 return x instanceof String || x == null && !isDefault ? null : "is an expression giving rows, not " + shown(v);
             }
             default -> {
+                if (isFn(p)) {
+                    return function(p, v);
+                }
                 if (v.isMap() || v.isList()) {
                     return "is a value: write it as an expression";
                 }

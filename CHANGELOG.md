@@ -57,6 +57,11 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **`RCH-2121`** (error): a column parameter over the table given a computed text, a text naming a local column over a list that is
   not the table, a column the table does not declare, or a bare name that is a local column; the message names the local column and
   says to write `@.<name>` or the column as text.
+- **`fn` parameters** (LIBRARIES 4.2, X13 lambdas of lane B): a value parameter of type `fn(T, ...) -> U` (one name or more;
+  `any` allowed in it) takes a lambda written at the use in the user's context (`score: "lambda x: x / 1000"`, or a lambda
+  `default`); the count of names and a body free of `@`, `^`, `#index` are checked (`RCH-2116`); inside, `arg.f(x)` becomes
+  `let(fn_f = <lambda>, ... fn_f(x) ...)` around the expression (around each `${...}` in a template) and `arg.f` passed whole
+  to `map`/`sort`/`reduce`/`group` becomes the lambda. Cases: `sutra/fragments-calls` (+2), `problem/fragments-calls` (+4).
 - **Conformance**: `sutra/fragments-calls` (+2: every renamed form, identity), `problem/fragments-calls` (+4: one per refusal),
   verified; the `sutra` kind now builds the view at the case's level (it built at 1.0, so 1.1 syntax in a 1.2 case did not
   read). `FragmentColumnsTest` checks the Java table of column parameters equals the role marks. API additions only

@@ -30,8 +30,8 @@ public final class BlockUses {
 
     private BlockUses() {}
 
-    /** The uses in a Sutra's text, in order; empty when it has none or cannot be read. */
-    public static List<Use> of(String text) {
+    /** The uses in a Sutra's text, in order, resolved by {@code fragments} (the instance's); empty when it has none or cannot be read. */
+    public static List<Use> of(String text, FragmentResolver fragments) {
         PNode root;
         try {
             root = new PositionalYamlReader().read(text == null ? "" : text, new ArrayList<>());
@@ -46,12 +46,12 @@ public final class BlockUses {
         for (int i = 0; i < items.size(); i++) {
             PNode p = items.get(i);
             if (SutraBlocks.isUse(p)) {
-                out.add(use(i, "panels[" + i + "]", p));
+                out.add(use(i, "panels[" + i + "]", p, fragments));
             } else if (p.isMap() && p.map().get("panels") != null && p.map().get("panels").isList()) {
                 List<PNode> inner = p.map().get("panels").list();
                 for (int j = 0; j < inner.size(); j++) {
                     if (SutraBlocks.isUse(inner.get(j))) {
-                        out.add(use(i, "panels[" + i + "].panels[" + j + "]", inner.get(j)));
+                        out.add(use(i, "panels[" + i + "].panels[" + j + "]", inner.get(j), fragments));
                     }
                 }
             }
@@ -59,7 +59,7 @@ public final class BlockUses {
         return out;
     }
 
-    private static Use use(int item, String at, PNode p) {
+    private static Use use(int item, String at, PNode p, FragmentResolver fragments) {
         String ref = p.map().get("use").text() == null ? "" : p.map().get("use").text().trim();
         Map<String, String> with = new LinkedHashMap<>();
         PNode w = p.map().get("with");
@@ -68,11 +68,11 @@ public final class BlockUses {
         }
         List<SutraProblem> problems = new ArrayList<>();
         List<Brought> brought = new ArrayList<>();
-        for (PNode q : SutraBlocks.expand(List.of(p), "studio", problems)) {
+        for (PNode q : SutraBlocks.expand(List.of(p), "studio", problems, fragments)) {
             Map<String, PNode> m = q.isMap() ? q.map() : Map.of();
             brought.add(new Brought(text(m.get("id")), text(m.get("kind")), text(m.get("title")), text(m.get("when")), plain(q)));
         }
-        SutraBlocks.Block b = SutraBlocks.find(ref).orElse(null);
+        SutraBlocks.Block b = fragments.find(ref).orElse(null);
         String name = ref.contains("@") ? ref.substring(0, ref.indexOf('@')) : ref;
         return new Use(item, at, p.line(), p.column(), ref, name, b == null ? null : b.version(), b == null ? null : b.file(), b == null ? null : b.path(),
                 b == null ? "" : b.description(), b == null ? Map.of() : b.params(), with, List.copyOf(brought), List.copyOf(problems));

@@ -3,6 +3,20 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased (G1 gate fixes)
+
+Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).
+
+- **F4, the block library per instance (A6)**: `parse.BlockLibrary` holds what `SutraBlocks` kept in static fields (the library,
+  its problems, warnings and clashes, the UI kit folder, the modules' contributed sections). A host makes one per instance and hands
+  it to its profile (`Entities.addTo(profile, kinds, blocks)`, or `Profile.Builder.fragments`); two instances never share blocks.
+  `SutraBlocks` keeps the stateless half (`read`, `expand(..., resolver)`, `sizes(..., resolver)`, `packOf`, `flow`, `isUse`).
+  Core alone resolves no block (`FragmentResolver.none()`, was the static folder library). API: removed the static `SutraBlocks.load`,
+  `kit`, `fromKit`, `library`, `blocks`, `find`, `problems`, `warnings`, `clashes`, `contribute`, `withdraw`, `contributedUses`,
+  `expand(3 args)`, `sizes(1 arg)`, `SutraBlocks.Contribution` (now `BlockLibrary.Contribution`), `FragmentResolver.folders()`;
+  changed `BlockUses.of(text)` to `of(text, resolver)`; added `BlockLibrary`, `FragmentResolver.none()`, `Entities.addTo(…, blocks)`,
+  `Entities.match(kinds, sections)` (DRISHTI_MIGRATION_TODO 8.3i).
+
 ## v0.11.0 ready (untagged): the JavaScript build
 
 Step A15. Not tagged: the tag waits for the owner (G1 gate).

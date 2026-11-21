@@ -243,6 +243,16 @@ here. What Drishti must do when the migration starts, in this order:
       needs no change. `rachana migrate` is not needed for `and`/`or`/`not` (PY1). Review the lint words of the forms' syntax errors
       (DECISIONS A7b-1) in Drishti's form tests and any UI text that quotes them. Tests: `FormTest` (Drishti half), the forms check API.
 
+- [ ] 8.3i **The block library per instance (G1 gate F4)**: every static `SutraBlocks` call of the host moves to one
+      `BlockLibrary` per Rachana instance, made by the holder of 8.3c and handed to the `drishti` profile with
+      `Entities.addTo(Profile.named("drishti"), () -> servedKinds, blocks)` (it also becomes the profile's fragment resolver):
+      `SutraBlocks.kit(dir)` → `blocks.kit(dir)`; `SutraBlocks.load(dirs)` → `blocks.load(dirs)` (`SutraRegistry`, `SutraCli`,
+      `UiKitController`/Studio's block list); `library()`, `blocks()`, `find`, `problems()`, `warnings()`, `clashes()`, `fromKit` the same
+      on the library; `ModuleBridge`'s `contribute`/`withdraw` on the library; `BlockUses.of(text)` → `BlockUses.of(text, blocks)`;
+      `SutraBlocks.Contribution` → `BlockLibrary.Contribution`; `FragmentResolver.folders()` → the library itself. A parser built without
+      the library (`new SutraParser()`, or a profile without it) now refuses every `use:` as unknown. Tests: `SutraBlocksTest`,
+      `SutraFragmentsTest`, `UiKitBlocksTest`, `PackSutrasTest`, `ModuleHostServerTest`.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

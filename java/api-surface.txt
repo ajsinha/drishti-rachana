@@ -76,6 +76,7 @@ class public final class com.ash.rachana.model.ControlRules
 class public final class com.ash.rachana.model.FormExpr
 class public final class com.ash.rachana.model.ModelVersion
 class public final class com.ash.rachana.model.PanelOptions
+class public final class com.ash.rachana.parse.BlockLibrary
 class public final class com.ash.rachana.parse.BlockUses
 class public final class com.ash.rachana.parse.Json
 class public final class com.ash.rachana.parse.PositionalYamlReader
@@ -266,11 +267,11 @@ class public static final record com.ash.rachana.model.Wiring$Emit
 class public static final record com.ash.rachana.model.Wiring$Field
 class public static final record com.ash.rachana.model.Wiring$Ref
 class public static final record com.ash.rachana.model.Wiring$Source
+class public static final record com.ash.rachana.parse.BlockLibrary$Contribution
 class public static final record com.ash.rachana.parse.BlockUses$Brought
 class public static final record com.ash.rachana.parse.BlockUses$Use
 class public static final record com.ash.rachana.parse.PositionalYamlReader$Issue
 class public static final record com.ash.rachana.parse.SutraBlocks$Block
-class public static final record com.ash.rachana.parse.SutraBlocks$Contribution
 class public static final record com.ash.rachana.view.MaskCount$Result
 class public static final record com.ash.rachana.view.PanelData$Bar
 class public static final record com.ash.rachana.view.PanelData$Bars
@@ -2285,8 +2286,30 @@ com.ash.rachana.model.Wiring$Source :: public static com.ash.rachana.model.Wirin
 com.ash.rachana.model.Wiring$Source :: public static final int com.ash.rachana.model.Wiring$Source.DEFAULT_LIMIT
 com.ash.rachana.model.Wiring$Source :: public static final int com.ash.rachana.model.Wiring$Source.MAX_LIMIT
 com.ash.rachana.model.Wiring$Source :: public static final int com.ash.rachana.model.Wiring$Source.MAX_PARAMS
+com.ash.rachana.parse.BlockLibrary :: public boolean com.ash.rachana.parse.BlockLibrary.fromKit(com.ash.rachana.parse.SutraBlocks$Block)
+com.ash.rachana.parse.BlockLibrary :: public com.ash.rachana.parse.BlockLibrary()
+com.ash.rachana.parse.BlockLibrary :: public java.util.Collection<java.lang.String> com.ash.rachana.parse.BlockLibrary.names()
+com.ash.rachana.parse.BlockLibrary :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.BlockLibrary.clashes()
+com.ash.rachana.parse.BlockLibrary :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.BlockLibrary.load(java.util.Collection<java.nio.file.Path>)
+com.ash.rachana.parse.BlockLibrary :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.BlockLibrary.problems()
+com.ash.rachana.parse.BlockLibrary :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.BlockLibrary.warnings()
+com.ash.rachana.parse.BlockLibrary :: public java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.BlockLibrary.contributedUses(java.lang.String)
+com.ash.rachana.parse.BlockLibrary :: public java.util.List<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.BlockLibrary.blocks()
+com.ash.rachana.parse.BlockLibrary :: public java.util.Map<java.lang.String, java.util.TreeMap<java.lang.Integer, com.ash.rachana.parse.SutraBlocks$Block>> com.ash.rachana.parse.BlockLibrary.library()
+com.ash.rachana.parse.BlockLibrary :: public java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.BlockLibrary.find(java.lang.String)
+com.ash.rachana.parse.BlockLibrary :: public java.util.Optional<java.nio.file.Path> com.ash.rachana.parse.BlockLibrary.kit()
+com.ash.rachana.parse.BlockLibrary :: public void com.ash.rachana.parse.BlockLibrary.contribute(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.parse.BlockLibrary :: public void com.ash.rachana.parse.BlockLibrary.kit(java.nio.file.Path)
+com.ash.rachana.parse.BlockLibrary :: public void com.ash.rachana.parse.BlockLibrary.withdraw(java.lang.String)
+com.ash.rachana.parse.BlockLibrary$Contribution :: public com.ash.rachana.parse.BlockLibrary$Contribution(java.lang.String,java.lang.String,com.ash.rachana.parse.SutraBlocks$Block)
+com.ash.rachana.parse.BlockLibrary$Contribution :: public com.ash.rachana.parse.SutraBlocks$Block com.ash.rachana.parse.BlockLibrary$Contribution.block()
+com.ash.rachana.parse.BlockLibrary$Contribution :: public final boolean com.ash.rachana.parse.BlockLibrary$Contribution.equals(java.lang.Object)
+com.ash.rachana.parse.BlockLibrary$Contribution :: public final int com.ash.rachana.parse.BlockLibrary$Contribution.hashCode()
+com.ash.rachana.parse.BlockLibrary$Contribution :: public final java.lang.String com.ash.rachana.parse.BlockLibrary$Contribution.toString()
+com.ash.rachana.parse.BlockLibrary$Contribution :: public java.lang.String com.ash.rachana.parse.BlockLibrary$Contribution.kind()
+com.ash.rachana.parse.BlockLibrary$Contribution :: public java.lang.String com.ash.rachana.parse.BlockLibrary$Contribution.module()
 com.ash.rachana.parse.BlockUses :: public static java.lang.Object com.ash.rachana.parse.BlockUses.plain(com.ash.rachana.parse.PNode)
-com.ash.rachana.parse.BlockUses :: public static java.util.List<com.ash.rachana.parse.BlockUses$Use> com.ash.rachana.parse.BlockUses.of(java.lang.String)
+com.ash.rachana.parse.BlockUses :: public static java.util.List<com.ash.rachana.parse.BlockUses$Use> com.ash.rachana.parse.BlockUses.of(java.lang.String,com.ash.rachana.parse.FragmentResolver)
 com.ash.rachana.parse.BlockUses$Brought :: public com.ash.rachana.parse.BlockUses$Brought(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Object)
 com.ash.rachana.parse.BlockUses$Brought :: public final boolean com.ash.rachana.parse.BlockUses$Brought.equals(java.lang.Object)
 com.ash.rachana.parse.BlockUses$Brought :: public final int com.ash.rachana.parse.BlockUses$Brought.hashCode()
@@ -2316,7 +2339,7 @@ com.ash.rachana.parse.BlockUses$Use :: public java.util.Map<java.lang.String, ja
 com.ash.rachana.parse.BlockUses$Use :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.BlockUses$Use.with()
 com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Collection<java.lang.String> com.ash.rachana.parse.FragmentResolver.names()
 com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.FragmentResolver.find(java.lang.String)
-com.ash.rachana.parse.FragmentResolver :: public static com.ash.rachana.parse.FragmentResolver com.ash.rachana.parse.FragmentResolver.folders()
+com.ash.rachana.parse.FragmentResolver :: public static com.ash.rachana.parse.FragmentResolver com.ash.rachana.parse.FragmentResolver.none()
 com.ash.rachana.parse.FragmentResolver :: public static com.ash.rachana.parse.FragmentResolver com.ash.rachana.parse.FragmentResolver.of(java.util.Collection<com.ash.rachana.parse.SutraBlocks$Block>)
 com.ash.rachana.parse.Json :: public static java.lang.Object com.ash.rachana.parse.Json.read(java.lang.String)
 com.ash.rachana.parse.Json :: public static java.lang.String com.ash.rachana.parse.Json.quote(java.lang.String)
@@ -2350,7 +2373,6 @@ com.ash.rachana.parse.PositionalYamlReader$Issue :: public final java.lang.Strin
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public int com.ash.rachana.parse.PositionalYamlReader$Issue.column()
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public int com.ash.rachana.parse.PositionalYamlReader$Issue.line()
 com.ash.rachana.parse.PositionalYamlReader$Issue :: public java.lang.String com.ash.rachana.parse.PositionalYamlReader$Issue.message()
-com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.fromKit(com.ash.rachana.parse.SutraBlocks$Block)
 com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.isBlockFile(java.nio.file.Path)
 com.ash.rachana.parse.SutraBlocks :: public static boolean com.ash.rachana.parse.SutraBlocks.isUse(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.SutraBlocks :: public static com.ash.rachana.parse.SutraBlocks$Block com.ash.rachana.parse.SutraBlocks.read(java.lang.String,java.lang.String)
@@ -2359,21 +2381,8 @@ com.ash.rachana.parse.SutraBlocks :: public static final int com.ash.rachana.par
 com.ash.rachana.parse.SutraBlocks :: public static final java.lang.String com.ash.rachana.parse.SutraBlocks.BLOCK
 com.ash.rachana.parse.SutraBlocks :: public static java.lang.String com.ash.rachana.parse.SutraBlocks.flow(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.SutraBlocks :: public static java.lang.String com.ash.rachana.parse.SutraBlocks.packOf(java.nio.file.Path)
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.SutraBlocks.clashes()
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.SutraBlocks.load(java.util.Collection<java.nio.file.Path>)
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.SutraBlocks.problems()
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.SutraBlocks.warnings()
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.contributedUses(java.lang.String)
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.expand(java.util.List<com.ash.rachana.parse.PNode>,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>)
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.expand(java.util.List<com.ash.rachana.parse.PNode>,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>,com.ash.rachana.parse.FragmentResolver)
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.SutraBlocks.blocks()
-com.ash.rachana.parse.SutraBlocks :: public static java.util.List<java.lang.Integer> com.ash.rachana.parse.SutraBlocks.sizes(java.util.List<com.ash.rachana.parse.PNode>)
-com.ash.rachana.parse.SutraBlocks :: public static java.util.Map<java.lang.String, java.util.TreeMap<java.lang.Integer, com.ash.rachana.parse.SutraBlocks$Block>> com.ash.rachana.parse.SutraBlocks.library()
-com.ash.rachana.parse.SutraBlocks :: public static java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.SutraBlocks.find(java.lang.String)
-com.ash.rachana.parse.SutraBlocks :: public static java.util.Optional<java.nio.file.Path> com.ash.rachana.parse.SutraBlocks.kit()
-com.ash.rachana.parse.SutraBlocks :: public static void com.ash.rachana.parse.SutraBlocks.contribute(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
-com.ash.rachana.parse.SutraBlocks :: public static void com.ash.rachana.parse.SutraBlocks.kit(java.nio.file.Path)
-com.ash.rachana.parse.SutraBlocks :: public static void com.ash.rachana.parse.SutraBlocks.withdraw(java.lang.String)
+com.ash.rachana.parse.SutraBlocks :: public static java.util.List<java.lang.Integer> com.ash.rachana.parse.SutraBlocks.sizes(java.util.List<com.ash.rachana.parse.PNode>,com.ash.rachana.parse.FragmentResolver)
 com.ash.rachana.parse.SutraBlocks$Block :: public boolean com.ash.rachana.parse.SutraBlocks$Block.fragment()
 com.ash.rachana.parse.SutraBlocks$Block :: public com.ash.rachana.parse.SutraBlocks$Block(java.lang.String,int,java.lang.String,java.util.Map<java.lang.String, java.lang.String>,java.lang.String)
 com.ash.rachana.parse.SutraBlocks$Block :: public com.ash.rachana.parse.SutraBlocks$Block(java.lang.String,int,java.lang.String,java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.String)
@@ -2389,13 +2398,6 @@ com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.racha
 com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Block.text()
 com.ash.rachana.parse.SutraBlocks$Block :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.parse.SutraBlocks$Block.doc()
 com.ash.rachana.parse.SutraBlocks$Block :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.SutraBlocks$Block.params()
-com.ash.rachana.parse.SutraBlocks$Contribution :: public com.ash.rachana.parse.SutraBlocks$Block com.ash.rachana.parse.SutraBlocks$Contribution.block()
-com.ash.rachana.parse.SutraBlocks$Contribution :: public com.ash.rachana.parse.SutraBlocks$Contribution(java.lang.String,java.lang.String,com.ash.rachana.parse.SutraBlocks$Block)
-com.ash.rachana.parse.SutraBlocks$Contribution :: public final boolean com.ash.rachana.parse.SutraBlocks$Contribution.equals(java.lang.Object)
-com.ash.rachana.parse.SutraBlocks$Contribution :: public final int com.ash.rachana.parse.SutraBlocks$Contribution.hashCode()
-com.ash.rachana.parse.SutraBlocks$Contribution :: public final java.lang.String com.ash.rachana.parse.SutraBlocks$Contribution.toString()
-com.ash.rachana.parse.SutraBlocks$Contribution :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Contribution.kind()
-com.ash.rachana.parse.SutraBlocks$Contribution :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Contribution.module()
 com.ash.rachana.parse.SutraDocstring :: public static final int com.ash.rachana.parse.SutraDocstring.SUMMARY_MAX
 com.ash.rachana.parse.SutraDocstring :: public static final java.lang.String com.ash.rachana.parse.SutraDocstring.CODE
 com.ash.rachana.parse.SutraDocstring :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.SutraDocstring.TYPES
@@ -2415,8 +2417,10 @@ com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.Ya
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.line()
 com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Entities.addTo(com.ash.rachana.profile.Profile$Builder)
 com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Entities.addTo(com.ash.rachana.profile.Profile$Builder,java.util.function.Supplier<? extends java.util.Collection<java.lang.String>>)
+com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Entities.addTo(com.ash.rachana.profile.Profile$Builder,java.util.function.Supplier<? extends java.util.Collection<java.lang.String>>,com.ash.rachana.parse.BlockLibrary)
 com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.SutraKey com.ash.rachana.profile.Entities.domain()
 com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.SutraKey com.ash.rachana.profile.Entities.match(java.util.function.Supplier<? extends java.util.Collection<java.lang.String>>)
+com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.SutraKey com.ash.rachana.profile.Entities.match(java.util.function.Supplier<? extends java.util.Collection<java.lang.String>>,java.util.function.Function<java.lang.String, java.util.List<com.ash.rachana.parse.PNode>>)
 com.ash.rachana.profile.Entities :: public static final java.lang.String com.ash.rachana.profile.Entities.DOMAIN
 com.ash.rachana.profile.Entities :: public static final java.lang.String com.ash.rachana.profile.Entities.MATCH
 com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.accepts(com.ash.rachana.model.PanelKind)

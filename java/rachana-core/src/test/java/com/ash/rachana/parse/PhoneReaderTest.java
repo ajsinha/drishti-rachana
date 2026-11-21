@@ -40,7 +40,7 @@ class PhoneReaderTest {
 
     @AfterEach
     void empty() {
-        SutraBlocks.load(List.of());
+        com.ash.rachana.TestGrammar.blocks().load(List.of());
     }
 
     @Test
@@ -82,7 +82,7 @@ class PhoneReaderTest {
                 panels:
                   - { id: "%{id}", kind: ladder, rows: $.FLOWS, columns: [ { label: Date, bind: "@.D" } ] }
                 """);
-        assertThat(SutraBlocks.load(List.of(dir))).isEmpty();
+        assertThat(com.ash.rachana.TestGrammar.blocks().load(List.of(dir))).isEmpty();
         Sutra s = com.ash.rachana.TestGrammar.parser().parse(sutra("", "  - { use: ladder@1 }\n  - { use: ladder@1, with: { id: other }, phone: glance }\n"), "a.yaml", "x");
         assertThat(s.panels().get(0).options().get("phone")).isEqualTo(Map.of("tier", "more", "from", "fragment"));
         assertThat(s.panels().get(1).options().get("phone")).isEqualTo(Map.of("tier", "glance", "from", "sutra"));

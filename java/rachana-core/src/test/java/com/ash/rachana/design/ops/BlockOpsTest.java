@@ -54,12 +54,12 @@ class BlockOpsTest {
     @BeforeEach
     void load() throws Exception {
         Files.writeString(dir.resolve("legs.v1.block.yaml"), LEGS);
-        assertThat(SutraBlocks.load(List.of(dir))).isEmpty();
+        assertThat(com.ash.rachana.TestGrammar.blocks().load(List.of(dir))).isEmpty();
     }
 
     @AfterEach
     void empty() {
-        SutraBlocks.load(List.of());
+        com.ash.rachana.TestGrammar.blocks().load(List.of());
     }
 
     private static List<String> ids(String text) {
@@ -72,7 +72,7 @@ class BlockOpsTest {
 
     @Test
     void theUsesAreListedWithThePanelsTheyBringAndTheirParameters() {
-        List<BlockUses.Use> uses = BlockUses.of(SUTRA);
+        List<BlockUses.Use> uses = BlockUses.of(SUTRA, com.ash.rachana.TestGrammar.blocks());
         assertThat(uses).hasSize(1);
         BlockUses.Use u = uses.get(0);
         assertThat(u.item()).isEqualTo(1);
@@ -87,7 +87,7 @@ class BlockOpsTest {
         assertThat(((java.util.Map<?, ?>) u.panels().get(0).panel()).get("id")).isEqualTo("legs");
         assertThat(u.problems()).isEmpty();
 
-        BlockUses.Use bad = BlockUses.of(SUTRA.replace("legs@1", "legz@1").replace("rate-fmt: pct4", "rate: pct4")).get(0);
+        BlockUses.Use bad = BlockUses.of(SUTRA.replace("legs@1", "legz@1").replace("rate-fmt: pct4", "rate: pct4"), com.ash.rachana.TestGrammar.blocks()).get(0);
         assertThat(bad.version()).isNull();
         assertThat(bad.panels()).isEmpty();
         assertThat(bad.problems()).extracting(p -> p.code()).containsExactly(SutraBlocks.BLOCK);

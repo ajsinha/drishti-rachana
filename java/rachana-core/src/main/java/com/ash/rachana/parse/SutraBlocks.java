@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -43,10 +42,10 @@ import java.util.stream.Stream;
  * A use is replaced by the block's panels, in order, before the Sutra is checked, so the panels are linted, matched and drawn as if
  * they had been written in place. A fragment ({@code <name>.v<N>.fragment.yaml}, {@code fragment: <name>}, the shared library in
  * the host's UI kit) is a block whose {@code doc:} is complete ({@link SutraDocstring}, {@code RCH-2055}); it is
- * used the same way. The platform's fragments are the host's UI kit ({@link #kit(Path)}), read by every
+ * used the same way. The platform's fragments are the host's UI kit ({@link BlockLibrary#kit(Path)}), read by every
  * load whatever packs are enabled; a pack's own blocks are namespaced by the pack ({@code trading/legs@1}). {@code @1} names the block's version (without one, the newest); {@code with} sets its parameters
- * (an unknown one, an unknown block or a block that uses another is {@code RCH-2048}). The library is a snapshot replaced whole when
- * the Sutra folders are read again; a parse reads the snapshot of that moment. Thread-safe.
+ * (an unknown one, an unknown block or a block that uses another is {@code RCH-2048}). This class holds no state: the blocks a use
+ * finds are a {@link FragmentResolver}'s, a host's {@link BlockLibrary} per instance (split step A6). Thread-safe.
  */
 public final class SutraBlocks {
 
@@ -96,58 +95,9 @@ public final class SutraBlocks {
         }
     }
 
-    private static final AtomicReference<Map<String, TreeMap<Integer, Block>>> LIBRARY = new AtomicReference<>(Map.of());
-    private static final AtomicReference<List<SutraProblem>> PROBLEMS = new AtomicReference<>(List.of());
-    private static final AtomicReference<List<SutraProblem>> WARNINGS = new AtomicReference<>(List.of());
-    private static final AtomicReference<List<SutraProblem>> CLASHES = new AtomicReference<>(List.of());
-    private static final AtomicReference<Path> KIT = new AtomicReference<>();
 
     private SutraBlocks() {}
 
-    /** A module's section of a kind's page (module.yaml {@code sections:}): the fragment it brings and the kind whose Sutras show it. */
-    public record Contribution(String module, String kind, Block block) {}
-
-    private static final java.util.Map<String, List<Contribution>> CONTRIBUTIONS = new java.util.concurrent.ConcurrentHashMap<>();
-
-    /**
-     * A module's section: its fragment joins the library (named {@code <module>/<fragment>}) and is appended to every Sutra of the kind
-     * when the Sutras are read again (the fragment's panels carry their own {@code when:}). One implementation for every module.
-     */
-    public static void contribute(String module, String kind, String fragmentYaml, String file) {
-        Block b = read(fragmentYaml, file, file);
-        Block named = new Block(module + "/" + b.name(), b.version(), b.text(), b.params(), b.file(), b.path());
-        CONTRIBUTIONS.compute(module, (k, old) -> {
-            List<Contribution> l = new ArrayList<>(old == null ? List.of() : old);
-            l.add(new Contribution(module, kind, named));
-            return l;
-        });
-        LIBRARY.updateAndGet(m -> {
-            Map<String, TreeMap<Integer, Block>> n = new TreeMap<>(m);
-            n.computeIfAbsent(named.name(), x -> new TreeMap<>()).put(named.version(), named);
-            return Map.copyOf(n);
-        });
-    }
-
-    /** Takes a module's sections away (the module stopped); the Sutras are read again by the caller. */
-    public static void withdraw(String module) {
-        List<Contribution> gone = CONTRIBUTIONS.remove(module);
-        if (gone != null) {
-            LIBRARY.updateAndGet(m -> {
-                Map<String, TreeMap<Integer, Block>> n = new TreeMap<>(m);
-                gone.forEach(c -> n.remove(c.block().name()));
-                return Map.copyOf(n);
-            });
-        }
-    }
-
-    /** The {@code use:} nodes of the sections modules contribute to a kind's Sutras, in module order. */
-    public static List<PNode> contributedUses(String kind) {
-        List<PNode> out = new ArrayList<>();
-        CONTRIBUTIONS.values().stream().flatMap(List::stream).filter(c -> c.kind().equals(kind))
-                .sorted(java.util.Comparator.comparing(c -> c.block().name()))
-                .forEach(c -> out.add(new PNode(Map.of("use", new PNode(c.block().ref(), 1, 1)), 1, 1)));
-        return out;
-    }
 
     /** Whether a file is a block file ({@code .block.yaml}) or a fragment of the library ({@code .fragment.yaml}). */
     public static boolean isBlockFile(Path f) {
@@ -155,31 +105,6 @@ public final class SutraBlocks {
         return n.endsWith(".block.yaml") || n.endsWith(".fragment.yaml");
     }
 
-    /**
-     * Where the host's UI kit is (its {@code fragments/} folder read by every {@link #load}), or null for
-     * none (a unit test of blocks alone). The server and the CLI set it before the first load.
-     */
-    public static void kit(Path dir) {
-        KIT.set(dir == null ? null : dir.toAbsolutePath().normalize());
-    }
-
-    /** The host's UI kit folder set by {@link #kit(Path)}, if any. */
-    public static java.util.Optional<Path> kit() {
-        return java.util.Optional.ofNullable(KIT.get());
-    }
-
-    /** Whether a block was read from the host's UI kit (an unqualified platform fragment) rather than a pack or a site folder. */
-    public static boolean fromKit(Block b) {
-        Path k = KIT.get();
-        if (k == null || b.path() == null) {
-            return false;
-        }
-        try {
-            return Path.of(b.path()).toAbsolutePath().normalize().startsWith(k);
-        } catch (java.nio.file.InvalidPathException e) {
-            return false;
-        }
-    }
 
     /**
      * The pack a Sutra folder belongs to: the {@code name:} of the {@code pack.yaml} beside it ({@code <pack>/sutras}), else the pack
@@ -201,115 +126,6 @@ public final class SutraBlocks {
         }
         String folder = parent.getFileName().toString();
         return folder.matches("[a-z][a-z0-9-]{0,63}") ? folder : null;
-    }
-
-    /**
-     * Reads the host's UI kit fragments (when a kit is set) and every block file under the folders: the library becomes exactly
-     * these. Kit fragments are unqualified ({@code series-line@1}); a pack's blocks are namespaced by the pack ({@code trading/legs@1})
-     * and also answer to their plain name unless the kit has that name: on a clash the kit wins and the pack's stays reachable only
-     * qualified, with a warning ({@link #clashes()}). Among folders, a later one (a more specific pack) wins a plain name. Returns the
-     * problems of the files that are not blocks.
-     */
-    public static List<SutraProblem> load(Collection<Path> dirs) {
-        Map<String, TreeMap<Integer, Block>> next = new TreeMap<>();
-        List<SutraProblem> problems = new ArrayList<>();
-        List<SutraProblem> warnings = new ArrayList<>();
-        List<SutraProblem> clashes = new ArrayList<>();
-        java.util.Set<String> kitNames = new java.util.HashSet<>();
-        Path kit = KIT.get() == null ? null : KIT.get().resolve("fragments");
-        List<Path> all = new ArrayList<>();
-        if (kit != null) {
-            all.add(kit);
-        }
-        for (Path d : dirs) {
-            Path n = d.toAbsolutePath().normalize();
-            if (kit == null || !(n.startsWith(kit) || kit.startsWith(n))) {   // the kit is read once, first (a caller may still name it)
-                all.add(d);
-            }
-        }
-        for (Path dir : all) {
-            if (!Files.isDirectory(dir)) {
-                continue;
-            }
-            boolean isKit = dir == kit;
-            String pack = isKit ? null : packOf(dir);
-            try (Stream<Path> s = Files.walk(dir)) {
-                for (Path f : s.filter(SutraBlocks::isBlockFile).sorted().toList()) {
-                    try {
-                        Block b = read(Files.readString(f, StandardCharsets.UTF_8), f.getFileName().toString(), f.toString());
-                        String plain = b.name();
-                        if (pack != null) {                            // namespaced by its pack: trading/deal-ticket
-                            b = new Block(pack + "/" + plain, b.version(), b.text(), b.params(), b.file(), b.path());
-                            next.computeIfAbsent(b.name(), k -> new TreeMap<>()).put(b.version(), b);
-                        }
-                        if (isKit) {
-                            kitNames.add(plain);
-                            next.computeIfAbsent(plain, k -> new TreeMap<>()).put(b.version(), b);
-                        } else if (kitNames.contains(plain)) {
-                            clashes.add(new SutraProblem(BLOCK, (pack == null ? "the site block " : "pack " + pack + "'s ") + plain
-                                    + " has the name of a UI kit fragment: the kit's wins" + (pack == null ? " (rename it)"
-                                    : "; use " + pack + "/" + plain + "@" + b.version() + " for the pack's"), new SourceLocation(f.toString(), 1, 1)));
-                        } else {
-                            next.computeIfAbsent(plain, k -> new TreeMap<>()).put(b.version(), b);   // a later folder (a more specific pack) wins
-                        }
-                        if (!b.fragment()) {                           // an older block: its doc is a warning today
-                            warnings.addAll(SutraDocstring.checkSutra(parse(b.text().replace("%{", "pXq{"), b.file()), "block " + plain, f.toString()));
-                        }
-                    } catch (SutraException e) {
-                        problems.addAll(e.problems());
-                    } catch (IOException e) {
-                        problems.add(problem("cannot read " + f + ": " + e.getMessage(), f.getFileName().toString(), 1, 1));
-                    }
-                }
-            } catch (IOException e) {
-                problems.add(problem("cannot scan " + dir + ": " + e.getMessage(), dir.toString(), 1, 1));
-            }
-        }
-        CONTRIBUTIONS.values().forEach(l -> l.forEach(c -> next.computeIfAbsent(c.block().name(), k -> new TreeMap<>()).put(c.block().version(), c.block())));
-        LIBRARY.set(Map.copyOf(next));
-        java.util.Set<Block> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        for (TreeMap<Integer, Block> versions : next.values()) {
-            for (Block b : versions.values()) {
-                if (seen.add(b) && b.fragment() && b.text().contains("use:")) {
-                    List<SutraProblem> inner = new ArrayList<>();
-                    expand(List.of(new PNode(Map.of("use", new PNode(b.ref(), 1, 1)), 1, 1)), b.path(), inner);
-                    problems.addAll(inner);
-                }
-            }
-        }
-        PROBLEMS.set(List.copyOf(problems));
-        WARNINGS.set(List.copyOf(warnings));
-        CLASHES.set(List.copyOf(clashes));
-        return problems;
-    }
-
-    /** Each block once (a pack's block is listed under its qualified and its plain name), in name order. */
-    public static List<Block> blocks() {
-        java.util.Set<Block> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        List<Block> out = new ArrayList<>();
-        LIBRARY.get().values().forEach(vs -> vs.values().stream().filter(seen::add).forEach(out::add));
-        out.sort(java.util.Comparator.comparing(Block::name).thenComparing(Block::version));
-        return out;
-    }
-
-    /** The names a pack or site block shares with a UI kit fragment, read last: the kit's won ({@code RCH-2048}, a warning). */
-    public static List<SutraProblem> clashes() {
-        return CLASHES.get();
-    }
-
-    /** The blocks known now: name to versions. */
-    public static Map<String, TreeMap<Integer, Block>> library() {
-        return LIBRARY.get();
-    }
-
-    /** The problems of the block files read last. */
-    public static List<SutraProblem> problems() {
-        return PROBLEMS.get();
-    }
-
-    /** The warnings of the block files read last: an older block without a complete {@code doc:} ({@code RCH-2055}). */
-    public static List<SutraProblem> warnings() {
-        return WARNINGS.get();
     }
 
     /** One block file's content, checked: {@code rachana: 1}, {@code block}, {@code version}, {@code panels} (a list), {@code params} (scalars). */
@@ -414,23 +230,6 @@ public final class SutraBlocks {
         }
     }
 
-    /** The block a use names ({@code name@N}, or {@code name} for the newest version), if it is loaded. */
-    public static java.util.Optional<Block> find(String ref) {
-        return find(LIBRARY.get(), ref);
-    }
-
-    /** The folder library as a {@link FragmentResolver}: Core's default. */
-    static final FragmentResolver FOLDERS = new FragmentResolver() {
-        @Override
-        public java.util.Optional<Block> find(String ref) {
-            return SutraBlocks.find(ref);
-        }
-
-        @Override
-        public java.util.Collection<String> names() {
-            return LIBRARY.get().keySet();
-        }
-    };
 
     static java.util.Optional<Block> find(Map<String, TreeMap<Integer, Block>> library, String ref) {
         String r = ref == null ? "" : ref.trim();
@@ -451,23 +250,18 @@ public final class SutraBlocks {
      * How many panels each item of a written panels list stands for once expanded: 1 for a panel, the block's panel count for a use
      * (0 when the use does not resolve). The design operations map a panel's place among the expanded panels to its written item.
      */
-    public static List<Integer> sizes(List<PNode> panels) {
+    public static List<Integer> sizes(List<PNode> panels, FragmentResolver fragments) {
         List<Integer> out = new ArrayList<>();
         for (PNode p : panels) {
-            out.add(isUse(p) ? expand(List.of(p), "studio", new ArrayList<>()).size() : 1);
+            out.add(isUse(p) ? expand(List.of(p), "studio", new ArrayList<>(), fragments).size() : 1);
         }
         return out;
     }
 
     /**
-     * The panels list with every {@code use} replaced by its block's panels (parameters filled); problems go to {@code problems}. A list
-     * without a use comes back as it is.
+     * The panels list with every {@code use} replaced by the panels of the block {@code fragments} finds (parameters filled); problems
+     * go to {@code problems}. A list without a use comes back as it is.
      */
-    public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems) {
-        return expand(panels, file, problems, FOLDERS);
-    }
-
-    /** {@link #expand(List, String, List)} with the fragments found by {@code fragments}. */
     public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments) {
         return expand(panels, file, problems, new ArrayList<>(), fragments);
     }
@@ -624,7 +418,7 @@ public final class SutraBlocks {
         }
     }
 
-    private static PNode parse(String text, String file) {
+    static PNode parse(String text, String file) {
         try {
             return READER.read(text, new ArrayList<>());
         } catch (YamlSyntaxException e) {
@@ -633,7 +427,7 @@ public final class SutraBlocks {
         }
     }
 
-    private static SutraProblem problem(String message, String file, int line, int column) {
+    static SutraProblem problem(String message, String file, int line, int column) {
         return new SutraProblem(BLOCK, message, new SourceLocation(file, line, column));
     }
 }

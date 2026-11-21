@@ -11,9 +11,9 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 /**
- * Where {@code use: name@version} finds its fragment (docs/design/CORE_AND_PROFILES.md section 3.4): a host hook. Core's default is
- * the folder library {@link SutraBlocks#load} reads ({@link #folders()}); a host may hand an in-memory set ({@link #of}) or its own
- * through a profile ({@code Profile.Builder.fragments}). Where the files are found (a UI kit, pack folders and their precedence) is
+ * Where {@code use: name@version} finds its fragment (docs/design/CORE_AND_PROFILES.md section 3.4): a host hook, given per instance
+ * through a profile ({@code Profile.Builder.fragments}): a {@link BlockLibrary} read from folders, an in-memory set ({@link #of}) or the
+ * host's own. Core alone has none ({@link #none()}): every use is refused as unknown. Where the files are found (a UI kit, pack folders and their precedence) is
  * the host's.
  */
 public interface FragmentResolver {
@@ -24,9 +24,9 @@ public interface FragmentResolver {
     /** The names it knows, for the words of a use that does not resolve. */
     Collection<String> names();
 
-    /** The folder library of {@link SutraBlocks#load}. */
-    static FragmentResolver folders() {
-        return SutraBlocks.FOLDERS;
+    /** No blocks: Core's default when no profile gives a resolver. */
+    static FragmentResolver none() {
+        return of(List.of());
     }
 
     /** An in-memory set of blocks (every version of a name kept; {@code name} alone is the newest). */

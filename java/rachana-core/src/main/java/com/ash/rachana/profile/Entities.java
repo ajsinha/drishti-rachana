@@ -7,11 +7,11 @@ package com.ash.rachana.profile;
 import com.ash.rachana.model.Match;
 import com.ash.rachana.model.PanelKind;
 import com.ash.rachana.parse.PNode;
-import com.ash.rachana.parse.SutraBlocks;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
@@ -47,7 +47,20 @@ public final class Entities {
      * @param kinds the entity kinds served now, for the schema's {@code match.kind} list (empty: any text)
      */
     public static Profile.Builder addTo(Profile.Builder profile, Supplier<? extends Collection<String>> kinds) {
-        return profile.keys(domain(), match(kinds)).panelKinds(PanelKind.LINKS, PanelKind.PROVENANCE).sourceForms("kind").formSave();
+        return profile.keys(domain(), match(kinds, k -> List.of())).panelKinds(PanelKind.LINKS, PanelKind.PROVENANCE).sourceForms("kind").formSave();
+    }
+
+    /**
+     * Adds every entity addition to {@code profile}, with {@code blocks} as its fragment resolver: a Sutra's {@code use:} finds that
+     * library's blocks, and a Sutra that matches a kind gets the sections the library's modules contribute to that kind.
+     *
+     * @param kinds the entity kinds served now, for the schema's {@code match.kind} list (empty: any text)
+     * @param blocks the instance's block library
+     */
+    public static Profile.Builder addTo(Profile.Builder profile, Supplier<? extends Collection<String>> kinds, com.ash.rachana.parse.BlockLibrary blocks) {
+        Objects.requireNonNull(blocks, "a block library");
+        return profile.keys(domain(), match(kinds, blocks::contributedUses)).panelKinds(PanelKind.LINKS, PanelKind.PROVENANCE).sourceForms("kind")
+                .formSave().fragments(blocks);
     }
 
     /** {@code domain}: the folder it belongs to; the folder it was read from when it does not say. */
@@ -75,8 +88,18 @@ public final class Entities {
         };
     }
 
-    /** {@code match: { kind, where, priority }}, required; a {@link Match}. */
+    /** {@code match: { kind, where, priority }}, required; a {@link Match}; no contributed sections. */
     public static SutraKey match(Supplier<? extends Collection<String>> kinds) {
+        return match(kinds, k -> List.of());
+    }
+
+    /**
+     * {@code match: { kind, where, priority }}, required; a {@link Match}.
+     *
+     * @param sections the {@code use:} nodes of the sections contributed to a kind's Sutras (module.yaml {@code sections:})
+     */
+    public static SutraKey match(Supplier<? extends Collection<String>> kinds, java.util.function.Function<String, List<PNode>> sections) {
+        Objects.requireNonNull(sections, "the contributed sections");
         return new SutraKey() {
             @Override
             public String name() {
@@ -124,7 +147,7 @@ public final class Entities {
 
             @Override
             public List<PNode> panels(Object value) {
-                return value instanceof Match m ? SutraBlocks.contributedUses(m.kind()) : List.of();   // module.yaml sections: of the kind
+                return value instanceof Match m && m.kind() != null ? sections.apply(m.kind()) : List.of();   // module.yaml sections: of the kind
             }
 
             @Override

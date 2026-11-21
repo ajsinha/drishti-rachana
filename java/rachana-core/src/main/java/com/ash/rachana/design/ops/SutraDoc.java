@@ -91,7 +91,7 @@ final class SutraDoc {
 
     /** The written item the {@code expanded}-th panel (0-based, as parsed) comes from; the item count when it is past the end. */
     private int item(int expanded) {
-        List<Integer> sizes = SutraBlocks.sizes(written());
+        List<Integer> sizes = SutraBlocks.sizes(written(), parser.grammar().fragments());
         int seen = 0;
         for (int k = 0; k < sizes.size(); k++) {
             if (expanded < seen + sizes.get(k)) {

@@ -1,0 +1,165 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: plan/plan
+since: "1.1"
+profile: core
+verified: false
+description: >-
+  The plan document (FORMAT 5.10; DataPlan): per table entry, { entry, name, readers, live, query { columns?, filter?, limit? },
+  local [ { panel?, where, reason } ] } and the plan's problems. A panel's where is pushed down only when it is the entry's sole reader.
+given:
+  today: "2026-01-15"
+  schemas:
+    sales:
+      name: sales
+      key: [region, month]
+      columns:
+        - { name: region, type: string }
+        - { name: month, type: date }
+        - { name: revenue, type: decimal }
+        - { name: note, type: string }
+      can: [page, sort, filter, group]
+    plain:
+      name: plain
+      columns: [ { name: a, type: string }, { name: b, type: integer } ]
+      can: [page]
+cases:
+  - id: entry-where-is-pushed-down
+    kind: plan
+    source: SPEC 2.4; PROTOCOL 7
+    given:
+      ctl: { region: South }
+    sutra: |
+      rachana: 1
+      sutra: plan-entry
+      version: 1
+      controls:
+        - { id: region, kind: dropdown, options: [North, South] }
+      data:
+        sales: { table: sales, where: "@.region == ctl.region && @.revenue > 10", limit: 500 }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+    expect:
+      at:
+        /tables/0/query/filter: { op: "&&", args: [ { op: "==", args: [ { col: region }, { lit: South } ] }, { op: ">", args: [ { col: revenue }, { lit: 10 } ] } ] }
+        /tables/0/query/limit: 500
+        /tables/0/readers: [total]
+        /tables/0/local: []
+
+  - id: a-panel-where-stays-local-with-two-readers
+    kind: plan
+    source: DataPlan (sole reader rule)
+    sutra: |
+      rachana: 1
+      sutra: plan-two
+      version: 1
+      data:
+        sales: { table: sales }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+        - { id: north, kind: table, rows: "$.sales", where: "@.region == 'North'", columns: [ { label: Month, bind: month } ] }
+    expect:
+      at:
+        /tables/0/query: {}
+        /tables/0/local/0/panel: north
+        /tables/0/readers: [total, north]
+
+  - id: outside-the-subset-stays-local
+    kind: plan
+    source: PROTOCOL 7 (fixed subset); FORMAT 5.10
+    sutra: |
+      rachana: 1
+      sutra: plan-regex
+      version: 1
+      data:
+        sales: { table: sales, where: "matches(@.note, '^late')" }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+    expect:
+      at:
+        /tables/0/query: {}
+        /tables/0/local/0/where: "matches(@.note, '^late')"
+
+  - id: a-table-that-cannot-filter-filters-locally
+    kind: plan
+    source: PROTOCOL 2 (can)
+    sutra: |
+      rachana: 1
+      sutra: plan-cannot
+      version: 1
+      data:
+        p: { table: plain, where: "@.b > 1" }
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.p)" }
+    expect:
+      at:
+        /tables/0/query: {}
+        /tables/0/local/0/reason: the table cannot filter
+
+  - id: multi-select-control-becomes-an-in-list
+    kind: plan
+    source: PROTOCOL 7 (in)
+    given:
+      ctl: { regions: [North, East] }
+    sutra: |
+      rachana: 1
+      sutra: plan-in
+      version: 1
+      controls:
+        - { id: regions, kind: multi-select, options: [North, South, East] }
+      data:
+        sales: { table: sales, where: "@.region in ctl.regions" }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+    expect:
+      at:
+        /tables/0/query/filter: { op: in, args: [ { col: region }, { list: [ { lit: North }, { lit: East } ] } ] }
+
+  - id: functions-of-the-subset-and-folded-constants
+    kind: plan
+    source: PROTOCOL 7 (functions; controls replaced by values)
+    given:
+      ctl: { q: Late }
+    sutra: |
+      rachana: 1
+      sutra: plan-fn
+      version: 1
+      controls:
+        - { id: q, kind: search }
+      data:
+        sales: { table: sales, where: "contains(@.note, lower(ctl.q)) || @.note == null" }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+    expect:
+      at:
+        /tables/0/query/filter: { op: "||", args: [ { op: contains, args: [ { col: note }, { lit: late } ] }, { op: is-null, args: [ { col: note } ] } ] }
+
+  - id: unknown-table-is-rch-2070
+    kind: plan
+    source: SPEC 6.2 (RCH-2070); PROTOCOL 10.2
+    sutra: |
+      rachana: 1
+      sutra: plan-unknown
+      version: 1
+      data:
+        x: { table: nowhere }
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.x)" }
+    expect:
+      at:
+        /problems/0/code: RCH-2070
+
+  - id: unknown-column-is-rch-2071
+    kind: plan
+    source: SPEC 6.2 (RCH-2071); PROTOCOL 10.2
+    sutra: |
+      rachana: 1
+      sutra: plan-column
+      version: 1
+      data:
+        sales: { table: sales, where: "@.reveune > 0" }
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.sales)" }
+    expect:
+      at:
+        /problems/0/code: RCH-2071
+        /problems/0/expected/0: revenue

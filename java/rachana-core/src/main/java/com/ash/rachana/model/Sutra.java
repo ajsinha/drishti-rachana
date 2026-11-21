@@ -105,6 +105,17 @@ public record Sutra(
         return extension("match") instanceof Match m ? m : null;
     }
 
+    /** The {@code data:} entries (SPEC 2.4, level 1.1), in the order written; empty when there are none. */
+    @SuppressWarnings("unchecked")
+    public List<DataEntry> data() {
+        return extension(DataEntry.KEY) instanceof List<?> l ? (List<DataEntry>) l : List.of();
+    }
+
+    /** The {@code data:} entry named {@code name}, if the Sutra declares one. */
+    public java.util.Optional<DataEntry> data(String name) {
+        return data().stream().filter(e -> e.name().equals(name)).findFirst();
+    }
+
     /** The control named {@code id}, if the Sutra declares one. */
     public java.util.Optional<Control> control(String id) {
         return controls.stream().filter(c -> c.id().equals(id)).findFirst();

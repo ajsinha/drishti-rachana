@@ -4,12 +4,12 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
+import com.ash.rachana.internal.DateText;
+import com.ash.rachana.internal.NumberText;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
-import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
 
@@ -82,7 +82,7 @@ final class TextParts {
         });
         t.fn("reverse", 1, 1, (a, c) -> {
             String s = Args.text("reverse", a.get(0));
-            return s == null ? null : new StringBuilder(s).reverse().toString();
+            return s == null ? null : CoreText.reverse(s);
         });
         t.fn("clean", 1, 1, (a, c) -> {
             String s = Args.text("clean", a.get(0));
@@ -102,7 +102,7 @@ final class TextParts {
         boolean start = true;
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
-            b.append(start ? Character.toUpperCase(ch) : Character.toLowerCase(ch));
+            b.append((char) (start ? CoreText.upper(ch) : CoreText.lower(ch)));
             start = !Character.isLetter(ch);
         }
         return b.toString();
@@ -119,8 +119,8 @@ final class TextParts {
         if (start < 1 || start > s.length() + 1) {
             throw Args.error(fn, "the start " + start + " is not from 1 to the text's length + 1");
         }
-        String h = ignoreCase ? s.toLowerCase(Locale.ROOT) : s;
-        String p = ignoreCase ? part.toLowerCase(Locale.ROOT) : part;
+        String h = ignoreCase ? CoreText.lower(s) : s;
+        String p = ignoreCase ? CoreText.lower(part) : part;
         return (long) (h.indexOf(p, start - 1) + 1);
     }
 
@@ -179,22 +179,22 @@ final class TextParts {
         if (dec.length() != 1 || grp.length() > 1 || dec.equals(grp)) {
             throw Args.error("value", "the separators are one character each and differ");
         }
-        String s = Values.text(v).strip();
+        String s = CoreText.strip(Values.text(v));
         boolean negative = false;
         if (s.length() > 2 && s.startsWith("(") && s.endsWith(")")) {
             negative = true;
-            s = s.substring(1, s.length() - 1).strip();
+            s = CoreText.strip(s.substring(1, s.length() - 1));
         }
         boolean percent = s.endsWith("%");
         if (percent) {
-            s = s.substring(0, s.length() - 1).strip();
+            s = CoreText.strip(s.substring(0, s.length() - 1));
         }
         if (s.startsWith("-") || s.startsWith("+")) {
             negative ^= s.startsWith("-");
-            s = s.substring(1).strip();
+            s = CoreText.strip(s.substring(1));
         }
         if (!s.isEmpty() && "$€£¥".indexOf(s.charAt(0)) >= 0) {
-            s = s.substring(1).strip();
+            s = CoreText.strip(s.substring(1));
         }
         if (!grp.isEmpty()) {
             s = s.replace(grp, "");
@@ -238,7 +238,7 @@ final class TextParts {
     }
 
     private static boolean looksLikeDateFormat(String f) {
-        String plain = f.replaceAll("\"[^\"]*\"", "").toLowerCase(Locale.ROOT);
+        String plain = CoreText.lower(f.replaceAll("\"[^\"]*\"", ""));
         return plain.contains("yy") || plain.contains("dd") || plain.contains("mmm") || plain.matches(".*\\bd\\b.*") || plain.contains("hh");
     }
 
@@ -263,39 +263,39 @@ final class TextParts {
                 i = end < 0 ? f.length() : end + 1;
                 continue;
             }
-            char lc = Character.toLowerCase(ch);
+            char lc = (char) CoreText.lower(ch);
             int run = 1;
-            while (i + run < f.length() && Character.toLowerCase(f.charAt(i + run)) == lc) {
+            while (i + run < f.length() && CoreText.lower(f.charAt(i + run)) == lc) {
                 run++;
             }
             switch (lc) {
-                case 'y' -> b.append(run <= 2 ? String.format("%02d", d.getYear() % 100) : String.format("%04d", d.getYear()));
+                case 'y' -> b.append(run <= 2 ? NumberText.pad(d.getYear() % 100, 2) : NumberText.pad(d.getYear(), 4));
                 case 'm' -> {
                     if (afterHour && run <= 2) {
-                        b.append(run == 1 ? String.valueOf(minute) : String.format("%02d", minute));
+                        b.append(run == 1 ? String.valueOf(minute) : NumberText.pad(minute, 2));
                         afterHour = false;
                     } else if (run >= 4) {
-                        b.append(d.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
+                        b.append(DateText.month(d.getMonthValue(), false));
                     } else if (run == 3) {
-                        b.append(d.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
+                        b.append(DateText.month(d.getMonthValue(), true));
                     } else {
-                        b.append(run == 1 ? String.valueOf(d.getMonthValue()) : String.format("%02d", d.getMonthValue()));
+                        b.append(run == 1 ? String.valueOf(d.getMonthValue()) : NumberText.pad(d.getMonthValue(), 2));
                     }
                 }
                 case 'd' -> {
                     if (run >= 4) {
-                        b.append(d.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
+                        b.append(DateText.day(d.getDayOfWeek().getValue(), false));
                     } else if (run == 3) {
-                        b.append(d.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
+                        b.append(DateText.day(d.getDayOfWeek().getValue(), true));
                     } else {
-                        b.append(run == 1 ? String.valueOf(d.getDayOfMonth()) : String.format("%02d", d.getDayOfMonth()));
+                        b.append(run == 1 ? String.valueOf(d.getDayOfMonth()) : NumberText.pad(d.getDayOfMonth(), 2));
                     }
                 }
                 case 'h' -> {
-                    b.append(run == 1 ? String.valueOf(hour) : String.format("%02d", hour));
+                    b.append(run == 1 ? String.valueOf(hour) : NumberText.pad(hour, 2));
                     afterHour = true;
                 }
-                case 's' -> b.append(run == 1 ? String.valueOf(second) : String.format("%02d", second));
+                case 's' -> b.append(run == 1 ? String.valueOf(second) : NumberText.pad(second, 2));
                 default -> b.append(f, i, i + run);
             }
             i += run;
@@ -319,38 +319,11 @@ final class TextParts {
         if (!f.replaceAll("\"[^\"]*\"", "").matches(".*[0#].*")) {
             return f.replace("\"", "");                                     // a section of literal text only ("-" for zero)
         }
-        StringBuilder pattern = new StringBuilder();
-        boolean scientific = false;
-        for (int i = 0; i < f.length(); i++) {
-            char ch = f.charAt(i);
-            if (ch == '"') {
-                int end = f.indexOf('"', i + 1);
-                String lit = f.substring(i + 1, end < 0 ? f.length() : end);
-                pattern.append('\'').append(lit.replace("'", "''")).append('\'');
-                i = end < 0 ? f.length() : end;
-            } else if ((ch == 'E' || ch == 'e') && i + 1 < f.length() && (f.charAt(i + 1) == '+' || f.charAt(i + 1) == '-')) {
-                pattern.append('E');
-                scientific = true;
-                i++;
-            } else if (ch == '\'') {
-                pattern.append("''");
-            } else if ("0#.,%".indexOf(ch) >= 0) {
-                pattern.append(ch);
-            } else {
-                pattern.append('\'').append(ch).append('\'');
-            }
-        }
-        try {
-            DecimalFormat df = new DecimalFormat(pattern.toString(), DecimalFormatSymbols.getInstance(Locale.ROOT));
-            df.setRoundingMode(RoundingMode.HALF_UP);
-            String s = df.format(v);
-            if (scientific) {
-                s = s.replaceAll("E(\\d)", "E+$1");
-            }
-            return s;
-        } catch (IllegalArgumentException e) {
+        NumberCode code = NumberCode.read(f);
+        if (code == null) {
             throw Args.error(fn, "the format '" + format + "' is not a number format this function reads");
         }
+        return code.format(v);
     }
 
     private static String[] splitSections(String f) {

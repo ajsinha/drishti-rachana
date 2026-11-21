@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
@@ -32,7 +33,7 @@ public final class BusinessCalendar implements Calendars.Calendar {
 
     /** {@code "USNY"} or a joint calendar {@code "USNY+GBLO"}. */
     public static BusinessCalendar of(String spec) {
-        List<String> cs = java.util.Arrays.stream(spec.toUpperCase(Locale.ROOT).split("\\+")).map(String::trim).toList();
+        List<String> cs = java.util.Arrays.stream(CoreText.upper(spec).split("\\+")).map(String::trim).toList();
         for (String c : cs) {
             if (!KNOWN.contains(c)) {
                 throw new IllegalArgumentException("unknown calendar " + c + " (known: " + new TreeSet<>(KNOWN) + ")");
@@ -85,15 +86,15 @@ public final class BusinessCalendar implements Calendars.Calendar {
      * "(observed)". Where joint centres share a day the names are joined with " / ".
      */
     public java.util.SortedMap<LocalDate, String> holidayNames(int year) {
-        return cache.computeIfAbsent(year, y -> {
+        return new java.util.TreeMap<>(cache.computeIfAbsent(year, y -> {
             java.util.TreeMap<LocalDate, String> out = new java.util.TreeMap<>();
             centers.forEach(c -> centre(c, y).forEach(h -> {
                 if (h.day().getDayOfWeek().getValue() <= 5) {
                     out.merge(h.day(), h.label(), (x, z) -> x.equals(z) ? x : x + " / " + z);
                 }
             }));
-            return java.util.Collections.unmodifiableSortedMap(out);
-        });
+            return out;
+        }));                                                    // a copy: the cached year stays as computed
     }
 
     /** A holiday kept on {@code day}; {@code nominal} is the date it falls on before any weekend substitution. */

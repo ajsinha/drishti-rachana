@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.model;
 
+import com.ash.rachana.internal.CoreMath;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -366,7 +367,7 @@ public record PivotSpec(List<Field> fields, boolean explicit, List<String> rows,
     private static Object plain(Object v) {
         if (v instanceof Number n) {
             double d = n.doubleValue();
-            return d == Math.rint(d) && Math.abs(d) < 1e15 ? (Object) n.longValue() : (Object) d;
+            return d == CoreMath.rint(d) && Math.abs(d) < 1e15 ? (Object) n.longValue() : (Object) d;
         }
         return v == null ? null : String.valueOf(v);
     }

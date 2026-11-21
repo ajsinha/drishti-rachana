@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.api.Node;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +27,8 @@ final class TextFunctions {
     static void register(Functions.Table t) {
         Regexes rx = t.regexes();
         t.fn("fmt", 2, 2, (a, c) -> c.formats().format(Values.text(a.get(1)), a.get(0)));
-        t.fn("upper", 1, 1, (a, c) -> Values.isNull(a.get(0)) ? null : Values.text(a.get(0)).toUpperCase(Locale.ROOT));   // null in, null out
-        t.fn("lower", 1, 1, (a, c) -> Values.isNull(a.get(0)) ? null : Values.text(a.get(0)).toLowerCase(Locale.ROOT));   // null in, null out
+        t.fn("upper", 1, 1, (a, c) -> Values.isNull(a.get(0)) ? null : CoreText.upper(Values.text(a.get(0))));   // null in, null out
+        t.fn("lower", 1, 1, (a, c) -> Values.isNull(a.get(0)) ? null : CoreText.lower(Values.text(a.get(0))));   // null in, null out
         t.fn("contains", 2, 2, (a, c) -> contains(a.get(0), Values.text(a.get(1))));
         t.fn("starts_with", 2, 2, (a, c) -> lower(a.get(0)).startsWith(lower(a.get(1))));
         t.old("startsWith", "starts_with", 2, 2);                       // read for compatibility: existing Sutras write startsWith
@@ -43,19 +44,19 @@ final class TextFunctions {
         t.fn("split", 2, 2, (a, c) -> split(a));
         t.fn("trim", 1, 1, (a, c) -> {
             String s = Args.text("trim", a.get(0));
-            return s == null ? null : s.strip();
+            return s == null ? null : CoreText.strip(s);
         });
         t.fn("pad", 2, 4, (a, c) -> pad(a)).check("pad", TextFunctions::checkPad);
         t.fn("regex_extract", 2, 3, (a, c) -> regexExtract(rx, a)).check("regex_extract", args -> checkPattern(rx, args));
     }
 
     private static String lower(Object v) {
-        return Values.text(v).toLowerCase(Locale.ROOT);
+        return CoreText.lower(Values.text(v));
     }
 
     /** Case-insensitive: text contains the part, or a list has an element that does. */
     private static boolean contains(Object where, String part) {
-        String p = part.toLowerCase(Locale.ROOT);
+        String p = CoreText.lower(part);
         if (where instanceof Node n && n.kind() == Node.Kind.ARRAY) {
             for (int i = 0; i < n.size(); i++) {
                 if (contains(n.get(i), part)) {
@@ -64,7 +65,7 @@ final class TextFunctions {
             }
             return false;
         }
-        return !Values.isNull(where) && Values.text(where).toLowerCase(Locale.ROOT).contains(p);
+        return !Values.isNull(where) && CoreText.lower(Values.text(where)).contains(p);
     }
 
     /**

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.wire;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.bind.AsOf;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.bind.Entity;
@@ -651,7 +652,7 @@ public final class ScreenWire {
     }
 
     private static String area(Panel p) {
-        return p.area().name().toLowerCase(java.util.Locale.ROOT);
+        return CoreText.lower(p.area().name());
     }
 
     private static Node node(Object v) {

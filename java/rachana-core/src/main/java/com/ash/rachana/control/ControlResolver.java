@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.control;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.bind.AsOf;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.el.BusinessCalendar;
@@ -131,7 +132,7 @@ public final class ControlResolver {
                 max = bound(c.max(), at);
                 step = bound(c.step(), at);
                 value = slider(c, raw, min, max, step);
-                ctl.put(c.id(), c.range() || value.isEmpty() ? value : (Object) Values.normalise(Double.parseDouble(value)));
+                ctl.put(c.id(), c.range() || value.isEmpty() ? value : (Object) Values.normalise(NumberText.parse(value)));
             }
             case SEARCH -> {
                 value = raw != null ? raw.trim() : c.defaultValue() == null ? "" : c.defaultValue();
@@ -287,9 +288,9 @@ public final class ControlResolver {
      * handle starts at the lower bound and two at both bounds. Bounds that cannot be read leave the value as it is.
      */
     static String slider(Control c, String raw, String min, String max, String step) {
-        double lo = min == null ? Double.NEGATIVE_INFINITY : Double.parseDouble(min);
-        double hi = max == null ? Double.POSITIVE_INFINITY : Double.parseDouble(max);
-        double st = step == null ? 1 : Double.parseDouble(step);
+        double lo = min == null ? Double.NEGATIVE_INFINITY : NumberText.parse(min);
+        double hi = max == null ? Double.POSITIVE_INFINITY : NumberText.parse(max);
+        double st = step == null ? 1 : NumberText.parse(step);
         if (st <= 0 || Double.isNaN(st)) {
             st = 1;
         }
@@ -299,12 +300,12 @@ public final class ControlResolver {
             }
             if (c.range() && ControlRules.isNumberRange(text) && text.indexOf("..") > 0 && !text.endsWith("..")) {
                 int cut = text.indexOf("..");
-                double a = snap(Double.parseDouble(text.substring(0, cut)), lo, hi, st);
-                double b = snap(Double.parseDouble(text.substring(cut + 2)), lo, hi, st);
+                double a = snap(NumberText.parse(text.substring(0, cut)), lo, hi, st);
+                double b = snap(NumberText.parse(text.substring(cut + 2)), lo, hi, st);
                 return num(Math.min(a, b)) + ".." + num(Math.max(a, b));
             }
             if (!c.range() && ControlRules.isNumber(text)) {
-                return num(snap(Double.parseDouble(text), lo, hi, st));
+                return num(snap(NumberText.parse(text), lo, hi, st));
             }
         }
         if (min == null || max == null) {

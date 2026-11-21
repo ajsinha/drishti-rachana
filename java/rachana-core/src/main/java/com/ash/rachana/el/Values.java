@@ -4,6 +4,9 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
+import com.ash.rachana.internal.CoreText;
+import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
 
 /**
@@ -54,7 +57,7 @@ public final class Values {
                 return Double.NaN;                                // a date, a code or a name: no exception per row
             }
             try {
-                return Double.parseDouble(str.trim());
+                return NumberText.parse(str.trim());
             } catch (NumberFormatException e) {
                 return Double.NaN;
             }
@@ -73,7 +76,7 @@ public final class Values {
     static boolean couldBeNumber(String str) {
         int n = str.length();
         int i = 0;
-        while (i < n && Character.isWhitespace(str.charAt(i))) {
+        while (i < n && CoreText.isWhitespace(str.charAt(i))) {
             i++;
         }
         if (i == n) {
@@ -101,7 +104,7 @@ public final class Values {
         if (s == null) {
             return "";
         }
-        if (s instanceof Double d && d == Math.rint(d) && Math.abs(d) < 1e15) {
+        if (s instanceof Double d && d == CoreMath.rint(d) && Math.abs(d) < 1e15) {
             return Long.toString(d.longValue());
         }
         if (s instanceof java.math.BigDecimal b) {
@@ -112,6 +115,12 @@ public final class Values {
         }
         if (s instanceof Node n) {
             return n.kind() == Node.Kind.ARRAY ? "[" + n.size() + "]" : "{" + n.size() + "}";
+        }
+        if (s instanceof Double d) {
+            return NumberText.text(d);
+        }
+        if (s instanceof Float f) {
+            return NumberText.text(f);
         }
         return s.toString();
     }
@@ -138,7 +147,7 @@ public final class Values {
 
     /** Numeric results that are whole become {@code Long}, so {@code 1 + 1} prints {@code 2}. */
     public static Number normalise(double d) {
-        return d == Math.rint(d) && Math.abs(d) < 1e15 && !Double.isInfinite(d) ? (Number) (long) d : (Number) d;
+        return d == CoreMath.rint(d) && Math.abs(d) < 1e15 && !Double.isInfinite(d) ? (Number) CoreMath.toLong(d) : (Number) d;
     }
 
     public static boolean equal(Object a, Object b) {

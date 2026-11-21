@@ -3,3 +3,20 @@
 # <case id> <step>: <why>
 edit/ops#refused-option-the-kind-does-not-accept A1: the reference names the accepted options in Set.of order, which changes from one JVM run to the next (DRISHTI_MIGRATION_TODO 7.2); Rachana sorts them. The case checks the message's start, so it passes on both.
 el/text#bad-regex-extract-ab-a-b A1: the refusal's words quote the regular-expression error with its code, now RCH-4010 where the reference says DRS-4010 (the code rename is A1 itself). The case passes on both.
+el/determinism#d-m04-c A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math by one unit in the last place; the probe now expects Core's value.
+el/determinism#d-m05-a A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math by one unit in the last place; the probe now expects Core's value.
+el/distributions#binom-dist-6-10-0-5-false A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/distributions#f-dist-15-2069-6-4-false A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/distributions#gamma-dist-10-00001131-9-2-false A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/distributions#hypgeom-dist-1-4-8-20-false A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/distributions#hypgeom-dist-1-4-8-20-true A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/distributions#norm-s-dist-1-333333 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/distributions#norm-s-dist-1-333333-true A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/finance#irr-irr2 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/finance#mirr-mirr-0-1-0-12 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/finance#npv-0-1-npv A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/finance#npv-irr-irr2-irr2 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) moves IRR in the last place, and NPV at that rate is a different rounding residue near zero (-2.0E-11 before, 2.9E-11 now); the case's tolerance passes both.
+el/finance#rate-4-12-200-8000 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/functions-finance#rate-1 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/functions-statistics#fisher-1 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.
+el/math#log-86-2-7182818 A5: P2-1, Core's maths (an fdlibm port, the same bits on every runtime) differs from the reference's java.lang.Math in the last places; the case's tolerance passes both.

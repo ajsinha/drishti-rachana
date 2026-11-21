@@ -4,6 +4,8 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
+import com.ash.rachana.internal.CoreMath;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -63,7 +65,7 @@ final class NumberFunctions {
             if (x == 0 && y == 0) {
                 throw Args.error("atan2", "the point (0, 0) has no angle");
             }
-            return Args.out("atan2", Math.atan2(y, x));                    // Excel's order: x first
+            return Args.out("atan2", CoreMath.atan2(y, x));                    // Excel's order: x first
         });
         t.fn("base", 2, 3, (a, c) -> base(a));
         t.fn("decimal", 2, 2, (a, c) -> decimal(a));
@@ -108,7 +110,7 @@ final class NumberFunctions {
         if (b.signum() <= 0 || b.compareTo(BigDecimal.ONE) == 0) {
             throw Args.error("log", "the base " + Args.describe(a.size() > 1 ? a.get(1) : 10) + " is not above zero and other than 1");
         }
-        double r = b.compareTo(BigDecimal.TEN) == 0 ? Math.log10(x.doubleValue()) : Math.log(x.doubleValue()) / Math.log(b.doubleValue());
+        double r = b.compareTo(BigDecimal.TEN) == 0 ? CoreMath.log10(x.doubleValue()) : CoreMath.log(x.doubleValue()) / CoreMath.log(b.doubleValue());
         return Args.out("log", r);
     }
 
@@ -211,7 +213,7 @@ final class NumberFunctions {
         if (len < 0 || len > 255) {
             throw Args.error("base", "the length " + len + " is not from 0 to 255");
         }
-        String s = n.setScale(0, RoundingMode.DOWN).toBigIntegerExact().toString(r).toUpperCase(Locale.ROOT);
+        String s = CoreText.upper(n.setScale(0, RoundingMode.DOWN).toBigIntegerExact().toString(r));
         return s.length() >= len ? s : "0".repeat(len - s.length()) + s;
     }
 
@@ -223,7 +225,7 @@ final class NumberFunctions {
             return null;
         }
         radix("decimal", r);
-        String t = s.strip();
+        String t = CoreText.strip(s);
         if (t.isEmpty() || t.length() > 255) {
             throw Args.error("decimal", "'" + s + "' is not a number of 1 to 255 digits");
         }

@@ -97,7 +97,7 @@ public final class Plain {
                 return Integer.parseInt(t);
             } catch (NumberFormatException e) {
                 try {
-                    return (int) Double.parseDouble(t);
+                    return CoreMath.toInt(NumberText.parse(t));
                 } catch (NumberFormatException e2) {
                     return otherwise;
                 }
@@ -115,7 +115,7 @@ public final class Plain {
         }
         if (v instanceof String s) {
             try {
-                return Double.parseDouble(s.trim());
+                return NumberText.parse(s.trim());
             } catch (NumberFormatException e) {
                 return otherwise;
             }

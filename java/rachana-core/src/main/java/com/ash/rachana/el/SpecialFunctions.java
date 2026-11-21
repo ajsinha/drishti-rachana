@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreMath;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -46,12 +47,12 @@ final class SpecialFunctions {
     private static final double[] LANCZOS = {0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
         -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7};
 
-    private static final double LN_SQRT_2PI = 0.5 * Math.log(2 * Math.PI);
+    private static final double LN_SQRT_2PI = 0.5 * CoreMath.log(2 * Math.PI);
 
     /** ln |Γ(x)|, x not 0 nor a negative whole number. */
     static double lnGamma(double x) {
         if (x < 0.5) {
-            return Math.log(Math.PI / Math.abs(Math.sin(Math.PI * x))) - lnGamma(1 - x);
+            return CoreMath.log(Math.PI / Math.abs(CoreMath.sin(Math.PI * x))) - lnGamma(1 - x);
         }
         double z = x - 1;
         double a = LANCZOS[0];
@@ -59,12 +60,12 @@ final class SpecialFunctions {
         for (int i = 1; i < 9; i++) {
             a += LANCZOS[i] / (z + i);
         }
-        return LN_SQRT_2PI + (z + 0.5) * Math.log(t) - t + Math.log(a);
+        return LN_SQRT_2PI + (z + 0.5) * CoreMath.log(t) - t + CoreMath.log(a);
     }
 
     /** Γ(x): exact for whole numbers up to 170 (the factorial), else from {@link #lnGamma} with its sign; NaN at 0 and negative wholes. */
     static double gamma(double x) {
-        if (x == Math.rint(x)) {
+        if (x == CoreMath.rint(x)) {
             if (x <= 0) {
                 return Double.NaN;
             }
@@ -76,9 +77,9 @@ final class SpecialFunctions {
                 return f;
             }
         }
-        double g = Math.exp(lnGamma(x));
+        double g = CoreMath.exp(lnGamma(x));
         // Γ is negative between −1 and 0, −3 and −2 …: where ⌊x⌋ is odd and negative
-        return x < 0 && ((long) Math.floor(x)) % 2 != 0 ? -g : g;
+        return x < 0 && (CoreMath.toLong(Math.floor(x)) % 2) != 0 ? -g : g;
     }
 
     /** ln n! for a whole n ≥ 0. */
@@ -116,7 +117,7 @@ final class SpecialFunctions {
             del *= x / ap;
             sum += del;
             if (Math.abs(del) < Math.abs(sum) * EPS) {
-                return sum * Math.exp(-x + a * Math.log(x) - lnGamma(a));
+                return sum * CoreMath.exp(-x + a * CoreMath.log(x) - lnGamma(a));
             }
         }
         throw new IllegalStateException("the incomplete gamma series did not converge for a = " + a + ", x = " + x);
@@ -142,7 +143,7 @@ final class SpecialFunctions {
             double del = d * c;
             h *= del;
             if (Math.abs(del - 1) < EPS) {
-                return Math.exp(-x + a * Math.log(x) - lnGamma(a)) * h;
+                return CoreMath.exp(-x + a * CoreMath.log(x) - lnGamma(a)) * h;
             }
         }
         throw new IllegalStateException("the incomplete gamma fraction did not converge for a = " + a + ", x = " + x);
@@ -156,7 +157,7 @@ final class SpecialFunctions {
         if (x >= 1) {
             return 1;
         }
-        double front = Math.exp(lnGamma(a + b) - lnGamma(a) - lnGamma(b) + a * Math.log(x) + b * Math.log1p(-x));
+        double front = CoreMath.exp(lnGamma(a + b) - lnGamma(a) - lnGamma(b) + a * CoreMath.log(x) + b * CoreMath.log1p(-x));
         if (x < (a + 1) / (a + b + 2)) {
             return front * betaFraction(a, b, x) / a;
         }
@@ -225,7 +226,7 @@ final class SpecialFunctions {
 
     /** φ(z), the standard normal density. */
     static double normalPdf(double z) {
-        return Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
+        return CoreMath.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
     }
 
     private static final double[] A = {-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02,
@@ -241,7 +242,7 @@ final class SpecialFunctions {
         double x;
         double low = 0.02425;
         if (p < low) {
-            double q = Math.sqrt(-2 * Math.log(p));
+            double q = Math.sqrt(-2 * CoreMath.log(p));
             x = (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
         } else if (p <= 1 - low) {
             double q = p - 0.5;
@@ -249,12 +250,12 @@ final class SpecialFunctions {
             x = (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q
                     / (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1);
         } else {
-            double q = Math.sqrt(-2 * Math.log1p(-p));
+            double q = Math.sqrt(-2 * CoreMath.log1p(-p));
             x = -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
         }
         // one Halley step on Φ: in the upper tail on the complement, where 1 − p keeps its digits
         double e = p > 0.5 ? -(0.5 * erfc(x / Math.sqrt(2)) - (1 - p)) : 0.5 * erfc(-x / Math.sqrt(2)) - p;
-        double u = e * Math.sqrt(2 * Math.PI) * Math.exp(x * x / 2);
+        double u = e * Math.sqrt(2 * Math.PI) * CoreMath.exp(x * x / 2);
         return x - u / (1 + x * u / 2);
     }
 

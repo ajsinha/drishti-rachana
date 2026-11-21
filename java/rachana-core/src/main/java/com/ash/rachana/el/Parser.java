@@ -4,6 +4,8 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.el.Token.Type;
 import com.ash.rachana.el.check.Signatures;
 import java.util.ArrayList;
@@ -173,7 +175,7 @@ final class Parser {
     /** Records that {@code e} was written from {@code start} to where the parser now is (trailing blanks left out). */
     private Expr at(Expr e, int start) {
         int end = p > 0 ? Math.min(src.length(), peek().type() == Type.EOF ? src.length() : peek().pos()) : start;
-        while (end > start && Character.isWhitespace(src.charAt(end - 1))) {
+        while (end > start && CoreText.isWhitespace(src.charAt(end - 1))) {
             end--;
         }
         spans.putIfAbsent(e, new int[] {start, Math.max(start, end)});
@@ -328,7 +330,7 @@ final class Parser {
         switch (t.type()) {
             case NUMBER:
                 try {
-                    double d = Double.parseDouble(t.text());
+                    double d = NumberText.parse(t.text());
                     return at(new Expr.Lit(Values.normalise(d)), s);
                 } catch (NumberFormatException e) {
                     throw new ElException("bad number '" + t.text() + "'", t.pos());

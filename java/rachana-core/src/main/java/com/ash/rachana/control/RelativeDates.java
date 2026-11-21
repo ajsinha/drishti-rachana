@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.control;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.el.BusinessCalendar;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ public final class RelativeDates {
 
     /** The range a phrase means, or empty when it is not one of the above. */
     public static Optional<Range> resolve(String phrase, LocalDate today, BusinessCalendar cal) {
-        String p = phrase == null ? "" : phrase.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+        String p = phrase == null ? "" : CoreText.lower(phrase.trim()).replaceAll("\\s+", " ");
         switch (p) {
             case "today" -> {
                 return Optional.of(new Range(today, today));

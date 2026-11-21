@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
 # P2's determinism probes (docs/plans/JS_PROOF.md section 3; results in docs/plans/P2_RESULTS.md). expect is the JVM
 # reference's actual result (Drishti's compiler, Java 21), recorded by tools/proofs; verified stays false until H1 and a review.
+# d-m04-c and d-m05-a expect Core's own maths (A5, P2-1: fdlibm on every runtime), one unit in the last place from the reference.
 suite: el/determinism
 since: "1.0"
 profile: core
@@ -1648,7 +1649,7 @@ cases:
     tags: ["determinism"]
     expr: "rate(10, -100, 800)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 0.0427749780351113, "type": "number", "text": "0.0427749780351113"}
+    expect: {"value": 0.042774978035111426, "type": "number", "text": "0.042774978035111426"}
 
   - id: "d-m04-d"
     kind: "expr"
@@ -1669,7 +1670,7 @@ cases:
     tags: ["determinism"]
     expr: "fisher(0.5)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 0.5493061443340549, "type": "number", "text": "0.5493061443340549"}
+    expect: {"value": 0.5493061443340548, "type": "number", "text": "0.5493061443340548"}
 
   - id: "d-m05-b"
     kind: "expr"

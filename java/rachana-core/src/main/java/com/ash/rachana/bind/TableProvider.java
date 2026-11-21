@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.bind;
 
+import com.ash.rachana.internal.CoreMath;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -88,8 +89,8 @@ public interface TableProvider {
         if (v instanceof java.math.BigDecimal b) {
             return b.stripTrailingZeros().toPlainString();
         }
-        if (v instanceof Double d && d == Math.rint(d) && Math.abs(d) < 1e15) {
-            return Long.toString(d.longValue());
+        if (v instanceof Double d && d == CoreMath.rint(d) && Math.abs(d) < 1e15) {
+            return Long.toString(CoreMath.toLong(d));
         }
         return String.valueOf(v);
     }

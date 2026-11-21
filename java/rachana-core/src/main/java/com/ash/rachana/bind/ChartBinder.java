@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.bind;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.view.PanelData;
 import com.ash.rachana.view.ViewModel.Cell;
@@ -73,7 +74,7 @@ final class ChartBinder {
         }
         Node v = row.get(spec);
         // a panel's default field names (open, close, label, value, date ...) read the UPPER_SNAKE attribute when the row has that instead
-        return v.isMissing() ? row.get(spec.toUpperCase(java.util.Locale.ROOT)) : v;
+        return v.isMissing() ? row.get(CoreText.upper(spec)) : v;
     }
 
     private static String text(Object v) {
@@ -338,7 +339,7 @@ final class ChartBinder {
     /** A node's or an edge's own field (id, kind, from, to, label), as the document writes it: lower case or UPPER_SNAKE (ID, FROM). */
     private static Node either(Node n, String field) {
         Node v = n.get(field);
-        return v.isMissing() ? n.get(field.toUpperCase(java.util.Locale.ROOT)) : v;
+        return v.isMissing() ? n.get(CoreText.upper(field)) : v;
     }
 
     // ---- timeline -----------------------------------------------------------------------------

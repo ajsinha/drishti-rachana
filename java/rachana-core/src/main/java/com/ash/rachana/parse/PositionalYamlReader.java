@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.parse;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.parse.YamlEvents.Event;
 import com.ash.rachana.parse.YamlEvents.Type;
 import com.ash.rachana.parse.YamlStream.Mark;
@@ -273,7 +274,7 @@ public final class PositionalYamlReader {
                     throw tooLong(numberText.length());
                 }
                 try {
-                    return Double.parseDouble(numberText);
+                    return NumberText.parse(numberText);
                 } catch (NumberFormatException e) {
                     throw error("Malformed numeric value '" + value + "'");
                 }

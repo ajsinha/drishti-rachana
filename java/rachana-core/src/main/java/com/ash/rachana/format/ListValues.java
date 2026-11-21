@@ -4,6 +4,8 @@
  */
 package com.ash.rachana.format;
 
+import com.ash.rachana.internal.NumberText;
+import com.ash.rachana.internal.CoreText;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -105,7 +107,7 @@ public final class ListValues {
                 case '\t' -> b.append("\\t");
                 default -> {
                     if (c < 0x20) {
-                        b.append(String.format("\\u%04x", (int) c));
+                        b.append("\\u" + NumberText.hex(c, 4));
                     } else {
                         b.append(c);
                     }
@@ -164,7 +166,7 @@ public final class ListValues {
                 return null;
             } else {
                 int start = i;
-                while (i < n && s.charAt(i) != ',' && s.charAt(i) != ']' && !Character.isWhitespace(s.charAt(i))) {
+                while (i < n && s.charAt(i) != ',' && s.charAt(i) != ']' && !CoreText.isWhitespace(s.charAt(i))) {
                     i++;
                 }
                 String tok = s.substring(start, i);
@@ -174,7 +176,7 @@ public final class ListValues {
                 if (!tok.equals("null")) {
                     if (!tok.equals("true") && !tok.equals("false")) {
                         try {
-                            double d = Double.parseDouble(tok);
+                            double d = NumberText.parse(tok);
                             tok = tok.matches("-?\\d+") ? tok : IdText.of(d);
                         } catch (NumberFormatException e) {
                             return null;
@@ -199,7 +201,7 @@ public final class ListValues {
     }
 
     private static int skip(String s, int i) {
-        while (i < s.length() && Character.isWhitespace(s.charAt(i))) {
+        while (i < s.length() && CoreText.isWhitespace(s.charAt(i))) {
             i++;
         }
         return i;

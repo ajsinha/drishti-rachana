@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.format;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.internal.Plain;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ public final class WorldRegions {
 
     /** The sub-region code of a country ({@code SR-WESTERN-EUROPE} for FRA), empty when the table does not list it. */
     public Optional<String> subRegionOf(String iso3) {
-        return Optional.ofNullable(countrySub.get(iso3 == null ? "" : iso3.toUpperCase()));
+        return Optional.ofNullable(countrySub.get(iso3 == null ? "" : CoreText.upper(iso3)));
     }
 
     /** The continent code of a country ({@code CT-EUR} for FRA), empty when the table does not list it. */
@@ -67,7 +68,7 @@ public final class WorldRegions {
 
     /** The region of a country at a level: {@code "subregion"} or {@code "continent"} (the code), empty for another level or an unlisted country. */
     public Optional<String> regionOf(String iso3, String level) {
-        return switch (level == null ? "" : level.toLowerCase()) {
+        return switch (level == null ? "" : CoreText.lower(level)) {
             case "subregion", "sub-region" -> subRegionOf(iso3);
             case "continent" -> continentOf(iso3);
             default -> Optional.empty();
@@ -76,13 +77,13 @@ public final class WorldRegions {
 
     /** The name of a continent or sub-region by its code, empty for another code. */
     public Optional<String> name(String code) {
-        String k = code == null ? "" : code.toUpperCase();
+        String k = code == null ? "" : CoreText.upper(code);
         return Optional.ofNullable(continents.containsKey(k) ? continents.get(k) : subNames.get(k));
     }
 
     /** The countries of a sub-region, or of every sub-region of a continent, in the table's order; empty for another code. */
     public List<String> countriesOf(String code) {
-        String k = code == null ? "" : code.toUpperCase();
+        String k = code == null ? "" : CoreText.upper(code);
         if (subCountries.containsKey(k)) {
             return subCountries.get(k);
         }

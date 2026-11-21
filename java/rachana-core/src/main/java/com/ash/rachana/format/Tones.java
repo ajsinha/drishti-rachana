@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.format;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.el.Values;
 
 /**
@@ -35,7 +36,7 @@ public final class Tones {
     }
 
     private static String status(String s) {
-        String v = s.toLowerCase(java.util.Locale.ROOT);
+        String v = CoreText.lower(s);
         if (v.contains("fail") || v.contains("reject") || v.contains("dispute") || v.contains("breach")) {
             return "bad";
         }

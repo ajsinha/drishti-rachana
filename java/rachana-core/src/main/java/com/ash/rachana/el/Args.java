@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.RachanaCode;
 import java.math.BigDecimal;
@@ -76,7 +77,7 @@ final class Args {
             }
             // the shortest decimal that reads back as the double (2.675 stays 2.675), to 15 significant digits as Excel keeps
             // them, so the binary noise of arithmetic goes: 0.1 + 0.2 is 0.3, not 0.30000000000000004
-            return BigDecimal.valueOf(d).round(DOUBLE_DIGITS);
+            return NumberText.decimal(d).round(DOUBLE_DIGITS);
         }
         if (v instanceof String s && Values.couldBeNumber(s)) {
             try {

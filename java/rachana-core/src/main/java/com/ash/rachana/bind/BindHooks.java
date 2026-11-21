@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.bind;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.model.PanelKind;
 import java.util.Locale;
 import java.util.Map;
@@ -65,7 +66,7 @@ public record BindHooks(LinkResolver links, Map<PanelKind, PanelBinder> panels, 
         for (int i = 0; i < words.length; i++) {
             String w = words[i];
             if (i == 0 && !w.isEmpty()) {
-                w = Character.toUpperCase(w.charAt(0)) + w.substring(1);
+                w = (char) CoreText.upper(w.charAt(0)) + w.substring(1);
             }
             out.append(i == 0 ? "" : " ").append(w);
         }
@@ -74,7 +75,7 @@ public record BindHooks(LinkResolver links, Map<PanelKind, PanelBinder> panels, 
 
     private static String words(String name) {
         if (upperSnake(name)) {
-            name = name.toLowerCase(Locale.ROOT);
+            name = CoreText.lower(name);
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < name.length(); i++) {
@@ -82,7 +83,7 @@ public record BindHooks(LinkResolver links, Map<PanelKind, PanelBinder> panels, 
             if (c == '_' || c == '-') {
                 sb.append(' ');
             } else if (Character.isUpperCase(c) && i > 0 && !Character.isUpperCase(name.charAt(i - 1))) {
-                sb.append(' ').append(Character.toLowerCase(c));
+                sb.append(' ').append((char) CoreText.lower(c));
             } else {
                 sb.append(c);
             }

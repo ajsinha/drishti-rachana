@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.bind;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.view.PanelData;
 import com.ash.rachana.view.ViewModel.Cell;
@@ -126,7 +127,7 @@ public final class Binder {
     }
 
     private static String area(Panel p) {
-        return p.area().name().toLowerCase(Locale.ROOT);
+        return CoreText.lower(p.area().name());
     }
 
     // ---- values -------------------------------------------------------------------------------

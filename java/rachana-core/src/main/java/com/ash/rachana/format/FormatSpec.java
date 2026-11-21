@@ -4,13 +4,14 @@
  */
 package com.ash.rachana.format;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.el.Link;
 import com.ash.rachana.el.Values;
+import com.ash.rachana.internal.DateText;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 /**
  * One named format. Immutable and thread-safe (no shared {@code DecimalFormat}).
@@ -50,7 +51,7 @@ public record FormatSpec(String type, int decimals, boolean grouping, String sig
     }
 
     private String number(double d) {
-        BigDecimal b = BigDecimal.valueOf(Math.abs(d)).setScale(decimals, RoundingMode.HALF_UP);
+        BigDecimal b = NumberText.decimal(Math.abs(d)).setScale(decimals, RoundingMode.HALF_UP);
         String digits = b.toPlainString();
         if (grouping) {
             digits = group(digits);
@@ -63,20 +64,7 @@ public record FormatSpec(String type, int decimals, boolean grouping, String sig
     }
 
     static String group(String plain) {
-        int dot = plain.indexOf('.');
-        String whole = dot < 0 ? plain : plain.substring(0, dot);
-        StringBuilder sb = new StringBuilder(plain.length() + whole.length() / 3);
-        int lead = whole.length() % 3;
-        for (int i = 0; i < whole.length(); i++) {
-            if (i > 0 && (i - lead) % 3 == 0) {
-                sb.append(',');
-            }
-            sb.append(whole.charAt(i));
-        }
-        if (dot >= 0) {
-            sb.append(plain, dot, plain.length());
-        }
-        return sb.toString();
+        return NumberText.group(plain);
     }
 
     private String compact(double d) {
@@ -107,7 +95,8 @@ public record FormatSpec(String type, int decimals, boolean grouping, String sig
             return iso;
         }
         try {
-            return LocalDate.parse(iso.substring(0, 10)).format(DateTimeFormatter.ofPattern(pattern));
+            String text = DateText.format(LocalDate.parse(iso.substring(0, 10)), pattern);
+            return text == null ? iso : text;
         } catch (RuntimeException e) {
             return iso;
         }

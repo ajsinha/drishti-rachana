@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.view;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.ScreenLayout;
 import com.ash.rachana.model.Sutra;
@@ -51,7 +52,7 @@ public final class ScreenGrid {
         if (named != null && names.contains(named)) {
             return named;
         }
-        String flow = p.area() == null ? "main" : p.area().name().toLowerCase(Locale.ROOT);
+        String flow = p.area() == null ? "main" : CoreText.lower(p.area().name());
         if (names.contains(flow)) {
             return flow;
         }

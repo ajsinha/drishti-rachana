@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.bind;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.view.PanelData;
 import com.ash.rachana.el.ElCompiler;
@@ -98,7 +99,7 @@ public final class MapSupport {
             for (EntityRef r : listing(kind, asOf)) {
                 Matcher m2 = id.matcher(r.id());
                 if (m2.matches()) {
-                    codes.add(m2.group(1).toUpperCase(java.util.Locale.ROOT));
+                    codes.add(CoreText.upper(m2.group(1)));
                 }
             }
             return new PanelData.GeoLink(kind, template, List.copyOf(codes), codes.isEmpty() ? "no " + kind + " entity matches " + template : null);

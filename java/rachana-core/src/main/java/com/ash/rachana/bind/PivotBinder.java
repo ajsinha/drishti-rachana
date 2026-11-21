@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.bind;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.api.Node;
 import com.ash.rachana.view.ViewModel.LinkView;
 import com.ash.rachana.el.ElCompiler;
@@ -97,8 +98,8 @@ public final class PivotBinder {
         String[] kinds = new String[exprs.size()];
         boolean[] ids = new boolean[exprs.size()];          // fields that hold entity ids: as a table column would link them
         for (int k = 0; k < ids.length; k++) {
-            String bind = spec.fields().get(k).bind().strip();
-            ids[k] = Binder.namesAnId(bind) || p.columns().stream().anyMatch(col -> col.link() && bind.equals(col.bind() == null ? null : col.bind().strip()));
+            String bind = CoreText.strip(spec.fields().get(k).bind());
+            ids[k] = Binder.namesAnId(bind) || p.columns().stream().anyMatch(col -> col.link() && bind.equals(col.bind() == null ? null : CoreText.strip(col.bind())));
         }
         for (int i = 0; i < total && i < limit; i++) {
             EvalContext rc = c.eval().withRow(rows.get(i), i);
@@ -146,7 +147,7 @@ public final class PivotBinder {
             return f.label();
         }
         for (Column c : columns) {
-            if (c.label() != null && f.bind().strip().equals(c.bind() == null ? null : c.bind().strip())) {
+            if (c.label() != null && CoreText.strip(f.bind()).equals(c.bind() == null ? null : CoreText.strip(c.bind()))) {
                 return c.label();
             }
         }
@@ -159,7 +160,7 @@ public final class PivotBinder {
             return f.fmt();
         }
         for (Column c : columns) {
-            if (f.bind().strip().equals(c.bind() == null ? null : c.bind().strip())) {
+            if (CoreText.strip(f.bind()).equals(c.bind() == null ? null : CoreText.strip(c.bind()))) {
                 return c.fmt();
             }
         }

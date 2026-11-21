@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.control;
 
+import com.ash.rachana.internal.CoreText;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +41,7 @@ public record ViewState(Map<String, String> params) {
         if (query == null || query.isBlank()) {
             return NONE;
         }
-        String q = query.strip();
+        String q = CoreText.strip(query);
         Map<String, String> out = new LinkedHashMap<>();
         for (String pair : (q.startsWith("?") ? q.substring(1) : q).split("&")) {
             int eq = pair.indexOf('=');

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.el.Token.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ final class Lexer {
         int n = src.length();
         while (i < n) {
             char c = src.charAt(i);
-            if (Character.isWhitespace(c)) {
+            if (CoreText.isWhitespace(c)) {
                 i++;
             } else if (Character.isDigit(c) || (c == '.' && i + 1 < n && Character.isDigit(src.charAt(i + 1)))) {
                 int j = i;

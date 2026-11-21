@@ -2951,7 +2951,7 @@ core:
   tolerance: 1.0e-09
   description: "Fisher transformation, atanh (Excel's FISHER). Real-number function: binary floating point as Excel computes it; results are pinned to a tolerance per case [CS]."
   examples:
-  - {expr: "fisher(0.5)", result: 0.5493061443340549}
+  - {expr: "fisher(0.5)", result: 0.5493061443340548}
   since: "1.0"
 - name: fisher_inv
   family: statistics

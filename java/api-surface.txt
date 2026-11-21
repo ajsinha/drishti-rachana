@@ -1983,10 +1983,14 @@ com.ash.rachana.lib.LibraryRef :: public java.lang.String com.ash.rachana.lib.Li
 com.ash.rachana.lib.LibraryResolver :: public abstract java.util.List<com.ash.rachana.lib.LibraryRef> com.ash.rachana.lib.LibraryResolver.list()
 com.ash.rachana.lib.LibraryResolver :: public abstract java.util.Optional<com.ash.rachana.lib.LibraryBundle> com.ash.rachana.lib.LibraryResolver.resolve(java.lang.String,java.lang.String)
 com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.archives(java.nio.file.Path)
+com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.classpath(java.lang.ClassLoader)
 com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.first(java.util.List<com.ash.rachana.lib.LibraryResolver>)
 com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.folder(java.nio.file.Path)
 com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.none()
 com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.of(java.util.Collection<com.ash.rachana.lib.LibraryBundle>)
+com.ash.rachana.lib.LibraryResolver :: public static com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibraryResolver.packages(java.util.List<java.nio.file.Path>)
+com.ash.rachana.lib.LibraryResolver :: public static final java.lang.String com.ash.rachana.lib.LibraryResolver.CLASSPATH_INDEX
+com.ash.rachana.lib.LibraryResolver :: public static final java.lang.String com.ash.rachana.lib.LibraryResolver.CLASSPATH_ROOT
 com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.Library com.ash.rachana.lib.LibrarySet.load(java.lang.String,int)
 com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.LibraryLock com.ash.rachana.lib.LibrarySet.lock()
 com.ash.rachana.lib.LibrarySet :: public com.ash.rachana.lib.LibraryResolver com.ash.rachana.lib.LibrarySet.resolver()

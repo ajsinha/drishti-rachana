@@ -158,6 +158,170 @@ public interface LibraryResolver {
         };
     }
 
+    /** The resource every library jar lists its libraries in, one name per line (the classpath resolver's index). */
+    String CLASSPATH_INDEX = "META-INF/rachana/libraries";
+    /** Where a jar holds library {@code <name>}: {@code META-INF/rachana/libs/<name>/}, the folder of section 3.1. */
+    String CLASSPATH_ROOT = "META-INF/rachana/libs/";
+
+    /**
+     * Libraries in jars (LIBRARIES.md 10, 11.2: the Maven carrier): {@code META-INF/rachana/libs/<name>/} holds the library's folder; its
+     * {@code MANIFEST.sha384} names every file, so nothing is listed from the jar itself; {@code META-INF/rachana/libraries} lists the
+     * names a jar carries (for {@link #list()}). No I/O beyond the class loader.
+     */
+    static LibraryResolver classpath(ClassLoader loader) {
+        return new LibraryResolver() {
+            @Override
+            public Optional<LibraryBundle> resolve(String name, String constraint) {
+                if (!name.matches("[a-z][a-z0-9-]{0,31}")) {
+                    return Optional.empty();
+                }
+                String root = CLASSPATH_ROOT + name + "/";
+                byte[] manifest = resource(loader, root + Library.HASHES);
+                if (manifest == null) {
+                    return Optional.empty();
+                }
+                Map<String, byte[]> files = new java.util.TreeMap<>();
+                files.put(Library.HASHES, manifest);
+                for (String line : new String(manifest, java.nio.charset.StandardCharsets.UTF_8).split("\n")) {
+                    int at = line.indexOf("  ");
+                    if (at > 0) {
+                        String path = line.substring(at + 2).trim();
+                        byte[] b = resource(loader, root + path);
+                        if (b == null) {
+                            throw new IllegalStateException("library " + name + " in the class path lacks " + path + ", which its " + Library.HASHES + " names");
+                        }
+                        files.put(path, b);
+                    }
+                }
+                byte[] sig = resource(loader, root + Library.SIGNATURE);
+                if (sig != null) {
+                    files.put(Library.SIGNATURE, sig);
+                }
+                return best(List.of(LibraryBundle.ofBytes(name, files, "classpath:" + root)), constraint);
+            }
+
+            @Override
+            public List<LibraryRef> list() {
+                java.util.TreeSet<String> names = new java.util.TreeSet<>();
+                try {
+                    for (java.net.URL u : java.util.Collections.list(loader.getResources(CLASSPATH_INDEX))) {
+                        try (java.io.InputStream in = u.openStream()) {
+                            for (String n : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).split("\n")) {
+                                if (!n.isBlank()) {
+                                    names.add(n.trim());
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+                List<LibraryRef> out = new ArrayList<>();
+                names.forEach(n -> resolve(n, "").ifPresent(b -> out.add(new LibraryRef(n, b.version(), b.source()))));
+                return out;
+            }
+        };
+    }
+
+    /**
+     * Libraries installed as packages (LIBRARIES.md 10, 11.2: the npm and PyPI carriers). Each root is a {@code node_modules} folder or a
+     * Python {@code site-packages} folder. An npm package declares {@code "rachana": { "library": "<name>", "folder": "<path>" }} in its
+     * {@code package.json} (the folder relative to the package, default {@code lib}); a Python distribution declares the entry point group
+     * {@code rachana.libraries} in its {@code *.dist-info/entry_points.txt}, {@code <name> = <package.module>}, the module's folder being
+     * the library's folder. Nothing is run: both are read as data.
+     */
+    static LibraryResolver packages(List<Path> roots) {
+        List<Path> all = List.copyOf(roots);
+        return new LibraryResolver() {
+            Map<String, Path> found() {
+                Map<String, Path> out = new java.util.TreeMap<>();
+                for (Path r : all) {
+                    npm(r, out);
+                    python(r, out);
+                }
+                return out;
+            }
+
+            @Override
+            public Optional<LibraryBundle> resolve(String name, String constraint) {
+                Path d = found().get(name);
+                return d == null ? Optional.empty() : best(List.of(LibraryBundle.ofBytes(name, read(d), "package:" + d)), constraint);
+            }
+
+            @Override
+            public List<LibraryRef> list() {
+                List<LibraryRef> out = new ArrayList<>();
+                found().forEach((n, d) -> resolve(n, "").ifPresent(b -> out.add(new LibraryRef(n, b.version(), b.source()))));
+                return out;
+            }
+        };
+    }
+
+    private static byte[] resource(ClassLoader loader, String path) {
+        try (java.io.InputStream in = loader.getResourceAsStream(path)) {
+            return in == null ? null : in.readAllBytes();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static void npm(Path root, Map<String, Path> out) {
+        List<Path> pkgs = new ArrayList<>();
+        try (Stream<Path> s = Files.isDirectory(root) ? Files.list(root) : Stream.empty()) {
+            for (Path p : s.sorted().toList()) {
+                if (p.getFileName().toString().startsWith("@") && Files.isDirectory(p)) {
+                    try (Stream<Path> scoped = Files.list(p)) {
+                        pkgs.addAll(scoped.sorted().toList());
+                    }
+                } else {
+                    pkgs.add(p);
+                }
+            }
+            for (Path p : pkgs) {
+                Path json = p.resolve("package.json");
+                if (!Files.isRegularFile(json)) {
+                    continue;
+                }
+                Object doc = com.ash.rachana.parse.Json.read(Files.readString(json));
+                if (doc instanceof Map<?, ?> m && m.get("rachana") instanceof Map<?, ?> r && r.get("library") instanceof String n) {
+                    Path dir = p.resolve(r.get("folder") instanceof String f ? f : "lib").normalize();
+                    if (dir.startsWith(p) && Files.isDirectory(dir)) {
+                        out.putIfAbsent(n, dir);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static void python(Path root, Map<String, Path> out) {
+        try (Stream<Path> s = Files.isDirectory(root) ? Files.list(root) : Stream.empty()) {
+            for (Path info : s.filter(p -> p.getFileName().toString().endsWith(".dist-info")).sorted().toList()) {
+                Path ep = info.resolve("entry_points.txt");
+                if (!Files.isRegularFile(ep)) {
+                    continue;
+                }
+                boolean in = false;
+                for (String line : Files.readAllLines(ep)) {
+                    String t = line.trim();
+                    if (t.startsWith("[")) {
+                        in = t.equals("[rachana.libraries]");
+                    } else if (in && t.contains("=")) {
+                        String n = t.substring(0, t.indexOf('=')).trim();
+                        String module = t.substring(t.indexOf('=') + 1).trim().replaceAll(":.*", "");
+                        Path dir = root.resolve(module.replace('.', '/')).normalize();
+                        if (dir.startsWith(root) && Files.isDirectory(dir)) {
+                            out.putIfAbsent(n, dir);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     private static Optional<LibraryBundle> best(List<LibraryBundle> candidates, String constraint) {
         return candidates.stream().filter(b -> Versions.matches(b.version(), constraint)).max(Comparator.comparing(b -> Versions.semver(b.version())));
     }

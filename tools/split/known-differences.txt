@@ -23,3 +23,40 @@ el/math#log-86-2-7182818 A5: P2-1, Core's maths (an fdlibm port, the same bits o
 sutra/examples/sutra#metric-over-a-list A14: a Core Sutra (no match key): the reference's parser requires match, so the reference cannot answer it (unsupported there); Rachana answers it with Core's grammar alone. Unverified; the binder itself is proven by sutra/binder/panels.
 sutra/examples/sutra#falsy-when-leaves-the-panel-out A14: a Core Sutra (no match key): the reference's parser requires match, so the reference cannot answer it (unsupported there); Rachana answers it with Core's grammar alone. Unverified; the binder itself is proven by sutra/binder/panels.
 sutra/examples/sutra#control-value-reaches-a-template A14: a Core Sutra (no match key): the reference's parser requires match, so the reference cannot answer it (unsupported there); Rachana answers it with Core's grammar alone. Unverified; the binder itself is proven by sutra/binder/panels.
+el/determinism#d-n11-a A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/determinism#d-n11-b A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/determinism#d-n11-c A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/determinism#d-n20-b A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/determinism#d-n20-c A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/determinism#d-n25-a A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/determinism#d-n25-b A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/determinism#d-n25-c A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/determinism#d-o02-a A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/determinism#d-o02-b A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/determinism#d-o03-a A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/determinism#d-m07-e A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/determinism#d-m07-f A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/examples/expr-error#unknown-function-names-near-matches A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/functions-aggregates#sum-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#count-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#avg-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#median-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#median-2 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#variance-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#stddev-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#variance-pop-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#stddev-pop-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#distinct-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#percentile-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#percentile-2 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-aggregates#wavg-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-math#min-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/functions-math#max-1 A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/numbers-exact#sum-of-decimals-is-exact A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/numbers-exact#sum-with-a-double-is-a-double A9: Core computes its aggregates over lists (the kernel moved from the host's engine); the reference had no engine and refused with RCH-2102.
+el/reserved#reserved-name-group-by A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/reserved#reserved-name-filter A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/reserved#reserved-name-zip A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/reserved#reserved-name-money A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/reserved#reserved-name-between A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.
+el/reserved#reserved-name-of-a-core-library A9: the refusal's list of known functions (or its nearest names) now holds Core's aggregates; the case checks the code and the start of the words.

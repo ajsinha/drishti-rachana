@@ -1,0 +1,60 @@
+/*
+ * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+ * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+ */
+package com.ash.rachana.agg;
+
+import com.ash.rachana.api.Node;
+import com.ash.rachana.el.FunctionProvider;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+/**
+ * The grouping behind Rachana's {@code group(list, key, [aggregate])} (docs/architecture/ARCHITECTURE.md part 3): the elements grouped by their keys (the
+ * first {@code maxGroups} keys met), each group's inputs aggregated by the engine's function of that name ({@link ListAggregates}), the
+ * groups in key order. Rachana reads the keys and the inputs; this class never parses an expression.
+ */
+final class ListGrouping implements FunctionProvider.Grouping {
+
+    @Override
+    public List<FunctionProvider.Group> group(List<String> keys, List<List<Object>> columns, String aggregate, List<Object> options,
+            int maxGroups) {
+        Map<String, List<Integer>> members = new LinkedHashMap<>();
+        for (int i = 0; i < keys.size(); i++) {
+            String k = keys.get(i);
+            if (k == null || k.isBlank()) {
+                continue;
+            }
+            List<Integer> m = members.get(k);
+            if (m == null) {
+                if (members.size() >= maxGroups) {
+                    continue;                                         // the first keys met; the work and the answer stay bounded
+                }
+                m = new ArrayList<>();
+                members.put(k, m);
+            }
+            m.add(i);
+        }
+        List<FunctionProvider.Group> out = new ArrayList<>(members.size());
+        new TreeMap<>(members).forEach((k, rows) -> out.add(new FunctionProvider.Group(k, value(rows, columns, aggregate, options),
+                rows.size())));
+        return out;
+    }
+
+    private static Object value(List<Integer> rows, List<List<Object>> columns, String aggregate, List<Object> options) {
+        if (columns.isEmpty()) {
+            return (long) rows.size();                                // no input: the group's elements, counted
+        }
+        List<Object> args = new ArrayList<>(columns.size() + options.size());
+        for (List<Object> column : columns) {
+            List<Node> part = new ArrayList<>(rows.size());
+            rows.forEach(r -> part.add(Node.of(column.get(r))));
+            args.add(Node.list(part));
+        }
+        args.addAll(options);
+        return ListAggregates.apply(aggregate, args);
+    }
+}

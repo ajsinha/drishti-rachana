@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ash.rachana.api.Node;
 import java.util.TreeSet;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** The list functions (FUNCTION_CATALOGUE.md section 6): Excel's dynamic arrays over [*], with @ the element. */
@@ -125,19 +126,19 @@ class ListFunctionsTest {
      * tests the results.
      */
     @Test
-    void aggregatesCompileAndAreRefusedWithTheReasonWithoutTheEngine() {
+    void aggregatesAreCoresAndWhatOnlyAHostComputesIsRefused() {
         EL.compile("sum($.LEGS, 'NOTIONAL') + count($.LEGS) + percentile($.LEGS[*].NOTIONAL, 0.9)");
-        evalError("sum($.LEGS, 'NOTIONAL')", "sum", "pivot engine (drishti-bicompute)", "not on the class path");
-        evalError("avg($.LEGS[*].NOTIONAL)", "avg", "pivot engine");
-        evalError("min($.LEGS[*].NOTIONAL)", "min", "pivot engine");
-        evalError("group($.LEGS, 'CURRENCY', 'NOTIONAL')", "group", "pivot engine");
+        for (String src : List.of("sum($.LEGS, 'NOTIONAL')", "avg($.LEGS[*].NOTIONAL)", "min($.LEGS[*].NOTIONAL)")) {
+            assertThat(eval(src)).as(src).isInstanceOf(Number.class);           // Core's aggregate kernel (A9)
+        }
+        assertThat(eval("group($.LEGS, 'CURRENCY', 'NOTIONAL')")).isNotNull();
         evalError("measure('VAR', 'DESK:DESK-COMM')", "measure", "pivot engine");
         assertThat(eval("min(3, 1, 2)")).isEqualTo(1L);                           // several arguments: least, Rachana's own
         assertThat(eval("group($.NOPE, 'x')")).isNull();                          // not a list: empty, as before
         assertThat(Functions.catalogue()).anySatisfy(e -> {
             assertThat(e.name()).isEqualTo("sum");
-            assertThat(e.runs()).isEqualTo("E");
-            assertThat(e.source()).isEqualTo("none on the class path");
+            assertThat(e.runs()).isEqualTo("R");
+            assertThat(e.source()).isEqualTo(com.ash.rachana.agg.CoreAggregates.SOURCE);
         });
         assertThat(Functions.catalogue()).anySatisfy(e -> {
             assertThat(e.name()).isEqualTo("upper");

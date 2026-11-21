@@ -22,8 +22,9 @@ import java.util.function.Function;
  *
  * <p>A profile cannot redefine a Core name: a provided function whose name Core's families hold is refused when the table is built
  * ({@code registered twice}), as is a name two providers give; only {@code min} and {@code max} hand their one-list form to a
- * provider. {@link #core()} is the table of Core alone, with no provider: every aggregate compiles and is refused with the reason when
- * evaluated.
+ * provider. {@link #core()} is the table of Core alone: Core's aggregates over lists ({@code com.ash.rachana.agg.CoreAggregates}) and no
+ * provider, so a figure only a host computes ({@code measure}, {@code cell}, the {@code _once} family) compiles and is refused with the
+ * reason when evaluated.
  */
 public final class FunctionTable {
 
@@ -42,7 +43,10 @@ public final class FunctionTable {
     private final SafeRegex.Limits regexLimits;
 
     private FunctionTable(List<FunctionProvider> providers, Calendars calendars, SafeRegex.Limits regexLimits) {
-        this.aggregates = providers.isEmpty() ? Aggregates.NONE : new Aggregates(providers);
+        List<FunctionProvider> all = new java.util.ArrayList<>();
+        all.add(com.ash.rachana.agg.CoreAggregates.INSTANCE);         // Core's aggregates first (A9); a provider adds the rest
+        all.addAll(providers);
+        this.aggregates = new Aggregates(all);
         this.calendars = calendars == null ? Calendars.core() : calendars;
         this.regexLimits = regexLimits == null ? SafeRegex.Limits.DEFAULTS : regexLimits;
         Functions.Table t = new Functions.Table(aggregates, this.calendars, new Regexes(this.regexLimits));
@@ -184,15 +188,16 @@ public final class FunctionTable {
                 continue;
             }
             String source = aggregates.source(name);
+            String runs = com.ash.rachana.agg.CoreAggregates.SOURCE.equals(source) ? "R" : "E";   // Core's aggregates run here (A9)
             if ("group".equals(name)) {
-                out.add(new Functions.Entry(name, "aggregates", "E", source == null ? "none on the class path" : source,
+                out.add(new Functions.Entry(name, "aggregates", runs, source == null ? "none on the class path" : source,
                         "list, key, [aggregate], [by]", "the engine's grouping", "one row {label, value, count} per key, the aggregate "
                         + "over each group (sum of a quoted field, or any aggregate over @)"));
                 continue;
             }
             String fam = Aggregates.MEASURE_LEVEL.contains(name) ? "measures"
                     : p != null && "list".equals(p.form()) ? "lists" : "aggregates";
-            out.add(new Functions.Entry(name, fam, "E", source == null ? "none on the class path" : source,
+            out.add(new Functions.Entry(name, fam, runs, source == null ? "none on the class path" : source,
                     p == null ? "" : p.args(), p == null ? "" : p.form(), p == null ? "" : p.description()));
         }
         return out;

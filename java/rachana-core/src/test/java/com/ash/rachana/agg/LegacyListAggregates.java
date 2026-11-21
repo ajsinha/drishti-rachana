@@ -1,0 +1,116 @@
+/*
+ * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+ * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+ */
+package com.ash.rachana.agg;
+
+import com.ash.rachana.api.Node;
+import com.ash.rachana.el.Values;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+/**
+ * THE RECORD OF "BEFORE", for {@link SutraAggregateParityTest} only: Rachana's own list aggregates as they were in drishti-rachana
+ * until 2.9.11.b ({@code ListFunctions.sum}, {@code ListFunctions.group}, {@code MathFunctions.lenient} over one list), copied unchanged
+ * so the parity test can show every shipped Sutra draws the same figures from the engine. Test code: never on a class path that serves
+ * anything, and deleted with the parity test once 2.9.11.b is released (docs/architecture/ARCHITECTURE.md part 2).
+ */
+final class LegacyListAggregates {
+
+    private LegacyListAggregates() {}
+
+    static final int MAX_GROUPS = 500;
+
+    /** The old {@code sum(list, [field])}. */
+    static Object sum(List<Object> a) {
+        if (!(a.get(0) instanceof Node arr && arr.isArray())) {
+            return 0L;
+        }
+        String field = a.size() > 1 ? Values.text(a.get(1)) : null;
+        double total = 0;
+        for (Node e : ListAggregates.elements(arr)) {
+            Node x = field == null ? e : e.get(field);
+            if (x.isMasked()) {
+                return Values.mask();
+            }
+            double v = x.asDouble();
+            if (!Double.isNaN(v)) {
+                total += v;
+            }
+        }
+        return Values.normalise(total);
+    }
+
+    /** The old {@code min}/{@code max} (one list, or several arguments). */
+    static Object lenient(List<Object> a, boolean min) {
+        Iterable<?> items = a.size() == 1 && a.get(0) instanceof Node arr && arr.isArray() ? ListAggregates.elements(arr) : a;
+        Double best = null;
+        for (Object o : items) {
+            if (Values.masked(o)) {
+                return Values.mask();
+            }
+            double v = Values.number(o);
+            if (!Double.isNaN(v) && (best == null || (min ? v < best : v > best))) {
+                best = v;
+            }
+        }
+        return best == null ? null : Values.normalise(best);
+    }
+
+    /** The old {@code group(list, 'key', 'value'?, 'by'?)}. */
+    static Object group(List<Object> a) {
+        if (!(Values.simplify(a.get(0)) instanceof Node arr && arr.isArray())) {
+            return null;
+        }
+        String key = Values.text(a.get(1));
+        String value = a.size() > 2 && !Values.isNull(a.get(2)) && !Values.text(a.get(2)).isBlank() ? Values.text(a.get(2)) : null;
+        String by = a.size() > 3 ? Values.text(a.get(3)) : "";
+        TreeMap<String, double[]> groups = new TreeMap<>();
+        Set<String> masked = new HashSet<>();
+        for (Node e : ListAggregates.elements(arr)) {
+            String k = e.at(key).asText();
+            if (k == null || k.isBlank()) {
+                continue;
+            }
+            k = "month".equals(by) && k.length() >= 7 ? k.substring(0, 7) : "year".equals(by) && k.length() >= 4 ? k.substring(0, 4) : k;
+            if (!groups.containsKey(k) && groups.size() >= MAX_GROUPS) {
+                continue;
+            }
+            double[] g = groups.computeIfAbsent(k, x -> new double[2]);
+            g[1]++;
+            if (value == null) {
+                g[0]++;
+                continue;
+            }
+            Node v = e.at(value);
+            if (v.isMasked()) {
+                masked.add(k);
+            }
+            double d = v.asDouble();
+            if (Double.isNaN(d) && v.kind() == Node.Kind.STRING) {
+                try {
+                    d = Double.parseDouble(v.asText().trim());
+                } catch (NumberFormatException ignored) {
+                    d = Double.NaN;
+                }
+            }
+            if (!Double.isNaN(d)) {
+                g[0] += d;
+            }
+        }
+        List<Node> out = new ArrayList<>(groups.size());
+        groups.forEach((k, g) -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("label", k);
+            row.put("value", masked.contains(k) ? null : Values.normalise(g[0]));
+            row.put("count", (long) g[1]);
+            out.add(Node.of(row));
+        });
+        return Node.list(List.copyOf(out));
+    }
+}

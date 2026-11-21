@@ -27,6 +27,16 @@ Entries are written per release; the regime's unreleased work is listed after th
     `java/api-removals.txt` logs it with a date and a reason; a released `java/api-surface-<minor>.txt` (copied at the tag) is checked on
     every run and never written. README, the Python SDK and the JavaScript package say what is experimental.
 
+- **Tree formats, promoted formats, hyphenated column names** (level 1.2): a `tree` takes `fmt`, the format of every measure whose
+  column names none (a column's own `fmt` still wins; `fmt` at 1.1 is `RCH-2008`). Core bundles `pct4`, `bp1`, `df4` and `price4`
+  from level 1.2: reserved Drishti names promoted in `compat/promotions.yaml` with Drishti's definitions unchanged
+  (`ReservedNamesTest` prints probe values with both tables; below 1.2 Core alone does not know them). The format table is
+  level-gated (`Formats.atLevel`, `since` per entry; a pack's or site's name holds at every level), in the JVM and both bundles; the
+  Elements pack now carries the table (`3.2.0-dev+2b87fcd`, `pack --data`; `drishti.elements.version` names the pack folder and
+  `2.4.0/` is gone). A `{ from, columns }` mapping takes a caller column such as `mtm-usd`: `@.amount` and a `bind` read
+  `@['mtm-usd']`, a fragment's own `@['bid-size']` is renamed too; such a name in a field-name option is `RCH-2121`, never a minus.
+  Cases: `format/promoted`, `sutra/binder/tree-formats`, `problem/tree-format-level`, `sutra/fragments-hyphens`,
+  `problem/fragments-hyphens`.
 - **Corpus binds no longer flaky**: `CustomerCorpusTest.recordedBindsReplay…` flipped between "differs" and "listed but identical now"
   because both the reference (i7a) and Core wrote some objects from `Map.of`, whose key order is drawn afresh in every JVM run. Core now
   writes a form's `rules`, `steps` and a field's `options` (and a problem's `at`, a grouped query's columns) in declaration order, and a

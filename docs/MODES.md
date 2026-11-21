@@ -58,12 +58,12 @@ rachana build        # writes ./site: pages, Sutras, data, <rachana-view> with t
 
 A web app you already have draws a Sutra with one element and reads its tables from its own Data Protocol host
 ([spec/1/data-protocol](../spec/1/data-protocol/PROTOCOL.md)). The element compiles and binds the Sutra in the page with the
-runtime bundle (`rachana.runtime.js`) and paints it with Drishti Elements' painter (`<elements-view>`, Elements 3.2.0-dev+d1db672, vendored under
-`js/vendor/drishti-elements/3.2.0-dev+d1db672`, never from a CDN; the pack has `drishti-chart` and its engine, so chart panels draw):
+runtime bundle (`rachana.runtime.js`) and paints it with Drishti Elements' painter (`<elements-view>`, Elements 3.2.0-dev+2b87fcd, vendored under
+`js/vendor/drishti-elements/3.2.0-dev+2b87fcd`, never from a CDN; the pack has `drishti-chart` and its engine, so chart panels draw):
 
 ```html
-<link rel="stylesheet" href="/vendor/drishti-elements/3.2.0-dev+d1db672/drishti-elements.css">
-<script src="/vendor/drishti-elements/3.2.0-dev+d1db672/drishti-elements.js"></script>
+<link rel="stylesheet" href="/vendor/drishti-elements/3.2.0-dev+2b87fcd/drishti-elements.css">
+<script src="/vendor/drishti-elements/3.2.0-dev+2b87fcd/drishti-elements.js"></script>
 <script type="module" src="/vendor/drishti-rachana/src/rachana_view.js"></script>
 
 <rachana-view src="/sutras/sales.sutra.yaml" data="/dash/data/v1" runtime="/vendor/drishti-rachana/dist/rachana.runtime.js"
@@ -101,7 +101,7 @@ panels:
 
 ## 3. Python app
 
-`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol (JSON; Arrow IPC for a table whose schema declares `arrow`, with `[arrow]` installed; NDJSON; `GET` or `POST /data/changes` for the SSE stream, filtered by `changes.filter` and conflated by `everyMs`) and the real `<rachana-view>`: the adapter serves the page, the element and its modules (`js/packages/rachana/src`), the vendored Drishti Elements 3.2.0-dev+d1db672 pack and the runtime bundle under its own mount (`/dash/static/...`, shipped as package data of the wheel), so no address is configured. A table offers Arrow with `@rachana.table("t", key=[...], schema={..., "can": ["page", "arrow"]})`; without pyarrow or the declaration the answer is `406`, as on the JVM reference. `rachana lint` takes `--level` (default 1.1). Mount Sutras, expose tables, stream changes, and lint in CI.
+`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol (JSON; Arrow IPC for a table whose schema declares `arrow`, with `[arrow]` installed; NDJSON; `GET` or `POST /data/changes` for the SSE stream, filtered by `changes.filter` and conflated by `everyMs`) and the real `<rachana-view>`: the adapter serves the page, the element and its modules (`js/packages/rachana/src`), the vendored Drishti Elements 3.2.0-dev+2b87fcd pack and the runtime bundle under its own mount (`/dash/static/...`, shipped as package data of the wheel), so no address is configured. A table offers Arrow with `@rachana.table("t", key=[...], schema={..., "can": ["page", "arrow"]})`; without pyarrow or the declaration the answer is `406`, as on the JVM reference. `rachana lint` takes `--level` (default 1.1). Mount Sutras, expose tables, stream changes, and lint in CI.
 
 **Flask** (`examples/live-orders/flask_app.py`):
 

@@ -494,6 +494,12 @@ public final class FragmentColumns {
                     i += 2;
                     continue;
                 }
+                if (t.type() == Type.AT && i + 3 < e && tok(i + 1).type() == Type.LBRACKET && tok(i + 2).type() == Type.STRING
+                        && tok(i + 3).type() == Type.RBRACKET) {
+                    quoted(row, tok(i + 2));                     // @['bid-size']: a local column whose name is no identifier
+                    i += 3;
+                    continue;
+                }
                 if (t.type() == Type.DOT && i + 1 < e && tok(i + 1).type() == Type.IDENT && i > s) {
                     column(rowOf(primary(i, s), i, row), tok(i + 1));   // first(arg.rows).desk, arg.rows[0].desk, arg.rows[*].desk
                     i++;
@@ -708,10 +714,37 @@ public final class FragmentColumns {
                 tables.read(table, name.text());
                 String theirs = tables.rename(table, name.text());
                 if (!theirs.equals(name.text())) {
-                    edit(name.pos(), name.pos() + name.length(), theirs);
+                    if (IDENT.matcher(theirs).matches()) {
+                        edit(name.pos(), name.pos() + name.length(), theirs);
+                    } else {                                     // a caller's name such as bid-size: @.x becomes @['bid-size'] ("@.bid-size" is a minus)
+                        Token dot = tok(toks.indexOf(name) - 1);
+                        edit(dot.pos(), name.pos() + name.length(), "['" + theirs + "']");
+                    }
                 }
             }
         }
+
+        /** {@code @['<name>']} over {@code table}: renamed when it is a local column, the quotes kept. */
+        private void quoted(String table, Token name) {
+            if (table == null || table.startsWith(UNKNOWN_ROWS)) {
+                if (table != null) {
+                    column(table, name);                         // refused there as @.<name> is
+                }
+                return;
+            }
+            Set<String> cols = tables.columns(table);
+            if (cols != null && cols.contains(name.text())) {
+                tables.read(table, name.text());
+                String theirs = tables.rename(table, name.text());
+                if (!theirs.equals(name.text())) {
+                    char q = src.charAt(name.pos());
+                    edit(name.pos(), end(toks.indexOf(name)), q + theirs + q);
+                }
+            }
+        }
+
+        /** A name the expression language reads after a dot. */
+        private static final java.util.regex.Pattern IDENT = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
         /** A bare name that is a local column: refused (the caller's mapping reaches {@code @.<name>}, not a bare name). */
         private void bareName(int i, int e, Map<String, String> elements) {

@@ -7,7 +7,7 @@
 # conformance/1/format/ pin the output; where this file and a case disagree, the case wins until it is settled.
 #
 # A format is a name, never a style. A profile MAY add names (Drishti's core pack adds pct4, rate5, pips1, df4, bp1,
-# price4); it MUST NOT redefine one of these. An unknown name formats as the value's text form (SPEC 4.2).
+# price4); it MUST NOT redefine one of these, except a promoted name, which it defines exactly as Core does. An unknown name formats as the value's text form (SPEC 4.2).
 #
 # Rules every format keeps, before its type's rule:
 #   empty   -> ""            a link -> its label, else its id            a masked value -> "•••" (U+2022 x 3)
@@ -48,6 +48,13 @@ formats:
   compact:  { type: compact, decimals: 1 }                               # 1250000 -> "1.3m"
   date:     { type: date, pattern: yyyy-MM-dd }
   dmy:      { type: date, pattern: dd MMM yyyy }                         # "2026-11-17" -> "17 Nov 2026"
+
+# Language 1.2 (compat/promotions.yaml): four names Drishti's core pack declared, promoted into Core with Drishti's definitions
+# unchanged. Below 1.2 they are unknown (text form, SPEC 4.2) unless a profile defines them, as Drishti's still does.
+  pct4:     { type: number, decimals: 4, scale: 100, suffix: "%", since: "1.2" }   # 0.0123456 -> "1.2346%"
+  bp1:      { type: number, decimals: 1, sign: always, suffix: " bp", since: "1.2" } # 12.34 -> "+12.3 bp"
+  df4:      { type: number, decimals: 4, since: "1.2" }                    # 0.987654 -> "0.9877"
+  price4:   { type: number, decimals: 4, since: "1.2" }                    # 1234.56789 -> "1,234.5679"
 
 # Built in, not a table entry: `list` prints a list as the JSON text of its non-blank elements' text forms
 # (["fx","rates"]), which renderers draw as chips; a text holding a JSON list is read as that list; empty or an

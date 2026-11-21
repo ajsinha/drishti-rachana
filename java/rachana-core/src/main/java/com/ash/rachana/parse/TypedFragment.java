@@ -699,7 +699,8 @@ public final class TypedFragment {
     /** Panel options that hold a field name of the panel's rows (renamed by a column mapping). */
     static final Set<String> FIELD_OPTIONS = Set.of("x", "y", "label", "value", "size", "group", "open", "high", "low", "close", "volume", "date",
             "detail", "status", "by", "across", "node", "parent", "path", "rowKey", "series", "dataset-key");
-    private static final Pattern FIELD = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+    /** A caller's column name a mapping may give: letters, digits, {@code _} and {@code -} ({@code bid-size} is read as {@code @['bid-size']}). */
+    private static final Pattern FIELD = Pattern.compile("[A-Za-z_][A-Za-z0-9_-]*");
 
     /** As {@link #bind} with a caller that knows nothing; the panels alone. */
     public List<PNode> expand(PNode use, String sutraFile, List<SutraProblem> out) {
@@ -1113,7 +1114,7 @@ public final class TypedFragment {
             n.map().forEach((k, v) -> {
                 boolean isExpr = top && exprKeys.contains(k) || "bind".equals(k) || "when".equals(k);
                 if (table != null && (top && FIELD_OPTIONS.contains(k) && (v.isScalar() || v.isList()) || "bind".equals(k) && v.isScalar())) {
-                    m.put(k, field(v, table, isExpr, cols, out));
+                    m.put(k, field(v, table, isExpr, "bind".equals(k), cols, out));
                 } else {
                     m.put(k, columns(v, table, exprKeys, false, isExpr, cols, out));
                 }
@@ -1161,10 +1162,10 @@ public final class TypedFragment {
     }
 
     /** A field-name option or {@code bind}: a local column name (or a list of them) renamed; anything else read as an expression. */
-    private PNode field(PNode v, String table, boolean expr, Columns cols, List<SutraProblem> out) {
+    private PNode field(PNode v, String table, boolean expr, boolean bind, Columns cols, List<SutraProblem> out) {
         if (v.isList()) {
             List<PNode> l = new ArrayList<>();
-            v.list().forEach(x -> l.add(field(x, table, expr, cols, out)));
+            v.list().forEach(x -> l.add(field(x, table, expr, bind, cols, out)));
             return new PNode(l, v.line(), v.column());
         }
         if (com.ash.rachana.el.FragmentColumns.unfollowed(table)) {       // rows derived where the mapping cannot follow: never silent
@@ -1179,7 +1180,15 @@ public final class TypedFragment {
             }
         } else if (v.value() instanceof String s && cols.columns(table).contains(s)) {
             cols.read(table, s);
-            return new PNode(cols.rename(table, s), v.line(), v.column());
+            String theirs = cols.rename(table, s);
+            boolean plain = theirs.matches("[A-Za-z_][A-Za-z0-9_]*");
+            if (!bind && !plain) {                                    // a field-name option takes a name (SPEC 2.3a): never a silent wrong read
+                out.add(problem(COLUMN_TEXT, "fragment " + name + " names column " + s + " of table " + table + " in a field-name option, and the"
+                        + " caller maps it to '" + theirs + "', which is not a name ([A-Za-z_][A-Za-z0-9_]*): give the rows renamed in place of the mapping"
+                        + " (" + table + ": \"map(<the caller's table>, {" + s + ": @['" + theirs + "'], ...})\")", file, v));
+                return v;
+            }
+            return new PNode(bind && !plain ? "@['" + theirs + "']" : theirs, v.line(), v.column());   // a bind is an expression: bid-size is a minus
         }
         return columns(v, table, Set.of(), false, expr, cols, out);
     }

@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/tree-formats
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  A tree's formats (level 1.2, SPEC 2.3a): `fmt` formats every measure whose column names no format; a column's own `fmt` (on its
+  dataset field) wins and the measure then names none. Synthetic data only.
+given:
+  today: "2026-01-15"
+  record:
+    nodes:
+      - { id: GRP, parent: "", name: Group, var: 1500000, used: 0.75 }
+      - { id: RATES, parent: GRP, name: Rates, var: 1200000, used: 0.6 }
+      - { id: FX, parent: GRP, name: FX, var: 300000, used: 0.6 }
+cases:
+  - id: a-tree-formats-its-measures
+    kind: sutra
+    source: SPEC 2.3a; level 1.2
+    sutra: |
+      rachana: 1
+      sutra: hierarchy
+      version: 1
+      panels:
+        - { id: risk, kind: tree, rows: $.nodes, node: id, parent: parent, label: name, fmt: amount0 }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "risk", "kind": "tree", "area": "main", "inferred": false, "data": {"dataset": "risk", "node": "id", "parent": "parent", "label": "name", "measures": [{"field": "var", "agg": "sum", "fmt": "amount0"}, {"field": "used", "agg": "sum", "fmt": "amount0"}]}, "empty": false}], "keys": [], "contract": "1.1", "datasets": {"risk": {"fields": [{"name": "id", "type": "string"}, {"name": "parent", "type": "string"}, {"name": "name", "type": "string"}, {"name": "var", "type": "number"}, {"name": "used", "type": "number"}], "values": [["GRP", "", "Group", 1500000, 0.75], ["RATES", "GRP", "Rates", 1200000, 0.6], ["FX", "GRP", "FX", 300000, 0.6]]}}}}
+
+  - id: a-columns-format-wins-over-the-trees
+    kind: sutra
+    source: SPEC 2.3a; level 1.2
+    sutra: |
+      rachana: 1
+      sutra: hierarchy
+      version: 1
+      panels:
+        - { id: risk, kind: tree, rows: $.nodes, node: id, parent: parent, label: name, fmt: amount0, columns: [ { label: Id, bind: "@.id" }, { label: Parent, bind: "@.parent" }, { label: Name, bind: "@.name" }, { label: VaR, bind: "@.var" }, { label: Used, bind: "@.used", fmt: pct2 } ] }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "risk", "kind": "tree", "area": "main", "inferred": false, "data": {"dataset": "risk", "node": "id", "parent": "parent", "label": "name", "measures": [{"field": "var", "agg": "sum", "fmt": "amount0"}, {"field": "used", "agg": "sum"}]}, "empty": false}], "keys": [], "contract": "1.1", "datasets": {"risk": {"fields": [{"name": "id", "type": "string", "label": "Id"}, {"name": "parent", "type": "string", "label": "Parent"}, {"name": "name", "type": "string", "label": "Name"}, {"name": "var", "type": "number", "label": "VaR"}, {"name": "used", "type": "number", "label": "Used", "fmt": "pct2"}], "values": [["GRP", "", "Group", 1500000, 0.75], ["RATES", "GRP", "Rates", 1200000, 0.6], ["FX", "GRP", "FX", 300000, 0.6]]}}}}

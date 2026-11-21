@@ -64,8 +64,11 @@ public enum PanelKind {
      * {@code group} and {@code sort} the grouping and order, {@code limit} the most rows sent (10,000; at most 50,000).
      */
     GRID(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "limit", "search", "empty", "bars")),
-    /** Language 1.1: a hierarchy of the rows ({@code node} names a row's node, {@code parent} its parent or {@code path} its path). */
-    TREE(Set.of("rows", "node"), Set.of("parent", "path", "label", "mode", "open", "dataset", "rowKey", "limit")),
+    /**
+     * Language 1.1: a hierarchy of the rows ({@code node} names a row's node, {@code parent} its parent or {@code path} its path); a
+     * column's {@code fmt} formats its measure, and (level 1.2) {@code fmt} the measures whose column names none.
+     */
+    TREE(Set.of("rows", "node"), Set.of("parent", "path", "label", "mode", "open", "dataset", "rowKey", "limit", "fmt")),
     /** Language 1.1: a chart of the rows: {@code x}, the figures {@code y} (a field or a list), {@code by}, {@code agg}, {@code type}. */
     CHART(Set.of("rows", "x", "y"), Set.of("type", "by", "agg", "stack", "horizontal", "xLabel", "yLabel", "bins", "top", "fmt", "dataset",
             "rowKey", "limit")),
@@ -98,7 +101,7 @@ public enum PanelKind {
 
     /** The options a later level added to a kind of an earlier one, with that level: used below it they are {@code RCH-2008}. */
     private static final java.util.Map<PanelKind, java.util.Map<String, String>> OPTION_SINCE = java.util.Map.of(
-            GRID, java.util.Map.of("bars", "1.2"), LINE, java.util.Map.of("layers", "1.2", "by", "1.2"));
+            GRID, java.util.Map.of("bars", "1.2"), LINE, java.util.Map.of("layers", "1.2", "by", "1.2"), TREE, java.util.Map.of("fmt", "1.2"));
 
     /** The options this kind accepts but does not require at a language level (a later level's option left out). */
     public Set<String> optional(String level) {

@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/tree-format-level
+since: "1.1"
+profile: core
+verified: true
+description: "A tree's fmt is level 1.2: at 1.1 it is a later level's option (RCH-2008, SPEC 7.2)."
+cases:
+  - id: fmt-on-a-tree-needs-level-1-2
+    kind: problem
+    source: SPEC 7.2
+    until: "1.1"
+    sutra: |
+      rachana: 1
+      sutra: demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { id: t, kind: tree, rows: $.nodes, node: id, fmt: amount0 }
+    expect: {"ok": false, "problems": [{"code": "RCH-2008", "severity": "error", "message": "option 'fmt' of 'tree' panels needs Rachana 1.2; this host runs 1.1 (raise the host's language level)", "range": {"start": {"line": 6, "column": 56}}}]}

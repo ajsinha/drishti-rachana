@@ -1,0 +1,87 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/fragments-hyphens
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  Column names that are not identifiers (decision L-21): a caller's column such as mtm-usd is read as @['mtm-usd'] where the fragment
+  reads @.amount (and a bind of the bare name), never as a minus; a fragment's own column such as bid-size, read as @['bid-size'],
+  is renamed to the caller's. Level 1.2.
+cases:
+
+  - id: hyphenated-caller-columns-map-to-local-columns
+    kind: sutra
+    source: L-21 (2, 3); LIBRARIES 5.1
+    files: &desk
+      desk-list.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-list
+        version: 1
+        doc:
+          summary: Amounts by desk, one row each.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 }, { label: Double, bind: "@.amount * 2", fmt: amount0 } ]
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { book-desk: FX, mtm-usd: 1200 }, { book-desk: Rates, mtm-usd: 800 } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: book-desk, amount: mtm-usd } } }
+    expect:
+      at:
+        /panels/0/data/rows/0/cells/0/text: FX
+        /panels/0/data/rows/0/cells/1/text: "1,200"
+        /panels/0/data/rows/1/cells/2/text: "1,600"
+
+  - id: a-fragments-quoted-column-is-renamed
+    kind: sutra
+    source: L-21 (2, 3)
+    files:
+      depth.v1.fragment.yaml: |
+        rachana: 1
+        fragment: depth
+        version: 1
+        doc:
+          summary: Sizes by price.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per price
+            columns:
+              price: { type: number, doc: The price }
+              bid-size: { type: number, doc: The size bid }
+        panels:
+          - id: book
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Price, bind: "@.price", fmt: price2 }, { label: Bid, bind: "@['bid-size']", fmt: amount0 } ]
+    sutra: |
+      rachana: 1
+      sutra: depth-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        book: { rows: [ { PX: 101.25, BID_QTY: 500 }, { PX: 101.24, BID_QTY: 1200 } ] }
+      panels:
+        - use: depth@1
+          with: { rows: { from: $.book, columns: { price: PX, bid-size: BID_QTY } } }
+    expect:
+      at:
+        /panels/0/data/rows/0/cells/0/text: "101.25"
+        /panels/0/data/rows/1/cells/1/text: "1,200"

@@ -25,10 +25,33 @@ public final class Formats {
 
     private volatile Map<String, FormatSpec> specs;
     private final String overrideFile;
+    /** Every name read, at every level. */
+    private final Map<String, FormatSpec> all;
+    /** The bundled names a later language level brought ({@code since} in the table), with that level; a pack's or site's name is never here. */
+    private final Map<String, String> since;
+    private final String level;
 
-    private Formats(Map<String, FormatSpec> specs, String overrideFile) {
-        this.specs = Map.copyOf(specs);
+    private Formats(Map<String, FormatSpec> all, Map<String, String> since, String level, String overrideFile) {
+        this.all = Map.copyOf(all);
+        this.since = Map.copyOf(since);
+        this.level = level;
+        Map<String, FormatSpec> at = new HashMap<>(all);
+        since.forEach((name, l) -> {
+            if (com.ash.rachana.model.PanelKind.compareLevels(l, level) > 0) {
+                at.remove(name);
+            }
+        });
+        this.specs = Map.copyOf(at);
         this.overrideFile = overrideFile;
+    }
+
+    /**
+     * This table at another language level (SUTRA_EXPANSION 6.2): a bundled name of a later level ({@code since}, such as the 1.2
+     * promotions {@code pct4}, {@code bp1}, {@code df4}, {@code price4}) is unknown below it and prints as text, as any unknown name. A
+     * name a pack or the site file defines stays at every level. A table starts at level 1.0.
+     */
+    public Formats atLevel(String next) {
+        return next.equals(level) ? this : new Formats(all, since, next, overrideFile);
     }
 
 
@@ -40,32 +63,47 @@ public final class Formats {
     /** The bundled formats, then each pack's formats, then the site override file. */
     public static Formats load(String overrideFile, java.util.List<String> packFiles) {
         Map<String, FormatSpec> m = new HashMap<>();
+        Map<String, String> since = new HashMap<>();
         try (InputStream in = Formats.class.getClassLoader().getResourceAsStream("formats.yaml")) {
-            read(in, m);
+            read(in, m, since, true);
             for (String f : packFiles) {
                 try (InputStream p = Files.newInputStream(Path.of(f))) {
-                    read(p, m);
+                    read(p, m, since, false);
                 }
             }
             if (overrideFile != null && !overrideFile.isBlank() && Files.isRegularFile(Path.of(overrideFile))) {
                 try (InputStream o = Files.newInputStream(Path.of(overrideFile))) {
-                    read(o, m);
+                    read(o, m, since, false);
                 }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return new Formats(m, overrideFile);
+        return new Formats(m, since, "1.0", overrideFile);
+    }
+
+    /** The language level that brought a name: a bundled name's {@code since} ({@code 1.0} when it has none, and for a pack's or the site's name), or null for a name the table does not hold. */
+    public String since(String name) {
+        return since.containsKey(name) ? since.get(name) : all.containsKey(name) ? "1.0" : null;
     }
 
     public static Formats defaults() {
         return load(null);
     }
 
-    private static void read(InputStream in, Map<String, FormatSpec> into) throws IOException {
+    /**
+     * Reads a table into {@code into}. An entry's {@code since} goes into {@code since}; a pack's or the site's name without one holds at
+     * every level, so it leaves {@code since} (a customer profile's {@code pct4} stays its own at every level).
+     */
+    private static void read(InputStream in, Map<String, FormatSpec> into, Map<String, String> since, boolean bundled) throws IOException {
         Object root = Plain.path(Plain.yaml(in), "formats");
         for (Map.Entry<String, Object> e : Plain.entries(root)) {
             Object f = e.getValue();
+            if (Plain.hasNonNull(f, "since")) {
+                since.put(e.getKey(), Plain.text(Plain.path(f, "since")));   // a level-gated name wherever it is read (spec/1/formats.yaml)
+            } else if (!bundled) {
+                since.remove(e.getKey());
+            }
             into.put(e.getKey(), new FormatSpec(Plain.text(Plain.path(f, "type"), "number"), Plain.asInt(Plain.path(f, "decimals"), 0),
                     Plain.asBoolean(Plain.path(f, "grouping"), true), Plain.text(Plain.path(f, "sign"), "auto"),
                     Plain.asDouble(Plain.path(f, "scale"), 1), Plain.hasNonNull(f, "suffix") ? Plain.text(Plain.path(f, "suffix")) : null,

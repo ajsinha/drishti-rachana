@@ -1354,6 +1354,16 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         "suffix": null,
         "pattern": null
       },
+      "bp1": {
+        "type": "number",
+        "decimals": 1,
+        "grouping": true,
+        "sign": "always",
+        "scale": 1.0,
+        "suffix": " bp",
+        "pattern": null,
+        "since": "1.2"
+      },
       "compact": {
         "type": "compact",
         "decimals": 1,
@@ -1371,6 +1381,16 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         "scale": 1.0,
         "suffix": null,
         "pattern": "yyyy-MM-dd"
+      },
+      "df4": {
+        "type": "number",
+        "decimals": 4,
+        "grouping": true,
+        "sign": "auto",
+        "scale": 1.0,
+        "suffix": null,
+        "pattern": null,
+        "since": "1.2"
       },
       "dmy": {
         "type": "date",
@@ -1399,6 +1419,16 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         "suffix": "%",
         "pattern": null
       },
+      "pct4": {
+        "type": "number",
+        "decimals": 4,
+        "grouping": true,
+        "sign": "auto",
+        "scale": 100.0,
+        "suffix": "%",
+        "pattern": null,
+        "since": "1.2"
+      },
       "price2": {
         "type": "number",
         "decimals": 2,
@@ -1407,6 +1437,16 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         "scale": 1.0,
         "suffix": null,
         "pattern": null
+      },
+      "price4": {
+        "type": "number",
+        "decimals": 4,
+        "grouping": true,
+        "sign": "auto",
+        "scale": 1.0,
+        "suffix": null,
+        "pattern": null,
+        "since": "1.2"
       },
       "signed0": {
         "type": "number",
@@ -3199,9 +3239,9 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
   })();
   /* ---- src/drishti_views-schema.js ---- */
   __m["src/drishti_views-schema.js"] = (function () {
-    const CONTRACT = "1.1";
-    const SCHEMA_SHA256 = "4b737722f30062b08d8b9e482c243350fb294736fd62c82cc59450303c006c4d";
-    const SCHEMA = Object.freeze({"$ref":"#/$defs/ViewModel","$defs":{"ViewModel":{"type":"object","properties":{"ref":{"allOf":[{"$ref":"#/$defs/Ref"}]},"mnemonic":{"type":"string"},"title":{"allOf":[{"$ref":"#/$defs/TitleView"}]},"strip":{"type":"array","items":{"$ref":"#/$defs/Cell"}},"panels":{"type":"array","items":{"$ref":"#/$defs/PanelView"}},"keys":{"type":"array","items":{"$ref":"#/$defs/KeyView"}},"provenance":{"allOf":[{"$ref":"#/$defs/Provenance"}]},"timings":{"type":"object","additionalProperties":{"anyOf":[{"type":"number"},{"type":"null"}]}},"controls":{"type":"array","items":{"$ref":"#/$defs/ControlView"}},"selects":{"type":"array","items":{"$ref":"#/$defs/SelectView"}},"layout":{"type":"object"},"contract":{"type":"string"},"phone":{"type":"object"},"datasets":{"type":"object","additionalProperties":{"$ref":"#/$defs/Dataset"}},"state":{"type":"array","items":{"$ref":"#/$defs/StateView"}}},"required":["ref","title","strip","panels","keys","provenance","timings","contract"],"additionalProperties":false},"Frame":{"type":"object","properties":{"seq":{"type":"integer"},"generation":{"type":"integer"},"patches":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Patch"}},{"type":"null"}]},"latencyMs":{"anyOf":[{"type":"number"},{"type":"null"}]},"p99Ms":{"anyOf":[{"type":"number"},{"type":"null"}]}},"required":["seq","generation","patches","latencyMs","p99Ms"],"additionalProperties":false},"Bar":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"tone":{"anyOf":[{"$ref":"#/$defs/Tone"},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"}},"required":["label","value","text","tone"],"additionalProperties":false},"Bars":{"type":"object","properties":{"bars":{"type":"array","items":{"$ref":"#/$defs/Bar"}},"shape":{"type":"string"},"total":{"type":"string"}},"additionalProperties":false},"Bin":{"type":"object","properties":{"from":{"anyOf":[{"type":"number"},{"type":"null"}]},"to":{"anyOf":[{"type":"number"},{"type":"null"}]},"count":{"type":"integer"},"label":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["from","to","count","label"],"additionalProperties":false},"Candle":{"type":"object","properties":{"x":{"type":"string"},"open":{"anyOf":[{"type":"number"},{"type":"null"}]},"high":{"anyOf":[{"type":"number"},{"type":"null"}]},"low":{"anyOf":[{"type":"number"},{"type":"null"}]},"close":{"anyOf":[{"type":"number"},{"type":"null"}]},"volume":{"anyOf":[{"type":"number"},{"type":"null"}]},"openText":{"type":"string"},"highText":{"type":"string"},"lowText":{"type":"string"},"closeText":{"type":"string"},"volumeText":{"type":"string"},"ev":{"type":"string"},"set":{"type":"object"}},"additionalProperties":false},"Candles":{"type":"object","properties":{"candles":{"type":"array","items":{"$ref":"#/$defs/Candle"}},"volume":{"type":"boolean"},"last":{"type":"string"},"change":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"fmt":{"type":"string"},"unit":{"type":"string"}},"additionalProperties":false},"Cell":{"type":"object","properties":{"label":{"type":"string"},"text":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"emphasis":{"type":"boolean"},"path":{"type":"string"}},"additionalProperties":false},"Chart":{"type":"object","properties":{"x":{"type":"array","items":{"type":"string"}},"series":{"type":"array","items":{"$ref":"#/$defs/Series"}},"mark":{"type":"string"},"markText":{"type":"string"},"limit":{"anyOf":[{"type":"number"},{"type":"null"}]},"limitLabel":{"type":"string"},"source":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"unit":{"type":"string"},"step":{"type":"boolean"},"ev":{"type":"array","items":{"type":"string"}},"set":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}}},"additionalProperties":false},"ControlView":{"type":"object","properties":{"id":{"type":"string"},"kind":{"type":"string"},"label":{"type":"string"},"placement":{"type":"string"},"panel":{"type":"string"},"parent":{"type":"string"},"options":{"type":"array","items":{"$ref":"#/$defs/Opt"}},"value":{"type":"string"},"values":{"type":"array","items":{"type":"string"}},"required":{"type":"boolean"},"remember":{"type":"boolean"},"min":{"type":"string"},"max":{"type":"string"},"step":{"type":"string"},"range":{"type":"boolean"},"reads":{"type":"array","items":{"type":"string"}},"truncated":{"type":"boolean"}},"additionalProperties":false},"Edge":{"type":"object","properties":{"from":{"type":"string"},"to":{"type":"string"},"label":{"type":"string"}},"additionalProperties":false},"Event":{"type":"object","properties":{"date":{"type":"string"},"label":{"type":"string"},"detail":{"type":"string"},"status":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"ev":{"type":"string"},"set":{"type":"object"}},"additionalProperties":false},"Fields":{"type":"object","properties":{"fields":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Cell"}},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"}},"required":["fields"],"additionalProperties":false},"Gauge":{"type":"object","properties":{"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"max":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"}},"required":["value","max","text","label"],"additionalProperties":false},"GeoLink":{"type":"object","properties":{"kind":{"type":"string"},"template":{"type":"string"},"codes":{"type":"array","items":{"type":"string"}},"note":{"type":"string"}},"additionalProperties":false},"GeoMap":{"type":"object","properties":{"mode":{"enum":["world","region"]},"highlight":{"type":"string"},"region":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/GeoLink"}]},"shade":{"allOf":[{"$ref":"#/$defs/GeoShade"}]},"unit":{"type":"string"},"points":{"type":"array","items":{"$ref":"#/$defs/GeoPoint"}}},"additionalProperties":false},"GeoShade":{"type":"object","properties":{"label":{"type":"string"},"unit":{"type":"string"},"items":{"type":"array","items":{"$ref":"#/$defs/ShadeItem"}},"note":{"type":"string"}},"additionalProperties":false},"Graph":{"type":"object","properties":{"nodes":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Node"}},{"type":"null"}]},"edges":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Edge"}},{"type":"null"}]},"layout":{"anyOf":[{"enum":["tree","force"]},{"type":"null"}]},"more":{"type":"integer"}},"required":["nodes","edges","layout","more"],"additionalProperties":false},"Histogram":{"type":"object","properties":{"bins":{"type":"array","items":{"$ref":"#/$defs/Bin"}},"markers":{"type":"array","items":{"$ref":"#/$defs/Marker"}},"count":{"type":"integer"},"dropped":{"type":"integer"},"fmt":{"type":"string"},"unit":{"type":"string"}},"additionalProperties":false},"KeyView":{"type":"object","properties":{"key":{"type":"string"},"label":{"type":"string"},"action":{"enum":["panel","link","raw","impact","denied"]},"panel":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]}},"additionalProperties":false},"Level":{"type":"object","properties":{"title":{"anyOf":[{"type":"string"},{"type":"null"}]},"columns":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]},"numeric":{"anyOf":[{"type":"array","items":{"type":"boolean"}},{"type":"null"}]}},"required":["title","columns","numeric"],"additionalProperties":false},"LinkItem":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"link":{"anyOf":[{"$ref":"#/$defs/LinkView"},{"type":"null"}]},"badge":{"anyOf":[{"type":"string"},{"type":"null"}]},"status":{"anyOf":[{"enum":["resolved","pending","missing","denied","inactive"]},{"type":"null"}]}},"required":["label","text","link","badge","status"],"additionalProperties":false},"LinkView":{"type":"object","properties":{"kind":{"anyOf":[{"type":"string"},{"type":"null"}]},"id":{"anyOf":[{"type":"string"},{"type":"null"}]},"mnemonic":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["kind","id","mnemonic"],"additionalProperties":false},"Links":{"type":"object","properties":{"links":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/LinkItem"}},{"type":"null"}]}},"required":["links"],"additionalProperties":false},"Marker":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"tone":{"anyOf":[{"$ref":"#/$defs/Tone"},{"type":"null"}]}},"required":["label","value","text","tone"],"additionalProperties":false},"Metric":{"type":"object","properties":{"value":{"anyOf":[{"$ref":"#/$defs/Cell"},{"type":"null"}]},"delta":{"anyOf":[{"$ref":"#/$defs/Cell"},{"type":"null"}]},"unit":{"anyOf":[{"type":"string"},{"type":"null"}]},"caption":{"anyOf":[{"type":"string"},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"}},"required":["value","delta","unit","caption"],"additionalProperties":false},"Node":{"type":"object","properties":{"id":{"type":"string"},"label":{"type":"string"},"group":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"focus":{"type":"boolean"}},"additionalProperties":false},"Opt":{"type":"object","properties":{"value":{"anyOf":[{"type":"string"},{"type":"null"}]},"label":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["value","label"],"additionalProperties":false},"PanelCompute":{"type":"object","properties":{"state":{"enum":["ready","computing","stale","failed","refused"]},"requestId":{"type":"string"},"connector":{"type":"string"},"message":{"type":"string"},"progress":{"type":"object"},"hasResult":{"type":"boolean"},"stamp":{"type":"object"}},"additionalProperties":false},"PanelData":{"anyOf":[{"$ref":"#/$defs/Fields"},{"$ref":"#/$defs/Table"},{"$ref":"#/$defs/Tabs"},{"$ref":"#/$defs/Chart"},{"$ref":"#/$defs/Bars"},{"$ref":"#/$defs/Links"},{"$ref":"#/$defs/Text"},{"$ref":"#/$defs/Surface"},{"$ref":"#/$defs/Metric"},{"$ref":"#/$defs/GeoMap"},{"$ref":"#/$defs/Gauge"},{"$ref":"#/$defs/Waterfall"},{"$ref":"#/$defs/Histogram"},{"$ref":"#/$defs/Scatter"},{"$ref":"#/$defs/Candles"},{"$ref":"#/$defs/Graph"},{"$ref":"#/$defs/Timeline"},{"$ref":"#/$defs/Pivot"},{"$ref":"#/$defs/Grid"},{"$ref":"#/$defs/Tree"},{"$ref":"#/$defs/DataChart"}]},"PanelProvenance":{"type":"object","properties":{"source":{"type":"string"},"kind":{"type":"string"},"fetchedAt":{"type":"string"},"updatedAt":{"type":"string"},"staleAfter":{"type":"string"},"stale":{"type":"boolean"}},"additionalProperties":false},"PanelView":{"type":"object","properties":{"id":{"type":"string"},"kind":{"enum":["kv","table","tabs","line","area","hbar","ladder","links","status","provenance","markdown","gauge","surface","waterfall","histogram","scatter","candlestick","graph","timeline","pivot","metric","map","grid","tree","chart","live"]},"title":{"type":"string"},"code":{"type":"string"},"key":{"type":"string"},"area":{"type":"string"},"inferred":{"type":"boolean"},"explanation":{"type":"string"},"data":{"allOf":[{"$ref":"#/$defs/PanelData"}]},"error":{"type":"string"},"empty":{"type":"boolean"},"span":{"type":"integer"},"height":{"type":"integer"},"denied":{"type":"string"},"wire":{"allOf":[{"$ref":"#/$defs/Wire"}]},"refresh":{"allOf":[{"$ref":"#/$defs/RefreshView"}]},"form":{"type":"object"},"provenance":{"allOf":[{"$ref":"#/$defs/PanelProvenance"}]},"compute":{"allOf":[{"$ref":"#/$defs/PanelCompute"}]}},"required":["id","kind"],"additionalProperties":false,"allOf":[{"if":{"properties":{"kind":{"const":"kv"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Fields"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"table"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Table"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"tabs"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Tabs"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"line"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Chart"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"area"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Chart"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"hbar"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Bars"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"ladder"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Table"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"links"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Links"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"status"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Fields"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"provenance"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Fields"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"markdown"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Text"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"gauge"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Gauge"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"surface"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Surface"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"waterfall"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Waterfall"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"histogram"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Histogram"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"scatter"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Scatter"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"candlestick"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Candles"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"graph"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Graph"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"timeline"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Timeline"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"pivot"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Pivot"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"metric"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Metric"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"map"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/GeoMap"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"grid"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Grid"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"tree"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Tree"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"chart"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/DataChart"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"live"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Grid"},{"type":"null"}]}}}}]},"Patch":{"type":"object","properties":{"op":{"enum":["strip","panel","provenance","deleted","restored","rows"]},"index":{"type":"integer"},"cell":{"allOf":[{"$ref":"#/$defs/Cell"}]},"panel":{"allOf":[{"$ref":"#/$defs/PanelView"}]},"provenance":{"allOf":[{"$ref":"#/$defs/Provenance"}]},"at":{"type":"string","format":"date-time"},"dataset":{"type":"string"},"reset":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}},"remove":{"type":"array","items":{"type":"string"}},"update":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}},"add":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}}},"required":["op"],"additionalProperties":false},"Pivot":{"type":"object","properties":{"by":{"type":"string"},"columns":{"type":"array","items":{"type":"string"}},"rows":{"type":"array","items":{"$ref":"#/$defs/PivotRow"}},"totals":{"type":"array","items":{"$ref":"#/$defs/Cell"}},"agg":{"type":"string"},"heat":{"type":"boolean"},"min":{"anyOf":[{"type":"number"},{"type":"null"}]},"max":{"anyOf":[{"type":"number"},{"type":"null"}]},"more":{"type":"integer"},"levels":{"type":"array","items":{"type":"string"}},"expand":{"type":"integer"},"across":{"type":"string"}},"additionalProperties":false},"PivotRow":{"type":"object","properties":{"label":{"type":"string"},"cells":{"type":"array","items":{"$ref":"#/$defs/Cell"}},"values":{"type":"array","items":{"anyOf":[{"type":"number"},{"type":"null"}]}},"total":{"allOf":[{"$ref":"#/$defs/Cell"}]},"path":{"type":"array","items":{"type":"string"}},"group":{"type":"boolean"}},"additionalProperties":false},"Point":{"type":"object","properties":{"x":{"anyOf":[{"type":"number"},{"type":"null"}]},"y":{"anyOf":[{"type":"number"},{"type":"null"}]},"size":{"anyOf":[{"type":"number"},{"type":"null"}]},"xText":{"type":"string"},"yText":{"type":"string"},"label":{"type":"string"},"group":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"ev":{"type":"string"},"set":{"type":"object"}},"additionalProperties":false},"Provenance":{"type":"object","properties":{"layout":{"anyOf":[{"type":"string"},{"type":"null"}]},"fingerprint":{"anyOf":[{"type":"string"},{"type":"null"}]},"source":{"anyOf":[{"type":"string"},{"type":"null"}]},"generation":{"type":"integer"},"fetchedAt":{"anyOf":[{"type":"string"},{"type":"null"}]},"live":{"type":"boolean"},"businessDate":{"anyOf":[{"type":"string"},{"type":"null"}]},"updatedAt":{"anyOf":[{"type":"string"},{"type":"null"}]},"staleAfter":{"anyOf":[{"type":"string"},{"type":"null"}]},"stale":{"type":"boolean"},"sutra":{"anyOf":[{"type":"string"},{"type":"null"}]},"masked":{"type":"integer"},"maskedPanels":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]},"partial":{"type":"boolean"},"missing":{"type":"array","items":{"type":"string"}}},"required":["layout","fingerprint","source","generation","fetchedAt","live","businessDate","updatedAt","staleAfter","stale","sutra","masked","maskedPanels"],"additionalProperties":false},"Ref":{"type":"object","properties":{"kind":{"anyOf":[{"type":"string"},{"type":"null"}]},"id":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["kind","id"],"additionalProperties":false},"RefreshView":{"type":"object","properties":{"every":{"type":"integer"},"userCanPause":{"type":"boolean"}},"required":["every","userCanPause"],"additionalProperties":false},"Row":{"type":"object","properties":{"cells":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Cell"}},{"type":"null"}]},"highlight":{"type":"boolean"},"path":{"anyOf":[{"type":"string"},{"type":"null"}]},"children":{"type":"array","items":{"$ref":"#/$defs/Row"}},"pick":{"type":"string"},"crumb":{"type":"string"},"kidsTotal":{"allOf":[{"$ref":"#/$defs/Row"}]},"ev":{"type":"string"},"set":{"type":"object"}},"required":["cells","highlight","path"],"additionalProperties":false},"Scatter":{"type":"object","properties":{"points":{"type":"array","items":{"$ref":"#/$defs/Point"}},"groups":{"type":"array","items":{"type":"string"}},"xLabel":{"type":"string"},"yLabel":{"type":"string"},"sized":{"type":"boolean"},"more":{"type":"integer"}},"additionalProperties":false},"SelectView":{"type":"object","properties":{"panel":{"anyOf":[{"type":"string"},{"type":"null"}]},"by":{"anyOf":[{"type":"string"},{"type":"null"}]},"filter":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]}},"required":["panel","by","filter"],"additionalProperties":false},"StateView":{"type":"object","properties":{"id":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{},"url":{"type":"boolean"},"reads":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]}},"required":["id","value","url","reads"],"additionalProperties":false},"Series":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"values":{"anyOf":[{"type":"array","items":{"anyOf":[{"type":"number"},{"type":"null"}]}},{"type":"null"}]},"tone":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["label","values","tone"],"additionalProperties":false},"ShadeItem":{"type":"object","properties":{"code":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["code","value","text"],"additionalProperties":false},"Step":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"from":{"anyOf":[{"type":"number"},{"type":"null"}]},"to":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"tone":{"anyOf":[{"$ref":"#/$defs/Tone"},{"type":"null"}]},"total":{"type":"boolean"},"ev":{"type":"string"},"set":{"type":"object"}},"required":["label","value","from","to","text","tone","total"],"additionalProperties":false},"Surface":{"type":"object","properties":{"x":{"type":"array","items":{"type":"string"}},"y":{"type":"array","items":{"type":"string"}},"z":{"type":"array","items":{"anyOf":[{"type":"array","items":{"anyOf":[{"type":"number"},{"type":"null"}]}},{"type":"null"}]}},"min":{"anyOf":[{"type":"number"},{"type":"null"}]},"max":{"anyOf":[{"type":"number"},{"type":"null"}]},"fmt":{"type":"string"},"unit":{"type":"string"},"view":{"enum":["heatmap","3d"]}},"additionalProperties":false},"Tab":{"type":"object","properties":{"title":{"anyOf":[{"type":"string"},{"type":"null"}]},"fields":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Cell"}},{"type":"null"}]},"panels":{"type":"array","items":{"$ref":"#/$defs/PanelView"}}},"required":["title","fields"],"additionalProperties":false},"Table":{"type":"object","properties":{"columns":{"type":"array","items":{"type":"string"}},"numeric":{"type":"array","items":{"type":"boolean"}},"rows":{"type":"array","items":{"$ref":"#/$defs/Row"}},"total":{"allOf":[{"$ref":"#/$defs/Row"}]},"more":{"type":"string"},"search":{"type":"boolean"},"pivot":{"type":"object"},"expand":{"type":"integer"},"levels":{"type":"array","items":{"$ref":"#/$defs/Level"}},"root":{"type":"string"},"emptyLabel":{"type":"string"}},"additionalProperties":false},"Tabs":{"type":"object","properties":{"layout":{"anyOf":[{"enum":["tabs","columns"]},{"type":"null"}]},"tabs":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Tab"}},{"type":"null"}]}},"required":["layout","tabs"],"additionalProperties":false},"Text":{"type":"object","properties":{"text":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["text"],"additionalProperties":false},"Timeline":{"type":"object","properties":{"events":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Event"}},{"type":"null"}]},"more":{"type":"integer"}},"required":["events","more"],"additionalProperties":false},"TitleView":{"type":"object","properties":{"pill":{"anyOf":[{"type":"string"},{"type":"null"}]},"id":{"anyOf":[{"type":"string"},{"type":"null"}]},"with":{"anyOf":[{"$ref":"#/$defs/Cell"},{"type":"null"}]}},"required":["pill","id","with"],"additionalProperties":false},"Tone":{"enum":["pos","neg","link","accent","ok","warn","bad","muted","inactive"]},"Waterfall":{"type":"object","properties":{"steps":{"type":"array","items":{"$ref":"#/$defs/Step"}},"unit":{"type":"string"}},"additionalProperties":false},"Wire":{"type":"object","properties":{"emits":{"type":"array","items":{"anyOf":[{"type":"object","additionalProperties":{"type":"string"}},{"type":"null"}]}},"waits":{"type":"string"},"children":{"type":"array","items":{"anyOf":[{"type":"object","additionalProperties":{"type":"string"}},{"type":"null"}]}},"source":{"type":"object","additionalProperties":{"type":"string"}},"parent":{"type":"string"}},"additionalProperties":false},"Dataset":{"type":"object","properties":{"key":{"type":"array","items":{"type":"string"}},"fields":{"type":"array","items":{"$ref":"#/$defs/DataField"}},"values":{"type":"array","items":{"anyOf":[{"type":"array","items":{}},{"type":"null"}]}},"rows":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}},"more":{"type":"integer"},"name":{"type":"string"},"arrow":{"allOf":[{"$ref":"#/$defs/ArrowRef"}]},"pages":{"allOf":[{"$ref":"#/$defs/PagesRef"}]},"server":{"allOf":[{"$ref":"#/$defs/ServerRef"}]},"live":{"$ref":"#/$defs/LiveRef"}},"additionalProperties":false},"DataField":{"type":"object","properties":{"name":{"type":"string"},"type":{"enum":["string","number","boolean","date","datetime"]},"label":{"type":"string"},"fmt":{"type":"string"}},"required":["name"],"additionalProperties":false},"ArrowRef":{"type":"object","properties":{"url":{"type":"string"},"base64":{"type":"string"}},"additionalProperties":false},"PagesRef":{"type":"object","properties":{"url":{"type":"string"},"size":{"type":"integer"},"mode":{"enum":["offset","cursor"]},"total":{"type":"integer"},"sort":{"enum":["client","server"]},"filter":{"enum":["client","server"]}},"additionalProperties":false},"ServerRef":{"type":"object","properties":{"url":{"type":"string"}},"additionalProperties":false},"Grid":{"type":"object","properties":{"dataset":{"type":"string"},"columns":{"type":"array","items":{"$ref":"#/$defs/GridColumn"}},"group":{"type":"array","items":{"type":"string"}},"sort":{"type":"array","items":{"$ref":"#/$defs/SortKey"}},"pivot":{"allOf":[{"$ref":"#/$defs/GridPivot"}]},"search":{"type":"boolean"},"emptyLabel":{"type":"string"}},"required":["dataset"],"additionalProperties":false},"GridColumn":{"type":"object","properties":{"field":{"type":"string"},"label":{"type":"string"},"fmt":{"type":"string"},"tone":{"type":"string"},"width":{"type":"integer"},"pinned":{"enum":["left","right"]},"agg":{"enum":["sum","count","min","max","avg","first","last","distinct"]},"hidden":{"type":"boolean"},"bar":{"type":"boolean"}},"required":["field"],"additionalProperties":false},"SortKey":{"type":"object","properties":{"field":{"type":"string"},"desc":{"type":"boolean"}},"required":["field"],"additionalProperties":false},"GridPivot":{"type":"object","properties":{"rows":{"type":"array","items":{"type":"string"}},"columns":{"type":"array","items":{"type":"string"}},"values":{"type":"array","items":{"$ref":"#/$defs/Measure"}}},"additionalProperties":false},"Measure":{"type":"object","properties":{"field":{"type":"string"},"agg":{"enum":["sum","count","min","max","avg","first","last","distinct"]},"label":{"type":"string"},"fmt":{"type":"string"}},"required":["field"],"additionalProperties":false},"Tree":{"type":"object","properties":{"dataset":{"type":"string"},"node":{"type":"string"},"parent":{"type":"string"},"path":{"type":"string"},"label":{"type":"string"},"measures":{"type":"array","items":{"$ref":"#/$defs/Measure"}},"mode":{"enum":["grid","org","sunburst","icicle"]},"open":{"type":"integer"}},"required":["dataset","node"],"additionalProperties":false},"DataChart":{"type":"object","properties":{"dataset":{"type":"string"},"type":{"enum":["bar","line","area","scatter","pie","donut","heatmap","histogram"]},"x":{"type":"string"},"y":{"type":"array","items":{"$ref":"#/$defs/Measure"}},"by":{"type":"string"},"stack":{"enum":["sum","percent"]},"horizontal":{"type":"boolean"},"xLabel":{"type":"string"},"yLabel":{"type":"string"},"bins":{"type":"integer"},"limit":{"type":"integer"}},"required":["dataset","type"],"additionalProperties":false},"GeoPoint":{"type":"object","properties":{"label":{"type":"string"},"lat":{"anyOf":[{"type":"number"},{"type":"null"}]},"lon":{"anyOf":[{"type":"number"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]}},"required":["lat","lon"],"additionalProperties":false},"LiveRef":{"type":"object","properties":{"table":{"type":"string"},"window":{"type":"integer"},"top":{"type":"boolean"},"filter":{"type":"object"}},"required":["table"],"additionalProperties":false}}});
+    const CONTRACT = "1.2";
+    const SCHEMA_SHA256 = "698f996efe5bd611a88a1aaaa5b01fa1730482b1ac7d5e3bac23acee980004ea";
+    const SCHEMA = Object.freeze({"$ref":"#/$defs/ViewModel","$defs":{"ViewModel":{"type":"object","properties":{"ref":{"allOf":[{"$ref":"#/$defs/Ref"}]},"mnemonic":{"type":"string"},"title":{"allOf":[{"$ref":"#/$defs/TitleView"}]},"strip":{"type":"array","items":{"$ref":"#/$defs/Cell"}},"panels":{"type":"array","items":{"$ref":"#/$defs/PanelView"}},"keys":{"type":"array","items":{"$ref":"#/$defs/KeyView"}},"provenance":{"allOf":[{"$ref":"#/$defs/Provenance"}]},"timings":{"type":"object","additionalProperties":{"anyOf":[{"type":"number"},{"type":"null"}]}},"controls":{"type":"array","items":{"$ref":"#/$defs/ControlView"}},"selects":{"type":"array","items":{"$ref":"#/$defs/SelectView"}},"layout":{"type":"object"},"contract":{"type":"string"},"phone":{"type":"object"},"datasets":{"type":"object","additionalProperties":{"$ref":"#/$defs/Dataset"}},"state":{"type":"array","items":{"$ref":"#/$defs/StateView"}}},"required":["ref","title","strip","panels","keys","provenance","timings","contract"],"additionalProperties":false},"Frame":{"type":"object","properties":{"seq":{"type":"integer"},"generation":{"type":"integer"},"patches":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Patch"}},{"type":"null"}]},"latencyMs":{"anyOf":[{"type":"number"},{"type":"null"}]},"p99Ms":{"anyOf":[{"type":"number"},{"type":"null"}]}},"required":["seq","generation","patches","latencyMs","p99Ms"],"additionalProperties":false},"Bar":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"tone":{"anyOf":[{"$ref":"#/$defs/Tone"},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"required":["label","value","text","tone"],"additionalProperties":false},"Bars":{"type":"object","properties":{"bars":{"type":"array","items":{"$ref":"#/$defs/Bar"}},"shape":{"type":"string"},"total":{"type":"string"}},"additionalProperties":false},"Bin":{"type":"object","properties":{"from":{"anyOf":[{"type":"number"},{"type":"null"}]},"to":{"anyOf":[{"type":"number"},{"type":"null"}]},"count":{"type":"integer"},"label":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["from","to","count","label"],"additionalProperties":false},"Candle":{"type":"object","properties":{"x":{"type":"string"},"open":{"anyOf":[{"type":"number"},{"type":"null"}]},"high":{"anyOf":[{"type":"number"},{"type":"null"}]},"low":{"anyOf":[{"type":"number"},{"type":"null"}]},"close":{"anyOf":[{"type":"number"},{"type":"null"}]},"volume":{"anyOf":[{"type":"number"},{"type":"null"}]},"openText":{"type":"string"},"highText":{"type":"string"},"lowText":{"type":"string"},"closeText":{"type":"string"},"volumeText":{"type":"string"},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"additionalProperties":false},"Candles":{"type":"object","properties":{"candles":{"type":"array","items":{"$ref":"#/$defs/Candle"}},"volume":{"type":"boolean"},"last":{"type":"string"},"change":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"fmt":{"type":"string"},"unit":{"type":"string"}},"additionalProperties":false},"Cell":{"type":"object","properties":{"label":{"type":"string"},"text":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"emphasis":{"type":"boolean"},"path":{"type":"string"}},"additionalProperties":false},"Chart":{"type":"object","properties":{"x":{"type":"array","items":{"type":"string"}},"series":{"type":"array","items":{"$ref":"#/$defs/Series"}},"mark":{"type":"string"},"markText":{"type":"string"},"limit":{"anyOf":[{"type":"number"},{"type":"null"}]},"limitLabel":{"type":"string"},"source":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"unit":{"type":"string"},"step":{"type":"boolean"},"ev":{"type":"array","items":{"type":"string"}},"set":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}},"on":{"type":"array","items":{"anyOf":[{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}},{"type":"null"}]}}},"additionalProperties":false},"ControlView":{"type":"object","properties":{"id":{"type":"string"},"kind":{"type":"string"},"label":{"type":"string"},"placement":{"type":"string"},"panel":{"type":"string"},"parent":{"type":"string"},"options":{"type":"array","items":{"$ref":"#/$defs/Opt"}},"value":{"type":"string"},"values":{"type":"array","items":{"type":"string"}},"required":{"type":"boolean"},"remember":{"type":"boolean"},"min":{"type":"string"},"max":{"type":"string"},"step":{"type":"string"},"range":{"type":"boolean"},"reads":{"type":"array","items":{"type":"string"}},"truncated":{"type":"boolean"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"additionalProperties":false},"Edge":{"type":"object","properties":{"from":{"type":"string"},"to":{"type":"string"},"label":{"type":"string"}},"additionalProperties":false},"Event":{"type":"object","properties":{"date":{"type":"string"},"label":{"type":"string"},"detail":{"type":"string"},"status":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"additionalProperties":false},"Fields":{"type":"object","properties":{"fields":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Cell"}},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"required":["fields"],"additionalProperties":false},"Gauge":{"type":"object","properties":{"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"max":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"required":["value","max","text","label"],"additionalProperties":false},"GeoLink":{"type":"object","properties":{"kind":{"type":"string"},"template":{"type":"string"},"codes":{"type":"array","items":{"type":"string"}},"note":{"type":"string"}},"additionalProperties":false},"GeoMap":{"type":"object","properties":{"mode":{"enum":["world","region"]},"highlight":{"type":"string"},"region":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/GeoLink"}]},"shade":{"allOf":[{"$ref":"#/$defs/GeoShade"}]},"unit":{"type":"string"},"points":{"type":"array","items":{"$ref":"#/$defs/GeoPoint"}}},"additionalProperties":false},"GeoShade":{"type":"object","properties":{"label":{"type":"string"},"unit":{"type":"string"},"items":{"type":"array","items":{"$ref":"#/$defs/ShadeItem"}},"note":{"type":"string"}},"additionalProperties":false},"Graph":{"type":"object","properties":{"nodes":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Node"}},{"type":"null"}]},"edges":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Edge"}},{"type":"null"}]},"layout":{"anyOf":[{"enum":["tree","force"]},{"type":"null"}]},"more":{"type":"integer"}},"required":["nodes","edges","layout","more"],"additionalProperties":false},"Histogram":{"type":"object","properties":{"bins":{"type":"array","items":{"$ref":"#/$defs/Bin"}},"markers":{"type":"array","items":{"$ref":"#/$defs/Marker"}},"count":{"type":"integer"},"dropped":{"type":"integer"},"fmt":{"type":"string"},"unit":{"type":"string"}},"additionalProperties":false},"KeyView":{"type":"object","properties":{"key":{"type":"string"},"label":{"type":"string"},"action":{"enum":["panel","link","raw","impact","denied"]},"panel":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]}},"additionalProperties":false},"Level":{"type":"object","properties":{"title":{"anyOf":[{"type":"string"},{"type":"null"}]},"columns":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]},"numeric":{"anyOf":[{"type":"array","items":{"type":"boolean"}},{"type":"null"}]}},"required":["title","columns","numeric"],"additionalProperties":false},"LinkItem":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"link":{"anyOf":[{"$ref":"#/$defs/LinkView"},{"type":"null"}]},"badge":{"anyOf":[{"type":"string"},{"type":"null"}]},"status":{"anyOf":[{"enum":["resolved","pending","missing","denied","inactive"]},{"type":"null"}]}},"required":["label","text","link","badge","status"],"additionalProperties":false},"LinkView":{"type":"object","properties":{"kind":{"anyOf":[{"type":"string"},{"type":"null"}]},"id":{"anyOf":[{"type":"string"},{"type":"null"}]},"mnemonic":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["kind","id","mnemonic"],"additionalProperties":false},"Links":{"type":"object","properties":{"links":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/LinkItem"}},{"type":"null"}]}},"required":["links"],"additionalProperties":false},"Marker":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"tone":{"anyOf":[{"$ref":"#/$defs/Tone"},{"type":"null"}]}},"required":["label","value","text","tone"],"additionalProperties":false},"Metric":{"type":"object","properties":{"value":{"anyOf":[{"$ref":"#/$defs/Cell"},{"type":"null"}]},"delta":{"anyOf":[{"$ref":"#/$defs/Cell"},{"type":"null"}]},"unit":{"anyOf":[{"type":"string"},{"type":"null"}]},"caption":{"anyOf":[{"type":"string"},{"type":"null"}]},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"required":["value","delta","unit","caption"],"additionalProperties":false},"Node":{"type":"object","properties":{"id":{"type":"string"},"label":{"type":"string"},"group":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"focus":{"type":"boolean"}},"additionalProperties":false},"Opt":{"type":"object","properties":{"value":{"anyOf":[{"type":"string"},{"type":"null"}]},"label":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["value","label"],"additionalProperties":false},"PanelCompute":{"type":"object","properties":{"state":{"enum":["ready","computing","stale","failed","refused"]},"requestId":{"type":"string"},"connector":{"type":"string"},"message":{"type":"string"},"progress":{"type":"object"},"hasResult":{"type":"boolean"},"stamp":{"type":"object"}},"additionalProperties":false},"PanelData":{"anyOf":[{"$ref":"#/$defs/Fields"},{"$ref":"#/$defs/Table"},{"$ref":"#/$defs/Tabs"},{"$ref":"#/$defs/Chart"},{"$ref":"#/$defs/Bars"},{"$ref":"#/$defs/Links"},{"$ref":"#/$defs/Text"},{"$ref":"#/$defs/Surface"},{"$ref":"#/$defs/Metric"},{"$ref":"#/$defs/GeoMap"},{"$ref":"#/$defs/Gauge"},{"$ref":"#/$defs/Waterfall"},{"$ref":"#/$defs/Histogram"},{"$ref":"#/$defs/Scatter"},{"$ref":"#/$defs/Candles"},{"$ref":"#/$defs/Graph"},{"$ref":"#/$defs/Timeline"},{"$ref":"#/$defs/Pivot"},{"$ref":"#/$defs/Grid"},{"$ref":"#/$defs/Tree"},{"$ref":"#/$defs/DataChart"},{"$ref":"#/$defs/FormPanel"},{"$ref":"#/$defs/Treemap"},{"$ref":"#/$defs/Bullet"}]},"PanelProvenance":{"type":"object","properties":{"source":{"type":"string"},"kind":{"type":"string"},"fetchedAt":{"type":"string"},"updatedAt":{"type":"string"},"staleAfter":{"type":"string"},"stale":{"type":"boolean"}},"additionalProperties":false},"PanelView":{"type":"object","properties":{"id":{"type":"string"},"kind":{"enum":["kv","table","tabs","line","area","hbar","ladder","links","status","provenance","markdown","gauge","surface","waterfall","histogram","scatter","candlestick","graph","timeline","pivot","metric","map","grid","tree","chart","form","live","treemap","bullet"]},"title":{"type":"string"},"code":{"type":"string"},"key":{"type":"string"},"area":{"type":"string"},"inferred":{"type":"boolean"},"explanation":{"type":"string"},"data":{"allOf":[{"$ref":"#/$defs/PanelData"}]},"error":{"type":"string"},"empty":{"type":"boolean"},"span":{"type":"integer"},"height":{"type":"integer"},"denied":{"type":"string"},"wire":{"allOf":[{"$ref":"#/$defs/Wire"}]},"refresh":{"allOf":[{"$ref":"#/$defs/RefreshView"}]},"form":{"type":"object"},"provenance":{"allOf":[{"$ref":"#/$defs/PanelProvenance"}]},"compute":{"allOf":[{"$ref":"#/$defs/PanelCompute"}]},"actions":{"type":"array","items":{"$ref":"#/$defs/ActionView"}}},"required":["id","kind"],"additionalProperties":false,"allOf":[{"if":{"properties":{"kind":{"const":"kv"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Fields"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"table"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Table"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"tabs"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Tabs"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"line"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Chart"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"area"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Chart"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"hbar"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Bars"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"ladder"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Table"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"links"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Links"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"status"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Fields"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"provenance"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Fields"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"markdown"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Text"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"gauge"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Gauge"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"surface"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Surface"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"waterfall"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Waterfall"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"histogram"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Histogram"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"scatter"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Scatter"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"candlestick"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Candles"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"graph"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Graph"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"timeline"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Timeline"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"pivot"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Pivot"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"metric"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Metric"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"map"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/GeoMap"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"grid"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Grid"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"tree"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Tree"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"chart"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/DataChart"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"form"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/FormPanel"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"live"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Grid"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"treemap"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Treemap"},{"type":"null"}]}}}},{"if":{"properties":{"kind":{"const":"bullet"}},"required":["kind"]},"then":{"properties":{"data":{"anyOf":[{"$ref":"#/$defs/Bullet"},{"type":"null"}]}}}}]},"Patch":{"type":"object","properties":{"op":{"enum":["strip","panel","provenance","deleted","restored","rows"]},"index":{"type":"integer"},"cell":{"allOf":[{"$ref":"#/$defs/Cell"}]},"panel":{"allOf":[{"$ref":"#/$defs/PanelView"}]},"provenance":{"allOf":[{"$ref":"#/$defs/Provenance"}]},"at":{"type":"string","format":"date-time"},"dataset":{"type":"string"},"reset":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}},"remove":{"type":"array","items":{"type":"string"}},"update":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}},"add":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}}},"required":["op"],"additionalProperties":false},"Pivot":{"type":"object","properties":{"by":{"type":"string"},"columns":{"type":"array","items":{"type":"string"}},"rows":{"type":"array","items":{"$ref":"#/$defs/PivotRow"}},"totals":{"type":"array","items":{"$ref":"#/$defs/Cell"}},"agg":{"type":"string"},"heat":{"type":"boolean"},"min":{"anyOf":[{"type":"number"},{"type":"null"}]},"max":{"anyOf":[{"type":"number"},{"type":"null"}]},"more":{"type":"integer"},"levels":{"type":"array","items":{"type":"string"}},"expand":{"type":"integer"},"across":{"type":"string"}},"additionalProperties":false},"PivotRow":{"type":"object","properties":{"label":{"type":"string"},"cells":{"type":"array","items":{"$ref":"#/$defs/Cell"}},"values":{"type":"array","items":{"anyOf":[{"type":"number"},{"type":"null"}]}},"total":{"allOf":[{"$ref":"#/$defs/Cell"}]},"path":{"type":"array","items":{"type":"string"}},"group":{"type":"boolean"}},"additionalProperties":false},"Point":{"type":"object","properties":{"x":{"anyOf":[{"type":"number"},{"type":"null"}]},"y":{"anyOf":[{"type":"number"},{"type":"null"}]},"size":{"anyOf":[{"type":"number"},{"type":"null"}]},"xText":{"type":"string"},"yText":{"type":"string"},"label":{"type":"string"},"group":{"type":"string"},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"additionalProperties":false},"Provenance":{"type":"object","properties":{"layout":{"anyOf":[{"type":"string"},{"type":"null"}]},"fingerprint":{"anyOf":[{"type":"string"},{"type":"null"}]},"source":{"anyOf":[{"type":"string"},{"type":"null"}]},"generation":{"type":"integer"},"fetchedAt":{"anyOf":[{"type":"string"},{"type":"null"}]},"live":{"type":"boolean"},"businessDate":{"anyOf":[{"type":"string"},{"type":"null"}]},"updatedAt":{"anyOf":[{"type":"string"},{"type":"null"}]},"staleAfter":{"anyOf":[{"type":"string"},{"type":"null"}]},"stale":{"type":"boolean"},"sutra":{"anyOf":[{"type":"string"},{"type":"null"}]},"masked":{"type":"integer"},"maskedPanels":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]},"partial":{"type":"boolean"},"missing":{"type":"array","items":{"type":"string"}}},"required":["layout","fingerprint","source","generation","fetchedAt","live","businessDate","updatedAt","staleAfter","stale","sutra","masked","maskedPanels"],"additionalProperties":false},"Ref":{"type":"object","properties":{"kind":{"anyOf":[{"type":"string"},{"type":"null"}]},"id":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["kind","id"],"additionalProperties":false},"RefreshView":{"type":"object","properties":{"every":{"type":"integer"},"userCanPause":{"type":"boolean"}},"required":["every","userCanPause"],"additionalProperties":false},"Row":{"type":"object","properties":{"cells":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Cell"}},{"type":"null"}]},"highlight":{"type":"boolean"},"path":{"anyOf":[{"type":"string"},{"type":"null"}]},"children":{"type":"array","items":{"$ref":"#/$defs/Row"}},"pick":{"type":"string"},"crumb":{"type":"string"},"kidsTotal":{"allOf":[{"$ref":"#/$defs/Row"}]},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"required":["cells","highlight","path"],"additionalProperties":false},"Scatter":{"type":"object","properties":{"points":{"type":"array","items":{"$ref":"#/$defs/Point"}},"groups":{"type":"array","items":{"type":"string"}},"xLabel":{"type":"string"},"yLabel":{"type":"string"},"sized":{"type":"boolean"},"more":{"type":"integer"}},"additionalProperties":false},"SelectView":{"type":"object","properties":{"panel":{"anyOf":[{"type":"string"},{"type":"null"}]},"by":{"anyOf":[{"type":"string"},{"type":"null"}]},"filter":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]}},"required":["panel","by","filter"],"additionalProperties":false},"StateView":{"type":"object","properties":{"id":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{},"url":{"type":"boolean"},"reads":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}]}},"required":["id","value","url","reads"],"additionalProperties":false},"Series":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"values":{"anyOf":[{"type":"array","items":{"anyOf":[{"type":"number"},{"type":"null"}]}},{"type":"null"}]},"tone":{"anyOf":[{"type":"string"},{"type":"null"}]},"mark":{"type":"string"},"axis":{"type":"string"},"ev":{"type":"array","items":{"type":"string"}}},"required":["label","values","tone"],"additionalProperties":false},"ShadeItem":{"type":"object","properties":{"code":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["code","value","text"],"additionalProperties":false},"Step":{"type":"object","properties":{"label":{"anyOf":[{"type":"string"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"from":{"anyOf":[{"type":"number"},{"type":"null"}]},"to":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"anyOf":[{"type":"string"},{"type":"null"}]},"tone":{"anyOf":[{"$ref":"#/$defs/Tone"},{"type":"null"}]},"total":{"type":"boolean"},"ev":{"type":"string"},"set":{"type":"object"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"required":["label","value","from","to","text","tone","total"],"additionalProperties":false},"Surface":{"type":"object","properties":{"x":{"type":"array","items":{"type":"string"}},"y":{"type":"array","items":{"type":"string"}},"z":{"type":"array","items":{"anyOf":[{"type":"array","items":{"anyOf":[{"type":"number"},{"type":"null"}]}},{"type":"null"}]}},"min":{"anyOf":[{"type":"number"},{"type":"null"}]},"max":{"anyOf":[{"type":"number"},{"type":"null"}]},"fmt":{"type":"string"},"unit":{"type":"string"},"view":{"enum":["heatmap","3d"]}},"additionalProperties":false},"Tab":{"type":"object","properties":{"title":{"anyOf":[{"type":"string"},{"type":"null"}]},"fields":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Cell"}},{"type":"null"}]},"panels":{"type":"array","items":{"$ref":"#/$defs/PanelView"}}},"required":["title","fields"],"additionalProperties":false},"Table":{"type":"object","properties":{"columns":{"type":"array","items":{"type":"string"}},"numeric":{"type":"array","items":{"type":"boolean"}},"rows":{"type":"array","items":{"$ref":"#/$defs/Row"}},"total":{"allOf":[{"$ref":"#/$defs/Row"}]},"more":{"type":"string"},"search":{"type":"boolean"},"pivot":{"type":"object"},"expand":{"type":"integer"},"levels":{"type":"array","items":{"$ref":"#/$defs/Level"}},"root":{"type":"string"},"emptyLabel":{"type":"string"}},"additionalProperties":false},"Tabs":{"type":"object","properties":{"layout":{"anyOf":[{"enum":["tabs","columns"]},{"type":"null"}]},"tabs":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Tab"}},{"type":"null"}]}},"required":["layout","tabs"],"additionalProperties":false},"Text":{"type":"object","properties":{"text":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["text"],"additionalProperties":false},"Timeline":{"type":"object","properties":{"events":{"anyOf":[{"type":"array","items":{"$ref":"#/$defs/Event"}},{"type":"null"}]},"more":{"type":"integer"}},"required":["events","more"],"additionalProperties":false},"TitleView":{"type":"object","properties":{"pill":{"anyOf":[{"type":"string"},{"type":"null"}]},"id":{"anyOf":[{"type":"string"},{"type":"null"}]},"with":{"anyOf":[{"$ref":"#/$defs/Cell"},{"type":"null"}]}},"required":["pill","id","with"],"additionalProperties":false},"Tone":{"enum":["pos","neg","link","accent","ok","warn","bad","muted","inactive"]},"Waterfall":{"type":"object","properties":{"steps":{"type":"array","items":{"$ref":"#/$defs/Step"}},"unit":{"type":"string"}},"additionalProperties":false},"Wire":{"type":"object","properties":{"emits":{"type":"array","items":{"anyOf":[{"type":"object","additionalProperties":{"type":"string"}},{"type":"null"}]}},"waits":{"type":"string"},"children":{"type":"array","items":{"anyOf":[{"type":"object","additionalProperties":{"type":"string"}},{"type":"null"}]}},"source":{"type":"object","additionalProperties":{"type":"string"}},"parent":{"type":"string"}},"additionalProperties":false},"Dataset":{"type":"object","properties":{"key":{"type":"array","items":{"type":"string"}},"fields":{"type":"array","items":{"$ref":"#/$defs/DataField"}},"values":{"type":"array","items":{"anyOf":[{"type":"array","items":{}},{"type":"null"}]}},"rows":{"type":"array","items":{"anyOf":[{"type":"object"},{"type":"null"}]}},"more":{"type":"integer"},"name":{"type":"string"},"arrow":{"allOf":[{"$ref":"#/$defs/ArrowRef"}]},"pages":{"allOf":[{"$ref":"#/$defs/PagesRef"}]},"server":{"allOf":[{"$ref":"#/$defs/ServerRef"}]},"live":{"$ref":"#/$defs/LiveRef"}},"additionalProperties":false},"DataField":{"type":"object","properties":{"name":{"type":"string"},"type":{"enum":["string","number","boolean","date","datetime"]},"label":{"type":"string"},"fmt":{"type":"string"}},"required":["name"],"additionalProperties":false},"ArrowRef":{"type":"object","properties":{"url":{"type":"string"},"base64":{"type":"string"}},"additionalProperties":false},"PagesRef":{"type":"object","properties":{"url":{"type":"string"},"size":{"type":"integer"},"mode":{"enum":["offset","cursor"]},"total":{"type":"integer"},"sort":{"enum":["client","server"]},"filter":{"enum":["client","server"]}},"additionalProperties":false},"ServerRef":{"type":"object","properties":{"url":{"type":"string"}},"additionalProperties":false},"Grid":{"type":"object","properties":{"dataset":{"type":"string"},"columns":{"type":"array","items":{"$ref":"#/$defs/GridColumn"}},"group":{"type":"array","items":{"type":"string"}},"sort":{"type":"array","items":{"$ref":"#/$defs/SortKey"}},"pivot":{"allOf":[{"$ref":"#/$defs/GridPivot"}]},"search":{"type":"boolean"},"emptyLabel":{"type":"string"}},"required":["dataset"],"additionalProperties":false},"GridColumn":{"type":"object","properties":{"field":{"type":"string"},"label":{"type":"string"},"fmt":{"type":"string"},"tone":{"type":"string"},"width":{"type":"integer"},"pinned":{"enum":["left","right"]},"agg":{"enum":["sum","count","min","max","avg","first","last","distinct"]},"hidden":{"type":"boolean"},"bar":{"type":"boolean"}},"required":["field"],"additionalProperties":false},"SortKey":{"type":"object","properties":{"field":{"type":"string"},"desc":{"type":"boolean"}},"required":["field"],"additionalProperties":false},"GridPivot":{"type":"object","properties":{"rows":{"type":"array","items":{"type":"string"}},"columns":{"type":"array","items":{"type":"string"}},"values":{"type":"array","items":{"$ref":"#/$defs/Measure"}}},"additionalProperties":false},"Measure":{"type":"object","properties":{"field":{"type":"string"},"agg":{"enum":["sum","count","min","max","avg","first","last","distinct"]},"label":{"type":"string"},"fmt":{"type":"string"}},"required":["field"],"additionalProperties":false},"Tree":{"type":"object","properties":{"dataset":{"type":"string"},"node":{"type":"string"},"parent":{"type":"string"},"path":{"type":"string"},"label":{"type":"string"},"measures":{"type":"array","items":{"$ref":"#/$defs/Measure"}},"mode":{"enum":["grid","org","sunburst","icicle"]},"open":{"type":"integer"}},"required":["dataset","node"],"additionalProperties":false},"DataChart":{"type":"object","properties":{"dataset":{"type":"string"},"type":{"enum":["bar","line","area","scatter","pie","donut","heatmap","histogram"]},"x":{"type":"string"},"y":{"type":"array","items":{"$ref":"#/$defs/Measure"}},"by":{"type":"string"},"stack":{"enum":["sum","percent"]},"horizontal":{"type":"boolean"},"xLabel":{"type":"string"},"yLabel":{"type":"string"},"bins":{"type":"integer"},"limit":{"type":"integer"}},"required":["dataset","type"],"additionalProperties":false},"GeoPoint":{"type":"object","properties":{"label":{"type":"string"},"lat":{"anyOf":[{"type":"number"},{"type":"null"}]},"lon":{"anyOf":[{"type":"number"},{"type":"null"}]},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"type":"string"},"tone":{"allOf":[{"$ref":"#/$defs/Tone"}]},"link":{"allOf":[{"$ref":"#/$defs/LinkView"}]}},"required":["lat","lon"],"additionalProperties":false},"EffectView":{"type":"object","properties":{"do":{"enum":["set","toggle","clear","notify","host"]},"state":{"type":"string"},"value":{},"text":{"type":"string"},"tone":{"enum":["ok","warn","bad","accent"]},"action":{"type":"string"},"with":{"type":"object"},"event":{"type":"string"},"withEvent":{"type":"object","additionalProperties":{"type":"string"}}},"required":["do"],"additionalProperties":false},"FormPanel":{"type":"object","properties":{"values":{"type":"object"},"submitLabel":{"type":"string"},"cancelLabel":{"type":"string"},"on":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}}},"required":["values"],"additionalProperties":false},"ActionView":{"type":"object","properties":{"id":{"type":"string"},"label":{"type":"string"},"tone":{"enum":["ok","warn","bad","accent"]},"confirm":{"anyOf":[{"type":"boolean"},{"type":"string"}]},"requires":{"type":"string"},"effects":{"type":"array","items":{"$ref":"#/$defs/EffectView"}}},"required":["id","label","effects"],"additionalProperties":false},"LiveRef":{"type":"object","properties":{"table":{"type":"string"},"window":{"type":"integer"},"top":{"type":"boolean"},"filter":{"type":"object"}},"required":["table"],"additionalProperties":false},"Treemap":{"type":"object","properties":{"cells":{"type":"array","items":{"$ref":"#/$defs/TreemapCell"}},"total":{"type":"string"}},"required":["cells"],"additionalProperties":false},"TreemapCell":{"type":"object","properties":{"label":{"type":"string"},"group":{"type":"string"},"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"type":"string"},"tone":{"$ref":"#/$defs/Tone"},"ev":{"type":"string"},"set":{"type":"object"}},"required":["label","value","text"],"additionalProperties":false},"Bullet":{"type":"object","properties":{"value":{"anyOf":[{"type":"number"},{"type":"null"}]},"text":{"type":"string"},"label":{"type":"string"},"min":{"anyOf":[{"type":"number"},{"type":"null"}]},"max":{"anyOf":[{"type":"number"},{"type":"null"}]},"bands":{"type":"array","items":{"$ref":"#/$defs/Band"}},"lower":{"anyOf":[{"type":"number"},{"type":"null"}]},"lowerText":{"type":"string"},"upper":{"anyOf":[{"type":"number"},{"type":"null"}]},"upperText":{"type":"string"},"tone":{"$ref":"#/$defs/Tone"},"caption":{"type":"string"}},"required":["text","min","max","bands","tone"],"additionalProperties":false},"Band":{"type":"object","properties":{"from":{"anyOf":[{"type":"number"},{"type":"null"}]},"to":{"anyOf":[{"type":"number"},{"type":"null"}]},"tone":{"anyOf":[{"$ref":"#/$defs/Tone"},{"type":"null"}]}},"required":["from","to","tone"],"additionalProperties":false}}});
     return { "CONTRACT": CONTRACT, "SCHEMA_SHA256": SCHEMA_SHA256, "SCHEMA": SCHEMA };
   })();
   /* ---- src/drishti_views-validate.js ---- */
@@ -3665,6 +3705,11 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var h = __lib("drishti-core").h, safeUrl = __lib("drishti-core").safeUrl;
     const MESSAGES = Object.freeze({
       noData: 'No data available',
+      submit: 'Submit',
+      cancel: 'Cancel',
+      yes: 'Yes',
+      no: 'No',
+      sure: '{label}: are you sure?',
       noLinks: 'No linked entities',
       denied: 'No access',
       error: 'This panel could not be filled',
@@ -3758,11 +3803,263 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     function safeHref(u) { return typeof u === 'string' ? safeUrl(u) : null; }
     return { "MESSAGES": MESSAGES, "TONES": TONES, "DASH": DASH, "say": say, "toneClass": toneClass, "linkTo": linkTo, "drawCell": drawCell, "updateCell": updateCell, "safeHref": safeHref };
   })();
+  /* ---- src/drishti_views-state.js ---- */
+  __m["src/drishti_views-state.js"] = (function () {
+    const list = (x) => (Array.isArray(x) ? x : []);
+    const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+    function triggerOf(kind) {
+      return kind === 'table' || kind === 'ladder' ? 'row-click' : kind === 'hbar' ? 'bar-click' : null;
+    }
+    const POINT_KINDS = Object.freeze(['line', 'area', 'scatter', 'waterfall', 'timeline', 'candlestick', 'metric', 'gauge', 'kv', 'status', 'treemap']);
+    function triggerFor(kind) { return triggerOf(kind) || (POINT_KINDS.indexOf(kind) >= 0 ? 'point-click' : null); }
+    function rowsDepthFirst(rows, out) {
+      list(rows).forEach((r) => { if (isObj(r)) { out.push(r); rowsDepthFirst(r.children, out); } });
+      return out;
+    }
+    function marksOf(panel) {
+      const d = panel && isObj(panel.data) ? panel.data : {}, k = panel && panel.kind;
+      if (k === 'table' || k === 'ladder') { return rowsDepthFirst(d.rows, []); }
+      if (k === 'hbar') { return list(d.bars).filter(isObj); }
+      if (k === 'waterfall') { return list(d.steps).filter(isObj); }
+      if (k === 'scatter') { return list(d.points).filter(isObj); }
+      if (k === 'timeline') { return list(d.events).filter(isObj); }
+      if (k === 'candlestick') { return list(d.candles).filter(isObj); }
+      if (k === 'treemap') { return list(d.cells).filter(isObj); }
+      if (k === 'line' || k === 'area') {
+        return list(d.x).map((x, i) => ({ set: list(d.set)[i] || null, on: list(d.on)[i] || null, ev: list(d.ev)[i] }));
+      }
+      if (k === 'metric' || k === 'gauge' || k === 'kv' || k === 'status') { return [d]; }
+      return [];
+    }
+    function effectsOf(mark, trigger) {
+      if (!isObj(mark)) { return []; }
+      if (isObj(mark.on) && Array.isArray(mark.on[trigger])) { return mark.on[trigger].filter(isObj); }
+      if (isObj(mark.set)) { return Object.keys(mark.set).map((id) => ({ do: 'set', state: id, value: mark.set[id] })); }
+      return [];
+    }
+    function hasEffects(mark) { return isObj(mark) && (isObj(mark.set) || isObj(mark.on)); }
+    function requestText(v) {
+      if (v === null || v === undefined) { return null; }
+      return Array.isArray(v) ? v.map(String).join(',') : String(v);
+    }
+    function pickEvent(event, path) {
+      let v = event;
+      if (path === '') { return v === undefined ? null : v; }
+      for (const k of String(path).split('.')) { v = isObj(v) && Object.prototype.hasOwnProperty.call(v, k) ? v[k] : null; }
+      return v === undefined ? null : v;
+    }
+    class StateStore {
+      constructor() { this.entries = new Map(); }
+      load(states) {
+        this.entries.clear();
+        list(states).forEach((s) => { if (isObj(s) && typeof s.id === 'string') { this.entries.set(s.id, { value: s.value === undefined ? null : s.value, url: s.url === true, reads: Array.isArray(s.reads) ? s.reads.slice() : null }); } });
+      }
+      get(id) { const e = this.entries.get(id); return e ? e.value : null; }
+      values() {
+        const out = {};
+        this.entries.forEach((e, id) => { if (e.value !== null) { out[id] = e.value; } });
+        return out;
+      }
+      request() {
+        const out = {};
+        this.entries.forEach((e, id) => { const t = requestText(e.value); if (t !== null) { out[id] = t; } });
+        return out;
+      }
+      readers(ids) {
+        const out = [];
+        for (const id of ids) {
+          const e = this.entries.get(id);
+          if (!e || !e.reads) { return null; }
+          e.reads.forEach((r) => { if (out.indexOf(r) < 0) { out.push(r); } });
+        }
+        return out;
+      }
+      run(effects, event) {
+        const ran = [], changed = [], given = arguments.length > 1;
+        const touch = (id) => { if (changed.indexOf(id) < 0) { changed.push(id); } };
+        list(effects).forEach((e) => {
+          if (e.do === 'set' && typeof e.state === 'string') {
+            this.write(e.state, given && typeof e.event === 'string' ? pickEvent(event, e.event) : e.value === undefined ? null : e.value);
+            ran.push({ do: 'set', state: e.state, value: this.get(e.state) });
+            touch(e.state);
+          } else if (e.do === 'toggle' && typeof e.state === 'string') {
+            const now = this.get(e.state) !== true;
+            this.write(e.state, now);
+            ran.push({ do: 'toggle', state: e.state, value: now });
+            touch(e.state);
+          } else if (e.do === 'clear' && typeof e.state === 'string') {
+            this.write(e.state, null);
+            ran.push({ do: 'clear', state: e.state, value: null });
+            touch(e.state);
+          } else if (e.do === 'notify') {
+            ran.push(Object.assign({}, e));
+          } else if (e.do === 'host') {
+            const out = Object.assign({}, e), wired = isObj(e.withEvent) ? e.withEvent : null;
+            delete out.withEvent;
+            if (wired && given) {
+              out.with = Object.assign({}, isObj(e.with) ? e.with : {});
+              Object.keys(wired).forEach((k) => { out.with[k] = pickEvent(event, wired[k]); });
+            }
+            ran.push(out);
+          }
+        });
+        return { ran: ran, changed: changed };
+      }
+      write(id, value) {
+        const e = this.entries.get(id);
+        if (e) { e.value = value; } else { this.entries.set(id, { value: value, url: false, reads: null }); }
+      }
+    }
+    function resolveFire(panel, id, trigger, mark) {
+      const refuse = (message) => ({ problems: [{ code: 'RCH-5001', message: message }], effects: [] });
+      if (!panel) { return refuse("no panel '" + id + "' on the screen"); }
+      const fires = triggerFor(panel.kind);
+      if (fires !== trigger) { return refuse("panel '" + id + "' (" + panel.kind + ') does not fire ' + trigger); }
+      const marks = marksOf(panel), ix = mark === undefined || mark === null ? 0 : mark;
+      if (!Number.isInteger(ix) || ix < 0 || ix >= marks.length) { return refuse("panel '" + id + "' shows no mark " + ix + ' (it shows ' + marks.length + ')'); }
+      return { problems: [], effects: effectsOf(marks[ix], trigger) };
+    }
+    function resolveWire(panel, id, trigger, o) {
+      o = o || {};
+      const refuse = (message) => ({ problems: [{ code: 'RCH-5001', message: message }], effects: [] });
+      if (trigger === 'change') {
+        if (!o.control) { return refuse("no control '" + id + "' on the screen"); }
+        const on = isObj(o.control.on) && Array.isArray(o.control.on.change) ? o.control.on.change.filter(isObj) : [];
+        return { problems: [], effects: on, event: o.value === undefined ? null : o.value };
+      }
+      if (!panel) { return refuse("no panel '" + id + "' on the screen"); }
+      if (trigger === 'action') {
+        const acts = Array.isArray(panel.actions) ? panel.actions.filter(isObj) : [], ix = o.mark === undefined || o.mark === null ? 0 : o.mark;
+        if (!Number.isInteger(ix) || ix < 0 || ix >= acts.length) { return refuse("panel '" + id + "' has no action " + ix + ' (it has ' + acts.length + ')'); }
+        return { problems: [], effects: list(acts[ix].effects).filter(isObj), event: null };
+      }
+      if (panel.kind !== 'form') { return refuse("panel '" + id + "' (" + panel.kind + ') does not fire ' + trigger); }
+      const values = isObj(o.values) ? o.values : {};
+      if (trigger === 'submit') {
+        const known = formFields(panel).map((f) => f.id), extra = Object.keys(values).filter((k) => known.indexOf(k) < 0);
+        if (extra.length) { return refuse("the form of panel '" + id + "' has no field '" + extra[0] + "'"); }
+      }
+      const on = panel.data && isObj(panel.data.on) && Array.isArray(panel.data.on[trigger]) ? panel.data.on[trigger].filter(isObj) : [];
+      return { problems: [], effects: on, event: values };
+    }
+    function formFields(panel) { return panel && isObj(panel.form) ? list(panel.form.fields).filter((f) => isObj(f) && typeof f.id === 'string') : []; }
+    function clickable(ctx, el, panel, trigger, ix, mark) {
+      if (!hasEffects(mark)) { return false; }
+      el.classList.add('dv-pick');
+      el.setAttribute('data-mark', String(ix));
+      if (!el.hasAttribute('tabindex')) { el.setAttribute('tabindex', '0'); }
+      if (!el.hasAttribute('role') && el.tagName !== 'LI' && el.tagName !== 'TR') { el.setAttribute('role', 'button'); }
+      const go = () => ctx.fire(String(panel.id), trigger, ix);
+      el.addEventListener('click', (e) => { if (e.target && e.target.closest && e.target.closest('a, button') && e.target.closest('a, button') !== el) { return; } go(); });
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      return true;
+    }
+    return { "triggerOf": triggerOf, "POINT_KINDS": POINT_KINDS, "triggerFor": triggerFor, "marksOf": marksOf, "effectsOf": effectsOf, "hasEffects": hasEffects, "requestText": requestText, "pickEvent": pickEvent, "StateStore": StateStore, "resolveFire": resolveFire, "resolveWire": resolveWire, "formFields": formFields, "clickable": clickable };
+  })();
+  /* ---- src/drishti_views-forms.js ---- */
+  __m["src/drishti_views-forms.js"] = (function () {
+    var h = __lib("drishti-core").h, openDialog = __lib("drishti-core").openDialog, closeDialog = __lib("drishti-core").closeDialog;
+    var defineKind = __m["src/drishti_views-kinds.js"].defineKind;
+    var say = __m["src/drishti_views-cells.js"].say;
+    var formFields = __m["src/drishti_views-state.js"].formFields;
+    const list = (x) => (Array.isArray(x) ? x : []);
+    const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+    const TYPES = Object.freeze({ number: 'number', integer: 'integer', money: 'money', boolean: 'boolean', date: 'date', time: 'time', datetime: 'datetime' });
+    function formSchema(panel) {
+      const properties = {}, required = [];
+      formFields(panel).forEach((f) => {
+        const opts = list(f.options).filter(isObj), s = { type: TYPES[f.type] || 'string', title: typeof f.label === 'string' && f.label ? f.label : f.id };
+        if (opts.length) {
+          s.type = 'string';
+          s.enum = opts.map((o) => String(o.value));
+          s.enumLabels = opts.map((o) => String(o.label === undefined || o.label === null ? o.value : o.label));
+          if (f.type === 'enum') { s.widget = opts.length > 3 ? 'select' : 'radio'; }
+        }
+        if (typeof f.min === 'number') { s[s.type === 'string' ? 'minLength' : 'minimum'] = f.min; }
+        if (typeof f.max === 'number') { s[s.type === 'string' ? 'maxLength' : 'maximum'] = f.max; }
+        if (typeof f.hint === 'string' && f.hint) { s.description = f.hint; }
+        properties[f.id] = s;
+        if (f.required === true) { required.push(f.id); }
+      });
+      return { type: 'object', properties: properties, required: required, order: formFields(panel).map((f) => f.id) };
+    }
+    function formValues(panel) {
+      const v = panel && panel.data && isObj(panel.data.values) ? panel.data.values : {}, out = {};
+      Object.keys(v).forEach((k) => { if (v[k] !== null && v[k] !== undefined) { out[k] = v[k]; } });
+      return out;
+    }
+    function problemsByField(panel, problems) {
+      const fields = formFields(panel), rules = panel.form && Array.isArray(panel.form.rules) ? panel.form.rules.filter(isObj) : [], out = {};
+      list(problems).forEach((p) => {
+        const msg = String(p.message);
+        const rule = rules.find((r) => r.message === msg && Array.isArray(r.fields) && r.fields.length);
+        const byLabel = fields.find((f) => typeof f.label === 'string' && f.label && msg.indexOf(f.label) === 0);
+        const id = rule ? rule.fields[0] : byLabel ? byLabel.id : fields.length ? fields[0].id : '';
+        out[id] = out[id] ? out[id] + '; ' + msg : msg;
+      });
+      return out;
+    }
+    const form = {
+      paint(body, panel, ctx) {
+        const doc = ctx.doc, box = h(doc, 'div', { cls: 'dv-form', attrs: { 'data-form': String(panel.id) } });
+        body.appendChild(box);
+        let drawn = null, gone = false;
+        const id = String(panel.id), d = panel.data || {};
+        Promise.all([ctx.library('drishti-inputs'), ctx.styles('drishti-inputs')]).then(([I]) => {
+          if (gone) { return; }
+          drawn = new I.Form(box, {
+            schema: formSchema(panel), value: formValues(panel), label: panel.title || id, doneText: '', resetButton: false, layout: 'stacked',
+            submitLabel: typeof d.submitLabel === 'string' && d.submitLabel ? d.submitLabel : say(ctx.messages, 'submit'),
+            cancelLabel: typeof d.cancelLabel === 'string' && d.cancelLabel ? d.cancelLabel : say(ctx.messages, 'cancel'),
+            check: (values) => ctx.checkForm(id, values).then((problems) => problemsByField(panel, problems)),
+            onSubmit: (values) => ctx.submitForm(id, values),
+            onCancel: () => ctx.fire(id, 'cancel')
+          });
+          box.setAttribute('data-drawn', '');
+          ctx.emit('drawn', { panel: id, kind: 'form' });
+        }).catch((e) => { if (!gone) { box.textContent = say(ctx.messages, 'dataFailed'); ctx.emit('error', { code: 'panel.paint', panel: id, error: e }); } });
+        return {
+          component() { return drawn; },
+          dispose() { gone = true; if (drawn) { try { drawn.destroy(); } catch (e) { /* a library's teardown never stops the view's */ } } box.remove(); }
+        };
+      }
+    };
+    defineKind('form', form);
+    function ask(ctx, text) {
+      const doc = ctx.doc;
+      return new Promise((resolve) => {
+        const dlg = h(doc, 'dialog', { cls: 'dv-ask', attrs: { 'aria-label': text } });
+        const yes = h(doc, 'button', { cls: 'dv-btn dv-btn-main', text: say(ctx.messages, 'yes'), attrs: { type: 'button', 'data-ask': 'yes' }, on: { click: () => closeDialog(dlg, 'yes') } });
+        const no = h(doc, 'button', { cls: 'dv-btn', text: say(ctx.messages, 'no'), attrs: { type: 'button', 'data-ask': 'no' }, on: { click: () => closeDialog(dlg, 'no') } });
+        dlg.append(h(doc, 'p', { text: text }), h(doc, 'div', { cls: 'dv-ask-bar' }, [no, yes]));
+        dlg.addEventListener('close', () => { const ok = dlg.returnValue === 'yes'; dlg.remove(); resolve(ok); });
+        (ctx.root || doc.body).appendChild(dlg);
+        openDialog(dlg, { focus: no });
+      });
+    }
+    function drawActions(ctx, panel, into) {
+      const doc = ctx.doc;
+      while (into.firstChild) { into.removeChild(into.firstChild); }
+      const acts = list(panel.actions).filter(isObj);
+      into.hidden = !acts.length;
+      acts.forEach((a, i) => {
+        const allowed = typeof a.requires !== 'string' || !a.requires || ctx.allowed(a.requires);
+        const b = h(doc, 'button', { cls: 'dv-btn' + (a.tone ? ' dv-t-' + a.tone : ''), text: String(a.label), attrs: { type: 'button', 'data-action': String(a.id), disabled: allowed ? null : '' } });
+        b.addEventListener('click', () => {
+          const go = () => ctx.fire(String(panel.id), 'action', i);
+          if (a.confirm === true || (typeof a.confirm === 'string' && a.confirm)) { ctx.ask(typeof a.confirm === 'string' ? a.confirm : say(ctx.messages, 'sure', { label: String(a.label) })).then((ok) => { if (ok) { go(); } }); } else { go(); }
+        });
+        into.appendChild(b);
+      });
+    }
+    return { "formSchema": formSchema, "formValues": formValues, "problemsByField": problemsByField, "ask": ask, "drawActions": drawActions };
+  })();
   /* ---- src/drishti_views-panels.js ---- */
   __m["src/drishti_views-panels.js"] = (function () {
     var h = __lib("drishti-core").h, showState = __lib("drishti-core").showState, stateBlock = __lib("drishti-core").stateBlock;
     var kindOf = __m["src/drishti_views-kinds.js"].kindOf;
     var say = __m["src/drishti_views-cells.js"].say;
+    var drawActions = __m["src/drishti_views-forms.js"].drawActions;
     const PANEL_STATES = Object.freeze(['ready', 'error', 'denied', 'waiting', 'computing', 'stale', 'failed', 'empty', 'unknown-kind']);
     function stateOf(p) {
       if (typeof p.error === 'string' && p.error) { return 'error'; }
@@ -3781,7 +4078,8 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         const doc = ctx.doc, hid = ctx.uid('h-' + this.id);
         this.title = h(doc, 'h3', { cls: 'dv-panel-title', attrs: { id: hid } });
         this.tags = h(doc, 'span', { cls: 'dv-panel-tags' });
-        this.head = h(doc, 'header', { cls: 'dv-panel-h' }, [this.title, this.tags]);
+        this.acts = h(doc, 'span', { cls: 'dv-panel-acts', attrs: { hidden: '' } });
+        this.head = h(doc, 'header', { cls: 'dv-panel-h' }, [this.title, this.tags, this.acts]);
         this.body = h(doc, 'div', { cls: 'dv-panel-b', attrs: { id: ctx.uid('b-' + this.id) } });
         this.element = h(doc, 'section', { cls: 'dv-panel', attrs: { role: 'group', 'aria-labelledby': hid, tabindex: '-1', 'data-panel': this.id, id: ctx.uid('p-' + this.id) } },
           [this.head, this.body]);
@@ -3798,6 +4096,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         el.classList.toggle('dv-has-title', !!panel.title);
         this.title.textContent = typeof panel.title === 'string' && panel.title ? panel.title : this.id;
         this.headTags(panel);
+        drawActions(ctx, panel, this.acts);
         if (panel.span && Number.isInteger(panel.span)) { el.style.setProperty('--dv-span', String(Math.max(1, Math.min(12, panel.span)))); } else { el.style.removeProperty('--dv-span'); }
         if (panel.height && Number.isInteger(panel.height)) { el.style.setProperty('--dv-rows', String(Math.max(1, Math.min(48, panel.height)))); } else { el.style.removeProperty('--dv-rows'); }
         if (same && this.instance && typeof this.instance.update === 'function') {
@@ -4643,9 +4942,11 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var Patcher = __m["src/drishti_views-patch.js"].Patcher;
     var LiveLink = __m["src/drishti_views-live.js"].LiveLink;
     var datasetsOf = __m["src/drishti_views-data.js"].datasetsOf;
+    var StateStore = __m["src/drishti_views-state.js"].StateStore, resolveFire = __m["src/drishti_views-state.js"].resolveFire, resolveWire = __m["src/drishti_views-state.js"].resolveWire, requestText = __m["src/drishti_views-state.js"].requestText;
+    var ask = __m["src/drishti_views-forms.js"].ask;
     const SPECS = Object.freeze([Number(String(CONTRACT).split('.')[0])]);
     const HANDLES = new WeakMap();
-    const EVENTS = ['ready', 'error', 'issues', 'link', 'key', 'patch', 'navigate', 'pick', 'select', 'drawn', 'dispose', 'point'];
+    const EVENTS = ['ready', 'error', 'issues', 'link', 'key', 'patch', 'navigate', 'pick', 'select', 'state-change', 'notify', 'host', 'refused', 'bound', 'drawn', 'dispose', 'point'];
     const CANCELABLE = { link: true, key: true };
     let counter = 0;
     function now() { return typeof performance !== 'undefined' ? performance.now() : Date.now(); }
@@ -4659,6 +4960,8 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         this.history = [];
         this.frames = new Map();
         this.vm = null;
+        this.state = new StateStore();
+        this.firing = Promise.resolve();
         this.disposed = false;
         this.prefix = 'dv' + (++counter) + '-';
         this.ctx = this.context();
@@ -4691,6 +4994,12 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           library: (name) => self.library(name),
           charts: () => self.charts(),
           styles: (name) => self.styles(name),
+          fire: (id, trigger, mark) => self.fire(id, trigger, mark).catch(() => null),
+          root: self.root,
+          checkForm: (id, values) => self.checkForm(id, values),
+          submitForm: (id, values) => self.fire(id, 'submit', 0, values, true),
+          ask: (text) => (o.host && typeof o.host.confirm === 'function' ? Promise.resolve(o.host.confirm(text)).then((v) => v === true) : ask(self.ctx, text)),
+          allowed: (name) => !(o.host && typeof o.host.allowed === 'function') || o.host.allowed(name) !== false,
           dataset: (name) => (self.datasets && typeof name === 'string' ? self.datasets.get(name) || null : null),
           tables: (ref) => (typeof o.tables === 'function' ? o.tables(ref) || null : null),
           density: o.density || null,
@@ -4804,6 +5113,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
       build(vm) {
         this.clear();
         this.vm = vm;
+        this.state.load(vm.state);
         const o = this.options, doc = this.el.ownerDocument, given = o.data && typeof o.data === 'object' ? o.data : {};
         this.datasets = datasetsOf(vm, { library: (n) => this.library(n), data: given, fetch: o.fetch,
           where: { page: (doc.defaultView && doc.defaultView.location && doc.defaultView.location.href) || doc.baseURI || 'http://localhost/', view: this.src || null,
@@ -4921,6 +5231,105 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         const win = this.el.ownerDocument.defaultView;
         if (!node.animate || (win && win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches)) { return; }
         node.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 450, easing: 'ease-out' });
+      }
+      get stateValues() { return this.state.values(); }
+      fire(panel, trigger, mark, values, checked) {
+        const job = this.firing.then(() => this.runFire(panel, trigger, mark, values, checked));
+        this.firing = job.catch(() => null);
+        return job;
+      }
+      change(control, value) {
+        const job = this.firing.then(() => this.runFire(null, 'change', 0, undefined, false, control, value));
+        this.firing = job.catch(() => null);
+        return job;
+      }
+      async checkForm(id, values) {
+        const frame = this.frames.get(String(id)), found = resolveWire(frame ? frame.panel : null, String(id), 'submit', { values: values });
+        if (found.problems.length) { this.emit('refused', { panel: String(id), problems: found.problems }); return found.problems; }
+        const check = this.options.host && this.options.host.check;
+        if (typeof check !== 'function') { return []; }
+        let got;
+        try { got = await check({ panel: String(id), form: frame.panel.form, values: values }); } catch (x) { this.emit('error', { code: 'view.check', error: x }); return []; }
+        if (got && !Array.isArray(got) && Array.isArray(got.problems)) { got = got.problems; }
+        const problems = (Array.isArray(got) ? got : []).map((p) => (typeof p === 'string' ? { message: p } : p)).filter((p) => p && typeof p.message === 'string')
+          .map((p) => ({ code: typeof p.code === 'string' ? p.code : 'RCH-5003', message: p.message, severity: p.severity || 'error' }));
+        if (problems.length) { this.emit('refused', { panel: String(id), problems: problems }); }
+        return problems;
+      }
+      async runFire(id, trigger, mark, values, checked, control, value) {
+        const hostHooks = this.options.host || {};
+        let found, where;
+        if (trigger === 'change') {
+          const ctl = (Array.isArray(this.vm && this.vm.controls) ? this.vm.controls : []).find((c) => c && String(c.id) === String(control));
+          found = resolveWire(null, String(control), 'change', { control: ctl || null, value: value });
+          where = { control: String(control), trigger: 'change', value: value };
+          id = control;
+        } else if (trigger === 'submit' || trigger === 'cancel' || trigger === 'action') {
+          const frame = this.frames.get(String(id)), panel = frame ? frame.panel : null;
+          found = resolveWire(panel, String(id), trigger, { mark: mark, values: values });
+          where = { panel: String(id), trigger: trigger, mark: mark || 0 };
+          if (!found.problems.length && trigger === 'submit' && !checked) { found = { problems: await this.checkForm(id, values || {}), effects: found.effects, event: found.event }; }
+        } else {
+          const frame = this.frames.get(String(id));
+          found = resolveFire(frame ? frame.panel : null, String(id), trigger, mark);
+          where = { panel: String(id), trigger: trigger, mark: mark || 0 };
+        }
+        if (found.problems.length) {
+          return { effects: [], problems: found.problems, state: this.state.values() };
+        }
+        const done = trigger === 'change' || trigger === 'submit' || trigger === 'cancel' ? this.state.run(found.effects, found.event) : trigger === 'action' ? this.state.run(found.effects, null) : this.state.run(found.effects);
+        done.ran.forEach((e) => {
+          const hook = e.do === 'notify' ? hostHooks.notify : e.do === 'host' ? hostHooks.run : null;
+          if (e.do === 'notify' || e.do === 'host') {
+            this.emit(e.do, Object.assign({}, e, where));
+            if (typeof hook === 'function') { try { hook(e, where); } catch (x) { this.emit('error', { code: 'view.host', error: x }); } }
+          }
+        });
+        const ctlChanged = trigger === 'change' ? [{ id: String(control), value: value }] : [];
+        if (done.changed.length || ctlChanged.length) {
+          if (done.changed.length) { this.emit('state-change', { changed: done.changed, values: this.state.values(), panel: where.panel || null, trigger: trigger, mark: where.mark }); }
+          await this.rebind(done.changed, ctlChanged);
+        }
+        return { effects: done.ran, problems: [], state: this.state.values() };
+      }
+      async rebind(changed, controls) {
+        const bind = this.options.host && this.options.host.bind;
+        if (typeof bind !== 'function') { return; }
+        controls = controls || [];
+        let readers = [];           // the panels the changed states and controls read (null: one of them does not say, so the whole view)
+        const add = (names) => { if (readers === null) { return; } if (!Array.isArray(names)) { readers = null; return; } names.forEach((r) => { if (readers.indexOf(r) < 0) { readers.push(r); } }); };
+        if (changed.length) { add(this.state.readers(changed)); }
+        controls.forEach((c) => { const v = (Array.isArray(this.vm && this.vm.controls) ? this.vm.controls : []).find((x) => x && String(x.id) === c.id); add(v ? v.reads : null); });
+        const state = this.state.request(), params = {}, ctl = {};
+        changed.forEach((id) => { if (this.state.get(id) === null) { state[id] = null; } });
+        Object.keys(state).forEach((id) => { if (state[id] !== null) { params['state.' + id] = state[id]; } });
+        controls.forEach((c) => { const t = requestText(c.value); ctl[c.id] = t; if (t !== null) { params['ctl.' + c.id] = t; } });
+        const req = { state: state, params: params, changed: changed.slice() };
+        if (controls.length) { req.controls = ctl; }
+        let next;
+        try { next = await bind(req); } catch (e) { this.emit('error', { code: 'view.bind', error: e }); return; }
+        if (this.disposed || !isView(next)) { return; }
+        if (this.options.complete) { next = complete(JSON.parse(JSON.stringify(next)), 'ViewModel'); }
+        this.adopt(next, readers);
+      }
+      adopt(next, readers) {
+        const vm = this.vm, ids = (v) => (Array.isArray(v.panels) ? v.panels.map((p) => String(p && p.id)) : []);
+        const same = vm && ids(vm).join('\u0001') === ids(next).join('\u0001');
+        const partial = same && readers && readers.every((r) => r === 'strip' || this.frames.has(String(r))) && readers.indexOf('title') < 0 && !Array.isArray(this.options.panels);
+        if (!partial) { this.show(next, now()); this.emit('bound', { panels: ids(next), full: true }); return; }
+        const drawn = [];
+        readers.forEach((r) => {
+          if (r === 'strip') {
+            (Array.isArray(next.strip) ? next.strip : []).forEach((cell, i) => { if (this.screen && this.screen.setCell(i, cell) && Array.isArray(vm.strip)) { vm.strip[i] = cell; } });
+            return;
+          }
+          const i = next.panels.findIndex((x) => x && String(x.id) === String(r)), frame = this.frames.get(String(r));
+          if (i >= 0 && frame) { frame.draw(next.panels[i]); vm.panels[vm.panels.findIndex((x) => x && String(x.id) === String(r))] = next.panels[i]; drawn.push(String(r)); }
+        });
+        vm.state = next.state;
+        if (next.controls !== undefined) { vm.controls = next.controls; }
+        this.state.load(next.state);
+        this.emit('bound', { panels: drawn, full: false });
       }
       metrics() { return Object.assign({}, this.stats); }
       styles(name) {
@@ -5049,6 +5458,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var h = __lib("drishti-core").h;
     var defineKind = __m["src/drishti_views-kinds.js"].defineKind;
     var drawCell = __m["src/drishti_views-cells.js"].drawCell, updateCell = __m["src/drishti_views-cells.js"].updateCell, linkTo = __m["src/drishti_views-cells.js"].linkTo, safeHref = __m["src/drishti_views-cells.js"].safeHref, toneClass = __m["src/drishti_views-cells.js"].toneClass, say = __m["src/drishti_views-cells.js"].say;
+    var marksOf = __m["src/drishti_views-state.js"].marksOf, clickable = __m["src/drishti_views-state.js"].clickable;
     const LINK_STATUS = Object.freeze({ resolved: 'resolved', pending: 'pending', missing: 'missing', denied: 'no access', inactive: 'inactive' });
     const list = (x) => (Array.isArray(x) ? x : []);
     function fieldsKind(chips) {
@@ -5067,6 +5477,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           };
           draw(list(panel.data.fields));
           body.appendChild(dl);
+          clickable(ctx, dl, panel, 'point-click', 0, marksOf(panel)[0]);            // the record is one mark (contract 1.2)
           return {
             update(p) {
               const fields = list(p.data && p.data.fields);
@@ -5094,6 +5505,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         };
         draw(d);
         body.appendChild(box);
+        clickable(ctx, box, panel, 'point-click', 0, marksOf(panel)[0]);            // the figure is one mark (contract 1.2)
         return {
           update(p) {
             const m = p.data || {}, v = box.querySelector('.dv-metric-value'), dl = box.querySelector('.dv-metric-delta');
@@ -5180,14 +5592,16 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     const timeline = {
       paint(body, panel, ctx) {
         const doc = ctx.doc, ol = h(doc, 'ol', { cls: 'dv-timeline' });
-        const events = list(panel.data.events).slice().sort((a, b) => String((a && a.date) || '').localeCompare(String((b && b.date) || '')));
+        const events = list(panel.data.events).slice().sort((a, b) => String((a && a.date) || '').localeCompare(String((b && b.date) || ''))), marks = marksOf(panel);
         events.forEach((e) => {
           e = e || {};
-          ol.appendChild(h(doc, 'li', { cls: ['dv-tl-item', toneClass(e.tone)].filter(Boolean).join(' ') }, [
+          const li = h(doc, 'li', { cls: ['dv-tl-item', toneClass(e.tone)].filter(Boolean).join(' ') }, [
             h(doc, 'time', { cls: 'dv-tl-date', text: typeof e.date === 'string' ? e.date : '', attrs: { datetime: typeof e.date === 'string' ? e.date : null } }),
             h(doc, 'span', { cls: 'dv-tl-label', text: typeof e.label === 'string' ? e.label : '' }),
             typeof e.status === 'string' && e.status ? h(doc, 'span', { cls: 'dv-chip ' + toneClass(e.tone), text: e.status }) : null,
-            typeof e.detail === 'string' && e.detail ? h(doc, 'span', { cls: 'dv-tl-detail', text: e.detail }) : null]));
+            typeof e.detail === 'string' && e.detail ? h(doc, 'span', { cls: 'dv-tl-detail', text: e.detail }) : null]);
+          clickable(ctx, li, panel, 'point-click', marks.indexOf(e), e);                 // an event that carries effects (contract 1.2)
+          ol.appendChild(li);
         });
         body.appendChild(ol);
         if (Number.isInteger(panel.data.more) && panel.data.more > 0) { body.appendChild(h(doc, 'p', { cls: 'dv-more', text: say(ctx.messages, 'moreEvents', { count: panel.data.more.toLocaleString('en-US') }) })); }
@@ -5208,6 +5622,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var h = __lib("drishti-core").h;
     var defineKind = __m["src/drishti_views-kinds.js"].defineKind;
     var drawCell = __m["src/drishti_views-cells.js"].drawCell, say = __m["src/drishti_views-cells.js"].say;
+    var marksOf = __m["src/drishti_views-state.js"].marksOf, hasEffects = __m["src/drishti_views-state.js"].hasEffects;
     const PAGE_ROWS = 100;
     const list = (x) => (Array.isArray(x) ? x : []);
     const textOf = (c) => (c && typeof c.text === 'string' ? c.text : '');
@@ -5254,6 +5669,8 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         this.panel = panel;
         const d = panel.data || {};
         this.d = d;
+        this.marks = new Map();                                      // a row that carries effects (contract 1.2) to its place among the marks
+        marksOf(panel).forEach((m, i) => { if (hasEffects(m)) { this.marks.set(m, i); } });
         this.columns = list(d.columns).length ? list(d.columns).map(String) : (list(d.levels)[0] && list(list(d.levels)[0].columns)) || [];
         this.numeric = list(d.numeric);
         this.expandDepth = Number.isInteger(d.expand) ? d.expand : 0;
@@ -5330,9 +5747,10 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
       }
       row(r, depth, cls, tag, tree) {
         const doc = this.ctx.doc, cells = list(r.cells);
-        const tr = h(doc, 'tr', { cls: [cls, r.highlight ? 'dv-hl' : '', typeof r.pick === 'string' && r.pick ? 'dv-pick' : ''].filter(Boolean).join(' ') || null,
-          attrs: { 'aria-current': r.highlight && this.o.ladder ? 'true' : null, tabindex: typeof r.pick === 'string' && r.pick ? '0' : null, title: typeof r.crumb === 'string' ? r.crumb : null },
-          data: Object.assign({ depth: String(depth) }, typeof r.pick === 'string' && r.pick ? { pick: r.pick } : {}, typeof r.ev === 'string' && r.ev ? { ev: r.ev } : {}),
+        const picks = typeof r.pick === 'string' && r.pick, mark = this.marks.get(r);
+        const tr = h(doc, 'tr', { cls: [cls, r.highlight ? 'dv-hl' : '', picks || mark !== undefined ? 'dv-pick' : ''].filter(Boolean).join(' ') || null,
+          attrs: { 'aria-current': r.highlight && this.o.ladder ? 'true' : null, tabindex: picks || mark !== undefined ? '0' : null, title: typeof r.crumb === 'string' ? r.crumb : null },
+          data: Object.assign({ depth: String(depth) }, picks ? { pick: r.pick } : {}, typeof r.ev === 'string' && r.ev ? { ev: r.ev } : {}, mark !== undefined ? { mark: String(mark) } : {}),
           style: { '--dv-depth': String(depth) } });
         const n = Math.max(cells.length, this.columns.length);
         for (let i = 0; i < n; i++) {
@@ -5349,9 +5767,10 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         return tr;
       }
       onPick(e) {
-        const tr = e.target && e.target.closest ? e.target.closest('tr[data-pick]') : null;
+        const tr = e.target && e.target.closest ? e.target.closest('tr[data-pick], tr[data-mark]') : null;
         if (!tr || (e.target.closest('button, a') && e.type === 'click')) { return; }
-        this.ctx.emit('pick', { panel: this.panel.id, pick: tr.getAttribute('data-pick'), ev: tr.getAttribute('data-ev') || null });
+        if (tr.hasAttribute('data-pick')) { this.ctx.emit('pick', { panel: this.panel.id, pick: tr.getAttribute('data-pick'), ev: tr.getAttribute('data-ev') || null }); }
+        if (tr.hasAttribute('data-mark')) { this.ctx.fire(String(this.panel.id), 'row-click', Number(tr.getAttribute('data-mark'))); }
       }
       dispose() { this.box.remove(); }
     }
@@ -5509,10 +5928,12 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var h = __lib("drishti-core").h;
     var defineKind = __m["src/drishti_views-kinds.js"].defineKind;
     var say = __m["src/drishti_views-cells.js"].say, toneClass = __m["src/drishti_views-cells.js"].toneClass;
-    const CHART_KINDS = Object.freeze(['line', 'area', 'waterfall', 'histogram', 'scatter', 'candlestick', 'surface', 'graph', 'map']);
+    var marksOf = __m["src/drishti_views-state.js"].marksOf, hasEffects = __m["src/drishti_views-state.js"].hasEffects, clickable = __m["src/drishti_views-state.js"].clickable;
+    const CHART_KINDS = Object.freeze(['line', 'area', 'waterfall', 'histogram', 'scatter', 'candlestick', 'surface', 'graph', 'map', 'treemap']);
     const list = (x) => (Array.isArray(x) ? x : []);
     const str = (v) => (v === null || v === undefined ? '' : String(v));
     const LIMIT_ROWS = 500;
+    const POINT_CHARTS = { line: true, area: true, scatter: true, waterfall: true, candlestick: true, treemap: true };
     function chartTable(kind, d) {
       d = d || {};
       let columns = [], rows = [];
@@ -5520,6 +5941,9 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         const s = list(d.series);
         columns = [''].concat(s.map((x) => str(x && x.label)));
         rows = list(d.x).map((x, i) => [str(x)].concat(s.map((y) => str(list(y && y.values)[i]))));
+      } else if (kind === 'treemap') {
+        columns = ['', '', ''];
+        rows = list(d.cells).map((c) => [str(c && c.group), str(c && c.label), str(c && (c.text || c.value))]);
       } else if (kind === 'hbar') {
         columns = ['', ''];
         rows = list(d.bars).map((b) => [str(b && b.label), str(b && (b.text || b.value))]);
@@ -5582,10 +6006,29 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           let gone = false;
           const words = (w) => { el.removeAttribute('data-r-chart'); el.className = 'dv-chart-off'; el.textContent = w; };
           if (kind === 'map' && !ctx.can('geo')) { words(say(ctx.messages, 'noMaps')); } else {
-            ctx.charts().then((pc) => { if (!gone) { return pc.draw(box); } return null; }).catch(() => { if (!gone) { words(say(ctx.messages, 'noCharts')); } });
+            ctx.charts().then((pc) => { if (!gone) { return pc.draw(box); } return null; }).then(() => { if (!gone) { wire(); } })
+              .catch(() => { if (!gone) { words(say(ctx.messages, 'noCharts')); } });
           }
+          let cur = panel;
+          const wire = () => {
+            const win = doc.defaultView, E = win && win.echarts, chart = E && E.getInstanceByDom && E.getInstanceByDom(el);
+            if (!chart || el.__dvMarks || !(POINT_CHARTS[kind] || kind === 'hbar')) { return; }
+            el.__dvMarks = true;
+            chart.on('click', (e) => {
+              const marks = marksOf(cur);
+              if (!marks.some(hasEffects)) { return; }
+              const d = e && e.data ? e.data : null;
+              const find = (m) => { let i = marks.indexOf(m); if (i < 0 && m) { const t = JSON.stringify(m); i = marks.findIndex((x) => JSON.stringify(x) === t); } return i; };   // the engine may hold a copy
+              const trig = kind === 'hbar' ? 'bar-click' : 'point-click';                // the donut's slices are the bars (contract 1.2)
+              let ix = kind === 'hbar' ? find(d && d.bar) : kind === 'scatter' ? find(d && d.point) : kind === 'waterfall' ? find(d && d.step) : kind === 'treemap' ? find(d && d.cell) : e.dataIndex;
+              if (kind === 'candlestick' && e.seriesIndex > 0) { ix = -1; }
+              if (Number.isInteger(ix) && ix >= 0) { ctx.fire(String(cur.id), trig, ix); }
+            });
+            if (marksOf(cur).some(hasEffects)) { el.classList.add('dv-pick'); }
+          };
           return {
             update(p) {
+              cur = p;
               el.__drishti = { kind: k, data: p.data };
               const fresh = dataTable(ctx, kind, p.data);
               fresh.open = table.open;
@@ -5609,13 +6052,15 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         if (panel.data.shape === 'donut') { return engineKind('hbar').paint(body, panel, ctx); }
         const doc = ctx.doc, d = panel.data, items = list(d.bars);
         const max = Math.max.apply(null, items.map((b) => Math.abs(Number(b && b.value) || 0)).concat([0]));
-        const ul = h(doc, 'ul', { cls: 'dv-bars' });
+        const ul = h(doc, 'ul', { cls: 'dv-bars' }), marks = marksOf(panel);
         items.forEach((b) => {
           b = b || {};
           const share = max > 0 ? Math.abs(Number(b.value) || 0) / max : 0;
           const bar = h(doc, 'span', { cls: ['dv-bar', toneClass(b.tone) || 'dv-t-accent'].join(' '), style: { '--dv-share': String(Math.round(share * 1000) / 1000) } });
-          ul.appendChild(h(doc, 'li', {}, [h(doc, 'span', { cls: 'dv-bar-label', text: str(b.label) }), h(doc, 'span', { cls: 'dv-bar-track' }, [bar]),
-            h(doc, 'span', { cls: 'dv-bar-text', text: str(b.text || b.value) })]));
+          const li = h(doc, 'li', {}, [h(doc, 'span', { cls: 'dv-bar-label', text: str(b.label) }), h(doc, 'span', { cls: 'dv-bar-track' }, [bar]),
+            h(doc, 'span', { cls: 'dv-bar-text', text: str(b.text || b.value) })]);
+          clickable(ctx, li, panel, 'bar-click', marks.indexOf(b), b);               // a bar that carries effects (contract 1.2)
+          ul.appendChild(li);
         });
         body.appendChild(ul);
         if (typeof d.total === 'string' && d.total) { body.appendChild(h(doc, 'p', { cls: 'dv-more', text: d.total })); }
@@ -5633,10 +6078,28 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         const box = h(doc, 'div', { cls: 'dv-gauge-box' }, [h(doc, 'div', { cls: 'dv-gauge-text', text: text }), meter,
           typeof d.label === 'string' && d.label ? h(doc, 'div', { cls: 'dv-metric-caption', text: d.label }) : null]);
         body.appendChild(box);
+        clickable(ctx, box, panel, 'point-click', 0, marksOf(panel)[0]);            // the gauge is one mark (contract 1.2)
+        return { dispose() { box.remove(); } };
+      }
+    };
+    const bullet = {
+      paint(body, panel, ctx) {
+        const doc = ctx.doc, d = panel.data, min = Number(d.min) || 0, max = Number(d.max), span = max > min ? max - min : 1;
+        const at = (v) => String(Math.round(Math.max(0, Math.min(1, (Number(v) - min) / span)) * 1000) / 1000);
+        const track = h(doc, 'div', { cls: 'dv-bullet', attrs: { role: 'meter', 'aria-valuemin': str(min), 'aria-valuemax': str(max),
+          'aria-valuenow': d.value === null || d.value === undefined ? null : str(d.value), 'aria-valuetext': str(d.text), 'aria-label': str(d.label || panel.title || panel.id) } },
+        list(d.bands).map((b) => h(doc, 'span', { cls: 'dv-bullet-band ' + (toneClass(b && b.tone) || ''), style: { '--dv-from': at(Math.min(b.from, b.to)), '--dv-to': at(Math.max(b.from, b.to)) } }))
+          .concat([d.lower, d.upper].filter((v) => v !== null && v !== undefined).map((v) => h(doc, 'span', { cls: 'dv-bullet-bound', style: { '--dv-at': at(v) } })))
+          .concat(d.value === null || d.value === undefined ? [] : [h(doc, 'span', { cls: 'dv-bullet-mark ' + (toneClass(d.tone) || 'dv-t-accent'), style: { '--dv-at': at(d.value) } })]));
+        const scale = h(doc, 'div', { cls: 'dv-bullet-scale' }, [h(doc, 'span', { text: str(d.lowerText) }), h(doc, 'span', { text: str(d.upperText) })]);
+        const box = h(doc, 'div', { cls: 'dv-gauge-box dv-bullet-box' }, [h(doc, 'div', { cls: 'dv-gauge-text ' + (toneClass(d.tone) || ''), text: str(d.text) }), track, scale,
+          d.label || d.caption ? h(doc, 'div', { cls: 'dv-metric-caption', text: str(d.caption || d.label) }) : null]);
+        body.appendChild(box);
         return { dispose() { box.remove(); } };
       }
     };
     CHART_KINDS.forEach((k) => defineKind(k, engineKind(k)));
+    defineKind('bullet', bullet);
     defineKind('hbar', bars);
     defineKind('gauge', gauge);
     return { "CHART_KINDS": CHART_KINDS, "chartTable": chartTable };
@@ -5865,7 +6328,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     var defineElement = __m["src/drishti_views-element.js"].define;
     function registerKind(name, def) { defineKind(name, def); }
     function install(root) { if (root && root.customElements && root.HTMLElement) { defineElement({ window: root }); } }
-    return { "registerKind": registerKind, "install": install, "CONTRACT": __m["src/drishti_views-schema.js"].CONTRACT, "SCHEMA_SHA256": __m["src/drishti_views-schema.js"].SCHEMA_SHA256, "LIMITS": __m["src/drishti_views-validate.js"].LIMITS, "FORBIDDEN_KEYS": __m["src/drishti_views-validate.js"].FORBIDDEN_KEYS, "validate": __m["src/drishti_views-validate.js"].validate, "formatIssue": __m["src/drishti_views-validate.js"].formatIssue, "MESSAGES": __m["src/drishti_views-cells.js"].MESSAGES, "TONES": __m["src/drishti_views-cells.js"].TONES, "PANEL_STATES": __m["src/drishti_views-panels.js"].PANEL_STATES, "WIDTHS": __m["src/drishti_views-layout.js"].WIDTHS, "arrange": __m["src/drishti_views-layout.js"].arrange, "OPS": __m["src/drishti_views-patch.js"].OPS, "conflate": __m["src/drishti_views-patch.js"].conflate, "SPECS": __m["src/drishti_views-paint.js"].SPECS, "ViewHandle": __m["src/drishti_views-paint.js"].ViewHandle, "paint": __m["src/drishti_views-paint.js"].paint, "kinds": __m["src/drishti_views-kinds.js"].kinds, "inlineNodes": __m["src/drishti_views-words.js"].inlineNodes, "markupNodes": __m["src/drishti_views-words.js"].markupNodes, "LINK_STATUS": __m["src/drishti_views-words.js"].LINK_STATUS, "PAGE_ROWS": __m["src/drishti_views-tables.js"].PAGE_ROWS, "numberOfText": __m["src/drishti_views-tables.js"].numberOfText, "MAX_NESTING": __m["src/drishti_views-tabs.js"].MAX_NESTING, "CHART_KINDS": __m["src/drishti_views-charts.js"].CHART_KINDS, "chartTable": __m["src/drishti_views-charts.js"].chartTable, "AGGS": __m["src/drishti_views-data.js"].AGGS, "DATASET_FORMS": __m["src/drishti_views-data.js"].DATASET_FORMS, "READ_LIMIT": __m["src/drishti_views-data.js"].READ_LIMIT, "isMasked": __m["src/drishti_views-data.js"].isMasked, "valueText": __m["src/drishti_views-data.js"].valueText, "rowKey": __m["src/drishti_views-data.js"].rowKey, "inferFields": __m["src/drishti_views-data.js"].inferFields, "aggregate": __m["src/drishti_views-data.js"].aggregate, "derive": __m["src/drishti_views-data.js"].derive, "allowedAddress": __m["src/drishti_views-data.js"].allowedAddress, "Dataset": __m["src/drishti_views-data.js"].Dataset, "datasetsOf": __m["src/drishti_views-data.js"].datasetsOf, "DATASET_KINDS": __m["src/drishti_views-datakinds.js"].DATASET_KINDS, "gridColumns": __m["src/drishti_views-datakinds.js"].gridColumns, "chartSpec": __m["src/drishti_views-datakinds.js"].chartSpec, "LIVE_KINDS": __m["src/drishti_views-live.js"].LIVE_KINDS, "LiveLink": __m["src/drishti_views-live.js"].LiveLink, "VIEW_ELEMENT": __m["src/drishti_views-element.js"].VIEW_ELEMENT, "VIEW_ATTRIBUTES": __m["src/drishti_views-element.js"].VIEW_ATTRIBUTES, "define": __m["src/drishti_views-element.js"].define, "KIND_DATA": __m["src/drishti_views-build.js"].KIND_DATA, "stampOf": __m["src/drishti_views-build.js"].stampOf, "ViewError": __m["src/drishti_views-build.js"].ViewError, "complete": __m["src/drishti_views-build.js"].complete, "ViewBuilder": __m["src/drishti_views-build.js"].ViewBuilder, "view": __m["src/drishti_views-build.js"].view, "FrameBuilder": __m["src/drishti_views-build.js"].FrameBuilder, "frame": __m["src/drishti_views-build.js"].frame, "sse": __m["src/drishti_views-build.js"].sse };
+    return { "registerKind": registerKind, "install": install, "CONTRACT": __m["src/drishti_views-schema.js"].CONTRACT, "SCHEMA_SHA256": __m["src/drishti_views-schema.js"].SCHEMA_SHA256, "LIMITS": __m["src/drishti_views-validate.js"].LIMITS, "FORBIDDEN_KEYS": __m["src/drishti_views-validate.js"].FORBIDDEN_KEYS, "validate": __m["src/drishti_views-validate.js"].validate, "formatIssue": __m["src/drishti_views-validate.js"].formatIssue, "MESSAGES": __m["src/drishti_views-cells.js"].MESSAGES, "TONES": __m["src/drishti_views-cells.js"].TONES, "PANEL_STATES": __m["src/drishti_views-panels.js"].PANEL_STATES, "WIDTHS": __m["src/drishti_views-layout.js"].WIDTHS, "arrange": __m["src/drishti_views-layout.js"].arrange, "OPS": __m["src/drishti_views-patch.js"].OPS, "conflate": __m["src/drishti_views-patch.js"].conflate, "SPECS": __m["src/drishti_views-paint.js"].SPECS, "ViewHandle": __m["src/drishti_views-paint.js"].ViewHandle, "paint": __m["src/drishti_views-paint.js"].paint, "kinds": __m["src/drishti_views-kinds.js"].kinds, "StateStore": __m["src/drishti_views-state.js"].StateStore, "marksOf": __m["src/drishti_views-state.js"].marksOf, "effectsOf": __m["src/drishti_views-state.js"].effectsOf, "hasEffects": __m["src/drishti_views-state.js"].hasEffects, "triggerFor": __m["src/drishti_views-state.js"].triggerFor, "requestText": __m["src/drishti_views-state.js"].requestText, "resolveFire": __m["src/drishti_views-state.js"].resolveFire, "resolveWire": __m["src/drishti_views-state.js"].resolveWire, "pickEvent": __m["src/drishti_views-state.js"].pickEvent, "formFields": __m["src/drishti_views-state.js"].formFields, "formSchema": __m["src/drishti_views-forms.js"].formSchema, "formValues": __m["src/drishti_views-forms.js"].formValues, "problemsByField": __m["src/drishti_views-forms.js"].problemsByField, "inlineNodes": __m["src/drishti_views-words.js"].inlineNodes, "markupNodes": __m["src/drishti_views-words.js"].markupNodes, "LINK_STATUS": __m["src/drishti_views-words.js"].LINK_STATUS, "PAGE_ROWS": __m["src/drishti_views-tables.js"].PAGE_ROWS, "numberOfText": __m["src/drishti_views-tables.js"].numberOfText, "MAX_NESTING": __m["src/drishti_views-tabs.js"].MAX_NESTING, "CHART_KINDS": __m["src/drishti_views-charts.js"].CHART_KINDS, "chartTable": __m["src/drishti_views-charts.js"].chartTable, "AGGS": __m["src/drishti_views-data.js"].AGGS, "DATASET_FORMS": __m["src/drishti_views-data.js"].DATASET_FORMS, "READ_LIMIT": __m["src/drishti_views-data.js"].READ_LIMIT, "isMasked": __m["src/drishti_views-data.js"].isMasked, "valueText": __m["src/drishti_views-data.js"].valueText, "rowKey": __m["src/drishti_views-data.js"].rowKey, "inferFields": __m["src/drishti_views-data.js"].inferFields, "aggregate": __m["src/drishti_views-data.js"].aggregate, "derive": __m["src/drishti_views-data.js"].derive, "allowedAddress": __m["src/drishti_views-data.js"].allowedAddress, "Dataset": __m["src/drishti_views-data.js"].Dataset, "datasetsOf": __m["src/drishti_views-data.js"].datasetsOf, "DATASET_KINDS": __m["src/drishti_views-datakinds.js"].DATASET_KINDS, "gridColumns": __m["src/drishti_views-datakinds.js"].gridColumns, "chartSpec": __m["src/drishti_views-datakinds.js"].chartSpec, "LIVE_KINDS": __m["src/drishti_views-live.js"].LIVE_KINDS, "LiveLink": __m["src/drishti_views-live.js"].LiveLink, "VIEW_ELEMENT": __m["src/drishti_views-element.js"].VIEW_ELEMENT, "VIEW_ATTRIBUTES": __m["src/drishti_views-element.js"].VIEW_ATTRIBUTES, "define": __m["src/drishti_views-element.js"].define, "KIND_DATA": __m["src/drishti_views-build.js"].KIND_DATA, "stampOf": __m["src/drishti_views-build.js"].stampOf, "ViewError": __m["src/drishti_views-build.js"].ViewError, "complete": __m["src/drishti_views-build.js"].complete, "ViewBuilder": __m["src/drishti_views-build.js"].ViewBuilder, "view": __m["src/drishti_views-build.js"].view, "FrameBuilder": __m["src/drishti_views-build.js"].FrameBuilder, "frame": __m["src/drishti_views-build.js"].frame, "sse": __m["src/drishti_views-build.js"].sse };
   })();
   return Object.freeze(Object.assign({ library: "drishti-views", version: "3.1.0" }, __m["src/drishti_index.js"]));
 });
@@ -12422,6 +12885,10 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           if (this.o.submitHook) { this.submitBtn.setAttribute('data-' + this.o.submitHook, ''); }
           bar.appendChild(this.submitBtn);
         }
+        if (this.o.cancelLabel) {
+          bar.appendChild(this.el('button', { cls: 'di-btn', text: this.o.cancelLabel, attrs: { type: 'button' }, data: { act: 'cancel' },
+            on: { click: () => { const values = this.getValue(); this.emit('cancel', { values: values }); if (this.o.onCancel) { this.o.onCancel(values); } } } }));
+        }
         if (this.o.resetButton !== false) { bar.appendChild(this.el('button', { cls: 'di-btn', text: 'Reset', attrs: { type: 'button' }, data: { act: 'reset' }, on: { click: () => this.reset() } })); }
         return bar;
       }
@@ -16807,7 +17274,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
   /* ---- src/drishti_chart-panels.js ---- */
   __m["src/drishti_chart-panels.js"] = (function () {
     var formatCompact = __lib("drishti-core").formatCompact;
-    const PANEL_KINDS = Object.freeze(['line', 'area', 'waterfall', 'histogram', 'scatter', 'candlestick', 'graph', 'donut', 'surface', 'map']);
+    const PANEL_KINDS = Object.freeze(['line', 'area', 'waterfall', 'histogram', 'scatter', 'candlestick', 'graph', 'donut', 'surface', 'map', 'treemap']);
     const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
     function escapeTip(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ENT[c]); }
     const esc = escapeTip;
@@ -16969,7 +17436,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         tooltip: tip(t, { trigger: 'item', formatter: (p) => esc(p.name) + ': <b>' + esc(p.data.text) + '</b> (' + p.percent + '%)' }),
         title: { text: d.total || '', left: 'center', top: 'middle', textStyle: { color: t.ink, fontSize: 13, fontWeight: 600 } },
         series: [{ type: 'pie', radius: ['52%', '78%'], avoidLabelOverlap: true, label: { show: false }, itemStyle: { borderColor: t.surface, borderWidth: 1 },
-          data: bars.map((b, i) => ({ name: b.label, value: Math.abs(b.value), text: b.text, itemStyle: { color: colours[i % colours.length] } })) }] };
+          data: bars.map((b, i) => ({ name: b.label, value: Math.abs(b.value), text: b.text, bar: b, itemStyle: { color: colours[i % colours.length] } })) }] };
     }
     function surfaceOption(d, t, view) {
       const x = d.x || [], y = d.y || [], z = d.z || [], cells = [];
@@ -16993,18 +17460,74 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         visualMap: visual,
         series: [{ type: 'heatmap', data: cells, label: { show: x.length * y.length <= 72, color: t.ink, fontFamily: t.mono, fontSize: 10, formatter: (p) => Math.round(p.value[2] * 100) / 100 } }] };
     }
-    const BUILD = { line: (d, t) => line(d, t, 'line'), area: (d, t) => line(d, t, 'area'), waterfall, histogram, scatter, candlestick, donut,
+    function treemap(d, t) {
+      const cells = (d && d.cells) || [], pal = palette(t), groups = new Map();
+      const item = (c) => ({ name: String(c.label), value: c.value, text: c.text, cell: c,   // the ViewModel's own cell: its ev, set and on (a click finds the mark by it)
+        itemStyle: c.tone ? { color: tone(t, c.tone === 'pos' ? 'ok' : 'neg') } : undefined });
+      const top = [];
+      cells.forEach((c) => {
+        if (c.group === undefined || c.group === null) { top.push(item(c)); return; }
+        let g = groups.get(c.group);
+        if (!g) { g = { name: String(c.group), children: [], itemStyle: { color: pal[groups.size % pal.length] } }; groups.set(c.group, g); top.push(g); }
+        g.children.push(item(c));
+      });
+      return { tooltip: { formatter: (p) => esc(p.name) + (p.data && p.data.text ? ': ' + esc(p.data.text) : '') },
+        series: [{ type: 'treemap', data: top, roam: false, nodeClick: false, breadcrumb: { show: false }, width: '100%', height: '100%', top: 0, left: 0,
+          label: { show: true, color: t.ink, fontFamily: t.mono, fontSize: 10, formatter: (p) => p.name + (p.data && p.data.text ? '\n' + p.data.text : '') },
+          upperLabel: { show: groups.size > 0, height: 16, color: t.muted, fontFamily: t.mono, fontSize: 10 },
+          itemStyle: { borderColor: t.surface, borderWidth: 1, gapWidth: 1 },
+          levels: [{ itemStyle: { borderColor: t.border, borderWidth: 1, gapWidth: 2 } }, { itemStyle: { gapWidth: 1 }, colorSaturation: [0.35, 0.6] }] }] };
+    }
+    const BUILD = { line: (d, t) => line(d, t, 'line'), area: (d, t) => line(d, t, 'area'), waterfall, histogram, scatter, candlestick, donut, treemap,
       surface: (d, t, s, view) => surfaceOption(d, t, view || 'heatmap') };
     function panelOption(kind, data, tokens, size, view) {
       const b = BUILD[kind];
       if (!b) { throw new Error('no panel chart ' + kind + ' (' + Object.keys(BUILD).join(', ') + ')'); }
-      return b(data || {}, tokens, size || { width: 800, height: 360 }, view);
+      return elementTooltips(b(data || {}, tokens, size || { width: 800, height: 360 }, view));
     }
-    return { "PANEL_KINDS": PANEL_KINDS, "escapeTip": escapeTip, "panelCompact": panelCompact, "panelLineCompact": panelLineCompact, "panelTokens": panelTokens, "labelFit": labelFit, "panelOption": panelOption };
+    function elementTooltips(option) {
+      const fix = (tip) => {
+        if (!tip || typeof tip !== 'object' || tip.show === false) { return; }
+        const doc = globalThis.document;
+        if (!doc) { return; }
+        const f = tip.formatter;
+        tip.extraCssText = '';
+        tip.formatter = (p, ...rest) => {
+          const out = typeof f === 'function' ? f(p, ...rest) : null;
+          if (out && typeof out === 'object') { return out; }
+          const box = doc.createElement('div');
+          if (typeof out === 'string') {
+            const tpl = doc.createElement('template');
+            tpl.innerHTML = out;
+            tpl.content.querySelectorAll('[style]').forEach((n) => n.removeAttribute('style'));
+            box.appendChild(tpl.content);
+            return box;
+          }
+          const list = Array.isArray(p) ? p : [p];
+          const head = doc.createElement('div');
+          head.textContent = String((list[0] && (list[0].axisValueLabel !== undefined ? list[0].axisValueLabel : list[0].name)) || '');
+          box.appendChild(head);
+          list.forEach((q) => {
+            if (!q || (q.seriesName || '').startsWith('__')) { return; }
+            const row = doc.createElement('div'), sw = doc.createElement('i'), b = doc.createElement('b');
+            if (typeof q.color === 'string') { sw.style.setProperty('background', q.color); }
+            sw.style.setProperty('display', 'inline-block'); sw.style.setProperty('width', '8px'); sw.style.setProperty('height', '8px'); sw.style.setProperty('margin-right', '6px');
+            const v = Array.isArray(q.value) ? q.value[q.value.length - 1] : q.value;
+            b.textContent = ' ' + (num(v) ? panelCompact(v) : String(v == null ? '' : v));
+            row.appendChild(sw); row.appendChild(doc.createTextNode(q.seriesName || '')); row.appendChild(b);
+            box.appendChild(row);
+          });
+          return box;
+        };
+      };
+      if (option) { fix(option.tooltip); (Array.isArray(option.series) ? option.series : []).forEach((s) => fix(s && s.tooltip)); }
+      return option;
+    }
+    return { "PANEL_KINDS": PANEL_KINDS, "escapeTip": escapeTip, "panelCompact": panelCompact, "panelLineCompact": panelLineCompact, "panelTokens": panelTokens, "labelFit": labelFit, "panelOption": panelOption, "elementTooltips": elementTooltips };
   })();
   /* ---- src/drishti_chart-panel-draw.js ---- */
   __m["src/drishti_chart-panel-draw.js"] = (function () {
-    var panelOption = __m["src/drishti_chart-panels.js"].panelOption, panelTokens = __m["src/drishti_chart-panels.js"].panelTokens, panelCompact = __m["src/drishti_chart-panels.js"].panelCompact;
+    var panelOption = __m["src/drishti_chart-panels.js"].panelOption, panelTokens = __m["src/drishti_chart-panels.js"].panelTokens, panelCompact = __m["src/drishti_chart-panels.js"].panelCompact, elementTooltips = __m["src/drishti_chart-panels.js"].elementTooltips;
     const TOKEN = /\{(iso3|iso2|code)\}/;
     const upper = (v) => String(v == null ? '' : v).trim().toUpperCase();
     const panelOf = (el) => { const p = el.closest('.pnl'); return p ? p.getAttribute('data-panel') : null; };
@@ -17053,8 +17576,8 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
         const bubbles = points.map((p) => ({ lon: Number(p.lon), lat: Number(p.lat), value: Number(p.value) || 0, name: p.label || '', text: p.text || '' }));
         if (points.length) { notes.push(points.length + (points.length === 1 ? ' place' : ' places') + ' as bubbles'); }
         const chart = E.getInstanceByDom(el) || E.init(el, null, { renderer: 'svg' });
-        chart.setOption(G.option({ level: isRegion ? 'region' : 'world', geo, t, items, highlight, clickable, linked: !!(link && !link.note), bubbles,
-          legend: shade && shade.label, unit: d.unit || (shade && shade.unit) || '', numText: panelCompact, width: el.clientWidth || 800, height: el.clientHeight || 400 }), true);
+        chart.setOption(elementTooltips(G.option({ level: isRegion ? 'region' : 'world', geo, t, items, highlight, clickable, linked: !!(link && !link.note), bubbles,
+          legend: shade && shade.label, unit: d.unit || (shade && shade.unit) || '', numText: panelCompact, width: el.clientWidth || 800, height: el.clientHeight || 400 })), true);
         if (!chartsOut.includes(chart)) { chartsOut.push(chart); }
         el.__places = { make, clickable, points };
         if (!el.__clicks) {
@@ -17180,6 +17703,16 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           });
           this.ro.observe(this.root.host || this.root.firstElementChild || win.document.body);
         }
+        if (win.ResizeObserver) {                             // a chart's own box can change while the view does not (it was drawn before its box had a height): each box is watched
+          if (!this.rb) {
+            this.rb = new win.ResizeObserver(() => {
+              win.requestAnimationFrame(() => {
+                this.live().forEach((c) => { const d = c.getDom(); if (d && d.clientWidth && d.clientHeight && (c.getWidth() !== d.clientWidth || c.getHeight() !== d.clientHeight)) { c.resize(); } });
+              });
+            });
+          }
+          els.forEach((el) => this.rb.observe(el));
+        }
       }
       redraw() { return this.draw(this.root); }
       async update(el) {
@@ -17202,6 +17735,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
       dispose() {
         this.root.removeEventListener('click', this.onClick);
         if (this.ro) { this.ro.disconnect(); this.ro = null; }
+        if (this.rb) { this.rb.disconnect(); this.rb = null; }
         this.live().forEach((c) => c.dispose());
         this.all = [];
         this.root.querySelectorAll(this.o.selector).forEach((el) => { if (el.__drishtiGraph) { el.__drishtiGraph.destroy(); el.__drishtiGraph = null; } });
@@ -17522,7 +18056,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
     registerKind('calendar', { build: buildCalendar, label: 'calendar heatmap', cartesian: false });
     registerKind('layer', { label: 'layers', cartesian: true, build: (spec, rows, env) => buildLayers(spec, rows, env, kindOf, (l) => rowsOf(l.data)) });
     function install(root) { if (root && root.document && root.customElements) { defineChartElement(root.customElements, root); } }
-    return { "install": install, "registerKind": __m["src/drishti_chart-spec.js"].registerKind, "kindOf": __m["src/drishti_chart-spec.js"].kindOf, "kindList": __m["src/drishti_chart-spec.js"].kindList, "KIND_ALIASES": __m["src/drishti_chart-spec.js"].KIND_ALIASES, "checkSpec": __m["src/drishti_chart-spec.js"].checkSpec, "normalizeSpec": __m["src/drishti_chart-spec.js"].normalizeSpec, "specText": __m["src/drishti_chart-spec.js"].specText, "rowsOf": __m["src/drishti_chart-data.js"].rowsOf, "fieldOf": __m["src/drishti_chart-data.js"].fieldOf, "num": __m["src/drishti_chart-data.js"].num, "members": __m["src/drishti_chart-data.js"].members, "sumBy": __m["src/drishti_chart-data.js"].sumBy, "bin": __m["src/drishti_chart-data.js"].bin, "quantile": __m["src/drishti_chart-data.js"].quantile, "boxStats": __m["src/drishti_chart-data.js"].boxStats, "quantileBreaks": __m["src/drishti_chart-data.js"].quantileBreaks, "classOf": __m["src/drishti_chart-data.js"].classOf, "compileCondition": __m["src/drishti_chart-data.js"].compileCondition, "conditionFields": __m["src/drishti_chart-data.js"].conditionFields, "CHART_DENSITIES": __m["src/drishti_chart-theme.js"].CHART_DENSITIES, "blend": __m["src/drishti_chart-theme.js"].blend, "alpha": __m["src/drishti_chart-theme.js"].alpha, "chartTheme": __m["src/drishti_chart-theme.js"].chartTheme, "toneColour": __m["src/drishti_chart-theme.js"].toneColour, "rampColour": __m["src/drishti_chart-theme.js"].rampColour, "formatterFor": __m["src/drishti_chart-theme.js"].formatterFor, "textStyle": __m["src/drishti_chart-theme.js"].textStyle, "axisOf": __m["src/drishti_chart-theme.js"].axisOf, "rowId": __m["src/drishti_chart-kinds.js"].rowId, "seriesDefs": __m["src/drishti_chart-kinds.js"].seriesDefs, "annotationMarks": __m["src/drishti_chart-kinds.js"].annotationMarks, "buildSeriesChart": __m["src/drishti_chart-kinds.js"].buildSeriesChart, "buildScatter": __m["src/drishti_chart-kinds.js"].buildScatter, "buildHistogram": __m["src/drishti_chart-kinds.js"].buildHistogram, "buildWaterfall": __m["src/drishti_chart-kinds.js"].buildWaterfall, "buildBoxplot": __m["src/drishti_chart-kinds.js"].buildBoxplot, "buildHeatmap": __m["src/drishti_chart-kinds.js"].buildHeatmap, "overviewStrip": __m["src/drishti_chart-kinds.js"].overviewStrip, "buildCandlestick": __m["src/drishti_chart-kinds.js"].buildCandlestick, "buildLayers": __m["src/drishti_chart-kinds.js"].buildLayers, "registerAxisKinds": __m["src/drishti_chart-kinds.js"].registerAxisKinds, "buildPie": __m["src/drishti_chart-kinds2.js"].buildPie, "buildGauge": __m["src/drishti_chart-kinds2.js"].buildGauge, "buildTreemap": __m["src/drishti_chart-kinds2.js"].buildTreemap, "buildSankey": __m["src/drishti_chart-kinds2.js"].buildSankey, "registerOtherKinds": __m["src/drishti_chart-kinds2.js"].registerOtherKinds, "buildLollipop": __m["src/drishti_chart-kinds4.js"].buildLollipop, "buildTrace3d": __m["src/drishti_chart-kinds4.js"].buildTrace3d, "buildSegmented": __m["src/drishti_chart-kinds4.js"].buildSegmented, "buildMatrix": __m["src/drishti_chart-kinds4.js"].buildMatrix, "canDraw3d": __m["src/drishti_chart-kinds4.js"].canDraw3d, "ensure3d": __m["src/drishti_chart-kinds4.js"].ensure3d, "registerSequenceKinds": __m["src/drishti_chart-kinds4.js"].registerSequenceKinds, "trackValues": __m["src/drishti_chart-tracks.js"].trackValues, "trackColour": __m["src/drishti_chart-tracks.js"].trackColour, "categoryCells": __m["src/drishti_chart-tracks.js"].categoryCells, "addTracks": __m["src/drishti_chart-tracks.js"].addTracks, "segmentOf": __m["src/drishti_chart-overlays.js"].segmentOf, "scatterOverlays": __m["src/drishti_chart-overlays.js"].scatterOverlays, "frameValues": __m["src/drishti_chart-frames.js"].frameValues, "frameRows": __m["src/drishti_chart-frames.js"].frameRows, "reducedMotion": __m["src/drishti_chart-frames.js"].reducedMotion, "FrameBar": __m["src/drishti_chart-frames.js"].FrameBar, "equalEarth": __m["src/drishti_chart-geo.js"].equalEarth, "albers": __m["src/drishti_chart-geo.js"].albers, "plateCarree": __m["src/drishti_chart-geo.js"].plateCarree, "projectGeometry": __m["src/drishti_chart-geo.js"].projectGeometry, "coreExtent": __m["src/drishti_chart-geo.js"].coreExtent, "countryProjection": __m["src/drishti_chart-geo.js"].countryProjection, "US_INSETS": __m["src/drishti_chart-geo.js"].US_INSETS, "prepareRegions": __m["src/drishti_chart-geo.js"].prepareRegions, "prepareWorld": __m["src/drishti_chart-geo.js"].prepareWorld, "findPlace": __m["src/drishti_chart-geo.js"].findPlace, "locate": __m["src/drishti_chart-geo.js"].locate, "createGeoLoader": __m["src/drishti_chart-geo.js"].createGeoLoader, "holdAntimeridian": __m["src/drishti_chart-geo.js"].holdAntimeridian, "fitView": __m["src/drishti_chart-geo.js"].fitView, "WORLD_REGIONS": __m["src/drishti_world-regions.js"].WORLD_REGIONS, "REGION_START_LEVELS": __m["src/drishti_chart-regions.js"].REGION_START_LEVELS, "isRegionLevel": __m["src/drishti_chart-regions.js"].isRegionLevel, "regionOf": __m["src/drishti_chart-regions.js"].regionOf, "regionName": __m["src/drishti_chart-regions.js"].regionName, "prepareRegionLevel": __m["src/drishti_chart-regions.js"].prepareRegionLevel, "bounds": __m["src/drishti_chart-regions.js"].bounds, "mapMetrics": __m["src/drishti_chart-map.js"].mapMetrics, "placeValues": __m["src/drishti_chart-map.js"].placeValues, "mapScale": __m["src/drishti_chart-map.js"].mapScale, "ranking": __m["src/drishti_chart-map.js"].ranking, "buildMap": __m["src/drishti_chart-map.js"].buildMap, "registerMapKind": __m["src/drishti_chart-map.js"].registerMapKind, "colourTone": __m["src/drishti_chart-vega.js"].colourTone, "d3Format": __m["src/drishti_chart-vega.js"].d3Format, "fromVegaLite": __m["src/drishti_chart-vega.js"].fromVegaLite, "vegaLiteAlternative": __m["src/drishti_chart-vega.js"].vegaLiteAlternative, "vegaLiteRefusal": __m["src/drishti_chart-vega.js"].vegaLiteRefusal, "vegaLiteIn": __m["src/drishti_chart-vega.js"].vegaLiteIn, "valueText": __m["src/drishti_chart-parts.js"].valueText, "tooltipElement": __m["src/drishti_chart-parts.js"].tooltipElement, "dataTable": __m["src/drishti_chart-parts.js"].dataTable, "legendElement": __m["src/drishti_chart-parts.js"].legendElement, "markSelection": __m["src/drishti_chart-parts.js"].markSelection, "addZoom": __m["src/drishti_chart-parts.js"].addZoom, "dragBrush": __m["src/drishti_chart-parts.js"].dragBrush, "rangeBrush": __m["src/drishti_chart-parts.js"].rangeBrush, "rectBrush": __m["src/drishti_chart-parts.js"].rectBrush, "idsInBox": __m["src/drishti_chart-parts.js"].idsInBox, "svgOf": __m["src/drishti_chart-parts.js"].svgOf, "MAP_MODES": __m["src/drishti_map-view.js"].MAP_MODES, "geoLoader": __m["src/drishti_map-view.js"].geoLoader, "MapView": __m["src/drishti_map-view.js"].MapView, "Studio": __m["src/drishti_chart-studio.js"].Studio, "CHART_EVENTS": __m["src/drishti_chart-view.js"].CHART_EVENTS, "CHART_MODES": __m["src/drishti_chart-view.js"].CHART_MODES, "Chart": __m["src/drishti_chart-view.js"].Chart, "ChartIO": __m["src/drishti_chart-io.js"].ChartIO, "buildCalendar": __m["src/drishti_chart-calendar.js"].buildCalendar, "bullet": __m["src/drishti_bullet.js"].bullet, "bulletScale": __m["src/drishti_bullet.js"].bulletScale, "bulletSummary": __m["src/drishti_bullet.js"].bulletSummary, "kernelDensity": __m["src/drishti_chart-kinds3.js"].kernelDensity, "tenorDays": __m["src/drishti_chart-kinds3.js"].tenorDays, "buildRadar": __m["src/drishti_chart-kinds3.js"].buildRadar, "buildViolin": __m["src/drishti_chart-kinds3.js"].buildViolin, "buildRidgeline": __m["src/drishti_chart-kinds3.js"].buildRidgeline, "buildCurve": __m["src/drishti_chart-kinds3.js"].buildCurve, "buildDensity": __m["src/drishti_chart-kinds3.js"].buildDensity, "registerDistributionKinds": __m["src/drishti_chart-kinds3.js"].registerDistributionKinds, "colourScale": __m["src/drishti_chart-scale.js"].colourScale, "linkCrosshair": __m["src/drishti_chart-multiples.js"].linkCrosshair, "facets": __m["src/drishti_chart-multiples.js"].facets, "selectionTopic": __lib("drishti-core").selectionTopic, "filterTopic": __lib("drishti-core").filterTopic, "linkGrid": __lib("drishti-core").linkGrid, "publishSelection": __lib("drishti-core").publishSelection, "PANEL_KINDS": __m["src/drishti_chart-panels.js"].PANEL_KINDS, "escapeTip": __m["src/drishti_chart-panels.js"].escapeTip, "panelCompact": __m["src/drishti_chart-panels.js"].panelCompact, "panelLineCompact": __m["src/drishti_chart-panels.js"].panelLineCompact, "panelTokens": __m["src/drishti_chart-panels.js"].panelTokens, "labelFit": __m["src/drishti_chart-panels.js"].labelFit, "panelOption": __m["src/drishti_chart-panels.js"].panelOption, "drawMap": __m["src/drishti_chart-panel-draw.js"].drawMap, "PanelCharts": __m["src/drishti_chart-panel-draw.js"].PanelCharts, "pointOf": __m["src/drishti_chart-panel-draw.js"].pointOf, "CHART_ELEMENT": __m["src/drishti_chart-element.js"].CHART_ELEMENT, "defineChartElement": __m["src/drishti_chart-element.js"].defineChartElement, "chartIn": __m["src/drishti_chart-element.js"].chartIn };
+    return { "install": install, "registerKind": __m["src/drishti_chart-spec.js"].registerKind, "kindOf": __m["src/drishti_chart-spec.js"].kindOf, "kindList": __m["src/drishti_chart-spec.js"].kindList, "KIND_ALIASES": __m["src/drishti_chart-spec.js"].KIND_ALIASES, "checkSpec": __m["src/drishti_chart-spec.js"].checkSpec, "normalizeSpec": __m["src/drishti_chart-spec.js"].normalizeSpec, "specText": __m["src/drishti_chart-spec.js"].specText, "rowsOf": __m["src/drishti_chart-data.js"].rowsOf, "fieldOf": __m["src/drishti_chart-data.js"].fieldOf, "num": __m["src/drishti_chart-data.js"].num, "members": __m["src/drishti_chart-data.js"].members, "sumBy": __m["src/drishti_chart-data.js"].sumBy, "bin": __m["src/drishti_chart-data.js"].bin, "quantile": __m["src/drishti_chart-data.js"].quantile, "boxStats": __m["src/drishti_chart-data.js"].boxStats, "quantileBreaks": __m["src/drishti_chart-data.js"].quantileBreaks, "classOf": __m["src/drishti_chart-data.js"].classOf, "compileCondition": __m["src/drishti_chart-data.js"].compileCondition, "conditionFields": __m["src/drishti_chart-data.js"].conditionFields, "CHART_DENSITIES": __m["src/drishti_chart-theme.js"].CHART_DENSITIES, "blend": __m["src/drishti_chart-theme.js"].blend, "alpha": __m["src/drishti_chart-theme.js"].alpha, "chartTheme": __m["src/drishti_chart-theme.js"].chartTheme, "toneColour": __m["src/drishti_chart-theme.js"].toneColour, "rampColour": __m["src/drishti_chart-theme.js"].rampColour, "formatterFor": __m["src/drishti_chart-theme.js"].formatterFor, "textStyle": __m["src/drishti_chart-theme.js"].textStyle, "axisOf": __m["src/drishti_chart-theme.js"].axisOf, "rowId": __m["src/drishti_chart-kinds.js"].rowId, "seriesDefs": __m["src/drishti_chart-kinds.js"].seriesDefs, "annotationMarks": __m["src/drishti_chart-kinds.js"].annotationMarks, "buildSeriesChart": __m["src/drishti_chart-kinds.js"].buildSeriesChart, "buildScatter": __m["src/drishti_chart-kinds.js"].buildScatter, "buildHistogram": __m["src/drishti_chart-kinds.js"].buildHistogram, "buildWaterfall": __m["src/drishti_chart-kinds.js"].buildWaterfall, "buildBoxplot": __m["src/drishti_chart-kinds.js"].buildBoxplot, "buildHeatmap": __m["src/drishti_chart-kinds.js"].buildHeatmap, "overviewStrip": __m["src/drishti_chart-kinds.js"].overviewStrip, "buildCandlestick": __m["src/drishti_chart-kinds.js"].buildCandlestick, "buildLayers": __m["src/drishti_chart-kinds.js"].buildLayers, "registerAxisKinds": __m["src/drishti_chart-kinds.js"].registerAxisKinds, "buildPie": __m["src/drishti_chart-kinds2.js"].buildPie, "buildGauge": __m["src/drishti_chart-kinds2.js"].buildGauge, "buildTreemap": __m["src/drishti_chart-kinds2.js"].buildTreemap, "buildSankey": __m["src/drishti_chart-kinds2.js"].buildSankey, "registerOtherKinds": __m["src/drishti_chart-kinds2.js"].registerOtherKinds, "buildLollipop": __m["src/drishti_chart-kinds4.js"].buildLollipop, "buildTrace3d": __m["src/drishti_chart-kinds4.js"].buildTrace3d, "buildSegmented": __m["src/drishti_chart-kinds4.js"].buildSegmented, "buildMatrix": __m["src/drishti_chart-kinds4.js"].buildMatrix, "canDraw3d": __m["src/drishti_chart-kinds4.js"].canDraw3d, "ensure3d": __m["src/drishti_chart-kinds4.js"].ensure3d, "registerSequenceKinds": __m["src/drishti_chart-kinds4.js"].registerSequenceKinds, "trackValues": __m["src/drishti_chart-tracks.js"].trackValues, "trackColour": __m["src/drishti_chart-tracks.js"].trackColour, "categoryCells": __m["src/drishti_chart-tracks.js"].categoryCells, "addTracks": __m["src/drishti_chart-tracks.js"].addTracks, "segmentOf": __m["src/drishti_chart-overlays.js"].segmentOf, "scatterOverlays": __m["src/drishti_chart-overlays.js"].scatterOverlays, "frameValues": __m["src/drishti_chart-frames.js"].frameValues, "frameRows": __m["src/drishti_chart-frames.js"].frameRows, "reducedMotion": __m["src/drishti_chart-frames.js"].reducedMotion, "FrameBar": __m["src/drishti_chart-frames.js"].FrameBar, "equalEarth": __m["src/drishti_chart-geo.js"].equalEarth, "albers": __m["src/drishti_chart-geo.js"].albers, "plateCarree": __m["src/drishti_chart-geo.js"].plateCarree, "projectGeometry": __m["src/drishti_chart-geo.js"].projectGeometry, "coreExtent": __m["src/drishti_chart-geo.js"].coreExtent, "countryProjection": __m["src/drishti_chart-geo.js"].countryProjection, "US_INSETS": __m["src/drishti_chart-geo.js"].US_INSETS, "prepareRegions": __m["src/drishti_chart-geo.js"].prepareRegions, "prepareWorld": __m["src/drishti_chart-geo.js"].prepareWorld, "findPlace": __m["src/drishti_chart-geo.js"].findPlace, "locate": __m["src/drishti_chart-geo.js"].locate, "createGeoLoader": __m["src/drishti_chart-geo.js"].createGeoLoader, "holdAntimeridian": __m["src/drishti_chart-geo.js"].holdAntimeridian, "fitView": __m["src/drishti_chart-geo.js"].fitView, "WORLD_REGIONS": __m["src/drishti_world-regions.js"].WORLD_REGIONS, "REGION_START_LEVELS": __m["src/drishti_chart-regions.js"].REGION_START_LEVELS, "isRegionLevel": __m["src/drishti_chart-regions.js"].isRegionLevel, "regionOf": __m["src/drishti_chart-regions.js"].regionOf, "regionName": __m["src/drishti_chart-regions.js"].regionName, "prepareRegionLevel": __m["src/drishti_chart-regions.js"].prepareRegionLevel, "bounds": __m["src/drishti_chart-regions.js"].bounds, "mapMetrics": __m["src/drishti_chart-map.js"].mapMetrics, "placeValues": __m["src/drishti_chart-map.js"].placeValues, "mapScale": __m["src/drishti_chart-map.js"].mapScale, "ranking": __m["src/drishti_chart-map.js"].ranking, "buildMap": __m["src/drishti_chart-map.js"].buildMap, "registerMapKind": __m["src/drishti_chart-map.js"].registerMapKind, "colourTone": __m["src/drishti_chart-vega.js"].colourTone, "d3Format": __m["src/drishti_chart-vega.js"].d3Format, "fromVegaLite": __m["src/drishti_chart-vega.js"].fromVegaLite, "vegaLiteAlternative": __m["src/drishti_chart-vega.js"].vegaLiteAlternative, "vegaLiteRefusal": __m["src/drishti_chart-vega.js"].vegaLiteRefusal, "vegaLiteIn": __m["src/drishti_chart-vega.js"].vegaLiteIn, "valueText": __m["src/drishti_chart-parts.js"].valueText, "tooltipElement": __m["src/drishti_chart-parts.js"].tooltipElement, "dataTable": __m["src/drishti_chart-parts.js"].dataTable, "legendElement": __m["src/drishti_chart-parts.js"].legendElement, "markSelection": __m["src/drishti_chart-parts.js"].markSelection, "addZoom": __m["src/drishti_chart-parts.js"].addZoom, "dragBrush": __m["src/drishti_chart-parts.js"].dragBrush, "rangeBrush": __m["src/drishti_chart-parts.js"].rangeBrush, "rectBrush": __m["src/drishti_chart-parts.js"].rectBrush, "idsInBox": __m["src/drishti_chart-parts.js"].idsInBox, "svgOf": __m["src/drishti_chart-parts.js"].svgOf, "MAP_MODES": __m["src/drishti_map-view.js"].MAP_MODES, "geoLoader": __m["src/drishti_map-view.js"].geoLoader, "MapView": __m["src/drishti_map-view.js"].MapView, "Studio": __m["src/drishti_chart-studio.js"].Studio, "CHART_EVENTS": __m["src/drishti_chart-view.js"].CHART_EVENTS, "CHART_MODES": __m["src/drishti_chart-view.js"].CHART_MODES, "Chart": __m["src/drishti_chart-view.js"].Chart, "ChartIO": __m["src/drishti_chart-io.js"].ChartIO, "buildCalendar": __m["src/drishti_chart-calendar.js"].buildCalendar, "bullet": __m["src/drishti_bullet.js"].bullet, "bulletScale": __m["src/drishti_bullet.js"].bulletScale, "bulletSummary": __m["src/drishti_bullet.js"].bulletSummary, "kernelDensity": __m["src/drishti_chart-kinds3.js"].kernelDensity, "tenorDays": __m["src/drishti_chart-kinds3.js"].tenorDays, "buildRadar": __m["src/drishti_chart-kinds3.js"].buildRadar, "buildViolin": __m["src/drishti_chart-kinds3.js"].buildViolin, "buildRidgeline": __m["src/drishti_chart-kinds3.js"].buildRidgeline, "buildCurve": __m["src/drishti_chart-kinds3.js"].buildCurve, "buildDensity": __m["src/drishti_chart-kinds3.js"].buildDensity, "registerDistributionKinds": __m["src/drishti_chart-kinds3.js"].registerDistributionKinds, "colourScale": __m["src/drishti_chart-scale.js"].colourScale, "linkCrosshair": __m["src/drishti_chart-multiples.js"].linkCrosshair, "facets": __m["src/drishti_chart-multiples.js"].facets, "selectionTopic": __lib("drishti-core").selectionTopic, "filterTopic": __lib("drishti-core").filterTopic, "linkGrid": __lib("drishti-core").linkGrid, "publishSelection": __lib("drishti-core").publishSelection, "PANEL_KINDS": __m["src/drishti_chart-panels.js"].PANEL_KINDS, "elementTooltips": __m["src/drishti_chart-panels.js"].elementTooltips, "escapeTip": __m["src/drishti_chart-panels.js"].escapeTip, "panelCompact": __m["src/drishti_chart-panels.js"].panelCompact, "panelLineCompact": __m["src/drishti_chart-panels.js"].panelLineCompact, "panelTokens": __m["src/drishti_chart-panels.js"].panelTokens, "labelFit": __m["src/drishti_chart-panels.js"].labelFit, "panelOption": __m["src/drishti_chart-panels.js"].panelOption, "drawMap": __m["src/drishti_chart-panel-draw.js"].drawMap, "PanelCharts": __m["src/drishti_chart-panel-draw.js"].PanelCharts, "pointOf": __m["src/drishti_chart-panel-draw.js"].pointOf, "CHART_ELEMENT": __m["src/drishti_chart-element.js"].CHART_ELEMENT, "defineChartElement": __m["src/drishti_chart-element.js"].defineChartElement, "chartIn": __m["src/drishti_chart-element.js"].chartIn };
   })();
   return Object.freeze(Object.assign({ library: "drishti-chart", version: "3.1.0" }, __m["src/drishti_index.js"]));
 });

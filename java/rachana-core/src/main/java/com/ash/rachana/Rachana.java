@@ -48,7 +48,7 @@ public final class Rachana {
         this.profiles = profiles;
         this.functions = functions;
         this.compiler = new ElCompiler(options.expressionCacheSize(), options.expressionLimits(), functions, grammar.level());
-        this.formats = formats;
+        this.formats = formats.atLevel(grammar.level());          // a later level's bundled names are unknown below it
     }
 
     /** The name of the library, from its internal banner. */

@@ -284,10 +284,11 @@ final class DatasetBinder {
                 structure.add(s);
             }
         }
+        String fmt = o.get("fmt") instanceof String s ? s : null;          // level 1.2: the measures' format where a column names none
         List<PanelData.Measure> measures = new ArrayList<>();             // the number fields: a node no row names adds them up
         for (ViewModel.DataField f : ds.fields()) {
             if ("number".equals(f.type()) && !structure.contains(f.name())) {
-                measures.add(new PanelData.Measure(f.name(), "sum", null, null));
+                measures.add(new PanelData.Measure(f.name(), "sum", null, f.fmt() == null ? fmt : null));
             }
         }
         return new PanelData.Tree(name, (String) o.get("node"), (String) o.get("parent"), (String) o.get("path"), (String) o.get("label"),

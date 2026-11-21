@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/fragments-hyphens
+since: "1.2"
+profile: core
+verified: true
+description: "A caller's column that is not a name (book-desk) mapped to a local column a fragment names in a field-name option: RCH-2121, never a silent wrong read; level 1.2."
+cases:
+
+  - id: hyphenated-caller-column-in-a-field-name-option
+    kind: problem
+    source: L-21 (3), never silent (RCH-2121); SPEC 2.3a field-name options
+    files:
+      desk-tree.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-tree
+        version: 1
+        doc:
+          summary: Desks under their parents.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              parent: { type: text, doc: Its parent }
+        panels:
+          - { id: t, kind: tree, rows: arg.rows, node: desk, parent: parent }
+    sutra: |
+      rachana: 1
+      sutra: tree-demo
+      version: 1
+      match: { kind: demo }
+      panels:
+        - use: desk-tree@1
+          with: { rows: { from: $.desks, columns: { desk: book-desk, parent: PARENT } } }
+    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment desk-tree names column desk of table rows in a field-name option, and the caller maps it to 'book-desk', which is not a name ([A-Za-z_][A-Za-z0-9_]*): give the rows renamed in place of the mapping (rows: \"map(<the caller's table>, {desk: @['book-desk'], ...})\")", "range": {"start": {"line": 15, "column": 48}}}]}

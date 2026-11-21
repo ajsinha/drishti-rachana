@@ -1,20 +1,19 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 # Synthetic demo content: fictional customers, items and orders.
-"""The live orders board under Flask. PLANNED API; runs once B5 lands. Not runnable today.
+"""The live orders board under Flask (drishti_rachana.adapters.flask).
 
-    pip install drishti-rachana[flask]     # planned
-    python flask_app.py                    # planned: then open http://127.0.0.1:5000/dash/
+    pip install drishti-rachana[flask]
+    python flask_app.py                    # then open http://127.0.0.1:5000/dash/
 
-The names below follow docs/MODES.md 3 and the stubs in python/src/drishti_rachana/adapters/flask.py; the decorator
-names (table, live) and the (key, row) change form may still change in B5. A change of (key, None) is assumed to
-remove the row.
+The page needs the painter (<rachana-view>, built on branch g2/data); the data endpoints under /dash/data work today.
+A change of (key, None) removes the row.
 """
 import time
 from pathlib import Path
 
 from flask import Flask
-from drishti_rachana.adapters.flask import RachanaBlueprint   # planned API
+from drishti_rachana.adapters.flask import RachanaBlueprint
 
 from gen_orders import OrderBook
 

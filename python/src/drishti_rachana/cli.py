@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""``rachana`` command line. Today: ``rachana conformance run`` (conformance/RUNNER.md 2)."""
+"""``rachana`` command line (PyPI launcher): ``rachana lint`` (compile and lint Sutras on V8; needs the ``v8`` extra) and
+``rachana conformance run`` (conformance/RUNNER.md 2). ``python -m drishti_rachana`` is the same program."""
 from __future__ import annotations
 
 import argparse
@@ -18,6 +19,11 @@ def _csv(s: Optional[str]) -> tuple[str, ...]:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="rachana")
     top = p.add_subparsers(dest="group", required=True)
+    lint = top.add_parser("lint", help="compile and lint Sutra files (exit 1 on errors; needs drishti-rachana[v8])")
+    lint.add_argument("paths", nargs="*", default=["."], help="files or folders (*.sutra.yaml); default: the current folder")
+    lint.add_argument("--format", choices=("text", "json", "sarif"), default="text")
+    lint.add_argument("--strict", action="store_true", help="warnings fail too")
+    lint.add_argument("--profiles", default="core")
     conf = top.add_parser("conformance", help="conformance suite").add_subparsers(dest="action", required=True)
     r = conf.add_parser("run", help="run the suite through an adapter and write results/<runtime>.jsonl")
     r.add_argument("--cases", default="conformance/1")
@@ -45,11 +51,73 @@ def _adapter(spec: str):
     return getattr(importlib.import_module(mod), cls)()
 
 
+SUFFIX = ".sutra.yaml"
+
+
+def find_sutras(paths: Sequence[str]) -> list[Path]:
+    out: list[Path] = []
+    for p in map(Path, paths):
+        if p.is_file():
+            out.append(p)
+        elif p.is_dir():
+            out += sorted(f for f in p.rglob("*" + SUFFIX) if not any(x.startswith(".") or x == "node_modules" for x in f.relative_to(p).parts))
+        else:
+            raise FileNotFoundError(f"no such file or folder: {p}")
+    return out
+
+
+def lint_files(files: Sequence[Path], profiles: str = "core") -> list[dict]:
+    """``[{"file", "ok", "problems"}]`` per file, from the bundle's ``check``: the same problem objects as the JVM and Node."""
+    from .engine import Rachana
+    r = Rachana(profiles=profiles)
+    results = []
+    for f in files:
+        res = r.check(f.read_text(encoding="utf-8"), file=str(f))
+        results.append({"file": str(f), "ok": res["ok"], "problems": res["problems"]})
+    return results
+
+
+def sarif(results: list[dict]) -> dict:
+    level = {"error": "error", "warning": "warning"}
+    return {"version": "2.1.0", "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            "runs": [{"tool": {"driver": {"name": "rachana", "informationUri": "https://github.com/ajsinha/drishti-rachana"}},
+                      "results": [{"ruleId": p["code"], "level": level.get(p["severity"], "note"), "message": {"text": p["message"]},
+                                   "locations": [{"physicalLocation": {"artifactLocation": {"uri": r["file"]},
+                                                  "region": {"startLine": p.get("range", {}).get("start", {}).get("line", 1),
+                                                             "startColumn": p.get("range", {}).get("start", {}).get("column", 1)}}}]}
+                                  for r in results for p in r["problems"]]}]}
+
+
+def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, profiles: str = "core") -> int:
+    import json
+    files = find_sutras(paths)
+    results = lint_files(files, profiles)
+    bad = sum(1 for r in results for p in r["problems"] if p["severity"] == "error" or (strict and p["severity"] == "warning"))
+    if fmt == "json":
+        print(json.dumps(results, indent=2, ensure_ascii=False))
+    elif fmt == "sarif":
+        print(json.dumps(sarif(results), indent=2, ensure_ascii=False))
+    else:
+        for r in results:
+            for p in r["problems"]:
+                st = p.get("range", {}).get("start", {})
+                first = p["message"].splitlines()[0] if p["message"] else ""
+                print(f"{r['file']}:{st.get('line', 1)}:{st.get('column', 1)}: {p['severity']} {p['code']}: {first}")
+        print(f"{len(results)} file(s), {bad} failing problem(s)")
+    return 1 if bad else 0
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     try:
         a = build_parser().parse_args(argv)
     except SystemExit as e:
         return EXIT_USAGE if e.code else 0
+    if a.group == "lint":
+        try:
+            return lint_main(a.paths, a.format, a.strict, a.profiles)
+        except (ImportError, FileNotFoundError) as e:
+            print(f"rachana: {e}", file=sys.stderr)
+            return EXIT_USAGE
     try:
         if a.cmd:
             raise UsageError("--cmd (RUNNER 5) is not implemented yet")  # TODO(B5/R2): the stdin/stdout driver

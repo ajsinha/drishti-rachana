@@ -1,0 +1,42 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+"""``rachana lint`` / ``python -m drishti_rachana lint`` (docs/design/COMPILER_AND_RUNTIMES.md 8): exit codes and output formats."""
+import json
+
+import pytest
+
+pytest.importorskip("py_mini_racer")
+from drishti_rachana.engine import BUNDLE_DIR  # noqa: E402
+from drishti_rachana.cli import main, find_sutras  # noqa: E402
+
+pytestmark = pytest.mark.skipif(not (BUNDLE_DIR / "rachana.tools.js").is_file(), reason="bundle not built (tools/js/build_js.py)")
+
+GOOD = "rachana: 1\nsutra: ok\nversion: 1\ntitle: { id: \"'Ok'\" }\npanels:\n  - { id: m, kind: metric, label: Revenue, value: 1 }\n"
+BAD = "rachana: 1\nsutra: bad\nversion: 1\npanels:\n  - { id: m, kind: metric, label: Revenue, value: \"1 +\" }\n"
+
+
+def test_exit_codes_and_text(tmp_path, capsys):
+    (tmp_path / "a.sutra.yaml").write_text(GOOD)
+    assert main(["lint", str(tmp_path)]) == 0
+    (tmp_path / "b.sutra.yaml").write_text(BAD)
+    assert main(["lint", str(tmp_path)]) == 1
+    out = capsys.readouterr().out
+    assert "b.sutra.yaml:" in out and "error RCH-" in out and "a.sutra.yaml:" not in out
+
+
+def test_json_and_sarif(tmp_path, capsys):
+    (tmp_path / "b.sutra.yaml").write_text(BAD)
+    assert main(["lint", "--format", "json", str(tmp_path)]) == 1
+    res = json.loads(capsys.readouterr().out)
+    assert res[0]["ok"] is False and res[0]["problems"][0]["code"].startswith("RCH-")
+    assert main(["lint", "--format", "sarif", str(tmp_path / "b.sutra.yaml")]) == 1
+    s = json.loads(capsys.readouterr().out)
+    assert s["version"] == "2.1.0" and s["runs"][0]["results"][0]["ruleId"].startswith("RCH-")
+
+
+def test_usage_error_and_discovery(tmp_path):
+    assert main(["lint", str(tmp_path / "missing")]) == 2
+    (tmp_path / "node_modules").mkdir()
+    (tmp_path / "node_modules" / "x.sutra.yaml").write_text(GOOD)
+    (tmp_path / "a.sutra.yaml").write_text(GOOD)
+    assert [f.name for f in find_sutras([str(tmp_path)])] == ["a.sutra.yaml"]

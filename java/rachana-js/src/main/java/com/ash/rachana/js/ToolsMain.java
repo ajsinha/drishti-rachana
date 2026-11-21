@@ -77,6 +77,16 @@ public final class ToolsMain {
         return Cases.run(Cases::edit, request);
     }
 
+    /**
+     * A live table's declaration ({@code <name>.live.yaml}, LIVE_TABLES 2) read and checked as a host loads it, for Studio and
+     * {@code rachana lint}: {@code {declaration, file?, profileKeys?}} answered {@code {ok, problems, schema}} (FORMAT 5.14). The tools
+     * bundle's alone: the runtime bundle carries no declaration checker.
+     */
+    @JSExport
+    public static String live(String request) {
+        return Cases.run(Cases::live, request);
+    }
+
     @JSExport
     public static String viewModelSchema() {
         return Json.write(ViewModelSchema.build());

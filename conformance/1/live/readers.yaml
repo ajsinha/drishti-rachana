@@ -1,0 +1,173 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: live/readers
+since: "1.0"
+profile: core
+verified: false
+description: "Readers of one shared live table (LIVE_TABLES 3, 5; PROTOCOL 16 Readers): each reader's rows, totals and patches are their own; masked values never pick, order or filter a row; refusals and their audit; fail closed without an authoriser. POST /_test/as names the reader and their view (PROTOCOL 15); the test bridge keeps one channel per reader. Run with protocol_check.py --live."
+cases:
+  - id: two-readers-see-their-own-rows-and-totals
+    kind: protocol
+    source: "LIVE_TABLES 3, 5 (row scope pushed down and re-checked)"
+    fixture: &orders
+      name: orders
+      declaration: &decl |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        version: v
+        columns: [ { name: id }, { name: v, type: integer }, { name: book }, { name: qty, type: integer } ]
+      rows: &rows
+        - { id: a, v: 1, book: A, qty: 1 }
+        - { id: b, v: 1, book: B, qty: 2 }
+        - { id: c, v: 1, book: A, qty: 3 }
+      readers: &readers
+        alice: { rowFilter: { op: "==", args: [ { col: book }, { lit: A } ] } }
+        bob: { rowFilter: { op: "==", args: [ { col: book }, { lit: B } ] } }
+        mia: { masked: [qty] }
+        carol: { refuse: forbidden }
+        dan: { refuse: unknown }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { columns: [id], sort: [ { col: id } ] } }
+        expect: { status: 200, body: { values: [ [a], [c] ], total: 2 } }
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { columns: [id], sort: [ { col: id } ] } }
+        expect: { status: 200, body: { values: [ [b] ], total: 1 } }
+
+  - id: the-same-paged-table-for-two-readers
+    kind: protocol
+    source: "LIVE_TABLES 3, 7 (audience-keyed indexes: neither reads the other's)"
+    fixture: { name: orders, tier: columns, declaration: *decl, rows: *rows, readers: *readers }
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { columns: [id], sort: [ { col: qty, dir: desc } ] } }
+        expect: { status: 200, body: { values: [ [c], [a] ], total: 2 } }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: d, v: 1, book: B, qty: 9 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { columns: [id], sort: [ { col: qty, dir: desc } ] } }
+        expect: { status: 200, body: { values: [ [c], [a] ], total: 2 } }
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { columns: [id], sort: [ { col: qty, dir: desc } ] } }
+        expect: { status: 200, body: { values: [ [d], [b] ], total: 2 } }
+
+  - id: patches-reach-only-the-readers-whose-rows-they-are
+    kind: protocol
+    source: "LIVE_TABLES 3, 5 (neither sees the other's rows in patches)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200, body: { body: { recovered: true } } }
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200, body: { body: { recovered: true } } }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, book: A, qty: 10 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { table: orders } } ] }
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { update: [ { id: a, qty: 10 } ] } } ] }
+
+  - id: a-row-that-leaves-a-readers-scope-is-removed-for-them
+    kind: protocol
+    source: "LIVE_TABLES 5 (a row outside the reader's scope: as if absent)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, book: B, qty: 1 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { remove: [ [a] ] } } ] }
+
+  - id: a-windowed-readers-total-counts-their-rows-only
+    kind: protocol
+    source: "PROTOCOL 16 Readers (rows outside their scope are never counted)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: alice } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders, window: { keys: [[a]] } } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: e, v: 1, book: B, qty: 5 }, { id: f, v: 1, book: A, qty: 6 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { table: orders, total: 2 } }, { t: msg, sub: s1, data: { table: orders, total: 3 } } ] }
+
+  - id: masked-values-are-sent-masked
+    kind: protocol
+    source: "LIVE_TABLES 5, PROTOCOL 3.2 and 11 (masked columns as {$masked: true}; the schema marks them)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: mia } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 200, body: { columns: [ { name: id }, { name: v }, { name: book }, { name: qty, masked: true } ] } }
+      - request: { method: POST, path: /tables/orders/query, body: { columns: [id, qty], sort: [ { col: id } ], limit: 1 } }
+        expect: { status: 200, body: { values: [ [a, { $masked: true }] ] } }
+
+  - id: a-masked-value-never-orders-or-filters
+    kind: protocol
+    source: "LIVE_TABLES 1.5, 5 (a masked value never picks, orders or filters a row)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: mia } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/orders/query, body: { sort: [ { col: qty } ] } }
+        expect: { status: 403, body: { error: { code: rdp.forbidden } } }
+      - request: { method: POST, path: /tables/orders/query, body: { filter: { op: ">", args: [ { col: qty }, { lit: 1 } ] } } }
+        expect: { status: 403, body: { error: { code: rdp.forbidden } } }
+
+  - id: a-refused-reader-is-forbidden-and-audited
+    kind: protocol
+    source: "LIVE_TABLES 5 (may not read the table: 403 rdp.forbidden, audit read-refused)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: carol } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 403, body: { error: { code: rdp.forbidden } } }
+      - request: { method: POST, path: /_test/audit }
+        expect: { status: 200, body: [ { caller: carol, table: orders, event: read-refused } ] }
+
+  - id: a-reader-told-nothing-of-the-table-sees-it-unknown
+    kind: protocol
+    source: "LIVE_TABLES 5 (404 rdp.table.unknown when the host says not to leak; not listed)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: dan } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 404, body: { error: { code: rdp.table.unknown } } }
+      - request: { method: GET, path: /tables }
+        expect: { status: 200, body: { tables: [] } }
+
+  - id: without-an-authoriser-reads-are-refused
+    kind: protocol
+    source: "LIVE_TABLES 5, LT-19 (fail closed)"
+    fixture: { name: orders, declaration: *decl, rows: *rows, authoriser: false }
+    steps:
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 403, body: { error: { code: rdp.forbidden } } }
+
+  - id: a-subscription-of-a-refused-reader-is-refused
+    kind: protocol
+    source: "LIVE_TABLES 5 (subscriptions keep to the same view)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: carol } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200, body: { t: res, re: s1, error: { code: rdp.forbidden } } }

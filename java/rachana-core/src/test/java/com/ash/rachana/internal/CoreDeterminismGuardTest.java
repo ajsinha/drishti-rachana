@@ -29,7 +29,7 @@ class CoreDeterminismGuardTest {
     private static final Set<String> OWNERS = Set.of("internal/CoreMath.java", "internal/NumberText.java", "internal/CoreText.java",
             "internal/CoreDecimal.java", "internal/DateText.java");
     /** Matches that are not the JDK call: {@code Sutra.strip()} is the Sutra's strip of panels, {@code ViewModel.strip()} the view's strip. */
-    private static final Set<String> NOT_THE_JDK = Set.of("control/ControlReads.java .strip()", "bind/ViewBuilder.java .strip()",
+    private static final Set<String> NOT_THE_JDK = Set.of("control/ControlReads.java .strip()", "control/ScreenState.java .strip()", "bind/ViewBuilder.java .strip()",
             "view/ViewRecords.java .strip()", "view/ViewDiff.java .strip()");
 
     /** Forbidden everywhere in Core. */

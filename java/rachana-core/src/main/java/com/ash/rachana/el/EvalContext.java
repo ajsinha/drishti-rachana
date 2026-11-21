@@ -136,7 +136,38 @@ public record EvalContext(Node root, Object row, int index, Formats formats, jav
      * list of text for a multi-select, a whole number for top-n, {@code from..to} text for a range.
      */
     public EvalContext withControls(java.util.Map<String, Object> values) {
-        return new EvalContext(root, row, index, formats, values, today, scope, locals);
+        java.util.Map<String, Object> kept = null;                    // the state values stay (withState)
+        for (java.util.Map.Entry<String, Object> e : ctl.entrySet()) {
+            if (e.getKey().startsWith(STATE_KEY)) {
+                kept = kept == null ? new java.util.LinkedHashMap<>(values == null ? java.util.Map.of() : values) : kept;
+                kept.put(e.getKey(), e.getValue());
+            }
+        }
+        return new EvalContext(root, row, index, formats, kept == null ? values : java.util.Collections.unmodifiableMap(kept), today, scope, locals);
+    }
+
+    /**
+     * The key under which a state value is held among the screen's values ({@link #ctl()}): a control's id has no dot, so the two never
+     * meet, and a {@code let} memoised for a bind follows both.
+     */
+    public static final String STATE_KEY = "state.";
+
+    /**
+     * The same context with the screen's state values (SUTRA_EXPANSION S1), read as {@code state.<id>}; the controls are kept. Text,
+     * an exact number, a boolean, an ISO date text, or a list of text; null for empty.
+     */
+    public EvalContext withState(java.util.Map<String, Object> values) {
+        if (values == null || values.isEmpty()) {
+            return this;
+        }
+        java.util.Map<String, Object> all = new java.util.LinkedHashMap<>(ctl);
+        values.forEach((k, v) -> all.put(STATE_KEY + k, v));
+        return new EvalContext(root, row, index, formats, java.util.Collections.unmodifiableMap(all), today, scope, locals);
+    }
+
+    /** The state value {@code id} ({@code state.<id>}), or null when the context holds none. */
+    public Object state(String id) {
+        return ctl.get(STATE_KEY + id);
     }
 
     /** The same context reading {@code next} as its events and source. */

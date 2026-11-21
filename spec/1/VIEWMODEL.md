@@ -69,6 +69,23 @@ Rachana writes `datasets` only when a Sutra of language level 1.1 has a `grid`, 
 never writes `rows`, `name`, `arrow`, `pages`, `server` or map `points` itself: those are for hosts and other producers.
 Drishti's screens, at level 1.0, stay byte-identical.
 
+## Contract 1.2
+
+Appended to 1.1 by the same rules (optional, after the fields of its record, left out when unused; new definitions carry
+`x-since: "1.2"`). `contract` is `"1.2"` only when the document has `state`; otherwise as for 1.1. A painter that knows only
+1.0 or 1.1 ignores what 1.2 adds (decision S1-OPEN b): the screen still draws, and a click simply writes no state.
+
+| Addition | Where | What |
+|---|---|---|
+| `state` | ViewModel, after `datasets` | the screen's state values (SUTRA_EXPANSION S1), in declared order, a fragment use's private state as `<as>.<name>` |
+| `StateView` | new | `id`; `value` (text, a number, `true`/`false`, an ISO date text, a list of text, or `null`: always written); `url` (the host keeps it in the address; `false` until the view-state document, S4); `reads` (the panels, `strip` or `title` whose expressions read it, directly or through a `let`: only those are rebuilt when it changes) |
+| `Row.set`, `Bar.set` | table and ladder rows, hbar bars, after `ev` | what a click writes into the state (I1 `set: { state, to }`): state id to the value, already evaluated for that row or bar and in the state's type; absent when the panel's `on:` writes no state |
+
+The painter keeps the values, applies a clicked row's or bar's `set` (then rebuilds the parts its states' `reads` name), and
+sends every value back with the next bind as a request parameter `state.<id>=<text>` (a list's items joined by commas;
+`StateValues`), exactly as it sends `ctl.<id>`. A value that does not fit its state's type is ignored there (the default
+stands). `set: <control>` in `on:` is written as today's `selects` entry and row `pick` (one mechanism).
+
 ## Differences found (for N3)
 
 Between the Java records (the contract-1.0 truth, now this schema) and the Views design (VIEWS_DESIGN, the `design/views`

@@ -20,6 +20,21 @@ Entries are written per release; the regime's unreleased work is listed after th
   unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
   placeholder. Built from Drishti Elements 3.1.0 widgets only; `<rachana-view>` takes a `files` property (the libraries). Vendored js-yaml 4.1.0.
 
+### Screen state and the effect list's set (G2 lane A5)
+
+- **S1 + I1 (first step), level 1.2** (SPEC 2.8; decision S1-OPEN): a Sutra's `state:` (typed `text`, `number`, `boolean`,
+  `date`, `list`; a default; at most 40 with fragments' private state; `url` and `remember` refused until S4), read as
+  `state.<id>` (`Expr.State`, parsed only while a Sutra that holds state is in force; an undeclared id does not compile), and
+  a panel's `on:` (`row-click` on tables and ladders, `bar-click` on hbars) with the effect `set`: `{ state, to }` evaluated
+  per row (`Row.set`, `Bar.set`), or `set: <control>` (with `field:`), which is the panel's `on-select`. The bind request
+  carries `StateValues` beside `ControlValues` (`state.<id>=...`; `ViewBuilder.Request.withState`, `LiveScreen.state`), and
+  the ViewModel lists `state[] {id, value, url, reads}` (contract 1.2, `ViewModel.NEWEST`; an older painter ignores it).
+  Fragments: private `state:` held as `<as>.<name>` (a stateful fragment needs `as:`, `RCH-2115`), `outputs:` read by the
+  screen as `state.<as>.<name>`, never written (`RCH-2117`); a use's `on:` takes an effect list that writes the screen's
+  state from the event's payload (`event.<name>`). Cases `sutra/state` (6), `problem/state` (9), `sutra/fragments-state`
+  (2), `problem/fragments-state` (4); conformance `given.state`. Not yet: the painter side (Elements lane), the other
+  triggers and effects, `state` name parameters (LIBRARIES 6.3), S4.
+
 ### Named arguments by the catalogue; stable wire keys; Sutra let and functions, library functions (G2 lane A4)
 
 - **X41 + S2 + X42, level 1.2** (SPEC 2.7): a Sutra's `let:` (named values, each reading the ones before it, no current
@@ -44,6 +59,27 @@ Entries are written per release; the regime's unreleased work is listed after th
   (`map(arg.rows, @)[?@.amount > 0]`) is `RCH-2121`, never a silent read of nothing. Cases sutra +1, problem +1.
 
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
+
+- **L11 (G2 half), conformance**: the live test adapter `LiveReferenceServer` (`rachana-live`: `/_test/live` loads a declaration and
+  its source's rows, `/_test/as` acts as a reader with a view, `/_test/stream` changes the source and pushes the stream, `/_test/upkeep`
+  moves the clock, `/_test/audit` reads the events; PROTOCOL 15), run by `protocol_check.py --live`; a fixture with a `declaration`
+  (FORMAT 5.12, `case.schema.json`) runs only there (other hosts: unsupported; the Python host skips it, LT-14). Suites
+  `protocol/window` 12, `protocol/narrow` 6, `live/merge` 9, `live/resync` 5, `live/retention` 5, `live/overlay` 11, `live/readers` 11,
+  all unverified, all green on the reference; the ported-case mapping table is LIVE_TABLES 9.1.
+- **Windows in the minimal SSE form and the clients**: `POST /changes` takes `window: {keys, top}`, answers `subd` first and is moved by
+  `POST /changes/{sub}/window` (only the stream's own caller: else `rdp.table.unknown`); a gap ends it. `TableClient.follow(…, window,
+  top, …)` and `TableClient.window`; JavaScript `DataClient.follow(…, {window})` and `DataClient.window` over HTTP and the bridge (`win`,
+  a window's `gap` routed). `ReferenceServer` gains `actAs`, `testPath`, `reset`, `onReset` (one bridge channel per caller);
+  `ProtocolHost.remove`. API additions only.
+- **Paging without O(offset)**: a paged table orders by the whole sort list (`dir`, `nulls`), then the key values; its cursor is keyset
+  (the last row sent, found by binary search in the kept index and the live side: rows changing before it neither repeat nor skip),
+  and an offset is placed by counting the live side and the shadowed positions.
+- **Declarations in Studio and lint**: the tools bundle's `live(request)` checks a `.live.yaml` (`{ok, problems, schema}`, FORMAT 5.14);
+  `rachana lint` lints `*.live.yaml` beside Sutras (the Drishti profile's keys with `--profiles core,drishti`). The runtime bundle stays
+  without the checker.
+- The four unverified JVM `examples` cases that fail at level 1.2 (`edit/examples/edit#set-a-title-keeps-comments`,
+  `#remove-a-required-key-is-refused`, `problem/examples/problem#problems-in-position-order-l11`, `#profile-key-without-the-profile`)
+  fail the same on fc74ffd, before the live tables work: not caused by it.
 
 - **L3 to L6, the engine** (new JVM module `rachana-live`, never in Core or the bundles: `LiveModuleGuardTest`): `LiveTables` is a
   Data Protocol provider over `SnapshotSource` (whole, columns, query tiers) and `LiveStream`; merge by key and record version

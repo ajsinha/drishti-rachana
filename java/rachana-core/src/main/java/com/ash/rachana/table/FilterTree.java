@@ -224,6 +224,7 @@ public final class FilterTree {
         return switch (e) {
             case Expr.Lit l -> false;
             case Expr.Ctl c -> false;
+            case Expr.State c -> false;
             case Expr.Absent a -> false;
             case Expr.Not n -> readsRow(n.e());
             case Expr.Neg n -> readsRow(n.e());
@@ -253,6 +254,7 @@ public final class FilterTree {
         switch (e) {
             case Expr.Lit l -> { }
             case Expr.Ctl c -> { }
+            case Expr.State c -> { }
             case Expr.Not n -> collect(n.e(), out);
             case Expr.Neg n -> collect(n.e(), out);
             case Expr.And a -> { collect(a.l(), out); collect(a.r(), out); }

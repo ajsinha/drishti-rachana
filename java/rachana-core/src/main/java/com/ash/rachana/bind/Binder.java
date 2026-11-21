@@ -262,6 +262,31 @@ public final class Binder {
         return null;
     }
 
+    /**
+     * What a click writes into the screen's state (level 1.2, I1): each {@code set: { state, to }} evaluated with {@code @} the clicked row,
+     * as its state's type, in order; the effects stop at the first whose value fails or does not fit its type. Null when the panel writes
+     * no state.
+     */
+    private Map<String, Object> sets(List<com.ash.rachana.model.Effects.SetState> sets, EvalContext rc) {
+        if (sets.isEmpty()) {
+            return null;
+        }
+        Map<String, String> types = com.ash.rachana.el.Declarations.inForce().states();
+        Map<String, Object> out = new java.util.LinkedHashMap<>();
+        for (com.ash.rachana.model.Effects.SetState st : sets) {
+            String type = types.get(st.state());
+            if (type == null) {
+                continue;
+            }
+            try {
+                out.put(st.state(), com.ash.rachana.el.StateTypes.json(com.ash.rachana.el.StateTypes.of(type, el.compile(st.to()).eval(rc))));
+            } catch (RuntimeException e) {
+                break;                                                     // effects stop at the first that fails (SUTRA_EXPANSION 3.4)
+            }
+        }
+        return out.isEmpty() ? null : out;
+    }
+
     private static String pick(Node row, String field) {
         if (field == null) {
             return null;
@@ -327,6 +352,7 @@ public final class Binder {
         boolean[] masked = new boolean[cols.size()];          // a column with a masked value is never added up
         String childrenExpr = p.options().get("children") instanceof String ce ? ce : null;   // a tree
         boolean emits = p.wiring().emits().stream().anyMatch(e -> "row-click".equals(e.on()));
+        List<com.ash.rachana.model.Effects.SetState> rowSets = com.ash.rachana.model.Effects.sets(p, "row-click");
         int[] budget = {limits.treeRows()};
         List<LevelSpec> levels = levelSpecs(p);
         if (!levels.isEmpty()) {
@@ -359,7 +385,8 @@ public final class Binder {
             }
             boolean hl = highlight != null && Values.truthy(eval(highlight, rc));
             out.add(new PanelData.Row(cells, hl, rowPath, null, pick(rows.get(i), pickField), null, null,
-                    emits ? String.valueOf(origin == null ? i : origin[i]) : null));   // a click sends the row's place in the data back
+                    emits ? String.valueOf(origin == null ? i : origin[i]) : null,     // a click sends the row's place in the data back
+                    sets(rowSets, rc)));                                              // level 1.2, I1: what a click writes into state
         }
         PanelData.Row total = null;
         if (cols.stream().anyMatch(Column::total)) {
@@ -709,6 +736,7 @@ public final class Binder {
         int[] origin = originals(p, all, c.eval());
         Node rows = origin == null ? all : keep(all, origin);
         boolean emits = p.wiring().emits().stream().anyMatch(e -> "bar-click".equals(e.on()));
+        List<com.ash.rachana.model.Effects.SetState> barSets = com.ash.rachana.model.Effects.sets(p, "bar-click");
         String label = p.option("label").orElse("label");
         String value = p.option("value").orElse("value");
         String fmt = p.option("fmt").orElse(null);
@@ -723,7 +751,8 @@ public final class Binder {
             }
             total += v;
             bars.add(new PanelData.Bar(r.get(label).asText(), v, formats.format(fmt, Values.normalise(v)),
-                    tone == null ? (v < 0 ? "neg" : "pos") : Tones.resolve(tone, v), emits ? String.valueOf(origin == null ? i : origin[i]) : null));
+                    tone == null ? (v < 0 ? "neg" : "pos") : Tones.resolve(tone, v), emits ? String.valueOf(origin == null ? i : origin[i]) : null,
+                    barSets.isEmpty() ? null : sets(barSets, c.eval().withRow(r, origin == null ? i : origin[i]))));
         }
         String shape = p.option("shape").filter("donut"::equals).orElse(null);
         return new PanelData.Bars(bars, shape, shape == null ? null : formats.format(fmt, Values.normalise(total)));

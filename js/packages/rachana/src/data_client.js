@@ -176,14 +176,18 @@ export class DataClient {
   /**
    * Follows a table's changes after a position. onFrame receives each `msg` or `gap` frame parsed; the rules of PROTOCOL 8.3 (drop a
    * seq not above the last, resync on a gap or another epoch) are the caller's. Returns a function that stops.
+   * opts.window ({keys: [[...key values]], top?}, a table whose can has changes.window; PROTOCOL 16): only the patches of the keys the
+   * reader's page shows, plus its new `total` when other rows change; a `subd` frame (the first over HTTP) names the subscription
+   * for `window(sub, keys, top)`. A window falling behind the host's capacity ends with a `gap` (read the page again).
    */
   follow(table, after, onFrame, onError, opts) {
-    const filter = (opts && opts.filter) || null, everyMs = (opts && opts.everyMs) || this.everyMs;
-    if (this.subscribeHook) return this.subscribeHook(table, after, onFrame, onError, { filter, everyMs });
-    if (this.bridge) return this.bridge.subscribe(table, after, filter, everyMs, onFrame, onError);
+    const filter = (opts && opts.filter) || null, everyMs = (opts && opts.everyMs) || this.everyMs, win = (opts && opts.window) || null;
+    const windowed = win ? { keys: win.keys || [], top: !!win.top } : undefined;
+    if (this.subscribeHook) return this.subscribeHook(table, after, onFrame, onError, { filter, everyMs, window: windowed });
+    if (this.bridge) return this.bridge.subscribe(table, after, filter, everyMs, onFrame, onError, windowed);
     const url = `${this.base}/changes?table=${encodeURIComponent(table)}&after=${encodeURIComponent(`${after.epoch}:${after.seq}`)}`;
-    // a filtered or conflated stream is asked with POST (the minimal SSE form's body); EventSource cannot POST, so fetch reads it
-    const post = filter || everyMs ? { table, after: `${after.epoch}:${after.seq}`, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined } : null;
+    // a filtered, conflated or windowed stream is asked with POST (the minimal SSE form's body); EventSource cannot POST, so fetch reads it
+    const post = filter || everyMs || windowed ? { table, after: `${after.epoch}:${after.seq}`, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined, window: windowed } : null;
     if (typeof EventSource !== 'undefined' && !post) {
       const es = new EventSource(url);
       const on = (e) => { try { onFrame(JSON.parse(e.data)); } catch (x) { if (onError) onError(x); } };
@@ -215,6 +219,18 @@ export class DataClient {
     })().catch((x) => { if (!(ctl && ctl.signal.aborted) && onError) onError(x); });
     return () => { if (ctl) ctl.abort(); };
   }
+
+  /**
+   * Changes the window of a windowed subscription (`sub` from its `subd` frame; PROTOCOL 16): the keys the page now shows and whether it
+   * starts at the top of the table's own order. Over HTTP `POST {base}/changes/{sub}/window`, over the bridge a `win` message. Only the
+   * subscription's own caller may; `rdp.table.unknown` otherwise.
+   */
+  async window(sub, keys, top) {
+    if (this.bridge) return this.bridge.window(sub, keys, top);
+    const r = await this.fetch(`${this.base}/changes/${encodeURIComponent(sub)}/window`, { method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ keys: keys || [], top: !!top }) });
+    if (r.status !== 204 && r.status !== 200) { const t = await r.text(); throw new DataError(r.status, t ? JSON.parse(t).error : null); }
+  }
 }
 
 /** Base64 (a bridge res.arrow buffer in JSON) as bytes; a platform's transferable buffer is used as it is. */
@@ -242,7 +258,7 @@ export class BridgeChannel {
       if (!w) return;
       this.waiting.delete(m.re);
       if (m.error) w.fail(new DataError(0, m.error)); else w.ok(m.t === 'res.arrow' ? bytesOf(m.buffer) : m.body);
-    } else if (m.t === 'msg' && this.subs.has(m.sub)) {
+    } else if ((m.t === 'msg' || m.t === 'gap') && this.subs.has(m.sub)) {
       this.subs.get(m.sub)(m);
     }
   }
@@ -260,11 +276,21 @@ export class BridgeChannel {
     return this.send(() => ({ t, table, body, accept }));
   }
 
-  subscribe(table, after, filter, everyMs, onFrame, onError) {
+  subscribe(table, after, filter, everyMs, onFrame, onError, window) {
     let id = null, live = true;
-    this.send((rid) => { id = rid; this.subs.set(rid, (msg) => onFrame({ t: 'msg', epoch: msg.epoch, seq: msg.seq, first: msg.first, data: msg.data }));
-      return { t: 'sub', table, after, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined }; })
-      .then((body) => { if (live && body && body.recovered === false) onFrame({ t: 'gap', recoverable: false }); }, (e) => { if (onError) onError(e); });
+    this.send((rid) => { id = rid; this.subs.set(rid, (msg) => onFrame(msg.t === 'gap' ? { t: 'gap', epoch: msg.epoch, seq: msg.seq, recoverable: false }
+      : { t: 'msg', epoch: msg.epoch, seq: msg.seq, first: msg.first, data: msg.data }));
+      return { t: 'sub', table, after, filter: filter || undefined, conflate: everyMs ? { everyMs } : undefined, window }; })
+      .then((body) => {
+        if (!live) return;
+        if (body && body.recovered === false) onFrame({ t: 'gap', recoverable: false });
+        else if (window) onFrame({ t: 'subd', sub: id, table });
+      }, (e) => { if (onError) onError(e); });
     return () => { live = false; if (id) { this.subs.delete(id); this.ch.post({ rdp: 1, t: 'unsub', id }); } };
+  }
+
+  /** A windowed subscription's window changed (PROTOCOL 16 `win`). */
+  window(sub, keys, top) {
+    return this.send(() => ({ t: 'win', sub, keys: keys || [], top: !!top })).then(() => undefined);
   }
 }

@@ -330,3 +330,7 @@ already knows); (4) fragments: private state ids `<as>.<name>` (a stateful fragm
 document after that, with `url: true`. Estimate: S1 5 bd + I1's state effect 3 bd + fragments' state/outputs 3 bd.
 
 **S1-OPEN decided (lead, under the owner's delegation, 2026-11-21):** the recommendation is accepted: S1 is built together with I1 in one lane, in the order (1)–(5) above; (a) `StateValues` beside `ControlValues`; (b) ViewModel 1.2 `state[] {id, value, url, reads}`, an older painter ignores it safely; (c) private ids `<as>.<name>`, a stateful fragment requires `as:`; (d) `url: true` and `remember: user` wait for S4's view-state document.
+
+### Libraries split across i7b and i8 (owner, 2026-11-21)
+
+i7b ships **`core` and `finance`** (the two Drishti uses first). `genomics`, `economy`, `geo`, `ops` and `ai` are built in Drishti i8 alongside its screens-from-fragments work (H2), where real screens show what each fragment needs. The library machinery, gates and gallery are complete in i7b.

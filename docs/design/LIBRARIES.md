@@ -20,7 +20,9 @@ parameters and lambda fields renamed too (lane A3; `RCH-2121` where a mapping ca
 result (`Sutra.libraries()`). `fn` parameters (`fn(T, ...) -> U`, a lambda
 in the user's context; lane A3), and `rachana lib contracts` / `rachana lib check-host` (22; in `java/rachana-cli` over
 `LibraryTool`). Library functions (X42: manifest `functions:` and `functions/*.yaml`, called `<library>.<f>(...)`, lane A4).
-Not built yet: private state, outputs, overlays, section 14 to
+Private state (`state:`, `<as>.<name>`, a stateful fragment needs `as:`), `outputs:` and a use's `on:` effect list writing
+the screen's state (`event.<name>`) (lane A5, SPEC 2.5 and 2.8). Not built yet: the `state` and `selection` name parameters
+(6.3), overlays, section 14 to
 17 (documents, gates LG1 to LG9 beyond what `lib` cases check, the AI kit, Studio), the CLI commands of 22 (the work is in
 `LibraryTool`). Per L-12 no library content lives here: the conformance suite carries a tiny synthetic `demo` library.
 The rest of this document is the design; syntax not listed above is settled only when it enters `spec/1/SPEC.md` with a

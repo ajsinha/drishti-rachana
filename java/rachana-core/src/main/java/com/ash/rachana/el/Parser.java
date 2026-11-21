@@ -591,6 +591,9 @@ final class Parser {
             next();                                              // ctl.<id>: the value of a control, never a field of the data
             return at(new Expr.Ctl(next().text()), s);
         }
+        if ("state".equals(t.text()) && !decls.states().isEmpty() && peek().type() == Type.DOT && !letNames.contains(t.text())) {
+            return at(state(t), s);                              // level 1.2, S1: state.<id> when the Sutra holds state, never a field
+        }
         if (v11 && "lambda".equals(t.text())) {
             throw new ElException("a lambda is passed to map, sort, reduce or group, or bound by let(...); it is not a value", t.pos());
         }
@@ -621,6 +624,48 @@ final class Parser {
         }
         next();
         return call(t, null);
+    }
+
+    /**
+     * {@code state.<id>}, {@code state} read and the dot next (SUTRA_EXPANSION S1): the longest declared id written there, its parts
+     * joined by {@code -} or {@code .} with no space ({@code state.md.query}, a fragment use's output); one that is not declared does not
+     * compile.
+     */
+    private Expr state(Token t) {
+        Token dot = next();
+        int end = dot.pos() + dot.length();
+        StringBuilder sb = new StringBuilder();
+        String best = null;
+        int bestAt = p;
+        int i = p;
+        while (i < tokens.size()) {
+            Token k = tokens.get(i);
+            boolean part = k.type() == Type.IDENT || sb.length() > 0 && k.type() == Type.NUMBER && !k.text().contains(".");
+            if (k.pos() != end || !part) {
+                break;
+            }
+            sb.append(k.text());
+            end = k.pos() + k.length();
+            i++;
+            if (decls.states().containsKey(sb.toString())) {
+                best = sb.toString();
+                bestAt = i;
+            }
+            Token j = i < tokens.size() ? tokens.get(i) : null;
+            if (j == null || j.pos() != end || !(j.type() == Type.DOT || j.is(Type.OP, "-"))) {
+                break;
+            }
+            sb.append(j.text());
+            end = j.pos() + j.length();
+            i++;
+        }
+        if (best == null) {
+            Token at = peek();
+            throw new ElException("unknown state '" + (sb.length() == 0 ? at.text() : sb.toString().replaceAll("[-.]$", "")) + "': this Sutra "
+                    + "holds " + String.join(", ", decls.states().keySet()) + " (a field named state is read as $.state or @.state)", at.pos());
+        }
+        p = bestAt;
+        return new Expr.State(best);
     }
 
     /**

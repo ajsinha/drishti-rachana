@@ -87,6 +87,17 @@ public final class LiveScreen {
         return out;
     }
 
+    private final Map<String, String> state = new LinkedHashMap<>();
+
+    /**
+     * Changes state values (level 1.2, S1), as a bind request carries them: text per state id (a list's items joined by commas); the next
+     * {@link #view} or {@link #patch} reads them.
+     */
+    public void state(Map<String, ?> next) {
+        next.forEach((k, v) -> state.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(String::valueOf).toList())
+                : v == null ? "" : String.valueOf(v)));
+    }
+
     /** Changes control values (the next {@link #view} or {@link #patch} reads them). */
     public void controls(Map<String, ?> next) {
         ctl.putAll(next);
@@ -104,7 +115,8 @@ public final class LiveScreen {
         Map<String, String> texts = new LinkedHashMap<>();
         ctl.forEach((k, v) -> texts.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(String::valueOf).toList()) : v == null ? "" : String.valueOf(v)));
         var doc = new Entity(EntityRef.of("record", "case"), record(true));
-        last = views.build(new ViewBuilder.Request(doc, sutra, null, AsOf.of(today), null, new ControlValues(texts, java.util.Set.of()), null));
+        last = views.build(new ViewBuilder.Request(doc, sutra, null, AsOf.of(today), null, new ControlValues(texts, java.util.Set.of()), null,
+                state.isEmpty() ? null : new com.ash.rachana.control.StateValues(state)));
         return last;
     }
 
@@ -154,6 +166,7 @@ public final class LiveScreen {
     private EvalContext context(Node root) {
         Map<String, Object> values = new LinkedHashMap<>();
         ctl.forEach((k, v) -> values.put(k, v instanceof List<?> ? Node.of(v) : v));
-        return EvalContext.of(root, rachana.formats()).withToday(today).withControls(values);
+        return EvalContext.of(root, rachana.formats()).withToday(today).withControls(values)
+                .withState(com.ash.rachana.control.ScreenState.resolve(sutra, new com.ash.rachana.control.StateValues(state)));
     }
 }

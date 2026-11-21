@@ -1,0 +1,101 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: live/resync
+since: "1.0"
+profile: core
+verified: false
+description: "Epochs and resync of a live table (LIVE_TABLES 1.3, LT-15; PROTOCOL 8.3): a stream gap starts a new epoch and every reader resyncs, a paused stream serves the snapshot, a reconnect, a trimmed paged table resyncs. Run against a host with live tables (protocol_check.py --live, PROTOCOL 15)."
+cases:
+  - id: a-stream-gap-starts-a-new-epoch
+    kind: protocol
+    source: "LIVE_TABLES 1.3 (gap resync: a new epoch; readers get gap, recoverable false)"
+    fixture: &orders
+      name: orders
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        version: v
+        columns: [ { name: id }, { name: v, type: integer }, { name: qty, type: integer } ]
+      rows: [ { id: a, v: 1, qty: 1 }, { id: b, v: 1, qty: 2 } ]
+    steps:
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 200, body: { version: { seq: 0 } } }
+        capture: { epoch: /version/epoch }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200, body: { body: { recovered: true } } }
+      - request: { method: POST, path: /_test/stream, body: { gap: "the broker lost the stream's position" } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: gap, sub: s1, table: orders, seq: 0, recoverable: false } ] }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s2, table: orders, after: { epoch: "${epoch}", seq: 0 } } }
+        expect: { status: 200, body: { body: { recovered: false, version: { seq: 0 } } } }
+
+  - id: after-a-gap-the-snapshot-is-read-again
+    kind: protocol
+    source: "LIVE_TABLES 1.3, LT-15 (the engine re-reads; no diff of old against new)"
+    fixture: *orders
+    steps:
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { total: 2 } }
+      - request: { method: POST, path: /_test/stream, body: { source: { put: [ { id: c, v: 1, qty: 3 } ] }, gap: reconnected } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { total: 3, version: { seq: 0 } } }
+
+  - id: a-paused-stream-serves-the-snapshot
+    kind: protocol
+    source: "LIVE_TABLES 1.2 (a paused stream: the snapshot, live state paused with its reason, never an error)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { state: { up: false, reason: "the broker is absent" } } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 200, body: { live: { state: paused, reason: "the broker is absent" } } }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [a, 1, 1], [b, 1, 2] ] } }
+
+  - id: a-reconnected-stream-is-up-again
+    kind: protocol
+    source: "LIVE_TABLES 1.2 (state up after a reconnect)"
+    fixture: *orders
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { state: { up: false, reason: "the broker is absent" } } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/stream, body: { state: { up: true } } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 200, body: { live: { state: up } } }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, qty: 10 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [a, 2, 10], [b, 1, 2] ], version: { seq: 1 } } }
+
+  - id: a-trimmed-paged-table-resyncs
+    kind: protocol
+    source: "LIVE_TABLES 1.4 (a paged table's trimmed live row shows the source's row again: readers resync)"
+    fixture:
+      name: orders
+      tier: columns
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        version: v
+        retention: { max-rows: 1 }
+        columns: [ { name: id }, { name: v, type: integer }, { name: qty, type: integer } ]
+      rows: [ { id: a, v: 1, qty: 1 }, { id: b, v: 1, qty: 2 } ]
+    steps:
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: a, v: 2, qty: 10 }, { id: b, v: 2, qty: 20 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200, body: { body: { recovered: true } } }
+      - request: { method: POST, path: /_test/upkeep, body: { advanceMs: 1000 } }
+        expect: { status: 200 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: gap, sub: s1, recoverable: false } ] }
+      - request: { method: POST, path: /tables/orders/query, body: { sort: [ { col: id } ] } }
+        expect: { status: 200, body: { values: [ [a, 1, 1], [b, 2, 20] ], version: { seq: 0 } } }

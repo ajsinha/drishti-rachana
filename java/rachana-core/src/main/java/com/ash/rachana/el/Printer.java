@@ -46,6 +46,7 @@ public final class Printer {
                 case Expr.Src r -> "$src";
                 case Expr.Index r -> "#index";
                 case Expr.Ctl c -> "ctl." + c.name();
+                case Expr.State c -> "state." + c.id();
                 case Expr.Event v -> "@" + v.panel();
                 case Expr.Local l -> l.name().equals(ListFunctions.ACC) ? "@acc" : l.name();
                 case Expr.RowOrRoot r -> "";

@@ -54,6 +54,21 @@ test("lint: exit codes and formats", { skip: !hasBundle && "bundle not built" },
   rmSync(d, { recursive: true });
 });
 
+test("lint checks live tables' declarations with the tools bundle", { skip: !hasBundle && "bundle not built" }, async () => {
+  const d = tmp();
+  writeFileSync(join(d, "orders.live.yaml"), "rachana: 1\nlive-table: orders\nsnapshot: s\nkey: id\ncolumns: [ { name: id } ]\n");
+  assert.equal(await main(["lint", d], io().io), 0);
+  writeFileSync(join(d, "bad.live.yaml"), "rachana: 1\nlive-table: bad\nsnapshot: s\nkey: nope\ncolumns: [ { name: id } ]\nkind: trade\n");
+  let { o, io: x } = io();
+  assert.equal(await main(["lint", d], x), 1);
+  assert.ok(o.out.some((l) => l.includes("bad.live.yaml") && l.includes("error RCH-")), o.out.join("\n"));
+  ({ o, io: x } = io());
+  await main(["lint", "--format", "json", "--profiles", "core,drishti", join(d, "bad.live.yaml")], x);
+  const codes = JSON.parse(o.out[0])[0].problems.map((p) => p.code);
+  assert.ok(!codes.includes("RCH-2060"), "the Drishti profile reads kind: " + codes);
+  rmSync(d, { recursive: true });
+});
+
 test("build writes the site and stops on a lint error", { skip: !hasBundle && "bundle not built" }, async () => {
   const d = tmp(); const p = join(d, "p"), out = join(d, "site");
   await main(["new", p], io().io);

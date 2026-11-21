@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -177,24 +178,46 @@ final class SutraBuilder {
             }
         }
         List<SutraProblem> declAdvisories = new ArrayList<>();
+        Map<String, com.ash.rachana.el.Declarations.Function> fns = new LinkedHashMap<>(libraryFunctions);
+        Map<String, String> lets = new LinkedHashMap<>();
+        Set<String> taken = new HashSet<>();
+        controls.forEach(c -> taken.add(c.id()));
+        if (extensions.get(com.ash.rachana.model.DataEntry.KEY) instanceof List<?> entries) {
+            entries.forEach(e -> taken.add(((com.ash.rachana.model.DataEntry) e).name()));
+        }
         if ((m.containsKey("let") || m.containsKey("functions")) && grammar.hasKey("let")) {   // level 1.2: X41, S2
-            Set<String> taken = new HashSet<>();
-            controls.forEach(c -> taken.add(c.id()));
-            if (extensions.get(com.ash.rachana.model.DataEntry.KEY) instanceof List<?> entries) {
-                entries.forEach(e -> taken.add(((com.ash.rachana.model.DataEntry) e).name()));
-            }
             DeclarationsReader reader = new DeclarationsReader(file, problems, declAdvisories);
-            Map<String, com.ash.rachana.el.Declarations.Function> fns = new LinkedHashMap<>(libraryFunctions);
             fns.putAll(reader.functions(m.get("functions"), ""));
-            Map<String, String> lets = reader.lets(m.get("let"), taken);
+            lets.putAll(reader.lets(m.get("let"), taken));
             for (String l : lets.keySet()) {
                 if (fns.containsKey(l)) {
                     problem("RCH-2024", "'" + l + "' is both a let and a function of this Sutra", m.get("let").map().get(l));
                 }
             }
-            extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(fns, lets));
-        } else if (!libraryFunctions.isEmpty()) {
-            extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(libraryFunctions, Map.of()));
+        }
+        List<com.ash.rachana.model.StateEntry> state = new ArrayList<>();   // level 1.2: S1, the screen's own state, then its fragments' private state
+        EffectsReader effects = new EffectsReader(file, problems);
+        if (m.containsKey("state") && grammar.hasKey("state")) {
+            Set<String> names = new HashSet<>(taken);
+            names.addAll(lets.keySet());
+            state.addAll(effects.state(m.get("state"), names));
+        }
+        state.addAll(calls.state());
+        if (state.size() > com.ash.rachana.model.StateEntry.MAX) {
+            problem("RCH-2012", "a Sutra holds at most " + com.ash.rachana.model.StateEntry.MAX + " state values, its fragments' private state included; "
+                    + "this one holds " + state.size(), m.getOrDefault("state", root));
+        }
+        effects.check(panels, state);
+        if (!calls.stateful().isEmpty()) {
+            privateState(root, calls.stateful());
+        }
+        Map<String, String> stateTypes = new LinkedHashMap<>();
+        state.forEach(e -> stateTypes.put(e.id(), e.type()));
+        if (!fns.isEmpty() || !lets.isEmpty() || !stateTypes.isEmpty()) {
+            extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(fns, lets, stateTypes));
+        }
+        if (!state.isEmpty()) {
+            extensions.put(Sutra.STATE, List.copyOf(state));
         }
         if (!problems.isEmpty()) {
             return null;
@@ -209,6 +232,40 @@ final class SutraBuilder {
         }
         return new Sutra(name, version, title, strip, panels, keyMap, loc(root), text(m.get("description"), null), controls, layout, phone,
                 extensions);
+    }
+
+    private static final Pattern PRIVATE_READ = Pattern.compile("(?<![A-Za-z0-9_.$@])state\\.([a-z][a-z0-9-]*)\\.([A-Za-z][A-Za-z0-9_]*)");
+
+    /**
+     * What the Sutra's own text (never a fragment's: those are not in it) does with a fragment use's private state (S1, LIBRARIES.md 7.2):
+     * it may read an output, {@code state.<as>.<output>}; reading any other private state, or writing one (an output too), is
+     * {@code RCH-2117}.
+     */
+    private void privateState(PNode n, Map<String, com.ash.rachana.parse.TypedFragment.Stateful> uses) {
+        if (n.isMap()) {
+            n.map().forEach((k, v) -> {
+                if ("set".equals(k) && v.isMap() && v.map().get("state") != null && v.map().get("state").text() != null) {
+                    String target = v.map().get("state").text();
+                    int dot = target.indexOf('.');
+                    if (dot > 0 && uses.containsKey(target.substring(0, dot))) {
+                        problem("RCH-2117", "state '" + target + "' belongs to the use " + target.substring(0, dot) + " of fragment "
+                                + uses.get(target.substring(0, dot)).fragment() + ": the screen reads its outputs, never writes them", v.map().get("state"));
+                    }
+                }
+                privateState(v, uses);
+            });
+        } else if (n.isList()) {
+            n.list().forEach(v -> privateState(v, uses));
+        } else if (n.value() instanceof String s && s.contains("state.")) {
+            Matcher m = PRIVATE_READ.matcher(s);
+            while (m.find()) {
+                var use = uses.get(m.group(1));
+                if (use != null && !use.outputs().contains(m.group(2))) {
+                    problem("RCH-2117", "state." + m.group(1) + "." + m.group(2) + " is private to the use " + m.group(1) + " of fragment " + use.fragment()
+                            + (use.outputs().isEmpty() ? ", which publishes no outputs" : "; the screen reads its outputs: " + String.join(", ", use.outputs())), n);
+                }
+            }
+        }
     }
 
     private com.ash.rachana.profile.SutraKey.Context keyContext(String folder, PNode root) {
@@ -371,9 +428,27 @@ final class SutraBuilder {
                 options.put(com.ash.rachana.model.Form.KEY, raw);
             }
         }
+        boolean on = m.containsKey(com.ash.rachana.model.Effects.KEY) && SutraBlocks.atLeast(grammar.level(), "1.2");   // I1: the effect list
+        if (on && kind != null) {
+            if (nested) {
+                problem("RCH-2012", "a panel inside a tab cannot have on: of its own", m.get(com.ash.rachana.model.Effects.KEY));
+            } else {
+                EffectsReader.Read r = new EffectsReader(file, problems).panel(kind.id(), m.get(com.ash.rachana.model.Effects.KEY));
+                if (r != null && !r.sets().isEmpty()) {
+                    options.put(com.ash.rachana.model.Effects.KEY, r.sets());
+                }
+                if (r != null && r.onSelect() != null) {
+                    if (m.containsKey(Panel.ON_SELECT)) {
+                        problem("RCH-2038", "panel '" + id + "' sets a control in on: and in on-select; one click sets one control", m.get(Panel.ON_SELECT));
+                    } else {
+                        options.put(Panel.ON_SELECT, r.onSelect());          // set: <control> is the panel's on-select: one mechanism
+                    }
+                }
+            }
+        }
         if (kind != null) {
             m.forEach((opt, val) -> {
-                if (PANEL.contains(opt) || WiringReader.isWiring(opt, val)) {
+                if (PANEL.contains(opt) || WiringReader.isWiring(opt, val) || on && com.ash.rachana.model.Effects.KEY.equals(opt)) {
                     return;
                 }
                 if (!kind.accepts(opt)) {

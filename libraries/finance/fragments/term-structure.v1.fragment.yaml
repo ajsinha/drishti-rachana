@@ -19,7 +19,7 @@ params:
       tenor: { type: text,   doc: The tenor, such as 3M or 5Y }
       value: { type: number, doc: The measure at the tenor }
   title: { type: text, default: Term structure, doc: The panel's title }
-  fmt:   { type: format, default: pct2, doc: How the values are written }
+  fmt:   { type: format, default: pct4, doc: How the values are written }
   step:  { type: boolean, default: false, doc: Whether the line steps between tenors instead of joining them }
   mark:  { type: text, optional: true, doc: A tenor to mark }
 emits:

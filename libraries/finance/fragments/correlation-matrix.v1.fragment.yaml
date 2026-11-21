@@ -21,6 +21,8 @@ params:
       value: { type: number, doc: The correlation }
   title: { type: text, default: Correlations, doc: The panel's title }
   fmt:   { type: format, default: signed2, doc: How the correlations are written }
+emits:
+  - { name: cell, payload: { a: text, b: text }, doc: A cell was chosen }
 panels:
   - id: square
     kind: pivot
@@ -33,3 +35,4 @@ panels:
     fmt: "%{fmt}"
     heat: true
     totals: false
+    emits: [ { name: cell, on: point-click, payload: { a: "@.row", b: "@.column" } } ]

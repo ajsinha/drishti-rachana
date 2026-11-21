@@ -21,6 +21,8 @@ params:
       value:  { type: number, doc: The sensitivity }
   title: { type: text, default: Sensitivity grid, doc: The panel's title }
   fmt:   { type: format, default: signed0, doc: How the figures are written }
+emits:
+  - { name: cell, payload: { factor: text, bucket: text }, doc: A cell was chosen }
 panels:
   - id: grid
     kind: pivot
@@ -33,3 +35,4 @@ panels:
     fmt: "%{fmt}"
     heat: true
     totals: true
+    emits: [ { name: cell, on: point-click, payload: { factor: "@.row", bucket: "@.column" } } ]

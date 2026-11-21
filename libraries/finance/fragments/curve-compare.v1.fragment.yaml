@@ -23,7 +23,8 @@ params:
       value: { type: number, doc: The rate, a fraction (0.0412) }
   base:  { type: text, default: "", doc: The curve the spreads are taken against (none - no spreads) }
   title: { type: text, default: Curves, doc: The panel's title }
-  fmt:   { type: format, default: pct2, doc: How the rates are written }
+  fmt:   { type: format, default: pct4, doc: How the rates are written }
+  spread-fmt: { type: format, default: bp1, doc: How the spreads are written in basis points }
 emits:
   - { name: point, payload: { curve: text, tenor: text }, doc: A point of a curve was chosen }
 panels:
@@ -44,4 +45,4 @@ panels:
     x: tenor
     y: spread
     by: curve
-    fmt: amount2
+    fmt: "%{spread-fmt}"

@@ -5,6 +5,12 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **finance library on the new formats and events**: rates default to `pct4` (curve-table, curve-overview, term-structure,
+  curve-compare, fixing-ladder, leg-table), changes and spreads to `bp1` (fixing-ladder; curve-compare's new `spread-fmt`), discount
+  factors to `df4`, prices to `price4` (depth-ladder, fx-scenario-chart, trade-ticket, fills-summary); the two trees take `fmt`
+  (risk-hierarchy-tree keeps its share used in `pct0` through a column); correlation-matrix, scenario-matrix, sensitivity-heatmap and
+  vol-surface raise `cell` on a click (their catalogue events). Goldens rewritten (22), gate green, gallery pages paint. Elements
+  pack `3.2.0-dev+6b4a3b2` (pivot cells and surface points as marks).
 - **Events on pivot cells and surface points** (level 1.2, contract 1.2 appended): `pivot` and `surface` fire `point-click`. A pivot
   cell with a figure is a mark, `@` the cell `{row, path?, column, value}`; a surface point is `{x, y, z}`; `#index` the place row by
   row. `Cell.ev`, `set`, `on` (a pivot's cells) and `Surface.ev`, `set`, `on` (lists beside `z`); `ev` only on a panel that emits on

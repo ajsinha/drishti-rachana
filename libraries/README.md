@@ -34,5 +34,7 @@ Where a built fragment differs from its entry in `docs/design/LIBRARY_CATALOGUE.
   `step` (a record inside a record is not a parameter type). Both take `rules` and name both buttons.
 - `finance/order-ticket`: no `max-qty` (a form rule cannot read a parameter) and no slots; `side` is an expression
   (`"'BUY'"`); the ticket raises `submit {order}` with every field, `instrument` included.
+- `finance/curve-table`: `df-fmt` defaults to `df4` (the catalogue's `df6` is no format name); `finance/order-ticket` and
+  `finance/performance-chart` keep their own format parameters (no `price-fmt`, `frequency-fmt`, `level-fmt` or `growth-fmt`).
 - `finance/what-if-shocks`: a form of number fields (`shocks`, each `{id, label, type: number, min, max}`) in place of sliders;
   `change {shocks}` hands the shocks to the screen, and the estimate is the host's (`estimate`), never computed by Rachana.

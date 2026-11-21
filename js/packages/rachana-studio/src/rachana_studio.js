@@ -3,7 +3,7 @@
 //
 // Rachana Studio (decision MK-1: mock-up A, the three panes, with B's command bar). Left: the fragments of the project's libraries;
 // middle: the live <rachana-view>; right: the Sutra source with its problems, the parameter form of the chosen fragment, and the
-// unsaved changes. Every control is a Drishti Elements widget (Select, Listbox, CodeEditor, Form, CodeDiff, toast); this file only
+// unsaved changes. Every control is a Drishti Elements widget (Select, NavList, SplitPane, CodeEditor, Form with its columnmap field, CodeDiff, toast); this file only
 // arranges them and moves text between them. The compiler bundle (on the server) checks and the runtime (in the page) paints.
 import { fragmentsOf, tablesOf, formSpec, insertUse, proposeMapping, editorProblems } from "./rachana_studio_model.js";
 
@@ -36,28 +36,22 @@ export async function startStudio(root) {
     h("div", { cls: "rs-ai" }, [aiInput, aiBtn, h("span", { cls: "rs-note", text: "AI authoring arrives with the GenAI release." })]),
     h("span", { cls: "rs-grow" }), status, saveBtn]);
 
-  // ---- left pane: the palette
-  const search = h("input", { cls: "di-field", attrs: { type: "search", placeholder: "Search fragments...", "aria-label": "Search fragments" }, data: { rs: "search" } });
-  const count = h("div", { cls: "rs-count" });
+  // ---- left pane: the palette, a NavList (search, headings by library, arrows and Enter are the widget's)
+  const items = fragments.map((f) => ({ id: `${f.library}/${f.name}`, label: f.name, detail: [f.category, f.summary].filter(Boolean).join(" - "), group: f.library, frag: f }));
+  const byId = new Map(items.map((i) => [i.id, i.frag]));
+  const count = h("div", { cls: "rs-count", text: `${items.length} from ${libs.map((l) => `${l.name} ${l.version}`).join(", ") || "no library"}` });
   const palBody = h("div", { cls: "rs-body", data: { rs: "palette" } });
-  const items = fragments.map((f) => ({ value: `${f.library}/${f.name}`, label: f.name, detail: f.summary, group: `${f.library} / ${f.category || "other"}`, frag: f, text: [f.name, f.summary, f.category, ...(f.tags || [])].join(" ").toLowerCase() }));
-  const listbox = new inputs.Listbox(doc, { label: "Fragments", cap: 500, onPick: (it) => chooseFragment(it.frag),
-    render: (it, el) => el.append(h("span", { cls: "di-option-label", text: it.label }), h("span", { cls: "rs-frag-detail", text: it.detail })) });
-  palBody.append(listbox.el);
-  const palette = h("section", { cls: "rs-pane rs-palette" }, [h("h2", { text: "Fragments" }), search, count, palBody]);
-  const drawPalette = () => {
-    const words = search.value.toLowerCase().split(/\s+/).filter(Boolean), shown = items.filter((i) => words.every((w) => i.text.includes(w)));
-    listbox.render(shown, (i) => st.frag === i.frag);
-    count.textContent = `${shown.length} of ${items.length} from ${libs.map((l) => `${l.name} ${l.version}`).join(", ") || "no library"}`;
-  };
-  search.addEventListener("input", drawPalette);
-  search.addEventListener("keydown", (e) => { if (e.key === "Enter") { const it = listbox.items[listbox.active >= 0 ? listbox.active : 0]; if (it) { e.preventDefault(); chooseFragment(it.frag); } } else listbox.key(e, search); });
+  const nav = new inputs.NavList(palBody, { items, label: "Fragments", placeholder: "Search fragments...", empty: "No fragment matches" });
+  nav.on("change", ({ value }) => { if (byId.has(value) && byId.get(value) !== st.frag) chooseFragment(byId.get(value)); });
+  const palette = h("section", { cls: "rs-pane rs-palette" }, [h("h2", { text: "Fragments" }), count, palBody]);
+  const drawPalette = () => { if (st.frag) nav.setValue(`${st.frag.library}/${st.frag.name}`); };
 
   // ---- middle pane: the live preview
   const view = doc.createElement("rachana-view");
   view.setAttribute("data", "/data");
   view.setAttribute("runtime", "/rachana/rachana.runtime.js");
   view.setAttribute("level", project.level);
+  view.setAttribute("complete", "");
   view.files = libFiles;
   const previewNote = h("div", { cls: "rs-note", data: { rs: "preview-note" } });
   const preview = h("section", { cls: "rs-pane rs-preview" }, [h("h2", { text: "Live preview" }), h("div", { cls: "rs-body" }, [previewNote, view])]);
@@ -72,10 +66,16 @@ export async function startStudio(root) {
   const formHost = h("div", { data: { rs: "form" } }, [h("p", { cls: "rs-note", text: "Choose a fragment on the left to set its parameters and insert it." })]);
   const diffTitle = h("h2", { text: "Changes" });
   const diffHost = h("div", { data: { rs: "diff" } });
-  const right = h("div", { cls: "rs-right" }, [h("section", { cls: "rs-pane" }, [srcTitle, srcBody]), h("section", { cls: "rs-pane" }, [formTitle, h("div", { cls: "rs-body" }, [formHost])]),
-    h("section", { cls: "rs-pane" }, [diffTitle, h("div", { cls: "rs-body" }, [diffHost])])]);
+  const srcPane = h("section", { cls: "rs-pane" }, [srcTitle, srcBody]), formPane = h("section", { cls: "rs-pane" }, [formTitle, h("div", { cls: "rs-body" }, [formHost])]);
+  const diffPane = h("section", { cls: "rs-pane" }, [diffTitle, h("div", { cls: "rs-body" }, [diffHost])]);
 
-  root.append(bar, h("main", { cls: "rs-main" }, [palette, preview, right]));
+  // ---- the page frame: SplitPane (palette | preview | the right column, itself a vertical SplitPane)
+  const mainHost = h("main", { cls: "rs-main" }), rightHost = h("div", { cls: "rs-split-right" });
+  const rightSplit = new inputs.SplitPane(rightHost, { direction: "vertical", label: "Source, properties and changes", persistKey: "rachana-studio-right",
+    panes: [{ id: "source", content: srcPane, size: 1.3, min: 120 }, { id: "form", content: formPane, size: 1, min: 90 }, { id: "diff", content: diffPane, size: 0.8, min: 70 }] });
+  const mainSplit = new inputs.SplitPane(mainHost, { direction: "horizontal", label: "Fragments, preview and editing", persistKey: "rachana-studio-main",
+    panes: [{ id: "palette", content: palette, size: 1, min: 200 }, { id: "preview", content: preview, size: 2, min: 260 }, { id: "right", content: rightHost, size: 2, min: 300 }] });
+  root.append(bar, mainHost);
 
   // ---- the editor, with the bundle's check as its live lint
   const check = async (text) => {
@@ -167,5 +167,5 @@ export async function startStudio(root) {
   if (project.problems.length) previewNote.textContent = `Libraries not loaded: ${project.problems.join("; ")}`;
   if (project.sutras.length) { fileSelect.setValue(project.sutras[0]); await openSutra(project.sutras[0]); }
   root.dataset.ready = "yes";
-  window.__studio = { state: st, editor, view, openSutra, chooseFragment };
+  window.__studio = { state: st, nav, mainSplit, rightSplit, editor, view, openSutra, chooseFragment };
 }

@@ -8,7 +8,7 @@ import { createStudio, listen } from "../../rachana-studio/server/studio_server.
 
 /** rachana studio [folder] [--libs <path>[,<path>...]] [--data <dir>] [--port <n>]: Rachana Studio over a folder of Sutras (the
  * editor in the browser; saves back into the folder). Libraries: `<folder>/rachana_libs`, each --libs path (an unpacked library, a
- * .rlib, or a folder of them) and RACHANA_LIBS. Listens on 127.0.0.1 only. */
+ * .rlib, or a folder of them) RACHANA_LIBS and the repository's own `libraries/`. Listens on 127.0.0.1 only. */
 export async function studio(target, flags, io) {
   if (!existsSync(target) || !statSync(target).isDirectory()) throw new UsageError(`no such folder: ${target}`);
   if (flags.data && !existsSync(flags.data)) throw new UsageError(`no such data folder: ${flags.data}`);

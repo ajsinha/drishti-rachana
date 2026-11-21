@@ -160,11 +160,22 @@ public final class TableClient {
      * the table must declare {@code changes.filter}) and conflated ({@code everyMs} above 0: at most one message per window, merged by key,
      * PROTOCOL 8.4; a merged message's {@code first} is its first seq). Asked with {@code POST {base}/changes}.
      */
-    @SuppressWarnings("unchecked")
     public void follow(String table, String epoch, long seq, Object filter, long everyMs, java.util.function.Predicate<Map<String, Object>> frames)
             throws IOException, InterruptedException {
+        follow(table, epoch, seq, filter, everyMs, null, false, frames);
+    }
+
+    /**
+     * As {@link #follow(String, String, long, Object, long, java.util.function.Predicate)}, windowed (PROTOCOL 16, a table whose {@code can}
+     * has {@code changes.window}): only patches for the keys the reader's page shows ({@code window}, each the list of key values), plus its
+     * new {@code total} when rows outside the page change; {@code top} when the page starts at the first row of the table's own order. The
+     * first frame handed over is {@code subd}, whose {@code sub} names the stream for {@link #window}. A null window is no window.
+     */
+    @SuppressWarnings("unchecked")
+    public void follow(String table, String epoch, long seq, Object filter, long everyMs, List<List<Object>> window, boolean top,
+            java.util.function.Predicate<Map<String, Object>> frames) throws IOException, InterruptedException {
         HttpRequest rq;
-        if (filter == null && everyMs <= 0) {
+        if (filter == null && everyMs <= 0 && window == null) {
             rq = HttpRequest.newBuilder(URI.create(base + "/changes?table=" + enc(table) + "&after=" + enc(epoch + ":" + seq)))
                     .header("Accept", "text/event-stream").build();
         } else {
@@ -176,6 +187,12 @@ public final class TableClient {
             }
             if (everyMs > 0) {
                 body.put("conflate", Map.of("everyMs", everyMs));
+            }
+            if (window != null) {
+                Map<String, Object> w = new LinkedHashMap<>();
+                w.put("keys", window);
+                w.put("top", top);
+                body.put("window", w);
             }
             rq = HttpRequest.newBuilder(URI.create(base + "/changes")).header("Accept", "text/event-stream")
                     .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(Json.write(body))).build();
@@ -223,6 +240,23 @@ public final class TableClient {
             frames.accept(screen.patch(table, (Map<String, Object>) f.get("data")));
             return ++n[0] < max;
         });
+    }
+
+    /**
+     * Changes the window of a windowed stream this client follows ({@code sub} from its {@code subd} frame; PROTOCOL 16,
+     * {@code POST {base}/changes/{sub}/window}): the keys the page now shows and whether it starts at the top of the table's order.
+     * {@code rdp.table.unknown} when the stream is gone or is not this caller's.
+     */
+    public void window(String sub, List<List<Object>> keys, boolean top) throws IOException, InterruptedException {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("keys", keys == null ? List.of() : keys);
+        body.put("top", top);
+        HttpRequest rq = HttpRequest.newBuilder(URI.create(base + "/changes/" + enc(sub) + "/window")).header("Accept", "application/json")
+                .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(Json.write(body))).build();
+        HttpResponse<String> r = http.send(rq, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        if (r.statusCode() != 204 && r.statusCode() != 200) {
+            throw error(r.statusCode(), r.body());
+        }
     }
 
     private Object send(String method, String path, Object body) throws IOException, InterruptedException {

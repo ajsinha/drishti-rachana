@@ -5,6 +5,15 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **Studio on the new Drishti Elements widgets**: the vendored pack is now `js/vendor/drishti-elements/3.2.0-dev+475232e/` (packed from drishti-elements commit 475232e, SHA-384 manifest kept). Studio's frame is `SplitPane` (palette | preview | a vertical split of source, properties and changes), the palette a `NavList` grouped by library, the column mapping the `columnmap` form field; `<rachana-view complete>` asks the painter to complete the view, so the console no longer warns that `ref` is missing. No hand-rolled widget is left in Studio.
+- **`rachana build` sites load libraries in the browser**: a page that uses `use:` gets the files of the libraries it names (project, `--libs`, `RACHANA_LIBS`, bundled) copied to `rachana_libs/<library>/` and a `libraries/<page>.libraries.json` manifest that `<rachana-view libraries="...">` reads (a Sutra with `libraries:` builds at `--level 1.2`); tested in Node and by the Chromium `paint_check.py`.
+- **Fragment libraries moved into this repository** (owner decision, L-12 superseded): `libraries/<name>/` by domain, `libraries/README.md`
+  the index, `tools/libraries/` the build and check (`build.py`, `LibCheck.java`; the jars come from this repository's own build);
+  `LibrariesCheckTest` runs the check in `./mvnw verify` (and proves an external folder and an `.rlib` beside bundled `core`); Studio, `lint` and `build` (`--libs`, `RACHANA_LIBS`) and the Python `lint` take extra library paths beside the bundled ones; a same-name conflict is refused (`LibraryResolver.first` too). The old repository's history is merged in.
+  **core 1.0.0** (baseline LB1, language level 1.2): 28 typed fragments (figures, records, tables, charts, states, history) with examples
+  and ViewModel snapshots; not built: `entry-form`, `stepped-form` (no standalone form panel yet), `compare-ab` (needs iteration over
+  fields). Differences from the catalogue are listed in `libraries/core/README.md`.
+
 - **Rachana Studio, first slice** (`js/packages/rachana-studio`, `rachana studio <folder> [--libs ...]`; decision MK-1): three panes (the fragments of the
   project's libraries, the live `<rachana-view>`, the Sutra source with its live problems, the parameter form of the chosen fragment and the
   unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
@@ -49,6 +58,27 @@ Entries are written per release; the regime's unreleased work is listed after th
   (`map(arg.rows, @)[?@.amount > 0]`) is `RCH-2121`, never a silent read of nothing. Cases sutra +1, problem +1.
 
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
+
+- **L11 (G2 half), conformance**: the live test adapter `LiveReferenceServer` (`rachana-live`: `/_test/live` loads a declaration and
+  its source's rows, `/_test/as` acts as a reader with a view, `/_test/stream` changes the source and pushes the stream, `/_test/upkeep`
+  moves the clock, `/_test/audit` reads the events; PROTOCOL 15), run by `protocol_check.py --live`; a fixture with a `declaration`
+  (FORMAT 5.12, `case.schema.json`) runs only there (other hosts: unsupported; the Python host skips it, LT-14). Suites
+  `protocol/window` 12, `protocol/narrow` 6, `live/merge` 9, `live/resync` 5, `live/retention` 5, `live/overlay` 11, `live/readers` 11,
+  all unverified, all green on the reference; the ported-case mapping table is LIVE_TABLES 9.1.
+- **Windows in the minimal SSE form and the clients**: `POST /changes` takes `window: {keys, top}`, answers `subd` first and is moved by
+  `POST /changes/{sub}/window` (only the stream's own caller: else `rdp.table.unknown`); a gap ends it. `TableClient.follow(…, window,
+  top, …)` and `TableClient.window`; JavaScript `DataClient.follow(…, {window})` and `DataClient.window` over HTTP and the bridge (`win`,
+  a window's `gap` routed). `ReferenceServer` gains `actAs`, `testPath`, `reset`, `onReset` (one bridge channel per caller);
+  `ProtocolHost.remove`. API additions only.
+- **Paging without O(offset)**: a paged table orders by the whole sort list (`dir`, `nulls`), then the key values; its cursor is keyset
+  (the last row sent, found by binary search in the kept index and the live side: rows changing before it neither repeat nor skip),
+  and an offset is placed by counting the live side and the shadowed positions.
+- **Declarations in Studio and lint**: the tools bundle's `live(request)` checks a `.live.yaml` (`{ok, problems, schema}`, FORMAT 5.14);
+  `rachana lint` lints `*.live.yaml` beside Sutras (the Drishti profile's keys with `--profiles core,drishti`). The runtime bundle stays
+  without the checker.
+- The four unverified JVM `examples` cases that fail at level 1.2 (`edit/examples/edit#set-a-title-keeps-comments`,
+  `#remove-a-required-key-is-refused`, `problem/examples/problem#problems-in-position-order-l11`, `#profile-key-without-the-profile`)
+  fail the same on fc74ffd, before the live tables work: not caused by it.
 
 - **L3 to L6, the engine** (new JVM module `rachana-live`, never in Core or the bundles: `LiveModuleGuardTest`): `LiveTables` is a
   Data Protocol provider over `SnapshotSource` (whole, columns, query tiers) and `LiveStream`; merge by key and record version

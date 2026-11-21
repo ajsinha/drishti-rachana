@@ -11,11 +11,11 @@ import { distDir } from "./bundle.js";
 export const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-export const ELEMENTS_VERSION = "3.1.0";
+export const ELEMENTS_VERSION = "3.2.0-dev+475232e";
 const ELEMENTS_URL = `vendor/drishti-elements/${ELEMENTS_VERSION}`;
 
 /** The real <rachana-view> and what it loads, as [site path, source file]: the element and its modules (js/packages/rachana/src),
- * the vendored Elements pack (js/vendor/drishti-elements/3.1.0) and the runtime bundle (dist, built by tools/js/build_js.py). */
+ * the vendored Elements pack (js/vendor/drishti-elements/3.2.0-dev+475232e) and the runtime bundle (dist, built by tools/js/build_js.py). */
 export function siteAssets() {
   const src = join(HERE, "..", "..", "rachana", "src"), vendor = join(HERE, "..", "..", "..", "vendor", "drishti-elements", ELEMENTS_VERSION);
   const list = [];
@@ -49,15 +49,25 @@ export function tableFiles(dir) {
 
 /** The page of one Sutra: Drishti Elements, then <rachana-view> over the Sutra file and the data folder. `base` is the path prefix
  * of the site root ("" for a page at the root, "/" for a server). */
-export function viewPage(name, src, data, base = "", level = "1.1") {
+export function viewPage(name, src, data, base = "", level = "1.1", libraries = "") {
   const u = (p) => esc(base + p);
   return `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
 <title>${esc(name)}</title>
 <link rel=stylesheet href="${u(`${ELEMENTS_URL}/drishti-elements.css`)}">
 <script src="${u(`${ELEMENTS_URL}/drishti-elements.js`)}"></script>
 <script type=module>import "${esc(base || "./")}rachana/src/static_files_host.js"; import "${esc(base || "./")}rachana/src/rachana_view.js";</script>
-<rachana-view src="${esc(src)}" data="${esc(data)}" runtime="${u("rachana/rachana.runtime.js")}" level="${esc(level)}"></rachana-view>
+<rachana-view src="${esc(src)}" data="${esc(data)}" runtime="${u("rachana/rachana.runtime.js")}" level="${esc(level)}"${libraries ? ` libraries="${esc(libraries)}"` : ""}></rachana-view>
 `;
 }
 
 export const nameOf = (file) => basename(file).replace(/\.sutra\.yaml$/, "");
+
+/** The library files a Sutra's text needs, from the whole `files` map (`rachana_libs/<library>/<path>`): every file of each library the
+ * text names (`libraries: [core@1]`, `- core@1`, or a `use: core/<fragment>`). A library is copied whole: its fragments name each other. */
+export function neededLibraryPaths(text, files) {
+  const names = new Set(Object.keys(files).map((p) => p.split("/")[1]).filter(Boolean));
+  const used = new Set();
+  for (const m of text.matchAll(/\buse:\s*["']?([\w.-]+)\//g)) used.add(m[1]);
+  for (const m of text.matchAll(/(?:^|[\s\[,"'-])([\w.-]+)@\d+/gm)) used.add(m[1]);
+  return Object.keys(files).filter((p) => p.startsWith("rachana_libs/") && used.has(p.split("/")[1]) && names.has(p.split("/")[1])).sort();
+}

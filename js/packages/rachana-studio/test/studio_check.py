@@ -2,15 +2,14 @@
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """Chromium check of Rachana Studio: open a copy of examples/static-sales, insert a core fragment (ranked-bars, with its columns
 mapped), see the preview paint the new panel, see the Sutra grow, save it to disk, and finish with no console error or failed request.
-Libraries: RACHANA_LIBS (path), else ../drishti-rachana-libraries/libraries beside this repository; the check is skipped (exit 0, said
-so) when neither exists.
+Libraries: RACHANA_LIBS (path), else libraries/ in this repository.
 Run: uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py   (once: playwright install chromium)"""
 import os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[4]
-libs = os.environ.get("RACHANA_LIBS") or str(ROOT.parent / "drishti-rachana-libraries" / "libraries")
+libs = os.environ.get("RACHANA_LIBS") or str(ROOT / "libraries")
 if not Path(libs).exists():
     print("studio_check: SKIPPED, no library folder (set RACHANA_LIBS)")
     sys.exit(0)
@@ -26,7 +25,7 @@ try:
         b = p.chromium.launch()
         pg = b.new_page(viewport={"width": 1500, "height": 950})
         errs = []
-        pg.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
+        pg.on("console", lambda m: errs.append(m.text) if m.type in ("error", "warning") else None)
         pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.on("requestfailed", lambda r: errs.append("request failed: " + r.url))
         pg.on("response", lambda r: errs.append(f"HTTP {r.status}: {r.url}") if r.status >= 400 else None)
@@ -41,12 +40,12 @@ try:
             print(f"{name}: {'ok' if ok else 'FAIL'} {detail}")
             if not ok: fails.append(name)
 
-        step("palette lists core fragments", pg.locator("[data-rs=palette] .di-option").count() >= 20, f"({pg.locator('[data-rs=palette] .di-option').count()})")
+        step("palette lists core fragments", pg.locator("[data-rs=palette] .di-nav-row").count() >= 20, f"({pg.locator('[data-rs=palette] .di-nav-row').count()})")
         step("assistant bar is disabled", pg.locator("[data-rs=ai]").is_disabled())
         before = ppainted()
         # the palette search narrows, then the fragment is chosen
-        pg.fill("[data-rs=search]", "ranked")
-        pg.locator("[data-rs=palette] .di-option", has_text="ranked-bars").first.click()
+        pg.fill("[data-rs=palette] .di-nav-search", "ranked")
+        pg.locator("[data-rs=palette] .di-nav-row", has_text="ranked-bars").first.click()
         pg.wait_for_selector("[data-rs=form] .di-form-field", timeout=5000)
         # choose the table and map the columns: label <- region, value <- revenue
         form_text = pg.inner_text("[data-rs=form]")
@@ -56,8 +55,9 @@ try:
             pg.locator(f"{path_sel(path)} .di-select-control").click()
             pg.locator(".di-select-pop .di-option", has_text=re.compile(rf"^{re.escape(value)}$")).first.click()
         pick("rows.from", "sales")
-        pick("rows.columns.label", "region")
-        pick("rows.columns.value", "revenue")
+        for local, col in (("label", "region"), ("value", "revenue")):     # Drishti Elements' ColumnMap: a row per column of the fragment
+            pg.locator(f"[data-rs=form] tr[data-local='{local}'] .di-select-control").click()
+            pg.locator(f".di-select-pop .di-option:has(.di-option-label:text-is('{col}'))").first.click()
         pg.fill(f"{path_sel('title')} input", "Revenue by region")
         pg.locator("[data-rs=form] button[data-act=submit]").click()
         pg.wait_for_function("window.__studio.state.text.includes('core/ranked-bars@1')", timeout=5000)
@@ -81,7 +81,8 @@ try:
         pg.wait_for_function("document.querySelector('[data-rs=status]').dataset.state === 'saved'", timeout=5000)
         saved = (proj / "overview.sutra.yaml").read_text()
         step("save wrote the file", "core/ranked-bars@1" in saved and "Revenue by region" in saved)
-        step("no console errors", not errs, "; ".join(errs[:4]))
+        step("the frame is Drishti Elements SplitPane, the palette a NavList", pg.locator("main.rs-main .di-split-bar").count() >= 3 and pg.locator("[data-rs=palette] .di-nav-tree").count() == 1)
+        step("no console errors or warnings", not errs, "; ".join(errs[:4]))
         # the server refuses a path outside the folder (its 400 is logged by the browser, so this comes after the console check)
         bad = pg.evaluate("""fetch('/api/save', {method:'POST', headers:{'content-type':'application/json','x-rachana-studio':'1'}, body: JSON.stringify({path:'../escape.sutra.yaml', text:'x'})}).then(r => r.status)""")
         step("a path outside the project is refused", bad in (400, 403) and not (work / "escape.sutra.yaml").exists(), str(bad))

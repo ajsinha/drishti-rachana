@@ -21,7 +21,24 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration><argLine>${rachana.arrow.opens}</argLine></configuration>
+        <!-- The adapter test speaks HTTP with the JDK client (TableClient takes one). -->
+        <configuration><argLine>${rachana.arrow.opens} --add-reads com.ash.rachana.live=java.net.http</argLine></configuration>
+      </plugin>
+      <!-- The live test adapter's module path (LiveReferenceServer), for tools/conformance/protocol_check.py live. -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.8.1</version>
+        <executions>
+          <execution>
+            <id>runtime-classpath</id>
+            <phase>package</phase>
+            <goals><goal>build-classpath</goal></goals>
+            <configuration>
+              <outputFile>${project.build.directory}/runtime-classpath.txt</outputFile>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <!-- rachana-data's Arrow dependencies reach this module transitively; it adds none of its own. -->
       <plugin>

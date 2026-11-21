@@ -271,6 +271,11 @@ list of `{ request, expect, capture }`:
 
 A `protocol` case has no top-level `expect`: each step carries its own.
 
+A fixture may instead be a **live table** ([LIVE_TABLES](../docs/design/LIVE_TABLES.md) 9): `{ name, declaration, rows, tier?,
+sourceColumns?, options?, readers?, authoriser?, stream? }`, the declaration's text served from a source holding `rows`, loaded
+through `POST /_test/live` (PROTOCOL 15). Such a case runs only against a host with live tables; another host reports it
+`unsupported`.
+
 ### 5.13 `lib`
 
 `files` is one library folder (paths inside it, `/` separated, text content), `library` its name. The library is read

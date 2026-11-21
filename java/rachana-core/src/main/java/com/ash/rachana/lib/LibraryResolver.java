@@ -123,8 +123,8 @@ public interface LibraryResolver {
     }
 
     /**
-     * Several resolvers in the host's order: the first that has the name answers. The same name and version found by two of them with
-     * different bytes is never a silent choice.
+     * Several resolvers in the host's order: the first that has the name answers. The same name found by two of them with different
+     * bytes (any version) is refused, never a silent shadowing; an external folder or .rlib sits beside the bundled libraries as one source among others.
      *
      * @throws IllegalStateException from {@code resolve} when two resolvers hold different bytes for the version chosen
      */
@@ -141,9 +141,9 @@ public interface LibraryResolver {
                     }
                     if (chosen == null) {
                         chosen = b.get();
-                    } else if (java.util.Objects.equals(chosen.version(), b.get().version()) && !chosen.sha384().equals(b.get().sha384())) {
-                        throw new IllegalStateException("library " + name + " " + chosen.version() + " is in " + chosen.source() + " and in "
-                                + b.get().source() + " with different contents");
+                    } else if (!chosen.sha384().equals(b.get().sha384())) {
+                        throw new IllegalStateException("library " + name + " is in " + chosen.source() + " (" + chosen.version() + ") and in "
+                                + b.get().source() + " (" + b.get().version() + ") with different contents: refused");
                     }
                 }
                 return Optional.ofNullable(chosen);

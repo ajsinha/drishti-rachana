@@ -4,7 +4,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { main } from "../src/index.js";
@@ -53,6 +53,21 @@ test("lint: exit codes and formats", { skip: !hasBundle && "bundle not built" },
   rmSync(d, { recursive: true });
 });
 
+test("lint checks live tables' declarations with the tools bundle", { skip: !hasBundle && "bundle not built" }, async () => {
+  const d = tmp();
+  writeFileSync(join(d, "orders.live.yaml"), "rachana: 1\nlive-table: orders\nsnapshot: s\nkey: id\ncolumns: [ { name: id } ]\n");
+  assert.equal(await main(["lint", d], io().io), 0);
+  writeFileSync(join(d, "bad.live.yaml"), "rachana: 1\nlive-table: bad\nsnapshot: s\nkey: nope\ncolumns: [ { name: id } ]\nkind: trade\n");
+  let { o, io: x } = io();
+  assert.equal(await main(["lint", d], x), 1);
+  assert.ok(o.out.some((l) => l.includes("bad.live.yaml") && l.includes("error RCH-")), o.out.join("\n"));
+  ({ o, io: x } = io());
+  await main(["lint", "--format", "json", "--profiles", "core,drishti", join(d, "bad.live.yaml")], x);
+  const codes = JSON.parse(o.out[0])[0].problems.map((p) => p.code);
+  assert.ok(!codes.includes("RCH-2060"), "the Drishti profile reads kind: " + codes);
+  rmSync(d, { recursive: true });
+});
+
 test("build writes the site and stops on a lint error", { skip: !hasBundle && "bundle not built" }, async () => {
   const d = tmp(); const p = join(d, "p"), out = join(d, "site");
   await main(["new", p], io().io);
@@ -80,7 +95,7 @@ test("preview handler serves pages, Sutra text and data; refuses path escape", {
   assert.equal(JSON.parse(h("/data/index.json")[2]).tables[0].rows, 1);
   assert.equal(h("/data/..%2Fsecret.txt")[0], 404);
   assert.equal(h("/page/zzz")[0], 404);
-  for (const u of ["/rachana/src/rachana_view.js", "/rachana/rachana.runtime.js", "/vendor/drishti-elements/3.1.0/drishti-elements.js", "/vendor/drishti-elements/3.1.0/drishti-elements.css"]) assert.equal(h(u)[0], 200, u);
+  for (const u of ["/rachana/src/rachana_view.js", "/rachana/rachana.runtime.js", "/vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.js", "/vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.css"]) assert.equal(h(u)[0], 200, u);
   rmSync(d, { recursive: true });
 });
 
@@ -115,9 +130,24 @@ test("build static-sales: the real <rachana-view>, Elements pack and runtime are
   assert.equal(await main(["build", "--src", join(examples, "static-sales"), "--out", out], x), 0);
   assert.ok(!o.err.length, o.err.join("\n"));
   for (const f of ["rachana/src/rachana_view.js", "rachana/src/screen.js", "rachana/src/data_client.js", "rachana/rachana.runtime.js",
-    "vendor/drishti-elements/3.1.0/drishti-elements.js", "vendor/drishti-elements/3.1.0/drishti-elements.css", "overview.html", "data/index.json"]) assert.ok(existsSync(join(out, f)), f);
+    "vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.js", "vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.css", "overview.html", "data/index.json"]) assert.ok(existsSync(join(out, f)), f);
   const page = readFileSync(join(out, "overview.html"), "utf8");
   assert.ok(page.includes('./rachana/src/rachana_view.js') && page.includes("<rachana-view") && page.includes('runtime="rachana/rachana.runtime.js"'));
+  rmSync(d, { recursive: true });
+});
+
+test("build: a page that uses a core fragment gets the library files and a manifest (so the browser can load them)", { skip: !hasBundle && "bundle not built" }, async () => {
+  const d = tmp(), src = join(d, "proj"), out = join(d, "site");
+  cpSync(join(examples, "static-sales"), src, { recursive: true });
+  writeFileSync(join(src, "ranked.sutra.yaml"), "rachana: 1\nsutra: ranked\nversion: 1\nlibraries: [core@1]\ntitle: { id: \"'R'\" }\ndata:\n  sales: { table: sales, key: [region, product, month] }\npanels:\n  - use: core/ranked-bars@1\n    with:\n      rows: { from: $.sales, columns: { label: region, value: revenue } }\n");
+  const { o, io: x } = io();
+  assert.equal(await main(["build", "--src", src, "--out", out, "--level", "1.2"], x), 0, o.err.join("\n"));
+  const m = JSON.parse(readFileSync(join(out, "libraries/ranked.libraries.json"), "utf8"));
+  assert.ok(m.files.includes("rachana_libs/core/fragments/ranked-bars.v1.fragment.yaml"), m.files.slice(0, 3).join());
+  for (const f of m.files) assert.ok(existsSync(join(out, f)), f);
+  assert.ok(readFileSync(join(out, "ranked.html"), "utf8").includes('libraries="libraries/ranked.libraries.json"'));
+  assert.ok(!existsSync(join(out, "libraries/overview.libraries.json")), "a page without use: gets no manifest");
+  assert.ok(!readFileSync(join(out, "overview.html"), "utf8").includes("libraries="));
   rmSync(d, { recursive: true });
 });
 

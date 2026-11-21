@@ -66,7 +66,10 @@ test("formSpec: a table parameter is a table choice plus a column mapping; names
   const { schema, values } = formSpec(frag, tables);
   assert.deepEqual(schema.required, ["rows"]);
   assert.deepEqual(schema.properties.rows.properties.from.enum, ["sales"]);
-  assert.deepEqual(schema.properties.rows.properties.columns.properties.label.enum, ["region", "revenue", "units"]);
+  const cm = schema.properties.rows.properties.columns;
+  assert.equal(cm.type, "columnmap");
+  assert.deepEqual(cm.options.targets.map((t) => [t.name, t.type, t.required]), [["label", "string", true], ["value", "number", true], ["note", "string", false]]);
+  assert.deepEqual(cm.options.columns.map((c) => c.name), ["region", "revenue", "units"]);
   assert.deepEqual(values.rows, { from: "sales", columns: { label: "region", value: "revenue" } });
   assert.deepEqual(schema.properties.by.enum, ["region", "revenue", "units"]);
   assert.equal(schema.properties.tone.widget, "select");
@@ -143,7 +146,18 @@ test("libraries: a folder, an .rlib and a folder of both are found; a bad one is
   assert.equal(readLibrary(join(d, "libs", "alpha")).files["fragments/x.v1.fragment.yaml"], "x");
   assert.throws(() => readZip(zip([["../evil", "x", 0]])), /unsafe/);
   const p = projectLibraries(d, [join(d, "libs")], {});
-  assert.equal(p.libraries.length, 2);
+  assert.deepEqual(p.libraries.map((l) => l.name).sort(), ["alpha", "beta", "core"], "the bundled core is one source among the others");
+  assert.equal(p.problems.length, 1, "only the junk archive");
+  // another folder through RACHANA_LIBS, nothing rebuilt
+  mkdirSync(join(d, "more", "gamma"), { recursive: true });
+  writeFileSync(join(d, "more", "gamma", "gamma.rachana-lib.yaml"), "rachana: 1\nlibrary: gamma\nversion: 1.0.0\n");
+  assert.ok(projectLibraries(d, [join(d, "libs")], { RACHANA_LIBS: join(d, "more") }).libraries.some((l) => l.name === "gamma"));
+  // a same-name library with other contents is refused, never shadowing the bundled one
+  mkdirSync(join(d, "shadow", "core"), { recursive: true });
+  writeFileSync(join(d, "shadow", "core", "core.rachana-lib.yaml"), "rachana: 1\nlibrary: core\nversion: 9.9.9\n");
+  const c = projectLibraries(d, [join(d, "shadow")], {});
+  assert.ok(!c.libraries.some((l) => l.name === "core"));
+  assert.match(c.problems.join("\n"), /library core is in .* and in .* different contents: refused/);
   rmSync(d, { recursive: true });
 });
 
@@ -171,12 +185,12 @@ test("tableInfo: columns and their types from csv, jsonl and json", () => {
 
 test("the server: the project, the file, the save; Host, header, path and size rules", async () => {
   const d = tmp(), out = tmp();
-  mkdirSync(join(d, "data")); mkdirSync(join(d, "rachana_libs", "core", "fragments"), { recursive: true });
+  mkdirSync(join(d, "data")); mkdirSync(join(d, "rachana_libs", "demolib", "fragments"), { recursive: true });
   writeFileSync(join(d, "data", "sales.csv"), "region,revenue\nN,1\n");
   writeFileSync(join(d, "a.sutra.yaml"), SUTRA);
-  writeFileSync(join(d, "rachana_libs", "core", "core.rachana-lib.yaml"), "library: core\nversion: 1.0.0\n");
-  writeFileSync(join(d, "rachana_libs", "core", "fragments", "x.v1.fragment.yaml"), FRAG);
-  writeFileSync(join(d, "rachana_libs", "core", "fragments", "e.sutra.yaml"), "an example inside a library is not a project Sutra");
+  writeFileSync(join(d, "rachana_libs", "demolib", "demolib.rachana-lib.yaml"), "library: demolib\nversion: 1.0.0\n");
+  writeFileSync(join(d, "rachana_libs", "demolib", "fragments", "x.v1.fragment.yaml"), FRAG);
+  writeFileSync(join(d, "rachana_libs", "demolib", "fragments", "e.sutra.yaml"), "an example inside a library is not a project Sutra");
   const studio = createStudio(d, { env: {} }), { server, url } = await listen(studio);
   const H = { "content-type": "application/json", "x-rachana-studio": "1" }, post = (p, b, h = H) => fetch(url + p, { method: "POST", headers: h, body: typeof b === "string" ? b : JSON.stringify(b) });
   try {
@@ -184,7 +198,7 @@ test("the server: the project, the file, the save; Host, header, path and size r
     assert.deepEqual(proj.sutras, ["a.sutra.yaml"]);
     assert.equal(proj.level, "1.2");
     assert.equal(proj.tables[0].columns[1].type, "number");
-    assert.equal(proj.libraries[0].name, "core");
+    assert.equal(proj.libraries[0].name, "demolib");
     assert.equal((await fetch(url + "api/file?path=a.sutra.yaml")).status, 200);
     assert.equal((await fetch(url + "api/file?path=../" + out.split("/").pop() + "/x.sutra.yaml")).status, 404);
     assert.match(await (await fetch(url)).text(), /Rachana Studio/);

@@ -13,9 +13,9 @@ or set `RACHANA_DIST`).
 `lib` is the Java `LibraryTool` behind `com.ash.rachana.cli.Main` (one implementation): set `RACHANA_JAR` (a runnable jar) or
 `RACHANA_CLASSPATH` (the module classes or jars). Tests: `npm test` (the lib test needs `./mvnw -pl rachana-cli -am compile` in `java/`).
 
-**`build` and `preview` use the real `<rachana-view>`** (`js/packages/rachana/src`, with the Drishti Elements 3.1.0 pack under
-`js/vendor/drishti-elements/3.1.0` and the runtime bundle from `dist`). A built site holds `rachana/src/*.js` (the element, the data
-client, `static_files_host.js`), `rachana/rachana.runtime.js`, `vendor/drishti-elements/3.1.0/`, one page per Sutra, the Sutras and
+**`build` and `preview` use the real `<rachana-view>`** (`js/packages/rachana/src`, with the Drishti Elements 3.2.0-dev+475232e pack under
+`js/vendor/drishti-elements/3.2.0-dev+475232e` and the runtime bundle from `dist`). A built site holds `rachana/src/*.js` (the element, the data
+client, `static_files_host.js`), `rachana/rachana.runtime.js`, `vendor/drishti-elements/3.2.0-dev+475232e/`, one page per Sutra, the Sutras and
 `data/`. With no server beside it, the page answers the Data Protocol itself from `data/index.json` and the table files
 (`static_files_host.js`: schema, filter tree, sort, columns, cursor paging; no change stream); serve the folder with any static web
 server (a browser does not fetch from `file://`). `test/paint_check.py`
@@ -27,8 +27,8 @@ a palette of the fragments of the project's libraries (`<folder>/rachana_libs`, 
 them, and `RACHANA_LIBS`), the live preview, the Sutra source with the bundle's `check` at level 1.2 shown as you type, a parameter form that
 inserts a `use:` block (tables and column mapping from the folder's data files), the unsaved changes as a diff, and Save into the folder (a
 `*.sutra.yaml` path inside it; nothing else is written). The assistant bar is a placeholder until the GenAI release. Tests: `npm test` in
-`js/packages/rachana-studio`; `uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py` (needs the libraries
-repository, `RACHANA_LIBS`).
+`js/packages/rachana-studio`; `uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py` (uses the repository's libraries/
+`RACHANA_LIBS` adds more).
 
 **`--level`** (default `1.1`, the newest built level; `1.2` when typed fragments or libraries are used) is the language level of
 `lint` (`since` in the bundle's `check`) and of the pages' `<rachana-view level>`.

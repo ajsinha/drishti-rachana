@@ -96,10 +96,13 @@ class Rachana:
     def template(self, template: str, record: Any = None, **given: Any) -> dict[str, Any]:
         return self._call("evaluate", {"template": template, "given": {"record": record or {}, **given}})
 
-    def check(self, sutra: str, file: str = "case.sutra.yaml", level: str = DEFAULT_LEVEL) -> dict[str, Any]:
+    def check(self, sutra: str, file: str = "case.sutra.yaml", level: str = DEFAULT_LEVEL, files: dict[str, str] | None = None) -> dict[str, Any]:
         """Compile and lint a Sutra at a language level (``"1.1"`` by default, the newest built; ``"1.2"`` for typed fragments and
         libraries): parsed, then its expressions checked; ``{"ok": bool, "problems": [...]}``."""
-        return self._call("check", {"sutra": sutra, "file": file, "since": level})
+        req: dict[str, Any] = {"sutra": sutra, "file": file, "since": level}
+        if files:
+            req["files"] = files                       # the libraries: ``rachana_libs/<library>/<path>`` to text
+        return self._call("check", req)
 
     def format(self, value: Any, format: str | None = None) -> dict[str, Any]:
         request: dict[str, Any] = {"value": value}

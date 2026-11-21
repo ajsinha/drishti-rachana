@@ -78,9 +78,9 @@ export function formSpec(frag, tables, values = null) {
     if (p.required) required.push(name);
     if (p.type === "table") {
       const want = p.columns || {}, from = values && values[name] ? values[name].from : (names[0] ?? ""), cols = colsOf(from);
-      const colProps = {};
-      for (const [k, spec] of Object.entries(want)) colProps[k] = { type: "string", title: `${k} (${spec.type || "text"}${spec.optional ? ", optional" : ""})`, description: spec.doc || "", enum: cols.map((c) => c.name), widget: "select" };
-      props[name] = { ...base, type: "object", properties: { from: { type: "string", title: "Table", enum: names, widget: "select" }, ...(Object.keys(colProps).length ? { columns: { type: "object", title: "Column mapping", properties: colProps } } : {}) }, required: ["from"] };
+      // the column mapping is Drishti Elements' ColumnMap field: the fragment's own columns (targets) on the table's (text is its "string")
+      const ty = (t) => (t === "text" ? "string" : t || ""), targets = Object.entries(want).map(([k, spec]) => ({ name: k, type: ty(spec.type), required: !spec.optional, description: spec.doc || "" }));
+      props[name] = { ...base, type: "object", properties: { from: { type: "string", title: "Table", enum: names, widget: "select" }, ...(targets.length ? { columns: { type: "columnmap", title: "Column mapping", options: { targets, columns: cols.map((c) => ({ name: c.name, type: ty(c.type) })) } } } : {}) }, required: ["from"] };
       init[name] = values && values[name] ? values[name] : { from, columns: proposeMapping(want, cols) };
     } else if (p.type === "id") {
       const cols = colsOf(tableName);

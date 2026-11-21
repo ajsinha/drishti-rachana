@@ -14,7 +14,12 @@ Usage: python3 tools/conformance/protocol_check.py --reference          (starts 
        uv run --with pyarrow python3 tools/conformance/protocol_check.py --python   (starts the Python DataHost with the same test adapter and
                                                                           runs every case, as for --reference; the Arrow cases need pyarrow in
                                                                           both the host's and this process's interpreter)
-       python3 tools/conformance/protocol_check.py --base http://127.0.0.1:8080/rdp/v1   (a host of your own)"""
+       python3 tools/conformance/protocol_check.py --live   (starts java/rachana-live's LiveReferenceServer: every case, the live-table
+                                                              ones too; build it first as for --reference)
+       python3 tools/conformance/protocol_check.py --base http://127.0.0.1:8080/rdp/v1   (a host of your own)
+
+A case whose fixture is a live table (`declaration`, FORMAT 5.12) is loaded with POST {base}/_test/live (PROTOCOL 15) and runs only
+against a host with live tables (--live, or --base with --with-live); other hosts report it unsupported."""
 import argparse, base64, fnmatch, http.client, json, os, socket, subprocess, sys, time, urllib.parse
 from pathlib import Path
 
@@ -165,10 +170,18 @@ def pointer(doc, ptr):
     return cur
 
 
+def is_live(c):
+    """A case whose fixture is a live table (FORMAT 5.12): it needs a host with live tables and their test adapter."""
+    return "declaration" in (c.get("fixture") or {})
+
+
 def run_case(host, c):
     why, actual = [], []
     f = c.get("fixture") or {}
-    st, body = host.request("POST", "/_test/fixture", body={"name": f.get("name"), "schema": f.get("schema"), "rows": f.get("rows", [])})
+    if is_live(c):
+        st, body = host.request("POST", "/_test/live", body=f)
+    else:
+        st, body = host.request("POST", "/_test/fixture", body={"name": f.get("name"), "schema": f.get("schema"), "rows": f.get("rows", [])})
     if st not in (200, 204):
         return "error", [f"fixture not loaded: {st} {body}"], actual
     captured = {}
@@ -207,6 +220,22 @@ def start_reference():
     return p, line.split("listening on", 1)[1].strip()
 
 
+def start_live():
+    target = ROOT / "java" / "rachana-live" / "target"
+    cp = target / "runtime-classpath.txt"
+    jars = sorted(str(j) for j in target.glob("rachana-live-*.jar") if not j.name.endswith(("-sources.jar", "-tests.jar")))
+    if not cp.is_file() or not jars:
+        sys.exit(f"{cp} is missing: build first (cd java && ./mvnw clean package -DskipTests)")
+    mp = os.pathsep.join(jars + [cp.read_text().strip()])
+    p = subprocess.Popen(["java", "--add-opens=java.base/java.nio=org.apache.arrow.memory.core", "-p", mp, "-m",
+                          "com.ash.rachana.live/com.ash.rachana.live.LiveReferenceServer", "--port", "0"], stdout=subprocess.PIPE, text=True)
+    line = p.stdout.readline()
+    if "listening on" not in line:
+        p.kill()
+        sys.exit(f"the live reference server did not start: {line!r}")
+    return p, line.split("listening on", 1)[1].strip()
+
+
 def start_python():
     p = subprocess.Popen([sys.executable, "-m", "drishti_rachana.testhost", "--port", "0"], stdout=subprocess.PIPE, text=True,
                          env={**os.environ, "PYTHONPATH": str(ROOT / "python" / "src") + os.pathsep + os.environ.get("PYTHONPATH", "")})
@@ -222,13 +251,17 @@ def main(argv=None):
     ap.add_argument("--base")
     ap.add_argument("--reference", action="store_true")
     ap.add_argument("--python", action="store_true", help="start python/src/drishti_rachana/testhost.py (DataHost) and run the same cases")
+    ap.add_argument("--live", action="store_true", help="start java/rachana-live's LiveReferenceServer and run every case, the live-table ones too")
+    ap.add_argument("--with-live", action="store_true", help="with --base: the host has live tables and their test adapter")
     ap.add_argument("--cases", default=str(ROOT / "conformance" / "1"))
     ap.add_argument("--only")
     ap.add_argument("--skip", help="comma list of case globs not run")
     ap.add_argument("--out", default=str(ROOT / "results" / "protocol.jsonl"))
     a = ap.parse_args(argv)
     proc = None
-    if a.reference:
+    if a.live:
+        proc, a.base = start_live()
+    elif a.reference:
         proc, a.base = start_reference()
     elif a.python:
         proc, a.base = start_python()
@@ -237,7 +270,8 @@ def main(argv=None):
     host = Host(a.base)
     only = [g for g in (a.only or "").split(",") if g]
     skip = [g for g in (a.skip or "").split(",") if g]
-    counts, failures, lines = {"pass": 0, "fail": 0, "error": 0}, [], []
+    counts, failures, lines = {"pass": 0, "fail": 0, "error": 0, "unsupported": 0}, [], []
+    live = a.live or a.with_live
     t0 = time.time()
     try:
         for p, suite, doc in load_files(Path(a.cases)):
@@ -247,6 +281,10 @@ def main(argv=None):
                 if c["kind"] != "protocol" or (only and not any(fnmatch.fnmatchcase(cid, g) for g in only)):
                     continue
                 if any(fnmatch.fnmatchcase(cid, g) for g in skip):
+                    continue
+                if is_live(c) and not live:
+                    counts["unsupported"] += 1
+                    lines.append(canon({"case": cid, "kind": "protocol", "status": "unsupported"}))
                     continue
                 try:
                     status, why, actual = run_case(host, c)
@@ -267,7 +305,8 @@ def main(argv=None):
     summ = {"host": a.base, "cases": sum(counts.values()), **counts, "verifiedFailing": verified, "failures": failures,
             "millis": int((time.time() - t0) * 1000)}
     out.with_suffix(".summary.json").write_text(json.dumps(summ, indent=1) + "\n", encoding="utf-8")
-    print(f"protocol: {summ['cases']} cases: pass {counts['pass']}, fail {counts['fail']}, error {counts['error']} (verified failing {verified})")
+    print(f"protocol: {summ['cases']} cases: pass {counts['pass']}, fail {counts['fail']}, error {counts['error']}, "
+          f"unsupported {counts['unsupported']} (verified failing {verified})")
     return 1 if verified or counts["error"] else 0
 
 

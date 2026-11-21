@@ -28,13 +28,16 @@
     ],
     "BY_SOURCE": [
      {
-      "VALUE": 855.53
+      "SOURCE": "SOURCE-O1",
+      "COUNT": 267
      },
      {
-      "VALUE": 705.53
+      "SOURCE": "SOURCE-P2",
+      "COUNT": 117
      },
      {
-      "VALUE": 1055.53
+      "SOURCE": "SOURCE-Q3",
+      "COUNT": 467
      }
     ],
     "PIPELINE": [
@@ -54,24 +57,18 @@
       "DROPPED": 759.19
      }
     ],
-    "PROVENANCE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "NEWS_ID": "NEWS_ID-F1",
     "ENTITY": "ENTITY-X1",
     "EDITION": -199,
     "RELEVANCE_FILTER": 88,
     "COUNT": 267,
-    "FETCHED_AT": "2026-05-14",
-    "SNAPSHOT": 534.77
+    "FETCHED_AT": "2026-01-31",
+    "NEWS_ID": "NEWS_ID-F1",
+    "SNAPSHOT": 534.77,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

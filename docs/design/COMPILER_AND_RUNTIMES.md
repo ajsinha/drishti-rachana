@@ -131,8 +131,12 @@ and `internal.Bits` (the words of a double through a `DataView`, no
 
 | Bundle | Exports (JSON text in and out; answers are the conformance documents of FORMAT 5) |
 |---|---|
-| `rachana.runtime.js` | `init(profiles, formats)`, `version`, `evaluate`, `evaluateError`, `format`, `check` (parse, then check: compile and lint), `view` |
+| `rachana.runtime.js` | `init(profiles, formats)`, `version`, `evaluate`, `evaluateError`, `format`, `check` (parse, then check: compile and lint), `checked` (checked mode over known types, FORMAT 5.4), `grammar` (FORMAT 5.5), `view` |
 | `rachana.tools.js` | the runtime's, plus `edit` (design/ops), `viewModelSchema`, and the conformance harness `hello`, `answer` |
+
+**EXPERIMENTAL at 1.0 (gate 2, O9):** these exports are the conformance adapter (a request is a case's fields; `init` sets one
+instance for the page) and may change in a minor release; the frozen contract is the JSON documents they answer (FORMAT 5) and
+the ViewModel schemas. `screen(op, request)` and `<rachana-view>` are experimental for the same reason.
 
 Proof (2026-11-21): every conformance case byte-identical to the JVM in Node 22, Chromium 153, Firefox 155, WebKit 26.6 (strict CSP,
 Trusted Types, no violation) and in Python on V8 (2,123 cases with the tools bundle, 1,953 with the runtime bundle: all but `edit`);

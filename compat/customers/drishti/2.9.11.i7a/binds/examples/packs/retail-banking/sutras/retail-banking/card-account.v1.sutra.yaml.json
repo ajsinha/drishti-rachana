@@ -8,13 +8,16 @@
    "answer": {
     "spend": [
      {
-      "VALUE": 855.53
+      "category": 78.05,
+      "amount": 555.05
      },
      {
-      "VALUE": 705.53
+      "category": -71.95,
+      "amount": 905.05
      },
      {
-      "VALUE": 1055.53
+      "category": 278.05,
+      "amount": 1005.05
      }
     ],
     "statements": [
@@ -37,7 +40,7 @@
       "paid": 9.11
      }
     ],
-    "cardId": "CARDID-O1",
+    "customer": 78,
     "holderName": "HOLDERNAME-A1",
     "product": 610.57,
     "balance": 525,
@@ -45,7 +48,7 @@
     "utilisation": 805.37,
     "apr": 871,
     "status": "STATUS-Y1",
-    "customer": 78
+    "cardId": "CARDID-O1"
    }
   },
   {
@@ -83,7 +86,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Customer",
+      "text": "78",
+      "link": {
+       "kind": "customer",
+       "id": "78",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

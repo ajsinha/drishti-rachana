@@ -69,7 +69,7 @@ cases:
     scope: "data"
     types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
     expr: "$.mtm && $.n"
-    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+    expect: {"type": null, "problems": [{"code": "RCH-9127", "expr": {"start": 0, "end": 5}}, {"code": "RCH-9127", "expr": {"start": 9, "end": 12}}]}
 
   - id: "check-status-1"
     kind: "check"
@@ -159,7 +159,7 @@ cases:
     scope: "data"
     types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
     expr: "$.status in [1, 2]"
-    expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+    expect: {"type": null, "problems": [{"code": "RCH-9127", "expr": {"start": 13, "end": 14}}, {"code": "RCH-9127", "expr": {"start": 16, "end": 17}}]}
 
   - id: "check-round-mtm-n"
     kind: "check"

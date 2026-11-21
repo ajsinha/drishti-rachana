@@ -8,13 +8,16 @@
    "answer": {
     "frequencies": [
      {
-      "VALUE": 855.53
+      "population": 880,
+      "af": 354
      },
      {
-      "VALUE": 705.53
+      "population": 980,
+      "af": 204
      },
      {
-      "VALUE": 1055.53
+      "population": 830,
+      "af": 554
      }
     ],
     "evidence": [
@@ -22,40 +25,34 @@
       "source": 579.35,
       "assertion": 497.89,
       "stars": 520,
-      "date": "2026-09-27"
+      "date": "2026-04-08"
      },
      {
       "source": 929.35,
       "assertion": 597.89,
       "stars": 870,
-      "date": "2026-01-12"
+      "date": "2025-12-16"
      },
      {
       "source": 1029.35,
       "assertion": 447.89,
       "stars": 970,
-      "date": "2026-02-15"
+      "date": "2026-01-22"
      }
     ],
-    "annotation": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "variantId": "VARIANTID-C1",
+    "gene": 87,
     "geneSymbol": 237,
     "proteinChange": 761,
     "hgvsC": 598.49,
     "consequence": 586,
     "significance": -240.13,
     "rsid": 526.13,
-    "gene": 87
+    "variantId": "VARIANTID-C1",
+    "annotation": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -93,7 +90,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Gene",
+      "text": "87",
+      "link": {
+       "kind": "gene",
+       "id": "87",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

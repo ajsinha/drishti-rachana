@@ -17,11 +17,11 @@
       "ID": "ID-B3"
      }
     ],
-    "TRADER_ID": "TRADER_ID-C1",
+    "DESK": "DESK-G1",
     "NAME": "NAME-X1",
     "DESK_NAME": "DESK_NAME-A1",
     "TRADE_COUNT": 622.07,
-    "DESK": "DESK-G1"
+    "TRADER_ID": "TRADER_ID-C1"
    }
   },
   {
@@ -59,7 +59,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Desk",
+      "text": "DESK-G1",
+      "link": {
+       "kind": "desk",
+       "id": "DESK-G1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

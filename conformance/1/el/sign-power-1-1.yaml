@@ -1,0 +1,51 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# Gate 2 decision O6 (DECISIONS EL1-2 amended, 2026-11-21): a sign written right before a power spelled '^' is refused at level 1.1.
+suite: el/sign-power-1-1
+since: "1.1"
+profile: core
+verified: true
+description: "A sign before a power spelled ^ without parentheses does not compile at level 1.1 (Excel reads -2 ^ 2 as 4, Python's rule as -4); the parentheses say which is meant; ** keeps Python's rule."
+given: {"record": {"a": 3}}
+cases:
+
+  - id: "sign-before-caret-power-refused"
+    kind: "expr-error"
+    source: "SPEC 4.10 (the power row); DECISIONS EL1-2; gate 2 O6"
+    expr: "-2 ^ 2"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '-2 ^ 2': a sign before a power written with '^' is ambiguous (Excel reads -2 ^ n as (-2) ^ n, Python's rule as -(2 ^ n)): write -(2 ^ n) or (-2) ^ n at 3", "expr": {"source": "-2 ^ 2", "start": 3, "end": 4}}]}
+
+  - id: "sign-before-caret-power-of-a-path-refused"
+    kind: "expr-error"
+    source: "SPEC 4.10; gate 2 O6"
+    expr: "2 * -$.a ^ 2"
+    expect: {"problems": [{"code": "RCH-2101", "severity": "error", "message": "expression '2 * -$.a ^ 2': a sign before a power written with '^' is ambiguous (Excel reads -$.a ^ n as (-$.a) ^ n, Python's rule as -($.a ^ n)): write -($.a ^ n) or (-$.a) ^ n at 9", "expr": {"source": "2 * -$.a ^ 2", "start": 9, "end": 10}}]}
+
+  - id: "negative-of-a-caret-power"
+    kind: "expr"
+    source: "SPEC 4.10; gate 2 O6"
+    expr: "-(2 ^ 2)"
+    expect: {"value": -4, "type": "decimal"}
+
+  - id: "caret-power-of-a-negative"
+    kind: "expr"
+    source: "SPEC 4.10; gate 2 O6"
+    expr: "(-2) ^ 2"
+    expect: {"value": 4, "type": "decimal"}
+
+  - id: "caret-power-of-a-negative-path"
+    kind: "expr"
+    source: "SPEC 4.10; gate 2 O6"
+    expr: "(-$.a) ^ 2"
+    expect: {"value": 9, "type": "decimal"}
+
+  - id: "sign-after-caret-is-the-exponent"
+    kind: "expr"
+    source: "SPEC 4.10; gate 2 O6: only a sign before the base is ambiguous"
+    expr: "2 ^ -1"
+    expect: {"value": 0.5, "type": "decimal"}
+
+  - id: "sign-before-double-star-keeps-python"
+    kind: "expr"
+    source: "SPEC 4.10; DECISIONS EL1-2: ** keeps Python's rule"
+    expr: "-2 ** 2"
+    expect: {"value": -4, "type": "decimal"}

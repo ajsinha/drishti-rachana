@@ -14,6 +14,27 @@ Entries are written per release; the regime's unreleased work is listed after th
   `server.origins`) in every auth mode, and a link in `static/` cannot leave it (F8). `levels.py` refuses a deleted recorded case that
   is not a listed withdrawal (F9). One default language level, `Grammar.DEFAULT_LEVEL`, handed out by the bundles' `levels()` (F12;
   guard `DefaultLevelGuardTest`). One Elements pin (`ElementsPinGuardTest`). The reference server serves a path with a `+`.
+- **Gate 2 fixes A (compiler and engine)**:
+  - **F4 / O7, the `check` and `grammar` kinds run**: the 49 frozen cases no runtime answered are answered on the JVM, both JavaScript
+    bundles (facade `checked`, `grammar`; the tools bundle's harness) and Python on V8. Corrected cases that had never run: checked
+    mode reports every problem (`el/check#check-mtm-n`, `#check-status-in-1-2`: two each); `expected` of SPEC 6.1 is deferred
+    (`el/examples/check#unknown-name-did-you-mean`). `grammar/reserved`: the seven refusals level 1.1 reads (`|>`, `??`, spread, `{}`,
+    comments, digit separators, `??` in a template part) carry `until: "1.0"`, each with a level 1.1 twin that is accepted
+    (`pipe-refused` was wrong at 1.1: it passed only because `f` is no function).
+  - **F7 / O4, problems carry `path`, a full `range` and severity** (SPEC 6.1): `SutraProblem` is `(code, severity, message, location,
+    path, range)` (the three-argument constructor stays); the parser places every problem of the file it read (`parse.ProblemPlaces`:
+    the node's JSON Pointer and start and end with line, column and UTF-16 offset), live-table declarations too; advisories are
+    `warning`. Conformance answers carry them from level 1.1 (level 1.0 keeps its recorded shape, so its replay is identical). From
+    level 1.1 a duplicate panel id is reported at the id (`/panels/<n>/id`). `doc`, `fix` on compile problems and `expected` are
+    deferred to a later minor (SPEC 6.1 says so). `path` restored in `problem/examples/problem` (`-l11`, `profile-key-without-the-profile`).
+  - **O6, `-x ^ y` refused at level 1.1** (`RCH-2101`, the message names `-(x ^ n)` and `(-x) ^ n`); `-x ** n` keeps Python's rule and
+    the checked-mode hint `RCH-2091`; level 1.0 has no infix `^`. Cases `el/sign-power-1-1`; DECISIONS EL1-2 amended.
+  - **O5, `range` rename**: complete since lane B (`span` at 1.1); the SPEC's list of pending pivot names says so.
+  - **F11 / O9, CG5 over all seven modules, removals logged, stability marked**: `ApiSurfaceTest` reads rachana-api, -core, -tools,
+    -data, -live, -server and -cli (Arrow's jars from rachana-data's `runtime-classpath.txt`); each baseline line is `[stable]` (the
+    entry surface of gate 2 section 4) or `[experimental]`. The write flag refuses to drop a line (or demote a stable one) unless
+    `java/api-removals.txt` logs it with a date and a reason; a released `java/api-surface-<minor>.txt` (copied at the tag) is checked on
+    every run and never written. README, the Python SDK and the JavaScript package say what is experimental.
 
 - **Tree formats, promoted formats, hyphenated column names** (level 1.2): a `tree` takes `fmt`, the format of every measure whose
   column names none (a column's own `fmt` still wins; `fmt` at 1.1 is `RCH-2008`). Core bundles `pct4`, `bp1`, `df4` and `price4`
@@ -25,6 +46,17 @@ Entries are written per release; the regime's unreleased work is listed after th
   `@['mtm-usd']`, a fragment's own `@['bid-size']` is renamed too; such a name in a field-name option is `RCH-2121`, never a minus.
   Cases: `format/promoted`, `sutra/binder/tree-formats`, `problem/tree-format-level`, `sutra/fragments-hyphens`,
   `problem/fragments-hyphens`.
+- **The corpus's bind proof binds real data** (gate finding F2, owner decision O2): the recorder (`tools/regime/corpus_binds.py`,
+  `CorpusBind.java`) now makes its synthetic data from each Sutra as the reference parsed it (fragments and blocks expanded: rows for
+  timelines, charts' named fields, field-lists, histograms, graphs) and gives the reference a **recording source router** (one source
+  plugin serving every kind: linked documents, wired `source:`s, map lookups, control lookups), the record's links and the host's
+  pivot engine; every answer is a host call in `binds/<file>.json` (`source.fetch`, `source.search`, `source.freshness`,
+  `pivot.cells`, `pivot.key`). Core's replay answers its `TableProvider` and `PivotEngine` from the same recording
+  (`CoreBinds.tables`, `CoreBinds.pivots`; the links panel replays its items). Before: 463 of 478 bound, 454 compared, 24 listed,
+  65% of data panels empty (1,312 of 1,447 tables, 788 of 863 line charts, every timeline and links panel). Now: **478 of 478
+  bind on the reference and are identical on Core, none listed**; 3 of 5,569 data panels empty (0.1%: panels waiting for a
+  selection), 6 of 400 links panels empty (the record names no entity), every panel kind filled somewhere.
+  `corpus_binds.py --report` prints the count by kind.
 - **Corpus binds no longer flaky**: `CustomerCorpusTest.recordedBindsReplay…` flipped between "differs" and "listed but identical now"
   because both the reference (i7a) and Core wrote some objects from `Map.of`, whose key order is drawn afresh in every JVM run. Core now
   writes a form's `rules`, `steps` and a field's `options` (and a problem's `at`, a grouped query's columns) in declaration order, and a

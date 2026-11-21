@@ -26,33 +26,160 @@
       "NET_MTM": 654.13
      }
     ],
-    "COUNTERPARTY_ID": "COUNTERPARTY-G1",
+    "HIERARCHY": {
+     "NODES": [
+      {
+       "id": "ID-H1",
+       "kind": "KIND-F1",
+       "LABEL": "LABEL-I1",
+       "TYPE": "TYPE-X1"
+      },
+      {
+       "id": "ID-I2",
+       "kind": "KIND-G2",
+       "LABEL": "LABEL-J2",
+       "TYPE": "TYPE-Y2"
+      },
+      {
+       "id": "ID-J3",
+       "kind": "KIND-H3",
+       "LABEL": "LABEL-K3",
+       "TYPE": "TYPE-Z3"
+      }
+     ],
+     "EDGES": [
+      {
+       "from": "ID-H1",
+       "to": "ID-I2"
+      },
+      {
+       "from": "ID-H1",
+       "to": "ID-J3"
+      },
+      {
+       "from": "ID-H1",
+       "to": "ID-I2"
+      }
+     ]
+    },
+    "GROUP": "GROUP-O1",
     "NAME": "NAME-X1",
-    "LEI": "LEI-Z1",
     "RATING": "RATING-N1",
+    "NET_MTM": 454.13,
+    "LEI": "LEI-Z1",
     "SECTOR": "SECTOR-T1",
     "COUNTRY_OF_RISK": "COUNTRY_OF_R-C1",
     "UEN": 460,
     "TYPE": "TYPE-X1",
-    "NET_MTM": 454.13,
+    "COUNTERPARTY_ID": "COUNTERPARTY-G1",
     "KYC": {
      "STATUS": "STATUS-Y1",
      "RISK_RATING": "RISK_RATING-N1",
      "LAST_REVIEW": 367,
      "EMIR_CLASSIFICATION": "EMIR_CLASSIF-I1",
      "PD_1Y": 115.49
-    },
-    "HIERARCHY": {
-     "NODES": 447,
-     "EDGES": 514.49
-    },
-    "GROUP": "GROUP-O1"
+    }
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "cpty-mtm",
+    "COUNTERPARTY-G1"
+   ],
+   "answer": {
+    "data": {
+     "NETTING_SETS": [
+      {
+       "label": "LABEL-W1",
+       "count": 465.29,
+       "value": 418
+      },
+      {
+       "label": "LABEL-X2",
+       "count": 815.29,
+       "value": 268
+      },
+      {
+       "label": "LABEL-Y3",
+       "count": 915.29,
+       "value": 618
+      }
+     ],
+     "NET_MTM": 454.13,
+     "TRADE_COUNT": 622.07,
+     "NETTING_SET_COUNT": 572.69,
+     "GROSS_POSITIVE_MTM": 151.63,
+     "GROSS_NEGATIVE_MTM": 354,
+     "CE_UNCOLLATERALISED": 768,
+     "PAST_MATURITY_COUNT": "2026-03-26",
+     "CURRENCY_NOTE": "CURRENCY_NOT-O1"
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "counterparty"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": [
+     {
+      "label": "Group",
+      "text": "GROUP-O1",
+      "link": {
+       "kind": "counterparty-group",
+       "id": "GROUP-O1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "source.freshness",
+   "args": [
+    "cpty-mtm"
+   ],
+   "answer": {
+    "source": "recorded",
+    "lastUpdate": null,
+    "staleAfter": null,
+    "stale": false
+   }
   }
  ]
 }

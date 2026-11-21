@@ -1,5 +1,8 @@
 # drishti-rachana (Python), skeleton
 
+**EXPERIMENTAL at Rachana 1.0 (gate 2, O9):** every module of `drishti_rachana` may change in a minor release; the frozen
+contract is the documents it carries (the ViewModel schemas, the Data Protocol, the conformance case format).
+
 Python package for Drishti Rachana; import name `rachana`. **Skeleton (plan F7):** the Data Protocol types, the
 conformance runner, the `rachana lint` command, a minimal Data Protocol host and the Flask and FastAPI adapters. It holds no language semantics: no parser, operator table or
 formatter: compiling, linting and evaluating run the JavaScript bundle on V8 (`drishti_rachana.engine`, W-1).

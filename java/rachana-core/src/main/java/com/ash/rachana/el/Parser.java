@@ -56,6 +56,8 @@ final class Parser {
     private final Map<Expr, int[]> spans = new IdentityHashMap<>();
     private int p;
     private int nesting;
+    /** A sign was read right before the operand being parsed (level 1.1: {@code -x ^ n} is refused, O6). */
+    private boolean signBefore;
     /** The names {@code let} has bound around the part being parsed, innermost first. */
     private final java.util.ArrayDeque<String> letNames = new java.util.ArrayDeque<>();
     /** Above zero inside {@code reduce}'s expression, where {@code @acc} is the value so far. */
@@ -403,12 +405,15 @@ final class Parser {
 
     private Expr unary() {
         int s = peek().pos();
+        boolean signed = signBefore;
+        signBefore = false;
         boolean not = accept(Type.OP, "!");
         if (!not && !accept(Type.OP, "-")) {
-            return v11 ? power() : postfix();
+            return v11 ? power(signed) : postfix();
         }
         descend();
         try {
+            signBefore = !not;
             Expr e = unary();
             return at(node(not ? new Expr.Not(e) : v11 ? new Expr.Minus(e) : new Expr.Neg(e), e), s);
         } finally {
@@ -416,10 +421,21 @@ final class Parser {
         }
     }
 
-    /** Level 1.1: {@code a ** b} and {@code a ^ b} (PY6), right-associative, tighter than a sign on its left. */
-    private Expr power() {
+    /**
+     * Level 1.1: {@code a ** b} and {@code a ^ b} (PY6), right-associative, tighter than a sign on its left. A sign written right
+     * before a power spelled {@code ^} is refused (DECISIONS EL1-2, gate 2 O6): Excel reads {@code -2 ^ 2} as 4 and Python's rule
+     * as -4, and a silent sign difference is the wrong default; the author writes the parentheses. {@code -2 ** 2} keeps Python's
+     * rule (checked mode warns, RCH-2091).
+     */
+    private Expr power(boolean signed) {
         int s = peek().pos();
         Expr e = postfix();
+        if (signed && peek().type() == Type.CARET) {
+            Token caret = peek();
+            String base = CoreText.strip(src.substring(s, caret.pos()));
+            throw new ElException("a sign before a power written with '^' is ambiguous (Excel reads -" + base + " ^ n as (-" + base
+                    + ") ^ n, Python's rule as -(" + base + " ^ n)): write -(" + base + " ^ n) or (-" + base + ") ^ n", caret.pos(), caret.pos() + 1);
+        }
         if (peek().is(Type.OP, "**") || peek().type() == Type.CARET) {
             next();
             descend();

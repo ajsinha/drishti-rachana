@@ -23,12 +23,12 @@
       "OUTRIGHT": 237
      }
     ],
-    "CURVE_ID": "CURVE_ID-Z1",
+    "FX_SPOT": 151.09,
     "PAIR": 36,
     "SPOT": 385,
     "POINTS_3M": 892.55,
     "POINTS_1Y": 586,
-    "FX_SPOT": 151.09
+    "CURVE_ID": "CURVE_ID-Z1"
    }
   },
   {
@@ -66,7 +66,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Fx spot",
+      "text": "151.09",
+      "link": {
+       "kind": "fx-spot",
+       "id": "151.09",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

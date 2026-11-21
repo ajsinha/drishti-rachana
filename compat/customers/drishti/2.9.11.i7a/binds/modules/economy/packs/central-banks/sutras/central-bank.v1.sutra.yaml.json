@@ -8,12 +8,15 @@
    "answer": {
     "POLICY_HISTORY": [
      {
+      "DATE": "2026-04-27",
       "VALUE": 855.53
      },
      {
+      "DATE": "2026-01-04",
       "VALUE": 705.53
      },
      {
+      "DATE": "2026-02-10",
       "VALUE": 1055.53
      }
     ],
@@ -23,7 +26,7 @@
       "TITLE": "TITLE-X1",
       "LATEST": 449.41,
       "UNIT": 271,
-      "DATE": "2026-04-22",
+      "DATE": "2026-04-27",
       "CHANGE": 436.25
      },
      {
@@ -31,7 +34,7 @@
       "TITLE": "TITLE-Y2",
       "LATEST": 549.41,
       "UNIT": 621,
-      "DATE": "2026-05-25",
+      "DATE": "2026-01-04",
       "CHANGE": 786.25
      },
      {
@@ -39,20 +42,25 @@
       "TITLE": "TITLE-Z3",
       "LATEST": 399.41,
       "UNIT": 721,
-      "DATE": "2026-06-10",
+      "DATE": "2026-02-10",
       "CHANGE": 886.25
      }
     ],
-    "BANK_ID": "BANK_ID-V1",
+    "PRESS": 159.41,
     "NAME": "NAME-X1",
     "POLICY_RATE": 688,
-    "POLICY_RATE_DATE": "2026-03-21",
-    "LAST_MOVE_DATE": "2026-06-15",
+    "POLICY_RATE_DATE": "2026-04-08",
+    "LAST_MOVE_DATE": "2026-01-02",
     "LAST_MOVE_BP": -57.61,
     "CURRENCY": "CURRENCY-Z1",
+    "BANK_ID": "BANK_ID-V1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "WEBSITE": 496.27,
-    "PRESS": 159.41
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -90,7 +98,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Press",
+      "text": "159.41",
+      "link": {
+       "kind": "release-source",
+       "id": "159.41",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

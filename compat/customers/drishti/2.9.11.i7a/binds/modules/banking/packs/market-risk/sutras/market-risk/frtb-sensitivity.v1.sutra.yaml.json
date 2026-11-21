@@ -28,21 +28,24 @@
     ],
     "BY_CLASS": [
      {
-      "VALUE": 855.53
+      "RISK_CLASS": "RISK_CLASS-Z1",
+      "CHARGE": 88
      },
      {
-      "VALUE": 705.53
+      "RISK_CLASS": "RISK_CLASS-A2",
+      "CHARGE": 188
      },
      {
-      "VALUE": 1055.53
+      "RISK_CLASS": "RISK_CLASS-B3",
+      "CHARGE": 38
      }
     ],
-    "RESULT_ID": "RESULT_ID-X1",
     "BOOK": "BOOK-L1",
     "DELTA_CHARGE": 560,
     "VEGA_CHARGE": 28,
     "CURVATURE_CHARGE": 555,
-    "TOTAL": 570
+    "TOTAL": 570,
+    "RESULT_ID": "RESULT_ID-X1"
    }
   },
   {
@@ -80,7 +83,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Book",
+      "text": "BOOK-L1",
+      "link": {
+       "kind": "book",
+       "id": "BOOK-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

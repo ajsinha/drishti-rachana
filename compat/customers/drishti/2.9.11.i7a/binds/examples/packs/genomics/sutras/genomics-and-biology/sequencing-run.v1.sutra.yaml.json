@@ -8,13 +8,16 @@
    "answer": {
     "qualityByCycle": [
      {
-      "VALUE": 855.53
+      "cycle": 159.95,
+      "q": 498
      },
      {
-      "VALUE": 705.53
+      "cycle": 509.95,
+      "q": 348
      },
      {
-      "VALUE": 1055.53
+      "cycle": 609.95,
+      "q": 698
      }
     ],
     "samples": [
@@ -34,13 +37,13 @@
       "coverage": 362.57
      }
     ],
-    "runId": "RUNID-T1",
     "instrument": 265.27,
     "flowcell": -212.65,
     "yieldGb": -144.97,
     "q30": 364.19,
     "clustersPf": 319.85,
-    "status": "STATUS-Y1"
+    "status": "STATUS-Y1",
+    "runId": "RUNID-T1"
    }
   },
   {

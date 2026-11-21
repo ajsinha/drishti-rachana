@@ -8,32 +8,41 @@
    "answer": {
     "ATTRIBUTION": [
      {
-      "VALUE": 855.53
+      "FACTOR": 640.27,
+      "PNL": 367
      },
      {
-      "VALUE": 705.53
+      "FACTOR": 740.27,
+      "PNL": 217
      },
      {
-      "VALUE": 1055.53
+      "FACTOR": 590.27,
+      "PNL": 567
      }
     ],
     "EXPLAIN_STEPS": [
      {
-      "VALUE": 855.53
+      "STEP": -214,
+      "PNL": 367,
+      "Actual": 666
      },
      {
-      "VALUE": 705.53
+      "STEP": 135,
+      "PNL": 217,
+      "Actual": 766
      },
      {
-      "VALUE": 1055.53
+      "STEP": 235,
+      "PNL": 567,
+      "Actual": 616
      }
     ],
-    "RESULT_ID": "RESULT_ID-X1",
-    "DATE": "2026-04-22",
+    "BOOK": "BOOK-L1",
+    "DATE": "2026-04-27",
     "ACTUAL": -51.67,
     "EXPLAINED": 640,
     "UNEXPLAINED": 283.79,
-    "BOOK": "BOOK-L1"
+    "RESULT_ID": "RESULT_ID-X1"
    }
   },
   {
@@ -71,7 +80,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Book",
+      "text": "BOOK-L1",
+      "link": {
+       "kind": "book",
+       "id": "BOOK-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

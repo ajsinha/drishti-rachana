@@ -8,26 +8,34 @@
    "answer": {
     "HISTORY": [
      {
+      "PERIOD": -199.39,
       "VALUE": 855.53
      },
      {
+      "PERIOD": 150.61,
       "VALUE": 705.53
      },
      {
+      "PERIOD": 250.61,
       "VALUE": 1055.53
      }
     ],
-    "SERIES_ID": "SERIES_ID-G1",
-    "NAME": "NAME-X1",
+    "OECD_COUNTRY": "OECD_COUNTRY-U1",
     "TITLE": "TITLE-X1",
     "LATEST": 449.41,
     "UNIT": 271,
     "LATEST_PERIOD": 261.91,
     "CHANGE": 436.25,
-    "OECD_COUNTRY": "OECD_COUNTRY-U1",
+    "SERIES_ID": "SERIES_ID-G1",
+    "NAME": "NAME-X1",
     "COUNTRY_NAME": "COUNTRY_NAME-B1",
     "FREQUENCY": 236.99,
-    "DATAFLOW": 249.41
+    "DATAFLOW": 249.41,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -65,7 +73,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Oecd country",
+      "text": "OECD_COUNTRY-U1",
+      "link": {
+       "kind": "oecd-country",
+       "id": "OECD_COUNTRY-U1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

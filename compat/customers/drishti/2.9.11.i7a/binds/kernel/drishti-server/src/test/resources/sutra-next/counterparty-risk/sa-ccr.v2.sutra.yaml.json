@@ -8,13 +8,16 @@
    "answer": {
     "ADD_ONS": [
      {
-      "VALUE": 855.53
+      "ASSET_CLASS": "ASSET_CLASS-P1",
+      "ADD_ON": 570
      },
      {
-      "VALUE": 705.53
+      "ASSET_CLASS": "ASSET_CLASS-Q2",
+      "ADD_ON": 920
      },
      {
-      "VALUE": 1055.53
+      "ASSET_CLASS": "ASSET_CLASS-R3",
+      "ADD_ON": 1020
      }
     ],
     "HEDGING_SETS": [
@@ -37,14 +40,14 @@
       "SF": 493.37
      }
     ],
-    "CALC_ID": "CALC_ID-A1",
+    "NETTING_SET": 67,
     "REPLACEMENT_COST": 625.91,
     "ADD_ON": 570,
     "MULTIPLIER": 736,
     "EAD": -219,
     "RWA": 538,
-    "ALPHA": 205,
-    "NETTING_SET": 67
+    "CALC_ID": "CALC_ID-A1",
+    "ALPHA": 205
    }
   },
   {
@@ -82,7 +85,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Netting set",
+      "text": "67",
+      "link": {
+       "kind": "netting-set",
+       "id": "67",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

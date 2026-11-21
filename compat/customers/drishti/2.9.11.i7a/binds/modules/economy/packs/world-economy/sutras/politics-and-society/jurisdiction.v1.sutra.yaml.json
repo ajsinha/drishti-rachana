@@ -40,17 +40,6 @@
       "UNIT": 721
      }
     ],
-    "PROFILE": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "PARTIES_LISTED": [
      {
       "PARTY": 46
@@ -62,21 +51,55 @@
       "PARTY": 246
      }
     ],
-    "JURISDICTION_ID": "JURISDICTION-R1",
+    "REGION": "REGION-I1",
     "NAME": "NAME-X1",
     "CAPITAL": 412.75,
     "GOVERNMENT_TYPE": "GOVERNMENT_T-M1",
     "POPULATION_M": 318,
     "AREA_KM2": 324,
     "CURRENCY": "CURRENCY-Z1",
-    "ISO3": -103,
-    "REGION": "REGION-I1"
+    "JURISDICTION_ID": "JURISDICTION-R1",
+    "ISO3": "USA",
+    "PROFILE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    },
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.search",
+   "args": [
+    "jurisdiction",
+    ""
+   ],
+   "answer": [
+    {
+     "id": "JURISDICTION-1",
+     "title": "Jurisdiction 1",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "JURISDICTION-2",
+     "title": "Jurisdiction 2",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "JURISDICTION-3",
+     "title": "Jurisdiction 3",
+     "subtitle": "recorded"
+    }
+   ]
   },
   {
    "hook": "panel",
@@ -108,7 +131,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Region",
+      "text": "REGION-I1",
+      "link": {
+       "kind": "region",
+       "id": "REGION-I1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

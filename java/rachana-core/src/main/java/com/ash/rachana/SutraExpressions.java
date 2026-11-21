@@ -102,7 +102,7 @@ public final class SutraExpressions {
 
     /** Compiles every expression in {@code s}; returns the problems (empty when all compile). */
     public List<SutraProblem> check(Sutra s) {
-        return com.ash.rachana.el.Declarations.within(s.declarations(), () -> checked(s));
+        return com.ash.rachana.parse.ProblemPlaces.place(s, com.ash.rachana.el.Declarations.within(s.declarations(), () -> checked(s)));
     }
 
     private List<SutraProblem> checked(Sutra s) {

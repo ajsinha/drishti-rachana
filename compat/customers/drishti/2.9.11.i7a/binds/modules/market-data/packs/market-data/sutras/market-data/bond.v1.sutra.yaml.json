@@ -6,52 +6,49 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "TERMS": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
     "COUPONS": [
      {
-      "DATE": "2026-04-22",
+      "DATE": "2026-04-27",
       "AMOUNT": 146
      },
      {
-      "DATE": "2026-05-25",
+      "DATE": "2026-01-04",
       "AMOUNT": 496
      },
      {
-      "DATE": "2026-06-10",
+      "DATE": "2026-02-10",
       "AMOUNT": 596
      }
     ],
     "HISTORY": [
      {
-      "VALUE": 855.53
+      "DATE": "2026-04-27",
+      "PRICE": 757
      },
      {
-      "VALUE": 705.53
+      "DATE": "2026-01-04",
+      "PRICE": 857
      },
      {
-      "VALUE": 1055.53
+      "DATE": "2026-02-10",
+      "PRICE": 707
      }
     ],
-    "ISIN": "ISIN-H1",
+    "ISSUER": 116,
     "ISSUER_NAME": "ISSUER_NAME-B1",
     "COUPON": 305.93,
-    "MATURITY": "2026-02-20",
+    "MATURITY": "2026-01-07",
     "PRICE": 757,
     "YIELD": 605.45,
     "Z_SPREAD": 566.53,
     "MOD_DURATION": 535.85,
     "RATING": "RATING-N1",
-    "ISSUER": 116
+    "ISIN": "ISIN-H1",
+    "TERMS": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -89,7 +86,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Issuer",
+      "text": "116",
+      "link": {
+       "kind": "issuer",
+       "id": "116",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

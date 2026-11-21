@@ -61,6 +61,16 @@ final class Facade {
         return Cases.run(Cases::format, json);
     }
 
+    /** Checked mode over known types (FORMAT 5.4): {@code {type, problems}}. */
+    static String checked(String json) {
+        return Cases.run(Cases::checked, json);
+    }
+
+    /** Whether the grammar reads a text (FORMAT 5.5): {@code {accepted}}. */
+    static String grammar(String json) {
+        return Cases.run(Cases::grammar, json);
+    }
+
     static String problem(String json) {
         return Cases.run(Cases::problem, json);
     }

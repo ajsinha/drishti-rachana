@@ -8,17 +8,18 @@
    "answer": {
     "HISTORY": [
      {
+      "PERIOD": -199.39,
       "VALUE": 855.53
      },
      {
+      "PERIOD": 150.61,
       "VALUE": 705.53
      },
      {
+      "PERIOD": 250.61,
       "VALUE": 1055.53
      }
     ],
-    "SERIES_ID": "SERIES_ID-G1",
-    "TITLE": "TITLE-X1",
     "LATEST": 449.41,
     "UNIT": 271,
     "LATEST_PERIOD": 261.91,
@@ -26,13 +27,20 @@
     "CHANGE_PCT": 702,
     "YEAR_ON_YEAR_PCT": 364,
     "RELEASED": 258,
+    "SERIES_ID": "SERIES_ID-G1",
+    "TITLE": "TITLE-X1",
     "TOPIC": 563.27,
     "TABLE_ID": "TABLE_ID-J1",
     "TABLE_TITLE": "TABLE_TITLE-L1",
     "MEMBERS": 567.35,
     "VECTOR": 123,
     "FREQUENCY": 236.99,
-    "SCALE": 548
+    "SCALE": 548,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

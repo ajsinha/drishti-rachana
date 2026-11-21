@@ -12,4 +12,22 @@
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-core</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
+  <build>
+    <resources>
+      <resource><directory>src/main/resources</directory></resource>
+      <!-- The problem-code table is the contract's: the language files are generated from it, no second copy. -->
+      <resource>
+        <directory>${rachana.repo.root}/spec/1</directory>
+        <includes><include>language-tables.yaml</include></includes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables><rachana.repo.root>${rachana.repo.root}</rachana.repo.root></systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

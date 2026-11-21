@@ -20,8 +20,9 @@ profile's format names (`pct4`) carry `profile: [core, drishti]`.
 The examples assumed a Core Sutra with no `match` and JSON-pointer paths. The reference always loads the Drishti profile (so `match: { kind }`
 is required) and reports lines and columns but no `path` or `expr` offsets inside a Sutra, and stops at the first problem a later one depends on.
 By N5 level 1.0 is the reference: the examples gained a `match` line, lost `path`/`expr`, and `unknown-top-level-key` expects the reference's column; four are verified.
-`problems-in-position-order` reports one problem at 1.0 and two at 1.1 (`-l11`, unverified). `profile-key-without-the-profile` needs a Core runtime
-with no profile and waits for rachana-core (unverified).
+`problems-in-position-order` reports one problem at 1.0 and two from 1.1 (`-l11`, verified: a panel refused for its kind still holds its id, SPEC 6.1).
+`profile-key-without-the-profile` runs a Core instance with no profile (`given: { profiles: [] }`) and pins `RCH-2060` from level 1.1 (SPEC 2.2).
+The two placeholder edit examples were withdrawn: the reference's editing operations are pinned by `edit/ops`.
 
 ## The function examples (plan H5)
 

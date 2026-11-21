@@ -93,6 +93,19 @@ public record Form(String title, String key, String edit, String create, String 
     private static final Set<String> RULE = Set.of("rule", "message", "severity", "fields");
     private static final Set<String> HINT = Set.of("label", "value", "of", "fmt", "step");
 
+    /** The keys a form is read with, by place ({@code form}, {@code form.save}, {@code form.field}, ...): the parser's own sets, for the generated language files. */
+    public static Map<String, Set<String>> keySets() {
+        Map<String, Set<String>> m = new java.util.LinkedHashMap<>();
+        m.put("form", TOP);
+        m.put("form.save", SAVE);
+        m.put("form.field", FIELD);
+        m.put("form.lookup", LOOKUP);
+        m.put("form.lookup.source", SOURCE);
+        m.put("form.rule", RULE);
+        m.put("form.hint", HINT);
+        return java.util.Collections.unmodifiableMap(m);
+    }
+
     /** One step of the drawer. */
     public record Step(String id, String label) {}
 

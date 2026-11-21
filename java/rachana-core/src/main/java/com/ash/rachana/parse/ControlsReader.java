@@ -317,4 +317,9 @@ final class ControlsReader {
     private void problem(String code, String message, PNode at) {
         problems.add(new SutraProblem(code, message, loc(at)));
     }
+
+    /** For {@link KeyTables}. */
+    static Set<String> keys() {
+        return KEYS;
+    }
 }

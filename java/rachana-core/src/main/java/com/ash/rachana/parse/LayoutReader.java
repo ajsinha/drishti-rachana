@@ -355,4 +355,9 @@ final class LayoutReader {
     private void problem(String message, PNode at) {
         problems.add(new SutraProblem(CODE, message, new SourceLocation(file, at == null ? 0 : at.line(), at == null ? 0 : at.column())));
     }
+
+    /** For {@link KeyTables}. */
+    static Set<String> keys() {
+        return KEYS;
+    }
 }

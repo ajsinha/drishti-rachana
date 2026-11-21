@@ -303,7 +303,8 @@ public final class Cases {
         List<com.ash.rachana.model.UsedLibrary> libraries = List.of();
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         try {
-            var g = grammar(at(c).grammar(), c, ps);
+            boolean noProfile = obj(c.get("given")).get("profiles") instanceof List<?> l && l.isEmpty();   // FORMAT 5.7: a runtime with no profile loaded
+            var g = grammar(noProfile ? com.ash.rachana.profile.Grammar.core().atLevel(level(c)) : at(c).grammar(), c, ps);
             var sutra = (g == at(c).grammar() ? at(c).parser() : new com.ash.rachana.parse.SutraParser(g)).parse(text(c.get("sutra")), file, "conformance");
             ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions(), g.level())).check(sutra));
             warnings = sutra.advisories();

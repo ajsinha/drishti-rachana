@@ -42,7 +42,7 @@ def test_none_adapter_marks_everything_unsupported(tmp_path):
     assert code == 0
     lines = [json.loads(l) for l in out.read_text(encoding="utf-8").splitlines()]
     assert lines and all(l["status"] == "unsupported" and l["actual"] is None for l in lines)
-    assert [l["case"] for l in lines][0].startswith("edit/examples/")
+    assert [l["case"] for l in lines][0].startswith("edit/")
     s = json.loads(summ.read_text(encoding="utf-8"))
     assert s["unsupported"] == s["cases"] == len(lines) and s["pass"] == 0 and s["runtime"] == "none"
 

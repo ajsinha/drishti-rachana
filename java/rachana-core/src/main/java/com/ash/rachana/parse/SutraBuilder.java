@@ -71,6 +71,8 @@ final class SutraBuilder {
             if (!grammar.hasKey(k) && com.ash.rachana.profile.Grammar.keySince(k) != null) {    // a later level's key, used below it
                 problem("RCH-2008", "'" + k + "' needs Rachana " + com.ash.rachana.profile.Grammar.keySince(k) + "; this host runs " + grammar.level()
                         + " (raise the host's language level)", v);
+            } else if (!grammar.hasKey(k) && (k.equals("match") || k.equals("domain")) && SutraBlocks.atLeast(grammar.level(), "1.1")) {
+                problem("RCH-2060", "'" + k + "' belongs to the profile of a data platform; a Core screen reads its data from 'data:'", v);   // SPEC 2.2
             } else if (!grammar.hasKey(k)) {
                 problem("RCH-2011", "unknown key '" + k + "' in top level", v);
             }
@@ -143,6 +145,10 @@ final class SutraBuilder {
                     problem("RCH-2025", "function key " + panel.key() + " is used twice", p);
                 }
                 panels.add(panel);
+            } else if (SutraBlocks.atLeast(grammar.level(), "1.1") && p.isMap() && p.map().get("id") != null && p.map().get("id").isScalar()) {
+                if (!ids.add(p.map().get("id").text())) {     // level 1.1 (SPEC 6.1: all problems): a panel refused for its kind still holds its id
+                    problem("RCH-2024", "duplicate panel id '" + p.map().get("id").text() + "'", p);
+                }
             }
         }
         if (screenRefresh != null) {
@@ -746,5 +752,20 @@ final class SutraBuilder {
 
     private void problem(String code, String message, PNode at) {
         problems.add(new SutraProblem(code, message, loc(at)));
+    }
+
+    /** For {@link KeyTables}. */
+    static Set<String> panelKeys() {
+        return PANEL;
+    }
+
+    /** For {@link KeyTables}. */
+    static Set<String> stripKeys() {
+        return STRIP;
+    }
+
+    /** For {@link KeyTables}. */
+    static Set<String> columnKeys() {
+        return COLUMN;
     }
 }

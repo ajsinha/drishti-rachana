@@ -26,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("--profiles", default="core")
     lint.add_argument("--libs", default="", help="more fragment libraries: paths (comma-separated) of an unpacked library, an .rlib or a folder of them; also RACHANA_LIBS; the bundled libraries/ are always offered")
     up = top.add_parser("upgrade", help="rewrite level-1.0 Sutras and fragments for a later level, keeping their meaning (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)")
-    up.add_argument("args", nargs=argparse.REMAINDER, help="paths, --to, --from, --write, --diff, --report, --rules (rachana upgrade --rules)")
+    up.add_argument("args", nargs=argparse.REMAINDER, help="paths, --to, --write, --diff, --report, --rules (rachana upgrade --rules)")
     conf = top.add_parser("conformance", help="conformance suite").add_subparsers(dest="action", required=True)
     r = conf.add_parser("run", help="run the suite through an adapter and write results/<runtime>.jsonl")
     r.add_argument("--cases", default="conformance/1")

@@ -14,7 +14,10 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** The text side of {@link Upgrade}: rewrites in place in every scalar style, refusals, the diff and the command line. */
+/**
+ * The text side of {@link Upgrade}: rewrites in place in every scalar style, refusals, the diff and the command line; a fragment's level
+ * is its own {@code rachana:} key, as a Sutra's (SPEC 2.1 rule 4).
+ */
 class UpgradeTest {
 
     static final String HEAD = "rachana: 1\nsutra: up\nversion: 1\npanels:\n";
@@ -79,5 +82,73 @@ class UpgradeTest {
         assertEquals(0, UpgradeCommand.run(new String[] {ok.toString()}, ps, ps), "upgrading again: nothing to do");
         assertEquals(0, UpgradeCommand.run(new String[] {"--rules"}, ps, ps));
         assertEquals(2, UpgradeCommand.run(new String[] {"--to", "9.9"}, ps, ps));
+    }
+
+    static final String FRAGMENT = "fragment: spread\nversion: 1\nparams:\n  rows: $.rows\npanels:\n"
+            + "  - { id: s, kind: metric, label: Spread, value: \"range(%{rows}, 'p')\" }\n";
+
+    @Test
+    void aFragmentAtOneZeroIsRewrittenAndDeclaresTheNewLevel() {
+        Upgrade.Result r = Upgrade.upgrade("s.v1.fragment.yaml", "rachana: 1\n" + FRAGMENT, "1.2");
+        assertNull(r.refused());
+        assertEquals("1.0", r.from());
+        assertEquals("rachana: 1.2\n" + FRAGMENT.replace("range(", "span("), r.text());
+        assertEquals(java.util.List.of("declare", "span"), r.changes().stream().map(Upgrade.Change::rule).toList());
+    }
+
+    @Test
+    void aFragmentAtTheTargetLevelIsLeftUntouched() {
+        String in = "rachana: 1.2\n" + FRAGMENT.replace("range(%{rows}, 'p')", "sum(range(1, 4))");
+        Upgrade.Result r = Upgrade.upgrade("s.v1.fragment.yaml", in, "1.2");
+        assertNull(r.refused());
+        assertEquals("1.2", r.from());
+        assertFalse(r.changed());
+        assertEquals(in, r.text(), "level-1.2 text keeps its meaning: range is the sequence");
+        assertTrue(r.changes().isEmpty() && r.flags().isEmpty());
+    }
+
+    @Test
+    void aFragmentThatDeclaresNoLevelIsOneZeroAndGainsTheKeyAsItsFirstKey() {
+        String in = "# a comment\n" + FRAGMENT;
+        Upgrade.Result r = Upgrade.upgrade("s.v1.fragment.yaml", in, "1.2");
+        assertNull(r.refused());
+        assertEquals("1.0", r.from());
+        assertEquals("# a comment\nrachana: 1.2\n" + FRAGMENT.replace("range(", "span("), r.text());
+        assertEquals(java.util.List.of("declare", "span"), r.changes().stream().map(Upgrade.Change::rule).toList());
+        Upgrade.Result again = Upgrade.upgrade("s.v1.fragment.yaml", r.text(), "1.2");
+        assertFalse(again.changed());
+        assertEquals(r.text(), again.text());
+    }
+
+    @Test
+    void aFragmentOfALaterLevelIsNeverMovedDownAndAnUnknownLevelIsRefused() {
+        assertNotNull(Upgrade.upgrade("s.v1.fragment.yaml", "rachana: 1.2\n" + FRAGMENT, "1.1").refused());
+        assertTrue(Upgrade.upgrade("s.v1.fragment.yaml", "rachana: 1.7\n" + FRAGMENT, "1.2").refused().contains("no level"));
+    }
+
+    /** Gate 2 review 10.5: the three runs over a Sutra and a fragment that calls range(list, field). */
+    @Test
+    void runningAgainNeitherRefusesNorRewritesAFragmentItUpgraded(@TempDir Path dir) throws Exception {
+        Path sutra = dir.resolve("up.sutra.yaml");
+        Path fragment = dir.resolve("spread.v1.fragment.yaml");
+        Files.writeString(sutra, HEAD + "  - { id: m, kind: metric, label: L, value: \"range($.r, 'p')\" }\n");
+        Files.writeString(fragment, "rachana: 1\n" + FRAGMENT);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(out, true, StandardCharsets.UTF_8);
+        String[] cmd = {dir.toString(), "--write"};
+
+        assertEquals(0, UpgradeCommand.run(cmd, ps, ps), "run 1");
+        String once = Files.readString(fragment);
+        assertEquals("rachana: 1.2\n" + FRAGMENT.replace("range(", "span("), once, "run 1: the fragment is rewritten and declares 1.2");
+
+        assertEquals(0, UpgradeCommand.run(cmd, ps, ps), "run 2: not refused");
+        assertEquals(once, Files.readString(fragment), "run 2: nothing changes");
+
+        String sequence = once.replace("span(%{rows}, 'p')", "sum(range(1, 4))");
+        Files.writeString(fragment, sequence);
+        assertEquals(0, UpgradeCommand.run(cmd, ps, ps), "run 3");
+        assertEquals(sequence, Files.readString(fragment), "run 3: level-1.2 range (the sequence) is not renamed span");
+
+        assertEquals(2, UpgradeCommand.run(new String[] {dir.toString(), "--from", "1.0"}, ps, ps), "--from is gone");
     }
 }

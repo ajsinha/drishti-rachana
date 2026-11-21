@@ -7,6 +7,15 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 - **Elements 3.2.0 vendored** (drishti-elements commit 787f97d, label `3.2.0`): `js/vendor/drishti-elements/3.2.0/` replaces the `3.2.0-dev+a40ca7e` folder (SHA-384 manifest; `ELEMENTS_VERSION`, the server pom, the Python assets, Studio and the docs name it); the pack's `data/formats.yaml` and `world-regions.yaml` are the bundled ones.
 
+- **`rachana upgrade` reads and writes a fragment's level as a Sutra's** (Gate 2 review 10.5; SPEC 2.1 rule 4). A fragment's own
+  `rachana:` key is its level (`1` / `1.0` is 1.0, `1.N` is 1.N); a fragment without the key is 1.0 and gains `rachana: <to>` as its
+  first key. The tool upgrades a level-1.0 fragment and writes the new level into its key; a file already at the target level is left
+  untouched (exit 0). `--from` is gone (`Upgrade.upgrade(file, text, to, table)`). Before, a fragment's key was never read or written:
+  a second run refused a fragment the first had rewritten (exit 1), and a third rewrote a valid 1.2 `sum(range(1, 4))` to
+  `sum(span(1, 4))` (exit 0). The three runs are regression tests (`UpgradeTest`), with fragments at 1.0, at 1.2 and undeclared. The
+  corpus proof is rerun: the 42 fragments now end at `rachana: 1.2` (520 files changed, 520 declarations); everything else in the
+  report is identical.
+
 - **The expression language's aggregates follow the host's on decimals** (lead decision L-3; SPEC 4.16 rule 7, PROTOCOL 3.1;
   conformance/1/VERIFIED.md). From level 1.1 `avg` over integers and decimals is the exact sum divided as `/` divides (decimal128, 34
   digits half to even, no trailing zeros: `avg([1, 2, 2])` → `1.666666666666666666666666666666667`), the digits a host gives for a
@@ -37,7 +46,7 @@ Entries are written per release; the regime's unreleased work is listed after th
   level. One switch (`Grammar.MAJOR_ONLY`) retires levels 1.0 and 1.1 later. Suites `problem/level-declaration`, `sutra/level-declaration`.
 - **`rachana upgrade`** (`java/rachana-tools` `Upgrade`, `UpgradeRule`, `UpgradeCommand`; Node `rachana upgrade`, `python -m
   drishti_rachana upgrade` and `java ... Main upgrade` run it): a level-1.0 Sutra or fragment rewritten for a later level with the same
-  meaning: `range(list, field)` becomes `span`, a named argument takes the catalogue's name, the Sutra declares `rachana: 1.2`; exact
+  meaning: `range(list, field)` becomes `span`, a named argument takes the catalogue's name, the file declares `rachana: 1.2`; exact
   arithmetic, number-like text of Java's grammar, `standardize`, texts beyond U+FFFF and run-time regular expressions are flagged; a
   bare `lambda` blocks the file. Only rewritten words change (comments, layout, quoting kept; checked by reading the file again);
   idempotent; dry run by default, `--diff`, `--write`, `--report`, `--rules`. The rule list is complete against the documents

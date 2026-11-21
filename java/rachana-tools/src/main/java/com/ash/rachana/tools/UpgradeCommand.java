@@ -18,13 +18,13 @@ import java.util.stream.Stream;
  * The command line of {@link Upgrade}, the one the Java, Node and Python launchers run:
  *
  * <pre>
- * rachana upgrade [paths ...] [--to 1.2] [--from 1.0] [--write] [--diff] [--report file.json] [--rules]
+ * rachana upgrade [paths ...] [--to 1.2] [--write] [--diff] [--report file.json] [--rules]
  * </pre>
  *
  * Paths are Sutras ({@code *.sutra.yaml}) and fragments ({@code *.fragment.yaml}, {@code *.block.yaml}), or folders searched for them
  * (dot folders and {@code node_modules} skipped). Without {@code --write} nothing is written (a dry run): each file's changes and flags are
- * printed, with {@code --diff} its unified diff. {@code --to} defaults to the newest level; {@code --from} is the level of the fragments
- * (a Sutra declares its own). Exit status: 0 done, 1 a file was refused or holds a blocking flag (nothing written for it), 2 usage.
+ * printed, with {@code --diff} its unified diff. {@code --to} defaults to the newest level. Each file's level is its own {@code rachana:}
+ * key, a fragment's as a Sutra's (SPEC 2.1 rule 4); a file already at {@code --to} is left untouched. Exit status: 0 done, 1 a file was refused or holds a blocking flag (nothing written for it), 2 usage.
  */
 public final class UpgradeCommand {
 
@@ -33,14 +33,12 @@ public final class UpgradeCommand {
     public static int run(String[] args, PrintStream out, PrintStream err) {
         List<String> paths = new ArrayList<>();
         String to = Grammar.DEFAULT_LEVEL;
-        String from = Grammar.LEVEL_1_0;
         boolean write = false;
         boolean diff = false;
         String report = null;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "--to" -> to = value(args, ++i);
-                case "--from" -> from = value(args, ++i);
                 case "--write" -> write = true;
                 case "--diff" -> diff = true;
                 case "--report" -> report = value(args, ++i);
@@ -57,8 +55,8 @@ public final class UpgradeCommand {
                 }
             }
         }
-        if (to == null || from == null || !Grammar.LEVELS.contains(to) || !Grammar.LEVELS.contains(from)) {
-            err.println("rachana upgrade: --to and --from name a level: " + String.join(", ", Grammar.LEVELS));
+        if (to == null || !Grammar.LEVELS.contains(to)) {
+            err.println("rachana upgrade: --to names a level: " + String.join(", ", Grammar.LEVELS));
             return 2;
         }
         if (paths.isEmpty()) {
@@ -68,7 +66,7 @@ public final class UpgradeCommand {
         try {
             for (Path f : files(paths)) {
                 String text = Files.readString(f, StandardCharsets.UTF_8);
-                Upgrade.Result r = Upgrade.upgrade(f.toString(), text, from, to, null);
+                Upgrade.Result r = Upgrade.upgrade(f.toString(), text, to, null);
                 results.add(r);
                 print(r, out);
                 if (diff && r.writable()) {

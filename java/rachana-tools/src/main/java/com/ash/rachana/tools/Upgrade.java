@@ -22,11 +22,13 @@ import java.util.Set;
 
 /**
  * {@code rachana upgrade}: a Sutra written for language level 1.0 (and the fragments it uses) rewritten for a later level with the same
- * meaning ({@link UpgradeRule}). Every expression and template is read as level 1.0 reads it; what a later level reads differently is
- * rewritten to keep the 1.0 meaning ({@code range} to {@code span}, a named argument to the catalogue's name), or flagged where a
- * rewrite cannot keep it; the Sutra then declares the new level ({@code rachana: 1.2}). Only the characters of a rewritten word change:
- * comments, layout, quoting and every other byte stay as written, and the rewrite is checked by reading the file again. Upgrading an
- * upgraded file changes nothing. A file that does not read (YAML, an expression that does not compile at 1.0) is refused, never
+ * meaning ({@link UpgradeRule}). A file's level is its own {@code rachana:} key, a fragment's exactly as a Sutra's (SPEC 2.1 rule 4;
+ * a fragment without the key is 1.0). Every expression and template of a level-1.0 file is read as level 1.0 reads it; what a later
+ * level reads differently is rewritten to keep the 1.0 meaning ({@code range} to {@code span}, a named argument to the catalogue's
+ * name), or flagged where a rewrite cannot keep it; the file then declares the new level ({@code rachana: 1.2}; a fragment without the
+ * key gains it as its first key). Only the characters of a rewritten word change: comments, layout, quoting and every other byte stay
+ * as written, and the rewrite is checked by reading the file again. A file already at the target level is left untouched, so upgrading
+ * an upgraded file changes nothing. A file that does not read (YAML, an expression that does not compile at 1.0) is refused, never
  * guessed at. One implementation: the Node command line and {@code python -m drishti_rachana upgrade} run this class.
  */
 public final class Upgrade {
@@ -76,20 +78,20 @@ public final class Upgrade {
     private static final Set<String> AGGREGATES = Set.of("avedev", "avg", "corr", "count", "covar", "covar_pop", "cv", "devsq", "distinct", "geomean", "harmean", "intercept", "iqr", "kth_largest", "kth_smallest", "kurtosis", "median", "mode", "mode_multi", "nmiss", "percent_rank_of", "percentile", "percentile_exc", "product", "rank_avg", "rsq", "skewness", "skewness_pop", "slope", "stddev", "stddev_pop", "stderr", "steyx", "string_agg", "sumproduct", "sumsq", "trimmean", "variance", "variance_pop", "wavg", "sum");
     private static final Set<String> REGEX = Set.of("regex_extract", "regex_replace", "matches", "matches_case");
 
-    /** As {@link #upgrade(String, String, String, String, FunctionTable)} for a Sutra (or a fragment of level 1.0) over Core's functions. */
+    /** As {@link #upgrade(String, String, String, FunctionTable)} over Core's functions. */
     public static Result upgrade(String file, String text, String to) {
-        return upgrade(file, text, Grammar.LEVEL_1_0, to, FunctionTable.core());
+        return upgrade(file, text, to, FunctionTable.core());
     }
 
     /**
-     * Upgrades one file.
+     * Upgrades one file. Its level is its own {@code rachana:} key (SPEC 2.1 rule 4), for a Sutra and a fragment alike; a fragment
+     * without the key is level 1.0 (written before levels existed) and gains the key.
      *
      * @param file its name (reports; a fragment is told by its {@code fragment:} or {@code block:} key)
-     * @param fragmentFrom the level a fragment was written for (a fragment declares none; a Sutra's own {@code rachana:} key is read)
      * @param to the level to upgrade to
      * @param table the functions its expressions call (Core's and the host's profiles')
      */
-    public static Result upgrade(String file, String text, String fragmentFrom, String to, FunctionTable table) {
+    public static Result upgrade(String file, String text, String to, FunctionTable table) {
         String scan = Work.placeholders(text);                       // a fragment's %{param} places read as names of the same length
         PNode root;
         try {
@@ -97,12 +99,13 @@ public final class Upgrade {
         } catch (RuntimeException e) {
             return refused(file, "?", "?", to, text, "it does not read as YAML: " + e.getMessage());
         }
-        Map<String, PNode> top = root == null ? Map.of() : root.map();
+        Map<String, PNode> top = root == null || !root.isMap() ? Map.of() : root.map();
         String kind = top.containsKey("sutra") ? "sutra" : top.containsKey("fragment") || top.containsKey("block") ? "fragment" : null;
         if (kind == null) {
             return refused(file, "?", "?", to, text, "it is neither a Sutra (sutra:) nor a fragment (fragment:, block:)");
         }
-        String from = "sutra".equals(kind) ? SutraParser.declaredLevel(text) : fragmentFrom;
+        boolean undeclared = "fragment".equals(kind) && !top.containsKey("rachana");
+        String from = undeclared ? Grammar.LEVEL_1_0 : SutraParser.declaredLevel(scan);
         if (from == null || !Grammar.LEVELS.contains(from)) {
             return refused(file, kind, String.valueOf(from), to, text, "its rachana: key names no level this runtime reads (rachana: 1 is 1.0)");
         }
@@ -110,9 +113,9 @@ public final class Upgrade {
             return refused(file, kind, from, to, text, "level " + to + " is not one of " + String.join(", ", Grammar.LEVELS));
         }
         if (!com.ash.rachana.parse.SutraBlocks.atLeast(to, from)) {
-            return refused(file, kind, from, to, text, "it is written for " + from + ", later than " + to + ": a Sutra is never moved down");
+            return refused(file, kind, from, to, text, "it is written for " + from + ", later than " + to + ": a file is never moved down");
         }
-        if (from.equals(to)) {
+        if (from.equals(to) && !undeclared) {
             return new Result(file, kind, from, to, text, false, List.of(), List.of(), null);
         }
         List<YamlScalarSpans.Scalar> scalars;
@@ -127,7 +130,7 @@ public final class Upgrade {
             if (s.key()) {
                 continue;
             }
-            if ("sutra".equals(kind) && "/rachana".equals(s.path())) {
+            if ("/rachana".equals(s.path())) {
                 w.edit(s, 0, s.value().length(), to, UpgradeRule.DECLARE, s.value(), to);
                 continue;
             }
@@ -149,7 +152,17 @@ public final class Upgrade {
         } catch (IllegalStateException e) {
             return refused(file, kind, from, to, text, e.getMessage());
         }
-        return new Result(file, kind, from, to, out, !out.equals(text), List.copyOf(w.changes), List.copyOf(w.flags), null);
+        List<Change> changes = new ArrayList<>(w.changes);
+        if (undeclared) {                                             // the key goes first, on its own line; every edit lies after it
+            YamlScalarSpans.Scalar first = scalars.stream().filter(YamlScalarSpans.Scalar::key).findFirst().orElse(null);
+            if (first == null || first.column() != 1 || first.start() > 0 && text.charAt(first.start() - 1) != '\n') {
+                return refused(file, kind, from, to, text, "it declares no level and its first key does not start a line: write rachana: "
+                        + to + " at its top by hand");
+            }
+            out = out.substring(0, first.start()) + "rachana: " + to + "\n" + out.substring(first.start());
+            changes.add(0, new Change(UpgradeRule.DECLARE.id(), "/rachana", first.line(), 1, "", to));
+        }
+        return new Result(file, kind, from, to, out, !out.equals(text), List.copyOf(changes), List.copyOf(w.flags), null);
     }
 
     /** Whether an argument of a fragment use reads as an expression: it names data ($, @, ctl., #index), calls, indexes or quotes. */

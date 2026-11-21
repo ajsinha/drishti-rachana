@@ -16,8 +16,9 @@ import java.util.List;
  */
 public enum UpgradeRule {
 
-    DECLARE(Action.REWRITE, "info", "The Sutra declares the level it is written for",
-            "rachana: 1 becomes rachana: 1.2 (SPEC 2.1 rule 4); a fragment declares none: it is read at the level of the Sutra that uses it",
+    DECLARE(Action.REWRITE, "info", "The Sutra or fragment declares the level it is written for",
+            "rachana: 1 becomes rachana: 1.2 (SPEC 2.1 rule 4), in a Sutra and a fragment alike: a fragment's rachana: key is its level; a "
+                    + "fragment without the key is 1.0 and gains rachana: 1.2 as its first key; a file already at the target level is left untouched",
             List.of("spec2.1:4", "decision:UP-0", "case:problem/level-declaration#*", "case:sutra/level-declaration#*")),
 
     SPAN(Action.REWRITE, "info", "range(list, field?) is span(list, field?)",

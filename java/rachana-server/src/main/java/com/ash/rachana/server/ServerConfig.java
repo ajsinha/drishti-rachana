@@ -185,7 +185,8 @@ public final class ServerConfig {
             r.problem("rachana-server: this file starts with 'rachana-server: 1' (the version of its keys)");
         }
         Map<String, Object> s = r.map(m.get("server"), "server");
-        r.keys(s, "server", "bind", "port", "origins", "cookie-secure", "session-idle", "session-max", "max-body");
+        r.keys(s, "server", "bind", "port", "origins", "cookie-secure", "behind-tls-proxy", "session-idle", "session-max", "max-body");
+        boolean behindTlsProxy = r.bool(s.getOrDefault("behind-tls-proxy", false), "server.behind-tls-proxy");
         String bind = r.text(s.getOrDefault("bind", "127.0.0.1"), "server.bind");
         long port = r.number(s.getOrDefault("port", 8080L), "server.port", 0, 65535);
         List<String> origins = new ArrayList<>();
@@ -264,6 +265,10 @@ public final class ServerConfig {
         }
         if (mode == AuthMode.NONE && !loopback(bind)) {
             r.problem("auth.mode: none is allowed only on a loopback address (server.bind " + bind + "): choose users or header to listen on others");
+        }
+        if (mode == AuthMode.USERS && !loopback(bind) && !behindTlsProxy) {
+            // G2 gate F17: this server speaks plain HTTP (it has no tls: of its own); passwords and session cookies must not cross a network in the clear
+            r.problem("auth.mode: users on a non-loopback address (server.bind " + bind + ") sends passwords over plain HTTP: put a TLS proxy in front and set server.behind-tls-proxy: true (with server.cookie-secure: true), or bind to loopback");
         }
         Auth auth = new Auth(mode, users, r.text(h.get("user"), "auth.header.user"), r.text(h.get("roles"), "auth.header.roles"), proxies);
 

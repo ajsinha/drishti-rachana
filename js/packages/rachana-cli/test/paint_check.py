@@ -54,5 +54,8 @@ with sync_playwright() as p:
         print(f"{page_name}: {'ok' if ok else 'FAIL'} ({n} chars){''.join(chr(10) + '  ' + e for e in errs)}")
         bad += 0 if ok else 1
     b.close()
-subprocess.run(["rm", "-rf", str(site), str(proj.parent)])
+import shutil
+shutil.rmtree(site, ignore_errors=True)
+shutil.rmtree(proj.parent, ignore_errors=True)      # a run leaves no temporary folder (G2 gate F16)
+srv.shutdown()
 sys.exit(1 if bad else 0)

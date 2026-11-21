@@ -15,7 +15,6 @@
   <properties>
     <node>node</node>
     <rachana.node.skip>false</rachana.node.skip>
-    <rachana.lanes.skip>false</rachana.lanes.skip>
     <uv>uv</uv>
   </properties>
   <profiles>
@@ -54,12 +53,14 @@
         <executions>
           <execution><id>node-tests</id><phase>test</phase><goals><goal>exec</goal></goals><configuration>
             <skip>${rachana.node.skip}</skip>
+            <environmentVariables><TMPDIR>${rachana.tmp}</TMPDIR><TEMP>${rachana.tmp}</TEMP><TMP>${rachana.tmp}</TMP></environmentVariables>
             <executable>${node}</executable>
             <workingDirectory>${rachana.repo.root}</workingDirectory>
             <arguments><argument>tools/js/node_tests.mjs</argument><argument>js/packages/*/test</argument></arguments>
           </configuration></execution>
           <execution><id>lane-conformance</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
             <skip>${rachana.lanes.skip}</skip>
+            <environmentVariables><TMPDIR>${rachana.tmp}</TMPDIR><TEMP>${rachana.tmp}</TEMP><TMP>${rachana.tmp}</TMP></environmentVariables>
             <executable>${uv}</executable>
             <workingDirectory>${rachana.repo.root}</workingDirectory>
             <arguments>
@@ -70,6 +71,7 @@
           </configuration></execution>
           <execution><id>lane-protocol</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
             <skip>${rachana.lanes.skip}</skip>
+            <environmentVariables><TMPDIR>${rachana.tmp}</TMPDIR><TEMP>${rachana.tmp}</TEMP><TMP>${rachana.tmp}</TMP></environmentVariables>
             <executable>${uv}</executable>
             <workingDirectory>${rachana.repo.root}</workingDirectory>
             <arguments>
@@ -80,6 +82,7 @@
           </configuration></execution>
           <execution><id>lane-pytest</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
             <skip>${rachana.lanes.skip}</skip>
+            <environmentVariables><TMPDIR>${rachana.tmp}</TMPDIR><TEMP>${rachana.tmp}</TEMP><TMP>${rachana.tmp}</TMP></environmentVariables>
             <executable>${uv}</executable>
             <workingDirectory>${rachana.repo.root}</workingDirectory>
             <arguments>
@@ -90,6 +93,7 @@
           </configuration></execution>
           <execution><id>lane-browser</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
             <skip>${rachana.lanes.skip}</skip>
+            <environmentVariables><TMPDIR>${rachana.tmp}</TMPDIR><TEMP>${rachana.tmp}</TEMP><TMP>${rachana.tmp}</TMP></environmentVariables>
             <executable>${uv}</executable>
             <workingDirectory>${rachana.repo.root}</workingDirectory>
             <arguments>
@@ -97,6 +101,11 @@
               <argument>--with</argument><argument>pyarrow&gt;=15</argument><argument>python</argument><argument>tools/gate/verify_lanes.py</argument>
               <argument>browser</argument><argument>--java-home</argument><argument>${java.home}</argument>
             </arguments>
+          </configuration></execution>
+          <execution><id>tmp-check</id><phase>verify</phase><goals><goal>exec</goal></goals><configuration>
+            <skip>${rachana.lanes.skip}</skip>
+            <executable>${python3}</executable>
+            <arguments><argument>${rachana.repo.root}/tools/gate/tmp_leaks.py</argument><argument>check</argument><argument>${rachana.tmp}</argument></arguments>
           </configuration></execution>
         </executions>
       </plugin>

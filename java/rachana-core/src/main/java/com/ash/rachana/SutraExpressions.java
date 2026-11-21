@@ -102,6 +102,10 @@ public final class SutraExpressions {
 
     /** Compiles every expression in {@code s}; returns the problems (empty when all compile). */
     public List<SutraProblem> check(Sutra s) {
+        return com.ash.rachana.el.Declarations.within(s.declarations(), () -> checked(s));
+    }
+
+    private List<SutraProblem> checked(Sutra s) {
         Run out = new Run(s.controls().stream().map(Control::id).collect(java.util.stream.Collectors.toSet()));
         s.controls().forEach(c -> {
             expr(c.from(), c.location(), out);
@@ -123,6 +127,10 @@ public final class SutraExpressions {
             }
         });
         SutraWiring.check(s).forEach(out::add);         // events, sources, children: RACHANA_REFERENCE.md 14
+        com.ash.rachana.el.Declarations d = s.declarations();   // level 1.2: every let value and function body, used or not (X41, S2)
+        d.lets().keySet().forEach(l -> expr(l, s.location(), out));
+        d.functions().values().forEach(f -> expr(f.name() + "(" + String.join(", ", java.util.Collections.nCopies(f.params().size(), "null")) + ")",
+                s.location(), out));
         return out.problems;
     }
 

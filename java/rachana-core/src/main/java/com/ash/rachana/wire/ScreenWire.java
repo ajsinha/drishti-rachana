@@ -257,6 +257,10 @@ public final class ScreenWire {
 
     /** The groups of children of {@code panelId}, bound; a group that shows on a selection the parent has not made is hidden. */
     public List<ChildrenView> children(Screen s, String panelId) {
+        return com.ash.rachana.el.Declarations.within(s.sutra().declarations(), () -> childrenDeclared(s, panelId));   // level 1.2: the Sutra's let and functions in force
+    }
+
+    private List<ChildrenView> childrenDeclared(Screen s, String panelId) {
         SutraWiring.Node n = node(s, panelId);
         List<ChildrenView> out = new ArrayList<>();
         List<Wiring.Children> groups = n.panel().wiring().children();
@@ -285,6 +289,10 @@ public final class ScreenWire {
      *     viewer may not read
      */
     public Result event(Screen s, String panelId, String event, int row) {
+        return com.ash.rachana.el.Declarations.within(s.sutra().declarations(), () -> eventDeclared(s, panelId, event, row));   // level 1.2: the Sutra's let and functions in force
+    }
+
+    private Result eventDeclared(Screen s, String panelId, String event, int row) {
         Selection sel = click(s, panelId, event, row);
         Set<String> down = downstream(s, panelId);
         Map<String, Map<String, Selection>> next = new LinkedHashMap<>();

@@ -74,6 +74,10 @@ public final class ControlResolver {
      * @param mayOpen the kinds the caller may open (a lookup of another kind lists nothing)
      */
     public Resolved resolve(Sutra s, EvalContext seen, ControlValues values, AsOf asOf, Predicate<String> mayOpen) {
+        return com.ash.rachana.el.Declarations.within(s.declarations(), () -> resolveDeclared(s, seen, values, asOf, mayOpen));   // level 1.2: the Sutra's let and functions in force
+    }
+
+    private Resolved resolveDeclared(Sutra s, EvalContext seen, ControlValues values, AsOf asOf, Predicate<String> mayOpen) {
         if (s.controls().isEmpty()) {
             return Resolved.NONE;
         }

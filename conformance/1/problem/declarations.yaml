@@ -1,0 +1,170 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/declarations
+since: "1.2"
+profile: core
+verified: true
+description: "Problems of a Sutra's let: and functions: (EL_EXPANSION X41, SUTRA_EXPANSION S2), level 1.2."
+cases:
+
+  - id: function-reads-the-document
+    kind: problem
+    source: EL_EXPANSION X41 (a body reads only its parameters and other functions)
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      functions:
+        leak: { params: { x: number }, is: "x + $.limit" }
+      panels:
+        - { id: a, kind: metric, label: A, value: "leak(1)" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2101
+        severity: error
+        message: "expression 'leak(1)': leak reads $ (the document): a function reads only its parameters at 0"
+        range: { start: { line: 9, column: 5 } }
+      - code: RCH-2101
+        severity: error
+        message: "expression 'leak(null)': leak reads $ (the document): a function reads only its parameters at 0"
+        range: { start: { line: 1, column: 1 } }
+
+  - id: function-calls-itself
+    kind: problem
+    source: EL_EXPANSION X41 (the call graph has no cycle)
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      functions:
+        ping: { params: { x: number }, is: "pong(x)" }
+        pong: { params: { x: number }, is: "ping(x - 1)" }
+      panels:
+        - { id: a, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2101
+        severity: error
+        message: "expression 'ping(null)': in ping ('pong(x)'): in pong ('ping(x - 1)'): ping calls itself (through ping -> pong): functions have no recursion at 0"
+        range: { start: { line: 1, column: 1 } }
+      - code: RCH-2101
+        severity: error
+        message: "expression 'pong(null)': in pong ('ping(x - 1)'): in ping ('pong(x)'): pong calls itself (through pong -> ping): functions have no recursion at 0"
+        range: { start: { line: 1, column: 1 } }
+
+  - id: let-reads-a-later-let
+    kind: problem
+    source: SUTRA_EXPANSION S2 (each reads only the ones before it)
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      let:
+        a: "b + 1"
+        b: "2"
+      panels:
+        - { id: a1, kind: metric, label: A, value: "a" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2101
+        severity: error
+        message: "expression 'a': the let 'a' ('b + 1'): reads the let 'b', which is not written before it: a let reads only the ones before it (no cycles) at 0"
+        range: { start: { line: 10, column: 5 } }
+      - code: RCH-2101
+        severity: error
+        message: "expression 'a': the let 'a' ('b + 1'): reads the let 'b', which is not written before it: a let reads only the ones before it (no cycles) at 0"
+        range: { start: { line: 1, column: 1 } }
+
+  - id: let-reads-the-current-row
+    kind: problem
+    source: SUTRA_EXPANSION S2 (evaluated once per bind, no row)
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      let:
+        twice: "@.amount * 2"
+      panels:
+        - { id: a1, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2101
+        severity: error
+        message: "expression 'twice': the let 'twice' reads @ outside a list it walks: a let value has no current row at 0"
+        range: { start: { line: 1, column: 1 } }
+
+  - id: let-shadows-a-control
+    kind: problem
+    source: SUTRA_EXPANSION S2 (a name shadows nothing)
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      controls:
+        - { id: desk, kind: dropdown, label: Desk, options: [FX, Rates] }
+      let:
+        desk: "'FX'"
+      panels:
+        - { id: a1, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2024
+        severity: error
+        message: "the let 'desk' has the name of a control or a data entry of this Sutra: a let shadows nothing"
+        range: { start: { line: 9, column: 9 } }
+
+  - id: function-takes-a-core-name
+    kind: problem
+    source: EL_EXPANSION X41, X1 d
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      functions:
+        sum: { params: { x: number }, is: "x" }
+      panels:
+        - { id: a1, kind: metric, label: A, value: "1" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2020
+        severity: error
+        message: "the function 'sum' is a Core function's name: pick another (a declared function never hides a Core one)"
+        range: { start: { line: 7, column: 8 } }
+
+  - id: wrong-argument-count
+    kind: problem
+    source: EL_EXPANSION X41
+    sutra: |
+      rachana: 1
+      sutra: decl-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      functions:
+        share: { params: { part: number, whole: number }, is: "if(whole == 0, null, part / whole)" }
+      panels:
+        - { id: a1, kind: metric, label: A, value: "share(1)" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2101
+        severity: error
+        message: "expression 'share(1)': share takes 2 argument(s) [part, whole], got 1 at 0"
+        range: { start: { line: 9, column: 5 } }

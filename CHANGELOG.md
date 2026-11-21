@@ -5,6 +5,8 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **IDE launchers**: IntelliJ Java programs (`Rachana CLI (lib)`, `Rachana reference server`), PyCharm configurations (`python/run-configs/`), Shell Script configurations for Node (`js/run-configs/`) and `drishti-rachana.code-workspace` for VS Code; [java/README, Build and run in the IDE](java/README.md#build-and-run-in-the-ide).
+
 - **Kinds batch** (level 1.2, contract 1.2 appended; SPEC 2.3, VIEWMODEL; API additions only):
   - **the `live` panel kind**: a grid over a live host table read a window at a time (`rows: $.<table entry>`, `window`, `top`,
     `sort`, `group`, `bars`); the dataset carries its fields and `live` (`table`, `window`, `top`, the conditions as one filter tree),

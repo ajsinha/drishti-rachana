@@ -2,7 +2,7 @@
 suite: el/examples/check
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Checked mode (SPEC 4.14) over known types; it only refuses more, never changes meaning.
 given:
   limits: { depth: 200 }

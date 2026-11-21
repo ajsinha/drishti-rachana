@@ -3,7 +3,7 @@
 suite: el/python-words
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "PY1: and, or and not are Rachana-EL operators beside &&, || and !; not reads as Python's (below the comparisons)."
 given: {"record": {"a": 2, "b": 0, "side": "Buy"}}
 cases:

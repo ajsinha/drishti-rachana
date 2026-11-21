@@ -3,7 +3,7 @@
 suite: el/check
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Checked mode (SPEC 4.14) over known types. The Java CheckedModeTest runs over a Drishti pivot model with ROW, AGGREGATE and RULE scopes; only what Core can say with record types is converted."
 given: {"limits": {"depth": 200}}
 cases:
@@ -45,6 +45,7 @@ cases:
     expect: {"type": "boolean"}
 
   - id: "check-n-0-mtm-0"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#typesWhatIsRight"
     note: "Java scope ROW; mapped to scope data."
@@ -54,6 +55,7 @@ cases:
     expect: {"type": "decimal"}
 
   - id: "check-switch-status-a-1-b-2-0"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#typesWhatIsRight"
     note: "Java scope ROW; mapped to scope data."
@@ -126,6 +128,7 @@ cases:
     expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
 
   - id: "check-concat-status-x"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#refusesWithDelsCodes"
     note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'not yet in a table or a model'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
@@ -135,6 +138,7 @@ cases:
     expect: {"type": null, "problems": [{"code": "RCH-9129"}]}
 
   - id: "check-let-x-n-x-2"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#refusesWithDelsCodes"
     note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'not yet in a table or a model'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
@@ -144,6 +148,7 @@ cases:
     expect: {"type": null, "problems": [{"code": "RCH-9129"}]}
 
   - id: "check-status-in-n"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#refusesWithDelsCodes"
     note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'takes a list'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
@@ -153,6 +158,7 @@ cases:
     expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
 
   - id: "check-status-in-1-2"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#refusesWithDelsCodes"
     note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'the list has a integer'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
@@ -162,6 +168,7 @@ cases:
     expect: {"type": null, "problems": [{"code": "RCH-9127", "expr": {"start": 13, "end": 14}}, {"code": "RCH-9127", "expr": {"start": 16, "end": 17}}]}
 
   - id: "check-round-mtm-n"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#refusesWithDelsCodes"
     note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'is a whole number written in the expression'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."
@@ -180,6 +187,7 @@ cases:
     expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
 
   - id: "check-date-09-10-2026-tradedate"
+    verified: false
     kind: "check"
     source: "CheckedModeTest#refusesWithDelsCodes"
     note: "The Java test (DRS code mapped one to one, SPEC 6.2) expects the message to contain 'not an ISO date'. The Java test uses aliases (trades.X) of a Drishti model and the scopes ROW/AGGREGATE; this is the same rule over $ and scope data."

@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+#
+# The server example: two Data Protocol tables from files (CSV and JSON), one Sutra, sign-in with the users file (user dev, password
+# dev-only-pass: DEVELOPMENT ONLY, see users.yaml). Synthetic demo content: fictional regions and figures.
+# Start it: IDE launcher "Rachana server (server-demo)", or  java -jar rachana-server-<version>-all.jar serve --config examples/server-demo/rachana-server.yaml
+# then open http://127.0.0.1:8090/ and sign in as dev.
+rachana-server: 1
+
+server:
+  bind: 127.0.0.1
+  port: 8090
+
+project:
+  dir: "${config}/project"
+  level: "1.1"
+  watch: true
+
+tables:
+  sales:
+    title: Sales
+    file: "${project}/data/sales.csv"
+    key: [region, product, month]
+    refresh: 5s
+  regions:
+    title: Regions
+    file: "${project}/data/regions.json"
+    key: code
+
+auth:
+  mode: users
+  users: "${config}/users.yaml"
+
+access:
+  default: signed-in

@@ -1,0 +1,36 @@
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see LICENSE.
+
+  Rachana JS runtime bundle: tools/js/build_js.py: the TeaVM bundles into js/packages/rachana/dist/, then the conformance check (about two minutes).
+  Use it when: you changed the compiler or the runtime, or before the first server or Node run on a fresh clone.
+  Maven launcher (js/pom.xml, exec-maven-plugin) starting Python 3 (on the PATH; or add -Dpython=<path to python> to the goals); needs a JDK 21 for TeaVM (JAVA_HOME).
+  Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
+-->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Rachana JS runtime bundle" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana JS">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+      <option name="myRunnerSettings" />
+      <option name="myRunnerParameters">
+        <MavenRunnerParameters>
+          <option name="profiles">
+            <set />
+          </option>
+          <option name="goals">
+            <list>
+              <option value="exec:exec@runtime-bundle" />
+            </list>
+          </option>
+          <option name="pomFileName" value="pom.xml" />
+          <option name="profilesMap">
+            <map />
+          </option>
+          <option name="resolveToWorkspace" value="false" />
+          <option name="workingDirPath" value="$PROJECT_DIR$/../js" />
+        </MavenRunnerParameters>
+      </option>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>

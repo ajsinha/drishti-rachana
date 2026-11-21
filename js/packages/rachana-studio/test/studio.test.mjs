@@ -20,7 +20,7 @@ const made = [];
 const tmp = () => { const d = mkdtempSync(join(tmpdir(), "rachana-studio-")); made.push(d); return d; };
 after(() => { for (const d of made) rmSync(d, { recursive: true, force: true }); });   // a test run leaves no temporary folder (G2 gate F16)
 
-const FRAG = `rachana: 1
+const FRAG = `rachana: 1.2
 fragment: ranked-bars
 version: 1
 doc: { summary: Bars., category: charts }

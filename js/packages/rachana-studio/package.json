@@ -1,0 +1,11 @@
+{
+  "name": "drishti-rachana-studio",
+  "version": "0.11.0-snapshot",
+  "private": true,
+  "description": "Rachana Studio: a three-pane editor (fragment palette, live preview, Sutra source and properties), served by rachana studio",
+  "license": "SEE LICENSE IN ../../../LICENSE",
+  "author": "Ashutosh Sinha",
+  "type": "module",
+  "scripts": { "test": "node --test test/studio.test.mjs" },
+  "engines": { "node": ">=20" }
+}

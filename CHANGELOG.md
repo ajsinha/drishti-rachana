@@ -5,6 +5,11 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **Rachana Studio, first slice** (`js/packages/rachana-studio`, `rachana studio <folder> [--libs ...]`; decision MK-1): three panes (the fragments of the
+  project's libraries, the live `<rachana-view>`, the Sutra source with its live problems, the parameter form of the chosen fragment and the
+  unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
+  placeholder. Built from Drishti Elements 3.1.0 widgets only; `<rachana-view>` takes a `files` property (the libraries). Vendored js-yaml 4.1.0.
+
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 
 - **L1, the declaration** (`rachana-core`): `LiveTableSpec` reads and checks `<name>.live.yaml` (`rachana: 1`, `live-table:`, snapshot,

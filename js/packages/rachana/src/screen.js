@@ -27,7 +27,8 @@ function call(rt, op, req) {
 export class Screen {
   /**
    * @param {Object} rt the initialised runtime bundle
-   * @param {Object} o {sutra: text, level: '1.1', today?: 'yyyy-mm-dd', ctl?: {}, record?: {}, client?: DataClient}
+   * @param {Object} o {sutra: text, level: '1.1', today?: 'yyyy-mm-dd', ctl?: {}, record?: {}, client?: DataClient, files?: {path: text}}
+   *   files: the libraries a Sutra uses, as FORMAT 5.7 gives them (`rachana_libs/<library>/<path>` to text, and `rachana.lock`)
    */
   constructor(rt, o) {
     this.rt = rt;
@@ -36,7 +37,9 @@ export class Screen {
     const given = { ctl: this.ctl };
     if (o.today) given.today = o.today;
     if (o.record) given.record = o.record;
-    const opened = call(rt, 'open', { sutra: o.sutra, since: o.level || '1.1', profile: 'core', given });
+    const req = { sutra: o.sutra, since: o.level || '1.1', profile: 'core', given };
+    if (o.files) req.files = o.files;
+    const opened = call(rt, 'open', req);
     this.id = opened.id;
     this.tables = opened.tables;
     this.reads = new Map();     // table -> {version, live}

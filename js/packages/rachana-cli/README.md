@@ -22,6 +22,14 @@ server (a browser does not fetch from `file://`). `test/paint_check.py`
 (`uv run --with playwright==1.64.0 python js/packages/rachana-cli/test/paint_check.py`) builds `examples/static-sales`, opens every
 page in Chromium and fails on a console error, a failed request or an empty page.
 
+**`studio`** (`rachana studio [folder] [--libs <path>,...] [--data <dir>] [--port <n>]`) opens Rachana Studio on a folder of Sutras (127.0.0.1 only):
+a palette of the fragments of the project's libraries (`<folder>/rachana_libs`, each `--libs` path: an unpacked library, a `.rlib`, or a folder of
+them, and `RACHANA_LIBS`), the live preview, the Sutra source with the bundle's `check` at level 1.2 shown as you type, a parameter form that
+inserts a `use:` block (tables and column mapping from the folder's data files), the unsaved changes as a diff, and Save into the folder (a
+`*.sutra.yaml` path inside it; nothing else is written). The assistant bar is a placeholder until the GenAI release. Tests: `npm test` in
+`js/packages/rachana-studio`; `uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py` (needs the libraries
+repository, `RACHANA_LIBS`).
+
 **`--level`** (default `1.1`, the newest built level; `1.2` when typed fragments or libraries are used) is the language level of
 `lint` (`since` in the bundle's `check`) and of the pages' `<rachana-view level>`.
 

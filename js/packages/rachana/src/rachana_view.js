@@ -14,7 +14,7 @@
 // separated, Core's first), level (language level, default 1.1), today (the as-of date), allow (other data origins, space separated),
 // live (follow the live tables), form (rows as json, arrow or ndjson; arrow needs js/vendor/apache-arrow's script loaded first and is
 // asked only of tables that declare it). Properties: sutra (the text instead of src), record (the host's record), controls (values),
-// linkResolver (link => absolute address or null), fetch (the host's fetch).
+// linkResolver (link => absolute address or null), fetch (the host's fetch), files (the libraries a Sutra uses: {'rachana_libs/<library>/<path>': text}).
 //
 // Portable-view principles: every address the element is given is resolved once, against the page, to an absolute address; a link of
 // the view gets its address only from the host's linkResolver and only when that address is absolute (a relative one would mean
@@ -35,7 +35,7 @@ export function defineRachanaView(o) {
   class RachanaView extends w.HTMLElement {
     static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'level', 'today', 'allow', 'live', 'form']; }
 
-    constructor() { super(); this._sutra = null; this.record = null; this.controls = {}; this.linkResolver = null; this.fetch = null; this.screen = null; this._gen = 0; }
+    constructor() { super(); this._sutra = null; this.record = null; this.controls = {}; this.linkResolver = null; this.fetch = null; this.files = null; this.screen = null; this._gen = 0; }
 
     set sutra(text) { this._sutra = text; if (this.isConnected) this.refresh(); }
 
@@ -71,7 +71,7 @@ export function defineRachanaView(o) {
       const client = this.getAttribute('data') ? new DataClient({ base: this.abs(this.getAttribute('data')), fetch: f, origin: w.location.origin,
         allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null }) : null;
       const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || '1.1', today: this.getAttribute('today') || undefined,
-        ctl: this.controls, record: this.record, client });
+        ctl: this.controls, record: this.record, client, files: this.files || undefined });
       this.screen = screen;
       await screen.load();
       if (gen !== this._gen) { screen.close(); return; }

@@ -10,7 +10,8 @@ import java.util.Map;
 /**
  * What the corpus test runs the corpus's Sutras through: compile every file of the corpus (blocks and the UI kit as the corpus gives
  * them) and write the per-file documents the corpus holds under {@code compiled/}, into a folder, same relative paths, same bytes.
- * Two implementations: Core's own compiler once v0.9.0 has moved it here, and until then the reference bridge over Drishti's jars.
+ * Two implementations: Core's own compiler with the conformance suite's Drishti profile ({@link CoreRuntime}, the default), and the
+ * reference bridge over Drishti's jars (on request only: it compares the reference with its own recording).
  */
 interface CorpusRuntime {
     String name();
@@ -19,17 +20,19 @@ interface CorpusRuntime {
     void compileAll(Corpus corpus, Path out) throws Exception;
 
     /**
-     * The runtime named by {@code -Drachana.compat.runtime}: {@code core}, {@code bridge}, or {@code auto} (core when it can compile,
-     * else the bridge when {@code -Drachana.reference.classpath} names Drishti's jars, else none).
+     * The runtime named by {@code -Drachana.compat.runtime}: {@code core} (the default; also for a blank value) or {@code bridge}
+     * (needs {@code -Drachana.reference.classpath} naming Drishti's jars). Never null: a runtime that cannot run is a failure.
+     *
+     * @throws IllegalStateException for {@code bridge} without a class path, or an unknown name
      */
     static CorpusRuntime choose(Map<String, String> props) {
-        String want = props.getOrDefault("rachana.compat.runtime", "auto");
-        boolean coreReady = false; // flips when rachana-core exposes the compile entry (plan A13); then CoreRuntime is wired here
-        if (want.equals("core") && !coreReady) throw new IllegalStateException("rachana-core cannot compile Sutras yet (v0.9.0 moves the compiler)");
-        if (want.equals("bridge") || want.equals("auto")) {
+        String want = props.getOrDefault("rachana.compat.runtime", "core").trim();
+        if (want.isEmpty() || want.equals("core")) return new CoreRuntime();
+        if (want.equals("bridge")) {
             String cp = props.getOrDefault("rachana.reference.classpath", "");
-            if (!cp.isBlank()) return new ReferenceBridgeRuntime(cp);
+            if (cp.isBlank()) throw new IllegalStateException("-Drachana.compat.runtime=bridge needs -Drachana.reference.classpath (Drishti's jars)");
+            return new ReferenceBridgeRuntime(cp);
         }
-        return null;
+        throw new IllegalStateException("unknown -Drachana.compat.runtime=" + want + " (core or bridge)");
     }
 }

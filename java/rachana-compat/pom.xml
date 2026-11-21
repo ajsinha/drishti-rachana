@@ -12,6 +12,7 @@
   <dependencies>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-api</artifactId><version>${project.version}</version><scope>test</scope></dependency>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-core</artifactId><version>${project.version}</version><scope>test</scope></dependency>
+    <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-conformance</artifactId><version>${project.version}</version><scope>test</scope></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
   <build>

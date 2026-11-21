@@ -5,7 +5,6 @@
 package com.ash.rachana.compat;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.*;
 import java.util.*;
@@ -15,8 +14,8 @@ import org.junit.jupiter.api.Test;
 /**
  * CG3, the customer corpus (SUTRA_EXPANSION 6.5, 6.6). Per corpus under compat/customers/: it is exactly as exported (manifest); every
  * Sutra and block it lists is present; every Sutra compiles, with the corpus's blocks, to the recorded problem list, canonical model
- * text and plan, byte for byte (this is the part that needs a runtime: Core's compiler, until v0.9.0 the reference bridge); the
- * recorded binds replay through a RecordedHost (none before v0.10.0). No re-record flag exists here: a corpus arrives only from a release
+ * text and plan, byte for byte, on Core's compiler with the conformance suite's Drishti profile ({@link CoreRuntime}; the reference
+ * bridge only when asked for); the recorded binds replay through a RecordedHost (none recorded yet: binds/ is planned before G4). No re-record flag exists here: a corpus arrives only from a release
  * of the customer.
  */
 class CustomerCorpusTest {
@@ -52,28 +51,32 @@ class CustomerCorpusTest {
 
     @Test
     void theShippedSutrasCompileToTheRecordedDocuments() throws Exception {
-        CorpusRuntime rt = CorpusRuntime.choose(Map.of("rachana.compat.runtime", System.getProperty("rachana.compat.runtime", "auto"),
-                "rachana.reference.classpath", System.getProperty("rachana.reference.classpath", "")));
-        assumeTrue(rt != null, "no runtime: Core cannot compile yet and -Drachana.reference.classpath is not set (the first replay is in CG8)");
+        CorpusRuntime rt = CorpusRuntime.choose(Map.of("rachana.compat.runtime", System.getProperty("rachana.compat.runtime", "core"),
+                "rachana.reference.classpath", System.getProperty("rachana.reference.classpath", "")));   // never skipped: no runtime fails
         for (Corpus c : Corpus.all()) {
             Path out = Files.createTempDirectory("rachana-compat-out-");
             try {
                 rt.compileAll(c, out);
                 List<String> diffs = new ArrayList<>();
+                int compared = 0;
                 Path recorded = c.dir().resolve("compiled");
                 try (Stream<Path> s = Files.walk(recorded)) {
                     for (Path f : s.filter(Files::isRegularFile).toList()) {
                         Path rel = recorded.relativize(f);
                         Path got = out.resolve("compiled").resolve(rel.toString());
+                        if (rel.toString().endsWith(".json")) compared++;
                         if (!Files.exists(got)) diffs.add("not produced: " + rel);
-                        else if (!Arrays.equals(Files.readAllBytes(f), Files.readAllBytes(got))) diffs.add("differs: " + rel);
+                        else if (!Arrays.equals(Files.readAllBytes(f), Files.readAllBytes(got))) diffs.add("differs: " + rel + (diffs.isEmpty()
+                                ? "\n--- recorded\n" + Files.readString(f) + "--- " + rt.name() + "\n" + Files.readString(got) : ""));
                     }
                 }
                 try (Stream<Path> s = Files.walk(out.resolve("compiled"))) {
                     for (Path f : s.filter(Files::isRegularFile).toList())
                         if (!Files.exists(recorded.resolve(out.resolve("compiled").relativize(f).toString()))) diffs.add("not recorded: " + f.getFileName());
                 }
-                assertEquals(List.of(), diffs, c.name() + " via " + rt.name());
+                assertEquals(List.of(), diffs, c.name() + " via " + rt.name() + ": " + diffs.size() + " differences");
+                Map<String, Object> v = Json.object(Json.parse(Files.readString(c.dir().resolve("VERSION.json"))));
+                assertEquals(((java.math.BigDecimal) v.get("sutras")).intValue(), compared, c.name() + ": every Sutra compared, byte for byte");
             } finally {
                 ReferenceBridgeRuntime.deleteTree(out);
             }

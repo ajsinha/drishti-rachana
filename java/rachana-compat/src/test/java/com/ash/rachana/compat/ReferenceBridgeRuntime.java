@@ -18,13 +18,8 @@ final class ReferenceBridgeRuntime implements CorpusRuntime {
     @Override public String name() { return "reference-bridge"; }
 
     @Override public void compileAll(Corpus corpus, Path out) throws Exception {
-        Path scratch = Files.createTempDirectory("rachana-compat-");
+        Path scratch = scratch(corpus);
         try {
-            copyTree(corpus.dir().resolve("sutras"), scratch.resolve("tree"));
-            copyTree(corpus.dir().resolve("blocks"), scratch.resolve("tree"));
-            copyTree(corpus.dir().resolve("blocks/ui-kit"), scratch.resolve("kit/fragments"));
-            deleteTree(scratch.resolve("tree/ui-kit"));
-            Files.copy(corpus.dir().resolve("groups.json"), scratch.resolve("groups.json"));
             String java = System.getProperty("rachana.compat.java", "java");
             Process p = new ProcessBuilder(java, "-cp", classpath, Corpus.repoRoot().resolve("tools/regime/CorpusCompile.java").toString(),
                     scratch.toString(), out.toString()).redirectErrorStream(true).start();
@@ -33,6 +28,20 @@ final class ReferenceBridgeRuntime implements CorpusRuntime {
         } finally {
             deleteTree(scratch);
         }
+    }
+
+    /**
+     * The tree both runtimes read, as corpus_export.py took it from Drishti: {@code tree/} (the Sutras and the blocks together, the
+     * packs' {@code pack.yaml} beside their {@code sutras/}), {@code kit/fragments/} (the UI kit) and {@code groups.json}.
+     */
+    static Path scratch(Corpus corpus) throws IOException {
+        Path scratch = Files.createTempDirectory("rachana-compat-");
+        copyTree(corpus.dir().resolve("sutras"), scratch.resolve("tree"));
+        copyTree(corpus.dir().resolve("blocks"), scratch.resolve("tree"));
+        copyTree(corpus.dir().resolve("blocks/ui-kit"), scratch.resolve("kit/fragments"));
+        deleteTree(scratch.resolve("tree/ui-kit"));
+        Files.copy(corpus.dir().resolve("groups.json"), scratch.resolve("groups.json"));
+        return scratch;
     }
 
     private static void copyTree(Path from, Path to) throws IOException {

@@ -1,7 +1,7 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # The Rachana server
 
-The standalone server (`java/rachana-server`) serves a project folder of Sutras as pages, the [Data Protocol](DATA_PROTOCOL.md) over
+The standalone server (`java/rachana-server`) serves a project folder of Sutras as pages, the [Data Protocol](../../spec/1/data-protocol/PROTOCOL.md) over
 tables read from files, JDBC databases and REST endpoints and kept [live](LIVE_TABLES.md), sign-in, access rules, and the guarded edit
 path with approvals. It is one JVM process configured by one YAML file.
 

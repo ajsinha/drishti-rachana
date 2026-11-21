@@ -58,7 +58,7 @@ Values are written in four ways, fixed per key (SPEC 3): an **expression** (`val
 
 | Entry | Meaning |
 |---|---|
-| `{table: sales, key: [...]}` | a table the host serves over the [Data Protocol](DATA_PROTOCOL.md) (in static mode a file under `data/`) |
+| `{table: sales, key: [...]}` | a table the host serves over the [Data Protocol](../../spec/1/data-protocol/PROTOCOL.md) (in static mode a file under `data/`) |
 | `{url: ...}` | a file or endpoint read whole (JSON, CSV, NDJSON, Arrow), at an address the host allows |
 | `{rows: [...]}` | rows written in the file |
 | `{record: {...}}` | one record written in the file |

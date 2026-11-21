@@ -57,11 +57,11 @@ public final class Signatures {
     public record Example(String expr, String says) {}
 
     /**
-     * One function. {@code legacy}: the name it had before (DEL's name of a Rachana function, or the W1 name of a DEL one); {@code runs}:
+     * One function. {@code runs}:
      * {@code R} or {@code E}; {@code edgeCases} by topic: nulls, empty, masked, currencies, types.
      */
     public record Signature(String name, String family, String runs, String signature, List<Param> params, String returns, List<String> scopes,
-            String status, String since, String legacy, String description, List<Example> examples, Map<String, String> edgeCases) {
+            String status, String since, String description, List<Example> examples, Map<String, String> edgeCases) {
         public Signature {
             params = List.copyOf(params);
             scopes = List.copyOf(scopes);
@@ -103,9 +103,6 @@ public final class Signatures {
             m.put("scopes", scopes);
             m.put("status", status);
             m.put("since", since);
-            if (legacy != null) {
-                m.put("legacy", legacy);
-            }
             m.put("description", description);
             m.put("examples", examples.stream().map(e -> Map.of("expr", e.expr(), "says", e.says())).toList());
             m.put("edgeCases", edgeCases);
@@ -195,11 +192,9 @@ public final class Signatures {
                     Plain.text(Plain.path(e, "says")))));
             Map<String, String> edges = new LinkedHashMap<>();
             Plain.entries(Plain.path(f, "edge-cases")).forEach(e -> edges.put(e.getKey(), Plain.text(e.getValue())));
-            String legacy = Plain.hasNonNull(f, "legacy") ? Plain.text(Plain.path(f, "legacy"))
-                    : Plain.hasNonNull(f, "del") ? Plain.text(Plain.path(f, "del")) : null;
             if (out.put(name, new Signature(name, Plain.text(Plain.path(f, "family")), Plain.text(Plain.path(f, "runs"), ""),
                     Plain.text(Plain.path(f, "signature")), params, Plain.text(Plain.path(f, "returns"), "any"), scopes,
-                    Plain.text(Plain.path(f, "status"), BUILT), Plain.text(Plain.path(f, "since"), ""), legacy,
+                    Plain.text(Plain.path(f, "status"), BUILT), Plain.text(Plain.path(f, "since"), ""),
                     Plain.text(Plain.path(f, "description"), ""), examples, edges)) != null) {
                 throw new IllegalStateException(what + ": the function " + name + " is listed twice");
             }

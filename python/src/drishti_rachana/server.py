@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""A minimal Data Protocol v1 host in plain Python (docs/design/DATA_PROTOCOL.md 3 to 7), framework neutral.
+"""A minimal Data Protocol v1 host in plain Python (spec/1/data-protocol/PROTOCOL.md sections 4 to 8), framework neutral.
 
 The Flask and FastAPI adapters are thin: they hand ``(method, path, query, body)`` to :meth:`DataHost.handle` and stream
 :meth:`DataHost.changes`. Implemented, as the JVM reference host (java/rachana-data) does: the discovery document, table list, schema, rows (JSON,

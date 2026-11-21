@@ -1,9 +1,8 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). -->
 # The Rachana Data Protocol, version 1
 
-**Status: draft 1 (2026-11-17), front-load item F8.** Normative once the owner approves it. The design it is made from is
-[../../../docs/design/DATA_PROTOCOL.md](../../../docs/design/DATA_PROTOCOL.md); where this text and the design differ, this text
-wins. The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. **Section 8.2 follows the events wire protocol v1
+**Status: draft 1 (2026-11-17), front-load item F8.** Normative once the owner approves it. The decisions behind it are kept in
+[../../../docs/design/DATA_PROTOCOL.md](../../../docs/design/DATA_PROTOCOL.md); this text is the specification. The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. **Section 8.2 follows the events wire protocol v1
 (`EVENTING_DESIGN.md` section 8 of Drishti Elements, branch `design/eventing`); it is re-checked when that protocol ships.**
 
 The machine-readable forms are JSON Schemas (draft 2020-12) in this folder: [schema.json](schema.json) (table schema, base

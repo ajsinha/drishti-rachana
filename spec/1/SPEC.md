@@ -4,7 +4,7 @@
 **Status: draft 1 (2026-11-17), with the decisions for 1.0 taken on 2026-11-19 (EL_EXPANSION XD2 to XD4: the reservations
 of 4.15, the numbers of 4.16, text by code point in 4.13).** Normative once the owner approves it and the first conformance
 suite is cut. Until then it describes the language as the reference implementation (Drishti's `compute/drishti-rachana`)
-behaves today, plus the settled additions of the design ([../../docs/design/SPEC.md](../../docs/design/SPEC.md),
+behaves today, plus the settled additions; the decisions behind them are kept in ([../../docs/design/SPEC.md](../../docs/design/SPEC.md),
 [CORE_AND_PROFILES](../../docs/design/CORE_AND_PROFILES.md), [DECISIONS](../../docs/design/DECISIONS.md)).
 
 Companion files in this folder:

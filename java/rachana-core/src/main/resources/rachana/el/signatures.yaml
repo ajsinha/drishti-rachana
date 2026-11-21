@@ -158,7 +158,6 @@ functions:
   - {name: prefix, type: string}
   returns: boolean
   scopes: [row, rule, aggregate]
-  del: startswith
   description: True when the text starts with the prefix, ignoring case.
   examples:
   - {expr: 'starts_with(trades.PORTFOLIO, ''BOOK-RATES-'')', says: the rates books}
@@ -173,7 +172,6 @@ functions:
   - {name: suffix, type: string}
   returns: boolean
   scopes: [row, rule, aggregate]
-  del: endswith
   description: True when the text ends with the suffix, ignoring case.
   examples:
   - {expr: 'ends_with(trades.PORTFOLIO, ''-1'')', says: the London books}
@@ -795,7 +793,6 @@ functions:
   - {name: date, type: date-field}
   returns: same
   scopes: [aggregate]
-  del: last
   description: 'The aggregate over the rows of each group dated on the group''s latest date (a balance''s semi-additive total: the latest day''s figure, never the
     sum of the days).'
   examples:
@@ -811,7 +808,6 @@ functions:
   - {name: date, type: date-field}
   returns: same
   scopes: [aggregate]
-  del: first
   description: The aggregate over the rows of each group dated on the group's earliest date.
   examples:
   - {expr: 'earliest(sum(accounts.balance), accounts.business_date)', says: the balance at the start of the period}

@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""Data Protocol v1 messages as dataclasses with ``to_json`` / ``from_json`` (docs/design/DATA_PROTOCOL.md).
+"""Data Protocol v1 messages as dataclasses with ``to_json`` / ``from_json`` (spec/1/data-protocol/PROTOCOL.md).
 
 TODO(F8): align names and field order with ``spec/1/data-protocol`` once the normative text and schemas land.
 Key order of ``to_json`` follows the order the design writes the fields in; absent (None) fields are left out.

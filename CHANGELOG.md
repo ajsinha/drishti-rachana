@@ -5,6 +5,11 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Duplicate leftovers (i7b audit S10, D6)**: `Signatures.Signature` loses its `legacy` component and `signatures.yaml` its four `del:` lines
+  (DEL's names for functions; DEL is folded away and nothing read them; logged in `java/api-removals.txt`). The deprecated function
+  spellings (`startsWith`, `oneOf`, `matchesCase`, `days`, `today` ...) are part of the frozen level 1.0 (SPEC 5.10, 7.2 rule 3: read, never
+  offered, warning `RCH-2090`), so `conformance/1/el/coverage-old-spellings.yaml` stays as that baseline; they leave with level 1.0 at G4.
+  `docs/design/SPEC.md` and `docs/design/DATA_PROTOCOL.md` keep decisions only (the specification is `spec/1/`); links to them corrected.
 - **Product documentation**: the README describes the built product (parts, ways to use it, build, install order Rachana → tools →
   Lake → Drishti from release tags, IDE support) with front matter. One guide per major feature under `docs/guides/` (the language at
   level 1.2 with fragments as functions, libraries and `rachana lib`, the Data Protocol, live tables with editing and approvals, the

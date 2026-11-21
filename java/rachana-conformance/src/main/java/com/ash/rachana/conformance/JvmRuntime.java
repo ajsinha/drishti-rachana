@@ -42,7 +42,7 @@ public final class JvmRuntime {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), false, StandardCharsets.UTF_8);
         in.readLine();                                                   // the driver's greeting
-        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"rachana-" + VERSION + "\",\"language\":\"1.0\",\"profiles\":" + jsonList(profiles) + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\"]}");
+        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"rachana-" + VERSION + "\",\"language\":\"1.0\",\"profiles\":" + jsonList(profiles) + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\"]}");
         out.flush();
         String line;
         while ((line = in.readLine()) != null) {
@@ -58,6 +58,7 @@ public final class JvmRuntime {
                     case "format" -> format(c, sb);
                     case "problem" -> problem(c, sb);
                     case "edit" -> edit(c, sb);
+                    case "sutra" -> sutra(c, sb);
                     default -> throw new IllegalStateException("kind not implemented: " + kind);
                 }
             } catch (Throwable t) {
@@ -200,6 +201,30 @@ public final class JvmRuntime {
         ps.append("{\"code\":").append(str(code)).append(",\"severity\":\"error\",\"message\":").append(str(message));
         if (line > 0) { ps.append(",\"range\":{\"start\":{\"line\":").append(line).append("}}"); }
         ps.append('}');
+    }
+
+    /**
+     * FORMAT 5 {@code sutra}: the Sutra over {@code given.record} (the entity's data; {@code given.today} the business date,
+     * {@code given.ctl} the control values as a request carries them) built by Core's view pipeline with no host hooks
+     * ({@code Rachana.views}, split step A14), written by Core's canonical writer. A host's fields (reference, mnemonic, provenance,
+     * timings) are not set, so not written.
+     */
+    static void sutra(Map<String, Object> c, StringBuilder sb) {
+        Map<String, Object> g = obj(c.get("given"));
+        String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
+        boolean coreOnly = "core".equals(text(c.get("profile")));          // a Core case is read with Core's grammar alone
+        var sutra = (coreOnly ? new com.ash.rachana.parse.SutraParser() : rachana.parser()).parse(text(c.get("sutra")), file, "conformance");
+        LocalDate today = g.containsKey("today") ? LocalDate.parse(text(g.get("today"))) : LocalDate.of(2026, 1, 15);
+        Map<String, String> ctl = new LinkedHashMap<>();
+        obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(JvmRuntime::text).toList()) : text(v)));
+        var views = rachana.views(com.ash.rachana.bind.BindHooks.core(), com.ash.rachana.bind.PivotEngine.NONE,
+                com.ash.rachana.bind.TableProvider.NONE,
+                com.ash.rachana.control.BusinessDays.of(today, com.ash.rachana.el.BusinessCalendar.of("WEEKENDS")), java.time.Duration.ofSeconds(2));
+        var doc = new com.ash.rachana.bind.Entity(com.ash.rachana.bind.EntityRef.of("record", "case"),
+                node(g.containsKey("record") ? g.get("record") : new LinkedHashMap<String, Object>()));
+        var view = views.build(new com.ash.rachana.bind.ViewBuilder.Request(doc, sutra, null, com.ash.rachana.bind.AsOf.of(today), null,
+                new com.ash.rachana.control.ControlValues(ctl, java.util.Set.of()), null));
+        sb.append("{\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(view)).append('}');
     }
 
     static String words(com.ash.rachana.RachanaException e) {

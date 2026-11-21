@@ -1,0 +1,241 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/panels
+since: "1.0"
+profile: [core, drishti]
+verified: true
+description: >-
+  Sutra + data -> ViewModel over the binder moved at split step A13 (A14: harvested from the host's panel tests ChartPanelsTest,
+  DrillPanelTest, DeepTradeViewTest and MetricPanelTest, the host-only parts left out: no sources, links, masks or pivot engine). The
+  whole ViewModel is compared byte for byte with the reference's (tools/split/compare_results.py); `at` pins the parts a reader checks.
+cases:
+  - id: chart-kinds
+    kind: sutra
+    source: ChartPanelsTest (the pivot panels left out until Core's aggregate kernel, A9)
+    given:
+      today: "2026-01-15"
+      record: {"tradeId": "IRS-1001",
+        "explain": [{"step": "Opening", "pnl": 1000, "total": true}, {"step": "Carry", "pnl": 200}, {"step": "Rates", "pnl": -500},
+                    {"step": "Broken", "pnl": "n/a"}],
+        "scenarios": [-4, -3, -1, 0, 0, 1, 2, 4, "x", null], "var99": 3.5,
+        "books": [{"book": "IRS-2001", "desk": "Rates", "var": 10, "pnl": 5000, "trades": 4}, {"book": "B2", "desk": "FX", "var": 20, "pnl": -1000},
+                  {"book": "B3", "var": "?", "pnl": 1}],
+        "ohlc": [{"date": "2026-09-28", "open": 10, "high": 11, "low": 9, "close": 10.5, "volume": 100},
+                 {"date": "2026-09-29", "open": 10.5, "high": 10.6, "low": 9.5, "close": 9.8},
+                 {"date": "2026-09-30", "open": 9.8, "high": 9.9, "low": 9.0}],
+        "tree": {"nodes": [{"id": "CP-PARENT", "label": "Parent", "type": "Group"}, {"id": "IRS-1001", "label": "This"}, {"id": "X", "label": "x"},
+                           {"label": "no id"}],
+                 "edges": [{"from": "CP-PARENT", "to": "IRS-1001", "label": "owns"}, {"from": "CP-PARENT", "to": "NOWHERE"}]},
+        "events": [{"date": "2026-02-01", "event": "Confirmed", "status": "Matched"}, {"date": "2026-01-15", "event": "Booked", "note": "Captured",
+                    "status": "Done"}, {"date": "2026-03-01", "event": "Amended", "status": "Pending approval"}],
+        "org": [{"name": "Group", "size": 999, "children": [{"name": "Desk A", "size": 999, "children": [{"name": "Book 1", "size": 30}, {"name": "Book 2", "size": 20}]},
+                                                         {"name": "Desk B", "size": 999, "children": []}]},
+                {"name": "Loose", "size": 5}]}
+    sutra: |
+      rachana: 1
+      sutra: chart-kinds
+      version: 1
+      match: { kind: record }
+      title: { pill: Trade, id: $.tradeId }
+      panels:
+        - { id: explain, kind: waterfall, rows: $.explain, label: step, value: pnl, sum: Closing, fmt: signed0 }
+        - { id: explain-theme, kind: waterfall, rows: $.explain, label: step, value: pnl, sum: Closing, colors: theme }
+        - id: dist
+          kind: histogram
+          rows: $.scenarios
+          bins: 4
+          markers:
+            - { label: VaR 99%, value: "-$.var99", tone: neg }
+            - { label: Missing, value: $.nothing }
+        - { id: rr, kind: scatter, rows: $.books, x: var, y: "@.pnl / 1000", size: trades, label: book, group: desk, fmt: amount0 }
+        - { id: px, kind: candlestick, rows: $.ohlc, volume: volume, fmt: price2 }
+        - { id: tree, kind: graph, nodes: $.tree.nodes, edges: $.tree.edges }
+        - { id: life, kind: timeline, rows: $.events, label: event, detail: note }
+        - id: org
+          kind: table
+          rows: $.org
+          children: "@.children"
+          expand: 2
+          columns:
+            - { label: Name, bind: "@.name" }
+            - { label: Size, bind: "@.size", fmt: amount0, total: true }
+        - id: org-flat
+          kind: ladder
+          rows: $.org
+          columns:
+            - { label: Name, bind: "@.name" }
+            - { label: Size, bind: "@.size", fmt: amount0, total: true }
+    expect:
+      at:
+        /title/id: IRS-1001
+        /panels/0/kind: waterfall
+        /panels/7/kind: table
+
+  - id: drill-levels-and-a-timeline
+    kind: sutra
+    source: DrillPanelTest
+    given:
+      today: "2026-01-15"
+      record: {"TRADE_ID": 100001,
+        "LEGS": [
+          {"LEG_ID": 1, "LEG_TYPE": "Fixed", "NOTIONAL": 1000,
+           "CASH_FLOWS": [{"FLOW_ID": 11, "PAYMENT_DATE": "2026-02-10", "NOTIONAL": 400, "RESETS": []},
+                          {"FLOW_ID": 12, "PAYMENT_DATE": "2026-03-10", "NOTIONAL": 600}]},
+          {"LEG_ID": 2, "LEG_TYPE": "Float", "NOTIONAL": 1000,
+           "CASH_FLOWS": [{"FLOW_ID": 21, "PAYMENT_DATE": "2026-01-10", "NOTIONAL": 1000,
+                           "RESETS": [{"RESET_DATE": "2026-01-02", "RATE": "78.5"}, {"RESET_DATE": "2026-01-05", "RATE": ""}, 7]}]}]}
+    sutra: |
+      rachana: 1
+      sutra: deep-deal
+      version: 1
+      match: { kind: record }
+      title: { pill: Deal, id: $.TRADE_ID }
+      panels:
+        - id: legs
+          kind: table
+          rows: $.LEGS
+          crumb: "'Leg ' + @.LEG_ID + ' · ' + @.LEG_TYPE"
+          root: "'Deal ' + $.TRADE_ID"
+          columns:
+            - { label: Leg, bind: "@.LEG_ID" }
+            - { label: Notional, bind: "@.NOTIONAL", fmt: amount0, total: true }
+          levels:
+            - rows: "@.CASH_FLOWS"
+              title: Cash flows
+              crumb: "'Flow ' + @.FLOW_ID"
+              columns:
+                - { label: Pay date, bind: "@.PAYMENT_DATE", fmt: date }
+                - { label: Notional, bind: "@.NOTIONAL", fmt: amount0, total: true }
+                - { label: Resets, bind: "size(@.RESETS)", fmt: amount0 }
+            - rows: "@.RESETS"
+              title: Resets
+              columns:
+                - { label: Fixing, bind: "@.RESET_DATE", fmt: date }
+                - { label: Rate, bind: "nonblank(@.RATE, '-')" }
+        - id: events
+          kind: table
+          rows: $.EVENTS
+          empty: No events
+          columns:
+            - { label: Type, bind: "@.EVENT_TYPE" }
+        - id: payments
+          kind: timeline
+          rows: "flatten($.LEGS[*].CASH_FLOWS)"
+          date: PAYMENT_DATE
+          label: FLOW_ID
+    expect:
+      at:
+        /title/id: "100001"
+        /panels/0/id: legs
+        /panels/1/empty: true
+
+  - id: tabs-with-a-tree-table
+    kind: sutra
+    source: DeepTradeViewTest
+    given:
+      today: "2026-01-15"
+      record: {"tradeId": "CMD-1", "notional": 1000000,
+        "legs": [
+          {"leg": 1, "label": "Pay fixed", "payReceive": "Pay", "index": null, "pv": -100.0,
+           "cashflows": [{"periodStart": "2026-10-01", "payDate": "2026-11-05", "rate": 71.0, "amount": -710.0, "status": "Projected"},
+                         {"periodStart": "2026-11-01", "payDate": "2026-12-05", "rate": 71.0, "amount": -710.0, "status": "Projected"}]},
+          {"leg": 2, "label": "Receive WTI average", "payReceive": "Receive", "index": "WTI", "pv": 120.0,
+           "cashflows": [{"periodStart": "2026-10-01", "payDate": "2026-11-05", "rate": 72.5, "amount": 725.0, "status": "Projected",
+                          "fixings": [{"fixingDate": "2026-10-01", "rate": 72.0, "source": "NYMEX"}, {"fixingDate": "2026-10-02", "rate": 73.0, "source": "NYMEX"}]},
+                         {"periodStart": "2026-11-01", "payDate": "2026-12-05", "rate": 72.0, "amount": 720.0, "status": "Projected",
+                          "fixings": [{"fixingDate": "2026-11-02", "rate": 72.0, "source": "Forward curve"}]}]},
+          {"leg": 3, "label": "Pay fee", "payReceive": "Pay", "index": null, "pv": -5.0,
+           "cashflows": [{"periodStart": "2026-10-01", "payDate": "2026-11-05", "rate": 0.1, "amount": -5.0, "status": "Projected"}]}]}
+    sutra: |
+      rachana: 1
+      sutra: deep-trade
+      version: 1
+      match: { kind: record }
+      title: { pill: Trade, id: $.tradeId }
+      panels:
+        - id: legs
+          kind: tabs
+          title: Legs
+          each: $.legs
+          tabTitle: "'Leg ' + @.leg + ' · ' + @.label"
+          panels:
+            - id: leg-terms
+              kind: kv
+              title: Leg terms
+              columns:
+                - { label: Pay/receive, bind: "@.payReceive" }
+                - { label: Index, bind: "@.index" }
+                - { label: Leg PV, bind: "@.pv", fmt: signed0, tone: sign }
+            - id: leg-cashflows
+              kind: table
+              title: Cashflows and fixings
+              rows: "@.cashflows"
+              children: "@.fixings"
+              expand: 1
+              where: "@.status != 'Settled' || true"
+              columns:
+                - { label: Period, bind: "coalesce(@.periodStart, @.fixingDate)", fmt: date }
+                - { label: Rate, bind: "@.rate", fmt: pct4 }
+                - { label: Amount, bind: "@.amount", fmt: signed0, tone: sign }
+                - { label: Source, bind: "@.source" }
+        - { id: flat, kind: kv, title: Flat, columns: [ { label: Id, bind: $.tradeId } ] }
+    expect:
+      at:
+        /panels/0/kind: tabs
+        /panels/1/data/fields/0/text: CMD-1
+
+  - id: metric-with-delta-unit-and-caption
+    kind: sutra
+    source: MetricPanelTest
+    given:
+      record: {"tradeId": "MX-1", "mtm": -1250, "chg": 0.0123}
+    sutra: |
+      rachana: 1
+      sutra: metric-demo
+      version: 1
+      match: { kind: record }
+      title: { pill: Trade, id: $.tradeId }
+      panels:
+        - { id: mtm, kind: metric, title: MTM, value: $.mtm, fmt: signed0, tone: sign, label: USD, delta: $.chg, deltaFmt: pct2, unit: USD, caption: 'of ${$.tradeId}' }
+        - { id: m, kind: metric, title: M, value: $.mtm }
+        - { id: absent, kind: metric, title: A, value: $.nothing }
+    expect:
+      at:
+        /panels/0/data/unit: USD
+        /panels/0/data/caption: of MX-1
+
+  - id: strip-keys-controls-and-selects
+    kind: sutra
+    source: the view pipeline's strip, keys, controls and selects (ViewPipeline.assemble)
+    given:
+      today: "2026-01-15"
+      ctl: { side: Pay }
+      record: {"tradeId": "T-9", "notional": 2500000, "pv": -1234.5, "rows": [{"side": "Pay", "amt": 10}, {"side": "Receive", "amt": 20}]}
+    sutra: |
+      rachana: 1
+      sutra: strip-demo
+      version: 2
+      match: { kind: record }
+      title: { pill: Trade, id: $.tradeId }
+      strip:
+        - { label: Notional, bind: $.notional, fmt: amount0 }
+        - { label: PV, bind: $.pv, fmt: signed0, tone: sign, emphasis: true }
+        - { label: Missing, bind: $.nothing }
+      keys: { F9: raw, F8: rows }
+      controls:
+        - { id: side, kind: segmented, options: [Pay, Receive], default: Receive }
+      panels:
+        - id: rows
+          kind: table
+          key: F2
+          title: Rows of this side (filtered)
+          rows: $.rows
+          where: "@.side == ctl.side"
+          on-select: { by: side }
+          columns:
+            - { label: Side, bind: "@.side" }
+            - { label: Amount, bind: "@.amt", fmt: amount0 }
+        - { id: note, kind: markdown, text: "Side ${ctl.side}" }
+    expect:
+      at:
+        /strip/0/text: "2,500,000"
+        /panels/1/data/text: Side Pay

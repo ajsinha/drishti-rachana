@@ -30,7 +30,7 @@ public class RefBridge {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), false, StandardCharsets.UTF_8);
         in.readLine();                                                   // the driver's greeting
-        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"bootstrap-2.9.11.i7a\",\"language\":\"1.0\",\"profiles\":[\"core\",\"drishti\"],\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\"]}");
+        out.println("{\"runtime\":\"jvm\",\"runtimeVersion\":\"bootstrap-2.9.11.i7a\",\"language\":\"1.0\",\"profiles\":[\"core\",\"drishti\"],\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\"]}");
         out.flush();
         String line;
         while ((line = in.readLine()) != null) {
@@ -46,6 +46,7 @@ public class RefBridge {
                     case "format" -> format(c, sb);
                     case "problem" -> problem(c, sb);
                     case "edit" -> edit(c, sb);
+                    case "sutra" -> sutra(c, sb);
                     default -> throw new IllegalStateException("kind not implemented: " + kind);
                 }
             } catch (Throwable t) {
@@ -55,6 +56,137 @@ public class RefBridge {
             out.println(sb.append('}'));
             out.flush();
         }
+    }
+
+    // ---- sutra (split step A14) -------------------------------------------------------------------------------------
+    // The reference's view pipeline steps (ViewPipeline.assemble) over the reference's binder, controls, wiring and ViewModel records,
+    // with no sources, links or masks, written by a plain ObjectMapper: what Rachana's ViewBuilder and ViewJson must answer byte for byte.
+    // Needs the engine's jars on the class path (drishti-engine and its dependencies).
+
+    static void sutra(JsonNode c, StringBuilder sb) throws Exception {
+        JsonNode g = c.path("given");
+        String file = c.path("file").asText("case.sutra.yaml");
+        var s = new com.ash.drishti.rachana.parse.SutraParser().parse(c.get("sutra").asText(), file, "conformance");
+        LocalDate today = g.has("today") ? LocalDate.parse(g.get("today").asText()) : LocalDate.of(2026, 1, 15);
+        Map<String, String> ctl = new LinkedHashMap<>();
+        g.path("ctl").fields().forEachRemaining(e -> {
+            List<String> parts = new ArrayList<>();
+            if (e.getValue().isArray()) { e.getValue().forEach(x -> parts.add(x.asText())); }
+            ctl.put(e.getKey(), e.getValue().isArray() ? String.join(",", parts) : e.getValue().asText());
+        });
+        var values = new com.ash.drishti.engine.control.ControlValues(ctl, Set.of());
+        var gp = new com.ash.drishti.graph.GraphProperties(null, null, null, null, null);
+        var catalog = new com.ash.drishti.graph.ReferenceCatalog(gp);
+        var binder = new com.ash.drishti.engine.bind.Binder(EL, formats, catalog, new com.ash.drishti.graph.BadgeRenderer(gp, EL, formats),
+                new com.ash.drishti.engine.command.Mnemonics(new com.ash.drishti.engine.command.CommandsProperties(null, null, null, null)));
+        var dates = new com.ash.drishti.engine.time.BusinessDates(new com.ash.drishti.engine.time.BusinessDateProperties("WEEKENDS", "UTC", null, null),
+                java.time.Clock.systemUTC());
+        var budget = java.time.Duration.ofSeconds(2);
+        var controls = new com.ash.drishti.engine.control.ControlResolver(EL, dates, null, budget);
+        var maps = new com.ash.drishti.engine.bind.MapSupport(null, EL, formats, binder.limits());
+        var wire = new com.ash.drishti.engine.wire.ScreenWire(null, binder, EL, budget);
+        DataNode data = node(g.has("record") ? g.get("record") : M.createObjectNode());
+        var ref = com.ash.drishti.api.EntityRef.of("record", "case");
+        var doc = new com.ash.drishti.api.EntityDocument(ref, data, new com.ash.drishti.api.Provenance("conformance", 0, java.time.Instant.EPOCH, false));
+        var asOf = com.ash.drishti.api.AsOf.of(today);
+        var resolved = controls.resolve(s, EvalContext.of(data, formats), values, asOf, k -> true);
+        EvalContext eval = resolved.apply(EvalContext.of(data, formats)).withToday(today);
+        Set<com.ash.drishti.api.EntityRef> wanted = new LinkedHashSet<>();
+        Set<com.ash.drishti.api.EntityRef> denied = new HashSet<>();
+        for (var p : s.panels()) {
+            if (p.kind().readsData() && values.builds(p.id())) { binder.chartSource(p, eval).ifPresent(wanted::add); }
+        }
+        denied.removeAll(wanted);
+        var lookups = maps.resolve(s.panels(), values::builds, asOf, java.util.function.UnaryOperator.identity(), k -> true);
+        var layout = new com.ash.drishti.inference.EffectiveLayout(s, s.name(), false, Map.of());
+        var ctx = new com.ash.drishti.engine.bind.BindContext(doc, layout, new com.ash.drishti.common.Fingerprint(0), eval, List.of(), Map.of(), Set.of(), denied, lookups);
+        var screen = new com.ash.drishti.engine.wire.ScreenWire.Screen(s, com.ash.drishti.rachana.SutraWiring.nodes(s), ctx, eval.withRoot(data), asOf,
+                com.ash.drishti.engine.ViewerContext.SYSTEM, Map.of(), null);
+        List<com.ash.drishti.engine.view.ViewModel.PanelView> panels = new ArrayList<>();
+        for (var p : s.panels()) {
+            boolean wired = com.ash.drishti.engine.wire.ScreenWire.wired(p);
+            if (values.builds(p.id()) && (wired ? wire.shown(screen, p) : binder.shown(p, eval))) {
+                panels.add(wired ? wire.bind(screen, p) : wire.formed(screen, p, com.ash.drishti.engine.wire.ScreenWire.refreshed(p, binder.bind(p, ctx))));
+            }
+        }
+        List<com.ash.drishti.engine.view.ViewModel.Cell> strip = new ArrayList<>();
+        for (var i : s.strip()) {
+            Object v;
+            try { v = EL.compile(i.bind()).eval(eval); } catch (RuntimeException | StackOverflowError e) { v = null; }
+            strip.add(binder.cell(i.label(), v, i.fmt(), i.tone(), i.emphasis(), binder.pathOf(i.bind())));
+        }
+        var view = new com.ash.drishti.engine.view.ViewModel(null, null, title(s, eval, ref, binder), strip, panels, keys(s, panels, eval, binder), null, null)
+                .withControls(resolved.views(), selects(s))
+                .withLayout(com.ash.drishti.engine.view.ScreenGrid.of(s))
+                .withPhone(com.ash.drishti.engine.view.PhoneView.of(s, s.phone() == null || s.phone().summary() == null ? null
+                        : soft(() -> EL.template(s.phone().summary()).render(eval))));
+        sb.append("{\"viewModel\":").append(M.writeValueAsString(view)).append('}');
+    }
+
+    static List<com.ash.drishti.engine.view.ViewModel.SelectView> selects(com.ash.drishti.rachana.model.Sutra s) {
+        List<com.ash.drishti.engine.view.ViewModel.SelectView> out = new ArrayList<>();
+        for (var p : s.panels()) {
+            if (p.options().get(com.ash.drishti.rachana.model.Panel.ON_SELECT) instanceof Map<?, ?> m && m.get("by") instanceof String by) {
+                List<String> filter = m.get("filter") instanceof List<?> l ? l.stream().map(String::valueOf).toList() : List.of();
+                out.add(new com.ash.drishti.engine.view.ViewModel.SelectView(p.id(), by, filter));
+            }
+        }
+        return out;
+    }
+
+    static com.ash.drishti.engine.view.ViewModel.TitleView title(com.ash.drishti.rachana.model.Sutra s, EvalContext eval,
+            com.ash.drishti.api.EntityRef ref, com.ash.drishti.engine.bind.Binder binder) {
+        var t = s.title();
+        String id = soft(() -> Values.text(EL.compile(t.id()).eval(eval)));
+        com.ash.drishti.engine.view.ViewModel.Cell with = null;
+        if (t.with() != null) {
+            Object w = soft(() -> Values.simplify(EL.compile(t.with()).eval(eval)));
+            with = w == null ? null : binder.cell(null, w, null, null, false, null);
+        }
+        String pill = t.pill() == null ? null : soft(() -> EL.template(t.pill()).render(eval));
+        return new com.ash.drishti.engine.view.ViewModel.TitleView(pill, id == null || id.isBlank() ? ref.id() : id, with);
+    }
+
+    static List<com.ash.drishti.engine.view.ViewModel.KeyView> keys(com.ash.drishti.rachana.model.Sutra s,
+            List<com.ash.drishti.engine.view.ViewModel.PanelView> panels, EvalContext eval, com.ash.drishti.engine.bind.Binder binder) {
+        List<com.ash.drishti.engine.view.ViewModel.KeyView> keys = new ArrayList<>();
+        for (var p : panels) {
+            if (p.key() != null) { keys.add(new com.ash.drishti.engine.view.ViewModel.KeyView(p.key(), shortTitle(p.title()), "panel", p.id(), null)); }
+        }
+        s.keys().forEach((key, action) -> {
+            switch (action) {
+                case "raw" -> keys.add(new com.ash.drishti.engine.view.ViewModel.KeyView(key, "Raw JSON", "raw", null, null));
+                case "impact" -> keys.add(new com.ash.drishti.engine.view.ViewModel.KeyView(key, "Impact", "impact", null, null));
+                default -> {
+                    if (action.startsWith("link(")) {
+                        Object v = Values.simplify(EL.compile(action).eval(eval));
+                        if (v instanceof Link l) {
+                            var lv = binder.linkView(l);
+                            if (lv != null) {
+                                String k = lv.kind().replace('-', ' ');
+                                keys.add(new com.ash.drishti.engine.view.ViewModel.KeyView(key, Character.toUpperCase(k.charAt(0)) + k.substring(1), "link", null, lv));
+                            }
+                        }
+                    } else {
+                        keys.add(new com.ash.drishti.engine.view.ViewModel.KeyView(key, action, "panel", action, null));
+                    }
+                }
+            }
+        });
+        keys.sort(Comparator.comparingInt(k -> Integer.parseInt(k.key().substring(1))));
+        return keys;
+    }
+
+    static String shortTitle(String t) {
+        if (t == null) { return ""; }
+        String s = t;
+        for (String cut : new String[] {" · ", " ("}) { int i = s.indexOf(cut); if (i > 0) { s = s.substring(0, i); } }
+        String[] words = s.split(" ");
+        return words.length > 2 ? words[0] + " " + words[1] : s;
+    }
+
+    static <T> T soft(java.util.function.Supplier<T> f) {
+        try { return f.get(); } catch (RuntimeException | StackOverflowError e) { return null; }
     }
 
     // ---- expr ----------------------------------------------------------------------------------------------------

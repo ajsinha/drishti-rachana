@@ -5,6 +5,18 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (toward v0.10.0, the untangling)
 
+- **A14, the binder's API, writer and cases**: `rachana.binder(hooks, pivots)` and `rachana.views(hooks, pivots, tables, dates,
+  budget)`: `ViewBuilder`, Core's view pipeline (controls, the date, panel sources through the `TableProvider`, map lookups, `when`,
+  wired panels, strip, title, keys, controls and selects, screen grid, phone; a host's reference, mnemonic, provenance and timings left
+  unset). `ViewJson` is the canonical writer: the conformance `sutra` kind (`JvmRuntime`, and the reference bridge over the host's
+  engine) writes whole ViewModels with it, and the 5 views of the new `sutra/binder/panels` suite (harvested from the host's panel
+  tests: chart kinds, drill levels and a timeline, tabs with a tree table, metrics, strip/keys/controls/selects) are byte-identical to
+  the reference's Jackson output (verified). The driver checks `at` (JSON Pointers into the ViewModel). `patch` cases wait for `data:`
+  (B1). The level replay (CG2) compares the cases a level recorded: cases added later and `unsupported` ones now answered are reported,
+  not differences (3 sutra examples are now answered). Conformance: 2,112 of 2,117 identical to the reference, 5 known (the 2 of A1;
+  3 Core-only Sutra examples the reference cannot read); 0 verified failing (one unverified example, `metric-over-a-list`, fails: its
+  `sum($.sales, 'revenue')` is not a Core aggregate; the example `control-value-reaches-a-template` named a control kind `select` that
+  does not exist, now `dropdown`). API baseline: `Rachana.binder`, `Rachana.views`, `ViewBuilder` and its `Request`.
 - **A13, the binder behind hooks**: the binder and its neighbours (Drishti's engine `bind`, `view`, `control`, `wire`, and the live
   `Frame` and `Patch` records) moved here with their history (84 commits, `tools/split/a13-paths.txt`) into
   `com.ash.rachana.{bind,view,control,wire}`, and every host type behind a hook: `LinkResolver` (which kind an id names, a kind's

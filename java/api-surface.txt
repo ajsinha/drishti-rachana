@@ -37,6 +37,7 @@ class public final class com.ash.rachana.bind.MapSupport
 class public final class com.ash.rachana.bind.PivotBinder
 class public final class com.ash.rachana.bind.SourceDeniedException
 class public final class com.ash.rachana.bind.SourceFailures
+class public final class com.ash.rachana.bind.ViewBuilder
 class public final class com.ash.rachana.control.ControlReads
 class public final class com.ash.rachana.control.ControlResolver
 class public final class com.ash.rachana.control.RelativeDates
@@ -160,6 +161,7 @@ class public static final record com.ash.rachana.bind.MapSupport$Lookup
 class public static final record com.ash.rachana.bind.PivotBinder$Records
 class public static final record com.ash.rachana.bind.PivotEngine$Field
 class public static final record com.ash.rachana.bind.TableProvider$Freshness
+class public static final record com.ash.rachana.bind.ViewBuilder$Request
 class public static final record com.ash.rachana.control.ControlResolver$Resolved
 class public static final record com.ash.rachana.control.RelativeDates$Range
 class public static final record com.ash.rachana.design.ops.AddPanel$At
@@ -287,6 +289,8 @@ class public static final record com.ash.rachana.wire.ScreenWire$Result
 class public static final record com.ash.rachana.wire.ScreenWire$Screen
 class public static final record com.ash.rachana.wire.ScreenWire$Selection
 com.ash.rachana.Rachana :: public com.ash.rachana.RachanaOptions com.ash.rachana.Rachana.options()
+com.ash.rachana.Rachana :: public com.ash.rachana.bind.Binder com.ash.rachana.Rachana.binder(com.ash.rachana.bind.BindHooks,com.ash.rachana.bind.PivotEngine)
+com.ash.rachana.Rachana :: public com.ash.rachana.bind.ViewBuilder com.ash.rachana.Rachana.views(com.ash.rachana.bind.BindHooks,com.ash.rachana.bind.PivotEngine,com.ash.rachana.bind.TableProvider,com.ash.rachana.control.BusinessDays,java.time.Duration)
 com.ash.rachana.Rachana :: public com.ash.rachana.el.ElCompiler com.ash.rachana.Rachana.compiler()
 com.ash.rachana.Rachana :: public com.ash.rachana.el.FunctionTable com.ash.rachana.Rachana.functions()
 com.ash.rachana.Rachana :: public com.ash.rachana.format.Formats com.ash.rachana.Rachana.formats()
@@ -624,6 +628,25 @@ com.ash.rachana.bind.TableProvider$Freshness :: public final java.lang.String co
 com.ash.rachana.bind.TableProvider$Freshness :: public java.lang.String com.ash.rachana.bind.TableProvider$Freshness.source()
 com.ash.rachana.bind.TableProvider$Freshness :: public java.time.Duration com.ash.rachana.bind.TableProvider$Freshness.staleAfter()
 com.ash.rachana.bind.TableProvider$Freshness :: public java.time.Instant com.ash.rachana.bind.TableProvider$Freshness.lastUpdate()
+com.ash.rachana.bind.ViewBuilder :: public com.ash.rachana.bind.Binder com.ash.rachana.bind.ViewBuilder.binder()
+com.ash.rachana.bind.ViewBuilder :: public com.ash.rachana.bind.ViewBuilder(com.ash.rachana.el.ElCompiler,com.ash.rachana.format.Formats,com.ash.rachana.bind.Binder,com.ash.rachana.bind.TableProvider,com.ash.rachana.control.BusinessDays,java.time.Duration)
+com.ash.rachana.bind.ViewBuilder :: public com.ash.rachana.view.ViewModel com.ash.rachana.bind.ViewBuilder.build(com.ash.rachana.bind.ViewBuilder$Request)
+com.ash.rachana.bind.ViewBuilder :: public com.ash.rachana.wire.ScreenWire com.ash.rachana.bind.ViewBuilder.wire()
+com.ash.rachana.bind.ViewBuilder :: public static com.ash.rachana.view.MaskCount$Result com.ash.rachana.bind.ViewBuilder.masked(com.ash.rachana.view.ViewModel)
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.AsOf com.ash.rachana.bind.ViewBuilder$Request.asOf()
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.Entity com.ash.rachana.bind.ViewBuilder$Request.doc()
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.Layout com.ash.rachana.bind.ViewBuilder$Request.layout()
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.Masker com.ash.rachana.bind.ViewBuilder$Request.viewer()
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request com.ash.rachana.bind.ViewBuilder$Request.withAsOf(com.ash.rachana.bind.AsOf)
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request com.ash.rachana.bind.ViewBuilder$Request.withValues(com.ash.rachana.control.ControlValues)
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request(com.ash.rachana.bind.Entity,com.ash.rachana.model.Sutra,com.ash.rachana.bind.Layout,com.ash.rachana.bind.AsOf,com.ash.rachana.bind.Masker,com.ash.rachana.control.ControlValues,java.lang.Object)
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.control.ControlValues com.ash.rachana.bind.ViewBuilder$Request.values()
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.model.Sutra com.ash.rachana.bind.ViewBuilder$Request.sutra()
+com.ash.rachana.bind.ViewBuilder$Request :: public final boolean com.ash.rachana.bind.ViewBuilder$Request.equals(java.lang.Object)
+com.ash.rachana.bind.ViewBuilder$Request :: public final int com.ash.rachana.bind.ViewBuilder$Request.hashCode()
+com.ash.rachana.bind.ViewBuilder$Request :: public final java.lang.String com.ash.rachana.bind.ViewBuilder$Request.toString()
+com.ash.rachana.bind.ViewBuilder$Request :: public java.lang.Object com.ash.rachana.bind.ViewBuilder$Request.host()
+com.ash.rachana.bind.ViewBuilder$Request :: public static com.ash.rachana.bind.ViewBuilder$Request com.ash.rachana.bind.ViewBuilder$Request.of(com.ash.rachana.bind.Entity,com.ash.rachana.model.Sutra)
 com.ash.rachana.control.BusinessDays :: public abstract com.ash.rachana.el.BusinessCalendar com.ash.rachana.control.BusinessDays.calendar()
 com.ash.rachana.control.BusinessDays :: public abstract java.time.LocalDate com.ash.rachana.control.BusinessDays.today(com.ash.rachana.bind.AsOf)
 com.ash.rachana.control.BusinessDays :: public static com.ash.rachana.control.BusinessDays com.ash.rachana.control.BusinessDays.of(java.time.LocalDate,com.ash.rachana.el.BusinessCalendar)

@@ -201,6 +201,20 @@ def match_problem(exp, act, why):
     return True
 
 
+def pointer(doc, ptr):
+    """FORMAT 6 `at`: a JSON Pointer into the actual document; (found, value)."""
+    cur = doc
+    for raw in ptr.split("/")[1:] if ptr else []:
+        key = raw.replace("~1", "/").replace("~0", "~")
+        if isinstance(cur, dict) and key in cur:
+            cur = cur[key]
+        elif isinstance(cur, list) and key.isdigit() and int(key) < len(cur):
+            cur = cur[int(key)]
+        else:
+            return False, None
+    return True, cur
+
+
 def compare(kind, expect, actual, tolerance, why):
     for field, exp in expect.items():
         if field == "tolerance":
@@ -216,6 +230,16 @@ def compare(kind, expect, actual, tolerance, why):
             if not isinstance(act, dict) or not match_problem({**exp, "severity": "error"} if False else exp, {**act, "severity": "error"}, why):
                 why.append(f"error: expected {canon(exp)}, actual {canon(act)}")
                 return False
+        elif field == "at":
+            doc = actual.get("viewModel", actual.get("plan", actual)) if isinstance(actual, dict) else actual
+            for ptr, want in exp.items():
+                found, got = pointer(doc, ptr)
+                if not found:
+                    why.append(f"at {ptr}: nothing there")
+                    return False
+                if canon(want) != canon(got):
+                    why.append(f"at {ptr}: expected {canon(want)}, actual {canon(got)}")
+                    return False
         elif field == "value" and tolerance and isinstance(exp, (int, float)) and isinstance(act, (int, float)):
             d = abs(float(exp) - float(act))
             if d > tolerance.get("abs", 0) and d > tolerance.get("rel", 0) * abs(float(exp)):

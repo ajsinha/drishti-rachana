@@ -63,7 +63,7 @@ cases:
       sutra: control-demo
       version: 1
       controls:
-        - { id: region, kind: select, options: [North, South, West], default: North }
+        - { id: region, kind: dropdown, options: [North, South, West], default: North }
       panels:
         - { id: picked, kind: markdown, text: "Region: ${ctl.region}" }
     expect:

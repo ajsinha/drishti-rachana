@@ -3,3 +3,6 @@
 # <case id> <step>: <why>
 edit/ops#refused-option-the-kind-does-not-accept A1: the reference names the accepted options in Set.of order, which changes from one JVM run to the next (DRISHTI_MIGRATION_TODO 7.2); Rachana sorts them. The case checks the message's start, so it passes on both.
 el/text#bad-regex-extract-ab-a-b A1: the refusal's words quote the regular-expression error with its code, now RCH-4010 where the reference says DRS-4010 (the code rename is A1 itself). The case passes on both.
+sutra/examples/sutra#metric-over-a-list A14: a Core Sutra (no match key): the reference's parser requires match, so the reference cannot answer it (unsupported there); Rachana answers it with Core's grammar alone. Unverified; the binder itself is proven by sutra/binder/panels.
+sutra/examples/sutra#falsy-when-leaves-the-panel-out A14: a Core Sutra (no match key): the reference's parser requires match, so the reference cannot answer it (unsupported there); Rachana answers it with Core's grammar alone. Unverified; the binder itself is proven by sutra/binder/panels.
+sutra/examples/sutra#control-value-reaches-a-template A14: a Core Sutra (no match key): the reference's parser requires match, so the reference cannot answer it (unsupported there); Rachana answers it with Core's grammar alone. Unverified; the binder itself is proven by sutra/binder/panels.

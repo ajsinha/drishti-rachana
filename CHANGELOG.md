@@ -5,6 +5,27 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
+
+- **Binding like a call** (SPEC 2.5, LIBRARIES 5 to 7, DECISIONS L-21): a table parameter names its local columns or a
+  published contract (`contract: <name>`; `contracts/<name>.json` in a library, `Library.contract`, or served by the host,
+  `FragmentResolver.contract`); the use binds it as `rows: $.t` (identity) or `{ from, columns: { <local>: <caller> } }`,
+  renamed at compile time in the panels that read it (field options, `bind`, `@.<column>`). With the caller's columns known
+  (`data:` `fields` or written rows) problems name both sides: `RCH-2114` unknown local column, `RCH-2115` required column
+  missing, `RCH-2116` unknown caller column or type misfit; `RCH-2120` advisory for a mapping never read (severity warning,
+  `Sutra.advisories()`). Every typed fragment is hermetic (`RCH-2117`).
+- **Instances and return values**: `as:` scopes ids (`<as>-<id>`); `emits: [{name, payload, doc}]` declared and checked
+  against the inner panel that raises it; the screen reads `@<as>.<event>.<field>`; `on: {<event>: {set, field}}` sets a
+  control from the event's row (`on-select`). `TypedFragment.bind`, `TypedFragment.Caller`, `SutraBlocks.Calls`.
+- **Compile result records library hashes**: `Sutra.libraries()` (`UsedLibrary`: name, exact version, SHA-384), from
+  `LibrarySet.fragments(..., Consumer<Library>)`; the `problem` case output carries `libraries` (FORMAT 5.8, schema).
+- **Conformance**: `sutra/fragments-calls` (6), `problem/fragments-calls` (11), verified; JVM and both JavaScript bundles
+  agree at 1.0, 1.1, 1.2; level-1.0 replay and the customer corpus unchanged. API additions only (`api-surface.txt`).
+
+### IntelliJ launchers and installing a release
+
+- **Build launchers**: `java/run-configs/` holds four IntelliJ Maven configurations in the folder **Rachana** (build all, test, install release for a release tag only, JS bundles), the build guide is [java/README](java/README.md#build-in-intellij-idea), and a release is installed into `~/.m2` for Drishti from its tag only (decision R-1).
+
 ### Rachana-EL level 1.1: the syntax batch and exact numbers (lane B: EL phase 1)
 
 - **Syntax at language level 1.1** (SPEC 4.17, EBNF part D; EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY1 to PY8): record literals
@@ -69,6 +90,18 @@ Entries are written per release; the regime's unreleased work is listed after th
   `runners/view_browser.py` (`<rachana-view>` live in Chromium).
 - Not yet: Arrow IPC and NDJSON, bridge subscriptions, conflation, filtered subscriptions, checked mode over table schemas, exact
   decimal arithmetic in aggregates (the decimals item, X2).
+
+### The `rachana` command and the Python SDK basics (G2, CLI and SDK lane)
+
+- **CLI (Node, `js/packages/rachana-cli`)**: `rachana new` (starter project), `lint` (compile and problems; `--format text|json|sarif`,
+  `--strict`; exit 0 / 1 errors / 2 usage), `build` (lints, then a static site: pages, Sutras, data files, protocol index,
+  runtime bundle), `preview` and `dev` (local server). `lib build|sign|keygen|pack|verify|lock` is the Java `LibraryTool` behind
+  `com.ash.rachana.cli.Main` (the jar launcher; the Node launcher spawns it: one implementation). Not yet: the painter step of
+  `build` and `preview` (`<rachana-view>` is on g2/data), live reload, `fix`, `fmt`, `explain`.
+- **Python SDK**: `python -m drishti_rachana lint` / `rachana lint` on V8 (`drishti-rachana[v8]`), same output formats and exit
+  codes; `drishti_rachana.server.DataHost`, a minimal Data Protocol v1 host (JSON; schema, rows, query filter tree, cursor paging,
+  keyed patches, SSE changes); `RachanaBlueprint` (Flask) and `RachanaRouter` (FastAPI) replace the stubs; the live-orders example
+  uses them. Reuse of lane C's server shapes is pending the g2/data merge; the host follows DATA_PROTOCOL.md directly.
 
 ### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
 

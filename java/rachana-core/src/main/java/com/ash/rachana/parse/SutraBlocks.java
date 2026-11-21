@@ -268,7 +268,7 @@ public final class SutraBlocks {
      * go to {@code problems}. A list without a use comes back as it is.
      */
     public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments) {
-        return expand(panels, file, problems, new ArrayList<>(), fragments, null);
+        return expand(panels, file, problems, new ArrayList<>(), fragments, null, new Calls(null));
     }
 
     /**
@@ -276,7 +276,78 @@ public final class SutraBlocks {
      * level {@value TypedFragment#SINCE} is {@code RCH-2008}. A null level checks no level (the design tools' view of a written list).
      */
     public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments, String level) {
-        return expand(panels, file, problems, new ArrayList<>(), fragments, level);
+        return expand(panels, file, problems, fragments, level, new Calls(null));
+    }
+
+    /**
+     * What the uses of one panels list share (decision L-21, "fragments are functions"): what the caller knows about its own tables, and
+     * what the uses give back: the public events of each {@code as:} name and the advisories ({@code RCH-2120}).
+     */
+    public static final class Calls implements TypedFragment.Caller {
+        private final java.util.function.Function<String, Map<String, String>> columns;
+        private final Map<String, String> events = new LinkedHashMap<>();
+        private final List<SutraProblem> advisories = new ArrayList<>();
+        private FragmentResolver fragments = FragmentResolver.none();
+
+        /** @param columns the columns (name to type) of the table an expression gives, or null when unknown; null for none known */
+        public Calls(java.util.function.Function<String, Map<String, String>> columns) {
+            this.columns = columns;
+        }
+
+        @Override
+        public Map<String, String> columns(String expression) {
+            return columns == null ? null : columns.apply(expression);
+        }
+
+        @Override
+        public PNode contract(Block fragment, String name) {
+            return fragments.contract(fragment, name).map(t -> parse(t, "contracts/" + name + ".json")).orElse(null);
+        }
+
+        /** The advisories the uses gave ({@code RCH-2120}), in order. */
+        public List<SutraProblem> advisories() {
+            return advisories;
+        }
+    }
+
+    /**
+     * As {@link #expand(List, String, List, FragmentResolver, String)} with what the caller knows of its tables, collecting what the uses
+     * give back into {@code calls}; a read of {@code @<as>.<event>} anywhere in the list is moved to the panel that raises the event.
+     */
+    public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments, String level, Calls calls) {
+        calls.fragments = fragments;
+        List<PNode> out = expand(panels, file, problems, new ArrayList<>(), fragments, level, calls);
+        return calls.events.isEmpty() ? out : out.stream().map(p -> events(p, calls.events)).toList();
+    }
+
+    /** {@code @<as>.<event>} read as {@code @<panel>.<event>}, the panel of the use named {@code as} that raises it. */
+    private static PNode events(PNode n, Map<String, String> events) {
+        if (n.isMap()) {
+            Map<String, PNode> m = new LinkedHashMap<>();
+            n.map().forEach((k, v) -> m.put(k, events(v, events)));
+            return new PNode(m, n.line(), n.column());
+        }
+        if (n.isList()) {
+            List<PNode> l = new ArrayList<>();
+            n.list().forEach(v -> l.add(events(v, events)));
+            return new PNode(l, n.line(), n.column());
+        }
+        if (!(n.value() instanceof String s) || s.indexOf('@') < 0) {
+            return n;
+        }
+        Matcher m = java.util.regex.Pattern.compile("(?<![A-Za-z0-9_$@.-])@([a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*)(\\.[A-Za-z_][A-Za-z0-9_]*)?(?![A-Za-z0-9_-])")
+                .matcher(s);
+        StringBuilder sb = new StringBuilder();
+        int copied = 0;
+        while (m.find()) {
+            String field = m.group(2) == null ? "" : m.group(2);
+            String whole = events.get(m.group(1) + field);
+            String to = whole != null ? whole : events.containsKey(m.group(1)) ? events.get(m.group(1)) + field : null;
+            sb.append(s, copied, m.start()).append((to == null ? m.group() : "@" + to));
+            copied = m.end();
+        }
+        sb.append(s, copied, s.length());
+        return new PNode(sb.toString(), n.line(), n.column());
     }
 
     /** Whether language level {@code level} is at least {@code since} ({@code 1.10} after {@code 1.9}); a null level is any level. */
@@ -293,7 +364,7 @@ public final class SutraBlocks {
     public static final int MAX_DEPTH = 3;
 
     private static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, List<String> chain, FragmentResolver fragments,
-            String level) {
+            String level, Calls calls) {
         if (panels.stream().noneMatch(p -> p.map().containsKey("use"))) {
             return panels;
         }
@@ -327,19 +398,25 @@ public final class SutraBlocks {
                     continue;
                 }
                 TypedFragment t = TypedFragment.read(b.name(), b.file(), typedRoot);
-                if (!t.problems().isEmpty()) {
+                if (!t.problems().isEmpty() || !t.outsideScope().isEmpty()) {     // hermetic like a function (L-21): parameters only
                     problems.addAll(t.problems());
+                    problems.addAll(t.outsideScope());
                     continue;
                 }
-                List<PNode> brought = t.expand(p, file, problems);
-                if (brought == null) {
+                TypedFragment.Bound bound = t.bind(b, p, file, problems, calls);
+                if (bound == null) {
                     continue;
                 }
+                List<PNode> brought = bound.panels();
+                calls.events.putAll(bound.events());
+                calls.advisories.addAll(bound.advisories());
                 List<String> deeper = new ArrayList<>(chain);
                 deeper.add(b.name());
                 Map<String, PNode> wiring = new LinkedHashMap<>(p.map());
                 wiring.remove("slots");
-                out.addAll(wired(new PNode(wiring, p.line(), p.column()), expand(phoned(brought, typedRoot), b.file(), problems, deeper, fragments, level),
+                wiring.remove("as");
+                wiring.remove("on");
+                out.addAll(wired(new PNode(wiring, p.line(), p.column()), expand(phoned(brought, typedRoot), b.file(), problems, deeper, fragments, level, calls),
                         file, problems));
                 continue;
             }
@@ -378,7 +455,7 @@ public final class SutraBlocks {
                 List<PNode> brought = phoned(root.map().get("panels").list(), root);
                 List<String> deeper = new ArrayList<>(chain);
                 deeper.add(b.name());
-                out.addAll(wired(p, expand(brought, b.file(), problems, deeper, fragments, level), file, problems));   // a composite's own uses, one level down
+                out.addAll(wired(p, expand(brought, b.file(), problems, deeper, fragments, level, calls), file, problems));   // a composite's own uses, one level down
             } catch (SutraException e) {
                 problems.addAll(e.problems());
             }

@@ -205,12 +205,15 @@ public final class Cases {
         List<com.ash.rachana.parse.SutraBlocks.Block> blocks = new ArrayList<>();
         Map<String, Map<String, String>> libs = new TreeMap<>();
         com.ash.rachana.lib.LibraryLock lock = null;
+        Map<String, String> contracts = new TreeMap<>();
         for (Map.Entry<String, Object> f : files.entrySet()) {
             String path = f.getKey(), body = text(f.getValue());
             if (path.startsWith("rachana_libs/")) {
                 String rest = path.substring("rachana_libs/".length());
                 int slash = rest.indexOf('/');
                 libs.computeIfAbsent(rest.substring(0, slash), k -> new TreeMap<>()).put(rest.substring(slash + 1), body);
+            } else if (path.startsWith("contracts/") && path.endsWith(".json")) {      // the host's contracts (LIBRARIES.md 5.2)
+                contracts.put(path.substring("contracts/".length(), path.length() - ".json".length()), body);
             } else if (path.equals(com.ash.rachana.lib.LibraryLock.FILE)) {
                 lock = com.ash.rachana.lib.LibraryLock.read(body);
             } else if (path.endsWith(".fragment.yaml") || path.endsWith(".block.yaml")) {
@@ -224,7 +227,7 @@ public final class Cases {
         List<com.ash.rachana.lib.LibraryBundle> bundles = new ArrayList<>();
         libs.forEach((n, fs) -> bundles.add(com.ash.rachana.lib.LibraryBundle.ofText(n, fs, "folder:rachana_libs/" + n)));
         com.ash.rachana.lib.LibrarySet set = com.ash.rachana.lib.LibrarySet.of(com.ash.rachana.lib.LibraryResolver.of(bundles));
-        return base.withFragments(com.ash.rachana.parse.FragmentResolver.of(blocks)).withLibraries(lock == null ? set : set.locked(lock));
+        return base.withFragments(com.ash.rachana.parse.FragmentResolver.of(blocks, contracts)).withLibraries(lock == null ? set : set.locked(lock));
     }
 
     /**
@@ -271,22 +274,38 @@ public final class Cases {
     /** The Sutra is parsed, then its expressions are checked: the problems in the order found. */
     public static void problem(Map<String, Object> c, StringBuilder sb) {
         List<com.ash.rachana.SutraProblem> ps = new ArrayList<>();
+        List<com.ash.rachana.SutraProblem> warnings = List.of();
+        List<com.ash.rachana.model.UsedLibrary> libraries = List.of();
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         try {
             var g = grammar(at(c).grammar(), c, ps);
             var sutra = (g == at(c).grammar() ? at(c).parser() : new com.ash.rachana.parse.SutraParser(g)).parse(text(c.get("sutra")), file, "conformance");
             ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions())).check(sutra));
+            warnings = sutra.advisories();
+            libraries = sutra.libraries();
         } catch (com.ash.rachana.SutraException e) {
             ps.addAll(e.problems());
         }
         sb.append("{\"ok\":").append(ps.isEmpty()).append(",\"problems\":[");
         boolean f = true;
-        for (var p : ps) {
+        for (int i = 0; i < ps.size() + warnings.size(); i++) {           // errors, then advisories (severity warning; ok stays true)
+            var p = i < ps.size() ? ps.get(i) : warnings.get(i - ps.size());
             if (!f) { sb.append(','); } f = false;
-            sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":\"error\",\"message\":").append(str(p.message()))
+            sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":").append(i < ps.size() ? "\"error\"" : "\"warning\"")
+                    .append(",\"message\":").append(str(p.message()))
                     .append(",\"range\":{\"start\":{\"line\":").append(p.location().line()).append(",\"column\":").append(p.location().column()).append("}}}");
         }
-        sb.append("]}");
+        sb.append(']');
+        if (!libraries.isEmpty()) {                                        // the compile result's library hashes (level 1.2)
+            sb.append(",\"libraries\":[");
+            for (int i = 0; i < libraries.size(); i++) {
+                var l = libraries.get(i);
+                sb.append(i == 0 ? "" : ",").append("{\"name\":").append(str(l.name())).append(",\"version\":").append(str(l.version()))
+                        .append(",\"sha384\":").append(str(l.sha384())).append('}');
+            }
+            sb.append(']');
+        }
+        sb.append('}');
     }
 
     /**

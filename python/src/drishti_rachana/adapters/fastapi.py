@@ -13,12 +13,14 @@
 
     app.include_router(rachana, prefix="/dash")
 
-Same routes as the Flask adapter: ``/``, ``/page/{name}``, ``/sutras/{name}.sutra.yaml``, ``/data/...``.
+Same routes as the Flask adapter: ``/``, ``/page/{name}``, ``/sutras/{name}.sutra.yaml``, ``/static/...`` (the assets of ``<rachana-view>``),
+``/data/...`` (the Data Protocol; ``GET`` or ``POST /data/changes`` streams changes, filtered or conflated).
 """
 from __future__ import annotations
 
 import asyncio
 import inspect
+import json
 from pathlib import Path
 from typing import Callable, Optional, Union
 
@@ -26,28 +28,30 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response, StreamingResponse
 
 from ..protocol import ProtocolError
-from ..server import DataHost
-from ._common import DEFAULT_VIEW_SCRIPT, SUFFIX, SutraFolder, index_page, rows_of, start_async_live, view_page
+from ..server import DataHost, _STATUS
+from ..assets import find as find_asset
+from ._common import SUFFIX, SutraFolder, index_page, rows_of, start_async_live, view_page
 
 
 class RachanaRouter(APIRouter):
-    def __init__(self, sutras: Union[str, Path, None] = None, *, view_script: str = DEFAULT_VIEW_SCRIPT) -> None:
+    def __init__(self, sutras: Union[str, Path, None] = None) -> None:
         super().__init__()
         self.host = DataHost()
         self.folder = SutraFolder(sutras)
-        self._script = view_script
         self.add_api_route("/", self._index, methods=["GET"], response_class=HTMLResponse)
         self.add_api_route("/page/{name}", self._page, methods=["GET"], response_class=HTMLResponse)
         self.add_api_route("/sutras/{name}" + SUFFIX, self._sutra, methods=["GET"])
+        self.add_api_route("/static/{rel:path}", self._static, methods=["GET"])
         self.add_api_route("/data", self._data, methods=["GET"])
         self.add_api_route("/data/{sub:path}", self._data, methods=["GET", "POST"])
 
-    def table(self, name: str, *, key: Optional[list[str]] = None, title: Optional[str] = None) -> Callable:
+    def table(self, name: str, *, key: Optional[list[str]] = None, title: Optional[str] = None, schema: Optional[dict] = None) -> Callable:
+        """Expose a function's rows as a table; ``schema`` is the table's declared schema document (``can: [..., arrow]`` offers Arrow)."""
         def deco(fn: Callable) -> Callable:
             if inspect.iscoroutinefunction(fn):
-                self.host.add_table(name, lambda: rows_of(asyncio.run(fn())), key, title)
+                self.host.add_table(name, lambda: rows_of(asyncio.run(fn())), key, title, schema)
             else:
-                self.host.add_table(name, lambda: rows_of(fn()), key, title)
+                self.host.add_table(name, lambda: rows_of(fn()), key, title, schema)
             return fn
         return deco
 
@@ -67,7 +71,13 @@ class RachanaRouter(APIRouter):
         if name not in self.folder.files():
             raise HTTPException(404)
         base = request.scope.get("root_path", "") + request.url.path[: -len("/page/" + name)]
-        return view_page(name, base, self._script)
+        return view_page(name, base)
+
+    def _static(self, rel: str):
+        found = find_asset(rel)
+        if found is None:
+            raise HTTPException(404)
+        return Response(found[0], media_type=found[1], headers={"Cache-Control": "max-age=300"})
 
     def _sutra(self, name: str):
         t = self.folder.text(name)
@@ -80,10 +90,15 @@ class RachanaRouter(APIRouter):
         q = dict(request.query_params)
         if sub == "/changes":
             try:
-                stream = self.host.changes(q.get("table", ""), q.get("after"))
+                raw = await request.body()
+                doc = json.loads(raw) if raw else None
+                last = request.headers.get("last-event-id")
+                # in a worker thread: the first read of an async table function runs its own event loop
+                stream = await asyncio.get_running_loop().run_in_executor(None, lambda: self.host.stream(q, doc, last))
+            except ValueError:
+                return Response(json.dumps(ProtocolError("rdp.query.invalid", "the body is not JSON").to_json()), status_code=422, media_type="application/json")
             except ProtocolError as e:
-                return Response(__import__("json").dumps(e.to_json()), status_code=404 if e.code == "rdp.table.unknown" else 422,
-                                media_type="application/json")
+                return Response(json.dumps(e.to_json()), status_code=_STATUS.get(e.code, 500), media_type="application/json")
 
             async def frames():
                 loop = asyncio.get_running_loop()

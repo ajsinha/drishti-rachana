@@ -17,6 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qsl, urlsplit
 
 from .protocol import ProtocolError
+from .bridge import Bridge
 from .server import DataHost, _STATUS
 
 
@@ -27,6 +28,10 @@ class TestHost:
         self.base = "" if base in ("", "/") else base.rstrip("/")
         self.host = DataHost(self.base)
         outer = self
+        self._outbox: list[dict] = []
+        self._out_lock = threading.Lock()
+        self._bridge: Bridge | None = None
+        self._reset_bridge()
 
         class Handler(BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"
@@ -52,8 +57,8 @@ class TestHost:
                 try:
                     if rel.startswith("/_test/"):
                         return self._test(rel, body)
-                    if rel == "/changes":
-                        return self._stream(q)
+                    if rel == "/changes" and self.command in ("GET", "POST"):
+                        return self._stream(q, body)
                     r = outer.host.handle(self.command, rel, q, body, self.headers.get("Accept") or "application/json")
                     self._send(r.status, r.body, r.content_type)
                 except ProtocolError as e:
@@ -63,6 +68,7 @@ class TestHost:
                 doc = json.loads(body or b"{}")
                 if rel == "/_test/fixture":
                     outer.host.tables.clear()
+                    outer._reset_bridge()
                     s = doc.get("schema") or {}
                     outer.host.add_table(s.get("name") or doc.get("name"), list(doc.get("rows") or []), s.get("key"), s.get("title"), schema=s, epoch="t1")
                     return self._send(204)
@@ -71,12 +77,19 @@ class TestHost:
                     return self._send(204)
                 if rel == "/_test/bridge":
                     return self._send(200, json.dumps(outer.bridge(doc)).encode())
+                if rel == "/_test/bridge/out":
+                    with outer._out_lock:
+                        sent, outer._outbox[:] = list(outer._outbox), []
+                    return self._send(200, json.dumps(sent).encode())
                 self._send(404, json.dumps(ProtocolError("rdp.table.unknown", "no test path " + rel).to_json()).encode())
 
-            def _stream(self, q: dict) -> None:
+            def _stream(self, q: dict, body: bytes) -> None:
                 try:
-                    frames = outer.host.changes(q.get("table", ""), q.get("after") or self.headers.get("Last-Event-ID"), heartbeat=15.0,
-                                                stop=outer.stop)
+                    doc = json.loads(body) if body else None
+                except ValueError:
+                    return self._send(422, json.dumps(ProtocolError("rdp.query.invalid", "the body is not JSON").to_json()).encode())
+                try:
+                    frames = outer.host.stream(q, doc, self.headers.get("Last-Event-ID"), heartbeat=15.0, stop=outer.stop)
                 except ProtocolError as e:
                     return self._send(_STATUS.get(e.code, 500), json.dumps(e.to_json()).encode())
                 self.send_response(200)
@@ -101,28 +114,18 @@ class TestHost:
 
     def bridge(self, m: dict) -> dict:
         """One view to host bridge message (PROTOCOL 12) answered with the host to view message it produces."""
-        t, out = m.get("t"), {"rdp": 1}
-        if t == "hello":
-            return {**out, "t": "welcome", "v": 1, "limits": {"pageRows": 10000}}
-        if t == "ping":
-            return {**out, "t": "pong", "ts": m.get("ts")}
-        out.update(t="res", re=m.get("id"))
-        name = m.get("table")
-        body = m.get("body") or {}
-        if t == "tables":
-            r = self.host.handle("GET", "/tables")
-        elif t == "schema":
-            r = self.host.handle("GET", f"/tables/{name}")
-        elif t == "rows":
-            r = self.host.handle("GET", f"/tables/{name}/rows", {k: ",".join(map(str, v)) if isinstance(v, list) else str(v) for k, v in body.items()})
-        elif t == "query":
-            r = self.host.handle("POST", f"/tables/{name}/query", None, json.dumps(body).encode())
-        else:
-            out["error"] = ProtocolError("rdp.query.unsupported", f"no bridge message '{t}' here", operation=t).to_json()["error"]
-            return out
-        doc = json.loads(r.body)
-        out.update(body=doc) if r.status == 200 else out.update(error=doc.get("error"))
-        return out
+        return self._bridge.handle(m)
+
+    def _reset_bridge(self) -> None:
+        if self._bridge:
+            self._bridge.close()
+        with self._out_lock:
+            self._outbox.clear()
+        self._bridge = Bridge(self.host, self._push)
+
+    def _push(self, msg: dict) -> None:
+        with self._out_lock:
+            self._outbox.append(msg)
 
     @property
     def url(self) -> str:

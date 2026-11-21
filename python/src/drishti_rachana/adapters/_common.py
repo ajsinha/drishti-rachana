@@ -10,12 +10,11 @@ import threading
 from pathlib import Path
 from typing import Any, Callable, Iterator, Optional, Union
 
+from ..assets import ELEMENTS_VERSION
 from ..server import DataHost
 
 SUFFIX = ".sutra.yaml"
-# <rachana-view> and the data client are built on branch g2/data (lane C). Until they are merged and shipped with the wheel the
-# page references this URL and the browser shows the problem; a host may pass its own (``view_script=``).
-DEFAULT_VIEW_SCRIPT = "https://localhost/rachana-view.js"   # TODO(G2 merge): serve js/packages/rachana/dist/rachana-view.js from the package
+STATIC = "/static"       # under the adapter's mount: the assets of <rachana-view> (drishti_rachana.assets)
 
 
 def rows_of(value: Any) -> list[dict]:
@@ -53,11 +52,16 @@ def index_page(names: list[str], base: str) -> str:
     return f"<!doctype html><meta charset=utf-8><title>Sutras</title><h1>Sutras</h1><ul>{items}</ul>"
 
 
-def view_page(name: str, base: str, view_script: str) -> str:
-    n = html.escape(name)
+def view_page(name: str, base: str, level: str = "1.1") -> str:
+    """The page of one Sutra: Drishti Elements, then ``<rachana-view>`` over the Sutra file and the Data Protocol under ``base``, with
+    its assets served by the adapter at ``base + STATIC`` (drishti_rachana.assets)."""
+    n, b = html.escape(name), html.escape(base)
+    el = f"{b}{STATIC}/vendor/drishti-elements/{ELEMENTS_VERSION}"
     return ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-            f"<title>{n}</title><script type=module src='{html.escape(view_script)}'></script>"
-            f"<rachana-view src='{base}/sutras/{n}{SUFFIX}' data='{base}/data'></rachana-view>")
+            f"<title>{n}</title><link rel=stylesheet href='{el}/drishti-elements.css'><script src='{el}/drishti-elements.js'></script>"
+            f"<script type=module>import '{b}{STATIC}/rachana/src/rachana_view.js';</script>"
+            f"<rachana-view src='{b}/sutras/{n}{SUFFIX}' data='{b}/data' runtime='{b}{STATIC}/rachana/rachana.runtime.js' "
+            f"level='{html.escape(level)}' live></rachana-view>")
 
 
 def start_async_live(fn: Callable[[], Any]) -> Callable[[], Iterator]:

@@ -2,7 +2,7 @@
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """The `protocol` conformance cases (conformance/1/protocol) against the Python DataHost: the same cases tools/conformance/protocol_check.py
 runs against the JVM reference server (`--reference`) and against this host (`--python`)."""
-import fnmatch, sys, threading
+import importlib.util, json, sys, threading
 from pathlib import Path
 
 import pytest
@@ -17,6 +17,7 @@ from drishti_rachana.testhost import TestHost  # noqa: E402
 
 # The frozen example that sorts a table without `can: sort` (PROTOCOL 4 refuses it): it fails on the JVM reference too;
 # protocol/host#bridge-rows-of-a-sortable-table is the corrected case.
+HAS_ARROW = importlib.util.find_spec("pyarrow") is not None
 KNOWN = {"protocol/examples/bridge#bridge-rows-request-answered-once"}
 
 
@@ -26,8 +27,11 @@ def _cases():
         for c in doc["cases"]:
             c = merged(doc, c)
             cid = f"{suite}#{c['id']}"
-            if c["kind"] == "protocol" and not any(fnmatch.fnmatchcase(cid, g) for g in pc.PYTHON_SKIPS):
-                out.append(pytest.param(c, id=cid, marks=[pytest.mark.xfail(strict=True, reason="PROTOCOL 4")] if cid in KNOWN else []))
+            if c["kind"] == "protocol":
+                marks = [pytest.mark.xfail(strict=True, reason="PROTOCOL 4")] if cid in KNOWN else []
+                if not HAS_ARROW and "arrow" in json.dumps(c, default=str).lower():
+                    marks.append(pytest.mark.skip(reason="the Arrow cases need pyarrow (pip install 'drishti-rachana[arrow]')"))
+                out.append(pytest.param(c, id=cid, marks=marks))
     return out
 
 

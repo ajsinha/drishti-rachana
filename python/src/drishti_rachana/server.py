@@ -3,13 +3,15 @@
 """A minimal Data Protocol v1 host in plain Python (docs/design/DATA_PROTOCOL.md 3 to 7), framework neutral.
 
 The Flask and FastAPI adapters are thin: they hand ``(method, path, query, body)`` to :meth:`DataHost.handle` and stream
-:meth:`DataHost.changes`. Implemented: the discovery document, table list, schema, rows (JSON; columnar or objects shape;
-``limit``, ``offset``/``cursor``, ``sort``, ``columns``), ``POST query`` (filter tree, sort, columns, limit, cursor), keyed
-patches with a numbered log and the minimal SSE change stream. Not implemented (answered 406 or ``rdp.query.unsupported``):
-Arrow IPC, NDJSON, grouping push-down, filtered subscriptions. The JVM reference host (java/rachana-data) is the full one."""
+:meth:`DataHost.changes`. Implemented, as the JVM reference host (java/rachana-data) does: the discovery document, table list, schema, rows (JSON,
+Arrow IPC for a table that declares ``arrow`` when pyarrow is installed, NDJSON; columnar or objects shape; ``limit``,
+``offset``/``cursor``, ``sort``, ``columns``), ``POST query`` (filter tree, sort, columns, limit, cursor, ``group``), keyed patches
+with a numbered log, the SSE change stream (``GET`` or ``POST /changes``; filtered ``changes.filter`` and conflated ``everyMs``
+streams) and, in :mod:`drishti_rachana.bridge`, the in-process bridge's subscriptions."""
 from __future__ import annotations
 
 import json
+import queue
 import threading
 import uuid
 import zlib
@@ -18,6 +20,8 @@ from decimal import Decimal, InvalidOperation
 from typing import Any, Callable, Iterable, Iterator, Optional
 
 from .protocol import Column, ProtocolError, TableSchema, Version
+from .rows_forms import ARROW_MEDIA, NDJSON_MEDIA, arrow_available, arrow_write, ndjson_write
+from .subscription import Subscription
 
 PAGE_ROWS = 10000
 _STATUS = {"rdp.auth.required": 401, "rdp.forbidden": 403, "rdp.table.unknown": 404, "rdp.column.unknown": 422,
@@ -66,7 +70,8 @@ class _Table:
         self.log: list[tuple[int, dict]] = []
         self.live_source: Optional[Callable[[], Iterator]] = None
         self.live_started = False
-        self.cond = threading.Condition()
+        self.lock = threading.RLock()
+        self.subs: list[Subscription] = []
         self.overlay: Optional[dict[str, dict]] = None      # rows after patches, by key text
 
     def rows(self) -> list[dict]:
@@ -82,26 +87,50 @@ class _Table:
         return rows
 
     def apply(self, patch: dict) -> None:
-        """Apply a keyed patch (DATA_PROTOCOL 6.1) and append it to the log."""
+        """Apply a keyed patch (DATA_PROTOCOL 6.1), append it to the log and offer it to the subscriptions."""
         if not self.key:
             raise ProtocolError("rdp.table.no-key", f"{self.name} has no key and cannot change", table=self.name)
-        self.snapshot()
-        ov = self.overlay
-        assert ov is not None
-        if patch.get("reset") is not None:
-            ov.clear()
-            for r in patch["reset"]:
-                ov[_key_text(r, self.key)] = dict(r)
-        for k in patch.get("remove", []):
-            ov.pop(json.dumps([str(x) for x in (k if isinstance(k, (list, tuple)) else [k])]), None)
-        for r in patch.get("update", []) + patch.get("add", []):
-            kt = _key_text(r, self.key)
-            ov[kt] = {**ov.get(kt, {}), **r}
-        with self.cond:
+        with self.lock:
+            self.snapshot()
+            ov = self.overlay
+            assert ov is not None
+            if patch.get("reset") is not None:
+                ov.clear()
+                for r in patch["reset"]:
+                    ov[_key_text(r, self.key)] = dict(r)
+            for k in patch.get("remove", []):
+                ov.pop(json.dumps([str(x) for x in (k if isinstance(k, (list, tuple)) else [k])]), None)
+            for r in patch.get("update", []) + patch.get("add", []):
+                kt = _key_text(r, self.key)
+                ov[kt] = {**ov.get(kt, {}), **r}
             self.seq += 1
-            self.log.append((self.seq, {"table": self.name, **{k: v for k, v in patch.items() if v is not None}}))
+            data = {"table": self.name, **{k: v for k, v in patch.items() if v is not None}}
+            self.log.append((self.seq, data))
             del self.log[:-1000]
-            self.cond.notify_all()
+            frame = {"t": "msg", "topic": f"rdp.{self.name}", "stream": f"rdp.{self.name}", "epoch": self.epoch, "kind": "rows",
+                     "seq": self.seq, "data": data}
+            subs = list(self.subs)
+            for s in subs:
+                s.offer(frame, list(ov.values()))
+        for s in subs:
+            s.drain()
+
+    def backlog(self, after: Optional[str]) -> list[dict]:
+        """The frames after a position (``epoch:seq``; None: from now), or one ``gap`` frame (``recoverable: false``) when it cannot be
+        resumed: another epoch, a position ahead of the table or before its log, or a table without ``replay`` that moved on."""
+        epoch, seq = self.epoch, self.seq
+        if after:
+            epoch, _, n = after.rpartition(":")
+            if not epoch or not n.lstrip("-").isdigit():
+                raise ProtocolError("rdp.query.invalid", "after is <epoch>:<seq>")
+            seq = int(n)
+        first = self.log[0][0] if self.log else self.seq + 1
+        replay = "replay" in self.schema().get("can", [])
+        if epoch != self.epoch or seq > self.seq or seq + 1 < first or (not replay and seq < self.seq):
+            return [{"t": "gap", "topic": f"rdp.{self.name}", "stream": f"rdp.{self.name}", "epoch": self.epoch, "seq": self.seq,
+                     "recoverable": False}]
+        return [{"t": "msg", "topic": f"rdp.{self.name}", "stream": f"rdp.{self.name}", "epoch": self.epoch, "kind": "rows", "seq": s,
+                 "data": p} for s, p in self.log if s > seq]
 
     def schema(self) -> dict:
         rows = self.rows()
@@ -229,6 +258,14 @@ def _aggregate(rows: list[dict], v: dict, ctype: str, scale: int) -> Any:
     raise ProtocolError("rdp.query.invalid", f"{agg} needs a numeric column", column=col)
 
 
+def _form_of(accept: str) -> Optional[str]:
+    """The row form a reader asks for only (PROTOCOL 5.2, 5.3): ``arrow`` or ``ndjson``; JSON when it also accepts JSON or anything."""
+    if ARROW_MEDIA in accept or NDJSON_MEDIA in accept:
+        if "application/json" not in accept and "*/*" not in accept:
+            return "arrow" if ARROW_MEDIA in accept else "ndjson"
+    return None
+
+
 class DataHost:
     """Tables by name; ``handle`` answers the Data Protocol's HTTP resources; ``publish`` feeds the change stream."""
 
@@ -260,8 +297,6 @@ class DataHost:
         """``path`` is relative to the protocol base (``/``, ``/tables``, ``/tables/x``, ``/tables/x/rows``, ``/tables/x/query``)."""
         query = query or {}
         try:
-            if "arrow" in accept or "ndjson" in accept:
-                return Response(406, json.dumps(ProtocolError("rdp.query.unsupported", "this host answers JSON only").to_json()).encode())
             parts = [p for p in path.strip("/").split("/") if p]
             if not parts and method == "GET":
                 return self._json({"protocol": "rdp", "v": 1, "tables": f"{self.base}/tables", "changes": f"{self.base}/changes",
@@ -273,17 +308,33 @@ class DataHost:
                 t = self._table(parts[1])
                 if len(parts) == 2 and method == "GET":
                     return self._json(t.schema())
+                form = _form_of(accept) if parts[2:] in (["rows"], ["query"]) else None
+                if form == "arrow" and not (arrow_available() and "arrow" in t.schema().get("can", [])):
+                    return Response(406, json.dumps(ProtocolError("rdp.query.unsupported", f"{t.name} is not offered as Arrow",
+                                                                  table=t.name, operation="arrow").to_json()).encode())
                 if parts[2:] == ["rows"] and method == "GET":
-                    return self._json(self._rows(t, self._query_of(query)))
+                    return self._answer(t, self._rows(t, self._query_of(query)), form)
                 if parts[2:] == ["query"] and method == "POST":
                     try:
                         q = json.loads(body or b"{}")
                     except ValueError as e:
                         raise ProtocolError("rdp.query.invalid", "the query is not JSON") from e
-                    return self._json(self._rows(t, q))
+                    return self._answer(t, self._rows(t, q), form)
             return Response(404, json.dumps(ProtocolError("rdp.table.unknown", "no such resource").to_json()).encode())
         except ProtocolError as e:
             return Response(_STATUS.get(e.code, 500), json.dumps(e.to_json()).encode())
+
+    def encode_page(self, t: _Table, page: dict, form: Optional[str]) -> tuple[bytes, str]:
+        """A JSON page in the form asked for (``arrow``, ``ndjson`` or None for JSON): its bytes and media type."""
+        if form == "arrow":
+            return arrow_write(page, t.schema()), ARROW_MEDIA
+        if form == "ndjson":
+            return ndjson_write(page), NDJSON_MEDIA
+        return json.dumps(page, ensure_ascii=False).encode(), "application/json"
+
+    def _answer(self, t: _Table, page: dict, form: Optional[str]) -> Response:
+        body, media = self.encode_page(t, page, form)
+        return Response(200, body, media)
 
     @staticmethod
     def _json(d: dict) -> Response:
@@ -399,7 +450,7 @@ class DataHost:
             out["totals"] = {v["name"]: agg(rows, v) for v in values}
         return out
 
-    # -- changes (minimal SSE form, DATA_PROTOCOL 6.2) --------------------------------------------------------------
+    # -- changes (SSE form, DATA_PROTOCOL 8.2) ------------------------------------------------------------------------
     def _start_live(self, t: _Table) -> None:
         if t.live_source is None or t.live_started:
             return
@@ -413,40 +464,88 @@ class DataHost:
                     t.apply({"update": [row]})
         threading.Thread(target=pump, daemon=True, name=f"rachana-live-{t.name}").start()
 
-    def changes(self, table: str, after: Optional[str] = None, heartbeat: float = 15.0, stop: Optional[threading.Event] = None) -> Iterator[str]:
-        """SSE text frames (``event: msg``) for ``table`` after ``epoch:seq``; a ``: heartbeat`` comment while idle. A reader
-        whose position is not in the log (other epoch, or too old) gets ``event: gap`` and must re-read the snapshot."""
-        t = self._table(table)
+    def subscribe(self, name: str, after: Optional[str], flt: Any, every_ms: int, sink: Callable[[dict], None]) -> Subscription:
+        """Subscribes to a table's changes after a position (8.2, 8.3): the frames after ``after`` are replayed, then every new one
+        follows, to ``sink`` (a dict, the ``msg`` frame). ``flt`` (a filter tree; the table must declare ``changes.filter``) restates
+        each patch for the matching rows; a filtered subscription resumes only from the table's current position. ``every_ms`` above 0
+        conflates (8.4). When the position cannot be resumed the subscription is not ``recovered`` and nothing is sent: the reader reads
+        the rows again and subscribes from their version. Raises ``rdp.table.unknown``, ``rdp.table.no-key``, ``rdp.query.unsupported``
+        (a filter the table cannot take), ``rdp.query.invalid`` or ``rdp.column.unknown`` (a bad filter tree)."""
+        t = self._table(name)
         if not t.key:
-            raise ProtocolError("rdp.table.no-key", f"{table} has no key and cannot change", table=table)
-        seq0 = t.seq                      # the position at subscribe time, before a live source can move it
-        self._start_live(t)
-        return self._frames(t, after, heartbeat, stop, seq0)
+            raise ProtocolError("rdp.table.no-key", f"{name} has no key and cannot change", table=name)
+        match: Optional[Callable[[dict], bool]] = None
+        with t.lock:
+            sch = t.schema()
+            if flt is not None:
+                if "changes.filter" not in sch.get("can", []):
+                    raise ProtocolError("rdp.query.unsupported", f"{name} cannot filter its changes", table=name, operation="changes.filter")
+                cols = {c["name"]: c for c in sch["columns"]}
+                for c in _refs(flt):
+                    if c not in cols:
+                        raise ProtocolError("rdp.column.unknown", f"{name} has no column '{c}'", table=name, column=c, expected=list(cols))
+                    if cols[c].get("masked"):
+                        raise ProtocolError("rdp.forbidden", f"{c} is masked and cannot be filtered", table=name, column=c)
+                types = {n: c.get("type") for n, c in cols.items()}
+                match = lambda row: bool(_eval(flt, row, types))      # noqa: E731
+            backlog = t.backlog(after)
+            gap = bool(backlog) and backlog[0]["t"] == "gap"
+            recovered = not gap and (match is None or not backlog)
+            sub = Subscription(name, list(t.key), match, every_ms, recovered, sink)
+            if not recovered:
+                return sub
+            rows = t.snapshot()
+            sub.start(rows)
+            for f in backlog:
+                sub.offer(f, rows)           # no filter here: a filtered subscription has no backlog
+            t.subs.append(sub)
+            sub.on_close = lambda: t.subs.remove(sub) if sub in t.subs else None
+        sub.drain()
+        return sub
 
-    def _frames(self, t: _Table, after: Optional[str], heartbeat: float, stop: Optional[threading.Event], seq0: int) -> Iterator[str]:
-        table = t.name
-        seq = seq0
-        if after:
-            epoch, _, n = after.partition(":")
-            replay = "replay" in t.schema().get("can", [])
-            if epoch == t.epoch and n.isdigit() and int(n) == t.seq:
-                seq = int(n)
-            elif replay and epoch == t.epoch and n.isdigit() and int(n) >= (t.log[0][0] - 1 if t.log else t.seq):
-                seq = int(n)
-            else:      # another epoch, a position the log no longer holds, or a host without replay: read the snapshot again
-                yield "event: gap\ndata: " + json.dumps({"t": "gap", "table": table, "recoverable": False,
-                                                          "version": {"epoch": t.epoch, "seq": t.seq}}) + "\n\n"
-        while not (stop and stop.is_set()):
-            with t.cond:
-                pending = [(s, p) for s, p in t.log if s > seq]
-                if not pending:
-                    t.cond.wait(timeout=min(heartbeat, 1.0) if stop else heartbeat)
-                    pending = [(s, p) for s, p in t.log if s > seq]
-            if not pending:
-                yield ": heartbeat\n\n"
-                if stop is None and heartbeat <= 0:
-                    return
-                continue
-            for s, p in pending:
-                seq = s
-                yield f"id: {t.epoch}:{s}\nevent: msg\ndata: " + json.dumps({"t": "msg", "topic": f"rdp.{table}", "stream": f"rdp.{table}", "epoch": t.epoch, "kind": "rows", "seq": s, "data": p}) + "\n\n"
+    def changes(self, table: str, after: Optional[str] = None, heartbeat: float = 15.0, stop: Optional[threading.Event] = None,
+                flt: Any = None, every_ms: int = 0) -> Iterator[str]:
+        """SSE text frames (``event: msg``) for ``table`` after ``epoch:seq``; a ``: heartbeat`` comment while idle. A reader whose
+        position cannot be resumed (other epoch, too old, or a filtered stream not at the table's position) gets one ``event: gap`` frame
+        (``recoverable: false``) and must re-read the snapshot. Errors raise at the call, before the first frame."""
+        q: queue.Queue = queue.Queue()
+        sub = self.subscribe(table, after, flt, every_ms, q.put)
+        t = self._table(table)
+        if sub.recovered:
+            self._start_live(t)
+        return self._frames(t, sub, q, heartbeat, stop)
+
+    def stream(self, query: Optional[dict] = None, body: Any = None, last_event_id: Optional[str] = None, heartbeat: float = 15.0,
+               stop: Optional[threading.Event] = None) -> Iterator[str]:
+        """``GET`` or ``POST {base}/changes`` (8.2): ``table``, ``after``, ``filter`` and ``conflate: {everyMs}`` from the JSON body, else
+        ``table``, ``after`` and ``everyMs`` from the query; ``after`` falls back to ``Last-Event-ID``."""
+        query = query or {}
+        b = body if isinstance(body, dict) else {}
+        every = b["conflate"].get("everyMs") if isinstance(b.get("conflate"), dict) else query.get("everyMs")
+        try:
+            every_ms = int(every or 0)
+        except (TypeError, ValueError) as e:
+            raise ProtocolError("rdp.query.invalid", "everyMs is a number") from e
+        return self.changes(b.get("table") or query.get("table", ""), b.get("after") or query.get("after") or last_event_id, heartbeat, stop,
+                            b.get("filter"), every_ms)
+
+    @staticmethod
+    def _sse(f: dict) -> str:
+        return f"id: {f['epoch']}:{f['seq']}\nevent: {f['t']}\ndata: " + json.dumps(f) + "\n\n"
+
+    def _frames(self, t: _Table, sub: Subscription, q: "queue.Queue", heartbeat: float, stop: Optional[threading.Event]) -> Iterator[str]:
+        try:
+            if not sub.recovered:
+                yield self._sse(t.backlog("-:0")[0])
+                return
+            while not (stop and stop.is_set()):
+                try:
+                    f = q.get(timeout=min(heartbeat, 1.0) if stop else max(heartbeat, 0))
+                except queue.Empty:
+                    yield ": heartbeat\n\n"
+                    if stop is None and heartbeat <= 0:
+                        return
+                    continue
+                yield self._sse(f)
+        finally:
+            sub.close()

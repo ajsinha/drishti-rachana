@@ -14,7 +14,8 @@
     app.register_blueprint(rachana, url_prefix="/dash")
 
 Routes under the prefix: ``/`` (list of Sutras), ``/page/<name>`` (the page hosting ``<rachana-view>``), ``/sutras/<name>.sutra.yaml``,
-``/data/...`` (the Data Protocol, JSON only; see drishti_rachana.server for what it does and does not answer).
+``/static/...`` (the assets of ``<rachana-view>``: drishti_rachana.assets), ``/data/...`` (the Data Protocol: JSON, Arrow IPC for a table
+that declares ``arrow`` when pyarrow is installed, NDJSON; ``GET`` or ``POST /data/changes`` for the change stream).
 """
 from __future__ import annotations
 
@@ -25,25 +26,27 @@ from typing import Callable, Optional, Union
 from flask import Blueprint, Response, abort, request
 
 from ..protocol import ProtocolError
-from ..server import DataHost
-from ._common import DEFAULT_VIEW_SCRIPT, SUFFIX, SutraFolder, index_page, rows_of, start_async_live, view_page
+from ..server import DataHost, _STATUS
+from ..assets import find as find_asset
+from ._common import SUFFIX, SutraFolder, index_page, rows_of, start_async_live, view_page
 
 
 class RachanaBlueprint(Blueprint):
-    def __init__(self, sutras: Union[str, Path, None] = None, *, name: str = "rachana", view_script: str = DEFAULT_VIEW_SCRIPT) -> None:
+    def __init__(self, sutras: Union[str, Path, None] = None, *, name: str = "rachana") -> None:
         super().__init__(name, __name__)
         self.host = DataHost()
         self.folder = SutraFolder(sutras)
-        self._script = view_script
         self.add_url_rule("/", "index", self._index)
         self.add_url_rule("/page/<name>", "page", self._page)
         self.add_url_rule(f"/sutras/<name>{SUFFIX}", "sutra", self._sutra)
+        self.add_url_rule("/static/<path:rel>", "static", self._static)
         self.add_url_rule("/data", "data_root", self._data, defaults={"sub": ""}, methods=["GET"])
         self.add_url_rule("/data/<path:sub>", "data", self._data, methods=["GET", "POST"])
 
-    def table(self, name: str, *, key: Optional[list[str]] = None, title: Optional[str] = None) -> Callable:
+    def table(self, name: str, *, key: Optional[list[str]] = None, title: Optional[str] = None, schema: Optional[dict] = None) -> Callable:
+        """Expose a function's rows as a table; ``schema`` is the table's declared schema document (``can: [..., arrow]`` offers Arrow)."""
         def deco(fn: Callable) -> Callable:
-            self.host.add_table(name, lambda: rows_of(fn()), key, title)
+            self.host.add_table(name, lambda: rows_of(fn()), key, title, schema)
             return fn
         return deco
 
@@ -63,7 +66,13 @@ class RachanaBlueprint(Blueprint):
         if name not in self.folder.files():
             abort(404)
         base = request.script_root + request.path[: -len("/page/" + name)]
-        return Response(view_page(name, base, self._script), mimetype="text/html")
+        return Response(view_page(name, base), mimetype="text/html")
+
+    def _static(self, rel: str):
+        found = find_asset(rel)
+        if found is None:
+            abort(404)
+        return Response(found[0], mimetype=found[1].split(";")[0], headers={"Content-Type": found[1], "Cache-Control": "max-age=300"})
 
     def _sutra(self, name: str):
         t = self.folder.text(name)
@@ -75,9 +84,9 @@ class RachanaBlueprint(Blueprint):
         sub = "/" + sub
         if sub == "/changes":
             try:
-                stream = self.host.changes(request.args.get("table", ""), request.args.get("after"))
+                stream = self.host.stream(request.args.to_dict(), request.get_json(silent=True), request.headers.get("Last-Event-ID"))
             except ProtocolError as e:
-                return Response(json.dumps(e.to_json()), status=404 if e.code == "rdp.table.unknown" else 422, mimetype="application/json")
+                return Response(json.dumps(e.to_json()), status=_STATUS.get(e.code, 500), mimetype="application/json")
             return Response(stream, mimetype="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
         r = self.host.handle(request.method, sub, request.args.to_dict(), request.get_data(), request.headers.get("Accept", "application/json"))
         return Response(r.body, status=r.status, mimetype=r.content_type)

@@ -5,6 +5,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Python SDK parity with the JVM data host (G2)
+
+- **Arrow IPC and NDJSON** from `DataHost` (`drishti_rachana.rows_forms`): `Accept: application/vnd.apache.arrow.stream` (official pyarrow, optional extra `drishti-rachana[arrow]`; `406` + `rdp.query.unsupported` when it is not installed or the table does not declare `arrow`, as the JVM) and `application/x-ndjson`, by the rules of PROTOCOL 3.1, 3.2, 5.2 (metadata, masked `<name>$masked`, big integers, decimals), 5.3; a reader that also accepts JSON or `*/*` gets JSON.
+- **Filtered and conflated subscriptions** (`drishti_rachana.subscription`, port of `Subscription.java`): `changes.filter` restates each patch (`remove` / `update`, an empty patch keeps the numbering), `conflate: {everyMs}` merges by key with `first` and `seq`; `GET` or `POST /changes` (`table`, `after`, `filter`, `conflate`); an unresumable position (and any filtered stream not at the table's position) is one `gap` frame with `recoverable: false`. The bridge moved from the test host to `drishti_rachana.bridge` (`sub`, `unsub`, `msg`, `res.arrow`).
+- **`protocol_check.py --python` runs every `protocol` case** (the `--python` skips of `protocol/forms` and `protocol/live` are gone): 55 cases, 54 pass; the one failure is the frozen `bridge-rows-request-answered-once`, which the JVM reference fails the same way.
+- **The adapters serve the real `<rachana-view>`**: `drishti_rachana.assets` serves the element and its modules, the vendored Drishti Elements 3.1.0 pack and the runtime bundle (and Apache Arrow JS) under `<mount>/static/...` with correct media types, as package data of the wheel (`pyproject.toml` force-include) or from `js/` in a checkout; the placeholder `DEFAULT_VIEW_SCRIPT` and `view_script=` are deleted. `@table(..., schema=)` declares `arrow`. The FastAPI change stream no longer fails on an async table function (the first read ran inside the event loop). `examples/live-orders/paint_check.py` (Chromium): paints, changes while open, no console error.
+
 ### CLI and Python SDK, second pass (G2)
 
 - **Language level for `lint` / `check`**: the bundle's `check` already read `since` (as `open` does), so no facade change; `rachana lint`,
@@ -16,8 +23,7 @@ Entries are written per release; the regime's unreleased work is listed after th
   warning and the TODO are gone. Tests: node (`build` of static-sales), `test/paint_check.py` (Chromium: every page
   paints, no console error). 
 - **Python `DataHost` and the JVM reference answer the same `protocol` cases**: `drishti_rachana.testhost` (the PROTOCOL 15 test
-  adapter over the standard library) and `protocol_check.py --python`; the host skips `protocol/forms` (Arrow, NDJSON) and `protocol/live`
-  (bridge subscriptions, filtered and conflated streams), which it does not offer, and passes 39 of the other 40 (the one case is the
+  adapter over the standard library) and `protocol_check.py --python`; the host first passed 39 of the 40 cases it ran (superseded by the parity entry above; the one failing case is the
   frozen example that sorts a table without `can: sort`, which the JVM reference fails the same way). The host now enforces `can` (`rdp.query.unsupported` with `operation`), checks filter columns
   (`rdp.column.unknown`) and operations (`rdp.query.invalid`), refuses masked columns (`rdp.forbidden`), orders by the key last with
   empty values last, compares decimals exactly, answers `group` (count, sum, min, max, avg, distinct, totals) and sends `t: msg` frames

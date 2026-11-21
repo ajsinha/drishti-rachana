@@ -78,7 +78,7 @@ def test_keyed_patches_and_the_change_stream():
     assert {(r["region"], r["month"], r["revenue"]) for r in rows} == {("North", "2026-01", 999), ("North", "2026-02", 1), ("West", "2026-01", 1)}
     stop.set()
     resumed = h.changes("sales", after="zzzz:1", stop=threading.Event(), heartbeat=0.05)
-    assert next(resumed).startswith("event: gap")
+    assert "event: gap" in next(resumed)
     with pytest.raises(ProtocolError):
         h.add_table("nokey", [{"a": 1}])
         h.changes("nokey")

@@ -126,6 +126,8 @@ polars = [
 test = [
     { name = "httpx" },
     { name = "jsonschema" },
+    { name = "pyarrow", version = "25.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pyarrow", version = "26.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
     { name = "pyyaml" },
 ]
@@ -143,6 +145,7 @@ requires-dist = [
     { name = "mini-racer", marker = "extra == 'v8'", specifier = ">=0.14.1" },
     { name = "polars", marker = "extra == 'polars'", specifier = ">=1" },
     { name = "pyarrow", marker = "extra == 'arrow'", specifier = ">=15" },
+    { name = "pyarrow", marker = "extra == 'test'", specifier = ">=15" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
     { name = "pyyaml", marker = "extra == 'conformance'", specifier = ">=6" },
     { name = "pyyaml", marker = "extra == 'test'", specifier = ">=6" },

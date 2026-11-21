@@ -3,7 +3,7 @@
 library: core
 version: 1.0.0
 summary: Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
-fragments: 28
+fragments: 29
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
 
-28 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+29 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Figures
 
@@ -388,6 +388,22 @@ Who changed what and when: actor, time, field, the value before and after.
 | `limit` | integer | default 100. The most changes shown |
 
 Example: `examples/audit-trail.sutra.yaml`.
+
+### `core/compare-ab@1`
+
+Two records side by side, field by field, with the differences marked and the numeric differences computed.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `a` | record{} | required. The first record |
+| `b` | record{} | required. The second record |
+| `fields` | list<record{field: text, label: text, fmt: text?}> | required. The fields compared, in order: a list of { field, label, fmt } where field is the records' own field name |
+| `a-label` | text | default 'A'. What the first record is called |
+| `b-label` | text | default 'B'. What the second record is called |
+| `only-different` | boolean | default False. Whether fields with equal values are left out |
+| `title` | text | default 'Compare'. The panel's title |
+
+Example: `examples/compare-ab.sutra.yaml`.
 
 ### `core/event-timeline@1`
 

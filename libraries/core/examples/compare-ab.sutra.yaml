@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: compare-ab-example
+version: 1
+libraries: [core@1]
+title: { id: "'Compare'" }
+data:
+  days: { record: { TODAY: { TOTAL: 1320.5, TRADES: 41, DESK: Rates }, YESTERDAY: { TOTAL: 1200, TRADES: 41, DESK: FX } } }
+panels:
+  - use: core/compare-ab@1
+    as: days
+    with:
+      a: "$.days.YESTERDAY"
+      b: "$.days.TODAY"
+      a-label: Yesterday
+      b-label: Today
+      fields:
+        - { field: TOTAL, label: Total, fmt: amount2 }
+        - { field: TRADES, label: Trades, fmt: amount0 }
+        - { field: DESK, label: Desk }
+  - use: core/compare-ab@1
+    as: changed
+    with:
+      a: "$.days.YESTERDAY"
+      b: "$.days.TODAY"
+      title: Changed only
+      only-different: true
+      fields: [ { field: TRADES, label: Trades }, { field: DESK, label: Desk } ]

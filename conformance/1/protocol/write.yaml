@@ -2,7 +2,7 @@
 suite: protocol/write
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Writes to a live table (PROTOCOL 16 Writes, LIVE_TABLES 1.6 and 5): applied, queued and held changes; a repeated change id answers its first answer; the version guard (409 naming the version, who and when); the declaration's rules (422 naming the column and rule); unsupported (405); forbidden for a switch that is off, no right, a column not editable or the host's refusal (403, audited); a row outside the reader's scope (404); the tray <name>.changes lists only the caller's own. The case's writer applies a change to the source and pushes it on the stream, so an edit shows when the source's change arrives (PROTOCOL 15 adapter: edit, /_test/outbox). Run with protocol_check.py --live."
 cases:
   - id: an-applied-change-shows-when-the-source-sends-it
@@ -61,6 +61,7 @@ cases:
         expect: { status: 200, body: { values: [ [b, 2, DONE] ] } }
 
   - id: a-repeated-change-id-answers-the-first-answer
+    verified: false
     kind: protocol
     source: "PROTOCOL 16 (the same id again answers the first answer); LIVE_TABLES 1.6 exactly once"
     fixture: *outbox
@@ -93,6 +94,7 @@ cases:
         expect: { status: 403, body: { error: { code: rdp.write.forbidden } } }
 
   - id: a-held-change-waits-for-the-hosts-decision
+    verified: false
     kind: protocol
     source: "LIVE_TABLES 1.6, LT-9 (four eyes is the host's: held, release)"
     fixture: &held { name: trades, edit: { sink: outbox, hold: true }, declaration: *decl, rows: *rows, readers: *readers }
@@ -139,6 +141,7 @@ cases:
         expect: { status: 200, body: [ { event: write-conflicted, caller: bob, change: c1 } ] }
 
   - id: an-invalid-change-names-the-column-and-rule
+    verified: false
     kind: protocol
     source: "PROTOCOL 16, 10.1 rdp.write.invalid (Core's form checker, the code the page ran)"
     fixture: *outbox
@@ -282,6 +285,7 @@ cases:
         expect: { status: 200, body: { t: res, re: r2, error: { code: rdp.write.conflict, current: { version: 2, by: bob } } } }
 
   - id: the-schema-offers-write-to-an-editor-only
+    verified: false
     kind: protocol
     source: "PROTOCOL 16 schema write { columns, reason }; can: write"
     fixture: *outbox

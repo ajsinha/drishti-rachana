@@ -2,11 +2,12 @@
 suite: live/declaration
 since: "1.2"
 profile: core
-verified: false
+verified: true
 description: "A live table's declaration (LIVE_TABLES section 2, step L1): read and checked as a host loads it, every problem at once; its Data Protocol schema document (section 4)."
 cases:
 
   - id: blotter-reads-and-gives-its-schema
+    verified: false
     kind: live
     source: LIVE_TABLES 2, 4 (the design's blotter)
     declaration: |
@@ -62,6 +63,7 @@ cases:
         view: { sort: [ { col: SOURCE_UPDATE_TIME, dir: desc } ], widths: { TRADE_ID: 120 } }
 
   - id: read-only-table-with-a-compound-key
+    verified: false
     kind: live
     source: LIVE_TABLES 2 (no edit is a FORM result; key a list)
     declaration: |

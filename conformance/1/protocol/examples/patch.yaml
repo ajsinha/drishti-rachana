@@ -2,7 +2,7 @@
 suite: protocol/examples/patch
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Keyed patches on topic rdp.<table> in the minimal SSE form (PROTOCOL 8, 15). The adapter table starts at epoch t1, seq 0.
 cases:
   - id: patch-order-remove-update-add

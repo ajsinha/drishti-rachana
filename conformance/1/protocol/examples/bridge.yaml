@@ -2,7 +2,7 @@
 suite: protocol/examples/bridge
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Bridge messages through the adapter's /_test/bridge path (PROTOCOL 12, 15). The body of each answer is the host to view message.
 cases:
   - id: bridge-hello-welcome

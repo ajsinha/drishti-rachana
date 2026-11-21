@@ -2,7 +2,7 @@
 suite: protocol/examples/protocol
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Data Protocol host answers (DATA_PROTOCOL 2 to 5, 7); bodies compared as subsets. Normative cases are F8's.
 cases:
   - id: schema-document

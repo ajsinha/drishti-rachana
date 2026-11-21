@@ -2,7 +2,7 @@
 suite: live/readers
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Readers of one shared live table (LIVE_TABLES 3, 5; PROTOCOL 16 Readers): each reader's rows, totals and patches are their own; masked values never pick, order or filter a row; refusals and their audit; fail closed without an authoriser. POST /_test/as names the reader and their view (PROTOCOL 15); the test bridge keeps one channel per reader. Run with protocol_check.py --live."
 cases:
   - id: two-readers-see-their-own-rows-and-totals

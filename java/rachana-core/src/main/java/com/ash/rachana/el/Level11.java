@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * What language level 1.1 changes in Core's functions, bound by the parser at that level (level 1.0 keeps the functions as they were):
- * {@code range} (DECISIONS PY4), positions and orders counted by code point (SPEC 4.13, XD4: {@code left}, {@code right}, {@code mid},
+ * {@code range}, Python's sequence only, and {@code span}, the aggregate max − min that 1.0 spells {@code range} (DECISIONS PY4, EL1-1), positions and orders counted by code point (SPEC 4.13, XD4: {@code left}, {@code right}, {@code mid},
  * {@code find}, {@code search}, {@code pad}, {@code least}, {@code greatest}, {@code sort}), and list sums exact over integers and
  * decimals (SPEC 4.16 rule 7).
  */
@@ -21,7 +21,8 @@ final class Level11 {
     private record Fn(int min, int max, ElFunction fn) {}
 
     private static final Map<String, Fn> FUNCTIONS = Map.ofEntries(
-            Map.entry("range", new Fn(1, 3, Level11::range)),
+            Map.entry("range", new Fn(1, 3, (a, c) -> Ranges.range(a))),
+            Map.entry("span", new Fn(1, 2, (a, c) -> FunctionTable.core().get("range").apply(a, c))),
             Map.entry("left", new Fn(2, 2, (a, c) -> part("left", a, true))),
             Map.entry("right", new Fn(2, 2, (a, c) -> part("right", a, false))),
             Map.entry("mid", new Fn(3, 3, (a, c) -> mid(a))),
@@ -81,16 +82,18 @@ final class Level11 {
     }
 
     /**
-     * {@code range}: Python's {@code range(stop)}, {@code range(start, stop[, step])} (PY4) over numbers; over a list it stays Core's
-     * aggregate {@code range(list, [field])}, max − min (split step A9), so that level 1.1 only adds.
+     * The literal-argument check of level 1.1 (null when none): {@code range} is only Python's sequence (EL1-1), so a list or a text
+     * written as its argument, the 1.0 aggregate's {@code range(list, field)}, is refused with {@code span} named.
      */
-    private static Object range(List<Object> a, EvalContext c) {
-        Object first = Values.simplify(a.get(0));
-        if (first instanceof com.ash.rachana.api.Node n && n.isArray() || Values.masked(a.get(0))
-                || a.size() == 2 && Values.simplify(a.get(1)) instanceof String) {
-            return FunctionTable.core().get("range").apply(a, c);
+    static String check(String name, List<Expr> args) {
+        if ("range".equals(name)) {
+            for (Expr e : args) {
+                if (e instanceof Expr.ListLit || e instanceof Expr.Lit l && l.value() instanceof String) {
+                    return Ranges.NOT_AN_AGGREGATE;
+                }
+            }
         }
-        return Ranges.range(a);
+        return null;
     }
 
     /** {@code left(s, n)}, {@code right(s, n)} by code point. */

@@ -20,11 +20,24 @@ final class Ranges {
     /** The most elements {@code range} gives (EL_EXPANSION X7). */
     static final int MAX = 10_000;
 
-    /** {@code range(stop)}, {@code range(start, stop[, step])}. */
+    /** What {@code range} says of a list or a text: at level 1.1 it is only the sequence; the aggregate max − min is {@code span} (EL1-1). */
+    static final String NOT_AN_AGGREGATE = "it gives whole numbers, as Python's range(start, stop, step) does; for the largest value "
+            + "of a list minus its smallest write span(list, field?)";
+
+    /** {@code range(stop)}, {@code range(start, stop[, step])}; a masked argument masks the result, an empty one gives empty. */
     static Object range(List<Object> a) {
+        for (Object v : a) {
+            if (Values.masked(v)) {
+                return Values.mask();
+            }
+        }
         for (Object v : a) {
             if (Values.isNull(v)) {
                 return null;
+            }
+            Object s = Values.simplify(v);
+            if (s instanceof Node || s instanceof String) {
+                throw Args.error("range", NOT_AN_AGGREGATE);
             }
         }
         long start = a.size() == 1 ? 0 : whole(a.get(0));

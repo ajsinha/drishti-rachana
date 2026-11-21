@@ -2392,6 +2392,22 @@ core:
   examples:
   - {expr: "wavg([1, 3], [1, 3])", result: 2.5}
   since: "1.0"
+- name: span
+  family: aggregates
+  signature: "span(list, field?)"
+  eval: eager
+  params:
+  - {name: "list", type: "list"}
+  - {name: "field", type: "text", optional: true, default: "empty"}
+  returns: "number"
+  nulls: {empty: "empty when there is no number", masked: "masked"}
+  errors:
+  - {code: "RCH-2102", when: "no aggregate kernel on the host, or a field that is not in the elements"}
+  description: "The largest number minus the smallest (max - min): Core's aggregate that level 1.0 spells `range(list, field?)`, the same kernel. From level 1.1 `range` is only Python's sequence (DECISIONS EL1-1); `range` over a list there is RCH-2101 or RCH-2102 naming span. Not a name at level 1.0."
+  examples:
+  - {expr: "span([3, 9, 4])", result: 6}
+  - {expr: "span($.legs, 'n')", result: 10, needs_fixture: true}
+  since: "1.1"
 # ---- statistics (32)
 - name: norm_dist
   family: statistics

@@ -13,10 +13,12 @@ Entries are written per release; the regime's unreleased work is listed after th
   passes in every mode. The ViewModel schema's `x-contract` is the highest minor it defines (now `1.2`; a document's own `contract` stays the smallest
   that describes it), checked by `ContractAppendOnlyTest`.
 
-- **The painter's state and effects in `<rachana-view>`** (Elements 3.2.0-dev+282ee8a, contract 1.2): a click on a mark that writes state sends the state
+- **Elements pack re-packed from drishti-elements 824d83b** (folder `3.2.0-dev+824d83b`, SHA-384 manifest): the hbar donut fires `bar-click` like the bar form,
+  and the panel charts' tooltips are DOM elements, so no chart needs `'unsafe-inline'` for styles; `runners/state_browser.py` still passes.
+- **The painter's state and effects in `<rachana-view>`** (Elements 3.2.0-dev+824d83b, contract 1.2): a click on a mark that writes state sends the state
   back (`Screen.setState`, the bundle's `plan` and `view` operations now take `state`), the view is built again and the painter draws only the panels
   the changed states' `reads` name; `notify` and `host` effects go to the page's `host` property of `<rachana-view>` (`{notify, run}`), never run by
-  Elements. The vendored pack is re-packed from drishti-elements 282ee8a (folder `3.2.0-dev+282ee8a`, SHA-384 manifest); `runners/state_browser.py` clicks
+  Elements. The vendored pack is re-packed from drishti-elements 282ee8a (folder `3.2.0-dev+824d83b`, SHA-384 manifest); `runners/state_browser.py` clicks
   a bar in Chromium and checks the dependent panels.
 - **The standalone server, step 1** (`java/rachana-server`; COMPILER_AND_RUNTIMES 10, MODES 4): one JVM process (the JDK's HTTP
   server on virtual threads, no framework) serving a project folder: its Sutras as pages (`/v/<sutra>`, `<rachana-view>` live over the

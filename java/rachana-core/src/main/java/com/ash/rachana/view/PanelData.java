@@ -12,6 +12,16 @@ import java.util.Map;
 /** Kind-specific panel content. One record per panel kind (some kinds share one). */
 public sealed interface PanelData {
 
+    /**
+     * Language 1.2: a standalone form ({@code form} panel): the panel's {@code form} (PanelView.form) drawn as fields with Submit and
+     * Cancel. {@code values} are the fields' starting values ({@code initial:} over the screen's state and controls, then each field's
+     * default); {@code on} the effect lists of {@code submit} and {@code cancel} (EffectView; an effect may read a submitted value,
+     * {@code event}), run only after the form's own rules pass.
+     */
+    record FormPanel(@Include(Include.Rule.ALWAYS) Map<String, Object> values, @Include(Include.Rule.NON_NULL) String submitLabel,
+            @Include(Include.Rule.NON_NULL) String cancelLabel,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) implements PanelData {}
+
     /** Label/value fields for {@code kv}, {@code status} and {@code provenance}. */
     record Fields(List<Cell> fields, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
             @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) implements PanelData {

@@ -157,7 +157,12 @@ public record Form(String title, String key, String edit, String create, String 
 
     /** The panel option back as a Form; empty when absent or unreadable (the Sutra would not have loaded). */
     public static Optional<Form> fromOption(Object raw) {
-        if (!(raw instanceof Map<?, ?>) || !problems(raw).isEmpty()) {
+        return fromOption(raw, false);
+    }
+
+    /** As {@link #fromOption(Object)}; {@code standalone} for a form panel's form (level 1.2), which opens as the panel itself. */
+    public static Optional<Form> fromOption(Object raw, boolean standalone) {
+        if (!(raw instanceof Map<?, ?>) || !problems(raw, standalone).isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(read((Map<?, ?>) raw));
@@ -165,6 +170,14 @@ public record Form(String title, String key, String edit, String create, String 
 
     /** What is wrong with a written {@code form:}, in words (empty when it reads). */
     public static List<String> problems(Object raw) {
+        return problems(raw, false);
+    }
+
+    /**
+     * As {@link #problems(Object)}; {@code standalone} for a form panel's form (level 1.2): it opens as the panel itself, so it names no
+     * {@code edit} or {@code new} (the panel says so when it does).
+     */
+    public static List<String> problems(Object raw, boolean standalone) {
         List<String> out = new ArrayList<>();
         if (!(raw instanceof Map<?, ?> m)) {
             out.add("'form' is a mapping: { fields: [...], rules: [...], edit: beside|cells, new: drawer }");
@@ -179,7 +192,7 @@ public record Form(String title, String key, String edit, String create, String 
         if (create != null && !NEW_MODES.contains(create.toString())) {
             out.add("'form.new' is drawer (a guided drawer in steps), not '" + create + "'");
         }
-        if (edit == null && create == null) {
+        if (edit == null && create == null && !standalone) {
             out.add("a form says how it opens: edit: beside, edit: cells or new: drawer");
         }
         roles(m.get("roles"), "form.roles", out);

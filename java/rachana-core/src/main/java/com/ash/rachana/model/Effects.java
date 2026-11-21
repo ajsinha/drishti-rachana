@@ -33,7 +33,82 @@ public final class Effects {
 
     /** The triggers built at this level, each with the panel kinds that fire it. */
     public static final Map<String, List<String>> BUILT = Map.of("row-click", List.of("table", "ladder"), "bar-click", List.of("hbar"),
-            "point-click", Wiring.POINT_KINDS.stream().sorted().toList());
+            "point-click", Wiring.POINT_KINDS.stream().sorted().toList(), "submit", List.of("form"), "cancel", List.of("form"));
+
+    /**
+     * The triggers whose effects run with the event's values in hand ({@code submit}, {@code cancel}: the form's values): an effect reads
+     * them as {@code event.<field>} (a whole {@code to:} or {@code with:} value, filled in when the trigger fires, {@link #EVENT_REF}).
+     */
+    public static final List<String> AT_FIRE = List.of("submit", "cancel");
+
+    /**
+     * A value filled in when the trigger fires: {@code event} (every value) or {@code event.<field>} (one, dotted for a value inside a
+     * value), parentheses allowed around it (a fragment's event put in as its payload's expression).
+     */
+    public static final java.util.regex.Pattern EVENT_REF = java.util.regex.Pattern.compile("^\\(*\\s*event((?:\\.[A-Za-z_][A-Za-z0-9_-]*)*)\\s*\\)*$");
+
+    /** The path {@code text} reads from the event ({@code ""} for the whole event, {@code "qty"}, {@code "values.qty"}), or null. */
+    public static String eventPath(Object text) {
+        if (!(text instanceof String s)) {
+            return null;
+        }
+        java.util.regex.Matcher m = EVENT_REF.matcher(s.trim());
+        if (!m.matches() || s.chars().filter(c -> c == '(').count() != s.chars().filter(c -> c == ')').count()) {
+            return null;
+        }
+        return m.group(1).isEmpty() ? "" : m.group(1).substring(1);
+    }
+
+    /** The panel key of the buttons in the panel's header ({@code actions:}), and the option they are kept under. */
+    public static final String ACTIONS = "actions";
+
+    /** The keys of one action: {@code label} and {@code do} (its effects) required. */
+    public static final java.util.Set<String> ACTION_KEYS = java.util.Set.of("id", "label", "tone", "confirm", "requires", "do");
+
+    /** The most actions a panel has. */
+    public static final int MAX_ACTIONS = 8;
+
+    /** The trigger a press of an action fires (conformance {@code fire}: the mark is the action's place). */
+    public static final String ACTION = "action";
+
+    /**
+     * The actions of {@code p} as the panel keeps them, in order: {@code {id, label, tone?, confirm?, requires?, do: [effect, ...]}} (empty
+     * when it has none).
+     */
+    @SuppressWarnings("unchecked")
+    public static List<Map<String, Object>> actions(Panel p) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        if (p.options().get(ACTIONS) instanceof List<?> l) {
+            for (Object o : l) {
+                if (o instanceof Map<?, ?> m) {
+                    out.add((Map<String, Object>) m);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Every effect of {@code p}: its {@code on:} lists, trigger by trigger, then its actions' effects, in order. */
+    public static List<Map<String, Object>> every(Panel p) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        BUILT.keySet().stream().sorted().forEach(t -> out.addAll(list(p, t)));
+        actions(p).forEach(a -> out.addAll(effectsOf(a)));
+        return out;
+    }
+
+    /** The effects of one action as the panel keeps it (empty when it has none). */
+    @SuppressWarnings("unchecked")
+    public static List<Map<String, Object>> effectsOf(Map<String, Object> action) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        if (action.get("do") instanceof List<?> l) {
+            for (Object o : l) {
+                if (o instanceof Map<?, ?> m) {
+                    out.add((Map<String, Object>) m);
+                }
+            }
+        }
+        return out;
+    }
 
     /** The effects of the closed list (SUTRA_EXPANSION 3.4); the ones not in {@link #BUILT_EFFECTS} are refused until their step. */
     public static final List<String> EFFECTS = List.of("set", "toggle", "clear", "open", "close", "go", "fire", "submit", "refresh", "export",
@@ -78,7 +153,7 @@ public final class Effects {
      * whole list ({@code on}) and no {@code set}.
      */
     public static boolean full(Panel p, String trigger) {
-        return list(p, trigger).stream().anyMatch(m -> m.containsKey("do"));
+        return AT_FIRE.contains(trigger) && !list(p, trigger).isEmpty() || list(p, trigger).stream().anyMatch(m -> m.containsKey("do"));
     }
 
     /**

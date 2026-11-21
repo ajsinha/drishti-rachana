@@ -1,0 +1,126 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/forms
+since: "1.2"
+profile: core
+verified: true
+description: "The standalone form panel (kind form, level 1.2): starting values from initial: (state, controls) then the fields' defaults; submit runs its effects only after the form's own rules pass (a refused form runs none, each failing check a refusal RCH-5003); effects read the submitted values as event; cancel runs without checks."
+cases:
+
+  - id: submit-runs-only-after-the-rules-pass
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (submit, cancel), 3.6 (forms); ScreenWire.submit"
+    note: "The first submit breaks a rule, so nothing runs and the state stays; the second passes: the state takes the submitted quantity, the host gets the order with the values filled in. Cancel clears without checks."
+    sutra: |
+      rachana: 1
+      sutra: ticket
+      version: 1
+      title: { id: "'Ticket'" }
+      state:
+        qty:  { type: number, default: 0 }
+        side: { type: text, default: SELL }
+        sent: { type: boolean, default: false }
+      panels:
+        - id: ticket
+          kind: form
+          initial: { side: state.side }
+          submitLabel: Send
+          form:
+            fields:
+              - { id: side, label: Side, type: enum, options: [ BUY, SELL ], required: true }
+              - { id: qty, label: Quantity, type: number, required: true, min: 1 }
+              - { id: book, label: Book, default: B1 }
+            rules:
+              - { rule: "qty <= 1000", message: "At most 1,000", fields: [ qty ] }
+          on:
+            submit:
+              - { set: { state: qty, to: event.qty } }
+              - { toggle: sent }
+              - { host: order.place, with: { side: event.side, qty: event.qty, desk: "'FX'" } }
+            cancel: [ { clear: qty } ]
+        - { id: shown, kind: metric, label: Qty, value: state.qty }
+    steps:
+      - { panel: ticket, trigger: submit, values: { side: BUY, qty: 2000, book: B1 } }
+      - { panel: ticket, trigger: submit, values: { side: BUY, qty: 5, book: B1 } }
+      - { panel: ticket, trigger: cancel }
+    expect:
+      at:
+        /panels/0/kind: form
+        /panels/0/data: { values: { side: SELL, qty: null, book: B1 }, submitLabel: Send, on: { submit: [ { do: set, state: qty, event: qty }, { do: toggle, state: sent }, { do: host, action: order.place, with: { desk: FX }, withEvent: { side: side, qty: qty } } ], cancel: [ { do: clear, state: qty } ] } }
+      steps:
+        - state: { qty: 0, side: SELL, sent: false }
+          effects: []
+          problems: [ { code: RCH-5003, message: "At most 1,000" } ]
+        - state: { qty: 5, side: SELL, sent: true }
+          effects:
+            - { do: set, state: qty, value: 5 }
+            - { do: toggle, state: sent, value: true }
+            - { do: host, action: order.place, with: { desk: FX, side: BUY, qty: 5 } }
+          at:
+            /panels/1/data/value/text: "5"
+        - state: { qty: 0, side: SELL, sent: true }
+          effects: [ { do: clear, state: qty, value: null } ]
+
+  - id: a-required-field-left-blank-refuses-the-form
+    kind: fire
+    source: "SUTRA_EXPANSION 3.6; Form checks (required, min)"
+    sutra: |
+      rachana: 1
+      sutra: ticket
+      version: 1
+      title: { id: "'Ticket'" }
+      state:
+        qty: { type: number, default: 0 }
+      panels:
+        - id: ticket
+          kind: form
+          form:
+            fields:
+              - { id: qty, label: Quantity, type: number, required: true, min: 1 }
+              - { id: note, label: Note }
+          on:
+            submit: [ { set: { state: qty, to: event.qty } } ]
+    steps:
+      - { panel: ticket, trigger: submit, values: { note: hi } }
+      - { panel: ticket, trigger: submit, values: { qty: 0 } }
+      - { panel: ticket, trigger: submit, values: { qty: 3, extra: 1 } }
+      - { panel: shown, trigger: submit }
+    expect:
+      steps:
+        - effects: []
+          problems: [ { code: RCH-5003, message: "Quantity is required" } ]
+        - effects: []
+          problems: [ { code: RCH-5003, messageStart: "Quantity" } ]
+        - effects: []
+          problems: [ { code: RCH-5001, message: "the form of panel 'ticket' has no field 'extra'" } ]
+        - problems: [ { code: RCH-5001, message: "no panel 'shown' on the screen" } ]
+
+  - id: initial-reads-state-and-controls
+    kind: fire
+    source: "SUTRA_EXPANSION 3.6 (defaults from state and controls)"
+    sutra: |
+      rachana: 1
+      sutra: ticket
+      version: 1
+      title: { id: "'Ticket'" }
+      controls:
+        - { id: book, kind: dropdown, options: [ B1, B2 ] }
+      state:
+        qty: { type: number, default: 7 }
+      panels:
+        - id: ticket
+          kind: form
+          initial: { qty: "state.qty * 2", book: ctl.book }
+          cancelLabel: Close
+          form:
+            fields:
+              - { id: book, label: Book }
+              - { id: qty, label: Quantity, type: number }
+    steps:
+      - { panel: ticket, trigger: cancel }
+    given:
+      ctl: { book: B2 }
+    expect:
+      at:
+        /panels/0/data: { values: { book: B2, qty: 14 }, cancelLabel: Close }
+      steps:
+        - effects: []

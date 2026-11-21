@@ -29,14 +29,14 @@
       "result": 733
      }
     ],
-    "assessmentId": "ASSESSMENTID-W1",
+    "desk": 628.33,
     "risk": 319,
     "deskName": "DESKNAME-S1",
     "inherent": 716,
     "effectiveness": 284.03,
     "residual": 709.45,
     "nextReview": 378.65,
-    "desk": 628.33
+    "assessmentId": "ASSESSMENTID-W1"
    }
   },
   {
@@ -74,7 +74,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Desk",
+      "text": "628.33",
+      "link": {
+       "kind": "desk",
+       "id": "628.33",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

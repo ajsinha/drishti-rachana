@@ -47,6 +47,8 @@ final class SutraBuilder {
     private static final Set<String> COLUMN = Set.of("label", "bind", "fmt", "tone", "total", "link");
 
     private final String file;
+    /** Where the text it builds from places a problem (SPEC 6.1); null when it was not read from a text. */
+    ProblemPlaces places;
     private final com.ash.rachana.profile.Grammar grammar;
     private final List<SutraProblem> problems = new ArrayList<>();
     private FragmentResolver fragments;
@@ -129,6 +131,9 @@ final class SutraBuilder {
         Set<String> ids = new HashSet<>();
         Set<String> keys = new HashSet<>();
         List<PNode> own = new ArrayList<>(listOf(m.get("panels"), "panels"));
+        if (m.get("panels") != null) {
+            written.addAll(m.get("panels").list());
+        }
         grammar.keys().forEach((keyName, key) -> {                               // the panels a key brings (match: the sections modules contribute)
             List<PNode> brought = key.panels(extensions.get(keyName));
             if (!brought.isEmpty()) {
@@ -139,7 +144,7 @@ final class SutraBuilder {
             Panel panel = panel(p, false);
             if (panel != null) {
                 if (!ids.add(panel.id())) {
-                    problem("RCH-2024", "duplicate panel id '" + panel.id() + "'", p);
+                    problem("RCH-2024", "duplicate panel id '" + panel.id() + "'", idAt(p));
                 }
                 if (panel.key() != null && !keys.add(panel.key())) {
                     problem("RCH-2025", "function key " + panel.key() + " is used twice", p);
@@ -147,7 +152,7 @@ final class SutraBuilder {
                 panels.add(panel);
             } else if (SutraBlocks.atLeast(grammar.level(), "1.1") && p.isMap() && p.map().get("id") != null && p.map().get("id").isScalar()) {
                 if (!ids.add(p.map().get("id").text())) {     // level 1.1 (SPEC 6.1: all problems): a panel refused for its kind still holds its id
-                    problem("RCH-2024", "duplicate panel id '" + p.map().get("id").text() + "'", p);
+                    problem("RCH-2024", "duplicate panel id '" + p.map().get("id").text() + "'", idAt(p));
                 }
             }
         }
@@ -238,14 +243,30 @@ final class SutraBuilder {
         if (!used.isEmpty()) {
             extensions.put(Sutra.LIBRARIES, List.copyOf(used));
         }
+        if (places != null) {
+            extensions.put(Sutra.PLACES, places);
+        }
         if (!calls.advisories().isEmpty() || !declAdvisories.isEmpty()) {
             List<SutraProblem> all = new ArrayList<>(declAdvisories);
             all.addAll(calls.advisories());
-            extensions.put(Sutra.ADVISORIES, List.copyOf(all));
+            all.replaceAll(SutraProblem::warning);                      // advisories never stop a Sutra from loading
+            extensions.put(Sutra.ADVISORIES, List.copyOf(places == null ? all : places.place(all)));
         }
         return new Sutra(name, version, title, strip, panels, keyMap, loc(root), text(m.get("description"), null), controls, layout, phone,
                 extensions);
     }
+
+    /**
+     * Where a duplicate id is reported: from level 1.1 the id itself (SPEC 6.1: the problem's path is {@code /panels/<n>/id}), at
+     * level 1.0 the panel, as that level was recorded.
+     */
+    private PNode idAt(PNode panel) {
+        PNode id = panel.map().get("id");
+        return id != null && SutraBlocks.atLeast(grammar.level(), "1.1") && written.contains(panel) ? id : panel;
+    }
+
+    /** The panels written in this file (not brought by a fragment or a key), by identity: their id is where it is written. */
+    private final Set<PNode> written = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
     private static final Pattern PRIVATE_READ = Pattern.compile("(?<![A-Za-z0-9_.$@])state\\.([a-z][a-z0-9-]*)\\.([A-Za-z][A-Za-z0-9_]*)");
 

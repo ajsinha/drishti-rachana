@@ -37,7 +37,9 @@ import java.util.Map;
  * to Core's view pipeline over the same Sutra (parsed with the corpus's blocks and the conformance suite's Drishti profile, its formats
  * Core's table and the profile's names) and the ViewModel Core writes ({@link ViewJson}) is compared byte for byte with the one the
  * reference wrote ({@code binds/<file>.view.json}). A Sutra the reference could not bind ({@code .error.txt}) must not bind on Core
- * either. No source, link or mask is read: the reference recorded none.
+ * either. The sources are the recording's: what the reference's recording source router answered (its fetches and searches, gate
+ * finding F2) answers Core's {@link TableProvider} ({@link #tables}); the host's own panels (provenance, links) answer as recorded.
+ * No mask is read: the reference recorded none.
  */
 final class CoreBinds {
 
@@ -85,7 +87,7 @@ final class CoreBinds {
         String got;
         try {
             Sutra s = rachana.parser().parse(Files.readString(sutraFile, StandardCharsets.UTF_8), sutraFile.getFileName().toString(), pack);
-            ViewBuilder views = rachana.views(hostPanels(host), PivotEngine.NONE, TableProvider.NONE,
+            ViewBuilder views = rachana.views(hostPanels(host), pivots(host), tables(host),
                     BusinessDays.of(today, BusinessCalendar.of("WEEKENDS")), Duration.ofSeconds(2));
             got = ViewJson.write(views.build(new ViewBuilder.Request(new Entity(EntityRef.of("record", "case"), Node.of(plain(record))), s, null,
                     AsOf.of(today), null, null, null))) + "\n";
@@ -185,11 +187,121 @@ final class CoreBinds {
                 })
                 .withPanel(com.ash.rachana.model.PanelKind.LINKS, (p, c, b) -> {
                     Map<String, Object> data = Json.object(host.answer("panel", "links", p.id()));
-                    if (!Json.array(data.get("links")).isEmpty()) {
-                        throw new AssertionError("a recorded links panel with links: replay its items (" + p.id() + ")");
+                    List<com.ash.rachana.view.PanelData.LinkItem> items = new ArrayList<>();
+                    for (Object o : Json.array(data.get("links"))) {
+                        Map<String, Object> l = Json.object(o);
+                        Map<String, Object> v = l.get("link") == null ? null : Json.object(l.get("link"));
+                        items.add(new com.ash.rachana.view.PanelData.LinkItem((String) l.get("label"), (String) l.get("text"),
+                                v == null ? null : new com.ash.rachana.view.ViewModel.LinkView((String) v.get("kind"), (String) v.get("id"), (String) v.get("mnemonic")),
+                                (String) l.get("badge"), (String) l.get("status")));
                     }
-                    return new com.ash.rachana.view.PanelData.Links(List.of());
+                    return new com.ash.rachana.view.PanelData.Links(items);
                 });
+    }
+
+    /**
+     * Core's sources answering from the recording (gate finding F2): what the reference's recording source plugin answered,
+     * {@code source.search [kind, text]} (the hits, every entity of the kind; at most {@code limit} taken, as the reference's router
+     * takes them) and {@code source.fetch [kind, id]} (the entity's data, null when the source holds none). A listing across a kind is
+     * the reference router's search with no text. A call the recording does not hold fails the replay ({@link RecordedHost.UnrecordedCall}).
+     */
+    static TableProvider tables(RecordedHost host) {
+        return new TableProvider() {
+            @Override
+            public List<com.ash.rachana.bind.EntityHit> search(String kind, String text, int limit, Duration budget, AsOf at) {
+                List<com.ash.rachana.bind.EntityHit> hits = new ArrayList<>();
+                for (Object o : Json.array(host.answer("source.search", kind, text == null ? "" : text))) {
+                    Map<String, Object> h = Json.object(o);
+                    if (hits.size() < limit) {
+                        hits.add(new com.ash.rachana.bind.EntityHit(EntityRef.of(kind, (String) h.get("id")), (String) h.get("title"), (String) h.get("subtitle")));
+                    }
+                }
+                return hits;
+            }
+
+            @Override
+            public List<com.ash.rachana.bind.EntityHit> list(String kind, String text, int limit, Duration budget, AsOf at, com.ash.rachana.bind.SourceFailures failures) {
+                return search(kind, text, limit, budget, at);
+            }
+
+            @Override
+            public List<com.ash.rachana.bind.EntityHit> listAcross(String kind, int max, Duration budget, AsOf at, com.ash.rachana.bind.SourceFailures failures) {
+                return search(kind, "", max, budget, at);
+            }
+
+            @Override
+            public Map<EntityRef, Entity> fetchAll(java.util.Collection<EntityRef> refs, Duration budget, AsOf at, com.ash.rachana.bind.SourceFailures failures) {
+                Map<EntityRef, Entity> out = new LinkedHashMap<>();
+                for (EntityRef r : refs) {
+                    Object a = host.answer("source.fetch", r.kind(), r.id());
+                    if (a != null) {
+                        Map<String, Object> d = Json.object(a);
+                        out.put(r, new Entity(r, Node.of(plain(d.get("data"))), false, new Entity.Origin((String) d.get("source"),
+                                d.get("fetchedAt") == null ? null : java.time.Instant.parse((String) d.get("fetchedAt"))), null));
+                    }
+                }
+                return out;
+            }
+
+            @Override
+            public Freshness freshness(String kind, String source) {
+                Map<String, Object> f = Json.object(host.answer("source.freshness", kind));
+                return new Freshness((String) f.get("source"), f.get("lastUpdate") == null ? null : java.time.Instant.parse((String) f.get("lastUpdate")),
+                        f.get("staleAfter") == null ? null : Duration.parse((String) f.get("staleAfter")), Boolean.TRUE.equals(f.get("stale")));
+            }
+        };
+    }
+
+    /**
+     * Core's pivot engine answering from the recording (gate finding F2): the cells Drishti's pivot engine computed for the view, fields
+     * and rows the reference's binder hands it ({@code pivot.cells [view, fields, rows]}), and each group's row key as that engine writes
+     * it ({@code pivot.key [coordinates]}). Core's binder must hand its engine exactly what the reference's handed its own: any other
+     * view, field or row is an unrecorded call.
+     */
+    @SuppressWarnings("unchecked")
+    static PivotEngine pivots(RecordedHost host) {
+        return new PivotEngine() {
+            @Override
+            public Map<String, Map<String, Object>> cells(Map<String, Object> view, List<Field> fields, List<Object[]> rows) {
+                List<Object> fs = new ArrayList<>();
+                for (Field f : fields) {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("name", f.name());
+                    m.put("type", f.type());
+                    m.put("label", f.label());
+                    m.put("description", f.description());
+                    fs.add(m);
+                }
+                Object cells = host.answer("pivot.cells", numbers(view), fs, rows.stream().map(r -> numbers(java.util.Arrays.asList(r))).toList());
+                Map<String, Map<String, Object>> out = new LinkedHashMap<>();
+                Json.object(cells).forEach((k, v) -> out.put(k, (Map<String, Object>) numbers(v)));
+                return out;
+            }
+
+            @Override
+            public String key(Map<String, String> coordinates) {
+                return (String) host.answer("pivot.key", coordinates);
+            }
+        };
+    }
+
+    /** Numbers as the recording's JSON holds them (decimals), so a call's arguments compare with the recorded ones. */
+    private static Object numbers(Object v) {
+        if (v instanceof Double || v instanceof Float) {
+            return new BigDecimal(String.valueOf(v));
+        }
+        if (v instanceof Number n && !(v instanceof BigDecimal)) {
+            return new BigDecimal(n.toString());
+        }
+        if (v instanceof List<?> l) {
+            return l.stream().map(CoreBinds::numbers).toList();
+        }
+        if (v instanceof Map<?, ?> m) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            m.forEach((k, x) -> out.put(String.valueOf(k), numbers(x)));
+            return out;
+        }
+        return v;
     }
 
     /** The recording's values as the reference read them: whole numbers as long, others as double (RefBridgeSutra.plain). */

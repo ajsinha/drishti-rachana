@@ -30,8 +30,8 @@ public record Problem(String code, String level, String message, String fix, int
     /** A filter, sort, {@code in} or grouping on a masked field. */
     public static final String MASKED = "RCH-9161";
     /**
-     * A style hint at level 1.1 (DECISIONS EL1-2, a warning): {@code -x ** n} or {@code -x ^ n} without parentheses, which is
-     * {@code -(x ** n)} by Python's rule where Excel reads {@code (-x) ^ n}.
+     * A style hint at level 1.1 (DECISIONS EL1-2, a warning): {@code -x ** n} without parentheses, which is {@code -(x ** n)} by
+     * Python's rule where Excel reads {@code (-x) ^ n}. {@code -x ^ n} does not compile at all (gate 2, O6).
      */
     public static final String SIGN_POWER = "RCH-2091";
 

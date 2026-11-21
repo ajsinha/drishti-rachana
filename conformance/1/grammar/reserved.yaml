@@ -9,6 +9,7 @@ cases:
 
   - id: "pipe-refused"
     kind: "grammar"
+    until: "1.0"
     source: "SPEC 4.15; rachana-el.ebnf reserved-token"
     note: "X11."
     tags: ["reserved"]
@@ -17,6 +18,7 @@ cases:
 
   - id: "empty-default-refused"
     kind: "grammar"
+    until: "1.0"
     source: "SPEC 4.15; rachana-el.ebnf reserved-token"
     note: "X12."
     tags: ["reserved"]
@@ -33,6 +35,7 @@ cases:
 
   - id: "spread-refused"
     kind: "grammar"
+    until: "1.0"
     source: "SPEC 4.15; rachana-el.ebnf reserved-token"
     note: "X6."
     tags: ["reserved"]
@@ -49,6 +52,7 @@ cases:
 
   - id: "empty-record-refused"
     kind: "grammar"
+    until: "1.0"
     source: "SPEC 4.15; rachana-el.ebnf reserved-token"
     note: "X6."
     tags: ["reserved"]
@@ -57,6 +61,7 @@ cases:
 
   - id: "comment-refused"
     kind: "grammar"
+    until: "1.0"
     source: "SPEC 4.15; rachana-el.ebnf reserved-token"
     note: "X14."
     tags: ["reserved"]
@@ -65,6 +70,7 @@ cases:
 
   - id: "digit-separator-refused"
     kind: "grammar"
+    until: "1.0"
     source: "SPEC 4.15; rachana-el.ebnf reserved-token"
     note: "Digit separators."
     tags: ["reserved"]
@@ -130,9 +136,74 @@ cases:
 
   - id: "reserved-token-in-a-template-part-refused"
     kind: "grammar"
+    until: "1.0"
     source: "SPEC 4.15; rachana-el.ebnf reserved-token"
     rule: "template"
     note: "A part is an expression."
     tags: ["reserved"]
     text: "Total ${$.a ?? 0}"
     expect: {"accepted": false}
+
+  - id: "pipe-accepted-l11"
+    kind: "grammar"
+    since: "1.1"
+    source: "SPEC 4.15; DECISIONS PY2 to PY6 (level 1.1)"
+    note: "X11: the pipe is level 1.1's (DECISIONS PY2); its right side is a call. The 1.0 answer is pipe-refused (until 1.0)."
+    tags: ["reserved", "level-1-1"]
+    text: "$.a |> round(2)"
+    expect: {"accepted": true}
+
+  - id: "empty-default-accepted-l11"
+    kind: "grammar"
+    since: "1.1"
+    source: "SPEC 4.15; DECISIONS PY2 to PY6 (level 1.1)"
+    note: "X12: the first non-empty is level 1.1's. The 1.0 answer is empty-default-refused (until 1.0)."
+    tags: ["reserved", "level-1-1"]
+    text: "$.a ?? 0"
+    expect: {"accepted": true}
+
+  - id: "spread-accepted-l11"
+    kind: "grammar"
+    since: "1.1"
+    source: "SPEC 4.15; DECISIONS PY2 to PY6 (level 1.1)"
+    note: "X6: a list spread is level 1.1's. The 1.0 answer is spread-refused (until 1.0)."
+    tags: ["reserved", "level-1-1"]
+    text: "[...$.l]"
+    expect: {"accepted": true}
+
+  - id: "empty-record-accepted-l11"
+    kind: "grammar"
+    since: "1.1"
+    source: "SPEC 4.15; DECISIONS PY2 to PY6 (level 1.1)"
+    note: "X6: a record literal is level 1.1's. The 1.0 answer is empty-record-refused (until 1.0)."
+    tags: ["reserved", "level-1-1"]
+    text: "{}"
+    expect: {"accepted": true}
+
+  - id: "comment-accepted-l11"
+    kind: "grammar"
+    since: "1.1"
+    source: "SPEC 4.15; DECISIONS PY2 to PY6 (level 1.1)"
+    note: "Level 1.1 reads a comment. The 1.0 answer is comment-refused (until 1.0)."
+    tags: ["reserved", "level-1-1"]
+    text: "$.a /* c */"
+    expect: {"accepted": true}
+
+  - id: "digit-separator-accepted-l11"
+    kind: "grammar"
+    since: "1.1"
+    source: "SPEC 4.15; DECISIONS PY2 to PY6 (level 1.1)"
+    note: "Level 1.1 reads a digit separator. The 1.0 answer is digit-separator-refused (until 1.0)."
+    tags: ["reserved", "level-1-1"]
+    text: "1_000"
+    expect: {"accepted": true}
+
+  - id: "reserved-token-in-a-template-part-accepted-l11"
+    kind: "grammar"
+    since: "1.1"
+    source: "SPEC 4.15; DECISIONS PY2 to PY6 (level 1.1)"
+    rule: "template"
+    note: "A part is an expression; level 1.1 reads ??. The 1.0 answer is reserved-token-in-a-template-part-refused (until 1.0)."
+    tags: ["reserved", "level-1-1"]
+    text: "Total ${$.a ?? 0}"
+    expect: {"accepted": true}

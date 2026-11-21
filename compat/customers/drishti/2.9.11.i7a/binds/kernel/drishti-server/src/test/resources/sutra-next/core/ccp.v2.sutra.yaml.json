@@ -20,11 +20,11 @@
       "IM": 453
      }
     ],
-    "CCP_ID": "CCP_ID-X1",
     "NAME": "NAME-X1",
     "DEFAULT_FUND": 525.53,
     "IM_POSTED": 422.03,
-    "MARGIN_MODEL": "MARGIN_MODEL-O1"
+    "MARGIN_MODEL": "MARGIN_MODEL-O1",
+    "CCP_ID": "CCP_ID-X1"
    }
   },
   {

@@ -6,6 +6,61 @@
    "hook": "record",
    "args": [],
    "answer": {
+    "FINANCIALS": [
+     {
+      "YEAR": 728,
+      "REVENUE": 647,
+      "NET_INCOME": 111.41,
+      "PERIOD_END": "2026-02-17",
+      "ASSETS": 545,
+      "LIABILITIES": 51.41,
+      "EQUITY": 742.21,
+      "EPS_DILUTED": 300
+     },
+     {
+      "YEAR": 578,
+      "REVENUE": 497,
+      "NET_INCOME": -38.59,
+      "PERIOD_END": "2026-03-26",
+      "ASSETS": 395,
+      "LIABILITIES": -98.59,
+      "EQUITY": 842.21,
+      "EPS_DILUTED": 150
+     },
+     {
+      "YEAR": 928,
+      "REVENUE": 847,
+      "NET_INCOME": 311.41,
+      "PERIOD_END": "2026-05-02",
+      "ASSETS": 745,
+      "LIABILITIES": 251.41,
+      "EQUITY": 692.21,
+      "EPS_DILUTED": 500
+     }
+    ],
+    "FILINGS": [
+     {
+      "FILED": 177.17,
+      "FORM": 337.49,
+      "DESCRIPTION": "DESCRIPTION-K1",
+      "REPORT_DATE": "2026-05-08",
+      "ACCESSION": 373
+     },
+     {
+      "FILED": 527.17,
+      "FORM": 687.49,
+      "DESCRIPTION": "DESCRIPTION-L2",
+      "REPORT_DATE": "2026-01-15",
+      "ACCESSION": 223
+     },
+     {
+      "FILED": 627.17,
+      "FORM": 787.49,
+      "DESCRIPTION": "DESCRIPTION-M3",
+      "REPORT_DATE": "2026-02-21",
+      "ACCESSION": 573
+     }
+    ],
     "INDEXES": [
      {
       "INDEX": "INDEX-Q1",
@@ -23,23 +78,191 @@
       "SINCE": 894
      }
     ],
+    "LEI": "LEI-Z1",
+    "PRICE_HISTORY": 868,
+    "SIC_SECTOR": "SIC_SECTOR-T1",
     "TICKER": "TICKER-K1",
-    "NAME": "NAME-X1",
     "SIC_DESCRIPTION": "SIC_DESCRIPT-W1",
     "FISCAL_YEAR": -240,
     "REVENUE": 647,
     "NET_INCOME": 111.41,
-    "FINANCIALS": 536.57,
     "EPS_DILUTED": 300,
-    "LEI": "LEI-Z1",
-    "PRICE_HISTORY": 868,
-    "SIC_SECTOR": "SIC_SECTOR-T1"
+    "NAME": "NAME-X1",
+    "EXCHANGE": 20.17,
+    "LISTING": 634,
+    "SIC": 240.37,
+    "SECTOR": "SECTOR-T1",
+    "INDEX_TEXT": "INDEX_TEXT-X1",
+    "SHARES_OUTSTANDING": 523,
+    "CIK": 630.53,
+    "STATE_OF_INCORPORATION": "STATE_OF_INC-C1",
+    "FISCAL_YEAR_END": "2026-02-13",
+    "CURRENCY": "CURRENCY-Z1",
+    "HEADQUARTERS": 170,
+    "BUSINESS_ADDRESS": 663.07,
+    "FOUNDED": 235,
+    "WEBSITE": 496.27,
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "fund-holder",
+    "TICKER-K1"
+   ],
+   "answer": {
+    "data": {
+     "HOLDERS": [
+      {
+       "FUND": 575,
+       "FUND_NAME": "FUND_NAME-C1",
+       "TYPE": "TYPE-X1",
+       "PCT": 75.47,
+       "VALUE": 855.53,
+       "SHARES": 409,
+       "REPORT_DATE": "2026-05-08"
+      },
+      {
+       "FUND": 675,
+       "FUND_NAME": "FUND_NAME-D2",
+       "TYPE": "TYPE-Y2",
+       "PCT": 425.47,
+       "VALUE": 705.53,
+       "SHARES": 759,
+       "REPORT_DATE": "2026-01-15"
+      },
+      {
+       "FUND": 525,
+       "FUND_NAME": "FUND_NAME-E3",
+       "TYPE": "TYPE-Z3",
+       "PCT": 525.47,
+       "VALUE": 1055.53,
+       "SHARES": 859,
+       "REPORT_DATE": "2026-02-21"
+      }
+     ],
+     "TICKER": "TICKER-K1",
+     "FUNDS": 422.05,
+     "ETFS": 623.39,
+     "TOTAL_VALUE": 529,
+     "PCT_OF_SHARES": -175.33,
+     "AVG_WEIGHT": 370.07,
+     "TOP_HOLDER": 479
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "us-company"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": [
+     {
+      "label": "Lei",
+      "text": "LEI-Z1",
+      "link": {
+       "kind": "lei-entity",
+       "id": "LEI-Z1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Price history",
+      "text": "868",
+      "link": {
+       "kind": "price-history",
+       "id": "868",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Sic sector",
+      "text": "SIC_SECTOR-T1",
+      "link": {
+       "kind": "sic-sector",
+       "id": "SIC_SECTOR-T1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Ticker",
+      "text": "TICKER-K1",
+      "link": {
+       "kind": "us-company",
+       "id": "TICKER-K1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     },
+     {
+      "label": "Sic",
+      "text": "240.37",
+      "link": {
+       "kind": "sic-sector",
+       "id": "240.37",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "source.freshness",
+   "args": [
+    "fund-holder"
+   ],
+   "answer": {
+    "source": "recorded",
+    "lastUpdate": null,
+    "staleAfter": null,
+    "stale": false
+   }
   }
  ]
 }

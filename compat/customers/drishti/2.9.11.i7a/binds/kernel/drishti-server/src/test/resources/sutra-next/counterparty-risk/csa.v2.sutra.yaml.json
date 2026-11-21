@@ -20,16 +20,16 @@
       "HAIRCUT": 897
      }
     ],
-    "CSA_ID": "CSA_ID-V1",
+    "AGREEMENT": 679,
     "MARGIN_TYPE": "MARGIN_TYPE-J1",
     "THRESHOLD_US": 329.09,
     "THRESHOLD_THEM": 47.87,
     "MTA": 587,
-    "INDEPENDENT_AMOUNT": "2026-02-11",
+    "INDEPENDENT_AMOUNT": "2026-03-05",
     "CSA_CURRENCY": "CSA_CURRENCY-X1",
     "FREQUENCY": 236.99,
     "MPOR_DAYS": 6,
-    "AGREEMENT": 679
+    "CSA_ID": "CSA_ID-V1"
    }
   },
   {
@@ -67,7 +67,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Agreement",
+      "text": "679",
+      "link": {
+       "kind": "agreement",
+       "id": "679",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

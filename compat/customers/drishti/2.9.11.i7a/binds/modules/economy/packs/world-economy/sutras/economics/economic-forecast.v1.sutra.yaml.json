@@ -15,7 +15,7 @@
       "UNEMPLOYMENT": 461,
       "CURRENT_ACCOUNT": 102,
       "DEBT": 591,
-      "NET_LENDING": "2026-03-12",
+      "NET_LENDING": "2026-04-29",
       "GDP": 458.45
      },
      {
@@ -26,7 +26,7 @@
       "UNEMPLOYMENT": 561,
       "CURRENT_ACCOUNT": 452,
       "DEBT": 441,
-      "NET_LENDING": "2026-04-15",
+      "NET_LENDING": "2026-01-06",
       "GDP": 308.45
      },
      {
@@ -37,28 +37,36 @@
       "UNEMPLOYMENT": 411,
       "CURRENT_ACCOUNT": 552,
       "DEBT": 791,
-      "NET_LENDING": "2026-05-18",
+      "NET_LENDING": "2026-02-12",
       "GDP": 658.45
      }
     ],
     "PATH": [
      {
-      "VALUE": 855.53
+      "YEAR": 728,
+      "GROWTH": 155
      },
      {
-      "VALUE": 705.53
+      "YEAR": 578,
+      "GROWTH": 505
      },
      {
-      "VALUE": 1055.53
+      "YEAR": 928,
+      "GROWTH": 605
      }
     ],
-    "FORECAST_ID": "FORECAST_ID-X1",
+    "ECONOMY": 141.49,
     "ECONOMY_NAME": "ECONOMY_NAME-N1",
     "VINTAGE": 6.37,
     "GROWTH_2027": 511,
     "INFLATION_2027": 423.83,
     "DEBT_2030": -9,
-    "ECONOMY": 141.49
+    "FORECAST_ID": "FORECAST_ID-X1",
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -96,7 +104,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Economy",
+      "text": "141.49",
+      "link": {
+       "kind": "economy",
+       "id": "141.49",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

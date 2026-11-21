@@ -8,29 +8,29 @@
    "answer": {
     "EVENTS": [
      {
-      "AT": "2026-05-14",
+      "AT": "2026-04-25",
       "EVENT": 815.77,
       "BY": -119.17
      },
      {
-      "AT": "2026-06-17",
+      "AT": "2026-01-02",
       "EVENT": 915.77,
       "BY": 230.83
      },
      {
-      "AT": "2026-07-20",
+      "AT": "2026-02-08",
       "EVENT": 765.77,
       "BY": 330.83
      }
     ],
-    "CALL_ID": "CALL_ID-X1",
-    "CALL_DATE": "2026-03-12",
+    "NETTING_SET": 67,
+    "CALL_DATE": "2025-12-24",
     "MARGIN_TYPE": "MARGIN_TYPE-J1",
     "DIRECTION": 200.57,
     "AMOUNT": 146,
     "STATUS": "STATUS-Y1",
     "DISPUTE_AMOUNT": -220.45,
-    "NETTING_SET": 67
+    "CALL_ID": "CALL_ID-X1"
    }
   },
   {
@@ -68,7 +68,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Netting set",
+      "text": "67",
+      "link": {
+       "kind": "netting-set",
+       "id": "67",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

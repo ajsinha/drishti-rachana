@@ -6,26 +6,58 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "TOP_WEIGHTS": [
+    "HOLDERS": [
      {
-      "VALUE": 855.53
+      "FUND": 575,
+      "FUND_NAME": "FUND_NAME-C1",
+      "TYPE": "TYPE-X1",
+      "PCT": 75.47,
+      "VALUE": 855.53,
+      "SHARES": 409,
+      "REPORT_DATE": "2026-05-08"
      },
      {
-      "VALUE": 705.53
+      "FUND": 675,
+      "FUND_NAME": "FUND_NAME-D2",
+      "TYPE": "TYPE-Y2",
+      "PCT": 425.47,
+      "VALUE": 705.53,
+      "SHARES": 759,
+      "REPORT_DATE": "2026-01-15"
      },
      {
-      "VALUE": 1055.53
+      "FUND": 525,
+      "FUND_NAME": "FUND_NAME-E3",
+      "TYPE": "TYPE-Z3",
+      "PCT": 525.47,
+      "VALUE": 1055.53,
+      "SHARES": 859,
+      "REPORT_DATE": "2026-02-21"
      }
     ],
-    "TICKER": "TICKER-K1",
-    "NAME": "NAME-X1",
+    "TOP_WEIGHTS": [
+     {
+      "FUND": 575,
+      "PCT": 75.47
+     },
+     {
+      "FUND": 675,
+      "PCT": 425.47
+     },
+     {
+      "FUND": 525,
+      "PCT": 525.47
+     }
+    ],
     "COMPANY": -37.51,
+    "NAME": "NAME-X1",
     "FUNDS": 422.05,
     "ETFS": 623.39,
     "TOTAL_VALUE": 529,
     "PCT_OF_SHARES": -175.33,
     "AVG_WEIGHT": 370.07,
-    "MAX_WEIGHT": -109
+    "MAX_WEIGHT": -109,
+    "TICKER": "TICKER-K1"
    }
   },
   {

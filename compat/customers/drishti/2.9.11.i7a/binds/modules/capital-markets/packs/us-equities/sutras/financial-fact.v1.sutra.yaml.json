@@ -9,36 +9,36 @@
     "HISTORY": [
      {
       "YEAR": 728,
-      "PERIOD_END": "2026-04-13",
       "VALUE": 855.53,
+      "PERIOD_END": "2026-02-17",
       "FORM": 337.49,
       "FILED": 177.17,
       "ACCESSION": 373
      },
      {
       "YEAR": 578,
-      "PERIOD_END": "2026-05-16",
       "VALUE": 705.53,
+      "PERIOD_END": "2026-03-26",
       "FORM": 687.49,
       "FILED": 527.17,
       "ACCESSION": 223
      },
      {
       "YEAR": 928,
-      "PERIOD_END": "2026-06-19",
       "VALUE": 1055.53,
+      "PERIOD_END": "2026-05-02",
       "FORM": 787.49,
       "FILED": 627.17,
       "ACCESSION": 573
      }
     ],
-    "FACT_ID": "FACT_ID-P1",
     "COMPANY": -37.51,
-    "COMPANY_NAME": "COMPANY_NAME-L1",
     "LABEL": "LABEL-I1",
     "LATEST": 449.41,
     "LATEST_YEAR": 542,
     "UNIT": 271,
+    "FACT_ID": "FACT_ID-P1",
+    "COMPANY_NAME": "COMPANY_NAME-L1",
     "CONCEPT": 125,
     "XBRL_TAG": 895,
     "YEARS": 12.83
@@ -79,7 +79,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Company",
+      "text": "-37.51",
+      "link": {
+       "kind": "us-company",
+       "id": "-37.51",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

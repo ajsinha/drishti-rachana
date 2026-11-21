@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
 """Written by the release that creates a level (CG1, CG4): conformance/1/FROZEN.sha384 (a hash per case file; `--released <tag>` sets
-the state, otherwise pre-release) and, with --contract <minor>, spec/1/released/viewmodel-<minor>.schema.json from the current schema.
+the state, otherwise pre-release); with --contract <minor>, spec/1/released/viewmodel-<minor>.schema.json from the current schema; with
+--api <minor>, java/api-surface-<minor>.txt from java/api-surface.txt (CG5's released baseline, gate 2 F11: ApiSurfaceTest checks it on
+every run and never writes it).
 The release tool runs it; there is no other writer, and a released file is never rewritten (it refuses)."""
 import argparse, hashlib, shutil, sys
 from pathlib import Path
@@ -11,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ap = argparse.ArgumentParser(description=__doc__)
 ap.add_argument("--released", metavar="TAG", help="state the files as released at this tag (default: pre-release)")
 ap.add_argument("--contract", metavar="MINOR", help="copy the current ViewModel schema to spec/1/released/ as this minor")
+ap.add_argument("--api", metavar="MINOR", help="copy java/api-surface.txt to java/api-surface-<MINOR>.txt, the released API baseline")
 a = ap.parse_args()
 cases = ROOT / "conformance" / "1"
 target = cases / "FROZEN.sha384"
@@ -33,4 +36,10 @@ if a.contract:
     if t.exists():
         sys.exit(f"{t.name} exists: a released contract is never rewritten")
     shutil.copy(ROOT / "spec/1/viewmodel.schema.json", t)
+    print(f"wrote {t}")
+if a.api:
+    t = ROOT / "java" / f"api-surface-{a.api}.txt"
+    if t.exists():
+        sys.exit(f"{t.name} exists: a released API baseline is never rewritten")
+    shutil.copy(ROOT / "java" / "api-surface.txt", t)
     print(f"wrote {t}")

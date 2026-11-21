@@ -8,13 +8,16 @@
    "answer": {
     "enrolment": [
      {
-      "VALUE": 855.53
+      "month": 395.93,
+      "patients": 202
      },
      {
-      "VALUE": 705.53
+      "month": 745.93,
+      "patients": 302
      },
      {
-      "VALUE": 1055.53
+      "month": 845.93,
+      "patients": 152
      }
     ],
     "arms": [
@@ -37,14 +40,14 @@
       "orr": 43.61
      }
     ],
-    "trialId": "TRIALID-V1",
+    "gene": 87,
     "title": 181,
     "phase": 475.63,
     "status": "STATUS-Y1",
     "enrolled": 213,
     "target": 38,
     "biomarkerName": "BIOMARKERNAM-B1",
-    "gene": 87
+    "trialId": "TRIALID-V1"
    }
   },
   {
@@ -82,7 +85,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Gene",
+      "text": "87",
+      "link": {
+       "kind": "gene",
+       "id": "87",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

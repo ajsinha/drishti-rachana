@@ -57,15 +57,18 @@
       }
      ],
      "PNL": [
-      {
-       "VALUE": 855.53
-      },
-      {
-       "VALUE": 705.53
-      },
-      {
-       "VALUE": 1055.53
-      }
+      -20.6,
+      46.7,
+      -16.2,
+      -44.1,
+      45.4,
+      -6.3,
+      -28.7,
+      -36.4,
+      -36.7,
+      66.6,
+      21.8,
+      2.9
      ],
      "VAR": 290,
      "ES": 138,
@@ -74,15 +77,15 @@
      "PCT_OF_BOOK_VAR": "PCT_OF_BOOK_-O1",
      "NOTE": "NOTE-M1"
     },
-    "POSITION_ID": "POSITION_ID-W1",
-    "INSTRUMENT": 143.11,
+    "TT_BOOK": "TT_BOOK-V1",
     "DIRECTION": 200.57,
     "QUANTITY": 294,
     "MARKET_VALUE": 386,
     "TRADE_COUNT": 622.07,
+    "POSITION_ID": "POSITION_ID-W1",
+    "INSTRUMENT": 143.11,
     "INSTRUMENT_ID": "INSTRUMENT_I-C1",
     "POSITION_RULE": 445,
-    "TT_BOOK": "TT_BOOK-V1",
     "DESK": "DESK-G1",
     "LEGAL_ENTITY": "LEGAL_ENTITY-E1",
     "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
@@ -127,7 +130,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Tt book",
+      "text": "TT_BOOK-V1",
+      "link": {
+       "kind": "book",
+       "id": "TT_BOOK-V1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

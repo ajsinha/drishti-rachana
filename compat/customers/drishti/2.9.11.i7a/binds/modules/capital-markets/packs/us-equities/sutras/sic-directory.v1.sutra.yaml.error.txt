@@ -1,1 +1,0 @@
-NullPointerException: Cannot invoke "com.ash.drishti.engine.source.SourceRouter.list(String, String, int, java.time.Duration, com.ash.drishti.api.AsOf, com.ash.drishti.engine.source.SourceFailures)" because "this.router" is null

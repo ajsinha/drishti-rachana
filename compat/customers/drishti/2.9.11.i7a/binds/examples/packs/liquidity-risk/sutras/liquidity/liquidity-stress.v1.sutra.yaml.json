@@ -8,33 +8,39 @@
    "answer": {
     "path": [
      {
-      "VALUE": 855.53
+      "day": "2026-01-08",
+      "position": 409
      },
      {
-      "VALUE": 705.53
+      "day": "2026-02-14",
+      "position": 759
      },
      {
-      "VALUE": 1055.53
+      "day": "2026-03-23",
+      "position": 859
      }
     ],
     "drivers": [
      {
-      "VALUE": 855.53
+      "driver": 635,
+      "outflow": 441
      },
      {
-      "VALUE": 705.53
+      "driver": 485,
+      "outflow": 791
      },
      {
-      "VALUE": 1055.53
+      "driver": 835,
+      "outflow": 891
      }
     ],
-    "resultId": "RESULTID-N1",
+    "legalEntity": "LEGALENTITY-L1",
     "scenarioName": "SCENARIONAME-R1",
     "legalEntityName": "LEGALENTITYN-P1",
     "survivalDays": 454,
     "minimumPosition": 760.01,
     "appetiteDays": 858,
-    "legalEntity": "LEGALENTITY-L1"
+    "resultId": "RESULTID-N1"
    }
   },
   {
@@ -72,7 +78,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

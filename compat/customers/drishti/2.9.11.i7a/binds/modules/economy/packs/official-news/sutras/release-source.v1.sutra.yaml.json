@@ -31,16 +31,18 @@
     ],
     "BY_CATEGORY": [
      {
-      "VALUE": 855.53
+      "CATEGORY": "CATEGORY-A1",
+      "COUNT": 267
      },
      {
-      "VALUE": 705.53
+      "CATEGORY": "CATEGORY-B2",
+      "COUNT": 117
      },
      {
-      "VALUE": 1055.53
+      "CATEGORY": "CATEGORY-C3",
+      "COUNT": 467
      }
     ],
-    "SOURCE_ID": "SOURCE_ID-W1",
     "NAME": "NAME-X1",
     "PUBLISHER_TYPE": "PUBLISHER_TY-J1",
     "COUNTRY": "COUNTRY-I1",
@@ -49,10 +51,16 @@
     "LAST_PULL": 862.15,
     "INTERNAL_ONLY": 384,
     "WHY_INTERNAL": 62.99,
+    "SOURCE_ID": "SOURCE_ID-W1",
     "LICENCE": 77,
     "TERMS_URL": "TERMS_URL-S1",
     "WEBSITE": 496.27,
-    "FEED_URL": "FEED_URL-J1"
+    "FEED_URL": "FEED_URL-J1",
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {

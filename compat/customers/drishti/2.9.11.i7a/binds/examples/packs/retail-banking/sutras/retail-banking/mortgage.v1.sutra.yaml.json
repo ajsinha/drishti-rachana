@@ -8,24 +8,16 @@
    "answer": {
     "amortisation": [
      {
-      "VALUE": 855.53
+      "year": 770,
+      "balance": 525
      },
      {
-      "VALUE": 705.53
+      "year": 870,
+      "balance": 375
      },
      {
-      "VALUE": 1055.53
-     }
-    ],
-    "property": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
+      "year": 720,
+      "balance": 725
      }
     ],
     "payments": [
@@ -48,14 +40,19 @@
       "status": "STATUS-A3"
      }
     ],
-    "loanId": "LOANID-F1",
+    "customer": 78,
     "borrowerName": "BORROWERNAME-D1",
     "balance": 525,
     "rate": 593.99,
     "ltv": 178.07,
     "remainingYears": 104.53,
     "daysPastDue": 825.89,
-    "customer": 78
+    "loanId": "LOANID-F1",
+    "property": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -93,7 +90,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Customer",
+      "text": "78",
+      "link": {
+       "kind": "customer",
+       "id": "78",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

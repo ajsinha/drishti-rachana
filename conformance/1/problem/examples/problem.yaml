@@ -52,7 +52,7 @@ cases:
     kind: problem
     since: "1.1"
     source: SPEC 2.3, 6.1
-    note: "SPEC 6.1 (all problems): a panel refused for its kind still holds its id, so the duplicate is found too. The reference stops at the first (level 1.0); the paths of SPEC 6.1 are not reported by this runtime (a Sutra's problems carry a line and column)."
+    note: "SPEC 6.1 (all problems): a panel refused for its kind still holds its id, so the duplicate is found too. The reference stops at the first (level 1.0). Each problem carries its path and range (SPEC 6.1, gate 2 O4)."
     sutra: |
       rachana: 1
       sutra: demo
@@ -64,8 +64,8 @@ cases:
     expect:
       ok: false
       problems:
-        - { code: RCH-2021, range: { start: { line: 6 } } }
-        - { code: RCH-2024, range: { start: { line: 7 } } }
+        - { code: RCH-2021, severity: error, path: /panels/0/kind, range: { start: { line: 6 } } }
+        - { code: RCH-2024, severity: error, path: /panels/1/id, range: { start: { line: 7 } } }
 
   - id: expression-problem-inside-a-panel
     kind: problem
@@ -98,4 +98,4 @@ cases:
     expect:
       ok: false
       problems:
-        - { code: RCH-2060, range: { start: { line: 4 } } }
+        - { code: RCH-2060, severity: error, path: /match, range: { start: { line: 4 } } }

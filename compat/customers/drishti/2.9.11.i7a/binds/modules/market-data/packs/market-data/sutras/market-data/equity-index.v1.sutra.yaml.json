@@ -22,22 +22,25 @@
     ],
     "HISTORY": [
      {
-      "VALUE": 855.53
+      "DATE": "2026-04-27",
+      "CLOSE": 590
      },
      {
-      "VALUE": 705.53
+      "DATE": "2026-01-04",
+      "CLOSE": 440
      },
      {
-      "VALUE": 1055.53
+      "DATE": "2026-02-10",
+      "CLOSE": 790
      }
     ],
-    "INDEX_ID": "INDEX_ID-O1",
+    "EQUITY_VOL_SURFACE": 610.69,
     "NAME": "NAME-X1",
     "LEVEL": "LEVEL-A1",
     "CHANGE_1D": 468.91,
     "CONSTITUENT_COUNT": 632.27,
     "CURRENCY": "CURRENCY-Z1",
-    "EQUITY_VOL_SURFACE": 610.69
+    "INDEX_ID": "INDEX_ID-O1"
    }
   },
   {
@@ -75,7 +78,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Equity vol surface",
+      "text": "610.69",
+      "link": {
+       "kind": "equity-vol-surface",
+       "id": "610.69",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

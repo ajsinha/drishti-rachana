@@ -8,33 +8,30 @@
    "answer": {
     "percentiles": [
      {
-      "VALUE": 855.53
+      "percentile": 23,
+      "loss": 874
      },
      {
-      "VALUE": 705.53
+      "percentile": 123,
+      "loss": 974
      },
      {
-      "VALUE": 1055.53
+      "percentile": -26,
+      "loss": 824
      }
     ],
-    "context": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "scenarioId": "SCENARIOID-N1",
+    "legalEntity": "LEGALENTITY-L1",
     "name": "NAME-D1",
     "eventType": "EVENTTYPE-Z1",
     "returnPeriod": 356.15,
     "p50": 494,
     "p999": 15,
-    "legalEntity": "LEGALENTITY-L1"
+    "scenarioId": "SCENARIOID-N1",
+    "context": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -72,7 +69,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Legal entity",
+      "text": "LEGALENTITY-L1",
+      "link": {
+       "kind": "legal-entity",
+       "id": "LEGALENTITY-L1",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

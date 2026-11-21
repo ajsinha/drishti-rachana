@@ -8,13 +8,16 @@
    "answer": {
     "expression": [
      {
-      "VALUE": 855.53
+      "tissue": 779.47,
+      "tpm": 281.21
      },
      {
-      "VALUE": 705.53
+      "tissue": 879.47,
+      "tpm": 631.21
      },
      {
-      "VALUE": 1055.53
+      "tissue": 729.47,
+      "tpm": 731.21
      }
     ],
     "variants": [
@@ -34,25 +37,19 @@
       "significance": 209.87
      }
     ],
-    "identifiers": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "geneId": "GENEID-G1",
+    "protein": 210,
     "symbol": 503,
     "name": "NAME-D1",
     "location": 134,
     "length": 264,
     "strand": 893.89,
     "transcripts": 218.15,
-    "protein": 210
+    "geneId": "GENEID-G1",
+    "identifiers": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -90,7 +87,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Protein",
+      "text": "210",
+      "link": {
+       "kind": "protein",
+       "id": "210",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

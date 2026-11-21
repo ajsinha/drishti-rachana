@@ -8,94 +8,139 @@
    "answer": {
     "TRADES": [
      {
+      "TRADE_ID": "TRADE_ID-P1",
+      "SOURCE_SYSTEM": "SOURCE_SYSTE-B1",
+      "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
+      "BUY_SELL_CODE": "BUY_SELL_COD-F1",
+      "CURRENCY": "CURRENCY-Z1",
+      "NOTIONAL": 155,
+      "INDEX_NAME": "INDEX_NAME-Y1",
+      "MATURITY_DATE": "2026-01-23",
+      "TRADE_STATUS": "TRADE_STATUS-U1",
+      "label": "LABEL-W1",
+      "value": 418,
       "EVENTS": [
        {
-        "EVENT_DATE": "2026-08-26",
+        "EVENT_DATE": "2026-04-13",
         "PAYMENT_TYPE": "PAYMENT_TYPE-F1",
         "EVENT_TYPE": "EVENT_TYPE-A1",
         "LEG_ID": "LEG_ID-R1",
         "CURRENCY": "CURRENCY-Z1",
-        "AMOUNT": 146
+        "AMOUNT": 146,
+        "label": "LABEL-W1",
+        "value": 418
        },
        {
-        "EVENT_DATE": "2026-09-11",
+        "EVENT_DATE": "2025-12-21",
         "PAYMENT_TYPE": "PAYMENT_TYPE-G2",
         "EVENT_TYPE": "EVENT_TYPE-B2",
         "LEG_ID": "LEG_ID-S2",
         "CURRENCY": "CURRENCY-A2",
-        "AMOUNT": 496
+        "AMOUNT": 496,
+        "label": "LABEL-X2",
+        "value": 268
        },
        {
-        "EVENT_DATE": "2026-01-14",
+        "EVENT_DATE": "2026-01-27",
         "PAYMENT_TYPE": "PAYMENT_TYPE-H3",
         "EVENT_TYPE": "EVENT_TYPE-C3",
         "LEG_ID": "LEG_ID-T3",
         "CURRENCY": "CURRENCY-B3",
-        "AMOUNT": 596
+        "AMOUNT": 596,
+        "label": "LABEL-Y3",
+        "value": 618
        }
-      ],
-      "VALUE": 855.53,
-      "TRADE_STATUS": "TRADE_STATUS-U1"
+      ]
      },
      {
+      "TRADE_ID": "TRADE_ID-Q2",
+      "SOURCE_SYSTEM": "SOURCE_SYSTE-C2",
+      "PRODUCT_TYPE": "PRODUCT_TYPE-W2",
+      "BUY_SELL_CODE": "BUY_SELL_COD-G2",
+      "CURRENCY": "CURRENCY-A2",
+      "NOTIONAL": 255,
+      "INDEX_NAME": "INDEX_NAME-Z2",
+      "MATURITY_DATE": "2026-03-01",
+      "TRADE_STATUS": "TRADE_STATUS-V2",
+      "label": "LABEL-X2",
+      "value": 268,
       "EVENTS": [
        {
-        "EVENT_DATE": "2026-08-26",
+        "EVENT_DATE": "2026-04-13",
         "PAYMENT_TYPE": "PAYMENT_TYPE-F1",
         "EVENT_TYPE": "EVENT_TYPE-A1",
         "LEG_ID": "LEG_ID-R1",
         "CURRENCY": "CURRENCY-Z1",
-        "AMOUNT": 146
+        "AMOUNT": 146,
+        "label": "LABEL-W1",
+        "value": 418
        },
        {
-        "EVENT_DATE": "2026-09-11",
+        "EVENT_DATE": "2025-12-21",
         "PAYMENT_TYPE": "PAYMENT_TYPE-G2",
         "EVENT_TYPE": "EVENT_TYPE-B2",
         "LEG_ID": "LEG_ID-S2",
         "CURRENCY": "CURRENCY-A2",
-        "AMOUNT": 496
+        "AMOUNT": 496,
+        "label": "LABEL-X2",
+        "value": 268
        },
        {
-        "EVENT_DATE": "2026-01-14",
+        "EVENT_DATE": "2026-01-27",
         "PAYMENT_TYPE": "PAYMENT_TYPE-H3",
         "EVENT_TYPE": "EVENT_TYPE-C3",
         "LEG_ID": "LEG_ID-T3",
         "CURRENCY": "CURRENCY-B3",
-        "AMOUNT": 596
+        "AMOUNT": 596,
+        "label": "LABEL-Y3",
+        "value": 618
        }
-      ],
-      "VALUE": 705.53,
-      "TRADE_STATUS": "TRADE_STATUS-V2"
+      ]
      },
      {
+      "TRADE_ID": "TRADE_ID-R3",
+      "SOURCE_SYSTEM": "SOURCE_SYSTE-D3",
+      "PRODUCT_TYPE": "PRODUCT_TYPE-X3",
+      "BUY_SELL_CODE": "BUY_SELL_COD-H3",
+      "CURRENCY": "CURRENCY-B3",
+      "NOTIONAL": 105,
+      "INDEX_NAME": "INDEX_NAME-A3",
+      "MATURITY_DATE": "2026-04-07",
+      "TRADE_STATUS": "TRADE_STATUS-W3",
+      "label": "LABEL-Y3",
+      "value": 618,
       "EVENTS": [
        {
-        "EVENT_DATE": "2026-08-26",
+        "EVENT_DATE": "2026-04-13",
         "PAYMENT_TYPE": "PAYMENT_TYPE-F1",
         "EVENT_TYPE": "EVENT_TYPE-A1",
         "LEG_ID": "LEG_ID-R1",
         "CURRENCY": "CURRENCY-Z1",
-        "AMOUNT": 146
+        "AMOUNT": 146,
+        "label": "LABEL-W1",
+        "value": 418
        },
        {
-        "EVENT_DATE": "2026-09-11",
+        "EVENT_DATE": "2025-12-21",
         "PAYMENT_TYPE": "PAYMENT_TYPE-G2",
         "EVENT_TYPE": "EVENT_TYPE-B2",
         "LEG_ID": "LEG_ID-S2",
         "CURRENCY": "CURRENCY-A2",
-        "AMOUNT": 496
+        "AMOUNT": 496,
+        "label": "LABEL-X2",
+        "value": 268
        },
        {
-        "EVENT_DATE": "2026-01-14",
+        "EVENT_DATE": "2026-01-27",
         "PAYMENT_TYPE": "PAYMENT_TYPE-H3",
         "EVENT_TYPE": "EVENT_TYPE-C3",
         "LEG_ID": "LEG_ID-T3",
         "CURRENCY": "CURRENCY-B3",
-        "AMOUNT": 596
+        "AMOUNT": 596,
+        "label": "LABEL-Y3",
+        "value": 618
        }
-      ],
-      "VALUE": 1055.53,
-      "TRADE_STATUS": "TRADE_STATUS-W3"
+      ]
      }
     ],
     "COUNTERPARTY": "COUNTERPARTY-N1",
@@ -104,7 +149,13 @@
     "SOURCE_SYSTEMS": "SOURCE_SYSTE-H1",
     "PRODUCT_TYPES": "PRODUCT_TYPE-X1",
     "CURRENCIES": 377.63,
-    "LAST_MATURITY": "2026-05-23"
+    "LAST_MATURITY": "2026-01-16",
+    "PAY_7D_EVENTS": 379,
+    "PAY_7D": 114.79,
+    "PAY_30D_EVENTS": 175.79,
+    "PAY_30D": 893.21,
+    "PAY_90D_EVENTS": 485.93,
+    "PAY_90D": 387.95
    }
   },
   {

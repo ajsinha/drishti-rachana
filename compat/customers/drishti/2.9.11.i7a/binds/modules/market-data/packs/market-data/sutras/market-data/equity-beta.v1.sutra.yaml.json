@@ -6,17 +6,17 @@
    "hook": "record",
    "args": [],
    "answer": {
-    "EQUITY": 742.21,
     "BETA": 453.13,
     "INDEX": "INDEX-Q1",
     "CORRELATION": 217.93,
     "R_SQUARED": 349.81,
     "AVAILABLE": 628.49,
+    "EQUITY": 742.21,
     "ALPHA": 205,
     "VOLATILITY": 619,
     "INDEX_VOLATILITY": "INDEX_VOLATI-H1",
     "WINDOW": 521.03,
-    "FROM": "2026-04-22",
+    "FROM": "2026-01-15",
     "TO": 480.29
    }
   },

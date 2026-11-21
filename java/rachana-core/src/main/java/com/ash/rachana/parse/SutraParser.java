@@ -56,19 +56,21 @@ public final class SutraParser {
     public Sutra parse(String yaml, String file, String domain) {
         PNode root;
         List<PositionalYamlReader.Issue> issues = new ArrayList<>();
+        ProblemPlaces places = ProblemPlaces.of(yaml, file);           // SPEC 6.1: every problem with its path and range
         try {
             root = reader.read(yaml, issues);
         } catch (YamlSyntaxException e) {
-            throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getMessage(),
-                    new SourceLocation(file, e.line(), e.column()))));
+            throw new SutraException(places.place(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getMessage(),
+                    new SourceLocation(file, e.line(), e.column())))));
         }
         SutraBuilder b = new SutraBuilder(file, grammar);
+        b.places = places;
         Sutra s = b.build(root, domain);
         if (!issues.isEmpty() || !b.problems().isEmpty()) {
             List<SutraProblem> all = new ArrayList<>();
             issues.forEach(i -> all.add(new SutraProblem(AMBIGUOUS_YAML, i.message(), new SourceLocation(file, i.line(), i.column()))));
             all.addAll(b.problems());
-            throw new SutraException(all);
+            throw new SutraException(places.place(all));
         }
         return s;
     }

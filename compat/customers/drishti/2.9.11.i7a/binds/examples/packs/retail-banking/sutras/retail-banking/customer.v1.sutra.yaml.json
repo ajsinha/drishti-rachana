@@ -23,25 +23,19 @@
       "balance": 725
      }
     ],
-    "profile": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "customerId": "CUSTOMERID-E1",
+    "branch": 62,
     "name": "NAME-D1",
     "segment": 757,
     "totalDeposits": 46.55,
-    "totalLending": "2026-05-14",
+    "totalLending": "2026-03-08",
     "kycRisk": 640.19,
     "since": -95.47,
-    "branch": 62
+    "customerId": "CUSTOMERID-E1",
+    "profile": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -79,7 +73,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Branch",
+      "text": "62",
+      "link": {
+       "kind": "branch",
+       "id": "62",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

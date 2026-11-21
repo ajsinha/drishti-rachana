@@ -739,7 +739,7 @@ words (`el/syntax-at-1-0`). Every one is pinned by `el/syntax-1-1`.
 | `a ?? b` | `a` unless it is empty, else `b` (evaluated only then); `''` and `0` are values; a masked `a` is passed on; between the conditional and `\|\|` | `$.missing ?? 'n/a'` → `'n/a'` |
 | `a if c else b` | the conditional in Python's order (PY2); `c ? a : b` and `if(c, a, b)` stay | `'big' if 5 > 3 else 'small'` → `'big'` |
 | `lambda x: body`, `lambda acc, x: body` | a function, **second class** (XD8): an argument of `map`, `sort` (a key), `reduce` (two names) or `group` (the key), or a `let` value called as `f(…)`; never stored, compared or printed; a `let` name is not in scope in its own value, so there is no recursion; inside, `@`, `^`, `#index` keep their outer meaning; `=>` stays reserved (PY3) | `let(bp = lambda x: x * 10000, bp(0.0125))` → `125` |
-| `a ** b`, `a ^ b` | power (PY6), right-associative, tighter than a sign on its left (`-2 ** 2` → `-4`, Python's rule; Excel reads `-2 ^ 2` as `4`), the same for both spellings (EL1-2); checked mode warns `RCH-2091` on a sign before a power without parentheses, with both spellings as the fix; exact for an exact base and a whole exponent of at most 64, else a double; `^` before an operand is still the parent | `2 ** 3 ** 2` → `512` |
+| `a ** b`, `a ^ b` | power (PY6), right-associative, tighter than a sign on its left (`-2 ** 2` → `-4`, Python's rule); a sign written right before a power spelled `^` without parentheses does not compile (`-2 ^ 2` is `RCH-2101`: Excel reads it as `4`; write `-(2 ^ 2)` or `(-2) ^ 2`; EL1-2 as amended by gate 2, O6); checked mode warns `RCH-2091` on `-x ** n`, with both readings as the fix; exact for an exact base and a whole exponent of at most 64, else a double; `^` before an operand is still the parent | `2 ** 3 ** 2` → `512` |
 | comment `/* … */` | white space; not nested; not kept by the printer | `1 /* one */ + 2` → `3` |
 | digit separator `1_000_000` | an underscore only between two digits | `1_000.000_1` → `1000.0001` |
 | exact numbers | 4.16 | `0.1 * 3 == 0.3` → `true` |
@@ -921,7 +921,7 @@ empty element gives empty.
 
 **To be classified in R0 step 0d** (today supplied by Drishti's pivot engine as list functions; Core or profile is
 not yet settled, so a Core implementation MAY lack them): `sum_once`, `count_once`, `avg_once`, `sumproduct`, `sumsq`,
-`product`, `devsq`, `avedev`, `geomean`, `harmean`, `mode`, `mode_multi`, `range`, `iqr`, `cv`, `stderr`, `nmiss`,
+`product`, `devsq`, `avedev`, `geomean`, `harmean`, `mode`, `mode_multi`, `range` (spelled `span` from level 1.1, EL1-1), `iqr`, `cv`, `stderr`, `nmiss`,
 `kurtosis`, `skewness`, `skewness_pop`, `covar`, `covar_pop`, `corr`, `rsq`, `slope`, `intercept`, `steyx`,
 `trimmean`, `percentile_exc`, `rank_avg`, `percent_rank_of`, `kth_largest`, `kth_smallest`, `string_agg`, `cumsum`,
 `cumprod`, `cummax`, `cummin`, `movsum`, `movmean`, `movstd`, `movmedian`, `maxk`, `mink`, `bounds`, `zscore`,
@@ -941,8 +941,7 @@ A compile returns **all** problems of a file, sorted by position (deterministic,
     "file": "sales.sutra.yaml",
     "range": { "start": { "line": 9, "column": 14, "offset": 201 }, "end": { "line": 9, "column": 37, "offset": 224 } },
     "path": "/panels/0/value",
-    "expr": { "source": "sum($.sales 'revenue')", "start": 12, "end": 21 },
-    "doc": "https://ajsinha.github.io/drishti-rachana/problems/RCH-2101" } ] }
+    "expr": { "source": "sum($.sales 'revenue')", "start": 12, "end": 21 } } ] }
 ```
 
 | Field | Always | Meaning |
@@ -951,12 +950,19 @@ A compile returns **all** problems of a file, sorted by position (deterministic,
 | `severity` | yes | `error` (the Sutra does not load), `warning`, `info` |
 | `message` | yes | one plain sentence naming the thing and what is allowed; names only, never data values |
 | `file` | when known | as given |
-| `range` | yes | 1-based line and column, 0-based offset; `end` exclusive |
-| `path` | yes | RFC 6901 JSON Pointer to the YAML node (`/panels/2/limit`), so a tool can find it without positions |
+| `range` | yes | the YAML node's start and end: 1-based line and column (a column in code points), 0-based offset in UTF-16 code units (4.13); `end` exclusive (from the key to the end of the value when the problem names an entry) |
+| `path` | yes | RFC 6901 JSON Pointer to the YAML node (`/panels/2/limit`; `""` the document), so a tool can find it without positions |
 | `expr` | expression problems | the source and 0-based `start`/`end` inside it |
-| `expected` | closed sets | valid names, nearest first, at most 40 (then `"more": n`) |
-| `fix` | when certain | text edits; applying every fix of a result MUST NOT increase the number of problems [CS] |
-| `doc` | yes | a stable page per code |
+| `expected` | closed sets, **from a later minor** | valid names, nearest first, at most 40 (then `"more": n`); until then the message names them |
+| `fix` | when certain | text edits; applying every fix of a result MUST NOT increase the number of problems [CS]. Checked mode gives it (4.14); a compile's problems carry it **from a later minor** |
+| `doc` | **from a later minor** | a stable page per code |
+
+`path` and the full `range` are given for every problem of the file compiled. A problem located in another file (a fragment
+or library file, a library's lock) carries that file's name in `file` and its start only, since the compile did not read that
+file's text. The conformance answers recorded for level 1.0 (`compat/levels/1.0`) hold the start line and column only, and a
+runtime answers level 1.0 cases in that shape so the replay stays byte for byte; from level 1.1 the answers carry `path` and the
+full `range` (gate 2, O4). `doc`, `fix` on compile problems and `expected` are deferred to a later minor: a 1.0 or 1.1 runtime
+need not give them.
 
 An API that serves compile results wraps the same list (HTTP 422).
 
@@ -971,7 +977,7 @@ Core keeps the reference's numbers with the prefix `RCH-` (decision D8; Drishti 
 | `RCH-2048`..`2059` | reuse, docstring, wiring, forms, layout | `2048` fragment not found, `2055` docstring, `2056` children depth, `2057` event or source read, `2058` form, `2059` layout |
 | `RCH-2060`..`2069` | profiles | `2060` key, kind or function of a profile not loaded, `2061` profile claimed but unused, `2062` unknown profile |
 | `RCH-2070`..`2079` | data | `2070` unknown table, `2071` unknown column (`expected`), `2072` key missing for a live table, `2073` source shape or name clash, `2074` not push-down-able over a server table |
-| `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling, `2091` a sign before a power without parentheses (level 1.1, checked mode: `-x ** n` is `-(x ** n)`; EL1-2), `2092` a declared name a later level reserves (the local one wins; 2.7) |
+| `RCH-2090`..`2099` | deprecation, style (warnings) | `2090` deprecated spelling, `2091` a sign before a `**` power without parentheses (level 1.1, checked mode: `-x ** n` is `-(x ** n)`; EL1-2; `-x ^ n` does not compile), `2092` a declared name a later level reserves (the local one wins; 2.7) |
 | `RCH-2110`..`2119` | libraries and typed fragments (since 1.2) | `2110` library not found, `2111` not in the lock or another major, `2112` invalid library, `2113` integrity, `2114` unknown parameter or slot, `2115` required parameter missing, `2116` wrong type or constraint, `2117` reads outside its scope, `2118` slot content; `2119` reserved (a library needs a profile or level the host lacks); `2120` advisory (warning): a column mapping the fragment never reads (L-21) |
 | `RCH-2080`..`2089` | live table declarations (`<name>.live.yaml`) | `2080` `edit` needs a key and a `version` column, `2081` a column that cannot be edited (the key, the version, `changed-by`, `changed-at`) or an edit field that binds none, `2082` a heavy column where a list needs it (key, order, grouping, narrowing), `2083` retention; `2084`..`2089` reserved |
 | `RCH-2101`, `2102` | expressions | `2101` does not compile (syntax, unknown function, arity, literal check, limits); `2102` evaluation error |

@@ -8,26 +8,118 @@
    "answer": {
     "TRADES": [
      {
-      "VALUE": 855.53
+      "TRADE_ID": "TRADE_ID-P1",
+      "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
+      "COUNTERPARTY": "COUNTERPARTY-N1",
+      "NOTIONAL": 155,
+      "MATURITY_DATE": "2026-01-23"
      },
      {
-      "VALUE": 705.53
+      "TRADE_ID": "TRADE_ID-Q2",
+      "PRODUCT_TYPE": "PRODUCT_TYPE-W2",
+      "COUNTERPARTY": "COUNTERPARTY-O2",
+      "NOTIONAL": 255,
+      "MATURITY_DATE": "2026-03-01"
      },
      {
-      "VALUE": 1055.53
+      "TRADE_ID": "TRADE_ID-R3",
+      "PRODUCT_TYPE": "PRODUCT_TYPE-X3",
+      "COUNTERPARTY": "COUNTERPARTY-P3",
+      "NOTIONAL": 105,
+      "MATURITY_DATE": "2026-04-07"
      }
     ],
-    "PORTFOLIO": -233,
     "TRADE_COUNT": 622.07,
     "NOTIONAL": 155,
     "PRODUCT_TYPES": "PRODUCT_TYPE-X1",
-    "LAST_MATURITY": "2026-05-23"
+    "LAST_MATURITY": "2026-01-16",
+    "PORTFOLIO": -233
    }
   },
   {
    "hook": "calendar.today",
    "args": [],
    "answer": "2026-01-15"
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "credit-limit",
+    "CREDIT-LIMIT-1"
+   ],
+   "answer": {
+    "data": {
+     "COUNTERPARTY": "COUNTERPARTY-N1",
+     "BUCKET": 626.83,
+     "UTILISATION": 323.03
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "credit-limit",
+    "CREDIT-LIMIT-2"
+   ],
+   "answer": {
+    "data": {
+     "COUNTERPARTY": "COUNTERPARTY-O2",
+     "BUCKET": 726.83,
+     "UTILISATION": 173.03
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.fetch",
+   "args": [
+    "credit-limit",
+    "CREDIT-LIMIT-3"
+   ],
+   "answer": {
+    "data": {
+     "COUNTERPARTY": "COUNTERPARTY-P3",
+     "BUCKET": 576.83,
+     "UTILISATION": 523.03
+    },
+    "source": "recorded",
+    "fetchedAt": "1970-01-01T00:00:00Z"
+   }
+  },
+  {
+   "hook": "source.search",
+   "args": [
+    "credit-limit",
+    ""
+   ],
+   "answer": [
+    {
+     "id": "CREDIT-LIMIT-1",
+     "title": "Credit Limit 1",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "CREDIT-LIMIT-2",
+     "title": "Credit Limit 2",
+     "subtitle": "recorded"
+    },
+    {
+     "id": "CREDIT-LIMIT-3",
+     "title": "Credit Limit 3",
+     "subtitle": "recorded"
+    }
+   ]
+  },
+  {
+   "hook": "source.search",
+   "args": [
+    "legal-entity",
+    ""
+   ],
+   "answer": []
   },
   {
    "hook": "panel",

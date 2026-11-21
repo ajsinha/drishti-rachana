@@ -84,8 +84,12 @@ final class Screens {
             e.problems().forEach(p -> {
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("code", p.code());
+                m.put("severity", p.severity());
                 m.put("message", p.message());
                 m.put("line", (long) p.location().line());
+                if (p.path() != null) {
+                    m.put("path", p.path());
+                }
                 ps.add(m);
             });
             return "{\"error\":{\"code\":\"sutra\",\"problems\":" + Json.write(ps) + "}}";

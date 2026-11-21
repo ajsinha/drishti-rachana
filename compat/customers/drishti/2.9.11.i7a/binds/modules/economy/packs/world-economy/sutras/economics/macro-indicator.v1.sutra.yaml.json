@@ -8,34 +8,36 @@
    "answer": {
     "HISTORY": [
      {
+      "YEAR": 728,
       "VALUE": 855.53
      },
      {
+      "YEAR": 578,
       "VALUE": 705.53
      },
      {
+      "YEAR": 928,
       "VALUE": 1055.53
      }
     ],
-    "FACTS": [
-     {
-      "VALUE": 855.53
-     },
-     {
-      "VALUE": 705.53
-     },
-     {
-      "VALUE": 1055.53
-     }
-    ],
-    "INDICATOR_ID": "INDICATOR_ID-U1",
+    "ECONOMY": 141.49,
     "NAME": "NAME-X1",
     "LATEST": 449.41,
     "UNIT": 271,
     "LATEST_YEAR": 542,
     "PREVIOUS": 148,
     "RANK": 611,
-    "ECONOMY": 141.49
+    "INDICATOR_ID": "INDICATOR_ID-U1",
+    "FACTS": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    },
+    "PROVENANCE": {
+     "NAME": "NAME-X1",
+     "CODE": "CODE-P1",
+     "AMOUNT": 146
+    }
    }
   },
   {
@@ -73,7 +75,19 @@
     "refs"
    ],
    "answer": {
-    "links": []
+    "links": [
+     {
+      "label": "Economy",
+      "text": "141.49",
+      "link": {
+       "kind": "economy",
+       "id": "141.49",
+       "mnemonic": null
+      },
+      "badge": "",
+      "status": "resolved"
+     }
+    ]
    }
   }
  ]

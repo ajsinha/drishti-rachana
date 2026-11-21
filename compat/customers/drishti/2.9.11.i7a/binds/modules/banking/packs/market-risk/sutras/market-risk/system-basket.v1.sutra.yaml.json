@@ -18,8 +18,7 @@
        "TT_BOOK": "TT_BOOK-V1",
        "VAR": 290,
        "COMPONENT_VAR": 181.75,
-       "PCT_OF_VAR": 359.69,
-       "TRADE_ID": "TRADE_ID-P1"
+       "PCT_OF_VAR": 359.69
       },
       {
        "POSITION_ID": "POSITION_ID-X2",
@@ -31,8 +30,7 @@
        "TT_BOOK": "TT_BOOK-W2",
        "VAR": 390,
        "COMPONENT_VAR": 281.75,
-       "PCT_OF_VAR": 209.69,
-       "TRADE_ID": "TRADE_ID-Q2"
+       "PCT_OF_VAR": 209.69
       },
       {
        "POSITION_ID": "POSITION_ID-Y3",
@@ -44,63 +42,77 @@
        "TT_BOOK": "TT_BOOK-X3",
        "VAR": 240,
        "COMPONENT_VAR": 131.75,
-       "PCT_OF_VAR": 559.69,
-       "TRADE_ID": "TRADE_ID-R3"
+       "PCT_OF_VAR": 559.69
       }
      ],
      "PNL": [
-      {
-       "VALUE": 855.53
-      },
-      {
-       "VALUE": 705.53
-      },
-      {
-       "VALUE": 1055.53
-      }
+      -20.6,
+      46.7,
+      -16.2,
+      -44.1,
+      45.4,
+      -6.3,
+      -28.7,
+      -36.4,
+      -36.7,
+      66.6,
+      21.8,
+      2.9
      ],
      "TOP_CONTRIBUTORS": [
       {
-       "VALUE": 855.53
+       "INSTRUMENT": 143.11,
+       "COMPONENT_VAR": 181.75
       },
       {
-       "VALUE": 705.53
+       "INSTRUMENT": 243.11,
+       "COMPONENT_VAR": 281.75
       },
       {
-       "VALUE": 1055.53
+       "INSTRUMENT": 93.11,
+       "COMPONENT_VAR": 131.75
       }
      ],
      "BY_PRODUCT": [
       {
-       "VALUE": 855.53
+       "KEY": 158,
+       "COMPONENT_VAR": 181.75
       },
       {
-       "VALUE": 705.53
+       "KEY": 508,
+       "COMPONENT_VAR": 281.75
       },
       {
-       "VALUE": 1055.53
+       "KEY": 608,
+       "COMPONENT_VAR": 131.75
       }
      ],
      "BY_CURRENCY": [
       {
-       "VALUE": 855.53
+       "KEY": 158,
+       "COMPONENT_VAR": 181.75
       },
       {
-       "VALUE": 705.53
+       "KEY": 508,
+       "COMPONENT_VAR": 281.75
       },
       {
-       "VALUE": 1055.53
+       "KEY": 608,
+       "COMPONENT_VAR": 131.75
       }
      ],
      "BY_DIRECTION": [
       {
-       "VALUE": 855.53
+       "KEY": 158,
+       "NET_MV": -150
       },
       {
-       "VALUE": 705.53
+       "KEY": 508,
+       "NET_MV": 199
       },
       {
-       "VALUE": 1055.53
+       "KEY": 608,
+       "NET_MV": 299
       }
      ],
      "POSITION_COUNT": 619.97,
@@ -114,8 +126,8 @@
      "LIMIT": 5,
      "NOTE": "NOTE-M1"
     },
-    "TYPE": "TYPE-X1",
     "PORTFOLIO_ID": "PORTFOLIO_ID-V1",
+    "TYPE": "TYPE-X1",
     "NAME": "NAME-X1",
     "OWNER": 556,
     "DEFINITION": {
@@ -126,11 +138,11 @@
     "ROLLS_UP_TO": {
      "ID": "ID-Z1"
     },
-    "VALID_FROM": "2026-07-16",
+    "VALID_FROM": "2026-03-28",
     "VALID_TO": 109,
     "DESCRIPTION": "DESCRIPTION-K1",
     "VERSION": 756,
-    "UPDATED_BY": "2026-04-13"
+    "UPDATED_BY": "2026-02-05"
    }
   },
   {

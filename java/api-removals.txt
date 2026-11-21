@@ -1,0 +1,5 @@
+# Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
+# The reviewed log of API removals (CG5, ApiSurfaceTest; gate 2 F11). A line of java/api-surface.txt (or of a released
+# java/api-surface-<minor>.txt) may disappear only when it is listed here, one per line, as
+#     <the line, with or without its [stable]/[experimental] mark> ## <yyyy-mm-dd> <reason and who reviewed it>
+# A stable line of a released baseline may never be removed in its major, whatever this file says.

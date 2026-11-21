@@ -6,6 +6,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { tools } from "./bundle.js";
 import { UsageError } from "./errors.js";
+import { projectLibraries, bundleFiles } from "../../rachana-studio/server/library_files.js";
 
 export const DEFAULT_LEVEL = "1.1";   // the newest built language level; --level 1.2 for typed fragments and libraries
 export const LEVELS = ["1.0", "1.1", "1.2"];
@@ -29,12 +30,23 @@ export function findSutras(paths) {
 }
 
 /** Per file: { file, ok, problems } from the bundle's check (the problem objects of SPEC section 7, identical to the JVM and Python). */
-export async function lintFiles(files, profiles = "core", level = DEFAULT_LEVEL) {
+export async function lintFiles(files, profiles = "core", level = DEFAULT_LEVEL, libFiles = null) {
   const r = await tools(profiles);
   return files.map((file) => {
-    const res = JSON.parse(r.check(JSON.stringify({ sutra: readFileSync(file, "utf8"), file, since: level })));
+    const req = { sutra: readFileSync(file, "utf8"), file, since: level };
+    if (libFiles && Object.keys(libFiles).length) req.files = libFiles;
+    const res = JSON.parse(r.check(JSON.stringify(req)));
     return { file, ok: res.ok, problems: res.problems };
   });
+}
+
+/** The `files` map of the libraries for a lint or a build: the project's `rachana_libs`, each --libs path, RACHANA_LIBS and the bundled
+ * libraries. A name found twice with different contents is a refusal, reported through `onProblem`. */
+export function libraryFiles(root, flags, onProblem = () => {}) {
+  const extra = flags.libs ? String(flags.libs).split(",").filter(Boolean) : [];
+  const { libraries, problems } = projectLibraries(root, extra);
+  problems.forEach(onProblem);
+  return { files: bundleFiles(libraries), problems };
 }
 
 export function sarif(results) {
@@ -54,8 +66,9 @@ export async function lint(paths, flags, io) {
   if (!["text", "json", "sarif"].includes(fmt)) throw new UsageError("--format is text, json or sarif");
   const level = flags.level ?? DEFAULT_LEVEL;
   if (!LEVELS.includes(level)) throw new UsageError("--level is 1.0, 1.1 or 1.2");
-  const results = await lintFiles(findSutras(paths), flags.profiles ?? "core", level);
-  const failing = results.flatMap((r) => r.problems).filter((p) => p.severity === "error" || (flags.strict && p.severity === "warning")).length;
+  const lib = libraryFiles(paths[0] && existsSync(paths[0]) && statSync(paths[0]).isDirectory() ? paths[0] : ".", flags, (m) => io.err(`rachana: ${m}`));
+  const results = await lintFiles(findSutras(paths), flags.profiles ?? "core", level, lib.files);
+  const failing = results.flatMap((r) => r.problems).filter((p) => p.severity === "error" || (flags.strict && p.severity === "warning")).length + lib.problems.length;
   if (fmt === "json") io.out(JSON.stringify(results, null, 2));
   else if (fmt === "sarif") io.out(JSON.stringify(sarif(results), null, 2));
   else {

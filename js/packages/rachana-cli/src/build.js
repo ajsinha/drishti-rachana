@@ -4,7 +4,7 @@
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { lintFiles, findSutras, DEFAULT_LEVEL } from "./lint.js";
+import { lintFiles, findSutras, libraryFiles, DEFAULT_LEVEL } from "./lint.js";
 import { UsageError } from "./errors.js";
 import { esc, nameOf, siteAssets, elementsStubs, STUB_CSS, tableFiles, viewPage } from "./site.js";
 
@@ -20,7 +20,9 @@ export async function build(src, out, io, flags = {}) {
   const files = findSutras([sutraDir]);
   if (!files.length) throw new UsageError(`no *.sutra.yaml under ${sutraDir}`);
   const assets = siteAssets();
-  const results = await lintFiles(files, "core", level);
+  const lib = libraryFiles(src, flags, (m) => io.err(`rachana: ${m}`));
+  if (lib.problems.length) return 1;
+  const results = await lintFiles(files, "core", level, lib.files);
   const errors = results.flatMap((r) => r.problems.map((p) => ({ file: r.file, ...p }))).filter((p) => p.severity === "error");
   if (errors.length) {
     for (const p of errors) io.err(`${p.file}:${p.range?.start?.line ?? 1}: ${p.code}: ${p.message.split("\n")[0]}`);

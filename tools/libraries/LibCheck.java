@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * problem and no advisory, and its ViewModel equals the golden snapshot beside it.
  *
  * <pre>
- * java -cp "rachana-jars/*" tools/LibCheck.java LIBRARIES-DIR [--update] [--only FRAGMENT]
+ * java -cp "results/libraries/rachana-jars/*" tools/libraries/LibCheck.java LIBRARIES-DIR [--update] [--only FRAGMENT]
  * </pre>
  *
  * LIBRARIES-DIR holds one folder per library (already built: the hashes must match). {@code --update} writes the goldens

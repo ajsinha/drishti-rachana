@@ -2,15 +2,14 @@
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """Chromium check of Rachana Studio: open a copy of examples/static-sales, insert a core fragment (ranked-bars, with its columns
 mapped), see the preview paint the new panel, see the Sutra grow, save it to disk, and finish with no console error or failed request.
-Libraries: RACHANA_LIBS (path), else ../drishti-rachana-libraries/libraries beside this repository; the check is skipped (exit 0, said
-so) when neither exists.
+Libraries: RACHANA_LIBS (path), else libraries/ in this repository.
 Run: uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py   (once: playwright install chromium)"""
 import os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[4]
-libs = os.environ.get("RACHANA_LIBS") or str(ROOT.parent / "drishti-rachana-libraries" / "libraries")
+libs = os.environ.get("RACHANA_LIBS") or str(ROOT / "libraries")
 if not Path(libs).exists():
     print("studio_check: SKIPPED, no library folder (set RACHANA_LIBS)")
     sys.exit(0)

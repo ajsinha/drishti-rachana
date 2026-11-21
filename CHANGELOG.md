@@ -5,6 +5,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **Fragment libraries moved into this repository** (owner decision, L-12 superseded): `libraries/<name>/` by domain, `libraries/README.md`
+  the index, `tools/libraries/` the build and check (`build.py`, `LibCheck.java`; the jars come from this repository's own build);
+  `LibrariesCheckTest` runs the check in `./mvnw verify` (and proves an external folder and an `.rlib` beside bundled `core`); Studio, `lint` and `build` (`--libs`, `RACHANA_LIBS`) and the Python `lint` take extra library paths beside the bundled ones; a same-name conflict is refused (`LibraryResolver.first` too). The old repository's history is merged in.
+  **core 1.0.0** (baseline LB1, language level 1.2): 28 typed fragments (figures, records, tables, charts, states, history) with examples
+  and ViewModel snapshots; not built: `entry-form`, `stepped-form` (no standalone form panel yet), `compare-ab` (needs iteration over
+  fields). Differences from the catalogue are listed in `libraries/core/README.md`.
+
 - **Rachana Studio, first slice** (`js/packages/rachana-studio`, `rachana studio <folder> [--libs ...]`; decision MK-1): three panes (the fragments of the
   project's libraries, the live `<rachana-view>`, the Sutra source with its live problems, the parameter form of the chosen fragment and the
   unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled

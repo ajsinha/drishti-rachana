@@ -1,0 +1,23 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Workspace B: tabs</title><style>*{box-sizing:border-box}body{margin:0;background:#0b1426;color:#d8e0ef;font:13px/1.45 system-ui,sans-serif}
+:root{--p:#111d36;--p2:#17274a;--l:#26375c;--a:#f5a623;--m:#8fa0c3;--g:#3ecf8e;--r:#ef5b5b}
+.top{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#08101f;border-bottom:1px solid var(--l)}
+.top b{color:var(--a)}.top a{color:var(--m);text-decoration:none}.tag{background:var(--p2);border:1px solid var(--l);border-radius:10px;padding:1px 8px;color:var(--m);font-size:11px}
+.pane{background:var(--p);border:1px solid var(--l);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.pane>h4{margin:0;padding:6px 10px;background:var(--p2);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--a)}
+.pane .b{padding:8px 10px;flex:1;overflow:auto}
+.frag{border:1px solid var(--l);border-radius:5px;padding:5px 8px;margin:4px 0;background:#0e1a31;cursor:grab}.frag small{color:var(--m);display:block}
+pre{margin:0;font:12px/1.5 ui-monospace,monospace;color:#cfe0ff;white-space:pre-wrap}.k{color:var(--a)}.s{color:var(--g)}.c{color:var(--m)}
+.err{color:var(--r)}.ok{color:var(--g)}.warn{color:var(--a)}
+table{border-collapse:collapse;width:100%}td,th{padding:3px 8px;border-bottom:1px solid var(--l);text-align:left}th{color:var(--m);font-weight:500}
+tr.sel td{background:#3a2e12;color:#ffd58a}.num{text-align:right;font-variant-numeric:tabular-nums}
+.btn{background:var(--a);color:#1a1200;border:0;border-radius:5px;padding:4px 10px;font-weight:600}.btn2{background:var(--p2);color:var(--d8e0ef,#d8e0ef);border:1px solid var(--l);border-radius:5px;padding:4px 10px}
+input,textarea{background:#0b1426;color:#d8e0ef;border:1px solid var(--l);border-radius:5px;padding:5px 8px;width:100%;font:inherit}
+.bar{display:flex;gap:6px;align-items:center}.grow{flex:1}.chip{display:inline-block;background:#0b1426;border:1px solid var(--l);border-radius:10px;padding:0 8px;margin:1px;font-size:11px}
+.bars i{display:block;height:14px;background:var(--a);margin:3px 0;border-radius:2px}.bars i.sel{background:#ffd58a;outline:1px solid #fff}
+.diffa{background:#12301f;color:#9be7be}.diffr{background:#3a1717;color:#ffa7a7}
+.note{font-size:11px;color:var(--m)}
+@media(max-width:800px){.g{display:block!important}.g>*{margin-bottom:8px}}
+</style></head><body>
+<div class="top"><b>Rachana</b><span>Workspace B: tabs</span><span class="tag">mock-up, static, synthetic data</span><span class="grow" style="flex:1"></span><a href="index.html">&larr; options</a></div><div class="note" style="padding:4px 10px">channel <span class="chip">selection:position</span> Blotter &rarr; Chart, Detail &nbsp; <span class="chip">filter:desk</span> Desk picker &rarr; all</div><div style="padding:8px"><div class="bar"><span class="chip" style="background:var(--a);color:#1a1200">Rates desk</span><span class="chip">Credit desk</span><span class="chip">Genomics QC</span><span class="chip">+</span></div>
+<div class="g" style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:6px"><div class="pane"><h4>Blotter (full width)</h4><div class="b"><table><tr><th>Position</th><th class="num">VaR</th></tr><tr><td>USD IRS 5Y pay</td><td class="num">1,204,100</td></tr><tr class="sel"><td>EUR swaption 1x10</td><td class="num">982,450</td></tr><tr><td>GBP gilt future</td><td class="num">411,770</td></tr></table></div></div><div class="g" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="pane"><h4>Chart</h4><div class="b"><div class="bars"><i style="width:35%"></i><i style="width:58%"></i><i style="width:80%" class="sel"></i><i style="width:50%"></i></div><p class="note">highlights selection</p></div></div><div class="pane"><h4>Detail</h4><div class="b"><table><tr><td>Position</td><td>EUR swaption 1x10</td></tr><tr><td>Notional</td><td>EUR 150,000,000</td></tr><tr><td>Limit use</td><td class="warn">88%</td></tr></table></div></div></div></div>
+<p class="note">Each tab is one Sutra or a small dock. Hidden tabs keep their channel state. Simple, works on a phone.</p></div></body></html>

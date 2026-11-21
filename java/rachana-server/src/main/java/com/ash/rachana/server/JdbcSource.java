@@ -246,7 +246,7 @@ final class JdbcSource extends TableSource {
     }
 
     /** The password, from the environment or a file; null when none is configured. */
-    private static String password(ServerConfig.Jdbc j) throws ReadFailed {
+    static String password(ServerConfig.Jdbc j) throws ReadFailed {
         if (j.passwordEnv() != null) {
             String v = System.getenv(j.passwordEnv());
             if (v == null) {

@@ -18,6 +18,7 @@ server:
   session-idle: 30m                     # a session unused this long ends
   session-max: 12h                      # a session ends this long after sign-in, used or not
   max-body: 1048576                     # the largest request body, in bytes
+  hosts: []                             # more Host names a write may arrive under (beside this address, localhost and the origins)
 
 project:
   dir: "${config}/project"              # sutras/ (*.sutra.yaml, any depth), rachana_libs/ (libraries), static/ (served at /static/)
@@ -54,6 +55,8 @@ tables:                                 # each a Data Protocol table, kept live 
     key: order_id
     refresh: 30s
     timeout: 10s                        # the query's time limit
+    write: { table: orders, journal-table: rachana_changes }   # edits of a *.live.yaml with edit: on this table go here; the journal
+                                        # table (change_id primary key, changed_at timestamp) makes each change apply once
   quotes:
     rest:
       url: "https://quotes.internal/api/v1/quotes"
@@ -74,6 +77,12 @@ auth:
 access:
   default: signed-in                    # a table or Sutra without an entry: every signed-in caller (signed-in) or nobody (closed)
   tables:
-    orders: { read: [sales, admin], unmask: { amount: [admin] } }   # read: the roles that may read; unmask: column -> roles that see it
+    orders: { read: [sales, admin], unmask: { amount: [admin] }, edit: { roles: [admin], columns: [amount] } }
+                                        # read: the roles that may read; unmask: column -> roles that see it; edit: who may edit which
+                                        # columns of a live table whose declaration has edit: (writes need X-Rachana-CSRF from the page)
   sutras:
     finance: [admin]                    # the roles that may open sutras/finance.sutra.yaml
+
+edits:                                  # the edit path of live tables (LIVE_TABLES 1.6): absent, no table takes writes
+  journal: "${config}/data/outbox.jsonl"   # the outbox: each change written here before it is acknowledged, then sent once
+  off: []                               # tables whose edits are switched off (writes refused and logged)

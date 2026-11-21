@@ -85,6 +85,7 @@ final class Pages {
     static String view(Project.Sutra s, String elements, String level, boolean libraries, Users.Principal who, String csrf, boolean canSignOut) {
         String n = esc(s.name());
         return head(s.name()) + STYLE
+                + "<meta name=\"rachana-csrf\" content=\"" + esc(csrf == null ? "" : csrf) + "\">\n"   // a live table's writes send it (X-Rachana-CSRF)
                 + "<link rel=stylesheet href=\"/assets/" + esc(elements) + "/drishti-elements.css\">\n"
                 + "<script src=\"/assets/" + esc(elements) + "/drishti-elements.js\"></script>\n"
                 + "<script type=module src=\"/assets/rachana/src/rachana_view.js\"></script>\n"

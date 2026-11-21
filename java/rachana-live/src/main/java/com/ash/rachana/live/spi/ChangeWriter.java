@@ -15,7 +15,15 @@ public interface ChangeWriter {
      * Applies the change (idempotent by {@link Change#id()}).
      *
      * @return the row's new version, or null when the source does not say
+     * @throws Refused when the source will never take it (the row changed there, a constraint): the change fails at once
      * @throws Exception when it could not be applied now (the outbox tries again)
      */
     Object write(Change change) throws Exception;
+
+    /** The source will never take this change: no further tries. */
+    final class Refused extends Exception {
+        public Refused(String reason) {
+            super(reason, null, false, false);
+        }
+    }
 }

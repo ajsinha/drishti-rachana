@@ -92,7 +92,7 @@ public final class RachanaServer implements AutoCloseable {
         }
         this.users = config.auth().mode() == ServerConfig.AuthMode.USERS ? new Users(config.auth().users()) : null;
         this.sessions = new Sessions(config.http().sessionIdleMs(), config.http().sessionMaxMs(), Clock.systemUTC());
-        this.access = new Access(config.access());
+        this.access = new Access(config.access(), config.edits().access(), this::declared);
         this.project = new Project(config.project(), config.libraries(), log);
         this.tables = new ServerTables(config, access, log);
         this.protocol = new ProtocolHttp(new ProtocolHost(DATA, tables.provider()), () -> closed);
@@ -240,6 +240,9 @@ public final class RachanaServer implements AutoCloseable {
         Users.Principal p = who.principal();
         if (path.equals(DATA) || path.startsWith(DATA + "/")) {
             String rel = path.substring(DATA.length());
+            if (method.equals("POST") && rel.startsWith("/tables/") && rel.endsWith("/write") && !writeAllowed(x, who, rel)) {
+                return;
+            }
             protocol.serve(x, rel.isEmpty() ? "/" : rel, ProtocolHttp.query(x.getRequestURI().getRawQuery()), body, p);
             return;
         }
@@ -470,6 +473,60 @@ public final class RachanaServer implements AutoCloseable {
             return "/";
         }
         return next;
+    }
+
+    /**
+     * The checks of a write beside the protocol's own (LIVE_TABLES 5): the {@code Host} is this server's (its own address, a loopback
+     * name on its port, {@code server.hosts} or an origin of {@code server.origins}: a page served from another name, a DNS rebinding,
+     * is refused); the request carries the session's CSRF token as {@code X-Rachana-CSRF} (header mode: the header present, which a page
+     * of another site cannot send without a preflight this server never answers); the {@code Origin} check ran for every POST. A refusal
+     * is answered {@code 403 rdp.write.forbidden} and logged.
+     */
+    private boolean writeAllowed(HttpExchange x, Who who, String rel) throws IOException {
+        String host = x.getRequestHeaders().getFirst("Host");
+        if (!hostAllowed(host)) {
+            log.warn("write-refused", "reason", "host", "host", host, "path", rel);
+            error(x, 403, "rdp.write.forbidden", "this server is not reached by that name");
+            return false;
+        }
+        String token = x.getRequestHeaders().getFirst("X-Rachana-CSRF");
+        boolean ok = who.session() != null ? Sessions.same(token, who.session().csrf()) : token != null && !token.isBlank();
+        if (!ok) {
+            log.warn("write-refused", "reason", "csrf", "user", who.principal() == null ? null : who.principal().name(), "path", rel);
+            error(x, 403, "rdp.write.forbidden", "the CSRF token is missing or wrong");
+            return false;
+        }
+        return true;
+    }
+
+    /** The columns a live table's declaration edits (for the access rules; none before the tables are up). */
+    private List<String> declared(String table) {
+        ServerTables t = tables;
+        return t == null ? List.of() : t.declared(table);
+    }
+
+    /** Whether a {@code Host} header names this server. */
+    private boolean hostAllowed(String host) {
+        if (host == null) {
+            return false;
+        }
+        String h = host.toLowerCase(Locale.ROOT);
+        int port = port();
+        for (String own : List.of("127.0.0.1", "localhost", "[::1]", config.http().bind())) {
+            if (h.equals(own + ":" + port) || port == 80 && h.equals(own)) {
+                return true;
+            }
+        }
+        for (String o : origins) {
+            try {
+                if (h.equalsIgnoreCase(new URI(o).getRawAuthority())) {
+                    return true;
+                }
+            } catch (java.net.URISyntaxException e) {
+                // checked at start
+            }
+        }
+        return config.edits().hosts().stream().anyMatch(a -> a.equalsIgnoreCase(h));
     }
 
     /**

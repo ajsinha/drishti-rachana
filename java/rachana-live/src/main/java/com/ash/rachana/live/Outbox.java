@@ -219,7 +219,7 @@ public final class Outbox implements ChangeSink, AutoCloseable {
                     synchronized (this) {
                         next.tries++;
                         next.message = "not sent: " + (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
-                        if (next.tries >= maxTries) {
+                        if (next.tries >= maxTries || e instanceof ChangeWriter.Refused) {
                             next.state = State.FAILED;
                             next.at = clock.instant();
                             journal(next, null);

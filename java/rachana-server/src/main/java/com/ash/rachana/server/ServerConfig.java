@@ -95,6 +95,22 @@ public final class ServerConfig {
     /** Table and Sutra rights; {@code openDefault}: a table or Sutra without an entry is open to every signed-in caller (else refused). */
     public record Access(Map<String, TableAccess> tables, Map<String, List<String>> sutras, boolean openDefault) {}
 
+    /**
+     * Where a JDBC table's edits are written ({@code tables.<name>.write}): the table to change and the journal table recording each
+     * change id (exactly once), both plain SQL names.
+     */
+    public record TableWrite(String table, String journalTable) {}
+
+    /** Who may edit a table ({@code access.tables.<name>.edit}): the roles, and the columns (empty: every column its declaration edits). */
+    public record TableEdit(List<String> roles, List<String> columns) {}
+
+    /**
+     * The edit path ({@code edits:}, LIVE_TABLES 1.6): the outbox's journal file, the tables whose edits are switched off, each JDBC table's
+     * {@link TableWrite}, who may edit each table, and the {@code Host} values a write may name (beside the server's own address and
+     * {@code server.origins}).
+     */
+    public record Edits(Path journal, List<String> off, Map<String, TableWrite> writes, Map<String, TableEdit> access, List<String> hosts) {}
+
     private final Path file;
     private final Http http;
     private final Project project;
@@ -104,9 +120,11 @@ public final class ServerConfig {
     private final Map<String, Table> tables;
     private final Auth auth;
     private final Access access;
+    private final Edits edits;
 
     private ServerConfig(Path file, Http http, Project project, List<Path> libraries, Path runtime, List<Path> drivers, Map<String, Table> tables,
-            Auth auth, Access access) {
+            Auth auth, Access access, Edits edits) {
+        this.edits = edits;
         this.file = file;
         this.http = http;
         this.project = project;
@@ -157,10 +175,15 @@ public final class ServerConfig {
         return access;
     }
 
+    /** The edit path's settings (no journal: no table takes writes). */
+    public Edits edits() {
+        return edits;
+    }
+
     /** The same configuration on another port (0: any free one). */
     public ServerConfig withPort(int port) {
         Http h = new Http(http.bind(), port, http.origins(), http.cookieSecure(), http.sessionIdleMs(), http.sessionMaxMs(), http.maxBody());
-        return new ServerConfig(file, h, project, libraries, runtime, drivers, tables, auth, access);
+        return new ServerConfig(file, h, project, libraries, runtime, drivers, tables, auth, access, edits);
     }
 
     /** Reads and checks a configuration file. */
@@ -180,12 +203,19 @@ public final class ServerConfig {
         }
         Reader r = new Reader(file.toAbsolutePath().normalize().getParent());
         Map<String, Object> m = r.map(root, "");
-        r.keys(m, "", "rachana-server", "server", "project", "libraries", "assets", "drivers", "tables", "auth", "access");
+        r.keys(m, "", "rachana-server", "server", "project", "libraries", "assets", "drivers", "tables", "auth", "access", "edits");
         if (!Long.valueOf(VERSION).equals(m.get("rachana-server"))) {
             r.problem("rachana-server: this file starts with 'rachana-server: 1' (the version of its keys)");
         }
         Map<String, Object> s = r.map(m.get("server"), "server");
-        r.keys(s, "server", "bind", "port", "origins", "cookie-secure", "session-idle", "session-max", "max-body");
+        r.keys(s, "server", "bind", "port", "origins", "cookie-secure", "session-idle", "session-max", "max-body", "hosts");
+        List<String> hosts = new ArrayList<>();
+        for (String hv : r.texts(s.get("hosts"), "server.hosts")) {
+            if (!hv.matches("[A-Za-z0-9.-]+(:[0-9]{1,5})?|\\[[0-9A-Fa-f:.]+\\](:[0-9]{1,5})?")) {
+                r.problem("server.hosts: '" + hv + "' is a host name with an optional port (dash.example.com, 10.0.0.5:8080)");
+            }
+            hosts.add(hv);
+        }
         String bind = r.text(s.getOrDefault("bind", "127.0.0.1"), "server.bind");
         long port = r.number(s.getOrDefault("port", 8080L), "server.port", 0, 65535);
         List<String> origins = new ArrayList<>();
@@ -270,13 +300,23 @@ public final class ServerConfig {
         Map<String, Object> ac = r.map(m.get("access"), "access");
         r.keys(ac, "access", "tables", "sutras", "default");
         Map<String, TableAccess> ta = new LinkedHashMap<>();
+        Map<String, TableEdit> editAccess = new LinkedHashMap<>();
         for (Map.Entry<String, Object> e : r.map(ac.get("tables"), "access.tables").entrySet()) {
             String k = "access.tables." + e.getKey();
             if (!tables.containsKey(e.getKey())) {
                 r.problem(k + ": no table '" + e.getKey() + "' in tables");
             }
             Map<String, Object> one = r.map(e.getValue(), k);
-            r.keys(one, k, "read", "unmask");
+            r.keys(one, k, "read", "unmask", "edit");
+            if (one.containsKey("edit")) {
+                Map<String, Object> ed = r.map(one.get("edit"), k + ".edit");
+                r.keys(ed, k + ".edit", "roles", "columns");
+                List<String> roles = r.texts(ed.get("roles"), k + ".edit.roles");
+                if (roles.isEmpty()) {
+                    r.problem(k + ".edit.roles: the roles that may edit (at least one: edits are never open to everyone)");
+                }
+                editAccess.put(e.getKey(), new TableEdit(roles, r.texts(ed.get("columns"), k + ".edit.columns")));
+            }
             Map<String, List<String>> unmask = new LinkedHashMap<>();
             r.map(one.get("unmask"), k + ".unmask").forEach((col, roles) -> unmask.put(col, r.texts(roles, k + ".unmask." + col)));
             ta.put(e.getKey(), new TableAccess(r.texts(one.get("read"), k + ".read"), unmask));
@@ -288,10 +328,24 @@ public final class ServerConfig {
             r.problem("access.default: signed-in (a table or Sutra without an entry is open to every signed-in caller) or closed");
         }
         Access access = new Access(ta, sa, "signed-in".equals(def));
+        Map<String, Object> ed = r.map(m.get("edits"), "edits");
+        r.keys(ed, "edits", "journal", "off");
+        Path journal = ed.get("journal") == null ? null : r.path(ed.get("journal"), "edits.journal", false);
+        List<String> off = r.texts(ed.get("off"), "edits.off");
+        Map<String, TableWrite> writes = new LinkedHashMap<>();
+        for (Table tw : tables.values()) {
+            if (r.writes.containsKey(tw.name())) {
+                writes.put(tw.name(), r.writes.get(tw.name()));
+            }
+        }
+        if (journal == null && (!writes.isEmpty() || !editAccess.isEmpty())) {
+            r.problem("edits.journal: tables with write or access entries with edit need the outbox's journal file (\"${config}/data/outbox.jsonl\")");
+        }
+        Edits edits = new Edits(journal, List.copyOf(off), Map.copyOf(writes), Map.copyOf(editAccess), List.copyOf(hosts));
         if (!r.problems.isEmpty()) {
             throw new Invalid(r.problems);
         }
-        return new ServerConfig(file, http, project, List.copyOf(libraries), runtime, List.copyOf(drivers), tables, auth, access);
+        return new ServerConfig(file, http, project, List.copyOf(libraries), runtime, List.copyOf(drivers), tables, auth, access, edits);
     }
 
     /** Whether an address is a loopback one ({@code 127.0.0.1}, {@code ::1}, {@code localhost}). */
@@ -323,6 +377,7 @@ public final class ServerConfig {
         final Path configDir;
         Path projectDir;
         final List<String> problems = new ArrayList<>();
+        final Map<String, TableWrite> writes = new LinkedHashMap<>();
 
         Reader(Path configDir) {
             this.configDir = configDir;
@@ -473,7 +528,20 @@ public final class ServerConfig {
             if (!name.matches("[A-Za-z][A-Za-z0-9_.-]{0,63}")) {
                 problem(k + ": a table name is a letter, then letters, digits, '_', '.' or '-' (at most 64)");
             }
-            keys(m, k, "title", "key", "file", "jdbc", "query", "params", "rest", "refresh", "timeout", "max-rows", "columns", "where");
+            keys(m, k, "title", "key", "file", "jdbc", "query", "params", "rest", "refresh", "timeout", "max-rows", "columns", "where", "write");
+            if (m.containsKey("write")) {
+                Map<String, Object> w = map(m.get("write"), k + ".write");
+                keys(w, k + ".write", "table", "journal-table");
+                String wt = text(w.get("table"), k + ".write.table");
+                String jt = text(w.get("journal-table"), k + ".write.journal-table");
+                if (!m.containsKey("jdbc")) {
+                    problem(k + ".write: only a jdbc table is written to");
+                }
+                if (!JdbcWriter.name(wt) || !JdbcWriter.name(jt)) {
+                    problem(k + ".write: table and journal-table are plain SQL names (letters, digits, '_', an optional schema.)");
+                }
+                writes.put(name, new TableWrite(wt, jt));
+            }
             int sources = (m.containsKey("file") ? 1 : 0) + (m.containsKey("jdbc") ? 1 : 0) + (m.containsKey("rest") ? 1 : 0);
             if (sources != 1) {
                 problem(k + ": exactly one source: file, jdbc or rest");

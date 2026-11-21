@@ -5,7 +5,9 @@
 package com.ash.rachana.server;
 
 import com.ash.rachana.SutraException;
+import com.ash.rachana.live.FileOutboxStore;
 import com.ash.rachana.live.LiveTables;
+import com.ash.rachana.live.Outbox;
 import com.ash.rachana.live.PollingDiff;
 import com.ash.rachana.live.spi.Authoriser;
 import com.ash.rachana.live.spi.LiveStream;
@@ -40,10 +42,14 @@ final class ServerTables implements AutoCloseable {
     private final Map<String, String> pending = new ConcurrentHashMap<>();
     private final LiveTables live;
     private final Log log;
+    private final ServerConfig config;
+    private final JdbcWriter writer;
+    private final Outbox outbox;
     private final ScheduledExecutorService retry;
 
     ServerTables(ServerConfig config, Authoriser authoriser, Log log) {
         this.log = log;
+        this.config = config;
         this.live = new LiveTables(new LiveTables.Resolver() {
             @Override
             public SnapshotSource snapshot(String name) {
@@ -60,11 +66,27 @@ final class ServerTables implements AutoCloseable {
                 return s != null ? s : streams.get(name + ".poll");     // a declaration may name the table whose poll it follows
             }
         }, LiveTables.Options.DEFAULTS, null).authoriser(authoriser).audit(e -> {
-            if ("read-refused".equals(e.get("event"))) {
-                log.info("read-refused", "table", e.get("table"), "reason", e.get("reason"));
+            String ev = String.valueOf(e.get("event"));
+            if (ev.equals("read-refused") || ev.startsWith("write-")) {             // the audit log: who, what, why (never a value)
+                log.info(ev, "table", e.get("table"), "user", e.get("caller") == null ? null : String.valueOf(e.get("caller")),
+                        "change", e.get("change"), "columns", e.get("columns"), "reason", e.get("reason"));
             }
         });
         JdbcSource.Drivers drivers = new JdbcSource.Drivers(config.drivers());
+        ServerConfig.Edits ed = config.edits();
+        if (ed != null && ed.journal() != null) {                      // the edit path: the outbox over its journal, writing through JDBC
+            writer = new JdbcWriter(drivers);
+            try {
+                outbox = new Outbox(new FileOutboxStore(ed.journal(), 10_000), writer, null, null, 5, 10_000).start(2_000);
+            } catch (IOException e) {
+                throw new IllegalStateException("edits.journal " + ed.journal() + " could not be opened", e);
+            }
+            live.sink(outbox);
+            ed.off().forEach(t -> live.edits(t, false));
+        } else {
+            writer = null;
+            outbox = null;
+        }
         for (ServerConfig.Table t : config.tables().values()) {
             TableSource s = TableSource.of(t, drivers);
             sources.put(t.name(), s);
@@ -113,6 +135,14 @@ final class ServerTables implements AutoCloseable {
                         refuse(file, spec.name() + ": snapshot '" + spec.snapshot() + "' is not a configured table");
                         continue;
                     }
+                    if (spec.edit() != null) {                        // edits need the snapshot's writer and the outbox
+                        ServerConfig.TableWrite w = config.edits().writes().get(spec.snapshot());
+                        if (writer == null || w == null) {
+                            refuse(file, spec.name() + ": 'edit:' needs tables." + spec.snapshot() + ".write and edits.journal");
+                            continue;
+                        }
+                        writer.target(new JdbcWriter.Target(spec, config.tables().get(spec.snapshot()), w));
+                    }
                     if (src.types() == null) {                         // its own first read may still be pending: the declared columns type it
                         Map<String, String> types = new LinkedHashMap<>();
                         for (Object c : (List<?>) spec.schema().get("columns")) {
@@ -135,6 +165,16 @@ final class ServerTables implements AutoCloseable {
     private void refuse(String file, String why) {
         pending.put(file, why);
         log.warn("table-refused", "file", file, "reason", why);
+    }
+
+    /** The columns a live table's declaration edits (empty: none, or no such table). */
+    List<String> declared(String table) {
+        for (LiveTableSpec s : live.specs()) {
+            if (s.name().equals(table)) {
+                return s.editableColumns();
+            }
+        }
+        return List.of();
     }
 
     /** The provider to mount on the protocol host. */
@@ -210,6 +250,13 @@ final class ServerTables implements AutoCloseable {
     public void close() {
         retry.shutdownNow();
         live.close();
+        if (outbox != null) {
+            try {
+                outbox.close();
+            } catch (IOException e) {
+                log.warn("outbox-close-failed", "error", e.getClass().getSimpleName());
+            }
+        }
     }
 
     /**

@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+ * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+ */
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { main } from "../src/index.js";
+import { handler } from "../src/serve.js";
+import { libCommand } from "../src/lib.js";
+import { distDir } from "../src/bundle.js";
+
+const GOOD = "rachana: 1\nsutra: ok\nversion: 1\ntitle: { id: \"'Ok'\" }\npanels:\n  - { id: m, kind: metric, label: Revenue, value: 1 }\n";
+const BAD = "rachana: 1\nsutra: bad\nversion: 1\npanels:\n  - { id: m, kind: metric, label: Revenue, value: \"1 +\" }\n";
+const hasBundle = existsSync(join(distDir(), "rachana.tools.js"));
+const tmp = () => mkdtempSync(join(tmpdir(), "rachana-cli-"));
+const io = () => { const o = { out: [], err: [] }; return { o, io: { out: (s) => o.out.push(s), err: (s) => o.err.push(s) } }; };
+
+test("usage: no command and unknown command exit 2", async () => {
+  assert.equal(await main([], io().io), 2);
+  assert.equal(await main(["nope"], io().io), 2);
+  assert.equal(await main(["lint", "--format"], io().io), 2);
+  assert.equal(await main(["lint", "--format", "xml", "."], io().io), 2);
+});
+
+test("new scaffolds a project and refuses a non-empty folder", async () => {
+  const d = tmp(); const p = join(d, "p");
+  assert.equal(await main(["new", p], io().io), 0);
+  for (const f of ["rachana.yaml", "sutras/overview.sutra.yaml", "data/sales.csv"]) assert.ok(existsSync(join(p, f)), f);
+  assert.equal(await main(["new", p], io().io), 2);
+  assert.equal(await main(["new", join(d, "q"), "--template", "zzz"], io().io), 2);
+  rmSync(d, { recursive: true });
+});
+
+test("lint: exit codes and formats", { skip: !hasBundle && "bundle not built" }, async () => {
+  const d = tmp();
+  writeFileSync(join(d, "a.sutra.yaml"), GOOD);
+  assert.equal(await main(["lint", d], io().io), 0);
+  writeFileSync(join(d, "b.sutra.yaml"), BAD);
+  let { o, io: x } = io();
+  assert.equal(await main(["lint", d], x), 1);
+  assert.ok(o.out.some((l) => l.includes("b.sutra.yaml") && l.includes("error RCH-")));
+  ({ o, io: x } = io());
+  await main(["lint", "--format", "json", d], x);
+  const res = JSON.parse(o.out[0]);
+  assert.equal(res.find((r) => r.file.endsWith("b.sutra.yaml")).ok, false);
+  ({ o, io: x } = io());
+  await main(["lint", "--format", "sarif", join(d, "b.sutra.yaml")], x);
+  assert.equal(JSON.parse(o.out[0]).version, "2.1.0");
+  assert.equal(await main(["lint", join(d, "missing")], io().io), 2);
+  rmSync(d, { recursive: true });
+});
+
+test("build writes the site and stops on a lint error", { skip: !hasBundle && "bundle not built" }, async () => {
+  const d = tmp(); const p = join(d, "p"), out = join(d, "site");
+  await main(["new", p], io().io);
+  assert.equal(await main(["build", "--src", p, "--out", out], io().io), 0);
+  const site = JSON.parse(readFileSync(join(out, "site.json"), "utf8"));
+  assert.deepEqual(site.sutras, ["overview"]);
+  assert.equal(site.tables[0].rows, 3);
+  assert.ok(readFileSync(join(out, "overview.html"), "utf8").includes("<rachana-view"));
+  assert.equal(JSON.parse(readFileSync(join(out, "data", "index.json"), "utf8")).protocol, "rdp");
+  writeFileSync(join(p, "sutras", "bad.sutra.yaml"), BAD);
+  const out2 = join(d, "site2");
+  assert.equal(await main(["build", "--src", p, "--out", out2], io().io), 1);
+  assert.ok(!existsSync(out2), "nothing is written when lint fails");
+  rmSync(d, { recursive: true });
+});
+
+test("preview handler serves pages, Sutra text and data; refuses path escape", () => {
+  const d = tmp(); mkdirSync(join(d, "data"));
+  writeFileSync(join(d, "a.sutra.yaml"), GOOD); writeFileSync(join(d, "data", "t.csv"), "a\n1\n"); writeFileSync(join(d, "secret.txt"), "x");
+  const h = handler(new Map([["a", join(d, "a.sutra.yaml")]]), join(d, "data"));
+  assert.equal(h("/")[0], 200);
+  assert.ok(h("/page/a")[2].includes("/sutras/a.sutra.yaml"));
+  assert.equal(h("/sutras/a.sutra.yaml")[2], GOOD);
+  assert.equal(h("/data/t.csv")[2].toString(), "a\n1\n");
+  assert.equal(JSON.parse(h("/data/index.json")[2]).tables[0].rows, 1);
+  assert.equal(h("/data/..%2Fsecret.txt")[0], 404);
+  assert.equal(h("/page/zzz")[0], 404);
+  rmSync(d, { recursive: true });
+});
+
+test("lib hands over to the one Java implementation", async () => {
+  assert.equal(libCommand(["verify", "x"], {}), null);
+  assert.deepEqual(libCommand(["verify", "x"], { RACHANA_JAR: "r.jar" }), ["java", ["-jar", "r.jar", "lib", "verify", "x"]]);
+  assert.equal(libCommand(["pack", "d"], { RACHANA_CLASSPATH: "a:b", RACHANA_JAVA: "/j/java" })[1][2], "com.ash.rachana.cli.Main");
+  const { o, io: x } = io();
+  const saved = { ...process.env }; delete process.env.RACHANA_JAR; delete process.env.RACHANA_CLASSPATH;
+  assert.equal(await main(["lib", "verify", "x"], x), 2);
+  Object.assign(process.env, saved);
+  assert.ok(o.err[0].includes("RACHANA_JAR"));
+});
+
+const jv = resolve(import.meta.dirname, "../../../../java");
+const cp = ["rachana-cli", "rachana-tools", "rachana-core", "rachana-api"].map((m) => join(jv, m, "target", "classes")).join(":");
+test("lib verify runs the jar's LibraryTool (needs the Java classes built)", { skip: !existsSync(join(jv, "rachana-cli", "target", "classes")) && "java not built" }, async () => {
+  process.env.RACHANA_CLASSPATH = cp;
+  const d = tmp();
+  try { assert.equal(await main(["lib", "verify", join(d, "missing")], io().io), 1); }
+  finally { delete process.env.RACHANA_CLASSPATH; rmSync(d, { recursive: true }); }
+});

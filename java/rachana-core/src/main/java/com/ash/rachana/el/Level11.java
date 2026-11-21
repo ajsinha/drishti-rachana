@@ -272,7 +272,7 @@ final class Level11 {
     private static Object exactElements(List<Object> a) {
         Object v = Values.simplify(a.get(0));
         String field = a.size() > 1 && Values.simplify(a.get(1)) instanceof String f ? f : null;
-        if (a.size() > 2 || a.size() > 1 && field == null || !(v instanceof com.ash.rachana.api.Node list && list.isArray())) {
+        if (a.size() > 2 || a.size() > 1 && field == null && Values.simplify(a.get(1)) != null || !(v instanceof com.ash.rachana.api.Node list && list.isArray())) {
             return null;
         }
         List<java.math.BigDecimal> out = new ArrayList<>();

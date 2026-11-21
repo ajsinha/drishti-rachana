@@ -41,25 +41,26 @@ public final class FragmentColumns {
      */
     public record ColumnParam(String function, int place, String name, boolean textOnly) { }
 
-    /** Every Core parameter of role {@code column}, in catalogue order (checked against {@code spec/1/functions.yaml} by a test). */
-    public static final List<ColumnParam> COLUMN_PARAMS = List.of(
-            new ColumnParam("group", 1, "key", false), new ColumnParam("group", 2, "aggregate", false),
-            new ColumnParam("sum", 1, "field", true), new ColumnParam("count", 1, "field", true), new ColumnParam("avg", 1, "field", true),
-            new ColumnParam("median", 1, "field", true), new ColumnParam("variance", 1, "field", true), new ColumnParam("stddev", 1, "field", true),
-            new ColumnParam("variance_pop", 1, "field", true), new ColumnParam("stddev_pop", 1, "field", true),
-            new ColumnParam("distinct", 1, "field", true), new ColumnParam("percentile", 1, "field", true),
-            new ColumnParam("wavg", 1, "b", false), new ColumnParam("wavg", 2, "c", true), new ColumnParam("span", 1, "field", true));
+    /** Every Core parameter of role {@code column}, in catalogue order: the {@code role: column} marks of the catalogue itself ({@link CoreParams}). */
+    public static final List<ColumnParam> COLUMN_PARAMS = columnParams();
 
-    /** The parameter names of the functions this pass reads, in call order (for named arguments). */
-    private static final Map<String, List<String>> PARAMS = Map.ofEntries(
-            Map.entry("group", List.of("list", "key", "aggregate", "by")), Map.entry("map", List.of("list", "expr")),
-            Map.entry("reduce", List.of("list", "init", "expr")), Map.entry("sort", List.of("list")),
-            Map.entry("percentile", List.of("list", "field", "p")), Map.entry("wavg", List.of("a", "b", "c")),
-            Map.entry("count", List.of("list", "field")), Map.entry("take", List.of("list", "n")), Map.entry("drop", List.of("list", "n")),
-            Map.entry("unique", List.of("list")));
+    private static List<ColumnParam> columnParams() {
+        List<ColumnParam> out = new java.util.ArrayList<>();
+        CoreParams.all().forEach((f, params) -> {
+            for (int i = 0; i < params.size(); i++) {
+                if (params.get(i).column()) {
+                    out.add(new ColumnParam(f, i, params.get(i).name(), params.get(i).text()));
+                }
+            }
+        });
+        return List.copyOf(out);
+    }
 
-    /** The functions whose result is rows of their first argument (a column of it is a column of them). */
-    private static final Set<String> SAME_ROWS = Set.of("sort", "take", "drop", "unique");
+    /** The functions whose result is rows of their first argument (a column of it is a column of them); {@code union} when both are one table's. */
+    private static final Set<String> SAME_ROWS = Set.of("sort", "take", "drop", "unique", "difference", "intersect");
+
+    /** Marks a filter's rows that come from a table the pass cannot follow (the tables it reads between two marks, then the text). */
+    private static final String UNKNOWN_ROWS = "?";            // never a table name; not a control character (TeaVM reads \u0001 in a concatenation as an argument)
 
     private static final Set<String> WORDS = Set.of("true", "false", "null", "and", "or", "not", "in", "if", "else", "lambda", "is");
 
@@ -270,7 +271,25 @@ public final class FragmentColumns {
                 List<int[]> args = args(s + 1);
                 return args.isEmpty() ? null : rows(args.get(0)[0], args.get(0)[1], row);
             }
+            if (tok(s).is(Type.IDENT, "union") && s + 1 < e && tok(s + 1).type() == Type.LPAREN && match[s + 1] > s
+                    && postfix(match[s + 1] + 1, e)) {
+                List<int[]> args = args(s + 1);
+                String first = args.size() == 2 ? rows(args.get(0)[0], args.get(0)[1], row) : null;
+                return first != null && first.equals(rows(args.get(1)[0], args.get(1)[1], row)) ? first : null;
+            }
             return null;
+        }
+
+        /** The table parameters {@code [s, e)} reads ({@code arg.<table>} anywhere in it), in order. */
+        private List<String> mentioned(int s, int e) {
+            List<String> out = new ArrayList<>();
+            for (int i = s; i < e; i++) {
+                Object[] a = arg(i, e);
+                if (a != null && a[0] != null && !out.contains((String) a[0])) {
+                    out.add((String) a[0]);
+                }
+            }
+            return out;
         }
 
         /** The table whose row (or each row, {@code [*]}) {@code [s, e)} gives: an index of its rows, or {@code first}/{@code last} of them. */
@@ -339,7 +358,13 @@ public final class FragmentColumns {
                     continue;
                 }
                 if (t.type() == Type.FILTER && match[i] > i) {   // a filter: @ is an element of the list before it
-                    span(i + 1, match[i], rows(primary(i, s), i, row), elements);
+                    int from = primary(i, s);
+                    String over = rows(from, i, row);
+                    if (over == null) {                          // rows derived from a table in a way the mapping cannot follow
+                        List<String> reach = mentioned(from, i);
+                        over = reach.isEmpty() ? null : UNKNOWN_ROWS + String.join(",", reach) + UNKNOWN_ROWS + src.substring(tok(from).pos(), tok(i).pos());
+                    }
+                    span(i + 1, match[i], over, elements);
                     i = match[i];
                     continue;
                 }
@@ -430,7 +455,10 @@ public final class FragmentColumns {
             List<int[]> args = args(lp);
             boolean piped = i > s && tok(i - 1).is(Type.OP, "|>");
             String list = piped ? rows(stage == i ? lastStage(i, s) : stage, i - 1, row) : args.isEmpty() ? null : rows(args.get(0)[0], args.get(0)[1], row);
-            List<String> names = PARAMS.getOrDefault(f, List.of("list", "field"));
+            if (list != null && list.startsWith(UNKNOWN_ROWS)) {
+                list = null;                                     // rows the mapping cannot follow: a column text over them is refused below
+            }
+            List<String> names = CoreParams.of(f) != null ? CoreParams.names(f) : List.of("list", "field");
             for (int k = 0; k < args.size(); k++) {
                 int as = args.get(k)[0];
                 int ae = args.get(k)[1];
@@ -539,6 +567,19 @@ public final class FragmentColumns {
         /** {@code @.<name>} or a lambda element's field over {@code table}: renamed when it is a local column. */
         private void column(String table, Token name) {
             if (table == null) {
+                return;
+            }
+            if (table.startsWith(UNKNOWN_ROWS)) {                   // never silent: a local column over rows the mapping cannot follow
+                int end = table.indexOf(UNKNOWN_ROWS, 1);
+                for (String t : table.substring(1, end).split(",")) {
+                    Set<String> cols = tables.columns(t);
+                    if (cols != null && cols.contains(name.text())) {
+                        problems.add("reads @." + name.text() + " over '" + table.substring(end + 1).trim() + "', rows derived from table " + t
+                                + " that the caller's mapping cannot follow: filter the table itself (arg." + t + "[?...]), or derive the rows"
+                                + " with sort, take, drop, unique, difference or intersect over it");
+                        return;
+                    }
+                }
                 return;
             }
             Set<String> cols = tables.columns(table);

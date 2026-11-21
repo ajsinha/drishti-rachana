@@ -298,3 +298,7 @@ The placement verdict of LIVE_TABLES.md section 0 is accepted: **(a) Rachana, as
 ### AI kit and MCP moved to the AI release (owner, 2026-11-21)
 
 The Rachana AI kit (prompt kit, validate-and-fix loop, evaluation harness) and the MCP tools (the generic Rachana MCP server, the sajhamcpserver tool pack) leave i7b G2 and are built in Drishti's GenAI release (i10 after the renumbering). The Studio's "describe a screen" command bar stays in the Studio design as a placeholder until then.
+
+### Desktop hosts deferred (owner, 2026-11-21)
+
+The desktop hosts (Electron, Java Swing over JCEF or JavaFX WebView, .NET WebView2) leave i7b and are **parked with no release assigned** (owner, final). The in-process bridge transport of the Data Protocol stays (built in G2), so a host can be added later without protocol changes. If revived, the first candidate is Swing over JavaFX WebView (jars only, no executable), after a painting spike.

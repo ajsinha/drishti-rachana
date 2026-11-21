@@ -30,10 +30,13 @@ flowchart LR
   R1b --> R2a[R2a Electron + bridge]
   R2a --> R2b[R2b Swing / JCEF]
   R2b --> R2c[R2c .NET / WebView2]
-  R1b --> R2[R2 WASM, server, editor,<br/>GenUI + MCP]
+  R1b --> R2[R2 V8 JS bundle, server, editor,<br/>GenUI + MCP]
   R2 --> R3[R3 distribution]
   R2c --> R3
 ```
+
+Language level 1.1 is built in G1 as ViewModel contract 1.1: datasets, the grid, tree and chart kinds, and map points
+(owner decision O3, 2026-11-21). Level 1.0 stays frozen.
 
 ## M1 progress: the compatibility regime
 

@@ -52,6 +52,14 @@ public final class SutraExpressions {
         return all;
     }
 
+    /**
+     * The options of panel kind {@code kind} (its written word) whose values are expressions: its own, {@code when}, and {@code source}
+     * for a kind that reads data; empty for a word that is no panel kind.
+     */
+    public static Set<String> expressionOptions(String kind) {
+        return PanelKind.parse(kind).map(SutraExpressions::expressionOptions).orElse(Set.of());
+    }
+
     /** The message without its leading RCH-nnnn: the problem carries the code itself. */
     /** The problem's words with the source in front, once (a compiler at level 1.1 has put it there already). */
     private static String whole(String what, String src, ElException e) {

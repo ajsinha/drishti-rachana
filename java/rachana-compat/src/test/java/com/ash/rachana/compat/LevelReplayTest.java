@@ -53,8 +53,15 @@ class LevelReplayTest {
         }
     }
 
-    /** spec/1/functions.yaml at a level, as levels.py write makes it: the {@code - name:} entries of a later {@code since} left out. */
+    /**
+     * spec/1/functions.yaml at a level, as levels.py write makes it: the {@code - name:} entries of a later {@code since} left out; before
+     * the level of {@code roles_since} (parameter roles, {@code role: "column"}) that key and every parameter's {@code role} left out.
+     */
     static String functionsAt(String text, String level) {
+        java.util.regex.Matcher roles = java.util.regex.Pattern.compile("(?m)^roles_since: \"([0-9.]+)\"\n").matcher(text);
+        if (roles.find() && minor(roles.group(1)) > minor(level)) {
+            text = text.replace(roles.group(), "").replaceAll(", role: \"[a-z]+\"}", "}");
+        }
         StringBuilder out = new StringBuilder();
         List<String> block = null;
         for (String line : text.split("(?<=\n)")) {
@@ -87,6 +94,9 @@ class LevelReplayTest {
         String yaml = "core:\n# ---- x (1)\n- name: a\n  since: \"1.0\"\n- name: b\n  since: \"1.1\"\n# ---- y (1)\n- name: c\n  since: \"1.0\"\n";
         assertEquals("core:\n# ---- x (1)\n- name: a\n  since: \"1.0\"\n# ---- y (1)\n- name: c\n  since: \"1.0\"\n", functionsAt(yaml, "1.0"));
         assertEquals(yaml, functionsAt(yaml, "1.1"));
+        String roles = "status: draft\nroles_since: \"1.2\"\ncore:\n- name: a\n  params:\n  - {name: \"f\", type: \"text\", role: \"column\"}\n  since: \"1.0\"\n";
+        assertEquals("status: draft\ncore:\n- name: a\n  params:\n  - {name: \"f\", type: \"text\"}\n  since: \"1.0\"\n", functionsAt(roles, "1.1"));
+        assertEquals(roles, functionsAt(roles, "1.2"));
     }
 
     /** EL1-4: the replay skips only the cases compat/levels/moved-cases.yaml lists; an unlisted difference or a wrong entry fails. */

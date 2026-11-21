@@ -170,3 +170,72 @@ cases:
         /panels/0/id: bars
         /panels/0/data/bars/0/label: FX
         /panels/0/data/bars/1/text: "800"
+
+  - id: column-parameter-text-is-renamed
+    kind: sutra
+    source: L-21 (3); functions.yaml role column
+    note: "sum's field is a column parameter (role: column): its text 'amount' is renamed to the caller's MTM_USD at compile time, as @.amount is; so are @.<column> in a filter or a per-element argument over the table, a lambda element's field, the field of first(...) or of an index of the table's rows, the key and aggregate texts of group, and the same inside a template's ${...}. The pipe and take keep the table's rows."
+    files: &figures
+      desk-figures.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-figures
+        version: 1
+        doc:
+          summary: Figures over amounts by desk.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - { id: total, kind: metric, label: Total, value: "sum(arg.rows, 'amount')", fmt: amount0 }
+          - { id: mean, kind: metric, label: Mean, value: "avg(arg.rows |> take(2), 'amount')", fmt: amount0 }
+          - { id: big, kind: metric, label: Large, value: "count(arg.rows[?@.amount > 1000])" }
+          - { id: top, kind: metric, label: Top desk, value: "first(sort(arg.rows, lambda r: r.amount, true)).desk" }
+          - { id: last, kind: metric, label: Last desk, value: "arg.rows[-1].desk" }
+          - { id: doubled, kind: metric, label: Doubled, value: "sum(map(arg.rows, @.amount * 2))", fmt: amount0 }
+          - { id: desks, kind: metric, label: Desks, value: "size(group(arg.rows, 'desk', 'amount'))" }
+          - { id: note, kind: markdown, text: "Total ${sum(arg.rows, 'amount')} over ${count(arg.rows, 'desk')} desks" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 }, { BOOK_DESK: Credit, MTM_USD: 2000 } ] }
+      panels:
+        - use: desk-figures@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      at:
+        /panels/0/data/value/text: "4,000"
+        /panels/1/data/value/text: "1,000"
+        /panels/2/data/value/text: "2"
+        /panels/3/data/value/text: Credit
+        /panels/4/data/value/text: Credit
+        /panels/5/data/value/text: "8,000"
+        /panels/6/data/value/text: "3"
+        /panels/7/data/text: Total 4000 over 3 desks
+
+  - id: identity-mapping-keeps-the-text
+    kind: sutra
+    source: L-21 (2, 3)
+    files: *figures
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        by_desk: { rows: [ { desk: FX, amount: 5 }, { desk: Rates, amount: 7 } ] }
+      panels:
+        - { use: desk-figures@1, with: { rows: $.by_desk } }
+    expect:
+      at:
+        /panels/0/data/value/text: "12"
+        /panels/1/data/value/text: "6"
+        /panels/3/data/value/text: Rates
+        /panels/7/data/text: Total 12 over 2 desks

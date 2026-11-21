@@ -14,7 +14,8 @@ on the JVM by `rachana-tools`), the hermetic check of a public library's typed f
 use (a label, a title), not as an expression. Built next (G2 lane A2), under the owner's rule **fragments are
 functions** (decision L-21): `as:` (instance-scoped ids `<as>-<id>`), declared `emits` with payloads read as
 `@<as>.<event>.<field>`, `on:` setting a control (host actions wait for I1), the `{from, columns}` mapping renamed at
-compile time with problems naming both sides (`RCH-2114`..`2116`, advisory `RCH-2120`), contract files
+compile time with problems naming both sides (`RCH-2114`..`2116`, advisory `RCH-2120`), column texts of Core's column
+parameters and lambda fields renamed too (lane A3; `RCH-2121` where a mapping cannot reach), contract files
 (`contracts/<name>.json`, 5.2), the hermetic check for every typed fragment, and the library hashes in the compile
 result (`Sutra.libraries()`). Not built yet: private state, `let`, outputs, overlays, `fn` parameters, `rachana lib
 check-host`, library functions (X41), section 14 to
@@ -339,8 +340,11 @@ with: { rows: "$.vectors |> select(date: r => r.SCEN_DATE, pnl: r => r.PNL_USD *
 - A computed column is made by the user, upstream (`let:`, X20 verbs, a derived table D3). A mapping takes a
   column name only: one way to compute, and it stays in the user's file where a reviewer sees it.
 - The rename covers the panels that read the table (`rows: arg.<table>`): their field-name options (`x`, `y`, `label`,
-  `value`, `by`, ...), column `bind`s and every `@.<column>`. A bare name or a column named as text (`sum(t, 'pnl')`)
-  is not renamed: a fragment reads its columns as `@.<name>` or by a field option (L-21, rule 3).
+  `value`, `by`, ...) and column `bind`s; and in every expression `@.<column>` over a row of the table, a lambda element's
+  field, the field of `first`/`last`/an index of its rows, and the text of a Core column parameter over the table
+  (`sum(arg.pnl, 'pnl')`, `group(arg.t, 'desk', 'pnl')`; `role: column` in `functions.yaml`). A computed column text, a local
+  column's text over another list, a column the table does not declare, or a bare name that is a local column is `RCH-2121`
+  (L-21, rule 3): the fragment writes `@.<name>` or the column as text.
 - A mapping the fragment never reads is an advisory (`RCH-2120`, severity warning), never a refusal.
 - Misfit is a problem at the use: `RCH-2116` "`rows` of `finance/var-histogram@1` needs column `pnl` (number);
   `$.vectors` has `PNL_USD`, `SCEN_DATE`, `DESK`", with the fix "map it: `columns: { pnl: PNL_USD }`".

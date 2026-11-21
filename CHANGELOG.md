@@ -31,6 +31,27 @@ Entries are written per release; the regime's unreleased work is listed after th
 - The three `test_conformance.py` failures could not be reproduced on `g2/integration` (6 pass, 26 in the package); two stale
   expectations in `test_server_adapters.py` were corrected to the spec.
 
+### Fragments are functions: column texts reach the mapping (decision L-21 rule 3, lead), level 1.2 (G2 lane A3)
+
+- **Column parameters** (SPEC 2.5, `functions.yaml`): every Core parameter whose argument names a column of the list's rows is
+  marked `role: "column"` (`field` of `sum`, `count`, `avg`, `median`, `variance`, `stddev`, `variance_pop`, `stddev_pop`,
+  `distinct`, `percentile`, `span`; `key` and `aggregate` of `group`; `b` and `c` of `wavg`); `roles_since: "1.2"` says when roles
+  arrived, so `levels.py write` and `LevelReplayTest` write a level before it without them (level 1.0's file is unchanged).
+  `functions.schema.json` describes both keys.
+- **Renamed at compile time like `@.col`** (`com.ash.rachana.el.FragmentColumns`, used by `TypedFragment.bind` before the
+  arguments are put in): the text of a column parameter over a table parameter (`sum(arg.rows, 'amount')`), `@.<column>` where
+  `@` is a row of the table (a panel that reads it, a filter `arg.rows[?...]`, the per-element argument of `map`, `sort`, `reduce`,
+  `group`), a lambda element's field (`lambda r: r.amount`), the field of `first`/`last`/an index of the rows, and the same inside a
+  template's `${...}`; the pipe and `sort`/`take`/`drop`/`unique` keep the table's rows. The spelling is kept; only the names change.
+  `RCH-2120` now also counts these reads.
+- **`RCH-2121`** (error): a column parameter over the table given a computed text, a text naming a local column over a list that is
+  not the table, a column the table does not declare, or a bare name that is a local column; the message names the local column and
+  says to write `@.<name>` or the column as text.
+- **Conformance**: `sutra/fragments-calls` (+2: every renamed form, identity), `problem/fragments-calls` (+4: one per refusal),
+  verified; the `sutra` kind now builds the view at the case's level (it built at 1.0, so 1.1 syntax in a 1.2 case did not
+  read). `FragmentColumnsTest` checks the Java table of column parameters equals the role marks. API additions only
+  (`FragmentColumns`, `SutraExpressions.expressionOptions(String)`, `TypedFragment.COLUMN_TEXT`).
+
 ### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
 
 - **Binding like a call** (SPEC 2.5, LIBRARIES 5 to 7, DECISIONS L-21): a table parameter names its local columns or a

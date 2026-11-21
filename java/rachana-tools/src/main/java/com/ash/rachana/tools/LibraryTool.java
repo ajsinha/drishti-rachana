@@ -9,6 +9,7 @@ import com.ash.rachana.SutraProblem;
 import com.ash.rachana.lib.Library;
 import com.ash.rachana.lib.LibraryBundle;
 import com.ash.rachana.lib.LibraryLock;
+import com.ash.rachana.table.TableSchema;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -17,13 +18,16 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
 /**
  * The library commands' work on the JVM (LIBRARIES.md 22): {@code build} (regenerate {@code exports} and {@code MANIFEST.sha384}),
  * {@code sign} (a detached Ed25519 signature line in {@code SIGNATURE}), {@code pack} (the deterministic {@code .rlib}), {@code verify}
- * (every rule of {@link Library#load}) and {@code lock} (the {@code rachana.lock} entry of a packed library). No network. Stateless.
+ * (every rule of {@link Library#load}), {@code lock} (the {@code rachana.lock} entry of a packed library), {@code contracts} (the tables a
+ * host serves to use the library, 5.2) and {@code check-host} (each contract against a host's table schemas, column by column; the
+ * schemas are handed in, so no network here). Stateless.
  */
 public final class LibraryTool {
 
@@ -114,6 +118,100 @@ public final class LibraryTool {
     public static LibraryLock.Entry lockEntry(Path dirOrArchive, Library.Trust trust) {
         Library lib = load(dirOrArchive, trust);
         return new LibraryLock.Entry(lib.name(), lib.version(), lib.sha384(), lib.source(), lib.signedBy(), lib.licence());
+    }
+
+    /** A column a contract asks for: its name, Data Protocol type, whether a table may leave it out, and what it means. */
+    public record ContractColumn(String name, String type, boolean optional, String doc) { }
+
+    /** A published contract of a library (LIBRARIES.md 5.2) and the fragments ({@code name@N}) whose table parameters name it. */
+    public record Contract(String name, String title, String grain, List<String> key, List<ContractColumn> columns, List<String> usedBy) { }
+
+    /**
+     * One column of a contract against a host's table (the rows of {@code ops/contract-fit}): {@code status} is {@code ok}, {@code type}
+     * (the table's type does not serve it), {@code missing} (a required column the table lacks), {@code absent} (an optional one it
+     * lacks; fine), {@code masked} (the host masks it from this reader) or {@code no-table} (the host has no such table; column null).
+     */
+    public record Fit(String contract, String table, String column, String needed, String found, String status) {
+
+        /** Whether this row breaks a fragment that reads the contract. */
+        public boolean breaks() {
+            return !"ok".equals(status) && !"absent".equals(status);
+        }
+    }
+
+    /** The published contracts of a library folder or {@code .rlib}, sorted by name, each with the fragments that name it. */
+    public static List<Contract> contracts(Path dirOrArchive, Library.Trust trust) {
+        Library lib = load(dirOrArchive, trust);
+        Map<String, List<String>> users = new TreeMap<>();
+        java.util.regex.Pattern named = java.util.regex.Pattern.compile("\\bcontract:\\s*([a-z][a-z0-9-]*)");
+        for (String f : lib.fragmentNames()) {
+            for (int major : lib.majors(f)) {
+                java.util.regex.Matcher m = named.matcher(lib.fragment(f, major).orElseThrow().text());
+                while (m.find()) {
+                    List<String> u = users.computeIfAbsent(m.group(1), k -> new ArrayList<>());
+                    if (!u.contains(f + "@" + major)) {
+                        u.add(f + "@" + major);
+                    }
+                }
+            }
+        }
+        List<Contract> out = new ArrayList<>();
+        for (String name : lib.contractNames()) {
+            Map<?, ?> c = (Map<?, ?>) com.ash.rachana.parse.Json.read(lib.contract(name).orElseThrow());
+            List<ContractColumn> cols = new ArrayList<>();
+            for (Object o : (List<?>) c.get("columns")) {
+                Map<?, ?> col = (Map<?, ?>) o;
+                cols.add(new ContractColumn(text(col.get("name")), text(col.get("type")), Boolean.TRUE.equals(col.get("optional")), text(col.get("doc"))));
+            }
+            List<String> key = new ArrayList<>();
+            if (c.get("key") instanceof List<?> k) {
+                k.forEach(x -> key.add(text(x)));
+            }
+            out.add(new Contract(name, text(c.get("title")), text(c.get("grain")), List.copyOf(key), List.copyOf(cols),
+                    List.copyOf(users.getOrDefault(name, List.of()))));
+        }
+        return out;
+    }
+
+    /**
+     * Each contract of a library against a host's tables, column by column ({@code rachana lib check-host}): the table for a contract is
+     * {@code tables.get(contract)} or one of the contract's own name; {@code schemas} gives a table's schema, or null when the host has
+     * no such table. Types fit as at a use (the numbers serve each other; {@link com.ash.rachana.parse.TypedFragment#fits}).
+     */
+    public static List<Fit> checkHost(List<Contract> contracts, Map<String, String> tables, Function<String, TableSchema> schemas) {
+        List<Fit> out = new ArrayList<>();
+        for (Contract c : contracts) {
+            String table = tables.getOrDefault(c.name(), c.name());
+            TableSchema s = schemas.apply(table);
+            if (s == null) {
+                out.add(new Fit(c.name(), table, null, null, null, "no-table"));
+                continue;
+            }
+            for (ContractColumn col : c.columns()) {
+                TableSchema.Column t = s.column(col.name());
+                String status = t == null ? (col.optional() ? "absent" : "missing")
+                        : t.masked() ? "masked"
+                        : com.ash.rachana.parse.TypedFragment.fits(col.type(), t.type()) ? "ok" : "type";
+                out.add(new Fit(c.name(), table, col.name(), col.type() + (col.optional() ? "?" : ""), t == null ? null : t.type(), status));
+            }
+        }
+        return out;
+    }
+
+    /** The fit rows as plain text, one line each, aligned; a last line says how many rows break a fragment. */
+    public static String report(List<Fit> fits) {
+        StringBuilder sb = new StringBuilder();
+        long broken = fits.stream().filter(Fit::breaks).count();
+        for (Fit f : fits) {
+            sb.append(String.format("%-9s %-24s %-24s %-20s %-12s %s%n", f.status(), f.contract(), f.table(), f.column() == null ? "-" : f.column(),
+                    f.needed() == null ? "-" : f.needed(), f.found() == null ? "-" : f.found()));
+        }
+        sb.append(broken == 0 ? "every contract fits" : broken + (broken == 1 ? " column breaks" : " columns break") + " a fragment").append('\n');
+        return sb.toString();
+    }
+
+    private static String text(Object o) {
+        return o == null ? null : String.valueOf(o);
     }
 
     private static Library load(Path p, Library.Trust trust) {

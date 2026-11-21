@@ -515,3 +515,123 @@ cases:
         severity: error
         message: "fragment desk-total names column 'qty' of table rows in sum(...), which it does not declare (it has desk, amount)"
         range: { start: { line: 15, column: 53 } }
+
+  - id: function-parameter-needs-a-lambda
+    kind: problem
+    source: LIBRARIES 4.2 (fn); EL_EXPANSION X13 (RCH-2116)
+    files: &scored
+      scored.v1.fragment.yaml: |
+        rachana: 1
+        fragment: scored
+        version: 1
+        doc:
+          summary: The amounts scored as the caller says.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              amount: { type: number, doc: The amount }
+          score: { type: "fn(number) -> number", required: true, doc: The score of an amount }
+        panels:
+          - { id: total, kind: metric, label: Scored, value: "sum(map(arg.rows, arg.score(@.amount)))" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { MTM_USD: 1200 } ] }
+      panels:
+        - use: scored@1
+          with: { rows: { from: $.positions, columns: { amount: MTM_USD } }, score: 1000 }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2116
+        severity: error
+        message: "parameter score of fragment scored is a function (fn(number) -> number): write lambda x: ..., not '1000'"
+        range: { start: { line: 10, column: 79 } }
+
+  - id: function-parameter-arity
+    kind: problem
+    source: LIBRARIES 4.2 (fn); EL_EXPANSION X13 (RCH-2116)
+    files: *scored
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { MTM_USD: 1200 } ] }
+      panels:
+        - use: scored@1
+          with: { rows: { from: $.positions, columns: { amount: MTM_USD } }, score: "lambda a, b: a + b" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2116
+        severity: error
+        message: "parameter score of fragment scored is a function of 1 name (fn(number) -> number); this lambda has 2"
+        range: { start: { line: 10, column: 79 } }
+
+  - id: function-parameter-reads-no-row
+    kind: problem
+    source: L-21 (4); EL_EXPANSION X13 (RCH-2116)
+    note: "Inside the fragment @ would be the fragment's row, not the caller's: a function argument reads its names and the caller's screen only."
+    files: *scored
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { MTM_USD: 1200, FX: 2 } ] }
+      panels:
+        - use: scored@1
+          with: { rows: { from: $.positions, columns: { amount: MTM_USD } }, score: "lambda x: x * @.FX" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2116
+        severity: error
+        message: "parameter score of fragment scored is a function: its body reads its names and the screen, not @, ^ or #index (inside the fragment they are the fragment's rows, not yours): 'lambda x: x * @.FX'"
+        range: { start: { line: 10, column: 79 } }
+
+  - id: function-type-is-checked
+    kind: problem
+    source: LIBRARIES 4.2 (fn); EL_EXPANSION X8
+    files:
+      bad.v1.fragment.yaml: |
+        rachana: 1
+        fragment: bad
+        version: 1
+        doc:
+          summary: A function type with no names.
+        params:
+          f: { type: "fn() -> number", optional: true, doc: Nothing to call it with }
+        panels:
+          - { id: total, kind: metric, label: Total, value: "1" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      panels:
+        - { use: bad@1 }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2048
+        severity: error
+        message: "parameter f of fragment bad has type 'fn() -> number': a value type ([boolean, date, datetime, decimal, duration, integer, money, number, text], list<T>, record{...}, T?, fn(T, ...) -> U with one name or more), a name type ([area, columns, enum, format, icon, id, key, palette, tone, variant]) or table"
+        range: { start: { line: 7, column: 14 } }
+      - code: RCH-2048
+        severity: error
+        message: "no block bad@1 (no block files are loaded)"
+        range: { start: { line: 7, column: 5 } }

@@ -290,3 +290,11 @@ The placement verdict, the design and the decisions **LT-1 to LT-19** with their
 ### Live tables (lead, under the owner's delegation, 2026-11-21)
 
 The placement verdict of LIVE_TABLES.md section 0 is accepted: **(a) Rachana, as the JVM module `rachana-live`**, never in Core or the JavaScript bundles; rights only through the host's `Authoriser` (no authoriser: writes refused); not a G4 dependency. **LT-1 to LT-19 are accepted as recommended**, including LT-8 (Drishti's write-back service stays in Drishti and is bound as the `ChangeSink`). LT-16 (the snapshot adapter lives in the host) is consistent with Drishti Lake's design (drishti `wip/i7b-products` docs/plans/DRISHTI_LAKE_DESIGN.md, host-supplied rows). Build: L1–L6 (read side) in G2, L7–L10 in G3; Drishti switches over in i8.
+
+### L-12 amended (owner, 2026-11-21)
+
+`drishti-rachana-libraries` is **public for the time being** (owner: "it is ok"), under the same proprietary licence as this repository (L-11 unchanged: all libraries proprietary). Like this repository, it carries no Drishti-internal data, only synthetic examples.
+
+### AI kit and MCP moved to the AI release (owner, 2026-11-21)
+
+The Rachana AI kit (prompt kit, validate-and-fix loop, evaluation harness) and the MCP tools (the generic Rachana MCP server, the sajhamcpserver tool pack) leave i7b G2 and are built in Drishti's GenAI release (i10 after the renumbering). The Studio's "describe a screen" command bar stays in the Studio design as a placeholder until then.

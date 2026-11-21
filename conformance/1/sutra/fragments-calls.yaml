@@ -239,3 +239,67 @@ cases:
         /panels/1/data/value/text: "6"
         /panels/3/data/value/text: Rates
         /panels/7/data/text: Total 12 over 2 desks
+
+  - id: function-parameter-takes-the-callers-lambda
+    kind: sutra
+    source: L-21 (2); LIBRARIES 4.2 (fn); EL_EXPANSION X13
+    note: "score is fn(number) -> number: the use writes a lambda in its own context; where the fragment calls it, arg.score(x) is the lambda bound by let around the expression; where it passes it whole (sort's key), the lambda itself. The lambda reads the caller's column names, as the rows it gets are the caller's."
+    files: &ranked
+      ranked-desks.v1.fragment.yaml: |
+        rachana: 1
+        fragment: ranked-desks
+        version: 1
+        doc:
+          summary: Desks scored and ordered as the caller says.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+          score: { type: "fn(number) -> number", default: "lambda x: x", doc: The score of an amount }
+          order: { type: "fn(any) -> any", optional: true, doc: The sort key of a row }
+        panels:
+          - { id: total, kind: metric, label: Scored, value: "sum(map(arg.rows, arg.score(@.amount)))" }
+          - { id: first, kind: metric, label: First, value: "first(sort(arg.rows, arg.order)).desk", when-bound: order }
+          - { id: note, kind: markdown, text: "Top score ${max(map(arg.rows, arg.score(@.amount)))}" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 }, { BOOK_DESK: Credit, MTM_USD: 2000 } ] }
+      panels:
+        - use: ranked-desks@1
+          with:
+            rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } }
+            score: "lambda x: x / 1000"
+            order: "lambda r: -r.MTM_USD"
+    expect:
+      at:
+        /panels/0/data/value/text: "4"
+        /panels/1/data/value/text: Credit
+        /panels/2/data/text: Top score 2
+
+  - id: function-parameter-default
+    kind: sutra
+    source: LIBRARIES 4.2 (fn, default)
+    files: *ranked
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 } ] }
+      panels:
+        - use: ranked-desks@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      at:
+        /panels/0/data/value/text: "2000"
+        /panels/1/id: note
+        /panels/1/data/text: Top score 1200

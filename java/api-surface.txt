@@ -1628,6 +1628,7 @@ com.ash.rachana.el.FormRules$Compiled :: public java.lang.String com.ash.rachana
 com.ash.rachana.el.FormRules$Compiled :: public void com.ash.rachana.el.FormRules$Compiled.names(java.util.Set<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static final java.lang.String com.ash.rachana.el.FragmentColumns.CODE
 com.ash.rachana.el.FragmentColumns :: public static final java.util.List<com.ash.rachana.el.FragmentColumns$ColumnParam> com.ash.rachana.el.FragmentColumns.COLUMN_PARAMS
+com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.parts(java.lang.String,java.util.function.UnaryOperator<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.rename(java.lang.String,java.lang.String,boolean,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.template(java.lang.String,java.lang.String,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public boolean com.ash.rachana.el.FragmentColumns$ColumnParam.textOnly()
@@ -1949,6 +1950,7 @@ com.ash.rachana.lib.Library :: public java.util.Optional<com.ash.rachana.parse.S
 com.ash.rachana.lib.Library :: public java.util.Optional<java.lang.String> com.ash.rachana.lib.Library.contract(java.lang.String)
 com.ash.rachana.lib.Library :: public java.util.Set<java.lang.String> com.ash.rachana.lib.Library.contractNames()
 com.ash.rachana.lib.Library :: public java.util.Set<java.lang.String> com.ash.rachana.lib.Library.fragmentNames()
+com.ash.rachana.lib.Library :: public java.util.SortedSet<java.lang.Integer> com.ash.rachana.lib.Library.majors(java.lang.String)
 com.ash.rachana.lib.Library :: public static com.ash.rachana.lib.Library com.ash.rachana.lib.Library.load(com.ash.rachana.lib.LibraryBundle,com.ash.rachana.lib.Library$Trust)
 com.ash.rachana.lib.Library :: public static final int com.ash.rachana.lib.Library.MAX_FRAGMENTS
 com.ash.rachana.lib.Library :: public static final java.lang.String com.ash.rachana.lib.Library.HASHES
@@ -2760,6 +2762,7 @@ com.ash.rachana.parse.TypedFragment :: public java.util.List<com.ash.rachana.par
 com.ash.rachana.parse.TypedFragment :: public java.util.List<java.lang.String> com.ash.rachana.parse.TypedFragment.declaredEvents()
 com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Param> com.ash.rachana.parse.TypedFragment.params()
 com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Slot> com.ash.rachana.parse.TypedFragment.slots()
+com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.parse.TypedFragment.fits(java.lang.String,java.lang.String)
 com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.parse.TypedFragment.isTyped(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.TypedFragment :: public static com.ash.rachana.parse.TypedFragment com.ash.rachana.parse.TypedFragment.of(com.ash.rachana.parse.SutraBlocks$Block)
 com.ash.rachana.parse.TypedFragment :: public static final int com.ash.rachana.parse.TypedFragment.MAX_PARAMS

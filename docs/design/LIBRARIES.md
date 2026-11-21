@@ -17,8 +17,9 @@ functions** (decision L-21): `as:` (instance-scoped ids `<as>-<id>`), declared `
 compile time with problems naming both sides (`RCH-2114`..`2116`, advisory `RCH-2120`), column texts of Core's column
 parameters and lambda fields renamed too (lane A3; `RCH-2121` where a mapping cannot reach), contract files
 (`contracts/<name>.json`, 5.2), the hermetic check for every typed fragment, and the library hashes in the compile
-result (`Sutra.libraries()`). Not built yet: private state, `let`, outputs, overlays, `fn` parameters, `rachana lib
-check-host`, library functions (X41), section 14 to
+result (`Sutra.libraries()`). `fn` parameters (`fn(T, ...) -> U`, a lambda
+in the user's context; lane A3), and `rachana lib contracts` / `rachana lib check-host` (22; in `java/rachana-cli` over
+`LibraryTool`). Not built yet: private state, `let`, outputs, overlays, library functions (X41), section 14 to
 17 (documents, gates LG1 to LG9 beyond what `lib` cases check, the AI kit, Studio), the CLI commands of 22 (the work is in
 `LibraryTool`). Per L-12 no library content lives here: the conformance suite carries a tiny synthetic `demo` library.
 The rest of this document is the design; syntax not listed above is settled only when it enters `spec/1/SPEC.md` with a

@@ -5,6 +5,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
+
+- **L2, one protocol host over providers** (`rachana-data`): `ProtocolHost` answers the routes of PROTOCOL 4 and the bridge of 12 over
+  any number of `TableProvider`s (a table is answered by the first provider that has it; the listing is every provider's) and checks
+  every query document (`RowQuery.validate`) before a provider sees it. `RowQuery` is the one evaluation of a query document over rows
+  held in memory (filter as Rachana-EL, sort, cursor and offset, group). `MemoryHost` is now a provider (its own `handle` and `bridge`
+  delegate to its `protocol()`); `ReferenceServer` serves `host().protocol()`, so other providers can be added to it. A caller object
+  (opaque) travels from the transport to the provider. No behaviour change: protocol cases 54 of 55 as before (the frozen
+  `examples/bridge` sort case).
+
 ### CLI and Python SDK, second pass (G2)
 
 - **Language level for `lint` / `check`**: the bundle's `check` already read `since` (as `open` does), so no facade change; `rachana lint`,

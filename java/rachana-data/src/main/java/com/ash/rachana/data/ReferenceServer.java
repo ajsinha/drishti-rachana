@@ -23,7 +23,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The reference Data Protocol server (small, for conformance and for trying a view): a {@link MemoryHost} over the JDK's HTTP server.
+ * The reference Data Protocol server (small, for conformance and for trying a view): a {@link ProtocolHost} over the JDK's HTTP server,
+ * serving a {@link MemoryHost} and any providers added to {@code host().protocol()}.
  * Under {@code base}: the resources of section 4, the minimal SSE change stream of section 8.2 (backlog, then live frames, a {@code : hb}
  * heartbeat), and the test adapter of section 15 ({@code POST /_test/fixture} loads a case's table, {@code POST /_test/patch} publishes a
  * patch, {@code POST /_test/bridge} answers a bridge message). Optionally serves a folder of static files outside the base (same origin
@@ -40,7 +41,7 @@ public final class ReferenceServer implements AutoCloseable {
     private final Path statics;
     private volatile boolean closed;
     private final List<Map<String, Object>> outbox = new java.util.concurrent.CopyOnWriteArrayList<>();
-    private MemoryHost.Bridge testBridge;
+    private ProtocolHost.Bridge testBridge;
 
     public ReferenceServer(int port, String base, Path statics) throws IOException {
         this.base = base == null || base.equals("/") ? "" : base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
@@ -99,7 +100,7 @@ public final class ReferenceServer implements AutoCloseable {
                     && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
                 binary(x, m, rel, q, body, x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson");
             } else {
-                MemoryHost.Answer a = host.handle(m, rel, q, body);
+                ProtocolHost.Answer a = host.protocol().handle(m, rel, q, body);
                 json(x, a.status(), a.body());
             }
         } catch (IOException e) {
@@ -117,7 +118,7 @@ public final class ReferenceServer implements AutoCloseable {
                         if (testBridge != null) {
                             testBridge.close();
                         }
-                        testBridge = host.bridge(outbox::add);
+                        testBridge = host.protocol().bridge(outbox::add);
                         outbox.clear();
                     }
                     host.clear();
@@ -144,9 +145,9 @@ public final class ReferenceServer implements AutoCloseable {
         }
     }
 
-    private synchronized MemoryHost.Bridge bridge() {
+    private synchronized ProtocolHost.Bridge bridge() {
         if (testBridge == null) {
-            testBridge = host.bridge(outbox::add);
+            testBridge = host.protocol().bridge(outbox::add);
         }
         return testBridge;
     }
@@ -165,7 +166,7 @@ public final class ReferenceServer implements AutoCloseable {
         BlockingQueue<Map<String, Object>> live = new LinkedBlockingQueue<>();
         Subscription sub;
         try {
-            sub = host.subscribe(table, after, b.get("filter"), every, live::add);
+            sub = host.protocol().subscribe(table, new TableProvider.Subscribe(after, b.get("filter"), every, null, false), live::add, null);
         } catch (ProtocolError e) {
             json(x, e.status(), e.body());
             return;
@@ -176,7 +177,7 @@ public final class ReferenceServer implements AutoCloseable {
             x.sendResponseHeaders(200, 0);
             OutputStream out = x.getResponseBody();
             if (!sub.recovered()) {
-                event(out, host.changes(table, "-:0").get(0));      // the gap frame at the table's position
+                event(out, host.protocol().changes(table, "-:0", null).get(0));      // the gap frame at the table's position
                 out.flush();
                 return;
             }
@@ -208,7 +209,7 @@ public final class ReferenceServer implements AutoCloseable {
         String name = rel.substring("/tables/".length(), rel.lastIndexOf('/'));
         com.ash.rachana.table.TableSchema schema;
         try {
-            schema = host.schemaOf(name);
+            schema = host.protocol().schemaOf(name, null);
         } catch (ProtocolError e) {
             json(x, e.status(), e.body());
             return;
@@ -217,7 +218,7 @@ public final class ReferenceServer implements AutoCloseable {
             json(x, 406, ProtocolError.of("rdp.query.unsupported", 406, name + " is not offered as Arrow", "table", name, "operation", "arrow").body());
             return;
         }
-        MemoryHost.Answer a = host.handle(m, rel, q, body);
+        ProtocolHost.Answer a = host.protocol().handle(m, rel, q, body);
         if (a.status() != 200) {
             json(x, a.status(), a.body());
             return;

@@ -302,7 +302,10 @@
 [experimental] class public abstract interface com.ash.rachana.lib.SignatureVerifier
 [experimental] class public abstract interface com.ash.rachana.live.spi.AuditSink
 [experimental] class public abstract interface com.ash.rachana.live.spi.Authoriser
+[experimental] class public abstract interface com.ash.rachana.live.spi.ChangeSink
+[experimental] class public abstract interface com.ash.rachana.live.spi.ChangeWriter
 [experimental] class public abstract interface com.ash.rachana.live.spi.LiveStream
+[experimental] class public abstract interface com.ash.rachana.live.spi.OutboxStore
 [experimental] class public abstract interface com.ash.rachana.live.spi.SnapshotSource
 [experimental] class public abstract interface com.ash.rachana.parse.FragmentResolver
 [experimental] class public abstract interface com.ash.rachana.profile.SutraKey
@@ -314,6 +317,7 @@
 [experimental] class public abstract static interface com.ash.rachana.el.FunctionProvider$Grouping
 [experimental] class public abstract static interface com.ash.rachana.live.LiveTables$Resolver
 [experimental] class public abstract static interface com.ash.rachana.live.spi.Authoriser$Decision
+[experimental] class public abstract static interface com.ash.rachana.live.spi.ChangeSink$Listener
 [experimental] class public abstract static interface com.ash.rachana.live.spi.LiveStream$Listener
 [experimental] class public abstract static interface com.ash.rachana.parse.TypedFragment$Caller
 [experimental] class public abstract static interface com.ash.rachana.profile.SutraKey$Context
@@ -383,8 +387,10 @@
 [experimental] class public final class com.ash.rachana.lib.LibraryLock
 [experimental] class public final class com.ash.rachana.lib.Rlib
 [experimental] class public final class com.ash.rachana.lib.Sha384
+[experimental] class public final class com.ash.rachana.live.FileOutboxStore
 [experimental] class public final class com.ash.rachana.live.LiveReferenceServer
 [experimental] class public final class com.ash.rachana.live.LiveTables
+[experimental] class public final class com.ash.rachana.live.Outbox
 [experimental] class public final class com.ash.rachana.live.PollingDiff
 [experimental] class public final class com.ash.rachana.model.ControlRules
 [experimental] class public final class com.ash.rachana.model.Effects
@@ -470,6 +476,7 @@
 [experimental] class public final record com.ash.rachana.format.FormatSpec
 [experimental] class public final record com.ash.rachana.lib.LibraryBundle
 [experimental] class public final record com.ash.rachana.lib.LibraryRef
+[experimental] class public final record com.ash.rachana.live.spi.Change
 [experimental] class public final record com.ash.rachana.live.spi.ReaderView
 [experimental] class public final record com.ash.rachana.model.Column
 [experimental] class public final record com.ash.rachana.model.Control
@@ -521,6 +528,7 @@
 [experimental] class public static final class com.ash.rachana.design.ops.Ops$FormatException
 [experimental] class public static final class com.ash.rachana.el.FormRules$Compiled
 [experimental] class public static final class com.ash.rachana.live.spi.Authoriser$Refusal
+[experimental] class public static final class com.ash.rachana.live.spi.ChangeWriter$Refused
 [experimental] class public static final class com.ash.rachana.parse.Json$JsonException
 [experimental] class public static final class com.ash.rachana.parse.SutraBlocks$Calls
 [experimental] class public static final class com.ash.rachana.profile.Profile$Builder
@@ -530,6 +538,7 @@
 [experimental] class public static final enum com.ash.rachana.SutraStore$Change$Kind
 [experimental] class public static final enum com.ash.rachana.api.Node$Kind
 [experimental] class public static final enum com.ash.rachana.data.TableClient$Form
+[experimental] class public static final enum com.ash.rachana.live.spi.ChangeSink$State
 [experimental] class public static final enum com.ash.rachana.live.spi.SnapshotSource$Tier
 [experimental] class public static final enum com.ash.rachana.model.Control$Placement
 [experimental] class public static final enum com.ash.rachana.model.DataEntry$Form
@@ -617,6 +626,8 @@
 [experimental] class public static final record com.ash.rachana.live.LiveTables$Options
 [experimental] class public static final record com.ash.rachana.live.spi.Authoriser$Decision$Allow
 [experimental] class public static final record com.ash.rachana.live.spi.Authoriser$Decision$Refuse
+[experimental] class public static final record com.ash.rachana.live.spi.ChangeSink$Entry
+[experimental] class public static final record com.ash.rachana.live.spi.ChangeSink$Outcome
 [experimental] class public static final record com.ash.rachana.model.Control$Choice
 [experimental] class public static final record com.ash.rachana.model.Effects$SetState
 [experimental] class public static final record com.ash.rachana.model.Form$Field
@@ -650,12 +661,15 @@
 [experimental] class public static final record com.ash.rachana.parse.TypedFragment$Stateful
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Access
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Auth
+[experimental] class public static final record com.ash.rachana.server.ServerConfig$Edits
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Http
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Jdbc
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Project
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Rest
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$Table
 [experimental] class public static final record com.ash.rachana.server.ServerConfig$TableAccess
+[experimental] class public static final record com.ash.rachana.server.ServerConfig$TableEdit
+[experimental] class public static final record com.ash.rachana.server.ServerConfig$TableWrite
 [experimental] class public static final record com.ash.rachana.table.DataRecord$Rows
 [experimental] class public static final record com.ash.rachana.table.LiveTableSpec$Column
 [experimental] class public static final record com.ash.rachana.table.LiveTableSpec$Retention
@@ -1521,6 +1535,7 @@
 [experimental] com.ash.rachana.data.TableClient :: public com.ash.rachana.data.TableClient(java.net.http.HttpClient,java.lang.String)
 [experimental] com.ash.rachana.data.TableClient :: public com.ash.rachana.table.TableSchema com.ash.rachana.data.TableClient.schema(java.lang.String) throws java.io.IOException,java.lang.InterruptedException
 [experimental] com.ash.rachana.data.TableClient :: public java.util.Map<java.lang.String, com.ash.rachana.data.TableClient$Read> com.ash.rachana.data.TableClient.load(com.ash.rachana.table.LiveScreen) throws java.io.IOException,java.lang.InterruptedException
+[experimental] com.ash.rachana.data.TableClient :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.data.TableClient.write(java.lang.String,java.util.Map<java.lang.String, java.lang.Object>) throws java.io.IOException,java.lang.InterruptedException
 [experimental] com.ash.rachana.data.TableClient :: public static java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.data.TableClient.rows(java.util.Map<java.lang.String, java.lang.Object>)
 [experimental] com.ash.rachana.data.TableClient :: public void com.ash.rachana.data.TableClient.follow(com.ash.rachana.table.LiveScreen,java.lang.String,com.ash.rachana.data.TableClient$Read,java.util.function.Consumer<java.util.List<com.ash.rachana.view.Frame>>,int) throws java.io.IOException,java.lang.InterruptedException
 [experimental] com.ash.rachana.data.TableClient :: public void com.ash.rachana.data.TableClient.follow(java.lang.String,java.lang.String,long,java.lang.Object,long,java.util.List<java.util.List<java.lang.Object>>,boolean,java.util.function.Predicate<java.util.Map<java.lang.String, java.lang.Object>>) throws java.io.IOException,java.lang.InterruptedException
@@ -1548,6 +1563,7 @@
 [experimental] com.ash.rachana.data.TableProvider :: public abstract java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.data.TableProvider.rows(java.lang.String,java.util.Map<java.lang.String, java.lang.Object>,java.lang.Object)
 [experimental] com.ash.rachana.data.TableProvider :: public abstract java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.data.TableProvider.schemaDoc(java.lang.String,java.lang.Object)
 [experimental] com.ash.rachana.data.TableProvider :: public abstract java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.data.TableProvider.version(java.lang.String,java.lang.Object)
+[experimental] com.ash.rachana.data.TableProvider :: public default java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.data.TableProvider.write(java.lang.String,java.lang.Object,java.lang.Object)
 [experimental] com.ash.rachana.data.TableProvider$Subscribe :: public boolean com.ash.rachana.data.TableProvider$Subscribe.top()
 [experimental] com.ash.rachana.data.TableProvider$Subscribe :: public com.ash.rachana.data.TableProvider$Subscribe(java.lang.String,java.lang.Object,long,java.util.List<java.util.List<java.lang.Object>>,boolean)
 [experimental] com.ash.rachana.data.TableProvider$Subscribe :: public final boolean com.ash.rachana.data.TableProvider$Subscribe.equals(java.lang.Object)
@@ -2432,6 +2448,10 @@
 [experimental] com.ash.rachana.lib.Sha384 :: public static byte[] com.ash.rachana.lib.Sha384.digest(byte[])
 [experimental] com.ash.rachana.lib.Sha384 :: public static java.lang.String com.ash.rachana.lib.Sha384.hex(byte[])
 [experimental] com.ash.rachana.lib.SignatureVerifier :: public abstract boolean com.ash.rachana.lib.SignatureVerifier.verify(java.lang.String,byte[],byte[])
+[experimental] com.ash.rachana.live.FileOutboxStore :: public com.ash.rachana.live.FileOutboxStore(java.nio.file.Path,int) throws java.io.IOException
+[experimental] com.ash.rachana.live.FileOutboxStore :: public synchronized java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.live.FileOutboxStore.replay() throws java.io.IOException
+[experimental] com.ash.rachana.live.FileOutboxStore :: public synchronized void com.ash.rachana.live.FileOutboxStore.append(java.util.Map<java.lang.String, java.lang.Object>) throws java.io.IOException
+[experimental] com.ash.rachana.live.FileOutboxStore :: public synchronized void com.ash.rachana.live.FileOutboxStore.close() throws java.io.IOException
 [experimental] com.ash.rachana.live.LiveReferenceServer :: public com.ash.rachana.data.ReferenceServer com.ash.rachana.live.LiveReferenceServer.server()
 [experimental] com.ash.rachana.live.LiveReferenceServer :: public com.ash.rachana.live.LiveReferenceServer(int,java.lang.String) throws java.io.IOException
 [experimental] com.ash.rachana.live.LiveReferenceServer :: public java.lang.String com.ash.rachana.live.LiveReferenceServer.url()
@@ -2441,8 +2461,12 @@
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.data.Subscription com.ash.rachana.live.LiveTables.subscribe(java.lang.String,com.ash.rachana.data.TableProvider$Subscribe,java.util.function.Consumer<java.util.Map<java.lang.String, java.lang.Object>>,java.lang.Object)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables com.ash.rachana.live.LiveTables.audit(com.ash.rachana.live.spi.AuditSink)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables com.ash.rachana.live.LiveTables.authoriser(com.ash.rachana.live.spi.Authoriser)
+[experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables com.ash.rachana.live.LiveTables.edits(java.lang.String,boolean)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables com.ash.rachana.live.LiveTables.openReads()
+[experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables com.ash.rachana.live.LiveTables.sink(com.ash.rachana.live.spi.ChangeSink)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables(com.ash.rachana.live.LiveTables$Resolver,com.ash.rachana.live.LiveTables$Options,java.time.Clock)
+[experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.LiveTables.reject(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.LiveTables.release(java.lang.String,java.lang.String,java.lang.String)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.table.TableSchema com.ash.rachana.live.LiveTables.schema(java.lang.String,java.lang.Object)
 [experimental] com.ash.rachana.live.LiveTables :: public java.util.List<com.ash.rachana.table.LiveTableSpec> com.ash.rachana.live.LiveTables.specs()
 [experimental] com.ash.rachana.live.LiveTables :: public java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.live.LiveTables.changes(java.lang.String,java.lang.String,java.lang.Object)
@@ -2451,6 +2475,7 @@
 [experimental] com.ash.rachana.live.LiveTables :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.live.LiveTables.rows(java.lang.String,java.util.Map<java.lang.String, java.lang.Object>,java.lang.Object)
 [experimental] com.ash.rachana.live.LiveTables :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.live.LiveTables.schemaDoc(java.lang.String,java.lang.Object)
 [experimental] com.ash.rachana.live.LiveTables :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.live.LiveTables.version(java.lang.String,java.lang.Object)
+[experimental] com.ash.rachana.live.LiveTables :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.live.LiveTables.write(java.lang.String,java.lang.Object,java.lang.Object)
 [experimental] com.ash.rachana.live.LiveTables :: public java.util.Map<java.lang.String, java.util.List<com.ash.rachana.SutraProblem>> com.ash.rachana.live.LiveTables.problems()
 [experimental] com.ash.rachana.live.LiveTables :: public void com.ash.rachana.live.LiveTables.close()
 [experimental] com.ash.rachana.live.LiveTables :: public void com.ash.rachana.live.LiveTables.declare(com.ash.rachana.table.LiveTableSpec)
@@ -2476,6 +2501,17 @@
 [experimental] com.ash.rachana.live.LiveTables$Options :: public static final com.ash.rachana.live.LiveTables$Options com.ash.rachana.live.LiveTables$Options.DEFAULTS
 [experimental] com.ash.rachana.live.LiveTables$Resolver :: public abstract com.ash.rachana.live.spi.LiveStream com.ash.rachana.live.LiveTables$Resolver.stream(java.lang.String)
 [experimental] com.ash.rachana.live.LiveTables$Resolver :: public abstract com.ash.rachana.live.spi.SnapshotSource com.ash.rachana.live.LiveTables$Resolver.snapshot(java.lang.String)
+[experimental] com.ash.rachana.live.Outbox :: public com.ash.rachana.live.Outbox(com.ash.rachana.live.spi.OutboxStore,com.ash.rachana.live.spi.ChangeWriter,java.util.function.Function<com.ash.rachana.live.spi.Change, java.lang.String>,java.time.Clock,int,int) throws java.io.IOException
+[experimental] com.ash.rachana.live.Outbox :: public com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.Outbox.accept(com.ash.rachana.live.spi.Change) throws java.io.IOException
+[experimental] com.ash.rachana.live.Outbox :: public com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.Outbox.reject(java.lang.String,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.live.Outbox :: public com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.Outbox.release(java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.live.Outbox :: public int com.ash.rachana.live.Outbox.flush()
+[experimental] com.ash.rachana.live.Outbox :: public synchronized com.ash.rachana.live.Outbox com.ash.rachana.live.Outbox.start(long)
+[experimental] com.ash.rachana.live.Outbox :: public synchronized com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.Outbox.prior(java.lang.String)
+[experimental] com.ash.rachana.live.Outbox :: public synchronized java.lang.String com.ash.rachana.live.Outbox.madeBy(java.lang.String)
+[experimental] com.ash.rachana.live.Outbox :: public synchronized java.util.List<com.ash.rachana.live.spi.ChangeSink$Entry> com.ash.rachana.live.Outbox.pending(java.lang.String)
+[experimental] com.ash.rachana.live.Outbox :: public void com.ash.rachana.live.Outbox.close() throws java.io.IOException
+[experimental] com.ash.rachana.live.Outbox :: public void com.ash.rachana.live.Outbox.watch(com.ash.rachana.live.spi.ChangeSink$Listener)
 [experimental] com.ash.rachana.live.PollingDiff :: public com.ash.rachana.live.PollingDiff(com.ash.rachana.live.spi.SnapshotSource,java.util.List<java.lang.String>,long)
 [experimental] com.ash.rachana.live.PollingDiff :: public java.lang.AutoCloseable com.ash.rachana.live.PollingDiff.subscribe(com.ash.rachana.live.spi.LiveStream$Listener)
 [experimental] com.ash.rachana.live.PollingDiff :: public synchronized void com.ash.rachana.live.PollingDiff.poll()
@@ -2483,6 +2519,7 @@
 [experimental] com.ash.rachana.live.spi.AuditSink :: public static final com.ash.rachana.live.spi.AuditSink com.ash.rachana.live.spi.AuditSink.NONE
 [experimental] com.ash.rachana.live.spi.Authoriser :: public abstract com.ash.rachana.live.spi.ReaderView com.ash.rachana.live.spi.Authoriser.view(java.lang.Object,java.lang.String) throws com.ash.rachana.live.spi.Authoriser$Refusal
 [experimental] com.ash.rachana.live.spi.Authoriser :: public default com.ash.rachana.live.spi.Authoriser$Decision com.ash.rachana.live.spi.Authoriser.mayEdit(java.lang.Object,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>,java.util.Map<java.lang.String, java.lang.Object>)
+[experimental] com.ash.rachana.live.spi.Authoriser :: public default java.lang.String com.ash.rachana.live.spi.Authoriser.who(java.lang.Object)
 [experimental] com.ash.rachana.live.spi.Authoriser$Decision$Allow :: public com.ash.rachana.live.spi.Authoriser$Decision$Allow()
 [experimental] com.ash.rachana.live.spi.Authoriser$Decision$Allow :: public final boolean com.ash.rachana.live.spi.Authoriser$Decision$Allow.equals(java.lang.Object)
 [experimental] com.ash.rachana.live.spi.Authoriser$Decision$Allow :: public final int com.ash.rachana.live.spi.Authoriser$Decision$Allow.hashCode()
@@ -2494,11 +2531,67 @@
 [experimental] com.ash.rachana.live.spi.Authoriser$Decision$Refuse :: public java.lang.String com.ash.rachana.live.spi.Authoriser$Decision$Refuse.reason()
 [experimental] com.ash.rachana.live.spi.Authoriser$Refusal :: public boolean com.ash.rachana.live.spi.Authoriser$Refusal.unknown()
 [experimental] com.ash.rachana.live.spi.Authoriser$Refusal :: public com.ash.rachana.live.spi.Authoriser$Refusal(java.lang.String,boolean)
+[experimental] com.ash.rachana.live.spi.Change :: public com.ash.rachana.live.spi.Change(java.lang.String,java.lang.String,java.lang.String,java.util.List<java.lang.Object>,java.lang.Object,java.util.Map<java.lang.String, java.lang.Object>,java.util.Map<java.lang.String, java.lang.Object>,java.lang.String,java.lang.String,java.time.Instant)
+[experimental] com.ash.rachana.live.spi.Change :: public final boolean com.ash.rachana.live.spi.Change.equals(java.lang.Object)
+[experimental] com.ash.rachana.live.spi.Change :: public final int com.ash.rachana.live.spi.Change.hashCode()
+[experimental] com.ash.rachana.live.spi.Change :: public final java.lang.String com.ash.rachana.live.spi.Change.toString()
+[experimental] com.ash.rachana.live.spi.Change :: public java.lang.Object com.ash.rachana.live.spi.Change.basedOn()
+[experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.by()
+[experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.id()
+[experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.op()
+[experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.reason()
+[experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.table()
+[experimental] com.ash.rachana.live.spi.Change :: public java.time.Instant com.ash.rachana.live.spi.Change.at()
+[experimental] com.ash.rachana.live.spi.Change :: public java.util.List<java.lang.Object> com.ash.rachana.live.spi.Change.key()
+[experimental] com.ash.rachana.live.spi.Change :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.live.spi.Change.from()
+[experimental] com.ash.rachana.live.spi.Change :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.live.spi.Change.set()
+[experimental] com.ash.rachana.live.spi.Change :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.live.spi.Change.toMap()
+[experimental] com.ash.rachana.live.spi.Change :: public static com.ash.rachana.live.spi.Change com.ash.rachana.live.spi.Change.of(java.util.Map<java.lang.String, java.lang.Object>)
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public abstract com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.spi.ChangeSink.accept(com.ash.rachana.live.spi.Change) throws java.lang.Exception
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public default com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.spi.ChangeSink.prior(java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public default com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.spi.ChangeSink.reject(java.lang.String,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public default com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.spi.ChangeSink.release(java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public default java.lang.String com.ash.rachana.live.spi.ChangeSink.madeBy(java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public default java.util.List<com.ash.rachana.live.spi.ChangeSink$Entry> com.ash.rachana.live.spi.ChangeSink.pending(java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public default void com.ash.rachana.live.spi.ChangeSink.watch(com.ash.rachana.live.spi.ChangeSink$Listener)
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public com.ash.rachana.live.spi.Change com.ash.rachana.live.spi.ChangeSink$Entry.change()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public com.ash.rachana.live.spi.ChangeSink$Entry(com.ash.rachana.live.spi.Change,com.ash.rachana.live.spi.ChangeSink$State,java.lang.String,java.time.Instant)
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$Entry.state()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public final boolean com.ash.rachana.live.spi.ChangeSink$Entry.equals(java.lang.Object)
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public final int com.ash.rachana.live.spi.ChangeSink$Entry.hashCode()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public final java.lang.String com.ash.rachana.live.spi.ChangeSink$Entry.toString()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public java.lang.String com.ash.rachana.live.spi.ChangeSink$Entry.message()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public java.time.Instant com.ash.rachana.live.spi.ChangeSink$Entry.at()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Listener :: public abstract void com.ash.rachana.live.spi.ChangeSink$Listener.changed(com.ash.rachana.live.spi.ChangeSink$Entry,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink$Outcome :: public com.ash.rachana.live.spi.ChangeSink$Outcome(com.ash.rachana.live.spi.ChangeSink$State,java.lang.String,java.lang.Object)
+[experimental] com.ash.rachana.live.spi.ChangeSink$Outcome :: public com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$Outcome.state()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Outcome :: public final boolean com.ash.rachana.live.spi.ChangeSink$Outcome.equals(java.lang.Object)
+[experimental] com.ash.rachana.live.spi.ChangeSink$Outcome :: public final int com.ash.rachana.live.spi.ChangeSink$Outcome.hashCode()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Outcome :: public final java.lang.String com.ash.rachana.live.spi.ChangeSink$Outcome.toString()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Outcome :: public java.lang.Object com.ash.rachana.live.spi.ChangeSink$Outcome.version()
+[experimental] com.ash.rachana.live.spi.ChangeSink$Outcome :: public java.lang.String com.ash.rachana.live.spi.ChangeSink$Outcome.message()
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public boolean com.ash.rachana.live.spi.ChangeSink$State.terminal()
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public java.lang.String com.ash.rachana.live.spi.ChangeSink$State.wire()
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.of(java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.valueOf(java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static com.ash.rachana.live.spi.ChangeSink$State[] com.ash.rachana.live.spi.ChangeSink$State.values()
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static final com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.APPLIED
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static final com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.FAILED
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static final com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.HELD
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static final com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.QUEUED
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static final com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.REFUSED
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static final com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.REJECTED
+[experimental] com.ash.rachana.live.spi.ChangeSink$State :: public static final com.ash.rachana.live.spi.ChangeSink$State com.ash.rachana.live.spi.ChangeSink$State.SENT
+[experimental] com.ash.rachana.live.spi.ChangeWriter :: public abstract java.lang.Object com.ash.rachana.live.spi.ChangeWriter.write(com.ash.rachana.live.spi.Change) throws java.lang.Exception
+[experimental] com.ash.rachana.live.spi.ChangeWriter$Refused :: public com.ash.rachana.live.spi.ChangeWriter$Refused(java.lang.String)
 [experimental] com.ash.rachana.live.spi.LiveStream :: public abstract java.lang.AutoCloseable com.ash.rachana.live.spi.LiveStream.subscribe(com.ash.rachana.live.spi.LiveStream$Listener) throws java.lang.Exception
 [experimental] com.ash.rachana.live.spi.LiveStream$Listener :: public abstract void com.ash.rachana.live.spi.LiveStream$Listener.delete(java.util.List<java.lang.Object>,java.lang.String)
 [experimental] com.ash.rachana.live.spi.LiveStream$Listener :: public abstract void com.ash.rachana.live.spi.LiveStream$Listener.gap(java.lang.String)
 [experimental] com.ash.rachana.live.spi.LiveStream$Listener :: public abstract void com.ash.rachana.live.spi.LiveStream$Listener.state(boolean,java.lang.String)
 [experimental] com.ash.rachana.live.spi.LiveStream$Listener :: public abstract void com.ash.rachana.live.spi.LiveStream$Listener.upsert(java.util.Map<java.lang.String, java.lang.Object>,java.lang.String)
+[experimental] com.ash.rachana.live.spi.OutboxStore :: public abstract java.util.List<java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.live.spi.OutboxStore.replay() throws java.io.IOException
+[experimental] com.ash.rachana.live.spi.OutboxStore :: public abstract void com.ash.rachana.live.spi.OutboxStore.append(java.util.Map<java.lang.String, java.lang.Object>) throws java.io.IOException
+[experimental] com.ash.rachana.live.spi.OutboxStore :: public default void com.ash.rachana.live.spi.OutboxStore.close() throws java.io.IOException
 [experimental] com.ash.rachana.live.spi.ReaderView :: public boolean com.ash.rachana.live.spi.ReaderView.unrestricted()
 [experimental] com.ash.rachana.live.spi.ReaderView :: public com.ash.rachana.live.spi.ReaderView(java.lang.String,java.lang.Object,java.util.Set<java.lang.String>,java.util.function.Predicate<java.util.Map<java.lang.String, java.lang.Object>>,java.util.function.UnaryOperator<java.util.Map<java.lang.String, java.lang.Object>>,java.util.Set<java.lang.String>,java.lang.String)
 [experimental] com.ash.rachana.live.spi.ReaderView :: public final boolean com.ash.rachana.live.spi.ReaderView.equals(java.lang.Object)
@@ -3482,6 +3575,7 @@
 [experimental] com.ash.rachana.server.ServerConfig :: public com.ash.rachana.server.ServerConfig com.ash.rachana.server.ServerConfig.withPort(int)
 [experimental] com.ash.rachana.server.ServerConfig :: public com.ash.rachana.server.ServerConfig$Access com.ash.rachana.server.ServerConfig.access()
 [experimental] com.ash.rachana.server.ServerConfig :: public com.ash.rachana.server.ServerConfig$Auth com.ash.rachana.server.ServerConfig.auth()
+[experimental] com.ash.rachana.server.ServerConfig :: public com.ash.rachana.server.ServerConfig$Edits com.ash.rachana.server.ServerConfig.edits()
 [experimental] com.ash.rachana.server.ServerConfig :: public com.ash.rachana.server.ServerConfig$Http com.ash.rachana.server.ServerConfig.http()
 [experimental] com.ash.rachana.server.ServerConfig :: public com.ash.rachana.server.ServerConfig$Project com.ash.rachana.server.ServerConfig.project()
 [experimental] com.ash.rachana.server.ServerConfig :: public java.nio.file.Path com.ash.rachana.server.ServerConfig.file()
@@ -3514,6 +3608,14 @@
 [experimental] com.ash.rachana.server.ServerConfig$AuthMode :: public static final com.ash.rachana.server.ServerConfig$AuthMode com.ash.rachana.server.ServerConfig$AuthMode.HEADER
 [experimental] com.ash.rachana.server.ServerConfig$AuthMode :: public static final com.ash.rachana.server.ServerConfig$AuthMode com.ash.rachana.server.ServerConfig$AuthMode.NONE
 [experimental] com.ash.rachana.server.ServerConfig$AuthMode :: public static final com.ash.rachana.server.ServerConfig$AuthMode com.ash.rachana.server.ServerConfig$AuthMode.USERS
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public com.ash.rachana.server.ServerConfig$Edits(java.nio.file.Path,java.util.List<java.lang.String>,java.util.Map<java.lang.String, com.ash.rachana.server.ServerConfig$TableWrite>,java.util.Map<java.lang.String, com.ash.rachana.server.ServerConfig$TableEdit>)
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public final boolean com.ash.rachana.server.ServerConfig$Edits.equals(java.lang.Object)
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public final int com.ash.rachana.server.ServerConfig$Edits.hashCode()
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public final java.lang.String com.ash.rachana.server.ServerConfig$Edits.toString()
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public java.nio.file.Path com.ash.rachana.server.ServerConfig$Edits.journal()
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public java.util.List<java.lang.String> com.ash.rachana.server.ServerConfig$Edits.off()
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public java.util.Map<java.lang.String, com.ash.rachana.server.ServerConfig$TableEdit> com.ash.rachana.server.ServerConfig$Edits.access()
+[experimental] com.ash.rachana.server.ServerConfig$Edits :: public java.util.Map<java.lang.String, com.ash.rachana.server.ServerConfig$TableWrite> com.ash.rachana.server.ServerConfig$Edits.writes()
 [experimental] com.ash.rachana.server.ServerConfig$Http :: public boolean com.ash.rachana.server.ServerConfig$Http.cookieSecure()
 [experimental] com.ash.rachana.server.ServerConfig$Http :: public com.ash.rachana.server.ServerConfig$Http(java.lang.String,int,java.util.List<java.lang.String>,boolean,long,long,int)
 [experimental] com.ash.rachana.server.ServerConfig$Http :: public final boolean com.ash.rachana.server.ServerConfig$Http.equals(java.lang.Object)
@@ -3575,6 +3677,18 @@
 [experimental] com.ash.rachana.server.ServerConfig$TableAccess :: public final java.lang.String com.ash.rachana.server.ServerConfig$TableAccess.toString()
 [experimental] com.ash.rachana.server.ServerConfig$TableAccess :: public java.util.List<java.lang.String> com.ash.rachana.server.ServerConfig$TableAccess.read()
 [experimental] com.ash.rachana.server.ServerConfig$TableAccess :: public java.util.Map<java.lang.String, java.util.List<java.lang.String>> com.ash.rachana.server.ServerConfig$TableAccess.unmask()
+[experimental] com.ash.rachana.server.ServerConfig$TableEdit :: public com.ash.rachana.server.ServerConfig$TableEdit(java.util.List<java.lang.String>,java.util.List<java.lang.String>)
+[experimental] com.ash.rachana.server.ServerConfig$TableEdit :: public final boolean com.ash.rachana.server.ServerConfig$TableEdit.equals(java.lang.Object)
+[experimental] com.ash.rachana.server.ServerConfig$TableEdit :: public final int com.ash.rachana.server.ServerConfig$TableEdit.hashCode()
+[experimental] com.ash.rachana.server.ServerConfig$TableEdit :: public final java.lang.String com.ash.rachana.server.ServerConfig$TableEdit.toString()
+[experimental] com.ash.rachana.server.ServerConfig$TableEdit :: public java.util.List<java.lang.String> com.ash.rachana.server.ServerConfig$TableEdit.columns()
+[experimental] com.ash.rachana.server.ServerConfig$TableEdit :: public java.util.List<java.lang.String> com.ash.rachana.server.ServerConfig$TableEdit.roles()
+[experimental] com.ash.rachana.server.ServerConfig$TableWrite :: public com.ash.rachana.server.ServerConfig$TableWrite(java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.server.ServerConfig$TableWrite :: public final boolean com.ash.rachana.server.ServerConfig$TableWrite.equals(java.lang.Object)
+[experimental] com.ash.rachana.server.ServerConfig$TableWrite :: public final int com.ash.rachana.server.ServerConfig$TableWrite.hashCode()
+[experimental] com.ash.rachana.server.ServerConfig$TableWrite :: public final java.lang.String com.ash.rachana.server.ServerConfig$TableWrite.toString()
+[experimental] com.ash.rachana.server.ServerConfig$TableWrite :: public java.lang.String com.ash.rachana.server.ServerConfig$TableWrite.journalTable()
+[experimental] com.ash.rachana.server.ServerConfig$TableWrite :: public java.lang.String com.ash.rachana.server.ServerConfig$TableWrite.table()
 [experimental] com.ash.rachana.table.DataPlan :: public static final java.lang.String com.ash.rachana.table.DataPlan.CHECKED_SINCE
 [experimental] com.ash.rachana.table.DataPlan :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.DataPlan.plan(com.ash.rachana.model.Sutra,java.util.Map<java.lang.String, com.ash.rachana.table.TableSchema>,com.ash.rachana.el.ElCompiler,com.ash.rachana.el.EvalContext)
 [experimental] com.ash.rachana.table.DataPlan :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.DataPlan.plan(com.ash.rachana.model.Sutra,java.util.Map<java.lang.String, com.ash.rachana.table.TableSchema>,com.ash.rachana.el.ElCompiler,com.ash.rachana.el.EvalContext,java.lang.String)

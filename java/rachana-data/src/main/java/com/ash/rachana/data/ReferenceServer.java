@@ -27,7 +27,8 @@ import java.util.concurrent.TimeUnit;
  * serving a {@link MemoryHost} and any providers added to {@code host().protocol()}.
  * Under {@code base}: the resources of section 4, the minimal SSE change stream of section 8.2 (backlog, then live frames, a {@code : hb}
  * heartbeat), and the test adapter of section 15 ({@code POST /_test/fixture} loads a case's table, {@code POST /_test/patch} publishes a
- * patch, {@code POST /_test/bridge} answers a bridge message). Optionally serves a folder of static files outside the base (same origin
+ * patch, {@code POST /_test/bridge} answers a bridge message; {@link #actAs} and {@link #testPath} for providers with readers and
+ * conventions of their own), and a windowed stream's {@code POST /changes/{sub}/window} (PROTOCOL 16). Optionally serves a folder of static files outside the base (same origin
  * for a page that embeds a view). Not a production server: no authentication, everything in memory, loopback only.
  *
  * <p>Usage: {@code java --add-opens=java.base/java.nio=org.apache.arrow.memory.core -m com.ash.rachana.data/com.ash.rachana.data.ReferenceServer [--port 0] [--base /rdp/v1] [--static <dir>]

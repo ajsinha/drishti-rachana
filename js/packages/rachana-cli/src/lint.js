@@ -3,22 +3,28 @@
  * Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
  */
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 import { tools } from "./bundle.js";
 import { UsageError } from "./errors.js";
 
 export const DEFAULT_LEVEL = "1.1";   // the newest built language level; --level 1.2 for typed fragments and libraries
 export const LEVELS = ["1.0", "1.1", "1.2"];
 export const SUFFIX = ".sutra.yaml";
+export const LIVE_SUFFIX = ".live.yaml";
+/** The profile keys of a live table's declaration that the Drishti profile reads (LIVE_TABLES 2); none in core. */
+export const DRISHTI_LIVE_KEYS = ["kind", "query", "links", "edit.roles", "edit.save", "edit.fields.editable-by"];
 
-/** Every *.sutra.yaml under the paths (files as given; folders searched, dot folders and node_modules skipped). */
-export function findSutras(paths) {
+/**
+ * Every *.sutra.yaml under the paths (files as given; folders searched, dot folders and node_modules skipped); `suffixes` names other
+ * file kinds to find instead (lint also takes live tables' *.live.yaml).
+ */
+export function findSutras(paths, suffixes = [SUFFIX]) {
   const out = [];
   const walk = (dir) => {
     for (const n of readdirSync(dir).sort()) {
       if (n.startsWith(".") || n === "node_modules") continue;
       const p = join(dir, n);
-      if (statSync(p).isDirectory()) walk(p); else if (n.endsWith(SUFFIX)) out.push(p);
+      if (statSync(p).isDirectory()) walk(p); else if (suffixes.some((x) => n.endsWith(x))) out.push(p);
     }
   };
   for (const p of paths) {
@@ -28,11 +34,18 @@ export function findSutras(paths) {
   return out;
 }
 
-/** Per file: { file, ok, problems } from the bundle's check (the problem objects of SPEC section 7, identical to the JVM and Python). */
+/**
+ * Per file: { file, ok, problems } from the bundle's check (the problem objects of SPEC section 7, identical to the JVM and Python); a
+ * live table's declaration (*.live.yaml) by the tools bundle's declaration checker (LIVE_TABLES 2).
+ */
 export async function lintFiles(files, profiles = "core", level = DEFAULT_LEVEL) {
   const r = await tools(profiles);
+  const profileKeys = profiles.split(",").includes("drishti") ? DRISHTI_LIVE_KEYS : [];
   return files.map((file) => {
-    const res = JSON.parse(r.check(JSON.stringify({ sutra: readFileSync(file, "utf8"), file, since: level })));
+    const text = readFileSync(file, "utf8");
+    const res = JSON.parse(file.endsWith(LIVE_SUFFIX) ? r.live(JSON.stringify({ declaration: text, file: basename(file), profileKeys }))
+      : r.check(JSON.stringify({ sutra: text, file, since: level })));
+    if (res.error) throw new Error(`${file}: ${res.error}`);
     return { file, ok: res.ok, problems: res.problems };
   });
 }
@@ -54,7 +67,7 @@ export async function lint(paths, flags, io) {
   if (!["text", "json", "sarif"].includes(fmt)) throw new UsageError("--format is text, json or sarif");
   const level = flags.level ?? DEFAULT_LEVEL;
   if (!LEVELS.includes(level)) throw new UsageError("--level is 1.0, 1.1 or 1.2");
-  const results = await lintFiles(findSutras(paths), flags.profiles ?? "core", level);
+  const results = await lintFiles(findSutras(paths, [SUFFIX, LIVE_SUFFIX]), flags.profiles ?? "core", level);
   const failing = results.flatMap((r) => r.problems).filter((p) => p.severity === "error" || (flags.strict && p.severity === "warning")).length;
   if (fmt === "json") io.out(JSON.stringify(results, null, 2));
   else if (fmt === "sarif") io.out(JSON.stringify(sarif(results), null, 2));

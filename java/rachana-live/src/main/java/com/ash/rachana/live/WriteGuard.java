@@ -37,6 +37,9 @@ import java.util.regex.Pattern;
 final class WriteGuard {
 
     static final String TRAY = ".changes";
+    /** The tray's one column an approver sets: {@code released} or {@code rejected}. */
+    static final String STATE = "state";
+    private static final List<String> DECISIONS = List.of("released", "rejected");
     private static final Pattern ID = Pattern.compile("^[A-Za-z0-9_-]{1,64}$");
     private static final int ANSWERS = 10_000;
 
@@ -85,9 +88,27 @@ final class WriteGuard {
         return spec.edit() != null && sink != null;
     }
 
+    /** Whether the trays take decisions: a sink is bound and it may hold changes. */
+    boolean decides() {
+        ChangeSink s = sink;
+        return s != null && s.holds();
+    }
+
     /** The schema's {@code write} for a reader: the columns they may set with their field rules, and the reason, or null. */
     @SuppressWarnings("unchecked")
     Map<String, Object> schemaWrite(LiveTableSpec spec, LiveTables.Reader r) {
+        if (tables.isTray(spec.name())) {                                // an approver decides the column state
+            if (!decides() || !r.editable().contains(STATE)) {
+                return null;
+            }
+            Map<String, Object> rules = new LinkedHashMap<>();
+            rules.put("type", "enum");
+            rules.put("options", DECISIONS);
+            Map<String, Object> w = new LinkedHashMap<>();
+            w.put("columns", Map.of(STATE, rules));
+            w.put("reason", "optional");
+            return w;
+        }
         if (!writable(spec) || !on(spec.name())) {
             return null;
         }
@@ -116,7 +137,10 @@ final class WriteGuard {
     @SuppressWarnings("unchecked")
     Map<String, Object> write(String name, Object body, Object caller) {
         if (name.endsWith(TRAY) && tables.isTray(name)) {
-            throw ProtocolError.of("rdp.write.unsupported", 405, name + " is read only: it lists pending changes", "table", name);
+            if (!decides()) {
+                throw ProtocolError.of("rdp.write.unsupported", 405, name + " is read only: it lists pending changes", "table", name);
+            }
+            return decide(name, body, caller);
         }
         LiveTableSpec spec = tables.spec(name);
         Map<String, Object> m = shape(name, body);
@@ -379,6 +403,98 @@ final class WriteGuard {
             a.put("version", o.version());
         }
         return a;
+    }
+
+    // ---- the approvers' decisions ----------------------------------------------------------------------------------------
+
+    /**
+     * An approver's decision written to a tray (PROTOCOL 16 Writes, four eyes): {@code {id, op: update, key: [<change>], basedOn: held,
+     * set: {state: released | rejected}, reason?}}. In order: the shape ({@code 422}), the reader (refusals as for reads), the approve
+     * right ({@code 403}, audited), the change (not listed for this reader: {@code 404}), its state (no longer held: {@code 409} naming its
+     * state, maker and time), the host's {@code mayDecide} ({@code 403}, audited), a rejection's reason ({@code 422}). Then the sink's
+     * {@code release} or {@code reject} (audited {@code write-released} or {@code write-rejected} by the sink); answered
+     * {@code {change: <decision id>, state: applied, message}}. A repeated decision id answers its first answer, only to its maker.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> decide(String tray, Object body, Object caller) {
+        String base = tables.trayBase(tray);
+        List<Map<String, Object>> bad = new ArrayList<>();
+        if (!(body instanceof Map<?, ?> b)) {
+            throw invalid(tray, List.of(issue(null, "shape", "a decision is an object: { id, key: [<change>], basedOn: held, set: { state } }")));
+        }
+        Map<String, Object> m = (Map<String, Object>) b;
+        if (!(m.get("id") instanceof String id0) || !ID.matcher(id0).matches()) {
+            bad.add(issue(null, "id", "id is the decision's own id: 1 to 64 letters, digits, '-' or '_' (a ULID)"));
+        }
+        if (!"update".equals(m.getOrDefault("op", "update"))) {
+            bad.add(issue(null, "op", "a decision is an update of the change's state"));
+        }
+        Object k = m.get("key");
+        List<?> key = k instanceof List<?> l ? l : k == null ? null : List.of(k);
+        if (key == null || key.size() != 1 || !(key.get(0) instanceof String)) {
+            bad.add(issue(null, "key", "key is the change's id: [<change>]"));
+        }
+        if (!"held".equals(m.get("basedOn"))) {
+            bad.add(issue(null, "basedOn", "basedOn is the change's state when it was decided: held"));
+        }
+        Object to = m.get("set") instanceof Map<?, ?> sm && sm.size() == 1 ? sm.get(STATE) : null;
+        if (!DECISIONS.contains(to)) {
+            bad.add(issue(STATE, "value", "set is { state: released } or { state: rejected }"));
+        }
+        if (m.get("reason") != null && !(m.get("reason") instanceof String)) {
+            bad.add(issue(null, "reason", "reason is text"));
+        }
+        if (!bad.isEmpty()) {
+            throw invalid(tray, bad);
+        }
+        String id = (String) m.get("id");
+        String changeId = (String) key.get(0);
+        String reason = (String) m.get("reason");
+        LiveTables.Reader r = tables.reader(caller, tray);            // a read refusal answers as for a read
+        Authoriser a = tables.authoriserOrNull();
+        String who = a.who(caller);
+        Object[] seen = answers.get(id);
+        if (seen != null) {                                             // a repeat: the first answer again (only to its maker)
+            if (!who.equals(seen[0])) {
+                throw refused(caller, tray, id, List.of(changeId), Map.of(STATE, to), "the decision id '" + id + "' is another's");
+            }
+            return (Map<String, Object>) seen[1];
+        }
+        if (!a.approves(caller, base)) {
+            throw refused(caller, tray, id, List.of(changeId), Map.of(STATE, to), "you may not decide the changes of " + base);
+        }
+        ChangeSink s = sink;
+        ChangeSink.Entry e = s.pending(base).stream().filter(x -> x.change().id().equals(changeId)).findFirst().orElse(null);
+        Map<String, Object> asHeld = e == null ? null : trayRow(e);
+        if (asHeld != null) {
+            asHeld.put(STATE, "held");                                  // listed for this approver while it was held
+        }
+        if (e == null || !r.scope().test(asHeld)) {
+            tables.event(caller, tray, "write-refused", "no such change for this reader", Map.of("change", id));
+            throw ProtocolError.of("rdp.table.unknown", 404, "no change " + changeId + " in " + tray, "table", tray);
+        }
+        if (e.state() != ChangeSink.State.HELD) {
+            Map<String, Object> cur = new LinkedHashMap<>();
+            cur.put("version", e.state().wire());
+            cur.put("by", e.change().by());
+            cur.put("at", e.at() == null ? null : e.at().toString());
+            tables.event(caller, tray, "write-conflicted", "the change is " + e.state().wire(), Map.of("change", id, "current", cur));
+            throw ProtocolError.of("rdp.write.conflict", 409, "the change " + changeId + " is " + e.state().wire() + ", not held", "table", tray,
+                    "current", cur);
+        }
+        if (a.mayDecide(caller, base, e.change().toMap()) instanceof Authoriser.Decision.Refuse no) {
+            throw refused(caller, tray, id, List.of(changeId), Map.of(STATE, to), no.reason());
+        }
+        if ("rejected".equals(to) && (reason == null || reason.isBlank())) {
+            throw invalid(tray, List.of(issue(null, "reason", "a rejection gives its reason")));
+        }
+        ChangeSink.Outcome o = "released".equals(to) ? s.release(changeId, who) : s.reject(changeId, who, reason);
+        Map<String, Object> ans = new LinkedHashMap<>();
+        ans.put("change", id);
+        ans.put("state", ChangeSink.State.APPLIED.wire());
+        ans.put("message", changeId + " " + to + (o == null || o.message() == null ? "" : ": " + o.message()));
+        answers.put(id, new Object[] {who, ans});
+        return ans;
     }
 
     // ---- host decisions ------------------------------------------------------------------------------------------------

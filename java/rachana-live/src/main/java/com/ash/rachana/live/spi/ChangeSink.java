@@ -75,6 +75,14 @@ public interface ChangeSink {
     default void watch(Listener listener) {
     }
 
+    /**
+     * Whether this sink may answer {@link State#HELD} (a host rule holds changes for a decision): then a table's tray takes the approvers'
+     * decisions ({@code release}, {@code reject}) as writes. False by default.
+     */
+    default boolean holds() {
+        return false;
+    }
+
     /** The host's decision for a held change: send it. */
     default Outcome release(String changeId, String by) {
         throw new UnsupportedOperationException("this sink holds no changes");

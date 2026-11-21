@@ -141,7 +141,8 @@
       "properties": {
         "audience": { "type": "string" }, "rowFilter": { "type": "object" },
         "masked": { "type": "array", "items": { "type": "string" } }, "refuse": { "enum": ["forbidden", "unknown"] },
-        "editable": { "type": "array", "items": { "type": "string" } }, "mayEdit": { "type": "string" }
+        "editable": { "type": "array", "items": { "type": "string" } }, "mayEdit": { "type": "string" },
+        "approve": { "type": "boolean" }, "mayDecide": { "type": "string" }
       }
     },
     "tableSchema": {

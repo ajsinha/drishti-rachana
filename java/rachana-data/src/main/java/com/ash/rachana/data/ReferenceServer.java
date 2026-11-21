@@ -40,8 +40,17 @@ public final class ReferenceServer implements AutoCloseable {
     private final String base;
     private final Path statics;
     private volatile boolean closed;
-    private final List<Map<String, Object>> outbox = new java.util.concurrent.CopyOnWriteArrayList<>();
-    private ProtocolHost.Bridge testBridge;
+    private final Map<Object, Channel> channels = new java.util.HashMap<>();          // the test bridge's channels, one per caller
+    private final Map<String, Open> streams = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<String, java.util.function.Function<Object, ProtocolHost.Answer>> testPaths = new java.util.concurrent.ConcurrentHashMap<>();
+    private volatile Object caller;
+    private final List<Runnable> resets = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** One bridge channel of the test adapter and the messages it pushed. */
+    private record Channel(ProtocolHost.Bridge bridge, List<Map<String, Object>> out) {}
+
+    /** A windowed minimal SSE stream (PROTOCOL 16): its subscription and the caller that opened it. */
+    private record Open(Subscription sub, Object caller) {}
 
     public ReferenceServer(int port, String base, Path statics) throws IOException {
         this.base = base == null || base.equals("/") ? "" : base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
@@ -72,6 +81,47 @@ public final class ReferenceServer implements AutoCloseable {
         server.stop(0);
     }
 
+    /**
+     * The caller every later request is made as (PROTOCOL 15's test adapter: a host with readers acts as one; null for none), handed to
+     * the providers as the request's caller; the test bridge keeps one channel per caller.
+     */
+    public void actAs(Object caller) {
+        this.caller = caller;
+    }
+
+    /** The caller requests are made as ({@link #actAs}). */
+    public Object caller() {
+        return caller;
+    }
+
+    /**
+     * Adds a test adapter path ({@code /_test/<name>}, PROTOCOL 15): the handler takes the parsed body (null for none) and answers; a
+     * {@link ProtocolError} it throws is answered as the error. A module that adds tables (live tables) adds its own conventions so.
+     */
+    public ReferenceServer testPath(String name, java.util.function.Function<Object, ProtocolHost.Answer> handler) {
+        testPaths.put("/_test/" + name, handler);
+        return this;
+    }
+
+    /** Adds what {@link #reset} also does (a module's own tables dropped). */
+    public ReferenceServer onReset(Runnable r) {
+        resets.add(r);
+        return this;
+    }
+
+    /** Starts a case afresh: every table, bridge channel and windowed stream gone, requests made as no caller. */
+    public void reset() {
+        resets.forEach(Runnable::run);
+        synchronized (channels) {
+            channels.values().forEach(c -> c.bridge().close());
+            channels.clear();
+        }
+        streams.values().forEach(o -> o.sub().close());
+        streams.clear();
+        caller = null;
+        host.clear();
+    }
+
     private void serve(HttpExchange x) throws IOException {
         try (x) {
             String path = x.getRequestURI().getRawPath();
@@ -96,11 +146,13 @@ public final class ReferenceServer implements AutoCloseable {
                 test(x, rel, body);
             } else if (rel.equals("/changes") && (m.equals("GET") || m.equals("POST"))) {
                 stream(x, q, body);
+            } else if (rel.startsWith("/changes/") && rel.endsWith("/window") && m.equals("POST")) {
+                window(x, rel.substring("/changes/".length(), rel.length() - "/window".length()), body);
             } else if (rel.startsWith("/tables/") && (rel.endsWith("/rows") || rel.endsWith("/query"))
                     && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
                 binary(x, m, rel, q, body, x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson");
             } else {
-                ProtocolHost.Answer a = host.protocol().handle(m, rel, q, body);
+                ProtocolHost.Answer a = host.protocol().handle(caller, m, rel, q, body);
                 json(x, a.status(), a.body());
             }
         } catch (IOException e) {
@@ -112,16 +164,15 @@ public final class ReferenceServer implements AutoCloseable {
     private void test(HttpExchange x, String rel, Object body) throws IOException {
         Map<String, Object> b = body instanceof Map<?, ?> m ? (Map<String, Object>) m : Map.of();
         try {
+            java.util.function.Function<Object, ProtocolHost.Answer> extra = testPaths.get(rel);
+            if (extra != null) {
+                ProtocolHost.Answer a = extra.apply(body);
+                json(x, a.status(), a.body());
+                return;
+            }
             switch (rel) {
                 case "/_test/fixture" -> {
-                    synchronized (this) {
-                        if (testBridge != null) {
-                            testBridge.close();
-                        }
-                        testBridge = host.protocol().bridge(outbox::add);
-                        outbox.clear();
-                    }
-                    host.clear();
+                    reset();
                     host.put(b.get("schema"), (List<Map<String, Object>>) b.getOrDefault("rows", List.of()), "t1");
                     json(x, 204, null);
                 }
@@ -129,12 +180,13 @@ public final class ReferenceServer implements AutoCloseable {
                     host.publish(b);
                     json(x, 204, null);
                 }
-                case "/_test/bridge" -> json(x, 200, bridge().handle(b));
+                case "/_test/bridge" -> json(x, 200, channel().bridge().handle(b));
                 case "/_test/bridge/out" -> {
+                    List<Map<String, Object>> out = channel().out();
                     List<Map<String, Object>> sent;
-                    synchronized (outbox) {
-                        sent = new java.util.ArrayList<>(outbox);
-                        outbox.removeAll(sent);
+                    synchronized (out) {
+                        sent = new java.util.ArrayList<>(out);
+                        out.clear();
                     }
                     json(x, 200, sent);
                 }
@@ -145,11 +197,34 @@ public final class ReferenceServer implements AutoCloseable {
         }
     }
 
-    private synchronized ProtocolHost.Bridge bridge() {
-        if (testBridge == null) {
-            testBridge = host.protocol().bridge(outbox::add);
+    /** The test bridge's channel of the current caller (one per caller: its subscriptions last until the next fixture). */
+    private Channel channel() {
+        Object c = caller;
+        synchronized (channels) {
+            return channels.computeIfAbsent(c, k -> {
+                List<Map<String, Object>> out = new java.util.ArrayList<>();
+                return new Channel(host.protocol().bridge(f -> {
+                    synchronized (out) {
+                        out.add(f);
+                    }
+                }, k), out);
+            });
         }
-        return testBridge;
+    }
+
+    /**
+     * {@code POST {base}/changes/{sub}/window} (PROTOCOL 16): changes the window of a windowed minimal SSE stream to {@code {keys, top?}};
+     * {@code 204}. Only the caller that opened the stream may: anyone else, or a stream that is gone, is {@code rdp.table.unknown}.
+     */
+    private void window(HttpExchange x, String sub, Object body) throws IOException {
+        Open o = streams.get(URLDecoder.decode(sub, StandardCharsets.UTF_8));
+        if (o == null || !java.util.Objects.equals(o.caller(), caller) || o.sub().closed() || !o.sub().windowed()) {
+            json(x, 404, ProtocolError.of("rdp.table.unknown", 404, "no windowed stream '" + sub + "' of yours", "operation", "window").body());
+            return;
+        }
+        Map<?, ?> b = body instanceof Map<?, ?> m ? m : Map.of();
+        o.sub().window(ProtocolHost.keys(b.get("keys")), Boolean.TRUE.equals(b.get("top")));
+        json(x, 204, null);
     }
 
     /**
@@ -158,18 +233,30 @@ public final class ReferenceServer implements AutoCloseable {
      * {@code GET} also takes {@code everyMs}. A position that cannot be resumed is one {@code gap} frame ({@code recoverable: false}).
      */
     private void stream(HttpExchange x, Map<String, String> q, Object body) throws IOException {
+        long idle = 0;
         Map<?, ?> b = body instanceof Map<?, ?> m ? m : Map.of();
         String table = b.get("table") instanceof String t ? t : q.get("table");
         String after = b.get("after") instanceof String a ? a : q.get("after") != null ? q.get("after") : x.getRequestHeaders().getFirst("Last-Event-ID");
         long every = b.get("conflate") instanceof Map<?, ?> c && c.get("everyMs") instanceof Number n ? n.longValue()
                 : q.get("everyMs") != null ? Long.parseLong(q.get("everyMs")) : 0;
+        List<List<Object>> window = null;
+        boolean top = false;
+        if (b.get("window") instanceof Map<?, ?> w) {                 // PROTOCOL 16: a windowed stream; its first frame is subd
+            window = ProtocolHost.keys(w.get("keys"));
+            top = Boolean.TRUE.equals(w.get("top"));
+        }
+        Object who = caller;
         BlockingQueue<Map<String, Object>> live = new LinkedBlockingQueue<>();
         Subscription sub;
         try {
-            sub = host.protocol().subscribe(table, new TableProvider.Subscribe(after, b.get("filter"), every, null, false), live::add, null);
+            sub = host.protocol().subscribe(table, new TableProvider.Subscribe(after, b.get("filter"), every, window, top), live::add, who);
         } catch (ProtocolError e) {
             json(x, e.status(), e.body());
             return;
+        }
+        String id = window == null ? null : java.util.UUID.randomUUID().toString();
+        if (id != null && sub.recovered()) {
+            streams.put(id, new Open(sub, who));
         }
         try (sub) {
             x.getResponseHeaders().set("Content-Type", "text/event-stream; charset=utf-8");
@@ -177,26 +264,43 @@ public final class ReferenceServer implements AutoCloseable {
             x.sendResponseHeaders(200, 0);
             OutputStream out = x.getResponseBody();
             if (!sub.recovered()) {
-                event(out, host.protocol().changes(table, "-:0", null).get(0));      // the gap frame at the table's position
+                event(out, host.protocol().changes(table, "-:0", who).get(0));      // the gap frame at the table's position
                 out.flush();
                 return;
+            }
+            if (id != null) {
+                Map<String, Object> subd = new LinkedHashMap<>();
+                subd.put("t", "subd");
+                subd.put("sub", id);
+                subd.put("table", table);
+                event(out, subd);
             }
             for (Map<String, Object> f = live.poll(); f != null; f = live.poll()) {
                 event(out, f);                                       // the backlog, then a heartbeat, then live frames
             }
             out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
             out.flush();
-            while (!closed) {
-                Map<String, Object> f = live.poll(15, TimeUnit.SECONDS);
+            while (!closed && !sub.closed()) {
+                Map<String, Object> f = live.poll(id == null ? 15_000 : 200, TimeUnit.MILLISECONDS);
                 if (f == null) {
-                    out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
+                    if (id == null || ++idle % 75 == 0) {
+                        out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
+                    }
                 } else {
                     event(out, f);
                 }
                 out.flush();
             }
+            for (Map<String, Object> f = live.poll(); f != null; f = live.poll()) {
+                event(out, f);                                       // what ended it (a gap)
+            }
+            out.flush();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        } finally {
+            if (id != null) {
+                streams.remove(id);
+            }
         }
     }
 
@@ -209,7 +313,7 @@ public final class ReferenceServer implements AutoCloseable {
         String name = rel.substring("/tables/".length(), rel.lastIndexOf('/'));
         com.ash.rachana.table.TableSchema schema;
         try {
-            schema = host.protocol().schemaOf(name, null);
+            schema = host.protocol().schemaOf(name, caller);
         } catch (ProtocolError e) {
             json(x, e.status(), e.body());
             return;
@@ -218,7 +322,7 @@ public final class ReferenceServer implements AutoCloseable {
             json(x, 406, ProtocolError.of("rdp.query.unsupported", 406, name + " is not offered as Arrow", "table", name, "operation", "arrow").body());
             return;
         }
-        ProtocolHost.Answer a = host.protocol().handle(m, rel, q, body);
+        ProtocolHost.Answer a = host.protocol().handle(caller, m, rel, q, body);
         if (a.status() != 200) {
             json(x, a.status(), a.body());
             return;
@@ -246,7 +350,8 @@ public final class ReferenceServer implements AutoCloseable {
     }
 
     private static void event(OutputStream out, Map<String, Object> f) throws IOException {
-        String text = "id: " + f.get("epoch") + ":" + f.get("seq") + "\nevent: " + f.get("t") + "\ndata: " + Json.write(f) + "\n\n";
+        String id = f.get("epoch") == null ? "" : "id: " + f.get("epoch") + ":" + f.get("seq") + "\n";
+        String text = id + "event: " + f.get("t") + "\ndata: " + Json.write(f) + "\n\n";
         out.write(text.getBytes(StandardCharsets.UTF_8));
     }
 

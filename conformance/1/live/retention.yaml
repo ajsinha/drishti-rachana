@@ -1,0 +1,128 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: live/retention
+since: "1.0"
+profile: core
+verified: false
+description: "Retention of a live table's live side and idle close (LIVE_TABLES 1.4): ttl by a column and by arrival, max-rows oldest first, a table nobody reads closed and reopened. The adapter's clock starts at 2026-11-21T12:00:00Z; POST /_test/upkeep moves it and runs the upkeep (PROTOCOL 15). Run with protocol_check.py --live."
+cases:
+  - id: ttl-by-a-column
+    kind: protocol
+    source: "LIVE_TABLES 1.4 (rows older than ttl by the column on; a whole-tier trim is a removal)"
+    fixture:
+      name: orders
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        retention: { ttl: 1h, on: at }
+        columns: [ { name: id }, { name: at, type: timestamp } ]
+      rows: [ { id: old, at: "2026-11-21T10:00:00Z" }, { id: new, at: "2026-11-21T11:30:00Z" } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/upkeep, body: { } }
+        expect: { status: 200 }
+      - request: { method: GET, path: /_test/bridge/out }
+        expect: { status: 200, body: [ { t: msg, sub: s1, data: { remove: [ [old] ] } } ] }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [new, "2026-11-21T11:30:00Z"] ], total: 1 } }
+
+  - id: ttl-by-arrival
+    kind: protocol
+    source: "LIVE_TABLES 1.4 (without on: the arrival time; a reopened table's snapshot arrives anew, so idle close is held off)"
+    fixture:
+      name: orders
+      options: { idleCloseMs: 86400000 }
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        retention: { ttl: 30m }
+        columns: [ { name: id }, { name: qty, type: integer } ]
+      rows: [ { id: a, qty: 1 } ]
+    steps:
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { total: 1 } }
+      - request: { method: POST, path: /_test/upkeep, body: { advanceMs: 1200000 } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/stream, body: { upsert: [ { id: b, qty: 2 } ] } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /_test/upkeep, body: { advanceMs: 1200000 } }
+        expect: { status: 200 }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [b, 2] ], total: 1 } }
+
+  - id: max-rows-drops-the-oldest
+    kind: protocol
+    source: "LIVE_TABLES 1.4 (beyond max-rows the oldest; the upkeep trims open tables)"
+    fixture:
+      name: orders
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        retention: { on: at, max-rows: 2 }
+        columns: [ { name: id }, { name: at, type: timestamp } ]
+      rows:
+        - { id: a, at: "2026-11-21T09:00:00Z" }
+        - { id: b, at: "2026-11-21T08:00:00Z" }
+        - { id: c, at: "2026-11-21T10:00:00Z" }
+    steps:
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { total: 3 } }
+      - request: { method: POST, path: /_test/upkeep, body: { } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /tables/orders/query, body: { sort: [ { col: id } ] } }
+        expect: { status: 200, body: { values: [ [a, "2026-11-21T09:00:00Z"], [c, "2026-11-21T10:00:00Z"] ], total: 2 } }
+
+  - id: idle-close-and-reopen
+    kind: protocol
+    source: "LIVE_TABLES 1.4 (a table nobody has read for idle-close is closed and reopened on the next read)"
+    fixture:
+      name: orders
+      options: { idleCloseMs: 60000 }
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        columns: [ { name: id }, { name: qty, type: integer } ]
+      rows: [ { id: a, qty: 1 } ]
+    steps:
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { total: 1 } }
+      - request: { method: POST, path: /_test/upkeep, body: { advanceMs: 30000 } }
+        expect: { status: 200, body: { open: [orders] } }
+      - request: { method: POST, path: /_test/upkeep, body: { advanceMs: 60000 } }
+        expect: { status: 200, body: { open: [] } }
+      - request: { method: GET, path: /tables/orders/rows }
+        expect: { status: 200, body: { values: [ [a, 1] ] } }
+      - request: { method: POST, path: /_test/upkeep, body: { } }
+        expect: { status: 200, body: { open: [orders] } }
+
+  - id: a-table-with-a-reader-stays-open
+    kind: protocol
+    source: "LIVE_TABLES 1.4 (idle: nobody reading; a subscription is reading)"
+    fixture:
+      name: orders
+      options: { idleCloseMs: 60000 }
+      declaration: |
+        rachana: 1
+        live-table: orders
+        snapshot: orders
+        stream: orders.live
+        key: id
+        columns: [ { name: id }, { name: qty, type: integer } ]
+      rows: [ { id: a, qty: 1 } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: sub, id: s1, table: orders } }
+        expect: { status: 200 }
+      - request: { method: POST, path: /_test/upkeep, body: { advanceMs: 600000 } }
+        expect: { status: 200, body: { open: [orders] } }

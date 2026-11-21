@@ -135,6 +135,14 @@
         }
       ]
     },
+    "readerView": {
+      "description": "A reader of a live table's test adapter (PROTOCOL 15): what the host's authoriser answers for them.",
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "audience": { "type": "string" }, "rowFilter": { "type": "object" },
+        "masked": { "type": "array", "items": { "type": "string" } }, "refuse": { "enum": ["forbidden", "unknown"] }
+      }
+    },
     "tableSchema": {
       "description": "A Data Protocol table schema (PROTOCOL 2). Its normative schema is spec/1/data-protocol/schema.json (F8); only the parts a case needs are constrained here.",
       "type": "object",
@@ -522,12 +530,38 @@
       "required": ["steps"],
       "properties": {
         "fixture": {
-          "type": "object", "required": ["name", "schema", "rows"], "additionalProperties": false,
-          "properties": {
-            "name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,128}$" },
-            "schema": { "$ref": "#/$defs/tableSchema" },
-            "rows": { "type": "array", "items": { "type": "object" } }
-          }
+          "oneOf": [
+            {
+              "type": "object", "required": ["name", "schema", "rows"], "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,128}$" },
+                "schema": { "$ref": "#/$defs/tableSchema" },
+                "rows": { "type": "array", "items": { "type": "object" } }
+              }
+            },
+            {
+              "description": "A live table (FORMAT 5.12, LIVE_TABLES 9): its declaration served from a source holding rows, through POST /_test/live.",
+              "type": "object", "required": ["name", "declaration", "rows"], "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,128}$" },
+                "declaration": { "type": "string" },
+                "rows": { "type": "array", "items": { "type": "object" } },
+                "tier": { "enum": ["whole", "columns", "query"] },
+                "sourceColumns": { "type": "array", "items": { "type": "string" } },
+                "options": {
+                  "type": "object", "additionalProperties": false,
+                  "properties": {
+                    "flushMs": { "type": "integer", "minimum": 0 }, "windowCapacity": { "type": "integer", "minimum": 1 }, "maxSnapshotRows": { "type": "integer", "minimum": 1 },
+                    "idleCloseMs": { "type": "integer", "minimum": 0 }, "maxIndexes": { "type": "integer", "minimum": 1 },
+                    "log": { "type": "integer", "minimum": 1 }
+                  }
+                },
+                "readers": { "type": "object", "additionalProperties": { "$ref": "#/$defs/readerView" } },
+                "authoriser": { "type": "boolean" },
+                "stream": { "type": "boolean" }
+              }
+            }
+          ]
         },
         "steps": {
           "type": "array", "minItems": 1,

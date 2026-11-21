@@ -34,6 +34,13 @@ final class ViewRecords {
                 ViewJson.put(m, "panels", r.panels(), Rule.ALWAYS);
                 yield m;
             }
+            case PanelData.Band r -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                ViewJson.put(m, "from", r.from(), Rule.ALWAYS);
+                ViewJson.put(m, "to", r.to(), Rule.ALWAYS);
+                ViewJson.put(m, "tone", r.tone(), Rule.ALWAYS);
+                yield m;
+            }
             case PanelData.Bar r -> {
                 Map<String, Object> m = new LinkedHashMap<>();
                 ViewJson.put(m, "label", r.label(), Rule.ALWAYS);
@@ -57,6 +64,22 @@ final class ViewRecords {
                 ViewJson.put(m, "to", r.to(), Rule.ALWAYS);
                 ViewJson.put(m, "count", r.count(), Rule.ALWAYS);
                 ViewJson.put(m, "label", r.label(), Rule.ALWAYS);
+                yield m;
+            }
+            case PanelData.Bullet r -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                ViewJson.put(m, "value", r.value(), Rule.NON_NULL);
+                ViewJson.put(m, "text", r.text(), Rule.NON_NULL);
+                ViewJson.put(m, "label", r.label(), Rule.NON_NULL);
+                ViewJson.put(m, "min", r.min(), Rule.NON_NULL);
+                ViewJson.put(m, "max", r.max(), Rule.NON_NULL);
+                ViewJson.put(m, "bands", r.bands(), Rule.NON_NULL);
+                ViewJson.put(m, "lower", r.lower(), Rule.NON_NULL);
+                ViewJson.put(m, "lowerText", r.lowerText(), Rule.NON_NULL);
+                ViewJson.put(m, "upper", r.upper(), Rule.NON_NULL);
+                ViewJson.put(m, "upperText", r.upperText(), Rule.NON_NULL);
+                ViewJson.put(m, "tone", r.tone(), Rule.NON_NULL);
+                ViewJson.put(m, "caption", r.caption(), Rule.NON_NULL);
                 yield m;
             }
             case PanelData.Candle r -> {
@@ -363,6 +386,9 @@ final class ViewRecords {
                 ViewJson.put(m, "label", r.label(), Rule.ALWAYS);
                 ViewJson.put(m, "values", r.values(), Rule.ALWAYS);
                 ViewJson.put(m, "tone", r.tone(), Rule.ALWAYS);
+                ViewJson.put(m, "mark", r.mark(), Rule.NON_NULL);
+                ViewJson.put(m, "axis", r.axis(), Rule.NON_NULL);
+                ViewJson.put(m, "ev", r.ev(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.ShadeItem r -> {
@@ -452,6 +478,23 @@ final class ViewRecords {
                 ViewJson.put(m, "measures", r.measures(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "mode", r.mode(), Rule.NON_DEFAULT);
                 ViewJson.put(m, "open", r.open(), Rule.NON_DEFAULT);
+                yield m;
+            }
+            case PanelData.Treemap r -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                ViewJson.put(m, "cells", r.cells(), Rule.NON_NULL);
+                ViewJson.put(m, "total", r.total(), Rule.NON_NULL);
+                yield m;
+            }
+            case PanelData.TreemapCell r -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                ViewJson.put(m, "label", r.label(), Rule.NON_NULL);
+                ViewJson.put(m, "group", r.group(), Rule.NON_NULL);
+                ViewJson.put(m, "value", r.value(), Rule.NON_NULL);
+                ViewJson.put(m, "text", r.text(), Rule.NON_NULL);
+                ViewJson.put(m, "tone", r.tone(), Rule.NON_NULL);
+                ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
+                ViewJson.put(m, "set", r.set(), Rule.NON_NULL);
                 yield m;
             }
             case PanelData.Waterfall r -> {

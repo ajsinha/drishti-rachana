@@ -16,7 +16,7 @@ public enum PanelKind {
     KV(Set.of(), Set.of("rows", "columns", "fields")),
     TABLE(Set.of("rows"), Set.of("totalLabel", "limit", "moreLabel", "link", "highlight", "search", "pivot", "children", "expand", "levels", "crumb", "root", "empty")),
     TABS(Set.of("each"), Set.of("tabTitle", "layout")),
-    LINE(Set.of(), Set.of("rows", "source", "x", "y", "mark", "footer", "unit", "fmt", "step", "values", "labels")),
+    LINE(Set.of(), Set.of("rows", "source", "x", "y", "mark", "footer", "unit", "fmt", "step", "values", "labels", "layers", "by")),
     AREA(Set.of("rows"), Set.of("x", "series", "limit", "limitLabel", "unit")),
     /** Bars, one per row; {@code shape: donut} draws the same rows as a ring of shares of their total. */
     HBAR(Set.of("rows"), Set.of("label", "value", "fmt", "tone", "shape")),
@@ -75,14 +75,22 @@ public enum PanelKind {
      * subscribes with that window and applies the patches as they come; {@code top} inserts new rows on top (a newest-first order).
      * {@code columns} each read one field ({@code bind: "@.qty"}); {@code bars} names the number fields drawn with a bar in the cell.
      */
-    LIVE(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "search", "empty", "window", "top", "bars"));
+    LIVE(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "search", "empty", "window", "top", "bars")),
+    /** Language 1.2: rows as rectangles sized by {@code value}, nested by {@code group}, toned by the sign of {@code color}. */
+    TREEMAP(Set.of("rows"), Set.of("label", "value", "group", "color", "fmt")),
+    /**
+     * Language 1.2: one figure on a band against a {@code limit} (one-sided, from {@code min}) or between {@code lower} and {@code upper}
+     * (two-sided), with warning zones within {@code warnAt} (0.8) of a bound.
+     */
+    BULLET(Set.of("value"), Set.of("label", "fmt", "min", "limit", "lower", "upper", "warnAt", "tone", "caption"));
 
     /** The language level that brought each kind not of level 1.0 (SUTRA_EXPANSION 6.2). */
-    private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1", LIVE, "1.2");
+    private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1", LIVE, "1.2", TREEMAP, "1.2",
+            BULLET, "1.2");
 
     /** The options a later level added to a kind of an earlier one, with that level: used below it they are {@code RCH-2008}. */
     private static final java.util.Map<PanelKind, java.util.Map<String, String>> OPTION_SINCE = java.util.Map.of(
-            GRID, java.util.Map.of("bars", "1.2"));
+            GRID, java.util.Map.of("bars", "1.2"), LINE, java.util.Map.of("layers", "1.2", "by", "1.2"));
 
     /** The language level that brought an option of this kind ({@link #since()} for the kind's own options). */
     public String since(String option) {

@@ -65,7 +65,7 @@ public record ViewModel(
     public static final List<String> KINDS_1_1 = List.of("grid", "tree", "chart");
 
     /** The panel kinds contract 1.2 adds. */
-    public static final List<String> KINDS_1_2 = List.of("live");
+    public static final List<String> KINDS_1_2 = List.of("live", "treemap", "bullet");
 
     /** A view with its datasets and no state. */
     public ViewModel(Ref ref, String mnemonic, TitleView title, List<Cell> strip, List<PanelView> panels, List<KeyView> keys,
@@ -148,7 +148,8 @@ public record ViewModel(
                 case PanelData.Metric m -> m.ev() != null;
                 case PanelData.Gauge g -> g.ev() != null;
                 case PanelData.Fields f -> f.ev() != null;
-                case PanelData.Chart c -> c.ev() != null && !c.ev().isEmpty();
+                case PanelData.Chart c -> c.ev() != null && !c.ev().isEmpty() || c.series() != null && c.series().stream()
+                        .anyMatch(x -> x != null && (x.mark() != null || x.axis() != null || x.ev() != null && !x.ev().isEmpty()));
                 case PanelData.Waterfall w -> w.steps().stream().anyMatch(s -> s.ev() != null);
                 case PanelData.Scatter s -> s.points().stream().anyMatch(x -> x.ev() != null);
                 case PanelData.Candles c -> c.candles().stream().anyMatch(x -> x.ev() != null);

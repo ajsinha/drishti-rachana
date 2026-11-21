@@ -1,0 +1,45 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/binder/series
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  Several series on one line panel (level 1.2, SPEC 2.3; contract 1.2 Series.mark, axis, ev): layers draw fields of wide rows over one
+  x, each with its mark (line, bar, area, point), tone and axis; by splits long rows into one series per value of a field, x the
+  values in order of appearance, a missing point null, and on a panel that emits on point-click each series carries ev beside x.
+  Synthetic data only.
+given:
+  today: "2026-01-15"
+  record:
+    daily:
+      - { date: "2026-01-12", pnl: 120000, var: 310000, limit: 400000 }
+      - { date: "2026-01-13", pnl: -260000, var: 305000, limit: 400000 }
+      - { date: "2026-01-14", pnl: 45000, var: 298000, limit: 400000 }
+    curves:
+      - { curve: Today, tenor: 1Y, value: 0.0412 }
+      - { curve: Today, tenor: 5Y, value: 0.0388 }
+      - { curve: Today, tenor: 10Y, value: 0.0395 }
+      - { curve: Yesterday, tenor: 1Y, value: 0.0409 }
+      - { curve: Yesterday, tenor: 10Y, value: 0.0401 }
+cases:
+  - id: layers-of-bars-and-lines-on-two-axes
+    kind: sutra
+    source: SPEC 2.3; VIEWMODEL contract 1.2
+    sutra: |
+      rachana: 1
+      sutra: pnl-var
+      version: 1
+      panels:
+        - { id: pv, kind: line, title: P&L against VaR, rows: $.daily, x: date, fmt: signed0, layers: [ { y: pnl, label: P&L, mark: bar, tone: accent }, { y: var, label: VaR, tone: warn, axis: right }, { y: limit, label: Limit, mark: point, tone: bad, axis: right } ] }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "pv", "kind": "line", "title": "P&L against VaR", "area": "main", "inferred": false, "data": {"x": ["2026-01-12", "2026-01-13", "2026-01-14"], "series": [{"label": "P&L", "values": [120000, -260000, 45000], "tone": "accent", "mark": "bar"}, {"label": "VaR", "values": [310000, 305000, 298000], "tone": "warn", "axis": "right"}, {"label": "Limit", "values": [400000, 400000, 400000], "tone": "bad", "mark": "point", "axis": "right"}]}, "empty": false}], "keys": [], "contract": "1.2"}}
+
+  - id: series-split-by-a-field-with-points-that-emit
+    kind: sutra
+    source: SPEC 2.3; VIEWMODEL contract 1.2 (Series.ev)
+    sutra: |
+      rachana: 1
+      sutra: curves
+      version: 1
+      panels:
+        - { id: cc, kind: line, rows: $.curves, x: tenor, y: value, by: curve, fmt: pct2, emits: [ { name: point, on: point-click, payload: { curve: "@.curve", tenor: "@.tenor" } } ] }
+    expect: {"viewModel": {"title": {"pill": null, "id": "case", "with": null}, "strip": [], "panels": [{"id": "cc", "kind": "line", "area": "main", "inferred": false, "data": {"x": ["1Y", "5Y", "10Y"], "series": [{"label": "Today", "values": [0.0412, 0.0388, 0.0395], "tone": "link", "ev": ["0", "1", "2"]}, {"label": "Yesterday", "values": [0.0409, null, 0.0401], "tone": null, "ev": ["3", null, "4"]}]}, "empty": false, "wire": {"emits": [{"name": "point", "on": "point-click"}]}}], "keys": [], "contract": "1.2"}}

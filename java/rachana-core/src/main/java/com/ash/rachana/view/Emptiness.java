@@ -40,6 +40,8 @@ public final class Emptiness {
             case PanelData.Graph g -> g.nodes() == null || g.nodes().isEmpty();
             case PanelData.Timeline t -> t.events() == null || t.events().isEmpty();
             case PanelData.Pivot p -> p.rows() == null || p.rows().isEmpty();
+            case PanelData.Treemap t -> t.cells() == null || t.cells().isEmpty();
+            case PanelData.Bullet b -> b.value() == null;
             case PanelData.Grid g -> false;              // a dataset's panels: the binder says empty from the dataset's rows
             case PanelData.Tree t -> false;
             case PanelData.DataChart c -> false;

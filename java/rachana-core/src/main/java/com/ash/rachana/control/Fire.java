@@ -98,7 +98,7 @@ public final class Fire {
                 bars.forEach(b -> out.add(map(b)));
             }
             case "point-click" -> {
-                for (String k : List.of("points", "steps", "events", "candles")) {
+                for (String k : List.of("points", "steps", "events", "candles", "cells")) {
                     if (data.get(k) instanceof List<?> l) {
                         l.forEach(x -> out.add(map(x)));
                         return out;

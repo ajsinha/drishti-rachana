@@ -5,6 +5,20 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Kinds batch** (level 1.2, contract 1.2 appended; SPEC 2.3, VIEWMODEL; API additions only):
+  - **the `live` panel kind**: a grid over a live host table read a window at a time (`rows: $.<table entry>`, `window`, `top`,
+    `sort`, `group`, `bars`); the dataset carries its fields and `live` (`table`, `window`, `top`, the conditions as one filter tree),
+    never rows; the plan reads such a table one window at a time; `<rachana-view>` hands the painter `options.tables` (`liveTables`:
+    one page, a windowed follow in seq order, the window moved, a gap). Cases `sutra/binder/live`, `problem/live`, `plan/live`.
+  - **cell bars**: `bars` on `grid` (level-gated: `RCH-2008` below 1.2, `PanelKind.since(option)`) and `live` (`GridColumn.bar`).
+  - **several series on a `line`**: `layers` (fields of wide rows, each with its `mark` line, bar, area or point, `tone` and `axis`) and
+    `by` (one series per value of a field of long rows, missing points null, `Series.ev` per series on a panel that emits on
+    point-click). Cases `sutra/binder/series`, `problem/series`, `problem/levels#line-layers-need-level-1-2`.
+  - **`treemap`** (cells sized by a figure, nested by `group`, toned by the sign of `color`; `point-click` cells with `ev` and `set`) and
+    **`bullet`** (one figure on a band against a `limit` or between `lower` and `upper`, warning zones within `warnAt`). Case
+    `sutra/binder/treemap-bullet`; problems in `problem/series`. `control.Fire` reads a treemap's `cells`.
+  - The vendored Elements pack is re-packed from drishti-elements g3/kinds (the live kind, cell bars, series marks, a right axis, the
+    legend, `point` events with the mark's row).
 - **The standalone server, step 1** (`java/rachana-server`; COMPILER_AND_RUNTIMES 10, MODES 4): one JVM process (the JDK's HTTP
   server on virtual threads, no framework) serving a project folder: its Sutras as pages (`/v/<sutra>`, `<rachana-view>` live over the
   Data Protocol; checked at load and on change, `/problems`), the libraries of `rachana_libs/`, `libraries:` and the jar, the page assets

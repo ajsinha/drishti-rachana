@@ -1613,6 +1613,12 @@
         },
         {
           "$ref": "#/$defs/DataChart"
+        },
+        {
+          "$ref": "#/$defs/Treemap"
+        },
+        {
+          "$ref": "#/$defs/Bullet"
         }
       ]
     },
@@ -1684,7 +1690,9 @@
             "grid",
             "tree",
             "chart",
-            "live"
+            "live",
+            "treemap",
+            "bullet"
           ],
           "description": "panel kind: one of the grammar's kinds; decides which record data carries"
         },
@@ -2452,6 +2460,58 @@
                 "anyOf": [
                   {
                     "$ref": "#/$defs/Grid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "treemap"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Treemap"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "bullet"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Bullet"
                   },
                   {
                     "type": "null"
@@ -3251,6 +3311,24 @@
             }
           ],
           "description": "the author's own word; free text"
+        },
+        "mark": {
+          "type": "string",
+          "description": "how the series is drawn: bar, area or point (absent: a line); a line panel's layers (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "axis": {
+          "type": "string",
+          "description": "right: read against a second axis on the right (absent: the left); a line panel's layers (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "ev": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "beside x, each point's row in the data (null where the series has no point), on a line split by a field that emits on point-click (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -4468,6 +4546,223 @@
       ],
       "additionalProperties": false,
       "description": "A live table of the Data Protocol read a window at a time (contract 1.2, panel kind live): the painter reads the first window rows of the query through the page's data client, subscribes with their keys and applies the patches",
+      "x-since": "1.2"
+    },
+    "Treemap": {
+      "type": "object",
+      "properties": {
+        "cells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TreemapCell"
+          },
+          "description": "the rows with a positive figure, in their order"
+        },
+        "total": {
+          "type": "string",
+          "description": "the figures' sum, formatted"
+        }
+      },
+      "required": [
+        "cells"
+      ],
+      "additionalProperties": false,
+      "description": "data of treemap (contract 1.2): rectangles sized by a figure, nested by group",
+      "x-since": "1.2"
+    },
+    "TreemapCell": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "its name"
+        },
+        "group": {
+          "type": "string",
+          "description": "its outer level"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "its size"
+        },
+        "text": {
+          "type": "string",
+          "description": "the size formatted"
+        },
+        "tone": {
+          "$ref": "#/$defs/Tone",
+          "description": "pos or neg by the sign of the panel's color figure"
+        },
+        "ev": {
+          "type": "string",
+          "description": "its row in the panel's data, on a panel that emits on point-click"
+        },
+        "set": {
+          "type": "object",
+          "description": "what a point-click on it writes into the screen's state"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "text"
+      ],
+      "additionalProperties": false,
+      "description": "One rectangle of a treemap (contract 1.2)",
+      "x-since": "1.2"
+    },
+    "Bullet": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the figure (null when not a number)"
+        },
+        "text": {
+          "type": "string",
+          "description": "the figure formatted"
+        },
+        "label": {
+          "type": "string",
+          "description": "its caption"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the scale's start"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the scale's end"
+        },
+        "bands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Band"
+          },
+          "description": "the zones behind the figure, in order"
+        },
+        "lower": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the lower bound"
+        },
+        "lowerText": {
+          "type": "string",
+          "description": "the lower bound formatted"
+        },
+        "upper": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "the upper bound (the limit)"
+        },
+        "upperText": {
+          "type": "string",
+          "description": "the upper bound formatted"
+        },
+        "tone": {
+          "$ref": "#/$defs/Tone",
+          "description": "the figure's zone: ok, warn or bad (past a bound)"
+        },
+        "caption": {
+          "type": "string",
+          "description": "words under it"
+        }
+      },
+      "required": [
+        "text",
+        "min",
+        "max",
+        "bands",
+        "tone"
+      ],
+      "additionalProperties": false,
+      "description": "data of bullet (contract 1.2): one figure on a band against one bound or two, with warning zones",
+      "x-since": "1.2"
+    },
+    "Band": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "where it starts"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "where it ends"
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Tone"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ok or warn"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "tone"
+      ],
+      "additionalProperties": false,
+      "description": "A zone of a bullet's band (contract 1.2)",
       "x-since": "1.2"
     }
   }

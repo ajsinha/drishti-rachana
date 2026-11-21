@@ -11,13 +11,13 @@ doc:
   category: market-risk
   tags: [var, expected-shortfall, tiles]
 params:
-  var:          { type: number, required: true, doc: The value-at-risk, as a positive loss }
-  es:           { type: number, optional: true, doc: The expected shortfall, as a positive loss }
+  var:          { type: number, required: true, doc: "The value-at-risk, as a positive loss" }
+  es:           { type: number, optional: true, doc: "The expected shortfall, as a positive loss" }
   var-label:    { type: text, default: "VaR 99%", doc: What the VaR figure is called }
   es-label:     { type: text, default: "ES 97.5%", doc: What the expected shortfall is called }
-  previous-var: { type: number, optional: true, doc: The previous VaR, to give the change }
-  limit:        { type: number, optional: true, doc: The VaR limit, to give the share used }
-  horizon:      { type: text, default: 1d, doc: The holding period, written under the figures }
+  previous-var: { type: number, optional: true, doc: "The previous VaR, to give the change" }
+  limit:        { type: number, optional: true, doc: "The VaR limit, to give the share used" }
+  horizon:      { type: text, default: 1d, doc: "The holding period, written under the figures" }
   fmt:          { type: format, default: amount0, doc: How the figures are written }
 panels:
   - id: var

@@ -17,9 +17,9 @@ params:
     doc: One row per cash flow
     columns:
       date:     { type: date,   doc: The cash flow date }
-      amount:   { type: number, doc: The signed amount, receipts positive }
+      amount:   { type: number, doc: "The signed amount, receipts positive" }
       currency: { type: text,   doc: The currency }
-      type:     { type: text,   optional: true, doc: The kind of flow, such as coupon or principal }
+      type:     { type: text,   optional: true, doc: "The kind of flow, such as coupon or principal" }
   title: { type: text, default: Cash flows, doc: The panel's title }
   fmt:   { type: format, default: signed0, doc: How amounts are written }
 panels:

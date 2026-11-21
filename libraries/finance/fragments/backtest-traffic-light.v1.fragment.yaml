@@ -19,7 +19,7 @@ params:
     columns:
       date: { type: date,   doc: The day }
       pnl:  { type: number, doc: The day's P&L }
-      var:  { type: number, doc: The day's VaR, as a positive loss }
+      var:  { type: number, doc: "The day's VaR, as a positive loss" }
   amber-from: { type: integer, default: 5, min: 1, max: 1000, doc: The exception count from which the zone is amber }
   red-from:   { type: integer, default: 10, min: 1, max: 1000, doc: The exception count from which the zone is red }
   window:     { type: integer, default: 250, min: 1, max: 5000, doc: The number of latest days counted }

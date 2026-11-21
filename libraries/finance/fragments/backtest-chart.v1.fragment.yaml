@@ -19,7 +19,7 @@ params:
     columns:
       date: { type: date,   doc: The day }
       pnl:  { type: number, doc: The day's P&L }
-      var:  { type: number, doc: The VaR for the day, a positive amount }
+      var:  { type: number, doc: "The VaR for the day, a positive amount" }
   title: { type: text, default: P&L against VaR, doc: The panel's title }
   fmt:   { type: format, default: signed0, doc: How the amounts are written }
 emits:

@@ -206,6 +206,22 @@ public final class TypedFragment {
         return t;
     }
 
+    /** The keys a parameter declaration takes (LIBRARIES.md 4.2 and 5.1); any other is refused, never read as part of the interface. */
+    static final Set<String> PARAM_KEYS = Set.of("type", "doc", "default", "required", "optional", "columns", "contract", "min", "max",
+            "options", "pattern", "max-rows", "live", "key", "window", "dynamic", "of");
+
+    /** The keys a column of a table parameter takes (LIBRARIES.md 5.1). */
+    static final Set<String> COLUMN_KEYS = Set.of("type", "doc", "optional");
+
+    /**
+     * The words for a key {@code what} does not take. A key with spaces is almost always the rest of an unquoted flow-mapping text cut at
+     * a comma ({@code doc: The change, written beside it} is the doc "The change" and a key "written beside it"): the fix says so.
+     */
+    private static String unknownKey(String what, String key, Set<String> keys) {
+        return what + " takes " + new java.util.TreeSet<>(keys) + ", not '" + key + "'" + (key.contains(" ")
+                ? ": a text with a comma inside { ... } is cut there; quote it (doc: \"..., ...\")" : "");
+    }
+
     private static Param param(String fragment, String name, PNode d, String file, List<SutraProblem> out) {
         if (!d.isMap() || !d.map().containsKey("type")) {
             out.add(problem(SutraBlocks.BLOCK, "fragment " + fragment + " mixes the typed and the text form: parameter " + name
@@ -217,6 +233,23 @@ public final class TypedFragment {
             return null;
         }
         Map<String, PNode> m = d.map();
+        for (String k : m.keySet()) {
+            if (!PARAM_KEYS.contains(k)) {
+                out.add(problem(SutraBlocks.BLOCK, unknownKey("parameter " + name + " of fragment " + fragment, k, PARAM_KEYS), file, m.get(k) == null ? d : m.get(k)));
+            }
+        }
+        if (m.get("columns") != null && m.get("columns").isMap()) {
+            m.get("columns").map().forEach((c, cd) -> {
+                if (cd != null && cd.isMap()) {
+                    for (String k : cd.map().keySet()) {
+                        if (!COLUMN_KEYS.contains(k)) {
+                            out.add(problem(SutraBlocks.BLOCK, unknownKey("column " + c + " of parameter " + name + " of fragment " + fragment, k,
+                                    COLUMN_KEYS), file, cd));
+                        }
+                    }
+                }
+            });
+        }
         String type = text(m.get("type"));
         String kind = "table".equals(type) ? "table" : NAME_TYPES.contains(type) || HANDED_TYPES.contains(type) ? "name" : "value";
         if ("value".equals(kind) && !valueType(type)) {

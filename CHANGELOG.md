@@ -5,6 +5,20 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Library doc texts are no longer cut at a comma; the 1.0.0 libraries' content hashes change** (G4, lead decision: no customers
+  yet). An unquoted text in a fragment's flow mapping ends at its first comma: `delta: { type: number, optional: true, doc: The change
+  against a reference, written beside the figure }` is the doc "The change against a reference" and a key "written beside the figure",
+  and `rachana lib build` carried exactly that into the manifest (`core/key-figure`'s `delta`, and 45 more parameter and column docs
+  across the two libraries). The cause is fixed where it starts: a parameter declaration takes only its keys (`type`, `doc`, `default`, `required`,
+  `optional`, `columns`, `contract`, `min`, `max`, `options`, `pattern`, `max-rows`, `live`, `key`, `window`, `dynamic`, `of`) and a
+  column only `type`, `doc`, `optional`; any other is `RCH-2048`, and a key with spaces says to quote the text (LIBRARIES.md 4.2 rule
+  7). The 46 docs are quoted in the fragment files; the manifests, READMEs and `MANIFEST.sha384` of `core` and `finance` are rebuilt
+  (`rachana lib build`, gates LG1-LG5 and LG8 pass, the gallery paints). `FragmentDocTextTest`: a cut doc is refused with the fix; a
+  quoted doc with commas, colons, double and single quotes, `#`, a backslash, accents, CJK and an emoji goes through the manifest
+  writer and back unchanged, and the manifest is not stale. Content hashes (SHA-384 of the canonical archive, signature left out):
+  `core@1.0.0` `6736932f…5857fa7b1` → `f77b54a5…1610d2501`, `finance@1.0.0` `cc79698c…c23a30e68` → `87bd4ca2…178cc9c20`; a host
+  that pinned them (a `rachana.lock`) pins the new ones.
+
 - **`Final`'s state is public API, so a host keeps no copy** (G4 binder pass R-2). `com.ash.rachana.agg.Final` gains `encode()`,
   `decode(byte[])` and `isEncoded(byte[])` (the tag test Core's own holistic states use too), marked `[experimental]` in
   `java/api-surface.txt` (additions only). Drishti's `bicompute.functions.Final` (a copy kept because these were package-private) can be

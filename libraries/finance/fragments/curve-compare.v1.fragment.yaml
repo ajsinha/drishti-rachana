@@ -18,9 +18,9 @@ params:
     doc: One row per curve and tenor
     columns:
       curve: { type: text,   doc: The curve's name }
-      tenor: { type: text,   doc: The tenor (1Y, 5Y) }
-      years: { type: number, doc: The tenor in years, for the order on the axis }
-      value: { type: number, doc: The rate, a fraction (0.0412) }
+      tenor: { type: text,   doc: "The tenor (1Y, 5Y)" }
+      years: { type: number, doc: "The tenor in years, for the order on the axis" }
+      value: { type: number, doc: "The rate, a fraction (0.0412)" }
   base:  { type: text, default: "", doc: The curve the spreads are taken against (none - no spreads) }
   title: { type: text, default: Curves, doc: The panel's title }
   fmt:   { type: format, default: pct4, doc: How the rates are written }

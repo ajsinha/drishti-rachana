@@ -16,7 +16,7 @@ params:
     required: true
     doc: One row per expiry
     columns:
-      expiry: { type: text, doc: The expiry, such as 1M or 1Y }
+      expiry: { type: text, doc: "The expiry, such as 1M or 1Y" }
   strikes: { type: columns, required: true, doc: "The strike columns: a list of { label, bind: \"@.field\", fmt } over a row" }
   title:   { type: text, default: Volatility surface, doc: The panel's title }
   fmt:     { type: format, default: pct2, doc: How the values are written }

@@ -22,7 +22,7 @@ params:
       start:    { type: date,   optional: true, doc: The period start }
       end:      { type: date,   optional: true, doc: The period end }
       rate:     { type: number, optional: true, doc: The rate for the period }
-      status:   { type: text,   optional: true, doc: Paid, due or late }
+      status:   { type: text,   optional: true, doc: "Paid, due or late" }
   title:    { type: text, default: Payments, doc: The panel's title }
   fmt:      { type: format, default: amount2, doc: How amounts are written }
   rate-fmt: { type: format, default: pct2, doc: How the rate is written }

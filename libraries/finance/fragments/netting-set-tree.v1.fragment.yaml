@@ -19,7 +19,7 @@ params:
       id:         { type: text,   doc: The node's id }
       parent:     { type: text,   doc: The parent node's id; empty at the root }
       name:       { type: text,   doc: The node's name }
-      level:      { type: text,   doc: The node's level, such as group, counterparty, netting set or trade }
+      level:      { type: text,   doc: "The node's level, such as group, counterparty, netting set or trade" }
       gross:      { type: number, optional: true, doc: The gross value }
       net:        { type: number, optional: true, doc: The net value }
       collateral: { type: number, optional: true, doc: The collateral held against the node }

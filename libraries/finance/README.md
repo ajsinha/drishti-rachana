@@ -115,7 +115,7 @@ The head of an instrument screen - name, identifiers, currency, last price with 
 | `last` | number | optional. The last price |
 | `change` | number | optional. The change on the day |
 | `price-fmt` | format | default 'price2'. How the price is written |
-| `status` | text | optional. A status word |
+| `status` | text | optional. A status word, such as Active or Suspended |
 
 Example: `examples/instrument-header.sutra.yaml`.
 
@@ -154,14 +154,14 @@ A quote at a glance - last, change, the day's range and the 52-week range with t
 | Parameter | Kind | Notes |
 |---|---|---|
 | `last` | number | required. The last price |
-| `previous` | number | optional. The previous close |
+| `previous` | number | optional. The previous close, to give the change |
 | `day-low` | number | optional. The day's low |
 | `day-high` | number | optional. The day's high |
 | `year-low` | number | optional. The 52-week low |
 | `year-high` | number | optional. The 52-week high |
 | `title` | text | default 'Quote'. What the quote is |
 | `fmt` | format | default 'price2'. How prices are written |
-| `as-of` | text | optional. When the quote was taken |
+| `as-of` | text | optional. When the quote was taken, as you want it written |
 
 Example: `examples/quote-card.sutra.yaml`.
 
@@ -273,7 +273,7 @@ A trading blotter over a large live table - read a window at a time, new rows on
 |---|---|---|
 | `rows` | table(id, status) | required. The live table (a data entry with table, key and live), one row per order or trade |
 | `columns` | columns | required. The columns: a list of { label, bind: "@.field", fmt, tone }, each reading one field |
-| `order` | id | default 'id'. The field the rows are ordered by |
+| `order` | id | default 'id'. The field the rows are ordered by, newest first (a time or a version) |
 | `title` | text | default 'Blotter'. The panel's title |
 
 Example: `examples/live-blotter.sutra.yaml`.
@@ -289,7 +289,7 @@ An order ticket - side, quantity, type, limit price, time in force - checked bef
 | `types` | list<text> | default ['MARKET', 'LIMIT']. The order types offered; LIMIT needs a limit price |
 | `tifs` | list<text> | default ['DAY', 'GTC', 'IOC']. The times in force offered |
 | `side` | text | default ''. The side to start from, an expression ("'BUY'", state.side); none when empty |
-| `last` | number | optional. The last price |
+| `last` | number | optional. The last price, the limit price to start from |
 | `title` | text | default 'Order ticket'. The panel's title |
 | `send-label` | text | default 'Send'. The send button's text |
 
@@ -377,7 +377,7 @@ P&L by a grouping - book, desk, strategy - as bars toned by sign.
 | `rows` | table(label, pnl) | required. One row per group |
 | `title` | text | default 'P&L by group'. The panel's title |
 | `fmt` | format | default 'signed0'. How the P&L is written |
-| `top` | integer | optional. Keep only this many groups |
+| `top` | integer | optional. Keep only this many groups, the largest by size |
 
 Events: `bar`
 
@@ -408,7 +408,7 @@ Day, month-to-date and year-to-date P&L as three figures toned by sign.
 | `mtd` | number | optional. The month-to-date P&L |
 | `ytd` | number | optional. The year-to-date P&L |
 | `fmt` | format | default 'signed0'. How the figures are written |
-| `currency` | text | optional. The currency |
+| `currency` | text | optional. The currency, written under each figure |
 
 Example: `examples/pnl-tiles.sutra.yaml`.
 
@@ -564,12 +564,12 @@ The distribution of scenario P&L with the VaR and the expected shortfall marked 
 | Parameter | Kind | Notes |
 |---|---|---|
 | `rows` | table(pnl) | required. One row per scenario |
-| `var` | number | required. The value-at-risk |
-| `es` | number | optional. The expected shortfall |
+| `var` | number | required. The value-at-risk, as a positive loss |
+| `es` | number | optional. The expected shortfall, as a positive loss |
 | `title` | text | default 'Scenario P&L'. The panel's title |
 | `bins` | integer | default 40. How many bins |
 | `fmt` | format | default 'compact'. How the values are written |
-| `unit` | text | default ''. The unit |
+| `unit` | text | default ''. The unit, written beside the values |
 
 Example: `examples/var-histogram.sutra.yaml`.
 
@@ -580,7 +580,7 @@ Scenario P&L against the scenario's date, with the worst days listed - when in h
 | Parameter | Kind | Notes |
 |---|---|---|
 | `rows` | table(date, pnl) | required. One row per scenario |
-| `var` | number | optional. The value-at-risk |
+| `var` | number | optional. The value-at-risk, as a positive loss |
 | `worst` | integer | default 5. How many worst scenarios are listed |
 | `title` | text | default 'Scenario P&L by date'. The panel's title |
 | `fmt` | format | default 'signed0'. How the P&L is written |
@@ -595,13 +595,13 @@ Value-at-risk and expected shortfall as tiles, with the change on the day and th
 
 | Parameter | Kind | Notes |
 |---|---|---|
-| `var` | number | required. The value-at-risk |
-| `es` | number | optional. The expected shortfall |
+| `var` | number | required. The value-at-risk, as a positive loss |
+| `es` | number | optional. The expected shortfall, as a positive loss |
 | `var-label` | text | default 'VaR 99%'. What the VaR figure is called |
 | `es-label` | text | default 'ES 97.5%'. What the expected shortfall is called |
-| `previous-var` | number | optional. The previous VaR |
-| `limit` | number | optional. The VaR limit |
-| `horizon` | text | default '1d'. The holding period |
+| `previous-var` | number | optional. The previous VaR, to give the change |
+| `limit` | number | optional. The VaR limit, to give the share used |
+| `horizon` | text | default '1d'. The holding period, written under the figures |
 | `fmt` | format | default 'amount0'. How the figures are written |
 
 Example: `examples/var-tiles.sutra.yaml`.

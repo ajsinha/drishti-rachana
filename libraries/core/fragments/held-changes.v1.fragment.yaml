@@ -22,10 +22,10 @@ params:
     columns:
       change:  { type: text, doc: The change's id }
       state:   { type: text, doc: "queued, held or failed" }
-      summary: { type: text, doc: The row and what the change sets, in words }
+      summary: { type: text, doc: "The row and what the change sets, in words" }
       by:      { type: text, doc: Who made the change }
       at:      { type: datetime, doc: When it was made or last moved }
-      message: { type: text, doc: Why it waits, or what happened to it }
+      message: { type: text, doc: "Why it waits, or what happened to it" }
   decide: { type: enum, options: [none, cells, beside], default: cells, doc: "How an approver decides a held change: in the state cell, in a record panel beside the list, or not here (none)" }
   order:  { type: id, default: at, doc: "The field of when a change was made or last moved, newest first (at; name your own when you map the columns: a mapping does not rename an order)" }
   title:  { type: text, default: Pending changes, doc: The panel's title }

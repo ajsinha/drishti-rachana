@@ -18,7 +18,7 @@ params:
     doc: One row per line item and period
     columns:
       item:   { type: text,   doc: The line item }
-      period: { type: text,   doc: The period, written so that periods sort in order }
+      period: { type: text,   doc: "The period, written so that periods sort in order" }
       value:  { type: number, doc: The reported figure }
   title:   { type: text, default: Financials, doc: The panel's title }
   fmt:     { type: format, default: compact, doc: How the figures are written }

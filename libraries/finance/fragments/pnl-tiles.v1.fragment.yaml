@@ -15,7 +15,7 @@ params:
   mtd:      { type: number, optional: true, doc: The month-to-date P&L }
   ytd:      { type: number, optional: true, doc: The year-to-date P&L }
   fmt:      { type: format, default: signed0, doc: How the figures are written }
-  currency: { type: text, optional: true, doc: The currency, written under each figure }
+  currency: { type: text, optional: true, doc: "The currency, written under each figure" }
 panels:
   - id: day
     kind: metric

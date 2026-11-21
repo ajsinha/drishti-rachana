@@ -19,7 +19,7 @@ params:
     columns:
       pay_date: { type: date,   doc: The payment date }
       amount:   { type: number, doc: The amount }
-      status:   { type: text,   optional: true, doc: Paid, due or late }
+      status:   { type: text,   optional: true, doc: "Paid, due or late" }
   today: { type: date, required: true, doc: The day the figures are taken on }
   fmt:   { type: format, default: amount0, doc: How amounts are written }
 panels:

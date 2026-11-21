@@ -13,14 +13,14 @@ doc:
   tags: [quote, price, range]
 params:
   last:      { type: number, required: true, doc: The last price }
-  previous:  { type: number, optional: true, doc: The previous close, to give the change }
+  previous:  { type: number, optional: true, doc: "The previous close, to give the change" }
   day-low:   { type: number, optional: true, doc: The day's low }
   day-high:  { type: number, optional: true, doc: The day's high }
   year-low:  { type: number, optional: true, doc: The 52-week low }
   year-high: { type: number, optional: true, doc: The 52-week high }
   title:     { type: text, default: Quote, doc: What the quote is }
   fmt:       { type: format, default: price2, doc: How prices are written }
-  as-of:     { type: text, optional: true, doc: When the quote was taken, as you want it written }
+  as-of:     { type: text, optional: true, doc: "When the quote was taken, as you want it written" }
 panels:
   - id: last
     kind: metric

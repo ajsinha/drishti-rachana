@@ -20,7 +20,7 @@ params:
       direction: { type: text,   doc: Held or posted }
       nominal:   { type: number, doc: The nominal amount }
       currency:  { type: text,   doc: The currency }
-      haircut:   { type: number, optional: true, doc: The haircut, as a fraction }
+      haircut:   { type: number, optional: true, doc: "The haircut, as a fraction" }
       value:     { type: number, doc: The value after haircut }
   title: { type: text, default: Collateral, doc: The panel's title }
   fmt:   { type: format, default: amount0, doc: How amounts are written }

@@ -17,7 +17,7 @@ params:
     required: true
     doc: One row per name
     columns:
-      group:    { type: text,   doc: The outer level (a sector, a country) }
+      group:    { type: text,   doc: "The outer level (a sector, a country)" }
       name:     { type: text,   doc: The name the rectangle shows }
       exposure: { type: number, doc: The figure that sizes it }
       pnl:      { type: number, optional: true, doc: The figure whose sign tones it }

@@ -21,7 +21,7 @@ params:
       direction: { type: text,   doc: Issued to or received from the counterparty }
       amount:    { type: number, doc: The amount called }
       currency:  { type: text,   doc: The currency }
-      status:    { type: text,   doc: Issued, agreed, disputed or settled }
+      status:    { type: text,   doc: "Issued, agreed, disputed or settled" }
   title: { type: text, default: Margin calls, doc: The panel's title }
   fmt:   { type: format, default: amount0, doc: How amounts are written }
 panels:

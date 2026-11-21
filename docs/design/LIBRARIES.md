@@ -265,6 +265,10 @@ Rules:
    root panel, never a crash.
 5. At most 40 parameters. A fragment that wants more is two fragments.
 6. Every parameter has a `doc` of one line; the docstring lint (`RCH-2055`) requires it.
+7. A declaration takes only its keys: a parameter `type`, `doc`, `default`, `required`, `optional`, `columns`, `contract`, `min`,
+   `max`, `options`, `pattern`, `max-rows`, `live`, `key`, `window`, `dynamic`, `of`; a column `type`, `doc`, `optional`. Any other
+   is `RCH-2048`. In a flow mapping (`{ type: number, doc: ... }`) a text with a comma is quoted: unquoted, `doc: The change,
+   written beside it` is the doc "The change" and a key "written beside it", which the manifest would carry as such.
 
 Every fragment also accepts the **placement words** on the use itself, with no declaration: `as` (7.2), `title`,
 `area`, `span`, `when`, `key`, `requires`, `variant`, `load`, `a11y`. They apply to the fragment's root: its single

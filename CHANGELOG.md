@@ -5,6 +5,10 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### IntelliJ launchers and installing a release
+
+- **Build launchers**: `java/run-configs/` holds four IntelliJ Maven configurations in the folder **Rachana** (build all, test, install release for a release tag only, JS bundles), the build guide is [java/README](java/README.md#build-in-intellij-idea), and a release is installed into `~/.m2` for Drishti from its tag only (decision R-1).
+
 ### Rachana-EL level 1.1: the syntax batch and exact numbers (lane B: EL phase 1)
 
 - **Syntax at language level 1.1** (SPEC 4.17, EBNF part D; EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY1 to PY8): record literals

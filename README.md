@@ -50,7 +50,8 @@ Author: Ashutosh Sinha. Proprietary. All rights reserved (see [LICENSE](LICENSE)
 | `tools/` | conformance driver, reference bridge (until the migration), split tools, regime and release tools | built |
 
 Build and prove: `cd java && ./mvnw clean verify`, then `python3 tools/conformance/rachana_conformance.py --jvm` (every
-verified case passes; see [java/README](java/README.md)).
+verified case passes; see [java/README](java/README.md)). Building in IntelliJ IDEA (the **Rachana** run configurations, Windows
+notes) and installing a release for Drishti: [java/README, Build in IntelliJ IDEA](java/README.md#build-in-intellij-idea).
 
 ## Use from JavaScript or Python
 

@@ -23,7 +23,7 @@ import java.util.function.Function;
  *   <li>a text argument written in the expression is one of its parameter's {@code enum} ({@code group(..., by = 'decade')} does not
  *       compile); an argument that is not a literal is left to the evaluation;</li>
  *   <li>a parameter typed {@code boolean-literal}, {@code integer-literal}, {@code number-literal} or {@code string-literal} (the
- *       Drishti profile's measure-level functions: {@code rank(agg, desc = true)}, {@code lag(agg, n, order)}) takes that literal;</li>
+ *       measure-level functions of the catalogue's profile section: {@code rank(agg, desc = true)}, {@code lag(agg, n, order)}) takes that literal;</li>
  *   <li>an engine's function (runs {@code E}) takes its keyword-only parameters by name only: {@code rank(sum(x), 'sideways')} gives
  *       {@code rank} a second argument by place, which it has not.</li>
  * </ul>

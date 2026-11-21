@@ -54,7 +54,7 @@ panels:
     kind: line
     when: "size(arg.history) > 0"
     title: Recent use
-    rows: "sort(map(arg.history, {date: @.date, used: @.used}), @.date)"
+    rows: "map(sort(arg.history, @.date), {date: @.date, used: @.used})"
     x: date
     y: used
     fmt: "%{fmt}"

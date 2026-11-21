@@ -25,6 +25,8 @@ params:
       volume: { type: number, optional: true, doc: The quantity traded }
   title: { type: text, default: Prices, doc: The panel's title }
   fmt:   { type: format, default: price2, doc: How prices are written }
+emits:
+  - { name: bar, payload: { date: date }, doc: A bar was chosen }
 panels:
   - id: bars
     kind: candlestick
@@ -37,3 +39,4 @@ panels:
     close: close
     volume: volume
     fmt: "%{fmt}"
+    emits: [ { name: bar, on: point-click, payload: { date: "@.date" } } ]

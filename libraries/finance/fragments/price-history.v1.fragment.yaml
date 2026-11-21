@@ -21,6 +21,8 @@ params:
       close: { type: number, doc: The closing price }
   title: { type: text, default: Price history, doc: The panel's title }
   fmt:   { type: format, default: price2, doc: How prices are written }
+emits:
+  - { name: point, payload: { date: date }, doc: A point of the line was chosen }
 panels:
   - id: high
     kind: metric
@@ -45,3 +47,4 @@ panels:
     x: date
     y: close
     fmt: "%{fmt}"
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]

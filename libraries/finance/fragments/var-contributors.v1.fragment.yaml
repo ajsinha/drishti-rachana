@@ -30,7 +30,7 @@ panels:
   - id: contributors
     kind: table
     title: arg.title
-    rows: "take(sort(map(arg.rows, {name: @.name, component: @.component, standalone: @.standalone, incremental: @.incremental, share: @.component / coalesce(arg.total, sum(arg.rows, 'component'))}), @.component, true), arg.top)"
+    rows: "map(take(sort(arg.rows, @.component, true), arg.top), {name: @.name, component: @.component, standalone: @.standalone, incremental: @.incremental, share: @.component / coalesce(arg.total, sum(arg.rows, 'component'))})"
     search: false
     columns:
       - { label: Name, bind: "@.name" }

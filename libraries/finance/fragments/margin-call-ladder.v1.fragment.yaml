@@ -33,7 +33,7 @@ panels:
   - id: ladder
     kind: ladder
     title: arg.title
-    rows: "sort(map(arg.rows, {date: @.date, direction: @.direction, amount: @.amount, currency: @.currency, status: @.status}), @.date)"
+    rows: "map(sort(arg.rows, @.date), {date: @.date, direction: @.direction, amount: @.amount, currency: @.currency, status: @.status})"
     columns:
       - { label: Date, bind: "@.date", fmt: date }
       - { label: Direction, bind: "@.direction" }

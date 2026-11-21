@@ -23,6 +23,8 @@ params:
   title:     { type: text, default: P&L explain, doc: The panel's title }
   fmt:       { type: format, default: signed0, doc: How the amounts are written }
   sum-label: { type: text, default: Close, doc: What the closing figure is called }
+emits:
+  - { name: step, payload: { effect: text }, doc: A step was chosen }
 panels:
   - id: explain
     kind: waterfall
@@ -33,3 +35,4 @@ panels:
     total: total
     sum: arg.sum-label
     fmt: "%{fmt}"
+    emits: [ { name: step, on: point-click, payload: { effect: "@.label" } } ]

@@ -35,14 +35,14 @@ panels:
   - id: line
     kind: line
     title: arg.title
-    rows: "sort(map(arg.rows, {date: @.date, pnl: @.pnl}), @.date)"
+    rows: "map(sort(arg.rows, @.date), {date: @.date, pnl: @.pnl})"
     x: date
     y: pnl
     fmt: "%{fmt}"
   - id: worst
     kind: table
     title: Worst scenarios
-    rows: "take(sort(map(arg.rows, {date: @.date, pnl: @.pnl}), @.pnl), arg.worst)"
+    rows: "map(take(sort(arg.rows, @.pnl), arg.worst), {date: @.date, pnl: @.pnl})"
     search: false
     columns:
       - { label: Date, bind: "@.date", fmt: date }

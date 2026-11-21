@@ -22,6 +22,8 @@ params:
   fmt:   { type: format, default: pct2, doc: How the values are written }
   step:  { type: boolean, default: false, doc: Whether the line steps between tenors instead of joining them }
   mark:  { type: text, optional: true, doc: A tenor to mark }
+emits:
+  - { name: point, payload: { tenor: text, value: number }, doc: A point of the line was chosen }
 panels:
   - id: line
     kind: line
@@ -32,3 +34,4 @@ panels:
     fmt: "%{fmt}"
     step: arg.step
     mark: "coalesce(arg.mark, '')"
+    emits: [ { name: point, on: point-click, payload: { tenor: "@.tenor", value: "@.value" } } ]

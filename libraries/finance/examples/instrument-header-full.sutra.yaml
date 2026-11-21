@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: instrument-header-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Instrument header (full)'" }
+data:
+  inst: { record: { NAME: Alder Ltd ordinary shares, ISIN_CODE: XS0000000001, TICKER: ALDR, CCY: USD, LAST_PX: 101.4, CHG: 1.3, STATE: Active } }
+panels:
+  - use: finance/instrument-header@1
+    with:
+      name: "${$.inst.NAME}"
+      identifiers: "[{label: 'ISIN', value: $.inst.ISIN_CODE}, {label: 'Ticker', value: $.inst.TICKER}]"
+      currency: "${$.inst.CCY}"
+      last: "$.inst.LAST_PX"
+      change: "$.inst.CHG"
+      status: "${$.inst.STATE}"

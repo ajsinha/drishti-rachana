@@ -43,7 +43,7 @@ panels:
   - id: totals
     kind: table
     title: Totals by direction
-    rows: "group(arg.rows, 'direction', 'value')"
+    rows: "map(group(arg.rows, 'direction', 'value'), {label: @.label, value: @.value, count: @.count})"
     search: false
     columns:
       - { label: Direction, bind: "@.label" }

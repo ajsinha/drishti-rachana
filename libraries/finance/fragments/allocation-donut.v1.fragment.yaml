@@ -27,7 +27,7 @@ panels:
   - id: slices
     kind: hbar
     title: arg.title
-    rows: "if(arg.as-weights, map(arg.rows, {label: @.label, value: @.value / sum(arg.rows, 'value')}), map(arg.rows, {label: @.label, value: @.value}))"
+    rows: "map(arg.rows, {label: @.label, value: if(arg.as-weights, @.value / sum(arg.rows, 'value'), @.value)})"
     label: label
     value: value
     fmt: "%{fmt}"

@@ -30,7 +30,7 @@ panels:
   - id: limits
     kind: table
     title: arg.title
-    rows: "sort(map(arg.rows, {name: @.name, owner: @.owner, limit: @.limit, used: @.used, headroom: @.limit - @.used, share: @.used / @.limit, state: if(@.used > @.limit, 'Breach', if(@.used >= arg.warn-at * @.limit, 'Warning', 'Within'))}), @.share, true)"
+    rows: "map(sort(arg.rows, @.used / @.limit, true), {name: @.name, owner: @.owner, limit: @.limit, used: @.used, headroom: @.limit - @.used, share: @.used / @.limit, state: if(@.used > @.limit, 'Breach', if(@.used >= arg.warn-at * @.limit, 'Warning', 'Within'))})"
     search: true
     columns:
       - { label: Limit, bind: "@.name" }

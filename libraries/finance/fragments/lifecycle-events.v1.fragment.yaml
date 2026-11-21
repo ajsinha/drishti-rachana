@@ -21,6 +21,8 @@ params:
       detail: { type: text, optional: true, doc: A line of detail }
       status: { type: text, optional: true, doc: A status word that tones the event }
   title: { type: text, default: Lifecycle, doc: The panel's title }
+emits:
+  - { name: select, payload: { date: date, event: text }, doc: An event was chosen }
 panels:
   - id: timeline
     kind: timeline
@@ -31,3 +33,4 @@ panels:
     detail: detail
     status: status
     tone: status
+    emits: [ { name: select, on: point-click, payload: { date: "@.date", event: "@.event" } } ]

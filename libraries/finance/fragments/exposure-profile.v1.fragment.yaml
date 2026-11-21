@@ -22,6 +22,8 @@ params:
   limit: { type: number, optional: true, doc: A horizontal limit drawn across the profile }
   title: { type: text, default: Exposure profile, doc: The panel's title }
   fmt:   { type: format, default: amount0, doc: How the peak is written }
+emits:
+  - { name: point, payload: { date: date }, doc: A date of the profile was chosen }
 panels:
   - id: peak
     kind: metric
@@ -31,10 +33,11 @@ panels:
   - id: profile
     kind: area
     title: arg.title
-    rows: "sort(map(arg.rows, {date: @.date, expected: @.expected, potential: @.potential}), @.date)"
+    rows: "map(sort(arg.rows, @.date), {date: @.date, expected: @.expected, potential: @.potential})"
     x: date
     series:
       - { label: Expected, value: expected }
       - { label: Potential, value: potential }
     limit: arg.limit
     limitLabel: Limit
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]

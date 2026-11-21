@@ -54,7 +54,7 @@ panels:
     kind: hbar
     when: "size(arg.trades) > 0"
     title: arg.title
-    rows: "take(sort(map(arg.trades, {id: @.id, value: @.value}), abs(@.value), true), arg.top)"
+    rows: "map(take(sort(arg.trades, abs(@.value), true), arg.top), {id: @.id, value: @.value})"
     label: id
     value: value
     fmt: "%{fmt}"

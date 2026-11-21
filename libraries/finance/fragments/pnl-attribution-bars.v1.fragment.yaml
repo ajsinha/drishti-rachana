@@ -6,8 +6,8 @@ version: 1
 doc:
   summary: P&L by a grouping - book, desk, strategy - as bars toned by sign.
   description: >-
-    One row per group with its P&L. Rows are drawn in the order given; give top to keep only the largest by size, losses
-    and gains alike. A click on a bar raises an event with its label.
+    One row per group with its P&L. Bars are listed by size, the largest first, losses and gains alike; give top to keep
+    only that many. A click on a bar raises an event with its label.
   category: pnl
   tags: [pnl, attribution, bars]
 params:
@@ -27,7 +27,7 @@ panels:
   - id: bars
     kind: hbar
     title: arg.title
-    rows: "if(is_blank(arg.top), map(arg.rows, {label: @.label, pnl: @.pnl}), take(sort(map(arg.rows, {label: @.label, pnl: @.pnl}), abs(@.pnl), true), arg.top))"
+    rows: "map(take(sort(arg.rows, abs(@.pnl), true), coalesce(arg.top, size(arg.rows))), {label: @.label, pnl: @.pnl})"
     label: label
     value: pnl
     fmt: "%{fmt}"

@@ -30,7 +30,7 @@ panels:
   - id: holdings
     kind: table
     title: arg.title
-    rows: "take(sort(map(arg.rows, {name: @.name, quantity: @.quantity, value: @.value, weight: coalesce(@.weight, @.value / sum(arg.rows, 'value')), change: @.change}), @.value, true), arg.top)"
+    rows: "map(take(sort(arg.rows, @.value, true), arg.top), {name: @.name, quantity: @.quantity, value: @.value, weight: coalesce(@.weight, @.value / sum(arg.rows, 'value')), change: @.change})"
     search: true
     columns:
       - { label: Name, bind: "@.name" }

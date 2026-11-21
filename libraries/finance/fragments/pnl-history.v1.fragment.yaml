@@ -21,6 +21,8 @@ params:
   title:      { type: text, default: P&L history, doc: The panel's title }
   fmt:        { type: format, default: signed0, doc: How the P&L is written }
   cumulative: { type: boolean, default: true, doc: Whether the line is the running total }
+emits:
+  - { name: point, payload: { date: date }, doc: A point of the line was chosen }
 panels:
   - id: best
     kind: metric
@@ -41,3 +43,4 @@ panels:
     x: date
     y: value
     fmt: "%{fmt}"
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]

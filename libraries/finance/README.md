@@ -3,7 +3,7 @@
 library: finance
 version: 1.0.0
 summary: Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
-fragments: 47
+fragments: 48
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
 
-47 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+48 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Market data
 
@@ -81,7 +81,25 @@ The path of an exchange rate over scenario dates, with the shock per scenario, a
 | `fmt` | format | default 'text'. How rates are written |
 | `shock-fmt` | format | default 'pct2'. How shocks are written |
 
+Events: `point`
+
 Example: `examples/fx-scenario-chart.sutra.yaml`.
+
+### `finance/instrument-header@1`
+
+The head of an instrument screen - name, identifiers, currency, last price with change, status.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `name` | text | required. The instrument's name |
+| `identifiers` | list<record{label: text, value: text}> | optional. The identifiers: a list of { label, value }, such as an ISIN or a ticker |
+| `currency` | text | optional. The instrument's currency |
+| `last` | number | optional. The last price |
+| `change` | number | optional. The change on the day |
+| `price-fmt` | format | default 'price2'. How the price is written |
+| `status` | text | optional. A status word |
+
+Example: `examples/instrument-header.sutra.yaml`.
 
 ### `finance/price-bars@1`
 
@@ -92,6 +110,8 @@ Open, high, low and close per period as candles, with volume under them.
 | `rows` | table(date, open, high, low, close, volume) | required. One row per period |
 | `title` | text | default 'Prices'. The panel's title |
 | `fmt` | format | default 'price2'. How prices are written |
+
+Events: `bar`
 
 Example: `examples/price-bars.sutra.yaml`.
 
@@ -104,6 +124,8 @@ A closing-price line with the period's high, low and return as figures beside it
 | `rows` | table(date, close) | required. One row per period, in date order |
 | `title` | text | default 'Price history'. The panel's title |
 | `fmt` | format | default 'price2'. How prices are written |
+
+Events: `point`
 
 Example: `examples/price-history.sutra.yaml`.
 
@@ -136,6 +158,8 @@ One term structure - zero rates, forwards or volatilities by expiry - drawn agai
 | `fmt` | format | default 'pct2'. How the values are written |
 | `step` | boolean | default False. Whether the line steps between tenors instead of joining them |
 | `mark` | text | optional. A tenor to mark |
+
+Events: `point`
 
 Example: `examples/term-structure.sutra.yaml`.
 
@@ -202,6 +226,8 @@ A trade's life as a timeline - booked, amended, fixed, paid, matured.
 |---|---|---|
 | `rows` | table(date, event, detail, status) | required. One row per event |
 | `title` | text | default 'Lifecycle'. The panel's title |
+
+Events: `select`
 
 Example: `examples/lifecycle-events.sutra.yaml`.
 
@@ -302,6 +328,8 @@ Daily P&L as a line of the cumulative total, with the best and worst day as figu
 | `fmt` | format | default 'signed0'. How the P&L is written |
 | `cumulative` | boolean | default True. Whether the line is the running total |
 
+Events: `point`
+
 Example: `examples/pnl-history.sutra.yaml`.
 
 ### `finance/pnl-tiles@1`
@@ -328,6 +356,8 @@ P&L explained - from the opening value through each effect to the close.
 | `title` | text | default 'P&L explain'. The panel's title |
 | `fmt` | format | default 'signed0'. How the amounts are written |
 | `sum-label` | text | default 'Close'. What the closing figure is called |
+
+Events: `step`
 
 Example: `examples/pnl-waterfall.sutra.yaml`.
 
@@ -577,6 +607,8 @@ Exposure through time - expected and potential future exposure by date, against 
 | `limit` | number | optional. A horizontal limit drawn across the profile |
 | `title` | text | default 'Exposure profile'. The panel's title |
 | `fmt` | format | default 'amount0'. How the peak is written |
+
+Events: `point`
 
 Example: `examples/exposure-profile.sutra.yaml`.
 

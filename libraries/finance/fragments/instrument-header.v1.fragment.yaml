@@ -1,0 +1,38 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: instrument-header
+version: 1
+doc:
+  summary: The head of an instrument screen - name, identifiers, currency, last price with change, status.
+  description: >-
+    Give the instrument's name and, when you have them, its identifiers as a list of label and value pairs, the currency,
+    the last price with its change and a status word. Whatever is left out is not shown. The name takes a template, so it
+    can be read from your data. Use it above finance/quote-card or finance/price-history.
+  category: market-data
+  tags: [instrument, header, identifiers]
+params:
+  name:        { type: text, dynamic: true, required: true, doc: The instrument's name }
+  identifiers: { type: "list<record{label: text, value: text}>", optional: true, max: 12, doc: "The identifiers: a list of { label, value }, such as an ISIN or a ticker" }
+  currency:    { type: text, dynamic: true, optional: true, doc: The instrument's currency }
+  last:        { type: number, optional: true, doc: The last price }
+  change:      { type: number, optional: true, doc: The change on the day }
+  price-fmt:   { type: format, default: price2, doc: How the price is written }
+  status:      { type: text, dynamic: true, optional: true, doc: A status word, such as Active or Suspended }
+panels:
+  - id: head
+    kind: kv
+    title: arg.name
+    description: "${coalesce(arg.currency, '')} ${coalesce(arg.status, '')}"
+    columns:
+      - { label: Last, bind: "arg.last", fmt: "%{price-fmt}" }
+      - { label: Change, bind: "arg.change", fmt: signed2, tone: sign }
+  - id: ids
+    kind: table
+    when: "size(arg.identifiers) > 0"
+    title: Identifiers
+    rows: "map(arg.identifiers, {label: @.label, value: @.value})"
+    search: false
+    columns:
+      - { label: Identifier, bind: "@.label" }
+      - { label: Value, bind: "@.value" }

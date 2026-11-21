@@ -51,8 +51,8 @@ public record Form(String title, String key, String edit, String create, String 
     }
 
     /**
-     * Where a submitted form goes (APPROVALS_GUIDE.md › The design and its reasons, sections 5 and 18.1): {@code target} {@code overlay} (a correction kept in Drishti, laid
-     * over the source), {@code owned} (Drishti is the record's system of record) or {@code source} (a command of the connector's
+     * Where a submitted form goes (APPROVALS_GUIDE.md › The design and its reasons, sections 5 and 18.1): {@code target} {@code overlay} (a correction kept by the host, laid
+     * over the source), {@code owned} (the host is the record's system of record) or {@code source} (a command of the connector's
      * {@code writes:}: {@code command} for an edit, {@code create} for a new record); {@code kind} is the kind of the records the form
      * edits (the page's kind when absent: a form on a book's trades names {@code trade}); {@code approval} the approvals it needs
      * (0, 1 or 2; the site's policy may raise it, never lower it); {@code reason} true when a reason must come with it.

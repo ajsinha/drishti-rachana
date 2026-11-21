@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 /** The {@code pivot} option of table and ladder panels: opting in, the fields and arrangement, and RCH-2031. */
 class PivotOptionTest {
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     private static String sutra(String panel) {
         return """

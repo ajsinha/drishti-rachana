@@ -29,7 +29,17 @@ public final class SutraPivotEditor {
     private static final Pattern PLAIN = Pattern.compile("[A-Za-z_][A-Za-z0-9_./ -]*");
     private static final java.util.Set<String> RESERVED = java.util.Set.of("true", "false", "yes", "no", "on", "off", "null", "y", "n", "~");
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser;
+
+    /** An editor of Core's grammar alone. */
+    public SutraPivotEditor() {
+        this(new SutraParser());
+    }
+
+    /** An editor that reads the Sutra with this parser ({@link Rachana#parser()}: Core's grammar and the instance's profiles'). */
+    public SutraPivotEditor(SutraParser parser) {
+        this.parser = java.util.Objects.requireNonNull(parser, "a parser");
+    }
     private final PositionalYamlReader reader = new PositionalYamlReader();
 
     /**

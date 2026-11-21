@@ -63,11 +63,11 @@ class BlockOpsTest {
     }
 
     private static List<String> ids(String text) {
-        return new SutraParser().parse(text, SutraParser.STUDIO, "studio").panels().stream().map(Panel::id).toList();
+        return com.ash.rachana.TestGrammar.parser().parse(text, SutraParser.STUDIO, "studio").panels().stream().map(Panel::id).toList();
     }
 
     private static OpResult apply(String text, String opsJson) {
-        return new OpApplier().apply(text, Ops.parse(opsJson));
+        return new com.ash.rachana.design.ops.OpApplier(com.ash.rachana.TestGrammar.parser()).apply(text, Ops.parse(opsJson));
     }
 
     @Test
@@ -132,7 +132,7 @@ class BlockOpsTest {
         OpResult set = apply(SUTRA, "[{\"op\":\"setBlock\",\"use\":0,\"with\":{\"rate-fmt\":\"amount2\"}}]");
         assertThat(set.problems()).isEmpty();
         assertThat(set.yaml()).contains("# the legs, shared by every swap\n  - { use: legs@1, with: { \"rate-fmt\": amount2 } }");
-        assertThat(new SutraParser().parse(set.yaml(), SutraParser.STUDIO, "studio").panels().get(1).columns().get(0).fmt()).isEqualTo("amount2");
+        assertThat(com.ash.rachana.TestGrammar.parser().parse(set.yaml(), SutraParser.STUDIO, "studio").panels().get(1).columns().get(0).fmt()).isEqualTo("amount2");
 
         OpResult defaults = apply(SUTRA, "[{\"op\":\"setBlock\",\"use\":0,\"with\":{}}]");
         assertThat(defaults.yaml()).contains("  - { use: legs@1 }");

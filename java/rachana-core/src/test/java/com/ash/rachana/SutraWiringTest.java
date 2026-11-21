@@ -67,7 +67,7 @@ class SutraWiringTest {
             """;
 
     static Sutra parse(String panels) {
-        return new SutraParser().parse(sutra(panels), "probe.v1.sutra.yaml", "x");
+        return com.ash.rachana.TestGrammar.parser().parse(sutra(panels), "probe.v1.sutra.yaml", "x");
     }
 
     static List<SutraProblem> lint(String panels) {

@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 /** {@code controls:} in Sutras: the grammar, its problem codes (RCH-2034 to 2039), {@code ctl.<id>} and {@code [*]} in Rachana-EL. */
 class ControlsTest {
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
     private static final ElCompiler EL = new ElCompiler();
     private static final Formats F = Formats.load(null, List.of());
     private static final Node DOC = new JsonCodec().read("""
@@ -226,13 +226,13 @@ class ControlsTest {
     @Test
     void theWorkbenchSetControlsOpWritesTheSection() {
         String yaml = "rachana: 1\nsutra: ctl-test\nversion: 1\nmatch: { kind: trade }\nstrip:\n  - { label: A, bind: $.a }\npanels:\n" + TABLE;
-        var out = new OpApplier().apply(yaml,
+        var out = new com.ash.rachana.design.ops.OpApplier(com.ash.rachana.TestGrammar.parser()).apply(yaml,
                 Ops.parse("[{\"op\":\"setControls\",\"items\":[{\"id\":\"q\",\"kind\":\"search\",\"label\":\"Find\"}]}]"));
         assertThat(out.problems()).isEmpty();
         assertThat(out.yaml()).contains("controls:\n  - ").contains("id: q").contains("kind: search");
         assertThat(out.yaml().indexOf("controls:")).isBetween(out.yaml().indexOf("strip:"), out.yaml().indexOf("panels:"));
         assertThat(parser.parse(out.yaml(), "t.sutra.yaml", "x").controls()).hasSize(1);
-        var gone = new OpApplier().apply(out.yaml(), Ops.parse("[{\"op\":\"setControls\",\"items\":[]}]"));
+        var gone = new com.ash.rachana.design.ops.OpApplier(com.ash.rachana.TestGrammar.parser()).apply(out.yaml(), Ops.parse("[{\"op\":\"setControls\",\"items\":[]}]"));
         assertThat(gone.yaml()).doesNotContain("controls:");
     }
 

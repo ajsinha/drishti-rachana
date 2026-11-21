@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /** {@code levels:} of a table or ladder (a drill-down, any depth): what the parser accepts, what it refuses, and the expressions it checks. */
 class DrillLevelsTest {
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     private static String sutra(String extra) {
         return """

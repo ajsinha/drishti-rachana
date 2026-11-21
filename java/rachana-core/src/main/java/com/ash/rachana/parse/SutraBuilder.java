@@ -7,7 +7,6 @@ package com.ash.rachana.parse;
 import com.ash.rachana.SutraProblem;
 import com.ash.rachana.model.Area;
 import com.ash.rachana.model.Column;
-import com.ash.rachana.model.Match;
 import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.PanelKind;
 import com.ash.rachana.model.PanelOptions;
@@ -40,8 +39,6 @@ final class SutraBuilder {
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]{1,63}");
     private static final Pattern FKEY = Pattern.compile("F([1-9]|1[0-2])");
     private static final int LANGUAGE = SutraParser.LANGUAGE;
-    private static final Set<String> TOP = Set.of("rachana", "sutra", "version", "domain", "match", "title", "strip", "panels", "keys",
-            "description", "notes", "controls", "doc", "refresh", "layout", ScreenPhone.KEY);
     private static final Set<String> PANEL = Set.of("id", "kind", "title", "key", "code", "area", "infer", "columns", "body", "panels", "description",
             Panel.SPAN, Panel.HEIGHT, com.ash.rachana.model.Refresh.KEY, Panel.ORDER, Panel.SECTION, Panel.COLLAPSIBLE, com.ash.rachana.model.Form.KEY,
             ScreenPhone.KEY);
@@ -49,10 +46,12 @@ final class SutraBuilder {
     private static final Set<String> COLUMN = Set.of("label", "bind", "fmt", "tone", "total", "link");
 
     private final String file;
+    private final com.ash.rachana.profile.Grammar grammar;
     private final List<SutraProblem> problems = new ArrayList<>();
 
-    SutraBuilder(String file) {
+    SutraBuilder(String file, com.ash.rachana.profile.Grammar grammar) {
         this.file = file;
+        this.grammar = grammar;
     }
 
     List<SutraProblem> problems() {
@@ -65,7 +64,11 @@ final class SutraBuilder {
             return null;
         }
         Map<String, PNode> m = root.map();
-        unknownKeys(m, TOP, "top level");
+        m.forEach((k, v) -> {
+            if (!grammar.hasKey(k)) {
+                problem("RCH-2011", "unknown key '" + k + "' in top level", v);
+            }
+        });
         PNode lang = m.get("rachana");
         if (lang == null) {
             problem("RCH-2009", "missing 'rachana: " + LANGUAGE + "' (the Rachana language version) at the top", root);
@@ -92,16 +95,26 @@ final class SutraBuilder {
         } else {
             version = l.intValue();
         }
-        Match match = match(m.get("match"), root);
+        Map<String, Object> extensions = new LinkedHashMap<>();             // the profiles' keys (split step A7)
+        com.ash.rachana.profile.SutraKey.Context keyContext = keyContext(domain, root);
+        grammar.keys().forEach((keyName, key) -> {
+            Object value = key.read(m.get(keyName), keyContext);
+            if (value != null) {
+                extensions.put(keyName, value);
+            }
+        });
         Title title = title(m.get("title"));
         List<StripItem> strip = strip(m.get("strip"));
         List<Panel> panels = new ArrayList<>();
         Set<String> ids = new HashSet<>();
         Set<String> keys = new HashSet<>();
         List<PNode> own = new ArrayList<>(listOf(m.get("panels"), "panels"));
-        if (match != null) {                                                    // the sections modules contribute to this kind (module.yaml sections:)
-            own.addAll(SutraBlocks.expand(SutraBlocks.contributedUses(match.kind()), file, problems));
-        }
+        grammar.keys().forEach((keyName, key) -> {                               // the panels a key brings (match: the sections modules contribute)
+            List<PNode> brought = key.panels(extensions.get(keyName));
+            if (!brought.isEmpty()) {
+                own.addAll(SutraBlocks.expand(brought, file, problems, grammar.fragments()));
+            }
+        });
         for (PNode p : own) {
             Panel panel = panel(p, false);
             if (panel != null) {
@@ -149,34 +162,32 @@ final class SutraBuilder {
         if (!problems.isEmpty()) {
             return null;
         }
-        return new Sutra(name, version, text(m.get("domain"), domain), match, title, strip, panels, keyMap, loc(root),
-                text(m.get("description"), null), controls, layout, phone);
+        return new Sutra(name, version, title, strip, panels, keyMap, loc(root), text(m.get("description"), null), controls, layout, phone,
+                extensions);
     }
 
-    private Match match(PNode n, PNode root) {
-        if (n == null || !n.isMap()) {
-            problem("RCH-2010", "missing 'match' mapping with at least 'kind'", n == null ? root : n);
-            return new Match("?", null, 0);
-        }
-        unknownKeys(n.map(), Set.of("kind", "where", "priority"), "match");
-        String kind = requiredText(n.map(), "kind", n);
-        if (kind != null && !(n.map().get("kind").value() instanceof String)) {
-            problem("RCH-2012", "'kind' in match is an entity kind written as text (such as trade), not '" + kind + "'", n.map().get("kind"));
-        }
-        PNode where = n.map().get("where");
-        if (where != null && where.value() != null && !(where.value() instanceof String)) {
-            problem("RCH-2012", "'where' in match is an expression written as text, not '" + plain(where) + "'", where);
-        }
-        PNode pr = n.map().get("priority");
-        int priority = 0;
-        if (pr != null && pr.value() != null) {
-            if (pr.value() instanceof Long l && l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE) {
-                priority = l.intValue();
-            } else {
-                problem("RCH-2012", "'priority' in match must be a whole number (higher is tried first), not '" + plain(pr) + "'", pr);
+    private com.ash.rachana.profile.SutraKey.Context keyContext(String folder, PNode root) {
+        return new com.ash.rachana.profile.SutraKey.Context() {
+            @Override
+            public String file() {
+                return file;
             }
-        }
-        return new Match(kind, text(where, null), priority);
+
+            @Override
+            public String folder() {
+                return folder;
+            }
+
+            @Override
+            public PNode root() {
+                return root;
+            }
+
+            @Override
+            public void problem(String code, String message, PNode at) {
+                SutraBuilder.this.problem(code, message, at);
+            }
+        };
     }
 
     private Title title(PNode n) {
@@ -221,7 +232,7 @@ final class SutraBuilder {
         }
         Map<String, PNode> m = n.map();
         String kindText = requiredText(m, "kind", n);
-        PanelKind kind = kindText == null ? null : PanelKind.parse(kindText).orElse(null);
+        PanelKind kind = kindText == null ? null : PanelKind.parse(kindText).filter(grammar::accepts).orElse(null);
         if (kindText != null && kind == null) {
             problem("RCH-2021", "unknown panel kind '" + kindText + "'; expected one of " + kinds(), m.get("kind"));
             return null;
@@ -301,6 +312,8 @@ final class SutraBuilder {
         if (form != null) {
             Object raw = form.isScalar() ? form.value() : plain(form);
             List<String> why = nested ? List.of("a form edits a whole panel's records: put it on the tabs panel")
+                    : !grammar.formSave() && raw instanceof Map<?, ?> fm && fm.containsKey("save")
+                    ? List.of("'form.save' (where a submitted form goes) comes with a profile that brings it; this grammar has none")
                     : com.ash.rachana.model.Form.problems(raw);
             why.forEach(w -> problem("RCH-2058", w, form));
             if (why.isEmpty()) {
@@ -353,7 +366,7 @@ final class SutraBuilder {
 
     private WiringReader wiring() {
         if (wiringReader == null) {
-            wiringReader = new WiringReader(file, problems, list -> listOf(list, "panels"), c -> panel(c, false));
+            wiringReader = new WiringReader(file, problems, list -> listOf(list, "panels"), c -> panel(c, false), grammar);
         }
         return wiringReader;
     }
@@ -500,7 +513,7 @@ final class SutraBuilder {
             problem("RCH-2012", "'" + what + "' must be a list", n);
             return List.of();
         }
-        return "panels".equals(what) ? SutraBlocks.expand(n.list(), file, problems) : n.list();   // { use: <block> } brings a block's panels
+        return "panels".equals(what) ? SutraBlocks.expand(n.list(), file, problems, grammar.fragments()) : n.list();   // { use: <block> } brings a block's panels
     }
 
     private void unknownKeys(Map<String, PNode> m, Set<String> allowed, String where) {
@@ -532,9 +545,9 @@ final class SutraBuilder {
         return n != null && Boolean.TRUE.equals(n.value());
     }
 
-    private static String kinds() {
+    private String kinds() {
         StringBuilder sb = new StringBuilder();
-        for (PanelKind k : PanelKind.values()) {
+        for (PanelKind k : grammar.panelKinds()) {
             sb.append(sb.isEmpty() ? "" : ", ").append(k.id());
         }
         return sb.toString();

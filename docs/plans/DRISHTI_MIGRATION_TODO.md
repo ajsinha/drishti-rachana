@@ -177,6 +177,15 @@ here. What Drishti must do when the migration starts, in this order:
       `RachanaOptions.regexLimits`. Tests: `RachanaAggregatesTest`, `SutraAggregateParityTest`, `OneGrammarRulesTest`,
       `ModuleHostServerTest`, plus a start-stop-restart test of the holder.
 
+- [ ] 8.3d **The model split (A7)**: the `drishti` profile takes the entity additions — `Entities.addTo(Profile.named("drishti"), () -> servedKinds)`
+      — and later owns them (move `Entities`, `Match` and the contributions/UI-kit half of `SutraBlocks` into the profile module).
+      Every `new SutraParser()` that reads Drishti Sutras takes `rachana.parser()` (the no-argument one is Core alone and refuses
+      `match`); likewise `new OpApplier(rachana.parser())`, `new SutraLayoutEditor(rachana.parser())`, `new SutraPivotEditor(...)`.
+      `RachanaSchema.build(formats, kinds)` becomes `rachana.schema(formats)` (the kinds through the supplier); the schema's `$id` is
+      now `urn:rachana:schema:sutra:1`. `SutraRegistry` keeps directory scanning, pack precedence, the watch service and the last good
+      version, and holds what it reads in Core's `SutraStore`. Tests: `PackSutrasTest`, `SutraRegistryTest`, `SutraBlocksTest`,
+      `UiKitBlocksTest`, the schema snapshot with the `drishti` profile loaded, the goldens.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

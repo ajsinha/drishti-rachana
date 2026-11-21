@@ -55,10 +55,10 @@ class SutraBlocksTest {
         assertThat(SutraBlocks.load(List.of(dir))).isEmpty();
         assertThat(SutraBlocks.library().get("ticket")).containsOnlyKeys(1, 2);
 
-        Sutra s = new SutraParser().parse(sutra("  - { use: ticket@1, with: { rate-fmt: pct4 } }\n  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
+        Sutra s = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { use: ticket@1, with: { rate-fmt: pct4 } }\n  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
         assertThat(s.panels()).extracting(Panel::id).containsExactly("ticket", "built", "notes");
         assertThat(s.panels().get(0).columns().get(0).fmt()).isEqualTo("pct4");
-        Sutra latest = new SutraParser().parse(sutra("  - { use: ticket }\n"), "deal.v1.sutra.yaml", "endur");
+        Sutra latest = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { use: ticket }\n"), "deal.v1.sutra.yaml", "endur");
         assertThat(latest.panels().get(0).columns().get(0).label()).isEqualTo("Price v2");                // no version: the newest
         assertThat(latest.panels().get(0).columns().get(0).fmt()).isEqualTo("price4");                   // the default
     }
@@ -67,10 +67,10 @@ class SutraBlocksTest {
     void anUnknownBlockOrParameterIsDrs2048AndABlockMayNotUseAnother() throws Exception {
         Files.writeString(dir.resolve("ticket.v1.block.yaml"), TICKET);
         SutraBlocks.load(List.of(dir));
-        assertThatThrownBy(() -> new SutraParser().parse(sutra("  - { use: nothing@1 }\n"), "deal.v1.sutra.yaml", "x"))
+        assertThatThrownBy(() -> com.ash.rachana.TestGrammar.parser().parse(sutra("  - { use: nothing@1 }\n"), "deal.v1.sutra.yaml", "x"))
                 .isInstanceOf(SutraException.class).satisfies(e -> assertThat(((SutraException) e).problems())
                         .extracting(SutraProblem::code).contains(SutraBlocks.BLOCK));
-        assertThatThrownBy(() -> new SutraParser().parse(sutra("  - { use: ticket@1, with: { colour: red } }\n"), "deal.v1.sutra.yaml", "x"))
+        assertThatThrownBy(() -> com.ash.rachana.TestGrammar.parser().parse(sutra("  - { use: ticket@1, with: { colour: red } }\n"), "deal.v1.sutra.yaml", "x"))
                 .isInstanceOf(SutraException.class).hasMessageContaining("no parameter 'colour'");
         Files.writeString(dir.resolve("nested.v1.block.yaml"), "rachana: 1\nblock: nested\nversion: 1\npanels:\n  - { use: ticket@1 }\n");
         assertThat(SutraBlocks.load(List.of(dir))).extracting(SutraProblem::message).anyMatch(m -> m.contains("uses another block"));
@@ -107,14 +107,14 @@ class SutraBlocksTest {
     void aModulesSectionJoinsEverySutraOfItsKindWhileTheModuleRunsAndLeavesWithIt() {
         SutraBlocks.contribute("source-swapone", "trade", SECTION, "trade-swapone.v1.fragment.yaml");
         try {
-            Sutra s = new SutraParser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
+            Sutra s = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
             assertThat(s.panels()).extracting(Panel::id).containsExactly("notes", "swapone-fields");
-            Sutra other = new SutraParser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n").replace("kind: trade", "kind: position"), "deal.v1.sutra.yaml", "endur");
+            Sutra other = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n").replace("kind: trade", "kind: position"), "deal.v1.sutra.yaml", "endur");
             assertThat(other.panels()).extracting(Panel::id).containsExactly("notes");                  // only the kind it names
         } finally {
             SutraBlocks.withdraw("source-swapone");
         }
-        Sutra gone = new SutraParser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
+        Sutra gone = com.ash.rachana.TestGrammar.parser().parse(sutra("  - { id: notes, kind: markdown, text: hi }\n"), "deal.v1.sutra.yaml", "endur");
         assertThat(gone.panels()).extracting(Panel::id).containsExactly("notes");
     }
 }

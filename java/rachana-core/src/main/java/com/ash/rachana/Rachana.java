@@ -34,8 +34,12 @@ public final class Rachana {
     private final FunctionTable functions;
     private final ElCompiler compiler;
     private final Formats formats;
+    private final com.ash.rachana.profile.Grammar grammar;
+    private final com.ash.rachana.parse.SutraParser parser;
 
     private Rachana(RachanaOptions options, List<Profile> profiles, FunctionTable functions, Formats formats) {
+        this.grammar = com.ash.rachana.profile.Grammar.of(profiles);
+        this.parser = new com.ash.rachana.parse.SutraParser(grammar);
         this.options = options;
         this.profiles = profiles;
         this.functions = functions;
@@ -53,7 +57,8 @@ public final class Rachana {
      * profiles add, in the order given: their function providers, their format files (after the options' own, before the site file),
      * and at most one of them its calendars.
      *
-     * @throws IllegalArgumentException when a profile is named twice, or two profiles bring calendars
+     * @throws IllegalArgumentException when a profile is named twice, two profiles bring calendars or a fragment resolver, or a profile
+     *     adds a Core key or another profile's key
      * @throws IllegalStateException when a profile's function has a Core name or another provider's name
      */
     public static Rachana with(RachanaOptions options, Profile... profiles) {
@@ -121,5 +126,24 @@ public final class Rachana {
     /** Its format table: the bundled names, the options' and the profiles' files, then the site file. */
     public Formats formats() {
         return formats;
+    }
+
+    /** Its Sutra grammar: Core's and what its profiles add (split step A7). */
+    public com.ash.rachana.profile.Grammar grammar() {
+        return grammar;
+    }
+
+    /** Its Sutra parser (of {@link #grammar()}). */
+    public com.ash.rachana.parse.SutraParser parser() {
+        return parser;
+    }
+
+    /**
+     * The JSON Schema of its Sutras: Core's grammar and its profiles' keys and kinds.
+     *
+     * @param formats format names this server knows (core and packs)
+     */
+    public java.util.Map<String, Object> schema(java.util.Collection<String> formats) {
+        return RachanaSchema.build(formats, grammar);
     }
 }

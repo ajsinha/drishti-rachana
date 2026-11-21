@@ -42,8 +42,8 @@ import java.util.stream.Stream;
  *
  * A use is replaced by the block's panels, in order, before the Sutra is checked, so the panels are linted, matched and drawn as if
  * they had been written in place. A fragment ({@code <name>.v<N>.fragment.yaml}, {@code fragment: <name>}, the shared library in
- * the Drishti UI kit) is a block whose {@code doc:} is complete ({@link SutraDocstring}, {@code RCH-2055}); it is
- * used the same way. The platform's fragments are the Drishti UI kit ({@code config/ui-kit/fragments}, {@link #kit(Path)}), read by every
+ * the host's UI kit) is a block whose {@code doc:} is complete ({@link SutraDocstring}, {@code RCH-2055}); it is
+ * used the same way. The platform's fragments are the host's UI kit ({@link #kit(Path)}), read by every
  * load whatever packs are enabled; a pack's own blocks are namespaced by the pack ({@code trading/legs@1}). {@code @1} names the block's version (without one, the newest); {@code with} sets its parameters
  * (an unknown one, an unknown block or a block that uses another is {@code RCH-2048}). The library is a snapshot replaced whole when
  * the Sutra folders are read again; a parse reads the snapshot of that moment. Thread-safe.
@@ -156,19 +156,19 @@ public final class SutraBlocks {
     }
 
     /**
-     * Where the Drishti UI kit is ({@code drishti.ui-kit.dir}, its {@code fragments/} folder read by every {@link #load}), or null for
+     * Where the host's UI kit is (its {@code fragments/} folder read by every {@link #load}), or null for
      * none (a unit test of blocks alone). The server and the CLI set it before the first load.
      */
     public static void kit(Path dir) {
         KIT.set(dir == null ? null : dir.toAbsolutePath().normalize());
     }
 
-    /** The Drishti UI kit folder set by {@link #kit(Path)}, if any. */
+    /** The host's UI kit folder set by {@link #kit(Path)}, if any. */
     public static java.util.Optional<Path> kit() {
         return java.util.Optional.ofNullable(KIT.get());
     }
 
-    /** Whether a block was read from the Drishti UI kit (an unqualified platform fragment) rather than a pack or a site folder. */
+    /** Whether a block was read from the host's UI kit (an unqualified platform fragment) rather than a pack or a site folder. */
     public static boolean fromKit(Block b) {
         Path k = KIT.get();
         if (k == null || b.path() == null) {
@@ -204,7 +204,7 @@ public final class SutraBlocks {
     }
 
     /**
-     * Reads the Drishti UI kit's fragments (when a kit is set) and every block file under the folders: the library becomes exactly
+     * Reads the host's UI kit fragments (when a kit is set) and every block file under the folders: the library becomes exactly
      * these. Kit fragments are unqualified ({@code series-line@1}); a pack's blocks are namespaced by the pack ({@code trading/legs@1})
      * and also answer to their plain name unless the kit has that name: on a clash the kit wins and the pack's stays reachable only
      * qualified, with a warning ({@link #clashes()}). Among folders, a later one (a more specific pack) wins a plain name. Returns the
@@ -292,7 +292,7 @@ public final class SutraBlocks {
         return out;
     }
 
-    /** The names a pack or site block shares with a Drishti UI kit fragment, read last: the kit's won ({@code RCH-2048}, a warning). */
+    /** The names a pack or site block shares with a UI kit fragment, read last: the kit's won ({@code RCH-2048}, a warning). */
     public static List<SutraProblem> clashes() {
         return CLASHES.get();
     }
@@ -416,9 +416,26 @@ public final class SutraBlocks {
 
     /** The block a use names ({@code name@N}, or {@code name} for the newest version), if it is loaded. */
     public static java.util.Optional<Block> find(String ref) {
+        return find(LIBRARY.get(), ref);
+    }
+
+    /** The folder library as a {@link FragmentResolver}: Core's default. */
+    static final FragmentResolver FOLDERS = new FragmentResolver() {
+        @Override
+        public java.util.Optional<Block> find(String ref) {
+            return SutraBlocks.find(ref);
+        }
+
+        @Override
+        public java.util.Collection<String> names() {
+            return LIBRARY.get().keySet();
+        }
+    };
+
+    static java.util.Optional<Block> find(Map<String, TreeMap<Integer, Block>> library, String ref) {
         String r = ref == null ? "" : ref.trim();
         String name = r.contains("@") ? r.substring(0, r.indexOf('@')) : r;
-        TreeMap<Integer, Block> versions = LIBRARY.get().get(name);
+        TreeMap<Integer, Block> versions = library.get(name);
         if (versions == null || versions.isEmpty()) {
             return java.util.Optional.empty();
         }
@@ -447,13 +464,18 @@ public final class SutraBlocks {
      * without a use comes back as it is.
      */
     public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems) {
-        return expand(panels, file, problems, new ArrayList<>());
+        return expand(panels, file, problems, FOLDERS);
+    }
+
+    /** {@link #expand(List, String, List)} with the fragments found by {@code fragments}. */
+    public static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, FragmentResolver fragments) {
+        return expand(panels, file, problems, new ArrayList<>(), fragments);
     }
 
     /** The deepest a use may nest: a Sutra's use of a composite fragment that uses fragments that use fragments. */
     public static final int MAX_DEPTH = 3;
 
-    private static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, List<String> chain) {
+    private static List<PNode> expand(List<PNode> panels, String file, List<SutraProblem> problems, List<String> chain, FragmentResolver fragments) {
         if (panels.stream().noneMatch(p -> p.map().containsKey("use"))) {
             return panels;
         }
@@ -465,12 +487,7 @@ public final class SutraBlocks {
                 continue;
             }
             String ref = use.text() == null ? "" : use.text().trim();
-            String name = ref.contains("@") ? ref.substring(0, ref.indexOf('@')) : ref;
-            TreeMap<Integer, Block> versions = LIBRARY.get().get(name);
-            Block b = null;
-            if (versions != null) {
-                b = ref.contains("@") ? versions.get(parseVersion(ref.substring(ref.indexOf('@') + 1))) : versions.lastEntry().getValue();
-            }
+            Block b = fragments.find(ref).orElse(null);
             if (b != null && chain.contains(b.name())) {
                 problems.add(problem("fragment " + b.name() + " uses itself through " + String.join(" > ", chain) + " > " + b.name(), file, p.line(), p.column()));
                 continue;
@@ -480,8 +497,8 @@ public final class SutraBlocks {
                 continue;
             }
             if (b == null) {
-                problems.add(problem("no block " + ref + (LIBRARY.get().isEmpty() ? " (no block files are loaded)" : " (blocks: "
-                        + String.join(", ", LIBRARY.get().keySet()) + ")"), file, p.line(), p.column()));
+                problems.add(problem("no block " + ref + (fragments.names().isEmpty() ? " (no block files are loaded)" : " (blocks: "
+                        + String.join(", ", fragments.names()) + ")"), file, p.line(), p.column()));
                 continue;
             }
             Map<String, String> values = new LinkedHashMap<>(b.params());
@@ -517,7 +534,7 @@ public final class SutraBlocks {
                 List<PNode> brought = phoned(root.map().get("panels").list(), root);
                 List<String> deeper = new ArrayList<>(chain);
                 deeper.add(b.name());
-                out.addAll(wired(p, expand(brought, b.file(), problems, deeper), file, problems));   // a composite's own uses, one level down
+                out.addAll(wired(p, expand(brought, b.file(), problems, deeper, fragments), file, problems));   // a composite's own uses, one level down
             } catch (SutraException e) {
                 problems.addAll(e.problems());
             }

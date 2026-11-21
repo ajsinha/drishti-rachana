@@ -28,9 +28,11 @@ import java.util.Set;
  * rachana lib pack   DIR [--out FOLDER] [--require-signed] [--publisher KEY]...
  * rachana lib verify DIR-OR-RLIB [--require-signed] [--publisher KEY]...
  * rachana lib lock   DIR-OR-RLIB... [--lock rachana.lock] [--require-signed] [--publisher KEY]...
+ * rachana lib contracts  DIR-OR-RLIB [--json]
+ * rachana lib check-host DIR-OR-RLIB --base URL [--table CONTRACT=TABLE]... [--json]
  * </pre>
  *
- * Exit status: 0 done, 1 the library does not verify, 2 usage.
+ * Exit status: 0 done, 1 the library does not verify (check-host: a column breaks a fragment, or the host does not answer), 2 usage.
  */
 public final class Main {
     private Main() { }
@@ -42,7 +44,7 @@ public final class Main {
     /** Runs a command line and returns the exit status. */
     public static int run(String[] args) {
         if (args.length < 2 || !args[0].equals("lib")) {
-            System.err.println("usage: rachana lib build|sign|keygen|pack|verify|lock ...  (the other commands: npx drishti-rachana-cli, or pip install drishti-rachana)");
+            System.err.println("usage: rachana lib build|sign|keygen|pack|verify|lock|contracts|check-host ...  (the other commands: npx drishti-rachana-cli, or pip install drishti-rachana)");
             return 2;
         }
         List<String> pos = new ArrayList<>();
@@ -50,6 +52,9 @@ public final class Main {
         boolean signed = false;
         String out = null;
         String lock = LibraryLock.FILE;
+        String base = null;
+        boolean json = false;
+        java.util.Map<String, String> tables = new java.util.LinkedHashMap<>();
         try {
             for (int i = 2; i < args.length; i++) {
                 switch (args[i]) {
@@ -57,6 +62,16 @@ public final class Main {
                     case "--publisher" -> publishers.add(arg(args, ++i));
                     case "--out" -> out = arg(args, ++i);
                     case "--lock" -> lock = arg(args, ++i);
+                    case "--base" -> base = arg(args, ++i);
+                    case "--json" -> json = true;
+                    case "--table" -> {
+                        String t = arg(args, ++i);
+                        int eq = t.indexOf('=');
+                        if (eq <= 0 || eq == t.length() - 1) {
+                            throw new IllegalArgumentException("--table is CONTRACT=TABLE, not " + t);
+                        }
+                        tables.put(t.substring(0, eq), t.substring(eq + 1));
+                    }
                     default -> pos.add(args[i]);
                 }
             }
@@ -104,6 +119,29 @@ public final class Main {
                     Files.writeString(f, LibraryLock.of(es).write());
                     System.out.println("wrote " + f + " (" + pos.size() + " added)");
                 }
+                case "contracts" -> {
+                    need(pos, 1);
+                    List<LibraryTool.Contract> cs = LibraryTool.contracts(Path.of(pos.get(0)), trust);
+                    if (json) {
+                        System.out.println(com.ash.rachana.parse.Json.write(cs.stream().map(Main::contract).toList()));
+                    } else {
+                        cs.forEach(c -> System.out.print(text(c)));
+                        System.out.println(cs.size() + (cs.size() == 1 ? " contract" : " contracts"));
+                    }
+                }
+                case "check-host" -> {
+                    need(pos, 1);
+                    if (base == null) {
+                        throw new IllegalArgumentException("check-host needs --base <url> (the host's Data Protocol address)");
+                    }
+                    List<LibraryTool.Fit> fits = LibraryTool.checkHost(LibraryTool.contracts(Path.of(pos.get(0)), trust), tables, schemas(base));
+                    if (json) {
+                        System.out.println(com.ash.rachana.parse.Json.write(fits.stream().map(Main::fit).toList()));
+                    } else {
+                        System.out.print(LibraryTool.report(fits));
+                    }
+                    return fits.stream().anyMatch(LibraryTool.Fit::breaks) ? 1 : 0;
+                }
                 default -> {
                     System.err.println("rachana lib: unknown command " + args[1]);
                     return 2;
@@ -120,6 +158,76 @@ public final class Main {
             System.err.println("rachana lib: " + e.getMessage());
             return 1;
         }
+    }
+
+    /**
+     * The schema of a table as a Data Protocol host gives it ({@code GET <base>/tables/<name>}, PROTOCOL 4), or null when the host has no
+     * such table (404); another failure stops the command.
+     */
+    static java.util.function.Function<String, com.ash.rachana.table.TableSchema> schemas(String base) {
+        java.net.http.HttpClient http = java.net.http.HttpClient.newHttpClient();
+        String root = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
+        return table -> {
+            try {
+                java.net.http.HttpResponse<String> r = http.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(root + "/tables/"
+                        + java.net.URLEncoder.encode(table, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20")))
+                        .header("Accept", "application/json").GET().build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+                if (r.statusCode() == 404) {
+                    return null;
+                }
+                if (r.statusCode() != 200) {
+                    throw new java.io.UncheckedIOException(new java.io.IOException("the host answered " + r.statusCode() + " for table " + table));
+                }
+                return com.ash.rachana.table.TableSchema.of(com.ash.rachana.parse.Json.read(r.body()));
+            } catch (java.io.IOException e) {
+                throw new java.io.UncheckedIOException(new java.io.IOException("the host at " + root + " does not answer: " + e.getMessage(), e));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new java.io.UncheckedIOException(new java.io.IOException("interrupted", e));
+            }
+        };
+    }
+
+    private static java.util.Map<String, Object> contract(LibraryTool.Contract c) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("contract", c.name());
+        m.put("title", c.title());
+        m.put("grain", c.grain());
+        m.put("key", c.key());
+        m.put("columns", c.columns().stream().map(x -> {
+            java.util.Map<String, Object> col = new java.util.LinkedHashMap<>();
+            col.put("name", x.name());
+            col.put("type", x.type());
+            col.put("optional", x.optional());
+            col.put("doc", x.doc());
+            return col;
+        }).toList());
+        m.put("usedBy", c.usedBy());
+        return m;
+    }
+
+    private static java.util.Map<String, Object> fit(LibraryTool.Fit f) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("contract", f.contract());
+        m.put("table", f.table());
+        m.put("column", f.column());
+        m.put("needed", f.needed());
+        m.put("found", f.found());
+        m.put("status", f.status());
+        return m;
+    }
+
+    private static String text(LibraryTool.Contract c) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(c.name()).append("  ").append(c.title() == null ? "" : c.title());
+        if (c.grain() != null) {
+            sb.append(" (").append(c.grain()).append(c.key().isEmpty() ? "" : "; key " + String.join(", ", c.key())).append(')');
+        }
+        sb.append(c.usedBy().isEmpty() ? "  (no fragment names it)" : "  used by " + String.join(", ", c.usedBy())).append('\n');
+        for (LibraryTool.ContractColumn x : c.columns()) {
+            sb.append(String.format("  %-24s %-10s %-9s %s%n", x.name(), x.type(), x.optional() ? "optional" : "required", x.doc() == null ? "" : x.doc()));
+        }
+        return sb.toString();
     }
 
     private static String arg(String[] a, int i) {

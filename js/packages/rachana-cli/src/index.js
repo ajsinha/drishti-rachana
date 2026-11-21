@@ -20,7 +20,7 @@ const HELP = `rachana <command>
   lint [paths] [--format text|json|sarif] [--strict] [--level 1.1|1.2]   compile and lint; exit 1 on errors
   build [--src <dir>] [--out site] [--level 1.1]            a static site: Sutras, data, runtime bundle, pages
   preview <file> [--data <dir>] [--port <n>]    one screen in the browser (dev <dir> serves a folder)
-  lib build|sign|keygen|pack|verify|lock ...    libraries (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)
+  lib build|sign|keygen|pack|verify|lock|contracts|check-host ...   libraries (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)
 `;
 
 /** Splits argv into positional arguments and --flags (a flag takes a value unless it is a known switch). */

@@ -8,7 +8,7 @@ or set `RACHANA_DIST`).
     node bin/rachana.js lint [paths] [--format text|json|sarif] [--strict] [--level 1.1|1.2]  # exit 0, 1 on errors, 2 usage
     node bin/rachana.js build --src my-dash --out site [--level 1.1]               # static site (lints first)
     node bin/rachana.js preview my-dash/sutras/overview.sutra.yaml --data my-dash/data
-    RACHANA_CLASSPATH=... node bin/rachana.js lib build|sign|keygen|pack|verify|lock ...
+    RACHANA_CLASSPATH=... node bin/rachana.js lib build|sign|keygen|pack|verify|lock|contracts|check-host ...
 
 `lib` is the Java `LibraryTool` behind `com.ash.rachana.cli.Main` (one implementation): set `RACHANA_JAR` (a runnable jar) or
 `RACHANA_CLASSPATH` (the module classes or jars). Tests: `npm test` (the lib test needs `./mvnw -pl rachana-cli -am compile` in `java/`).

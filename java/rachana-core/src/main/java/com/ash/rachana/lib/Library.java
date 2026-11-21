@@ -469,6 +469,12 @@ public final class Library {
         into.put(fm.group(1), text);
     }
 
+    /** The majors of fragment {@code fragment} it holds, ascending (empty when it holds none). */
+    public java.util.SortedSet<Integer> majors(String fragment) {
+        TreeMap<Integer, SutraBlocks.Block> v = fragments.get(fragment);
+        return v == null ? new java.util.TreeSet<>() : new java.util.TreeSet<>(v.keySet());
+    }
+
     public Optional<SutraBlocks.Block> fragment(String fragment, int major) {
         TreeMap<Integer, SutraBlocks.Block> v = fragments.get(fragment);
         return Optional.ofNullable(v == null ? null : v.get(major));

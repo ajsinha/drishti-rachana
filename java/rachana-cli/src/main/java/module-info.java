@@ -5,5 +5,6 @@
 /** rachana-cli. */
 module com.ash.rachana.cli {
     requires transitive com.ash.rachana.tools;
+    requires java.net.http;
     exports com.ash.rachana.cli;
 }

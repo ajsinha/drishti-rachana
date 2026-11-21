@@ -1,0 +1,37 @@
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see LICENSE.
+
+  Rachana install release: installs the reactor's jars into the local Maven repository (~/.m2) for Drishti to use. Run it ONLY on a checkout of a release tag (git checkout vX.Y.Z), never on a branch: a branch gives Drishti an unreleased snapshot (decision R-1).
+  Use it when: after tagging a release, on the tag's checkout, so Drishti builds against it.
+  Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
+-->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Rachana install release" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+      <option name="myRunnerSettings" />
+      <option name="myRunnerParameters">
+        <MavenRunnerParameters>
+          <option name="profiles">
+            <set />
+          </option>
+          <option name="goals">
+            <list>
+              <option value="clean" />
+              <option value="install" />
+              <option value="-DskipTests" />
+            </list>
+          </option>
+          <option name="pomFileName" />
+          <option name="profilesMap">
+            <map />
+          </option>
+          <option name="resolveToWorkspace" value="false" />
+          <option name="workingDirPath" value="$PROJECT_DIR$" />
+        </MavenRunnerParameters>
+      </option>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>

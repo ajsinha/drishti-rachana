@@ -2,13 +2,29 @@
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """Chromium check: `rachana build` static-sales, serve the site, open every page; it must paint with no console errors.
 Run: uv run --with playwright==1.64.0 python js/packages/rachana-cli/test/paint_check.py   (once: playwright install chromium)"""
-import http.server, subprocess, sys, tempfile, threading, functools
+import http.server, shutil, subprocess, sys, tempfile, threading, functools
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[4]
 site = Path(tempfile.mkdtemp(prefix="rachana-site-"))
-subprocess.run(["node", str(ROOT / "js/packages/rachana-cli/bin/rachana.js"), "build", "--src", str(ROOT / "examples/static-sales"), "--out", str(site)], check=True)
+proj = Path(tempfile.mkdtemp(prefix="rachana-proj-")) / "sales"
+shutil.copytree(ROOT / "examples/static-sales", proj)
+# a page that uses a core fragment: the built site must carry the library and the page load it
+(proj / "ranked.sutra.yaml").write_text("""rachana: 1
+sutra: ranked
+version: 1
+libraries: [core@1]
+title: { id: "'Revenue ranking'" }
+data:
+  sales: { table: sales, key: [region, product, month] }
+panels:
+  - use: core/ranked-bars@1
+    with:
+      rows: { from: $.sales, columns: { label: region, value: revenue } }
+      title: Revenue by region
+""")
+subprocess.run(["node", str(ROOT / "js/packages/rachana-cli/bin/rachana.js"), "build", "--src", str(proj), "--out", str(site), "--level", "1.2"], check=True)
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 H = functools.partial(Quiet, directory=str(site))
@@ -32,9 +48,11 @@ with sync_playwright() as p:
         except Exception as e:
             errs.append("nothing painted: " + str(e)[:80] + " len=" + str(pg.evaluate("(document.querySelector('rachana-view elements-view')?.shadowRoot?.textContent||'').length")))
             n = 0
+        if page_name == "ranked" and "Revenue by region" not in pg.evaluate("document.querySelector('rachana-view elements-view').shadowRoot.textContent"):
+            errs.append("the fragment's panel did not paint (library not loaded in the browser)")
         ok = not errs and n > 20
         print(f"{page_name}: {'ok' if ok else 'FAIL'} ({n} chars){''.join(chr(10) + '  ' + e for e in errs)}")
         bad += 0 if ok else 1
     b.close()
-subprocess.run(["rm", "-rf", str(site)])
+subprocess.run(["rm", "-rf", str(site), str(proj.parent)])
 sys.exit(1 if bad else 0)

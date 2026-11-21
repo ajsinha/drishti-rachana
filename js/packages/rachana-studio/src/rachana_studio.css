@@ -1,5 +1,5 @@
 /* Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-   Rachana Studio's page frame only: the three panes, the command bar and spacing. Every control is a Drishti Elements widget (di-* classes). */
+   Rachana Studio's page frame only: the command bar, the pane headings and spacing. Every control is a Drishti Elements widget (di-* classes). */
 html, body { margin: 0; height: 100%; background: var(--d-bg); color: var(--d-ink); font: 13px/1.45 var(--d-font-sans); }
 .rs { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
 .rs-bar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--d-border); background: var(--d-bg-2); flex-wrap: wrap; }
@@ -12,15 +12,12 @@ html, body { margin: 0; height: 100%; background: var(--d-bg); color: var(--d-in
 .rs-status[data-state="dirty"] { color: var(--d-warn); }
 .rs-status[data-state="saved"] { color: var(--d-ok); }
 .rs-status[data-state="bad"] { color: var(--d-bad); }
-.rs-main { display: grid; grid-template-columns: 240px minmax(300px, 1fr) minmax(360px, 1fr); gap: 8px; padding: 8px; min-height: 0; }
-.rs-pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; border: 1px solid var(--d-border); border-radius: 6px; background: var(--d-surface); overflow: hidden; }
+.rs-main { padding: 8px; min-height: 0; min-width: 0; box-sizing: border-box; overflow: hidden; }
+.rs-split-right { height: 100%; min-width: 0; }
+.rs-pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; border: 1px solid var(--d-border); border-radius: 6px; background: var(--d-surface); overflow: hidden; height: 100%; box-sizing: border-box; }
 .rs-pane > h2 { margin: 0; padding: 6px 10px; background: var(--d-surface-2); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--d-accent); font-weight: 600; }
 .rs-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; }
-.rs-right { display: grid; grid-template-rows: minmax(160px, 1.3fr) minmax(120px, 1fr) minmax(90px, .8fr); gap: 8px; min-height: 0; min-width: 0; }
 .rs-palette .rs-body { padding: 4px; }
-.rs-palette .di-field { width: calc(100% - 8px); margin: 4px; box-sizing: border-box; }
 .rs-count { color: var(--d-muted); font-size: 11px; padding: 0 8px 4px; }
-.rs-frag-detail { color: var(--d-muted); font-size: 11px; display: block; }
 .rs-problems { margin: 0; padding: 0; list-style: none; }
 .rs-pane rachana-view { display: block; }
-@media (max-width: 900px) { .rs { height: auto; } .rs-main { grid-template-columns: 1fr; } .rs-right { grid-template-rows: auto; } }

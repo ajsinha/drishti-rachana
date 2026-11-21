@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.1.0,
-// vendored under js/vendor/drishti-elements/3.1.0: load drishti-elements.js before this module). The element holds no meaning of its own:
+// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+475232e,
+// vendored under js/vendor/drishti-elements/3.2.0-dev+475232e: load drishti-elements.js before this module). The element holds no meaning of its own:
 // the bundle compiles, plans, binds and diffs; the DataClient fetches; the painter paints.
 //
-//   <script src="/vendor/drishti-elements/3.1.0/drishti-elements.js"></script>
+//   <script src="/vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.js"></script>
 //   <script type="module" src="/rachana/src/rachana_view.js"></script>
 //   <rachana-view src="/sutras/sales.sutra.yaml" data="/rdp/v1" runtime="/rachana/dist/rachana.runtime.js"
 //                 formats="/spec/1/formats.yaml" live></rachana-view>
@@ -33,7 +33,7 @@ export function defineRachanaView(o) {
   if (!w || !w.customElements || w.customElements.get(tag)) return false;
 
   class RachanaView extends w.HTMLElement {
-    static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'level', 'today', 'allow', 'live', 'form']; }
+    static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'level', 'today', 'allow', 'live', 'form', 'libraries']; }
 
     constructor() { super(); this._sutra = null; this.record = null; this.controls = {}; this.linkResolver = null; this.fetch = null; this.files = null; this.screen = null; this._gen = 0; }
 
@@ -66,12 +66,18 @@ export function defineRachanaView(o) {
       if (text == null) return;
       const formats = [];
       for (const u of (this.getAttribute('formats') || '').split(',').map((s) => s.trim()).filter(Boolean)) formats.push(await (await f(this.abs(u))).text());
+      let files = this.files || undefined;
+      if (!files && this.getAttribute('libraries')) {       // a built site: the manifest lists the library files the page uses ({files: ['rachana_libs/<library>/<path>', ...]})
+        const m = await (await f(this.abs(this.getAttribute('libraries')))).json(), got = {};
+        await Promise.all(m.files.map(async (n) => { got[n] = await (await f(this.abs(n))).text(); }));
+        files = got;
+      }
       const rt = await loadRuntime(this.abs(this.getAttribute('runtime') || 'rachana.runtime.js'), formats, 'core');
       if (gen !== this._gen) return;
       const client = this.getAttribute('data') ? new DataClient({ base: this.abs(this.getAttribute('data')), fetch: f, origin: w.location.origin,
         allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null }) : null;
       const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || '1.1', today: this.getAttribute('today') || undefined,
-        ctl: this.controls, record: this.record, client, files: this.files || undefined });
+        ctl: this.controls, record: this.record, client, files });
       this.screen = screen;
       await screen.load();
       if (gen !== this._gen) { screen.close(); return; }
@@ -79,7 +85,7 @@ export function defineRachanaView(o) {
       let painter = this.painter;
       if (!painter) { painter = w.document.createElement('elements-view'); this.appendChild(painter); }
       const resolver = this.linkResolver;
-      painter.options = { links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
+      painter.options = { complete: this.hasAttribute('complete'), links: { href: (link) => { const h = resolver ? resolver(link) : null; return h && ABSOLUTE.test(h) ? h : null; } } };
       painter.viewModel = vm;
       this.emit('ready', { viewModel: vm });
       if (this.hasAttribute('live')) {

@@ -304,7 +304,7 @@ public final class Cases {
         try {
             var g = grammar(at(c).grammar(), c, ps);
             var sutra = (g == at(c).grammar() ? at(c).parser() : new com.ash.rachana.parse.SutraParser(g)).parse(text(c.get("sutra")), file, "conformance");
-            ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions())).check(sutra));
+            ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions(), g.level())).check(sutra));
             warnings = sutra.advisories();
             libraries = sutra.libraries();
         } catch (com.ash.rachana.SutraException e) {

@@ -85,7 +85,7 @@ public final class LibCheck {
                     }
                     if (errors.isEmpty()) {
                         LiveScreen screen = new LiveScreen(rachana, sutra, LocalDate.of(2026, 1, 15), null, Map.of());
-                        json = canonical(ViewJson.write(screen.view())) + "\n";   // object keys sorted: see canonical()
+                        json = com.ash.rachana.tools.LibraryGates.canonical(ViewJson.write(screen.view())) + "\n";   // object keys sorted: see com.ash.rachana.tools.LibraryGates.canonical()
                     }
                 } catch (SutraException e) {
                     e.problems().forEach(p -> errors.add("problem " + p));
@@ -98,7 +98,7 @@ public final class LibCheck {
                         writes.put(golden, json);                       // written at the end: the library's hashes must not change under the run
                     } else if (!Files.exists(golden)) {
                         errors.add("no golden " + golden + " (run with --update)");
-                    } else if (!canonical(Files.readString(golden, StandardCharsets.UTF_8).trim()).equals(json.trim())) {
+                    } else if (!com.ash.rachana.tools.LibraryGates.canonical(Files.readString(golden, StandardCharsets.UTF_8).trim()).equals(json.trim())) {
                         errors.add("the ViewModel differs from " + golden);
                     }
                 }
@@ -118,74 +118,5 @@ public final class LibCheck {
         }
         System.out.println(pass + " passed, " + fail + " failed");
         System.exit(fail == 0 ? 0 : 1);
-    }
-
-    /**
-     * The same JSON with every object's keys in sorted order. The compiler writes the keys of an event's wire entry in an order that
-     * varies between runs; a snapshot compares what the ViewModel says, not the order of a mapping's keys.
-     */
-    static String canonical(String json) {
-        int[] at = {0};
-        StringBuilder out = new StringBuilder();
-        value(json, at, out);
-        return out.toString();
-    }
-
-    private static void value(String s, int[] at, StringBuilder out) {
-        char c = s.charAt(at[0]);
-        if (c == '{') {
-            at[0]++;
-            java.util.TreeMap<String, String> members = new java.util.TreeMap<>();
-            while (s.charAt(at[0]) != '}') {
-                if (s.charAt(at[0]) == ',') {
-                    at[0]++;
-                }
-                StringBuilder key = new StringBuilder();
-                string(s, at, key);
-                at[0]++;                                       // the colon
-                StringBuilder v = new StringBuilder();
-                value(s, at, v);
-                members.put(key.toString(), v.toString());
-            }
-            at[0]++;
-            out.append('{');
-            boolean first = true;
-            for (java.util.Map.Entry<String, String> m : members.entrySet()) {
-                out.append(first ? "" : ",").append(m.getKey()).append(':').append(m.getValue());
-                first = false;
-            }
-            out.append('}');
-        } else if (c == '[') {
-            at[0]++;
-            out.append('[');
-            boolean first = true;
-            while (s.charAt(at[0]) != ']') {
-                if (s.charAt(at[0]) == ',') {
-                    at[0]++;
-                }
-                out.append(first ? "" : ",");
-                first = false;
-                value(s, at, out);
-            }
-            at[0]++;
-            out.append(']');
-        } else if (c == '"') {
-            string(s, at, out);
-        } else {
-            int from = at[0];
-            while (at[0] < s.length() && ",]}".indexOf(s.charAt(at[0])) < 0) {
-                at[0]++;
-            }
-            out.append(s, from, at[0]);
-        }
-    }
-
-    private static void string(String s, int[] at, StringBuilder out) {
-        int from = at[0]++;
-        while (s.charAt(at[0]) != '"') {
-            at[0] += s.charAt(at[0]) == '\\' ? 2 : 1;
-        }
-        at[0]++;
-        out.append(s, from, at[0]);
     }
 }

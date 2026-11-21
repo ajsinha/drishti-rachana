@@ -113,7 +113,7 @@ public final class Library {
             String p = f.getKey();
             total += f.getValue().length;
             boolean typeOk = p.endsWith(".yaml") || p.endsWith(".json") || p.endsWith(".jsonl") || p.endsWith(".md") || p.equals("LICENSE")
-                    || p.equals(HASHES) || p.equals(SIGNATURE);
+                    || p.equals(HASHES) || p.equals(SIGNATURE) || p.equals("FROZEN.sha384");
             if (!PATH.matcher(p).matches() || p.contains("..") || !typeOk) {
                 out.add(problem(INVALID, "the library holds " + p + ": only .yaml, .json, .jsonl, .md, LICENSE, " + HASHES + " and " + SIGNATURE
                         + " files (a library carries no code, markup, fonts or images)", name + "/" + p, 1));
@@ -241,6 +241,9 @@ public final class Library {
             out.add(problem(INVALID, "a library holds at most " + MAX_FRAGMENTS + " fragments", mfile, 1));
         }
         String stale = staleExports(m.get("exports"), frags);
+        if (stale == null) {
+            stale = LibraryExports.stale(m.get("exports"), b.files());
+        }
         if (stale != null) {
             out.add(problem(INVALID, "exports " + stale + " (rachana lib build writes them)", mfile, line(m.get("exports"))));
         }
@@ -333,19 +336,7 @@ public final class Library {
      * {@code - { name: x, majors: [1, 2] }}); what {@code rachana lib build} writes.
      */
     public static List<String> exportLines(Map<String, byte[]> files) {
-        Map<String, List<Integer>> by = new TreeMap<>();
-        for (String p : files.keySet()) {
-            Matcher fm = FRAGMENT.matcher(p);
-            if (fm.matches()) {
-                by.computeIfAbsent(fm.group(1), k -> new ArrayList<>()).add(Integer.parseInt(fm.group(2)));
-            }
-        }
-        List<String> out = new ArrayList<>();
-        by.forEach((k, v) -> {
-            Collections.sort(v);
-            out.add("- { name: " + k + ", majors: " + v + " }");
-        });
-        return out;
+        return LibraryExports.lines(files);
     }
 
     private static String staleExports(PNode exports, Map<String, TreeMap<Integer, SutraBlocks.Block>> frags) {

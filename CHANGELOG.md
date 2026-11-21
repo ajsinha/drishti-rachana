@@ -13,10 +13,9 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **The conformance runner binds pivots**: `CasePivots`, a small pivot engine (sum, count, avg, min, max with subtotals and totals) in
   the runner every runtime shares (JVM, both bundles, Python on V8), handed to `LiveScreen.pivots`; pivot-cell clicks run as `fire`
   cases (`fire/pivot-cells`), not only in JUnit.
-- **Verify lanes clean their temporary files**: each lane of `tools/gate/verify_lanes.py` runs its programs with a temporary folder of
-  its own (`TMPDIR`), removed at its end, so pytest's `pytest-of-<user>` and uv's lock no longer trip the `tmp-check` (F16).
-- **Elements pack re-vendored `3.2.0-dev+b466b87`** (Elements g2/integration with g3/surface-click, so also its fail-closed `requires`): the surface heatmap's tooltip no longer asks for ECharts' arrow, whose inline
+- **Elements pack re-vendored `3.2.0-dev+b466b87`** (Elements g2/integration 6972989 with g3/surface-click): the surface heatmap's tooltip no longer asks for ECharts' arrow, whose inline
   style a strict CSP refused (found by Elements' new Chromium test that clicks a surface point, heatmap and 3D); references moved.
+- **Elements pack 3.2.0-dev+6972989** vendored (the painter's `requires` fails closed: a button naming a permission is enabled only when the host's `allowed` answers `true`; G2 gate F10, O8); the server refuses `auth: users` on a non-loopback bind unless `server.behind-tls-proxy: true` (F17); a test run leaves no temporary folder (`tools/gate/tmp_leaks.py`, F16).
 - **G2 gate fixes (B)**: `./mvnw verify` runs what G2 built (`tools/gate/verify_lanes.py`, four executions of `rachana-guards`, nothing skipped):
   conformance at every language level on the JVM and on the Node bundle with identical bytes, the protocol cases on the JVM reference, the
   Python host and the live server, the Python SDK tests (the case reader takes the `fire` and `live` kinds), and a Chromium lane

@@ -21,7 +21,8 @@ def main(argv: list[str]) -> int:
         shutil.rmtree(d, ignore_errors=True)
         d.mkdir(parents=True)
         return 0
-    left = sorted(p.name for p in d.iterdir()) if d.is_dir() else None
+    # uv's own empty lock files (uv-<hash>.lock) are the tool's, not a test's
+    left = sorted(p.name for p in d.iterdir() if not (p.name.startswith("uv-") and p.name.endswith(".lock"))) if d.is_dir() else None
     if left is None:
         print(f"tmp_leaks: {d} does not exist: the build did not create it, so nothing was checked", file=sys.stderr)
         return 1

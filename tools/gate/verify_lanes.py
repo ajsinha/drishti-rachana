@@ -97,8 +97,12 @@ def pytest_lane(env: dict[str, str]) -> list[str]:
         shutil.copyfile(dist / b, bundle / b)
         sums += f"{hashlib.sha256((dist / b).read_bytes()).hexdigest()}  {b}\n"
     (bundle / "SHA256SUMS").write_text(sums, encoding="utf-8")
-    r = run(["uv", "run", "--project", ROOT / "python", "--extra", "test", "--extra", "v8", "--extra", "flask", "--extra", "fastapi",
-             "pytest", "tests", "-q", "-rs", "-p", "no:cacheprovider"], env, cwd=ROOT / "python", quiet=True)
+    base = Path(tempfile.mkdtemp(prefix="rachana-pytest-"))              # pytest's own base folder (it keeps the last three runs otherwise): removed with the lane
+    try:
+        r = run(["uv", "run", "--project", ROOT / "python", "--extra", "test", "--extra", "v8", "--extra", "flask", "--extra", "fastapi",
+                 "pytest", "tests", "-q", "-rs", "-p", "no:cacheprovider", "--basetemp", base / "t"], env, cwd=ROOT / "python", quiet=True)
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
     tail = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else ""
     need(r.returncode == 0, f"the Python SDK tests failed (exit {r.returncode})", failures)
     need(not re.search(r"\b\d+ skipped\b", r.stdout), f"the Python SDK tests skipped some ({tail}): a missing prerequisite, never a pass", failures)
@@ -134,9 +138,7 @@ def main() -> int:
     if a.java_home:
         env["JAVA_HOME"] = a.java_home
         env["PATH"] = str(Path(a.java_home) / "bin") + os.pathsep + env.get("PATH", "")
-    with tempfile.TemporaryDirectory(prefix="rachana-lane-") as own:   # the programs' temporary files (pytest's tmp_path, uv's locks) go here and go with it
-        env.update(TMPDIR=own, TEMP=own, TMP=own)
-        failures = LANES[a.lane](env)
+    failures = LANES[a.lane](env)
     if failures:
         print(f"\nverify lane {a.lane}: {len(failures)} problem(s)\n  " + "\n  ".join(failures), file=sys.stderr)
         return 1

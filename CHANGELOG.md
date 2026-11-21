@@ -5,6 +5,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **The served ViewModel schema names the 1.2 `form` kind's data record** (G4 binder pass R-1; contract 1.2, append-only, CG4).
+  `ViewModelSchema.DATA_BY_KIND` had no entry for `form`, so the schema Core serves (`ViewModelSchema.build()`, the text a host's schema
+  test validates against) gave a form panel's `data` no record; it is now `FormPanel`, in the published order (after `chart`, before
+  `live`), so the generated kind rules equal `spec/1/viewmodel.schema.json`'s, which already held it (the contract file is unchanged).
+  `ViewCodeGeneratedTest` holds every panel kind to its data record. Elements' pinned copy of the contract file already has the record;
+  the next Elements sync re-pins it with this release's file (no change expected).
+
 - **Literal arguments checked against the function catalogue, the one place** (G4 binder pass P14; SPEC 4.10 rule 2). From level
   1.1 an expression's literal arguments are checked against `functions.yaml` when it compiles (`CatalogueArgs`), wherever a function
   has no check of its own words: a text outside its parameter's `enum` (`group(..., 'decade')`), a parameter typed `boolean-literal`,

@@ -144,6 +144,7 @@ public final class ViewModelSchema {
         m.put("grid", PanelData.Grid.class);                  // contract 1.1
         m.put("tree", PanelData.Tree.class);
         m.put("chart", PanelData.DataChart.class);
+        m.put("form", PanelData.FormPanel.class);             // contract 1.2: a standalone form (the record spec/1/viewmodel.schema.json names; G4 R-1)
         m.put("live", PanelData.Grid.class);                  // contract 1.2: a grid over a live table
         m.put("treemap", PanelData.Treemap.class);
         m.put("bullet", PanelData.Bullet.class);

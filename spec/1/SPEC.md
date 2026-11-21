@@ -587,7 +587,13 @@ A host's `Masker` marks values the reader may not see. A masked value prints `â€
    (`size takes 1 argument(s), got 2`).
 2. **Literal checks.** A wrong literal argument is found at compile time: an unknown day-count basis, interval,
    calendar, unit, fill method, a refused regular expression, a `pad` fill of two characters, a `sequence` length
-   outside 0..10,000 [today, CS].
+   outside 0..10,000 [today, CS]. From level 1.1 every literal argument is also checked against the function catalogue
+   (`functions.yaml`), the one place, where a function has no check of its own words: a text written for a parameter with an
+   `enum` is one of its words (`group($.rows, @.d, sum(@.x), 'decade')` does not compile); a parameter typed
+   `boolean-literal`, `integer-literal`, `number-literal` or `string-literal` takes that literal written in the expression
+   (`rank(agg, desc = 'sideways')`, `lag(agg, 1.5, order)`, `measure($.x)` do not compile); and a profile function of the
+   engine (runs `E`) takes its keyword-only parameters by name only (`rank(agg, 'sideways')` gives `rank` a second argument by
+   place, which it has not). Each is `RCH-2101` at the argument. Level 1.0 keeps the reference's acceptance.
 3. **Named arguments.** `f(x, name = v)`: names come after positional arguments; the name MUST be a parameter of the
    signature, given once and not also by place. A Core function binds every named argument to its position (a skipped
    optional parameter before it is empty, i.e. its default). A keyword-only parameter (`where`, `by`, `ignore`, â€¦)

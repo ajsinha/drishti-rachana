@@ -147,6 +147,11 @@ public final class FunctionTable {
         return passMask.contains(name);
     }
 
+    /** True when {@code name} has a check of its own literal arguments (its words win over the catalogue's, {@link CatalogueArgs}). */
+    boolean checksItself(String name) {
+        return checks.containsKey(name);
+    }
+
     String check(String name, List<Expr> args) {
         Function<List<Expr>, String> c = checks.get(name);
         return c == null ? null : c.apply(args);

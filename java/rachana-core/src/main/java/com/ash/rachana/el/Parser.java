@@ -235,6 +235,12 @@ final class Parser {
         return e;
     }
 
+    /** The text {@code e} was written as (its span), or null when it has none. */
+    private String written(Expr e) {
+        int[] s = spans.get(e);
+        return s == null ? null : src.substring(s[0], s[1]);
+    }
+
     /** Records that {@code e} was written from {@code start} to where the parser now is (trailing blanks left out). */
     private Expr at(Expr e, int start) {
         int end = p > 0 ? Math.min(src.length(), peek().type() == Type.EOF ? src.length() : peek().pos()) : start;
@@ -810,6 +816,14 @@ final class Parser {
         String problem = table.check(name, args);
         if (problem != null) {
             throw new ElException(name + ": " + problem, t.pos());
+        }
+        if (v11 && !table.checksItself(name)) {
+            // level 1.1 and later: the literal arguments against the function catalogue, the one place (enums, literal types, keyword-only)
+            CatalogueArgs.Refusal refused = CatalogueArgs.check(name, args, named, this::written);
+            if (refused != null) {
+                int[] at = refused.at() == null ? null : spans.get(refused.at());
+                throw new ElException(name + ": " + refused.message(), at == null ? t.pos() : at[0], at == null ? t.pos() + name.length() : at[1]);
+            }
         }
         List<Expr> all = new ArrayList<>(args);
         all.addAll(named.values());

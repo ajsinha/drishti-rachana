@@ -5,6 +5,26 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Literal arguments checked against the function catalogue, the one place** (G4 binder pass P14; SPEC 4.10 rule 2). From level
+  1.1 an expression's literal arguments are checked against `functions.yaml` when it compiles (`CatalogueArgs`), wherever a function
+  has no check of its own words: a text outside its parameter's `enum` (`group(..., 'decade')`), a parameter typed `boolean-literal`,
+  `integer-literal`, `number-literal` or `string-literal` given something else (`rank(agg, desc = 'sideways')`, `lag(agg, 1.5, order)`,
+  `measure($.x)`), and an engine function's keyword-only parameter given by place (`rank(sum(x), 'sideways')`, which compiled before).
+  Each is `RCH-2101` at the argument. Level 1.0 is frozen and keeps the reference's acceptance; the audit found every other enumerated
+  text argument (`pad`, `datedif`, `yearfrac`, `intck`, `shift_date`, `fillmissing`, `interp1`) already held by its own check, which keeps
+  its words. Suite `el/catalogue-arguments-1-1` (11 cases, verified); upgrade rule `CATALOGUE_ARGUMENTS` (nothing to rewrite: at 1.0 these
+  are refused when they run).
+
+- **Stack guard: Rachana never crashes on a deep input** (G4 binder pass P15). The depth bound (SPEC 4.12, 200 levels) refuses a deep
+  expression with `RCH-2101` before any stack ends on a normal thread, but a host thread with less stack (Drishti's profile test thread)
+  overflowed while still inside the bound: `coalesce(` 300 deep was a `StackOverflowError` there and `RCH-2101` on the reference. The
+  parser, the checker, the printer and the binder now run again, from the start, on a thread of Core's own with the stack the bounds
+  need (`internal.Deep`; the Sutra declarations in force carried over), so the answer is the bound's own refusal, the same text and
+  place on every thread; only past that thread's stack is it the walk's refusal at the place reached. The JavaScript bundles replace
+  `Deep` (an engine has no second thread): an exhausted stack (`RangeError`, `InternalError`) is the refusal at once. `ElLimitsTest`
+  runs the deep case on 64, 128 and 256 KB stacks at levels 1.0 and 1.2. Drishti can drop its known difference
+  `el/limits#call-chain-past-the-depth`.
+
 - **Elements 3.2.0 vendored** (drishti-elements commit 787f97d, label `3.2.0`): `js/vendor/drishti-elements/3.2.0/` replaces the `3.2.0-dev+a40ca7e` folder (SHA-384 manifest; `ELEMENTS_VERSION`, the server pom, the Python assets, Studio and the docs name it); the pack's `data/formats.yaml` and `world-regions.yaml` are the bundled ones.
 
 - **`rachana upgrade` reads and writes a fragment's level as a Sutra's** (Gate 2 review 10.5; SPEC 2.1 rule 4). A fragment's own

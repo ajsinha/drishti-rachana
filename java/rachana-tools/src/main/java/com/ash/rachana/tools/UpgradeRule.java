@@ -93,6 +93,13 @@ public enum UpgradeRule {
                     + "(O6) and -x ** y is -(x ** y) with the hint RCH-2091 (EL1-2)",
             List.of("decision:EL1-2", "decision:O6", "decision:PY6", "spec4.17:`a ** b`, `a ^ b`", "case:el/sign-power-1-1#*")),
 
+    CATALOGUE_ARGUMENTS(Action.NONE, "none", "Literal arguments checked against the function catalogue",
+            "from 1.1 a literal argument is checked against functions.yaml when the expression compiles (SPEC 4.10 rule 2, G4 P14): a word "
+                    + "outside its parameter's enum, a parameter that takes a literal given something else, an engine function's keyword-only "
+                    + "parameter given by place. At 1.0 each of these is refused when it runs (the function's own evaluation, or the engine "
+                    + "that lowers the measure), so a level-1.0 Sutra that works holds none of them: nothing changes",
+            List.of("spec4.10:2", "case:el/catalogue-arguments-1-1#*")),
+
     RESERVED_NAMES(Action.NONE, "none", "Names a later level reserves",
             "a call of a reserved name that no loaded table has does not compile at 1.0 either (an unknown function); a profile's function of "
                     + "that name keeps working; a field of that name is not held; let names are refused alike at both levels (SPEC 4.15 rule 2)",

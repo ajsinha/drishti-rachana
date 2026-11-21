@@ -443,16 +443,16 @@ cases:
             line: 9
             column: 1
 
-  - id: library-functions-wait-for-x41
+  - id: library-function-takes-a-core-name
     kind: lib
-    source: EL_EXPANSION X41, X42 (RCH-2112)
+    source: EL_EXPANSION X41, X42 (a library function never hides a Core one)
     library: demo
     files:
       LICENSE: |
         Test material for the conformance suite only.
       MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
-        324aee84a85091ee3753d46abdc98c8a7b0fcf72e10b8d88c6320e94c399e36ac9dd297349a4f1b4aee5c6c3df9cb0c2  demo.rachana-lib.yaml
+        d5d7d2a1e897aee1dc8dabe5fd616b6b9708993273ea6d8db428fc61f0068b74eec03f6ab3eb3a8d0ce4a14def824aff  demo.rachana-lib.yaml
         ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
         ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
       demo.rachana-lib.yaml: |
@@ -470,7 +470,8 @@ cases:
           fragments:
             - { name: figure-pair, majors: [1] }
             - { name: key-figure, majors: [1] }
-        functions: {}
+        functions:
+          sum: { params: { x: number }, is: "x" }
       fragments/figure-pair.v1.fragment.yaml: |
         rachana: 1
         fragment: figure-pair
@@ -508,10 +509,10 @@ cases:
     expect:
       ok: false
       problems:
-      - code: RCH-2112
+      - code: RCH-2020
         severity: error
-        message: library functions arrive with Sutra functions (X41); this level holds fragments
+        message: "the function 'sum' is a Core function's name: pick another (a declared function never hides a Core one)"
         range:
           start:
-            line: 1
-            column: 1
+            line: 16
+            column: 8

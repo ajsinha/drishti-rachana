@@ -5,12 +5,28 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **Fragment libraries moved into this repository** (owner decision, L-12 superseded): `libraries/<name>/` by domain, `libraries/README.md`
+  the index, `tools/libraries/` the build and check (`build.py`, `LibCheck.java`; the jars come from this repository's own build);
+  `LibrariesCheckTest` runs the check in `./mvnw verify` (and proves an external folder and an `.rlib` beside bundled `core`); Studio, `lint` and `build` (`--libs`, `RACHANA_LIBS`) and the Python `lint` take extra library paths beside the bundled ones; a same-name conflict is refused (`LibraryResolver.first` too). The old repository's history is merged in.
+  **core 1.0.0** (baseline LB1, language level 1.2): 28 typed fragments (figures, records, tables, charts, states, history) with examples
+  and ViewModel snapshots; not built: `entry-form`, `stepped-form` (no standalone form panel yet), `compare-ab` (needs iteration over
+  fields). Differences from the catalogue are listed in `libraries/core/README.md`.
+
 - **Rachana Studio, first slice** (`js/packages/rachana-studio`, `rachana studio <folder> [--libs ...]`; decision MK-1): three panes (the fragments of the
   project's libraries, the live `<rachana-view>`, the Sutra source with its live problems, the parameter form of the chosen fragment and the
   unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
   placeholder. Built from Drishti Elements 3.1.0 widgets only; `<rachana-view>` takes a `files` property (the libraries). Vendored js-yaml 4.1.0.
 
-### Named arguments by the catalogue; stable wire keys (G2 lane A4)
+### Named arguments by the catalogue; stable wire keys; Sutra let and functions, library functions (G2 lane A4)
+
+- **X41 + S2 + X42, level 1.2** (SPEC 2.7): a Sutra's `let:` (named values, each reading the ones before it, no current
+  row, evaluated once per bind) and `functions:` (pure: a body reads only its parameters and other functions; no recursion;
+  named and piped calls), and a library's functions (manifest `functions:` and `functions/*.yaml`, called `<lib>.<f>(...)`
+  from the Sutra and from the library's fragments). Inlined by the parser while the Sutra's `Declarations` are in force
+  (`Declarations.within`, opened by `SutraExpressions.check`, `ViewBuilder.build`, `ScreenWire.event`/`children`,
+  `DataRecord.record`, `DataPlan.plan`, `ControlResolver.resolve`); compiled expressions are cached per declarations.
+  `Sutra.declarations()`, `Library.functions()`. Cases `sutra/declarations` (2), `problem/declarations` (7); the lib case
+  that refused functions now checks a library function with a Core name. Not yet: `examples` run as tests (X43).
 
 - **The function catalogue is the one source of Core's parameter names** (lead's decision): `spec/1/functions.yaml` is built into
   the jar and both bundles (`rachana/el/functions.yaml`); `CoreParams` reads names, repeatable parameters and `role: column` from

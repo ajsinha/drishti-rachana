@@ -18,8 +18,8 @@ export const STATUS = "lint, new, build, painter included, preview, studio, lib"
 
 const HELP = `rachana <command>
   new <dir> [--template <name>]                 a starter folder: a Sutra, sample data, rachana.yaml
-  lint [paths] [--format text|json|sarif] [--strict] [--level 1.1|1.2]   compile and lint; exit 1 on errors
-  build [--src <dir>] [--out site] [--level 1.1]            a static site: Sutras, data, runtime bundle, pages
+  lint [paths] [--format text|json|sarif] [--strict] [--level 1.1|1.2] [--libs <path>,...]   compile and lint; exit 1 on errors
+  build [--src <dir>] [--out site] [--level 1.1] [--libs <path>,...]            a static site: Sutras, data, runtime bundle, pages
   preview <file> [--data <dir>] [--port <n>]    one screen in the browser (dev <dir> serves a folder)
   studio [folder] [--libs <path>,...] [--data <dir>] [--port <n>]   Rachana Studio: edit the folder's Sutras with a live preview and a fragment palette
   lib build|sign|keygen|pack|verify|lock|contracts|check-host ...   libraries (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)

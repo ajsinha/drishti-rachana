@@ -10,6 +10,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { inflateRawSync } from "node:zlib";
 
 const MAX_FILE = 2 * 1024 * 1024;
@@ -82,13 +83,30 @@ export function findLibraries(path, problems = []) {
   return out;
 }
 
-/** The libraries of a project: `<root>/rachana_libs`, then each of `extra` (paths), then RACHANA_LIBS (path-delimited). The first of a name wins. */
+const BUILT_IN_LIBRARIES = resolve(fileURLToPath(new URL("../../../../libraries", import.meta.url)));
+
+/** The identity of a library's bytes: its MANIFEST.sha384 when it has one (a folder and its .rlib agree), else every file. */
+const identity = (l) => l.files["MANIFEST.sha384"] ?? JSON.stringify(Object.entries(l.files).sort());
+
+/**
+ * The libraries of a project, from several sources (the bundled `libraries/` of the Rachana checkout is one among them, never the only
+ * one): `<root>/rachana_libs`, each of `extra` (paths: an unpacked library, an .rlib, or a folder of them), RACHANA_LIBS
+ * (path-delimited), then the bundled ones. A name found twice with different contents is refused with a problem and offered from
+ * neither source, never silently shadowed; the same bytes found twice are one library.
+ */
 export function projectLibraries(root, extra = [], env = process.env) {
-  const problems = [], seen = new Map();
-  const paths = [join(root, "rachana_libs"), ...extra, ...(env.RACHANA_LIBS ? env.RACHANA_LIBS.split(process.platform === "win32" ? ";" : ":").filter(Boolean) : [])];
+  const problems = [], seen = new Map(), refused = new Set();
+  const paths = [join(root, "rachana_libs"), ...extra, ...(env.RACHANA_LIBS ? env.RACHANA_LIBS.split(process.platform === "win32" ? ";" : ":").filter(Boolean) : []), BUILT_IN_LIBRARIES];
   for (const p of paths) {
-    if (p === paths[0] && !existsSync(p)) continue;
-    for (const l of findLibraries(p, problems)) if (!seen.has(l.name)) seen.set(l.name, l);
+    if ((p === paths[0] || p === BUILT_IN_LIBRARIES) && !existsSync(p)) continue;
+    for (const l of findLibraries(p, problems)) {
+      const had = seen.get(l.name);
+      if (!had) { if (!refused.has(l.name)) seen.set(l.name, l); }
+      else if (had.version !== l.version || identity(had) !== identity(l)) {
+        problems.push(`library ${l.name} is in ${had.source} (${had.version || "no version"}) and in ${l.source} (${l.version || "no version"}) with different contents: refused, rename or remove one`);
+        seen.delete(l.name); refused.add(l.name);
+      }
+    }
   }
   return { libraries: [...seen.values()], problems };
 }

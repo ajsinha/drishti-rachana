@@ -76,6 +76,8 @@ public final class Printer {
                 case Expr.Form f -> call(f.name(), f.args(), Map.of());
                 case Expr.LocalCall c -> call(c.name(), c.args(), Map.of());
                 case Expr.FnRef f -> f.name();
+                case Expr.SutraLet l -> l.name();                                  // a declared name prints as written (level 1.2)
+                case Expr.UserCall c -> call(c.name(), c.args(), Map.of());
                 case Expr.Lambda l -> "lambda" + (l.params().isEmpty() ? "" : " " + String.join(", ", l.params())) + ": " + p(l.body(), 0);
                 case Expr.Spread x -> "..." + p(x.e(), 0);
                 case Expr.Pair x -> key(x.key()) + ": " + p(x.value(), 0);

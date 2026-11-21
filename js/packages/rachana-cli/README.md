@@ -27,8 +27,8 @@ a palette of the fragments of the project's libraries (`<folder>/rachana_libs`, 
 them, and `RACHANA_LIBS`), the live preview, the Sutra source with the bundle's `check` at level 1.2 shown as you type, a parameter form that
 inserts a `use:` block (tables and column mapping from the folder's data files), the unsaved changes as a diff, and Save into the folder (a
 `*.sutra.yaml` path inside it; nothing else is written). The assistant bar is a placeholder until the GenAI release. Tests: `npm test` in
-`js/packages/rachana-studio`; `uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py` (needs the libraries
-repository, `RACHANA_LIBS`).
+`js/packages/rachana-studio`; `uv run --with playwright==1.64.0 python js/packages/rachana-studio/test/studio_check.py` (uses the repository's libraries/
+`RACHANA_LIBS` adds more).
 
 **`--level`** (default `1.1`, the newest built level; `1.2` when typed fragments or libraries are used) is the language level of
 `lint` (`since` in the bundle's `check`) and of the pages' `<rachana-view level>`.

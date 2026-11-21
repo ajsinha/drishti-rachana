@@ -229,7 +229,10 @@ protocol fixes only these conventions ([patch.json](patch.json) `$defs`):
 **Minimal SSE form** for a host with nothing else: `GET {base}/changes?table=sales&after=a1:4112` (epoch, colon, seq) answers
 `text/event-stream`: one `event: msg` frame per patch whose `data` is the `msg` frame of `patch.json#/$defs/msgFrame` **with
 `epoch` present**, a `: hb` comment heartbeat, read-only; `id:` is `<epoch>:<seq>`. Resume is `Last-Event-ID`. A host that cannot
-replay answers a `gap` frame with `recoverable: false` and the reader resyncs.
+replay answers a `gap` frame with `recoverable: false` and the reader resyncs. A filtered or conflated stream in the minimal form is
+`POST {base}/changes` with the body `{ "table", "after": "<epoch>:<seq>", "filter"?: <filter tree>, "conflate"?: { "everyMs": n } }`
+(the same stream answered; `GET` MAY also take `everyMs`). A host that cannot replay a filtered stream answers a position other than
+the table's current one with the `gap` frame.
 
 ### 8.3 Snapshot, resume and gaps
 
@@ -246,7 +249,8 @@ replay answers a `gap` frame with `recoverable: false` and the reader resyncs.
 A runtime applies patches at most once per animation frame (or its platform's equivalent); patches arriving faster are merged by key
 in order: a later `remove` cancels an earlier `add` or `update` of that key; a later `add` after a `remove` stands; later fields
 win. A host MAY do the same for a slow reader and MUST send `gap` if it drops instead. A reader MAY ask in `sub` for
-`conflate: { "everyMs": n }`.
+`conflate: { "everyMs": n }`. A message that merges the messages `first` to `seq` carries both (`first` absent: one message); the
+reader takes `first` as its start for the rules of 8.3, so a merged message is no gap.
 
 ### 8.5 Order and consistency
 
@@ -318,8 +322,8 @@ message channel. Every message is a JSON object `{ "rdp": 1, "t": …}` ([bridge
 | view → host | `tables`, `schema`, `rows`, `query` | `id`, `table` (not for `tables`), `body?`, `accept?` | a request. `body` is the query-parameter object for `rows` and the query document for `query` |
 | host → view | `res` | `re`, `body` or `error` | exactly one answer per request, `body` as the HTTP answer of sections 4 to 6, `error` the error object of section 10 |
 | host → view | `res.arrow` | `re`, `buffer` | Arrow IPC bytes (base64 in JSON; a platform with transferable buffers uses them in the same field) |
-| view → host | `sub`, `unsub` | `id`, `table`, `after?`, `filter?` | subscribe to changes, with the position held and an optional filter tree |
-| host → view | `msg` | `table`, `epoch`, `seq`, `data` | a patch (section 8.1); the rules of 8.3 apply |
+| view → host | `sub`, `unsub` | `id`, `table`, `after?`, `filter?`, `conflate?` | subscribe to changes, with the position held (absent: from now), an optional filter tree and conflation (8.4); answered by `res` whose `body` is `{ recovered, version }` (`recovered: false`: read the rows again and subscribe from their version); `unsub` (the `id` of the `sub`) by `res` with an empty `body` |
+| host → view | `msg` | `sub`, `table`, `epoch`, `seq`, `first?`, `data` | a patch (section 8.1) of the subscription `sub`; the rules of 8.3 apply |
 | host → view | `table` | `name`, `schema`, rows (either form), `version?` | **push**: a whole table without being asked |
 | view → host | `action` | `view`, `panel?`, `name`, `payload?` | what the reader did; `name` is `select`, `open`, `control`, `key`, `submit`, `ready` or `error` |
 | host → view | `control` | `view`, `set: [{ id, value }]` | the host sets control values |
@@ -369,6 +373,7 @@ that need the live parts use three conventions of the adapter (the cases' paths,
 |---|---|
 | `POST /_test/patch` with a patch (section 8.1) | the adapter applies it to the fixture table and publishes it; answers `204` |
 | `GET /changes?table=…&after=…` | the minimal SSE form; the **body of the step is the JSON array of the `msg` frames** (the parsed `data:` of each SSE event, in order), read until the stream is idle |
-| `POST /_test/bridge` with a view → host bridge message | the body of the answer is the host → view message it produces |
+| `POST /_test/bridge` with a view → host bridge message | the body of the answer is the host → view message it produces (one channel per fixture: its subscriptions last until the next fixture) |
+| `GET /_test/bridge/out` | the host → view messages the channel pushed since the last read (`msg` of its subscriptions), as a JSON array |
 
 The adapter's paths exist only under test and are not part of the protocol.

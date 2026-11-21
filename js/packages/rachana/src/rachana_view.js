@@ -12,7 +12,8 @@
 //
 // Attributes: src (the Sutra's address), data (the Data Protocol base), runtime (the runtime bundle), formats (format tables, comma
 // separated, Core's first), level (language level, default 1.1), today (the as-of date), allow (other data origins, space separated),
-// live (follow the live tables). Properties: sutra (the text instead of src), record (the host's record), controls (values),
+// live (follow the live tables), form (rows as json, arrow or ndjson; arrow needs js/vendor/apache-arrow's script loaded first and is
+// asked only of tables that declare it). Properties: sutra (the text instead of src), record (the host's record), controls (values),
 // linkResolver (link => absolute address or null), fetch (the host's fetch).
 //
 // Portable-view principles: every address the element is given is resolved once, against the page, to an absolute address; a link of
@@ -32,7 +33,7 @@ export function defineRachanaView(o) {
   if (!w || !w.customElements || w.customElements.get(tag)) return false;
 
   class RachanaView extends w.HTMLElement {
-    static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'level', 'today', 'allow', 'live']; }
+    static get observedAttributes() { return ['src', 'data', 'runtime', 'formats', 'level', 'today', 'allow', 'live', 'form']; }
 
     constructor() { super(); this._sutra = null; this.record = null; this.controls = {}; this.linkResolver = null; this.fetch = null; this.screen = null; this._gen = 0; }
 
@@ -68,7 +69,7 @@ export function defineRachanaView(o) {
       const rt = await loadRuntime(this.abs(this.getAttribute('runtime') || 'rachana.runtime.js'), formats, 'core');
       if (gen !== this._gen) return;
       const client = this.getAttribute('data') ? new DataClient({ base: this.abs(this.getAttribute('data')), fetch: f, origin: w.location.origin,
-        allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean) }) : null;
+        allow: (this.getAttribute('allow') || '').split(/\s+/).filter(Boolean), form: this.getAttribute('form') || 'json', arrow: w.Arrow || null }) : null;
       const screen = new Screen(rt, { sutra: text, level: this.getAttribute('level') || '1.1', today: this.getAttribute('today') || undefined,
         ctl: this.controls, record: this.record, client });
       this.screen = screen;

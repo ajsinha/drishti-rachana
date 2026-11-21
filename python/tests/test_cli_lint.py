@@ -40,3 +40,14 @@ def test_usage_error_and_discovery(tmp_path):
     (tmp_path / "node_modules" / "x.sutra.yaml").write_text(GOOD)
     (tmp_path / "a.sutra.yaml").write_text(GOOD)
     assert [f.name for f in find_sutras([str(tmp_path)])] == ["a.sutra.yaml"]
+
+
+def test_level_default_1_1_and_examples_lint_clean():
+    from pathlib import Path
+    from drishti_rachana.engine import Rachana
+    ex = Path(__file__).resolve().parents[2] / "examples"
+    for lv in ("1.1", "1.2"):
+        assert main(["lint", "--level", lv, str(ex / "static-sales"), str(ex / "live-orders")]) == 0, lv
+    assert main(["lint", str(ex)]) == 0                               # the default is 1.1
+    assert main(["lint", "--level", "9.9", str(ex)]) == 2             # usage error
+    assert Rachana().check(GOOD)["ok"] and Rachana().check(GOOD, level="1.2")["ok"]

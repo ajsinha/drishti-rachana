@@ -51,7 +51,7 @@ rachana new my-dashboard
 cd my-dashboard
 rachana preview sutras/sales.sutra.yaml   # one screen in the browser (dev: a folder)
 rachana lint         # check every Sutra: exit 1 on errors
-rachana build        # writes ./site: pages, Sutras, data (the painter is added when <rachana-view> lands from g2/data)
+rachana build        # writes ./site: pages, Sutras, data, <rachana-view> with the Elements pack and the runtime; serve it with any static server
 ```
 
 ## 2. Embedded
@@ -59,7 +59,7 @@ rachana build        # writes ./site: pages, Sutras, data (the painter is added 
 A web app you already have draws a Sutra with one element and reads its tables from its own Data Protocol host
 ([spec/1/data-protocol](../spec/1/data-protocol/PROTOCOL.md)). The element compiles and binds the Sutra in the page with the
 runtime bundle (`rachana.runtime.js`) and paints it with Drishti Elements' painter (`<elements-view>`, Elements 3.1.0, vendored under
-`js/vendor/drishti-elements/3.1.0`, never from a CDN):
+`js/vendor/drishti-elements/3.1.0`, never from a CDN; the pack has `drishti-chart` and its engine, so chart panels draw):
 
 ```html
 <link rel="stylesheet" href="/vendor/drishti-elements/3.1.0/drishti-elements.css">
@@ -84,6 +84,9 @@ panels:
 - **What it asks.** The Sutra's plan (`rachana explain`'s document; `DataPlan`) says what each table is asked: a row condition in the
   push-down subset of the protocol travels as a filter tree with the controls' values in it, never as text; anything else is applied
   in the page. The rows are read page by page (`next` cursors).
+- **Row forms.** `form="arrow"` asks for Arrow IPC from the tables that declare `arrow` (JSON from the others) and needs the vendored
+  Apache Arrow JS loaded first (`<script src="/vendor/apache-arrow/21.1.0/Arrow.es2015.min.js">`, from `js/vendor/apache-arrow`);
+  `form="ndjson"` asks for NDJSON. Every form gives the same rows; the default is JSON.
 - **Live.** With `live`, each live table follows its change stream (the minimal SSE form, or a host's drishti-events client through
   the `DataClient`'s `subscribe` hook); every keyed patch is applied by Core and only the parts of the view that changed are repainted
   (ViewModel frames). A gap or a new epoch reads the table again.
@@ -98,7 +101,7 @@ panels:
 
 ## 3. Python app
 
-`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol's JSON resources; the page that paints needs `<rachana-view>` (g2/data). Mount Sutras, expose tables, stream changes, and lint in CI.
+`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol's JSON resources; the page that paints loads `<rachana-view>` (`js/packages/rachana/src`; pass its address as `view_script=`). `rachana lint` takes `--level` (default 1.1). Mount Sutras, expose tables, stream changes, and lint in CI.
 
 **Flask** (`examples/live-orders/flask_app.py`):
 
@@ -162,6 +165,10 @@ through an **in-process bridge**, so there is no HTTP server and no open port. T
 patches to the view and receives what the reader does (a row selected, a link opened, a control changed, a form
 submitted). Design: [COMPILER_AND_RUNTIMES](design/COMPILER_AND_RUNTIMES.md) section 9 and
 [DATA_PROTOCOL](design/DATA_PROTOCOL.md) section 9.
+
+Built today, the protocol's two ends of that bridge: in the page, `DataClient({ bridge: { post, listen } })` (its `BridgeChannel`
+sends the requests and `sub`/`unsub`, reads `res`, `res.arrow` and the `msg` of its subscriptions, filtered or conflated); on the
+JVM, `MemoryHost.bridge(push)` answers them (`java/rachana-data`). The host SDKs in the table are still planned.
 
 | Host | Embedded browser | Host SDK (planned) |
 |---|---|---|

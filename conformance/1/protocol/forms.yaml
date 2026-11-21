@@ -1,0 +1,124 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/forms
+since: "1.0"
+profile: core
+verified: false
+description: The row forms other than JSON (PROTOCOL 5.2 Arrow IPC, 5.3 NDJSON, 12 res.arrow), compared as the JSON page they stand for (tools/conformance/protocol_check.py; Arrow steps need pyarrow).
+cases:
+  - id: ndjson-is-a-header-then-one-line-per-row
+    kind: protocol
+    source: PROTOCOL 5.3
+    fixture: &kv
+      name: rdp-kv
+      schema:
+        name: rdp-kv
+        key: [k]
+        columns: [ { name: k, type: string }, { name: v, type: decimal } ]
+        can: [page, sort, count, arrow]
+      rows: [ { k: b, v: "2.50" }, { k: a, v: "1.25" }, { k: c, v: null } ]
+    steps:
+      - request: { method: GET, path: /tables/rdp-kv/rows, query: { sort: k, limit: "2" }, headers: { Accept: application/x-ndjson } }
+        expect:
+          status: 200
+          body: { table: rdp-kv, version: { epoch: t1, seq: 0 }, columns: [k, v], values: [ [a, "1.25"], [b, "2.50"] ], total: 3 }
+
+  - id: ndjson-carries-the-next-cursor-in-its-header
+    kind: protocol
+    source: PROTOCOL 5.3, 6.2
+    fixture: *kv
+    steps:
+      - request: { method: POST, path: /tables/rdp-kv/query, body: { sort: [ { col: k } ], limit: 2 }, headers: { Accept: application/x-ndjson } }
+        expect: { status: 200, body: { values: [ [a, "1.25"], [b, "2.50"] ] } }
+        capture: { next: /next }
+      - request: { method: POST, path: /tables/rdp-kv/query, body: { sort: [ { col: k } ], limit: 2, cursor: "${next}" }, headers: { Accept: application/x-ndjson } }
+        expect: { status: 200, body: { columns: [k, v], values: [ [c, null] ] } }
+
+  - id: arrow-rows-with-the-protocol-metadata
+    kind: protocol
+    source: PROTOCOL 5.2 (metadata rachana.table, key, epoch, seq, total, next)
+    fixture: *kv
+    steps:
+      - request: { method: GET, path: /tables/rdp-kv/rows, query: { sort: "-k", limit: "2" }, headers: { Accept: application/vnd.apache.arrow.stream } }
+        expect:
+          status: 200
+          body: { table: rdp-kv, version: { epoch: t1, seq: 0 }, columns: [k, v], values: [ [c, null], [b, "2.50"] ], total: 3 }
+        capture: { next: /next }
+      - request: { method: GET, path: /tables/rdp-kv/rows, query: { sort: "-k", limit: "2", cursor: "${next}" }, headers: { Accept: application/vnd.apache.arrow.stream } }
+        expect: { status: 200, body: { values: [ [a, "1.25"] ] } }
+
+  - id: arrow-every-type-and-a-masked-cell
+    kind: protocol
+    source: PROTOCOL 3.1 (Arrow types), 3.2 (masked as a null slot and <name>$masked)
+    fixture:
+      name: rdp-types
+      schema:
+        name: rdp-types
+        key: [id]
+        can: [page, sort, arrow]
+        columns:
+          - { name: id, type: string }
+          - { name: n, type: integer }
+          - { name: amt, type: decimal, scale: 2 }
+          - { name: x, type: number }
+          - { name: ok, type: boolean }
+          - { name: d, type: date }
+          - { name: ts, type: timestamp }
+          - { name: tm, type: time }
+          - { name: tags, type: list, items: string }
+          - { name: o, type: object }
+          - { name: sal, type: decimal }
+      rows:
+        - { id: a, n: 1, amt: "-1250.05", x: 0.25, ok: true, d: "2026-11-17", ts: "2026-11-17T09:30:00.000Z", tm: "09:30:00", tags: [p, q], o: { k: 1 }, sal: { $masked: true } }
+        - { id: b, n: "9007199254740993", amt: null, x: null, ok: false, d: null, ts: null, tm: "23:59:59.250", tags: null, o: null, sal: "3.5" }
+    steps:
+      - request: { method: GET, path: /tables/rdp-types/rows, query: { sort: id }, headers: { Accept: application/vnd.apache.arrow.stream } }
+        expect:
+          status: 200
+          body:
+            columns: [id, n, amt, x, ok, d, ts, tm, tags, o, sal]
+            values:
+              - [a, 1, "-1250.05", 0.25, true, "2026-11-17", "2026-11-17T09:30:00.000Z", "09:30:00", [p, q], { k: 1 }, { $masked: true }]
+              - [b, "9007199254740993", null, null, false, null, null, "23:59:59.250", null, null, "3.5"]
+
+  - id: arrow-of-a-grouped-query-with-totals
+    kind: protocol
+    source: PROTOCOL 5.2, 6.3 (totals in the metadata rachana.totals)
+    fixture:
+      name: rdp-grp2
+      schema:
+        name: rdp-grp2
+        columns: [ { name: d, type: string }, { name: px, type: decimal } ]
+        can: [page, sort, group, arrow]
+      rows: [ { d: A, px: "1.10" }, { d: A, px: "2.20" }, { d: B, px: "0.05" } ]
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-grp2/query
+          headers: { Accept: application/vnd.apache.arrow.stream }
+          body: { group: { by: [d], values: [ { name: n, agg: count }, { name: s, agg: sum, col: px } ], totals: true }, sort: [ { col: d } ] }
+        expect:
+          status: 200
+          body: { columns: [d, n, s], values: [ [A, 2, "3.30"], [B, 1, "0.05"] ], totals: { n: 3, s: "3.35" } }
+
+  - id: bridge-rows-as-arrow
+    kind: protocol
+    source: PROTOCOL 12 (res.arrow; base64 in JSON)
+    fixture: *kv
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: query, id: q1, table: rdp-kv, accept: arrow, body: { sort: [ { col: k } ] } } }
+        expect:
+          status: 200
+          body: { rdp: 1, t: res.arrow, re: q1, buffer: { table: rdp-kv, columns: [k, v], values: [ [a, "1.25"], [b, "2.50"], [c, null] ] } }
+
+  - id: bridge-arrow-not-offered-is-an-error-res
+    kind: protocol
+    source: PROTOCOL 12, 5.2
+    fixture:
+      name: rdp-plain
+      schema: { name: rdp-plain, key: [k], columns: [ { name: k, type: string } ], can: [page] }
+      rows: [ { k: a } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: rows, id: r1, table: rdp-plain, accept: arrow } }
+        expect:
+          status: 200
+          body: { rdp: 1, t: res, re: r1, error: { code: rdp.query.unsupported, operation: arrow } }

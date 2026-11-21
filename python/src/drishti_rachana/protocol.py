@@ -203,16 +203,19 @@ class ProtocolError(Exception):
     expected: Optional[list[str]] = None
     retry: Optional[bool] = None
     retry_after_ms: Optional[int] = None
+    operation: Optional[str] = None
 
     def __post_init__(self) -> None:
         Exception.__init__(self, f"{self.code}: {self.message}")
 
     def to_json(self) -> dict:
         return {"error": _put({"code": self.code, "message": self.message}, table=self.table, column=self.column,
-                              expected=self.expected, retry=self.retry, retryAfterMs=self.retry_after_ms)}
+                              expected=self.expected, retry=self.retry, retryAfterMs=self.retry_after_ms,
+                              operation=self.operation)}
 
     @classmethod
     def from_json(cls, d: dict) -> "ProtocolError":
         e = d["error"]
         return cls(code=e["code"], message=e["message"], table=e.get("table"), column=e.get("column"),
-                   expected=e.get("expected"), retry=e.get("retry"), retry_after_ms=e.get("retryAfterMs"))
+                   expected=e.get("expected"), retry=e.get("retry"), retry_after_ms=e.get("retryAfterMs"),
+                   operation=e.get("operation"))

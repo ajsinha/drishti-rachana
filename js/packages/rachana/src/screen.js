@@ -55,9 +55,9 @@ export class Screen {
     this.plan = call(this.rt, 'plan', { id: this.id, schemas: this.client ? schemas : undefined, ctl: this.ctl });
     for (const t of this.plan.tables) {
       if (!schemas[t.name] || this.reads.has(t.name)) continue;
-      const { rows, version } = await this.client.read(t.name, t.query);
+      const { rows, version } = await this.client.read(t.name, t.query, schemas[t.name]);
       call(this.rt, 'table', { id: this.id, name: t.name, schema: schemas[t.name], rows });
-      this.reads.set(t.name, { version, live: !!t.live });
+      this.reads.set(t.name, { version, live: !!t.live, schema: schemas[t.name] });
     }
     return this.plan;
   }
@@ -76,9 +76,12 @@ export class Screen {
     for (const [table, read] of this.reads) {
       if (!read.live || !read.version) continue;
       let last = read.version;
+      // rows read through a pushed-down filter follow a filtered subscription where the table offers one (PROTOCOL 8.2)
+      const q = (this.plan.tables.find((x) => x.name === table) || {}).query || {};
+      const opts = q.filter && ((read.schema && read.schema.can) || []).includes('changes.filter') ? { filter: q.filter } : undefined;
       const start = () => {
         const stop = this.client.follow(table, last, (f) => {
-          if (f.t === 'msg' && f.epoch === last.epoch && f.seq === last.seq + 1) {
+          if (f.t === 'msg' && f.epoch === last.epoch && (f.first || f.seq) === last.seq + 1) {   // a conflated message starts at first
             last = { epoch: f.epoch, seq: f.seq };
             onChange(this.patch(table, f.data));
           } else if (f.t === 'msg' && f.epoch === last.epoch && f.seq <= last.seq) {
@@ -87,7 +90,7 @@ export class Screen {
             stop();
             this.resync(table).then((v) => { last = v; onChange({ viewModel: this.view() }); start(); }, onError);
           }
-        }, onError);
+        }, onError, opts);
         this.stops.push(stop);
       };
       start();
@@ -96,8 +99,9 @@ export class Screen {
 
   async resync(table) {
     const t = this.plan.tables.find((x) => x.name === table);
-    const { rows, version } = await this.client.read(table, t.query);
-    call(this.rt, 'table', { id: this.id, name: table, schema: await this.client.schema(table), rows });
+    const schema = await this.client.schema(table);
+    const { rows, version } = await this.client.read(table, t.query, schema);
+    call(this.rt, 'table', { id: this.id, name: table, schema, rows });
     return version;
   }
 

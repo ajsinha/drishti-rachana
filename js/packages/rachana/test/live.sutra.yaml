@@ -8,3 +8,4 @@ data:
 panels:
   - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
   - { id: list, kind: table, rows: "$.sales", columns: [ { label: Desk, bind: desk }, { label: Revenue, bind: revenue } ] }
+  - { id: trend, kind: line, title: Revenue by desk, rows: "group($.sales, 'desk', 'revenue')", x: label, y: value }

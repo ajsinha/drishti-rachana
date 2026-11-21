@@ -18,7 +18,7 @@ data:
   meta:                                            # one record written in the file
     record: { currency: USD, period: H1 2026, source: Synthetic demo data }
 controls:
-  - { id: product, kind: dropdown, label: Product, from: "unique($.sales[*].product)", default: first }
+  - { id: product, kind: dropdown, label: Product, options: "unique($.sales[*].product)", default: first }
 panels:
   - { id: revenue, kind: metric, label: Revenue, value: "sum($.sales[?@.product == ctl.product], 'revenue')", fmt: amount0, span: 4,
       caption: "${$.meta.currency}, ${$.meta.period}" }

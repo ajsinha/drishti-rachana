@@ -1,0 +1,107 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: plan/checked
+since: "1.2"
+profile: core
+verified: false
+description: >-
+  Checked mode over table schemas (SPEC 4.14; EL_EXPANSION X8; DataPlan at level 1.2): with the host's schemas known, each row
+  condition over a table (the entry's where, a reading panel's where) is read against the table's column types and masks. A type
+  refusal is RCH-9127, a filter on a masked column RCH-9161; each problem names its entry, panel and where. Controls are values.
+given:
+  today: "2026-01-15"
+  schemas:
+    sales:
+      name: sales
+      key: [region, month]
+      columns:
+        - { name: region, type: string }
+        - { name: month, type: date }
+        - { name: revenue, type: decimal }
+        - { name: units, type: integer }
+        - { name: salary, type: decimal, masked: true }
+      can: [page, sort, filter]
+cases:
+  - id: a-well-typed-condition-has-no-problem
+    kind: plan
+    source: SPEC 4.14 (checked mode only refuses more)
+    given:
+      ctl: { region: South }
+    sutra: |
+      rachana: 1
+      sutra: checked-ok
+      version: 1
+      controls:
+        - { id: region, kind: dropdown, options: [North, South] }
+      data:
+        sales: { table: sales, where: "@.region == ctl.region && @.revenue > 10 && @.month >= date('2026-01-01')" }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+    expect:
+      at:
+        /problems: []
+        /tables/0/local: []
+
+  - id: a-date-against-text-is-rch-9127
+    kind: plan
+    source: SPEC 4.14 (no implicit casts, a date against a text not in ISO form)
+    sutra: |
+      rachana: 1
+      sutra: checked-date
+      version: 1
+      data:
+        sales: { table: sales, where: "@.month >= '9 Oct'" }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+    expect:
+      at:
+        /problems/0/code: RCH-9127
+        /problems/0/entry: sales
+        /problems/0/where: "@.month >= '9 Oct'"
+
+  - id: a-number-against-text-is-rch-9127
+    kind: plan
+    source: SPEC 4.14 (no implicit casts)
+    sutra: |
+      rachana: 1
+      sutra: checked-number
+      version: 1
+      data:
+        sales: { table: sales }
+      panels:
+        - { id: big, kind: table, rows: "$.sales", where: "@.units + 'x' > 3", columns: [ { label: Region, bind: region } ] }
+    expect:
+      at:
+        /problems/0/code: RCH-9127
+        /problems/0/panel: big
+
+  - id: a-filter-on-a-masked-column-is-rch-9161
+    kind: plan
+    source: SPEC 4.14 (RCH-9161); PROTOCOL 11
+    sutra: |
+      rachana: 1
+      sutra: checked-masked
+      version: 1
+      data:
+        sales: { table: sales, where: "@.salary > 100" }
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.sales)" }
+    expect:
+      at:
+        /problems/0/code: RCH-9161
+        /problems/0/entry: sales
+
+  - id: an-unknown-column-stays-rch-2071
+    kind: plan
+    source: SPEC 6.2 (RCH-2071 names the column, checked mode adds nothing for it)
+    sutra: |
+      rachana: 1
+      sutra: checked-unknown
+      version: 1
+      data:
+        sales: { table: sales, where: "@.reveune > 0" }
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.sales)" }
+    expect:
+      at:
+        /problems/0/code: RCH-2071
+        /problems/0/expected/0: revenue

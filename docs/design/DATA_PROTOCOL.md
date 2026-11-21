@@ -5,9 +5,14 @@ Status: **design, phase R0; built in G2 (lane C) as v1's JSON forms.** The norma
 [spec/1/data-protocol/PROTOCOL.md](../../spec/1/data-protocol/PROTOCOL.md). Built: Core's half (`com.ash.rachana.table`: the `data:`
 entries, schema decoding, keyed patches, the filter tree both ways, the plan, `LiveScreen`; one implementation, compiled to the
 JavaScript bundles), the in-memory host and reference server, the JVM `TableClient` (`java/rachana-data`), the JavaScript client and
-`<rachana-view>` (`js/packages/rachana/src`), and `tools/conformance/protocol_check.py` over `conformance/1/protocol`. Not yet:
-Arrow IPC and NDJSON (the reference host answers `406`), the bridge's subscriptions (`sub`/`msg` over the channel), conflation
-`everyMs`, filtered subscriptions (`changes.filter`). The live part is
+`<rachana-view>` (`js/packages/rachana/src`), and `tools/conformance/protocol_check.py` over `conformance/1/protocol`. Built in G2
+lane C2: **Arrow IPC and NDJSON** (section 4; the host writes and the JVM client reads Arrow with the official Apache Arrow Java library,
+`ArrowRows`; the JavaScript client with the vendored Apache Arrow JS 21.1.0, `arrowPage`; the bridge's `res.arrow`), the **bridge's
+subscriptions** (`sub`/`unsub`/`msg`: `MemoryHost.Bridge`, the JavaScript `BridgeChannel`), **conflation** (`conflate: {everyMs}`: a
+merged message carries `first` and `seq`) and **filtered subscriptions** (`changes.filter`: patches restated for the matching rows; a
+filtered stream resumes only from the table's current position), in `Subscription`; the minimal SSE form takes them by `POST
+{base}/changes`; chart panels in `<rachana-view>` (the vendored Elements pack has `drishti-chart`); from level 1.2 a Sutra's plan over
+the host's schemas is read in checked mode (SPEC 4.14). The live part is
 aligned with the events wire protocol designed for Drishti Elements (`EVENTING_DESIGN.md` section 8, branch
 `design/eventing`) and the row patches of the Views design (`VIEWS_DESIGN.md` section 5); both are designs, not
 released code, so this document will be re-checked against them when they ship.

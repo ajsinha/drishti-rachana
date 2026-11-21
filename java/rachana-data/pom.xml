@@ -10,10 +10,44 @@
   <name>rachana-data</name>
   <dependencies>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-core</artifactId><version>${project.version}</version></dependency>
+    <!-- Arrow IPC (PROTOCOL 5.2) through the official Apache Arrow Java library (Apache-2.0): the host writes and the client reads with
+         it, no Arrow code of our own. Its own dependencies (Jackson, SLF4J API, Netty buffers, FlatBuffers) are allowed in this module
+         only; Core and the compiler stay free of them (DependencyAllowListTest, the enforcer override below). -->
+    <dependency><groupId>org.apache.arrow</groupId><artifactId>arrow-vector</artifactId><version>${arrow.version}</version></dependency>
+    <dependency><groupId>org.apache.arrow</groupId><artifactId>arrow-memory-unsafe</artifactId><version>${arrow.version}</version></dependency>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
+  <properties>
+    <arrow.version>19.0.0</arrow.version>
+    <!-- Arrow's off-heap memory reads direct buffers' addresses (Arrow Java's documented JDK 17+ requirement) -->
+    <rachana.arrow.opens>--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED</rachana.arrow.opens>
+  </properties>
   <build>
     <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration><argLine>${rachana.arrow.opens}</argLine></configuration>
+      </plugin>
+      <!-- Arrow's own dependencies, in this module only (the parent bans them everywhere else). -->
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-rules</id>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <includes combine.children="append">
+                    <include>com.fasterxml.jackson.core:*</include>
+                    <include>com.fasterxml.jackson.datatype:jackson-datatype-jsr310</include>
+                    <include>org.slf4j:slf4j-api</include>
+                  </includes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <!-- The reference server's module path, for tools/conformance/protocol_check.py and the JavaScript tests. -->
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>

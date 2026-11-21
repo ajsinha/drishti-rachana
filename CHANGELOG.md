@@ -5,6 +5,26 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### CLI and Python SDK, second pass (G2)
+
+- **Language level for `lint` / `check`**: the bundle's `check` already read `since` (as `open` does), so no facade change; `rachana lint`,
+  `python -m drishti_rachana lint` and `Rachana.check(level=)` take `--level` / `level` (default **1.1**; `1.2` for typed fragments and
+  libraries). `examples/static-sales` and `live-orders` lint clean at 1.1 and 1.2 (controls read `options:`, not `from:`; `regions` is
+  a `table:`).
+- **`rachana build` / `preview` use the real `<rachana-view>`**: the element, its modules, the vendored Elements pack and the runtime
+  bundle are copied into the site; `static_files_host.js` answers the Data Protocol in the page from `data/` (static-files mode); the
+  warning and the TODO are gone. Tests: node (`build` of static-sales), `test/paint_check.py` (Chromium: every page
+  paints, no console error). 
+- **Python `DataHost` and the JVM reference answer the same `protocol` cases**: `drishti_rachana.testhost` (the PROTOCOL 15 test
+  adapter over the standard library) and `protocol_check.py --python`; the host skips `protocol/forms` (Arrow, NDJSON) and `protocol/live`
+  (bridge subscriptions, filtered and conflated streams), which it does not offer, and passes 39 of the other 40 (the one case is the
+  frozen example that sorts a table without `can: sort`, which the JVM reference fails the same way). The host now enforces `can` (`rdp.query.unsupported` with `operation`), checks filter columns
+  (`rdp.column.unknown`) and operations (`rdp.query.invalid`), refuses masked columns (`rdp.forbidden`), orders by the key last with
+  empty values last, compares decimals exactly, answers `group` (count, sum, min, max, avg, distinct, totals) and sends `t: msg` frames
+  and `gap` with `recoverable: false` when there is no replay. `python/tests/test_protocol_cases.py` runs the cases.
+- The three `test_conformance.py` failures could not be reproduced on `g2/integration` (6 pass, 26 in the package); two stale
+  expectations in `test_server_adapters.py` were corrected to the spec.
+
 ### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
 
 - **Binding like a call** (SPEC 2.5, LIBRARIES 5 to 7, DECISIONS L-21): a table parameter names its local columns or a
@@ -92,8 +112,41 @@ Entries are written per release; the regime's unreleased work is listed after th
   on all 2,160 cases at levels 1.0 and 1.1; budgets: runtime 379 KB, tools 399 KB Brotli. Tests: Core `TablesTest`, `MemoryHostTest`,
   `TableClientTest` (JVM end to end), `js/packages/rachana/test/data_client.test.mjs` (Node end to end),
   `runners/view_browser.py` (`<rachana-view>` live in Chromium).
-- Not yet: Arrow IPC and NDJSON, bridge subscriptions, conflation, filtered subscriptions, checked mode over table schemas, exact
-  decimal arithmetic in aggregates (the decimals item, X2).
+- Not yet (lane C2 below builds the protocol's rest and checked mode over table schemas): exact decimal arithmetic in aggregates (the
+  decimals item, X2).
+
+### The Data Protocol completed: row forms, bridge subscriptions, conflation, filters (lane C2)
+
+- **Arrow IPC and NDJSON** (PROTOCOL 5.2, 5.3, 12). `java/rachana-data`: `ArrowRows` writes a page as an Arrow IPC stream and reads one
+  back with the official Apache Arrow Java library (19.0.0, `arrow-vector` with the `arrow-memory-unsafe` allocator; allowed in this
+  module only, Core stays free of it; a JVM that runs it opens `java.nio` to `org.apache.arrow.memory.core`), types by PROTOCOL 3.1,
+  masked cells as `<name>$masked`, the protocol facts as schema metadata (`rachana.totals` and `rachana.schema` added); `NdjsonRows`
+  (header, then one line per row). The reference server answers both (Arrow only for tables declaring `arrow`, else `406`); the bridge
+  answers `accept: arrow` with `res.arrow` (base64). `TableClient.read(table, query, Form)`. JavaScript: `arrowPage` (the vendored
+  Apache Arrow JS 21.1.0, `js/vendor/apache-arrow`, the same file Drishti Elements vendors), `ndjsonPage`, `DataClient({form, arrow})`,
+  `<rachana-view form="arrow|ndjson">`. Every form gives the same rows (`RowFormsTest`, `data_client.test.mjs`). Cases
+  `protocol/forms` (7); `protocol_check.py` compares Arrow and NDJSON answers as the JSON page they stand for (Arrow with pyarrow).
+- **Subscriptions** (PROTOCOL 8.2 to 8.4, 12). `MemoryHost.subscribe(table, after, filter, everyMs, sink)` gives a `Subscription`:
+  the backlog then live frames in seq order; **filtered** (`changes.filter`): each patch restated for the rows the reader sees (a row
+  that stops matching is a `remove`, one that starts an `update` with every field, an untouched patch an empty one so the numbering has
+  no holes; resumable only from the current position, else `recovered: false`); **conflated** (`everyMs`): one message per window,
+  merged by key (`Subscription.merge`: later remove cancels, later fields win, `reset` restarts), carrying `first` and `seq`. The
+  bridge: `MemoryHost.bridge(push)` opens a channel (`sub` answered by `res {recovered, version}`, `msg` with the `sub` id, `unsub`);
+  the reference server's SSE stream runs on a subscription and takes `POST /changes {table, after, filter?, conflate?}`; the test
+  adapter gains `GET /_test/bridge/out` (PROTOCOL 15). `TableClient.follow(..., filter, everyMs, ...)`, and a gap now stops the follow.
+  JavaScript: `BridgeChannel` (requests, `res.arrow`, `sub`/`msg`) behind `DataClient({bridge})`, `follow(..., {filter, everyMs})`;
+  `Screen` follows a table read through a pushed-down filter with a filtered subscription where the table offers one, and takes a
+  conflated message's `first`. Specification additions: PROTOCOL 8.2 (the POST form), 8.4 (`first`), 12 (`sub.conflate`, `msg.sub`,
+  `msg.first`, the `sub` answer), 15; `bridge.json`, `patch.json`. Cases `protocol/live` (8); tests `SubscriptionTest`, the Node bridge
+  test.
+- **Chart panels in `<rachana-view>`**: the vendored Elements 3.1.0 pack now has `drishti-chart` (with `drishti-inputs`, Apache
+  ECharts in the script, and its run-time files under `vendor/`), packed from the `v3.1.0` tag with its SHA-384 manifest. The browser
+  test's Sutra has a line panel; `runners/view_browser.py` passes in Chromium 156, Firefox 157 and WebKit 27.2 (Playwright 1.64.0).
+- **Checked mode over table schemas** (SPEC 4.14, EL_EXPANSION X8 where it touches tables), from level 1.2: `DataPlan.plan(...,
+  level)` reads each row condition over a table (the entry's `where`, a reading panel's `where`) against the table's column types and
+  masks (`TableFields`): `RCH-9127` for a type refusal (no implicit casts, no text arithmetic), `RCH-9161` for a filter on a masked
+  column, each problem with `entry`, `panel`, `where`; an unknown column stays `RCH-2071`; controls are values. Levels 1.0 and 1.1 are
+  unchanged. `LiveScreen` and the conformance runner pass the level. Cases `plan/checked` (5); `TablesTest`.
 
 ### The `rachana` command and the Python SDK basics (G2, CLI and SDK lane)
 

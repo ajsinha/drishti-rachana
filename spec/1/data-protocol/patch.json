@@ -44,7 +44,8 @@
         "kind": { "const": "rows" }, "time": { "type": "integer" }, "source": { "type": "string" },
         "epoch": { "type": "string", "description": "Present on messages of the minimal SSE form, where there is no subd to say it." },
         "data": { "$ref": "#" },
-        "replayed": { "type": "boolean" }
+        "replayed": { "type": "boolean" },
+        "first": { "type": "integer", "minimum": 1, "description": "A conflated message (PROTOCOL.md 8.4): the first seq it merges." }
       },
       "not": { "required": ["key"] }
     },

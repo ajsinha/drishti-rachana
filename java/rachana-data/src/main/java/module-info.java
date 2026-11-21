@@ -7,5 +7,8 @@ module com.ash.rachana.data {
     requires transitive com.ash.rachana.core;
     requires jdk.httpserver;
     requires java.net.http;
+    requires org.apache.arrow.vector;
+    requires org.apache.arrow.memory.core;
+    requires org.apache.arrow.memory.unsafe;
     exports com.ash.rachana.data;
 }

@@ -94,7 +94,7 @@ public final class LiveScreen {
 
     /** What to ask of each table (the plan document of {@link DataPlan}). */
     public Map<String, Object> plan(Map<String, TableSchema> known) {
-        return DataPlan.plan(sutra, known, rachana.compiler(), context(record(false)));
+        return DataPlan.plan(sutra, known, rachana.compiler(), context(record(false)), rachana.language());
     }
 
     /** Builds the ViewModel now (and remembers it as the base of the next frames). */

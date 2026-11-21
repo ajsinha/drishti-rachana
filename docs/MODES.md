@@ -166,6 +166,10 @@ patches to the view and receives what the reader does (a row selected, a link op
 submitted). Design: [COMPILER_AND_RUNTIMES](design/COMPILER_AND_RUNTIMES.md) section 9 and
 [DATA_PROTOCOL](design/DATA_PROTOCOL.md) section 9.
 
+Built today, the protocol's two ends of that bridge: in the page, `DataClient({ bridge: { post, listen } })` (its `BridgeChannel`
+sends the requests and `sub`/`unsub`, reads `res`, `res.arrow` and the `msg` of its subscriptions, filtered or conflated); on the
+JVM, `MemoryHost.bridge(push)` answers them (`java/rachana-data`). The host SDKs in the table are still planned.
+
 | Host | Embedded browser | Host SDK (planned) |
 |---|---|---|
 | Electron | Chromium (built in) | `drishti-rachana-electron` (npm) |

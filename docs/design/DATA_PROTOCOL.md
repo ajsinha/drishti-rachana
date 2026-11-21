@@ -11,7 +11,8 @@ lane C2: **Arrow IPC and NDJSON** (section 4; the host writes and the JVM client
 subscriptions** (`sub`/`unsub`/`msg`: `MemoryHost.Bridge`, the JavaScript `BridgeChannel`), **conflation** (`conflate: {everyMs}`: a
 merged message carries `first` and `seq`) and **filtered subscriptions** (`changes.filter`: patches restated for the matching rows; a
 filtered stream resumes only from the table's current position), in `Subscription`; the minimal SSE form takes them by `POST
-{base}/changes`. The live part is
+{base}/changes`; chart panels in `<rachana-view>` (the vendored Elements pack has `drishti-chart`); from level 1.2 a Sutra's plan over
+the host's schemas is read in checked mode (SPEC 4.14). The live part is
 aligned with the events wire protocol designed for Drishti Elements (`EVENTING_DESIGN.md` section 8, branch
 `design/eventing`) and the row patches of the Views design (`VIEWS_DESIGN.md` section 5); both are designs, not
 released code, so this document will be re-checked against them when they ship.

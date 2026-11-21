@@ -47,6 +47,22 @@ public final class DataPlan {
      * @param ctx controls and today, for the values a condition's non-row parts take
      */
     public static Map<String, Object> plan(Sutra sutra, Map<String, TableSchema> schemas, ElCompiler el, EvalContext ctx) {
+        return plan(sutra, schemas, el, ctx, null);
+    }
+
+    /** The level from which a plan over known schemas is also checked (SPEC 4.14; EL_EXPANSION X8, types over a table's schema). */
+    public static final String CHECKED_SINCE = "1.2";
+
+    /**
+     * The plan document; at language level {@link #CHECKED_SINCE} and above, with the schemas known, every row condition over a table
+     * (the entry's {@code where}, a reading panel's {@code where}) is also read in checked mode against the table's columns: a type
+     * refusal is {@code RCH-9127}, a filter on a masked column {@code RCH-9161}, each problem with {@code entry}, {@code panel} (for a
+     * panel's condition) and {@code where}. An unknown column stays {@code RCH-2071}; controls in a condition are the screen's values.
+     *
+     * @param level the Sutra's language level (null: not checked)
+     */
+    public static Map<String, Object> plan(Sutra sutra, Map<String, TableSchema> schemas, ElCompiler el, EvalContext ctx, String level) {
+        boolean checked = level != null && schemas != null && com.ash.rachana.parse.SutraBlocks.atLeast(level, CHECKED_SINCE);
         List<Object> tables = new ArrayList<>();
         List<Object> problems = new ArrayList<>();
         List<Panel> panels = new ArrayList<>();
@@ -70,12 +86,19 @@ public final class DataPlan {
             boolean canFilter = schema == null || schema.can("filter");
             if (e.where() != null) {
                 push(e.where(), null, el, ctx, canFilter, filters, columns, local);
+                if (checked && schema != null && !schema.columns().isEmpty()) {
+                    check(e.where(), e.name(), null, schema, el, ctx, problems);
+                }
             }
             String rowsText = "$." + e.name();
             boolean sole = readers.size() == 1 && !stripReads && rowsText.equals(readers.get(0).option("rows").map(String::trim).orElse(null))
                     && !mentionsOutsideRows(readers.get(0), reads);
             for (Panel p : readers) {
                 String w = p.option(Panel.WHERE).orElse(null);
+                if (w != null && checked && schema != null && !schema.columns().isEmpty()
+                        && rowsText.equals(p.option("rows").map(String::trim).orElse(null))) {
+                    check(w, e.name(), p.id(), schema, el, ctx, problems);
+                }
                 if (w != null) {
                     if (sole) {
                         push(w, p.id(), el, ctx, canFilter, filters, columns, local);
@@ -151,6 +174,42 @@ public final class DataPlan {
             local.add(local(panel, where, "the table cannot filter"));
         } else {
             filters.add(tree);
+        }
+    }
+
+    /**
+     * Checked mode over one row condition of a table: the condition with the controls' values in place (its filter tree spelt again, so
+     * controls, which a data scope does not name, are values), else the text itself with its control references not counted.
+     */
+    private static void check(String where, String entry, String panel, TableSchema schema, ElCompiler el, EvalContext ctx,
+            List<Object> problems) {
+        String text = where;
+        try {
+            Map<String, Object> tree = FilterTree.of(el.compile(where), ctx);
+            if (tree != null) {
+                text = FilterTree.toEl(tree);
+            }
+        } catch (ElException | IllegalArgumentException ex) {
+            return;                                                   // not compiled: the condition stays local with its reason
+        }
+        com.ash.rachana.el.check.Checker.Checked c = com.ash.rachana.el.CheckedMode.check(text, com.ash.rachana.el.check.Scope.ROW,
+                new TableFields(schema));
+        for (com.ash.rachana.el.check.Problem p : c.problems()) {
+            if (!p.error() || com.ash.rachana.el.check.Problem.NAME.equals(p.code()) || p.message().startsWith("ctl.")) {
+                continue;                                             // unknown columns are RCH-2071; controls are the screen's
+            }
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("code", p.code());
+            m.put("message", p.message());
+            if (p.fix() != null) {
+                m.put("fix", p.fix());
+            }
+            m.put("entry", entry);
+            if (panel != null) {
+                m.put("panel", panel);
+            }
+            m.put("where", where);
+            problems.add(m);
         }
     }
 

@@ -505,7 +505,9 @@ before it runs. Types: `integer`, `decimal`, `number`, `string`, `boolean`, `dat
 against `'9 Oct'`), chained comparisons, screen-only roots (`ctl`, `@panel`, `$src`, `#index`) in data scopes, old
 spellings (`RCH-9127`); functions without a signature yet (`RCH-9129`); unknown names with "did you mean"
 (`RCH-9152`); a filter, `in`, sort or grouping on a field masked for the reader (`RCH-9161`). **Checked mode only
-refuses more; it never changes what a text means.** A literal's type is `integer` (whole, no exponent), `decimal` (a
+refuses more; it never changes what a text means.** From level 1.2, a Sutra's plan over the host's schemas (DataPlan, `rachana
+explain`) reads each row condition over a table (the entry's `where`, a reading panel's `where`) in checked mode against the table's
+columns, with the controls' values in place; an unknown column stays `RCH-2071`. A literal's type is `integer` (whole, no exponent), `decimal` (a
 fraction, no exponent) or `number` (with an exponent), as 4.16 says.
 
 ### 4.15 Reservations

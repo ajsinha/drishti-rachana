@@ -382,7 +382,7 @@ public final class Cases {
                 schemas.put(e.getKey(), com.ash.rachana.table.TableSchema.of(e.getValue()));
             }
         }
-        sb.append("{\"plan\":").append(Json.write(com.ash.rachana.table.DataPlan.plan(sutra, schemas, at(c).compiler(), context(g)))).append('}');
+        sb.append("{\"plan\":").append(Json.write(com.ash.rachana.table.DataPlan.plan(sutra, schemas, at(c).compiler(), context(g), at(c).language()))).append('}');
     }
 
     static com.ash.rachana.model.Sutra parse(Map<String, Object> c) {

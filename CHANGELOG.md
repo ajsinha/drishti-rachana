@@ -92,7 +92,7 @@ Entries are written per release; the regime's unreleased work is listed after th
   on all 2,160 cases at levels 1.0 and 1.1; budgets: runtime 379 KB, tools 399 KB Brotli. Tests: Core `TablesTest`, `MemoryHostTest`,
   `TableClientTest` (JVM end to end), `js/packages/rachana/test/data_client.test.mjs` (Node end to end),
   `runners/view_browser.py` (`<rachana-view>` live in Chromium).
-- Not yet (lane C2 below builds the protocol's rest): checked mode over table schemas, exact decimal arithmetic in aggregates (the
+- Not yet (lane C2 below builds the protocol's rest and checked mode over table schemas): exact decimal arithmetic in aggregates (the
   decimals item, X2).
 
 ### The Data Protocol completed: row forms, bridge subscriptions, conflation, filters (lane C2)
@@ -122,6 +122,11 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **Chart panels in `<rachana-view>`**: the vendored Elements 3.1.0 pack now has `drishti-chart` (with `drishti-inputs`, Apache
   ECharts in the script, and its run-time files under `vendor/`), packed from the `v3.1.0` tag with its SHA-384 manifest. The browser
   test's Sutra has a line panel; `runners/view_browser.py` passes in Chromium 156, Firefox 157 and WebKit 27.2 (Playwright 1.64.0).
+- **Checked mode over table schemas** (SPEC 4.14, EL_EXPANSION X8 where it touches tables), from level 1.2: `DataPlan.plan(...,
+  level)` reads each row condition over a table (the entry's `where`, a reading panel's `where`) against the table's column types and
+  masks (`TableFields`): `RCH-9127` for a type refusal (no implicit casts, no text arithmetic), `RCH-9161` for a filter on a masked
+  column, each problem with `entry`, `panel`, `where`; an unknown column stays `RCH-2071`; controls are values. Levels 1.0 and 1.1 are
+  unchanged. `LiveScreen` and the conformance runner pass the level. Cases `plan/checked` (5); `TablesTest`.
 
 ### The `rachana` command and the Python SDK basics (G2, CLI and SDK lane)
 

@@ -271,7 +271,8 @@ What a runtime would ask of each table (SPEC 2.4, PROTOCOL 6 and 7): the tables 
 syntax tree with controls replaced by their values, sorting, grouping, and what stays local. `given.schemas` replaces
 rows. Cases check the plan document with `at`.
 
-**The plan document** (the same document `rachana explain --format json` prints): `{ tables, problems }`.
+**The plan document** is defined here: `{ tables, problems }`. `rachana explain --format json` (plan B1), when built, prints this
+document; it does not define it.
 
 `tables` has one entry per `table` entry of `data:`, in the order written (`url`, `rows` and `record` entries are not planned):
 

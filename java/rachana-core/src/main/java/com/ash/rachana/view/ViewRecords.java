@@ -42,6 +42,7 @@ final class ViewRecords {
                 ViewJson.put(m, "tone", r.tone(), Rule.ALWAYS);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Bars r -> {
@@ -74,6 +75,7 @@ final class ViewRecords {
                 ViewJson.put(m, "volumeText", r.volumeText(), Rule.NON_NULL);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Candles r -> {
@@ -100,6 +102,7 @@ final class ViewRecords {
                 ViewJson.put(m, "step", r.step(), Rule.NON_NULL);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_EMPTY);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.DataChart r -> {
@@ -133,6 +136,7 @@ final class ViewRecords {
                 ViewJson.put(m, "tone", r.tone(), Rule.NON_NULL);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Fields r -> {
@@ -140,6 +144,7 @@ final class ViewRecords {
                 ViewJson.put(m, "fields", r.fields(), Rule.ALWAYS);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Gauge r -> {
@@ -150,6 +155,7 @@ final class ViewRecords {
                 ViewJson.put(m, "label", r.label(), Rule.ALWAYS);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.GeoLink r -> {
@@ -283,6 +289,7 @@ final class ViewRecords {
                 ViewJson.put(m, "caption", r.caption(), Rule.ALWAYS);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Node r -> {
@@ -332,6 +339,7 @@ final class ViewRecords {
                 ViewJson.put(m, "link", r.link(), Rule.NON_NULL);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Row r -> {
@@ -345,6 +353,7 @@ final class ViewRecords {
                 ViewJson.put(m, "kidsTotal", r.kidsTotal(), Rule.NON_NULL);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Scatter r -> {
@@ -388,6 +397,7 @@ final class ViewRecords {
                 ViewJson.put(m, "total", r.total(), Rule.ALWAYS);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
                 ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Surface r -> {

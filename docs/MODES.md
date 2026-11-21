@@ -149,8 +149,28 @@ python -m drishti_rachana lint sutras/ --format sarif --strict      # exit 1 on 
 
 ## 4. Small standalone server
 
-One process: a folder of Sutras plus sources (REST endpoints or a database), live updates, and sign-in. For teams
-that want dashboards without writing an application. Planned for phase R2; its configuration is not designed yet.
+One process: a folder of Sutras plus sources (files, REST endpoints or a database), live updates, and sign-in. For teams
+that want dashboards without writing an application. Built (G3 step 1): `java/rachana-server`.
+
+```bash
+cd java && ./mvnw -pl rachana-server -am package -DskipTests        # rachana-server/target/rachana-server-<version>-all.jar
+java -jar rachana-server/target/rachana-server-0.11.0-SNAPSHOT-all.jar hash-password      # a hash for users.yaml
+java -jar rachana-server/target/rachana-server-0.11.0-SNAPSHOT-all.jar serve --config rachana-server.yaml
+# or, from the Node CLI: RACHANA_SERVER_JAR=<that jar> rachana serve --config rachana-server.yaml
+```
+
+```yaml
+rachana-server: 1
+project: { dir: "${config}/project" }          # sutras/, rachana_libs/, static/
+tables:
+  sales:  { file: "${project}/data/sales.csv", key: [region, month], refresh: 5s }
+  orders: { jdbc: { url: "jdbc:postgresql://db/sales", user: reporter, password-env: ORDERS_DB_PASSWORD },
+            query: "select * from orders where region = :region", params: { region: North }, key: order_id, refresh: 30s }
+auth:   { mode: users, users: "${config}/users.yaml" }
+access: { tables: { orders: { read: [sales] } } }
+```
+
+Pages are `/v/<sutra>`; the Data Protocol is at `/data/v1`; every key is in `java/rachana-server/rachana-server.example.yaml`.
 
 ## 5. Drishti
 

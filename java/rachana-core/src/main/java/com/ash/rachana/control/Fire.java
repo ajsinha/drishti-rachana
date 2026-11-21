@@ -15,8 +15,8 @@ import java.util.Map;
  * A trigger fired on a ViewModel as a painter fires it (SUTRA_EXPANSION I1, level 1.2; conformance kind {@code fire}): the mark the trigger
  * lands on (a table's rows, depth first through a tree's or a drill table's children; an {@code hbar}'s bars; a chart's points, steps,
  * events, candles or x positions; the one mark of a metric, a gauge or a record), the effects that mark carries, run in order, and the
- * state the screen holds after them. Rachana runs only the effects on its own state; the others ({@code host}, {@code go}, ...) are
- * handed to the host, which decides. A trigger the panel does not fire, or a mark it does not show, is a refusal ({@code RCH-5001}):
+ * state the screen holds after them. Rachana runs only the effects on its own state ({@code set}, {@code toggle}, {@code clear}); the
+ * others ({@code notify}, {@code host}) are handed to the host, which decides. A trigger the panel does not fire, or a mark it does not show, is a refusal ({@code RCH-5001}):
  * nothing runs.
  */
 public final class Fire {
@@ -54,6 +54,27 @@ public final class Fire {
             return refused(state, "panel '" + panel + "' shows no mark " + mark + " (it shows " + marks.size() + ")");
         }
         List<Map<String, Object>> effects = new ArrayList<>();
+        if (map(marks.get(mark).get("on")).get(trigger) instanceof List<?> list) {     // the whole list: state writes run here, the rest is handed over
+            for (Object o : list) {
+                Map<String, Object> e = new LinkedHashMap<>(map(o));
+                String id = String.valueOf(e.get("state"));
+                switch (String.valueOf(e.get("do"))) {
+                    case "set" -> state.put(id, e.get("value"));
+                    case "toggle" -> {
+                        boolean v = !Boolean.TRUE.equals(state.get(id));
+                        e.put("value", v);
+                        state.put(id, v);
+                    }
+                    case "clear" -> {
+                        e.put("value", null);
+                        state.put(id, null);
+                    }
+                    default -> { }
+                }
+                effects.add(e);
+            }
+            return new Result(state, effects, List.of());
+        }
         map(marks.get(mark).get("set")).forEach((id, value) -> {
             Map<String, Object> e = new LinkedHashMap<>();
             e.put("do", "set");
@@ -106,10 +127,14 @@ public final class Fire {
                 }
                 if (data.get("series") instanceof List<?> && data.get("x") instanceof List<?> x) {      // a line or area chart: one mark per x
                     List<?> sets = data.get("set") instanceof List<?> s ? s : List.of();
+                    List<?> ons = data.get("on") instanceof List<?> o ? o : List.of();
                     for (int i = 0; i < x.size(); i++) {
                         Map<String, Object> m = new LinkedHashMap<>();
                         if (i < sets.size()) {
                             m.put("set", sets.get(i));
+                        }
+                        if (i < ons.size()) {
+                            m.put("on", ons.get(i));
                         }
                         out.add(m);
                     }

@@ -1,0 +1,79 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+#
+# rachana-server.yaml: the standalone server's one configuration file. Every key is shown; all but rachana-server and project.dir are
+# optional. The file is checked whole at start (java -jar rachana-server-<version>-all.jar check --config <file>): an unknown key, a bad
+# value or a missing file is reported with every other problem, and the server does not start.
+#
+# Paths are explicit: absolute, or from ${config} (this file's folder) or ${project} (project.dir). A bare relative path is refused.
+# Secrets are never written here: a password or a secret header is named by an environment variable or a file.
+
+rachana-server: 1                       # the version of these keys
+
+server:
+  bind: 127.0.0.1                       # loopback by default; another address needs auth.mode users or header
+  port: 8080                            # 0: any free port (serve --port overrides)
+  origins: []                           # more origins allowed to POST (a reverse proxy's public address: https://dash.example.com)
+  cookie-secure: false                  # true behind HTTPS: the session cookie is sent over HTTPS only
+  session-idle: 30m                     # a session unused this long ends
+  session-max: 12h                      # a session ends this long after sign-in, used or not
+  max-body: 1048576                     # the largest request body, in bytes
+
+project:
+  dir: "${config}/project"              # sutras/ (*.sutra.yaml, any depth), rachana_libs/ (libraries), static/ (served at /static/)
+  level: "1.1"                          # the language level the pages compile at
+  watch: true                           # Sutras and project libraries are read again when they change
+
+libraries: []                           # more libraries: a library folder, an .rlib, or a folder of them (beside the bundled ones)
+
+assets:
+  runtime: "${config}/rachana.runtime.js"   # optional: serve this runtime bundle instead of the jar's
+
+drivers: []                             # JDBC driver jars (none is bundled): ["/opt/jdbc/postgresql-42.7.4.jar"]
+
+tables:                                 # each a Data Protocol table, kept live when it has refresh
+  sales:
+    title: Sales
+    file: "${project}/data/sales.csv"   # .csv (first line names the columns), .json (an array, or {rows: [...]}), .jsonl/.ndjson, .arrow
+    key: [region, month]                # a column or a list: rows are matched by it when they change
+    refresh: 5s                         # read again this often and send what changed as keyed patches; absent: read once
+    max-rows: 1000000                   # more rows than this is a refused read, never a cut table
+    where: "@.revenue > 0"              # optional Rachana-EL row condition: rows that fail it are not served
+    columns:                            # optional: inferred from the first read when absent (integer, decimal, boolean, date, timestamp, string)
+      - { name: region, type: string, label: Region }
+      - { name: month, type: date, label: Month }
+      - { name: revenue, type: decimal, label: Revenue, fmt: amount0 }
+  orders:
+    jdbc:
+      url: "jdbc:postgresql://db.internal:5432/sales"   # no password in the address
+      user: reporter
+      password-env: ORDERS_DB_PASSWORD  # or password-file: "${config}/secrets/orders.txt"
+      read-only: true                   # the default: the connection is read-only and rolled back after each read
+    query: "select order_id, region, amount, placed from orders where region = :region and placed >= :since"
+    params: { region: North, since: "2026-01-01" }      # bound to :region and :since through a prepared statement
+    key: order_id
+    refresh: 30s
+    timeout: 10s                        # the query's time limit
+  quotes:
+    rest:
+      url: "https://quotes.internal/api/v1/quotes"
+      path: $.data.items                # where the rows are in the answer (absent: the answer, or its rows)
+      headers: { Accept-Language: en }
+      header-env: { Authorization: QUOTES_TOKEN }       # header name: the environment variable holding its value
+    key: symbol
+    refresh: 5s
+
+auth:
+  mode: users                           # none (loopback only), users (the users file) or header (a trusted reverse proxy)
+  users: "${config}/users.yaml"         # users: { alice: { password: "pbkdf2-sha256$...", roles: [sales] } }; make a hash with hash-password
+  header:
+    user: X-Forwarded-User              # header mode: the header naming the caller
+    roles: X-Forwarded-Roles            # optional: comma-separated roles
+    trusted-proxies: [127.0.0.1]        # only these addresses may set the headers
+
+access:
+  default: signed-in                    # a table or Sutra without an entry: every signed-in caller (signed-in) or nobody (closed)
+  tables:
+    orders: { read: [sales, admin], unmask: { amount: [admin] } }   # read: the roles that may read; unmask: column -> roles that see it
+  sutras:
+    finance: [admin]                    # the roles that may open sutras/finance.sutra.yaml

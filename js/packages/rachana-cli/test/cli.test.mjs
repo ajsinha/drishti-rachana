@@ -11,6 +11,7 @@ import { main } from "../src/index.js";
 import { handler } from "../src/serve.js";
 import { libraryFiles } from "../src/lint.js";
 import { libCommand } from "../src/lib.js";
+import { serverCommand } from "../src/server.js";
 import { distDir } from "../src/bundle.js";
 
 const GOOD = "rachana: 1\nsutra: ok\nversion: 1\ntitle: { id: \"'Ok'\" }\npanels:\n  - { id: m, kind: metric, label: Revenue, value: 1 }\n";
@@ -109,6 +110,19 @@ test("lib hands over to the one Java implementation", async () => {
   assert.equal(await main(["lib", "verify", "x"], x), 2);
   Object.assign(process.env, saved);
   assert.ok(o.err[0].includes("RACHANA_JAR"));
+});
+
+test("serve hands over to the server jar (no jar: exit 2 naming RACHANA_SERVER_JAR; no config: usage)", async () => {
+  assert.equal(serverCommand({ config: "c.yaml" }, {}), null);
+  assert.deepEqual(serverCommand({ config: "c.yaml", port: "0" }, { RACHANA_SERVER_JAR: "s.jar" }),
+    ["java", ["-jar", "s.jar", "serve", "--config", "c.yaml", "--port", "0"]]);
+  assert.deepEqual(serverCommand({ config: "c.yaml", jar: "x.jar", check: true }, { RACHANA_JAVA: "/j/java" }), ["/j/java", ["-jar", "x.jar", "check", "--config", "c.yaml"]]);
+  const { o, io: x } = io();
+  const saved = process.env.RACHANA_SERVER_JAR; delete process.env.RACHANA_SERVER_JAR;
+  assert.equal(await main(["serve", "--config", "c.yaml"], x), 2);
+  if (saved !== undefined) process.env.RACHANA_SERVER_JAR = saved;
+  assert.ok(o.err[0].includes("RACHANA_SERVER_JAR"));
+  assert.equal(await main(["serve"], io().io), 2);
 });
 
 const jv = resolve(import.meta.dirname, "../../../../java");

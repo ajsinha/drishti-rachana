@@ -9,8 +9,10 @@ or set `RACHANA_DIST`).
     node bin/rachana.js build --src my-dash --out site [--level 1.1]               # static site (lints first)
     node bin/rachana.js preview my-dash/sutras/overview.sutra.yaml --data my-dash/data
     RACHANA_CLASSPATH=... node bin/rachana.js lib build|sign|keygen|pack|verify|lock|contracts|check-host ...
+    RACHANA_SERVER_JAR=... node bin/rachana.js serve --config rachana-server.yaml [--port 0] [--check]   # the standalone server (JVM)
 
-`lib` is the Java `LibraryTool` behind `com.ash.rachana.cli.Main` (one implementation): set `RACHANA_JAR` (a runnable jar) or
+`serve` starts `java/rachana-server` (a JVM process: `--jar` or `RACHANA_SERVER_JAR`, the `-all` jar; `--check` prints the checked settings
+and starts nothing). `lib` is the Java `LibraryTool` behind `com.ash.rachana.cli.Main` (one implementation): set `RACHANA_JAR` (a runnable jar) or
 `RACHANA_CLASSPATH` (the module classes or jars). Tests: `npm test` (the lib test needs `./mvnw -pl rachana-cli -am compile` in `java/`).
 
 **`build` and `preview` use the real `<rachana-view>`** (`js/packages/rachana/src`, with the Drishti Elements 3.2.0-dev+475232e pack under

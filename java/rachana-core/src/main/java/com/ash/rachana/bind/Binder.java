@@ -287,6 +287,82 @@ public final class Binder {
         return out.isEmpty() ? null : out;
     }
 
+    /**
+     * The whole effect list a click on one mark runs (level 1.2, I1), when it holds more than plain state writes: {@code {<trigger>: [ effect,
+     * ... ]}}, each effect evaluated for the mark ({@code rc}: {@code @} its row): {@code {do: set, state, value}}, {@code {do: toggle,
+     * state}}, {@code {do: clear, state}}, {@code {do: notify, text, tone?}}, {@code {do: host, action, with?}} (the host's: Rachana never
+     * runs it). An effect whose {@code when} is not true is left out for this mark; the list stops at a {@code set} whose value fails or
+     * does not fit its state's type. Null when the trigger's list is plain state writes (then the mark's {@code set} says it) or empty.
+     */
+    Map<String, Object> on(Panel p, String trigger, EvalContext rc) {
+        if (!com.ash.rachana.model.Effects.full(p, trigger)) {
+            return null;
+        }
+        Map<String, String> types = com.ash.rachana.el.Declarations.inForce().states();
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (Map<String, Object> e : com.ash.rachana.model.Effects.list(p, trigger)) {
+            if (e.get("when") instanceof String w) {
+                Object ok;
+                try {
+                    ok = el.compile(w).eval(rc);
+                } catch (RuntimeException ex) {
+                    ok = false;
+                }
+                if (!Values.truthy(ok)) {
+                    continue;
+                }
+            }
+            Map<String, Object> v = new java.util.LinkedHashMap<>();
+            String word = e.get("do") instanceof String d ? d : "set";
+            v.put("do", word);
+            switch (word) {
+                case "set" -> {
+                    String type = types.get(String.valueOf(e.get("state")));
+                    if (type == null) {
+                        continue;
+                    }
+                    try {
+                        v.put("state", e.get("state"));
+                        v.put("value", com.ash.rachana.el.StateTypes.json(com.ash.rachana.el.StateTypes.of(type, el.compile(String.valueOf(e.get("to"))).eval(rc))));
+                    } catch (RuntimeException ex) {
+                        return out.isEmpty() ? null : Map.of(trigger, out);      // effects stop at the first that fails (SUTRA_EXPANSION 3.4)
+                    }
+                }
+                case "toggle", "clear" -> v.put("state", e.get("state"));
+                case "notify" -> {
+                    Object t;
+                    try {
+                        t = el.template(String.valueOf(e.get("text"))).render(rc);
+                    } catch (RuntimeException ex) {
+                        t = e.get("text");
+                    }
+                    v.put("text", Values.text(t));
+                    if (e.get("tone") != null) {
+                        v.put("tone", e.get("tone"));
+                    }
+                }
+                default -> {
+                    v.put("action", e.get("action"));
+                    if (e.get("with") instanceof Map<?, ?> with) {
+                        Map<String, Object> w = new java.util.LinkedHashMap<>();
+                        with.forEach((k, x) -> {
+                            Object r;
+                            try {
+                                r = Values.simplify(el.compile(String.valueOf(x)).eval(rc));
+                            } catch (RuntimeException ex) {
+                                r = null;
+                            }
+                            w.put(String.valueOf(k), r instanceof com.ash.rachana.api.Node n ? (n.isMissing() ? null : n.unwrap()) : r);
+                        });
+                        v.put("with", w);
+                    }
+                }
+            }
+            out.add(v);
+        }
+        return out.isEmpty() ? null : Map.of(trigger, out);
+    }
+
     private static String pick(Node row, String field) {
         if (field == null) {
             return null;
@@ -319,7 +395,7 @@ public final class Binder {
                 }
             });
         }
-        return new PanelData.Fields(fields, oneMark(p), oneSet(p, c));
+        return new PanelData.Fields(fields, oneMark(p), oneSet(p, c), oneOn(p, c));
     }
 
     /** A figure's or a record's {@code ev} (level 1.2): "0" on a panel that emits on point-click, the panel itself one mark. */
@@ -330,6 +406,11 @@ public final class Binder {
     /** What a point-click on a figure or a record writes into the screen's state (level 1.2, I1), in the panel's context; null for none. */
     private Map<String, Object> oneSet(Panel p, BindContext c) {
         return sets(com.ash.rachana.model.Effects.sets(p, com.ash.rachana.model.Wiring.POINT_CLICK), c.eval());
+    }
+
+    /** The whole point-click effect list of a figure or a record, in the panel's context; null when it is plain state writes. */
+    private Map<String, Object> oneOn(Panel p, BindContext c) {
+        return on(p, com.ash.rachana.model.Wiring.POINT_CLICK, c.eval());
     }
 
     private PanelData status(Panel p, BindContext c) {
@@ -343,7 +424,7 @@ public final class Binder {
                 }
             }
         }
-        return new PanelData.Fields(fields, oneMark(p), oneSet(p, c));
+        return new PanelData.Fields(fields, oneMark(p), oneSet(p, c), oneOn(p, c));
     }
 
     private PanelData table(Panel p, BindContext c) {
@@ -383,7 +464,7 @@ public final class Binder {
             }
             String rowPath = rowsPath == null ? null : rowsPath + "[" + (origin == null ? i : origin[i]) + "]";
             if (childrenExpr != null) {
-                PanelData.Row tree = treeRow(cols, rc, rowPath, childrenExpr, highlight, totals, masked, i < limit, 0, budget);
+                PanelData.Row tree = treeRow(p, cols, rc, rowPath, childrenExpr, highlight, totals, masked, i < limit, 0, budget);
                 if (tree != null) {
                     out.add(tree);
                 }
@@ -396,7 +477,8 @@ public final class Binder {
             boolean hl = highlight != null && Values.truthy(eval(highlight, rc));
             out.add(new PanelData.Row(cells, hl, rowPath, null, pick(rows.get(i), pickField), null, null,
                     emits ? String.valueOf(origin == null ? i : origin[i]) : null,     // a click sends the row's place in the data back
-                    sets(rowSets, rc)));                                              // level 1.2, I1: what a click writes into state
+                    sets(rowSets, rc),                                                // level 1.2, I1: what a click writes into state
+                    on(p, "row-click", rc)));                                         // ... or its whole effect list
         }
         PanelData.Row total = null;
         if (cols.stream().anyMatch(Column::total)) {
@@ -469,7 +551,7 @@ public final class Binder {
             }
             String rowPath = rowsPath == null ? null : rowsPath + "[" + (origin == null ? i : origin[i]) + "]";
             boolean hl = highlight != null && Values.truthy(eval(highlight, rc));
-            out.add(drillRow(cols, crumb, levels, 0, rc, rowPath, hl, budget));
+            out.add(drillRow(p, cols, crumb, levels, 0, rc, rowPath, hl, budget));
         }
         PanelData.Row total = totalRow(cols, shown, p.option("totalLabel").orElse("Total"));
         String more = rows.size() > limit
@@ -488,7 +570,7 @@ public final class Binder {
         return new PanelData.Table(headers, numeric, out, total, more, search, null, null, heads, root, p.option("empty").orElse(null));
     }
 
-    private PanelData.Row drillRow(List<Column> cols, String crumbExpr, List<LevelSpec> levels, int depth, EvalContext rc, String path,
+    private PanelData.Row drillRow(Panel p, List<Column> cols, String crumbExpr, List<LevelSpec> levels, int depth, EvalContext rc, String path,
             boolean highlight, int[] budget) {
         List<Cell> cells = new ArrayList<>(cols.size());
         for (Column col : cols) {
@@ -515,11 +597,12 @@ public final class Binder {
                 budget[0]--;
                 EvalContext kc = rc.withRow(kid, j);
                 contexts.add(kc);
-                kids.add(drillRow(level.columns(), level.crumb(), levels, depth + 1, kc, null, false, budget));
+                kids.add(drillRow(p, level.columns(), level.crumb(), levels, depth + 1, kc, null, false, budget));
             }
             kidsTotal = totalRow(level.columns(), contexts, "Total");
         }
-        return new PanelData.Row(cells, highlight, path, kids, null, crumb, kidsTotal);
+        return new PanelData.Row(cells, highlight, path, kids, null, crumb, kidsTotal, null,   // level 1.2, I1: @ the row at its level
+                sets(com.ash.rachana.model.Effects.sets(p, "row-click"), rc), on(p, "row-click", rc));
     }
 
     /** The total row of {@code total: true} columns over these rows; null when no column is totalled. A masked value is never added up. */
@@ -558,7 +641,7 @@ public final class Binder {
      * @param budget rows left to build in all (at the front), so a deep or cyclic document stays bounded
      * @return the row, or null when {@code emit} is false
      */
-    private PanelData.Row treeRow(List<Column> cols, EvalContext rc, String path, String childrenExpr, String highlight, double[] totals,
+    private PanelData.Row treeRow(Panel p, List<Column> cols, EvalContext rc, String path, String childrenExpr, String highlight, double[] totals,
             boolean[] masked, boolean emit, int depth, int[] budget) {
         List<PanelData.Row> sub = new ArrayList<>();
         Node kids = depth < limits.treeDepth() ? node(eval(childrenExpr, rc)) : Node.missing();
@@ -572,7 +655,7 @@ public final class Binder {
             }
             budget[0]--;
             walked++;
-            PanelData.Row child = treeRow(cols, rc.withRow(kid, j), null, childrenExpr, highlight, totals, masked, emit, depth + 1, budget);
+            PanelData.Row child = treeRow(p, cols, rc.withRow(kid, j), null, childrenExpr, highlight, totals, masked, emit, depth + 1, budget);
             if (child != null) {
                 sub.add(child);
             }
@@ -595,7 +678,8 @@ public final class Binder {
             cells.add(cell(col, rc, null));
         }
         boolean hl = highlight != null && Values.truthy(eval(highlight, rc));
-        return new PanelData.Row(cells, hl, path, sub);
+        return new PanelData.Row(cells, hl, path, sub, null, null, null, null,     // level 1.2, I1: a click on any node writes state, @ the node
+                sets(com.ash.rachana.model.Effects.sets(p, "row-click"), rc), on(p, "row-click", rc));
     }
 
     /** Where the total label goes: the column just before the first totalled column, else the first. */
@@ -674,6 +758,8 @@ public final class Binder {
         EvalContext data = c.eval();
         List<com.ash.rachana.model.Effects.SetState> pointSets = com.ash.rachana.model.Effects.sets(p, com.ash.rachana.model.Wiring.POINT_CLICK);
         List<Map<String, Object>> marks = new ArrayList<>();
+        List<Map<String, Object>> ons = new ArrayList<>();
+        boolean full = com.ash.rachana.model.Effects.full(p, com.ash.rachana.model.Wiring.POINT_CLICK);
         LinkView source = null;
         Optional<EntityRef> src = chartSource(p, c.eval());
         if (src.isPresent()) {
@@ -701,7 +787,7 @@ public final class Binder {
             }
         } else {
             Node all = node(eval(p.option("rows").orElse("points"), data));
-            int[] origin = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK) || !pointSets.isEmpty() ? originals(p, all, data) : null;
+            int[] origin = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK) || !pointSets.isEmpty() || full ? originals(p, all, data) : null;
             Node rows = origin == null ? where(p, all, data) : keep(all, origin);
             String x = p.option("x").orElse("tenor");
             String y = p.option("y").orElse("value");
@@ -714,6 +800,9 @@ public final class Binder {
                 if (!pointSets.isEmpty()) {
                     marks.add(sets(pointSets, data.withRow(rows.get(i), origin == null ? i : origin[i])));
                 }
+                if (full) {
+                    ons.add(on(p, com.ash.rachana.model.Wiring.POINT_CLICK, data.withRow(rows.get(i), origin == null ? i : origin[i])));
+                }
             }
         }
         String mark = p.option("mark").map(m -> Values.text(eval(m, c.eval()))).filter(s -> !s.isEmpty()).orElse(null);
@@ -725,7 +814,7 @@ public final class Binder {
                     + (unit.isEmpty() || unit.equals("%") ? unit : " " + unit);
         }
         return new PanelData.Chart(xs, List.of(new PanelData.Series(p.title(), ys, "link")), mark, markText, null, null, source,
-                p.option("unit").orElse(null), "true".equals(p.option("step").orElse(null)) ? Boolean.TRUE : null, evs.isEmpty() ? null : evs, marks.isEmpty() ? null : marks);
+                p.option("unit").orElse(null), "true".equals(p.option("step").orElse(null)) ? Boolean.TRUE : null, evs.isEmpty() ? null : evs, marks.isEmpty() ? null : marks, ons.isEmpty() ? null : ons);
     }
 
     private PanelData area(Panel p, BindContext c) {
@@ -733,7 +822,9 @@ public final class Binder {
         boolean clicks = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK);
         List<com.ash.rachana.model.Effects.SetState> pointSets = com.ash.rachana.model.Effects.sets(p, com.ash.rachana.model.Wiring.POINT_CLICK);
         List<Map<String, Object>> marks = new ArrayList<>();
-        int[] origin = clicks || !pointSets.isEmpty() ? originals(p, all, c.eval()) : null;
+        List<Map<String, Object>> ons = new ArrayList<>();
+        boolean full = com.ash.rachana.model.Effects.full(p, com.ash.rachana.model.Wiring.POINT_CLICK);
+        int[] origin = clicks || !pointSets.isEmpty() || full ? originals(p, all, c.eval()) : null;
         Node rows = origin == null ? where(p, all, c.eval()) : keep(all, origin);
         String x = p.option("x").orElse("tenor");
         List<String> xs = new ArrayList<>();
@@ -745,6 +836,9 @@ public final class Binder {
             }
             if (!pointSets.isEmpty()) {
                 marks.add(sets(pointSets, c.eval().withRow(rows.get(i), origin == null ? i : origin[i])));
+            }
+            if (full) {
+                ons.add(on(p, com.ash.rachana.model.Wiring.POINT_CLICK, c.eval().withRow(rows.get(i), origin == null ? i : origin[i])));
             }
         }
         List<PanelData.Series> series = new ArrayList<>();
@@ -762,7 +856,7 @@ public final class Binder {
         }
         Double limit = p.option("limit").map(l -> Values.number(eval(l, c.eval()))).filter(d -> !d.isNaN()).orElse(null);
         return new PanelData.Chart(xs, series, null, null, limit, p.option("limitLabel").orElse(null), null, p.option("unit").orElse(null), null,
-                evs.isEmpty() ? null : evs, marks.isEmpty() ? null : marks);
+                evs.isEmpty() ? null : evs, marks.isEmpty() ? null : marks, ons.isEmpty() ? null : ons);
     }
 
     private PanelData bars(Panel p, BindContext c) {
@@ -786,7 +880,8 @@ public final class Binder {
             total += v;
             bars.add(new PanelData.Bar(r.get(label).asText(), v, formats.format(fmt, Values.normalise(v)),
                     tone == null ? (v < 0 ? "neg" : "pos") : Tones.resolve(tone, v), emits ? String.valueOf(origin == null ? i : origin[i]) : null,
-                    barSets.isEmpty() ? null : sets(barSets, c.eval().withRow(r, origin == null ? i : origin[i]))));
+                    barSets.isEmpty() ? null : sets(barSets, c.eval().withRow(r, origin == null ? i : origin[i])),
+                    on(p, "bar-click", c.eval().withRow(r, origin == null ? i : origin[i]))));
         }
         String shape = p.option("shape").filter("donut"::equals).orElse(null);
         return new PanelData.Bars(bars, shape, shape == null ? null : formats.format(fmt, Values.normalise(total)));
@@ -821,7 +916,7 @@ public final class Binder {
                 return t;
             }
         }).orElse(null);
-        return new PanelData.Metric(value, delta, p.option("unit").orElse(null), caption, oneMark(p), oneSet(p, c));
+        return new PanelData.Metric(value, delta, p.option("unit").orElse(null), caption, oneMark(p), oneSet(p, c), oneOn(p, c));
     }
 
     /** A value a document may lack: it shows as a dash, never as an error. */
@@ -841,9 +936,9 @@ public final class Binder {
         double max = p.option("max").map(m -> Values.number(eval(m, c.eval()))).filter(Double::isFinite).orElse(1.0);
         String fmt = p.option("fmt").orElse("pct0");
         if (!Double.isFinite(v)) {
-            return new PanelData.Gauge(Double.NaN, max, Values.masked(value) ? Node.MASK : "—", p.option("label").orElse(null), oneMark(p), oneSet(p, c));
+            return new PanelData.Gauge(Double.NaN, max, Values.masked(value) ? Node.MASK : "—", p.option("label").orElse(null), oneMark(p), oneSet(p, c), oneOn(p, c));
         }
-        return new PanelData.Gauge(v, max, formats.format(fmt, v / (max == 0 ? 1 : max)), p.option("label").orElse(null), oneMark(p), oneSet(p, c));
+        return new PanelData.Gauge(v, max, formats.format(fmt, v / (max == 0 ? 1 : max)), p.option("label").orElse(null), oneMark(p), oneSet(p, c), oneOn(p, c));
     }
 
     private PanelData surface(Panel p, BindContext c) {

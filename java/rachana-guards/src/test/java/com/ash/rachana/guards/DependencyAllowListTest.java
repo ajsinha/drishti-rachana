@@ -46,7 +46,9 @@ class DependencyAllowListTest {
                 boolean teavmBuild = g.equals("org.teavm") && module.equals("rachana-js") && body.contains("<scope>provided</scope>");
                 // Arrow IPC (PROTOCOL 5.2): the official Apache Arrow Java library (Apache-2.0), in the Data Protocol module only
                 boolean arrowData = g.equals("org.apache.arrow") && module.equals("rachana-data");
-                assertTrue(rachana || junitTest || teavmBuild || arrowData, pom + " has a dependency outside the allow-list: " + g + ":" + m.group(2));
+                // a JDBC driver for the standalone server's JDBC source tests: test scope, in rachana-server only (drivers are the operator's)
+                boolean jdbcTest = g.equals("com.h2database") && module.equals("rachana-server") && body.contains("<scope>test</scope>");
+                assertTrue(rachana || junitTest || teavmBuild || arrowData || jdbcTest, pom + " has a dependency outside the allow-list: " + g + ":" + m.group(2));
             }
         }
         Set<String> stale = new LinkedHashSet<>(exempt);

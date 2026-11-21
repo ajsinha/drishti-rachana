@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>0.11.0-SNAPSHOT</version></parent>
+  <artifactId>rachana-server</artifactId>
+  <name>rachana-server</name>
+  <!-- The standalone server (COMPILER_AND_RUNTIMES 10, MODES 4): a project folder of Sutras, Data Protocol tables from files, JDBC and REST
+       sources kept live by rachana-live, sign-in. The JDK's HTTP server on virtual threads; no framework, no driver bundled (JDBC drivers
+       are the operator's, named in the configuration). Depends on rachana-live (and through it rachana-data and Core) only. -->
+  <dependencies>
+    <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-live</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+    <!-- A JDBC driver for the JDBC source's tests only (test scope; DependencyAllowListTest allows it here and nowhere else). -->
+    <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><version>2.3.232</version><scope>test</scope></dependency>
+  </dependencies>
+  <properties>
+    <!-- The vendored Drishti Elements pack the pages load (js/vendor/drishti-elements/<this>; the CLI's site.js names the same one). -->
+    <rachana.elements.pack>3.2.0-dev+475232e</rachana.elements.pack>
+    <rachana.arrow.opens>--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED</rachana.arrow.opens>
+  </properties>
+  <build>
+    <resources>
+      <resource><directory>src/main/resources</directory><filtering>false</filtering><excludes><exclude>rachana-server/server.properties</exclude></excludes></resource>
+      <resource><directory>src/main/resources</directory><filtering>true</filtering><includes><include>rachana-server/server.properties</include></includes></resource>
+    </resources>
+    <plugins>
+      <!-- The page assets and the bundled libraries, copied from the repository into the jar (never from a CDN):
+           <rachana-view> and its modules, the vendored Elements pack, the runtime bundle when built (tools/js/build_js.py), libraries/. -->
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>page-assets</id>
+            <phase>process-resources</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}/rachana-server/assets</outputDirectory>
+              <resources>
+                <resource><directory>${rachana.repo.root}/js/packages/rachana/src</directory><targetPath>rachana/src</targetPath><includes><include>*.js</include></includes></resource>
+                <resource><directory>${rachana.repo.root}/js/packages/rachana/dist</directory><targetPath>rachana</targetPath><includes><include>rachana.runtime.js</include></includes></resource>
+                <resource><directory>${rachana.repo.root}/js/vendor/drishti-elements/${rachana.elements.pack}</directory><targetPath>vendor/drishti-elements/${rachana.elements.pack}</targetPath></resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>bundled-libraries</id>
+            <phase>process-resources</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}/META-INF/rachana/libs</outputDirectory>
+              <resources>
+                <resource><directory>${rachana.repo.root}/libraries</directory><excludes><exclude>README.md</exclude><exclude>*/SIGNATURE</exclude></excludes></resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${rachana.arrow.opens} --add-reads com.ash.rachana.server=java.net.http</argLine>
+          <systemPropertyVariables><rachana.repo.root>${rachana.repo.root}</rachana.repo.root></systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive><manifest><mainClass>com.ash.rachana.server.Main</mainClass></manifest></archive>
+        </configuration>
+      </plugin>
+      <!-- `java -jar rachana-server-<version>-all.jar`: one runnable jar with its dependencies (Arrow's need java.nio opened: Add-Opens). -->
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>all</shadedClassifierName>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/versions/*/module-info.class</exclude>
+                    <exclude>META-INF/*.SF</exclude><exclude>META-INF/*.DSA</exclude><exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.ash.rachana.server.Main</mainClass>
+                  <manifestEntries><Add-Opens>java.base/java.nio</Add-Opens><Multi-Release>true</Multi-Release></manifestEntries>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- rachana-data's Arrow dependencies reach this module transitively; it adds none of its own. -->
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-rules</id>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <includes combine.children="append">
+                    <include>com.fasterxml.jackson.core:*</include>
+                    <include>com.fasterxml.jackson.datatype:jackson-datatype-jsr310</include>
+                    <include>org.slf4j:slf4j-api</include>
+                  </includes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

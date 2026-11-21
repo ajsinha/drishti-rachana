@@ -543,8 +543,14 @@ final class ChartBinder {
         view.put("source", "panel");
         view.put("rows", rowDims);
         view.put("columns", List.of("x"));
-        view.put("values", List.of(Map.of("measure", function, "as", "v")));
-        view.put("expandTo", Map.of("rows", Math.max(1, k), "columns", 1));
+        Map<String, Object> value = new LinkedHashMap<>();                 // fixed key order, never Map.of's
+        value.put("measure", function);
+        value.put("as", "v");
+        Map<String, Object> expand = new LinkedHashMap<>();
+        expand.put("rows", Math.max(1, k));
+        expand.put("columns", 1);
+        view.put("values", List.of(value));
+        view.put("expandTo", expand);
         return pivotEngine.cells(view, fields, data);
     }
 

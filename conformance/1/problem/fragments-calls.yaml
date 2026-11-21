@@ -395,6 +395,45 @@ cases:
         message: "fragment desk-total names a column of table rows in sum(...) by a computed text ('arg.measure'): the caller's mapping cannot rename it; write the column parameter as text (one of desk, amount) or read the column as @.<name>"
         range: { start: { line: 16, column: 53 } }
 
+  - id: filter-over-rows-the-mapping-cannot-follow
+    kind: problem
+    source: L-21 (3); library finding (core library 1.0.0), never silent
+    files:
+      desk-mapped.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-mapped
+        version: 1
+        doc:
+          summary: Large amounts over rows made by map.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - { id: big, kind: metric, label: Large, value: "count(map(arg.rows, @)[?@.amount > 1000])" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-mapped@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2121
+        severity: error
+        message: "fragment desk-mapped reads @.amount over 'map(arg.rows, @)', rows derived from table rows that the caller's mapping cannot follow: filter the table itself (arg.rows[?...]), or derive the rows with sort, take, drop, unique, difference or intersect over it"
+        range: { start: { line: 15, column: 51 } }
+
   - id: bare-name-of-a-local-column
     kind: problem
     source: L-21 (3) (RCH-2121)

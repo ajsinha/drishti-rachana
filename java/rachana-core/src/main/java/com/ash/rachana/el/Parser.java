@@ -683,7 +683,11 @@ final class Parser {
             return at(new Expr.Call(name, null, args, named), s);
         }
         if (!named.isEmpty()) {
-            bind(name, args, named, names);
+            if (v11 && CoreParams.of(name) != null) {
+                bindCore(name, args, named, names);
+            } else {
+                bind(name, args, named, names);
+            }
         }
         if (args.size() < arity[0] || args.size() > arity[1]) {
             throw new ElException(name + " takes " + arity[0] + (arity[0] == arity[1] ? "" : "-" + arity[1])
@@ -863,6 +867,33 @@ final class Parser {
                 continue;
             }
             int place = positional.indexOf(param);
+            if (place < args.size() && !(args.get(place) instanceof Expr.Absent)) {
+                throw new ElException(fn + ": " + e.getKey() + " is given twice (by place and by name)", at.pos());
+            }
+            while (args.size() <= place) {
+                args.add(new Expr.Absent());
+            }
+            args.set(place, e.getValue());
+            named.remove(e.getKey());
+        }
+    }
+
+    /**
+     * Level 1.1: binds the named arguments of a Core function by the catalogue's parameter names ({@link CoreParams}): each moves to its
+     * place ({@link Expr.Absent} filling the optional places before it); a repeatable parameter is given by place only.
+     */
+    private static void bindCore(String fn, List<Expr> args, Map<String, Expr> named, List<Token> names) {
+        List<String> plain = CoreParams.names(fn);
+        int k = 0;
+        for (Map.Entry<String, Expr> e : List.copyOf(named.entrySet())) {
+            Token at = names.get(k++);
+            int place = plain.indexOf(e.getKey());
+            if (place < 0) {
+                throw new ElException(fn + " has no argument named " + e.getKey() + (plain.isEmpty() ? "" : "; its arguments: " + plain), at.pos());
+            }
+            if (CoreParams.of(fn).get(place).repeatable()) {
+                throw new ElException(fn + ": " + e.getKey() + " is repeatable; give its values by place", at.pos());
+            }
             if (place < args.size() && !(args.get(place) instanceof Expr.Absent)) {
                 throw new ElException(fn + ": " + e.getKey() + " is given twice (by place and by name)", at.pos());
             }

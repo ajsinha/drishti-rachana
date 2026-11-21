@@ -629,11 +629,19 @@ public final class ScreenWire {
         return n;
     }
 
+    private static Map<String, String> pair(String k1, String v1, String k2, String v2) {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put(k1, v1);
+        m.put(k2, v2);
+        return java.util.Collections.unmodifiableMap(m);
+    }
+
     /** The wiring the console needs, {@code waits} only while the panel waits. */
     static ViewModel.Wire wire(Panel p, SutraWiring.Node n, String waits) {
         Wiring w = p.wiring();
-        List<Map<String, String>> emits = w.emits().stream().map(e -> Map.of("name", e.name(), "on", e.on())).toList();
-        List<Map<String, String>> kids = w.children().stream().map(g -> Map.of("place", g.place(), "show", g.show())).toList();
+        // declaration order, never Map.of's (its order changes from run to run): the ViewModel's bytes are the same on every run
+        List<Map<String, String>> emits = w.emits().stream().map(e -> pair("name", e.name(), "on", e.on())).toList();
+        List<Map<String, String>> kids = w.children().stream().map(g -> pair("place", g.place(), "show", g.show())).toList();
         Wiring.Source src = w.source() != null ? w.source() : n != null && n.group() != null ? n.group().source() : null;
         Map<String, String> source = null;
         if (src != null) {

@@ -130,7 +130,10 @@ public final class DataPlan {
                 }
             }
             if (!filters.isEmpty()) {
-                query.put("filter", filters.size() == 1 ? filters.get(0) : Map.of("op", "&&", "args", filters));
+                Map<String, Object> all = new LinkedHashMap<>();         // keys in a fixed order: the plan's bytes are the same on every run
+                all.put("op", "&&");
+                all.put("args", filters);
+                query.put("filter", filters.size() == 1 ? filters.get(0) : all);
             }
             if (e.limit() != null) {
                 query.put("limit", e.limit());

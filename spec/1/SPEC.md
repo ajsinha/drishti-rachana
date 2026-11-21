@@ -438,7 +438,9 @@ A host's `Masker` marks values the reader may not see. A masked value prints `â€
 3. **Named arguments.** `f(x, name = v)`: names come after positional arguments; the name MUST be a parameter of the
    signature, given once and not also by place. A Core function binds every named argument to its position (a skipped
    optional parameter before it is empty, i.e. its default). A keyword-only parameter (`where`, `by`, `ignore`, â€¦)
-   exists only for profile functions; over a list it is refused at evaluation (`RCH-2102`).
+   exists only for profile functions; over a list it is refused at evaluation (`RCH-2102`). From level 1.1 a Core
+   function's parameter names are those of the function catalogue (`functions.yaml`, the contract: `avg(list, field?)`,
+   so `avg($.rows, field = 'x')`); a repeatable parameter (`...values`) is given by place only (`RCH-2101`).
 4. **Eager and lazy.** Most functions receive evaluated arguments and return a masked result if any argument is
    masked (4.9). **Forms** receive their arguments unevaluated: `switch`, `iferror`, `is_error`, `choose` evaluate
    lazily; `map`, `sort`, `reduce`, `group` evaluate an argument once per element with `@` the element, `#index` its

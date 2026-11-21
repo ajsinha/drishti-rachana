@@ -15,6 +15,6 @@ public final class BundledResources implements ResourceSupplier {
 
     @Override
     public String[] supplyResources(ResourceSupplierContext context) {
-        return new String[] { "formats.yaml", "world-regions.yaml", "rachana/el/signatures.yaml" };
+        return new String[] { "formats.yaml", "world-regions.yaml", "rachana/el/signatures.yaml", "rachana/el/functions.yaml" };
     }
 }

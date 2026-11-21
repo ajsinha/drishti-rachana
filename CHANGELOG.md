@@ -5,6 +5,20 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Named arguments by the catalogue; stable wire keys (G2 lane A4)
+
+- **The function catalogue is the one source of Core's parameter names** (lead's decision): `spec/1/functions.yaml` is built into
+  the jar and both bundles (`rachana/el/functions.yaml`); `CoreParams` reads names, repeatable parameters and `role: column` from
+  it (`FragmentColumns.COLUMN_PARAMS` too). From level 1.1 named arguments bind by those names (`avg($.p, field = 'x')`; the old
+  kernel names `x, where` are refused; a repeatable parameter only by place). Level 1.0 unchanged. `CoreParamsTest` guards that
+  every implemented function has a catalogue entry and vice versa; `el/named-arguments-1-1` (10 cases). Bundles grow by the
+  catalogue (Brotli runtime 463 KB, tools 483 KB).
+- **Deterministic ViewModel bytes**: an event's `wire.emits` keys (`name`, `on`) and a child group's keys in declaration order (were
+  `Map.of`'s, varying from run to run); the same for a plan's `&&` filter and the chart binder's engine view. `ScreenWireOrderTest`.
+- **L-21, never silent over derived rows** (library finding): `difference` and `intersect` keep their first list's rows (`union` when
+  both lists are one table's), so a filter's `@.<column>` over them is renamed; a filter over rows the mapping cannot follow
+  (`map(arg.rows, @)[?@.amount > 0]`) is `RCH-2121`, never a silent read of nothing. Cases sutra +1, problem +1.
+
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 
 - **L3 to L6, the engine** (new JVM module `rachana-live`, never in Core or the bundles: `LiveModuleGuardTest`): `LiveTables` is a

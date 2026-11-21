@@ -24,6 +24,12 @@
         <directory>${rachana.repo.root}/js/vendor/drishti-elements/${drishti.elements.version}/data</directory>
         <includes><include>world-regions.yaml</include><include>formats.yaml</include></includes>
       </resource>
+      <!-- The function catalogue is the contract: Core reads its parameter names and roles from it (one source, CoreParams). -->
+      <resource>
+        <directory>${rachana.repo.root}/spec/1</directory>
+        <includes><include>functions.yaml</include></includes>
+        <targetPath>rachana/el</targetPath>
+      </resource>
     </resources>
   </build>
 </project>

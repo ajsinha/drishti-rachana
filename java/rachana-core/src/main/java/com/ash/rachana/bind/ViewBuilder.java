@@ -9,6 +9,8 @@ import com.ash.rachana.api.Node;
 import com.ash.rachana.control.BusinessDays;
 import com.ash.rachana.control.ControlResolver;
 import com.ash.rachana.control.ControlValues;
+import com.ash.rachana.control.ScreenState;
+import com.ash.rachana.control.StateValues;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.EvalContext;
 import com.ash.rachana.el.Link;
@@ -49,14 +51,23 @@ import java.util.function.Supplier;
  */
 public final class ViewBuilder {
 
-    /** One view to build: the entity, its Sutra and layout, the point in time, the viewer, the control values, the host's object. */
-    public record Request(Entity doc, Sutra sutra, Layout layout, AsOf asOf, Masker viewer, ControlValues values, Object host) {
+    /**
+     * One view to build: the entity, its Sutra and layout, the point in time, the viewer, the control values, the host's object, and
+     * the state values the host kept for this reader (level 1.2, SUTRA_EXPANSION S1; decision S1-OPEN a).
+     */
+    public record Request(Entity doc, Sutra sutra, Layout layout, AsOf asOf, Masker viewer, ControlValues values, Object host, StateValues state) {
 
         public Request {
             layout = layout == null ? Layout.written(sutra == null ? null : sutra.name()) : layout;
             asOf = asOf == null ? AsOf.LATEST : asOf;
             viewer = viewer == null ? Masker.NONE : viewer;
             values = values == null ? ControlValues.NONE : values;
+            state = state == null ? StateValues.NONE : state;
+        }
+
+        /** A request with no state values (every state at its default). */
+        public Request(Entity doc, Sutra sutra, Layout layout, AsOf asOf, Masker viewer, ControlValues values, Object host) {
+            this(doc, sutra, layout, asOf, viewer, values, host, null);
         }
 
         public static Request of(Entity doc, Sutra sutra) {
@@ -64,11 +75,16 @@ public final class ViewBuilder {
         }
 
         public Request withValues(ControlValues next) {
-            return new Request(doc, sutra, layout, asOf, viewer, next, host);
+            return new Request(doc, sutra, layout, asOf, viewer, next, host, state);
+        }
+
+        /** The same request with the state values the host kept for this reader. */
+        public Request withState(StateValues next) {
+            return new Request(doc, sutra, layout, asOf, viewer, values, host, next);
         }
 
         public Request withAsOf(AsOf next) {
-            return new Request(doc, sutra, layout, next, viewer, values, host);
+            return new Request(doc, sutra, layout, next, viewer, values, host, state);
         }
     }
 
@@ -116,9 +132,10 @@ public final class ViewBuilder {
         Entity seen = r.doc() == null ? null : seenData == raw ? r.doc()
                 : new Entity(r.doc().ref(), seenData, r.doc().deleted(), r.doc().origin(), r.doc().host());
         AsOf at = r.asOf().businessDate() == null ? AsOf.of(dates.today(r.asOf())) : r.asOf();
-        ControlResolver.Resolved resolved = controls.resolve(s, EvalContext.of(seenData, formats), r.values(), r.asOf(), viewer::mayOpen);
+        Map<String, Object> state = ScreenState.resolve(s, r.state());   // level 1.2, S1: each state at the request's value or its default
+        ControlResolver.Resolved resolved = controls.resolve(s, EvalContext.of(seenData, formats).withState(state), r.values(), r.asOf(), viewer::mayOpen);
         LocalDate today = r.asOf().businessDate() != null ? r.asOf().businessDate() : dates.today(r.asOf());
-        EvalContext eval = resolved.apply(EvalContext.of(seenData, formats)).withToday(today);
+        EvalContext eval = resolved.apply(EvalContext.of(seenData, formats).withState(state)).withToday(today);
         Set<EntityRef> wanted = new LinkedHashSet<>();
         Set<EntityRef> denied = new HashSet<>();
         for (Panel p : s.panels()) {
@@ -168,7 +185,8 @@ public final class ViewBuilder {
                 .withLayout(ScreenGrid.of(s))
                 .withPhone(PhoneView.of(s, s.phone() == null || s.phone().summary() == null ? null
                         : soft(() -> el.template(s.phone().summary()).render(eval))))
-                .withDatasets(ctx.datasets());                 // contract 1.1: only when a dataset panel was bound (the stamp follows)
+                .withDatasets(ctx.datasets())                  // contract 1.1: only when a dataset panel was bound (the stamp follows)
+                .withState(ScreenState.views(s, state));       // contract 1.2: only when the Sutra holds state (the stamp follows)
         return view;
     }
 

@@ -1,0 +1,117 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/fragments-state
+since: "1.2"
+profile: core
+verified: true
+description: "A fragment's private state and outputs (SUTRA_EXPANSION S1; LIBRARIES 4.4, 6.2, 7.2; decision S1-OPEN c), and a use's on: writing the screen's state from an event (I1), level 1.2."
+cases:
+
+  - id: private-state-is-scoped-to-the-use
+    kind: sutra
+    source: "LIBRARIES 4.4 (state: private to each use), 6.2 (set on its own state), 7.2 (outputs); decision S1-OPEN c"
+    note: "Two uses, two instances: each use's state is <as>.<name>; the fragment's own row-click writes its own state; the screen reads the output as state.<as>.<name>."
+    files: &picker
+      picker.v1.fragment.yaml: |
+        rachana: 1
+        fragment: picker
+        version: 1
+        doc:
+          summary: A list whose clicked row is remembered and shown.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per item
+            columns:
+              id: { type: text, doc: The item }
+        state:
+          chosen: { type: text, default: none }
+          clicks: { type: number, default: 0 }
+        outputs: { chosen: text }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { set: { state: chosen, to: "@.id" } } ]
+          - { id: shown, kind: metric, label: Chosen, value: "state.chosen" }
+    given:
+      state: { a.chosen: Y }
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X }, { id: Y } ] }
+        right: { rows: [ { id: P } ] }
+      panels:
+        - use: picker@1
+          as: a
+          with: { rows: $.left }
+        - use: picker@1
+          as: b
+          with: { rows: $.right }
+        - { id: both, kind: metric, label: Both, value: "state.a.chosen + '/' + state.b.chosen" }
+    expect:
+      at:
+        /contract: "1.2"
+        /panels/0/id: a-list
+        /panels/0/data/rows/0/set: { a.chosen: X }
+        /panels/0/data/rows/1/set: { a.chosen: Y }
+        /panels/1/data/value/text: "Y"
+        /panels/2/id: b-list
+        /panels/2/data/rows/0/set: { b.chosen: P }
+        /panels/3/data/value/text: "none"
+        /panels/4/data/value/text: "Y/none"
+        /state/0: { id: a.chosen, value: "Y", url: false, reads: [ a-shown, both ] }
+        /state/1: { id: a.clicks, value: 0, url: false, reads: [] }
+        /state/2: { id: b.chosen, value: none, url: false, reads: [ b-shown, both ] }
+
+  - id: a-use-sets-screen-state-from-an-event
+    kind: sutra
+    source: "LIBRARIES 6.1 (the user decides what an event means); SUTRA_EXPANSION I1 (the effect list)"
+    note: "on: <event>: [ { set: { state, to } } ] reads the payload as event.<name>; it joins the effects of the panel that raises the event, beside the fragment's own."
+    files:
+      desk-list.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-list
+        version: 1
+        doc:
+          summary: Amounts by desk, one row each.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+        emits:
+          - { name: pick, payload: { desk: text }, doc: A desk was chosen }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Desk, bind: "@.desk" } ]
+            emits: [ { name: pick, on: row-click, payload: { desk: "@.desk" } } ]
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX }, { BOOK_DESK: Rates } ] }
+      state:
+        desk: { type: text }
+      panels:
+        - use: desk-list@1
+          as: mtm
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK } } }
+          on:
+            pick: [ { set: { state: desk, to: "lower(event.desk)" } } ]
+    expect:
+      at:
+        /panels/0/data/rows/0/set: { desk: fx }
+        /panels/0/data/rows/1/set: { desk: rates }
+        /state/0: { id: desk, value: null, url: false, reads: [] }

@@ -171,6 +171,7 @@
         "parents": { "type": "array", "items": { "$ref": "#/$defs/value" } },
         "index": { "type": "integer", "minimum": -1 },
         "ctl": { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } },
+        "state": { "description": "State values the bind request carries (level 1.2, S1): state id to its text, or a list of text.", "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } },
         "events": {
           "type": "object",
           "additionalProperties": { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } }

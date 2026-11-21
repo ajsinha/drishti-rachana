@@ -6,6 +6,7 @@ package com.ash.rachana.parse;
 
 import com.ash.rachana.SutraExpressions;
 import com.ash.rachana.SutraProblem;
+import com.ash.rachana.model.StateEntry;
 import com.ash.rachana.model.SourceLocation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -65,7 +66,7 @@ public final class TypedFragment {
     public static final Set<String> SLOT_KINDS = Set.of("panels");
     /** The keys a typed fragment file may have at this level. */
     public static final Set<String> KEYS = Set.of("rachana", "fragment", "version", "description", "doc", "params", "slots", "emits", "panels",
-            "budget", "examples");
+            "budget", "examples", "state", "outputs");
     /** The most parameters and slots a fragment declares (LIBRARIES.md 18). */
     public static final int MAX_PARAMS = 40;
     public static final int MAX_SLOTS = 8;
@@ -111,6 +112,10 @@ public final class TypedFragment {
     private final Map<String, Param> params;
     private final Map<String, Slot> slots;
     private final List<SutraProblem> problems;
+    /** Its private state (S1): name to the declaration, in order. */
+    private final Map<String, PNode> privateState = new LinkedHashMap<>();
+    /** Its outputs: the private state the screen may read as {@code state.<as>.<name>}, name to type. */
+    private final Map<String, String> outputs = new LinkedHashMap<>();
 
     private TypedFragment(String name, String file, PNode root, Map<String, Param> params, Map<String, Slot> slots, List<SutraProblem> problems) {
         this.name = name;
@@ -194,6 +199,7 @@ public final class TypedFragment {
             out.add(problem("RCH-2055", "fragment " + name + ": doc.summary is at most 120 characters", file, doc.map().get("summary")));
         }
         TypedFragment t = new TypedFragment(name, file, root, params, slots, out);
+        t.readState();
         t.checkBody();
         return t;
     }
@@ -365,6 +371,112 @@ public final class TypedFragment {
         return ok ? null : "is " + ("integer".equals(t) ? "a whole number" : "a " + t) + ", not " + shown(v);
     }
 
+    /**
+     * Its {@code state:} (private to each use, S1; LIBRARIES.md 4.4) and {@code outputs:} ({@code {name: type}}, 7.2): each output one of
+     * its private state, of the same type. Checked with the Sutra's rules for state (the codes of SPEC 2.8).
+     */
+    private void readState() {
+        PNode st = root.map().get("state");
+        if (st != null) {
+            if (!st.isMap()) {
+                problems.add(problem("RCH-2012", "fragment " + name + ": state is a mapping of name to { type, default }", file, st));
+            } else {
+                EffectsReader reader = new EffectsReader(file, problems);
+                st.map().forEach((k, v) -> {
+                    if (reader.entry(k, v, null, false, "state") != null) {
+                        privateState.put(k, v);
+                    }
+                });
+            }
+        }
+        PNode outs = root.map().get("outputs");
+        if (outs == null) {
+            return;
+        }
+        if (!outs.isMap()) {
+            problems.add(problem(SutraBlocks.BLOCK, "fragment " + name + ": outputs is a mapping of a private state's name to its type", file, outs));
+            return;
+        }
+        outs.map().forEach((k, v) -> {
+            PNode d = privateState.get(k);
+            String type = d == null || d.map().get("type") == null ? null : d.map().get("type").text();
+            if (d == null) {
+                problems.add(problem(SutraBlocks.BLOCK, "fragment " + name + ": output " + k + " is not one of its state ("
+                        + String.join(", ", privateState.keySet()) + ")", file, v));
+            } else if (!java.util.Objects.equals(type, v.text())) {
+                problems.add(problem(SutraBlocks.BLOCK, "fragment " + name + ": output " + k + " is " + v.text() + ", its state is " + type, file, v));
+            } else {
+                outputs.put(k, type);
+            }
+        });
+    }
+
+    /** Its private state's names (S1), in order. */
+    public java.util.Set<String> stateNames() {
+        return java.util.Collections.unmodifiableSet(privateState.keySet());
+    }
+
+    /** Its outputs ({@code outputs:}), name to type, in order. */
+    public Map<String, String> outputs() {
+        return java.util.Collections.unmodifiableMap(outputs);
+    }
+
+    private static final Pattern STATE_READ = Pattern.compile("(?<![A-Za-z0-9_.$@])state\\.([A-Za-z][A-Za-z0-9_]*)(?![A-Za-z0-9_])");
+
+    /**
+     * One of its own panels with its private state scoped to the use: {@code state.<name>} read as {@code state.<as>.<name>}, and each
+     * {@code set: { state: <name> }} of its {@code on:} writing {@code <as>.<name>}. A fragment writes only its own state (LIBRARIES.md 6.2):
+     * a set of any other is {@code RCH-2117}.
+     */
+    private PNode ownState(PNode n, String as, String sutraFile, List<SutraProblem> out) {
+        if (n.isMap()) {
+            Map<String, PNode> m = new LinkedHashMap<>();
+            n.map().forEach((k, v) -> {
+                if ("set".equals(k) && v.isMap() && v.map().get("state") != null && v.map().get("state").text() != null) {
+                    String target = v.map().get("state").text();
+                    if (!privateState.containsKey(target)) {
+                        out.add(problem(SCOPE, "fragment " + name + " sets state '" + target + "', which is not its own: a fragment writes only its own "
+                                + "state (" + String.join(", ", privateState.keySet()) + ")", sutraFile, v.map().get("state")));
+                    }
+                    Map<String, PNode> set = new LinkedHashMap<>();
+                    v.map().forEach((sk, sv) -> set.put(sk, "state".equals(sk) ? new PNode(as + "." + target, sv.line(), sv.column()) : ownState(sv, as, sutraFile, out)));
+                    m.put(k, new PNode(set, v.line(), v.column()));
+                } else {
+                    m.put(k, ownState(v, as, sutraFile, out));
+                }
+            });
+            return new PNode(m, n.line(), n.column());
+        }
+        if (n.isList()) {
+            List<PNode> l = new ArrayList<>();
+            n.list().forEach(v -> l.add(ownState(v, as, sutraFile, out)));
+            return new PNode(l, n.line(), n.column());
+        }
+        if (!(n.value() instanceof String s) || !s.contains("state.")) {
+            return n;
+        }
+        Matcher m = STATE_READ.matcher(s);
+        StringBuilder sb = new StringBuilder();
+        int copied = 0;
+        while (m.find()) {
+            sb.append(s, copied, m.start());
+            sb.append(privateState.containsKey(m.group(1)) ? "state." + as + "." + m.group(1) : m.group());
+            copied = m.end();
+        }
+        sb.append(s, copied, s.length());
+        return new PNode(sb.toString(), n.line(), n.column());
+    }
+
+    /** A fragment with no private state sets none: any {@code set: { state }} in its panels reaches the screen ({@code RCH-2117}). */
+    private void foreignWrites(PNode panel, String sutraFile, List<SutraProblem> out) {
+        walk(panel, n -> {
+            if (n.isMap() && n.map().get("set") != null && n.map().get("set").isMap() && n.map().get("set").map().get("state") != null) {
+                out.add(problem(SCOPE, "fragment " + name + " sets state '" + n.map().get("set").map().get("state").text() + "', which is not its "
+                        + "own: a fragment writes only its own state (declare it under state:)", sutraFile, n.map().get("set")));
+            }
+        });
+    }
+
     /** Every {@code %{x}} names a name parameter, every {@code arg.x} a value or table parameter, every {@code slot:} a slot. */
     private void checkBody() {
         PNode panels = root.map().get("panels");
@@ -437,7 +549,7 @@ public final class TypedFragment {
         PNode panels = root.map().get("panels");
         Pattern screen = Pattern.compile("\\$(?!\\{)|(?<![A-Za-z0-9_.])(ctl|state|sel)\\.");
         walk(panels, n -> {
-            if (n.value() instanceof String s && screen.matcher(s).find()) {
+            if (n.value() instanceof String s && screen.matcher(ownReads(s)).find()) {
                 out.add(problem(SCOPE, "fragment " + name + " reads the screen around it ('" + s + "'): a library fragment reads only its parameters "
                         + "(arg.), its tables and its slots", file, n));
             } else if (n.isMap()) {
@@ -450,6 +562,21 @@ public final class TypedFragment {
             }
         });
         return out;
+    }
+
+    /** {@code s} without its reads of the fragment's own private state ({@code state.<name>}: its own, not the screen's). */
+    private String ownReads(String s) {
+        if (privateState.isEmpty() || !s.contains("state.")) {
+            return s;
+        }
+        Matcher m = STATE_READ.matcher(s);
+        StringBuilder sb = new StringBuilder();
+        int copied = 0;
+        while (m.find()) {
+            sb.append(s, copied, m.start()).append(privateState.containsKey(m.group(1)) ? "" : m.group());
+            copied = m.end();
+        }
+        return sb.append(s, copied, s.length()).toString();
     }
 
     /**
@@ -478,7 +605,19 @@ public final class TypedFragment {
      * One use bound (decision L-21): the panels it brings, its public events ({@code <as>.<event>} to the panel that raises it, read by the
      * screen as {@code @<as>.<event>}) and advisories ({@code RCH-2120}: a column mapping the fragment never reads).
      */
-    public record Bound(List<PNode> panels, Map<String, String> events, List<SutraProblem> advisories) { }
+    public record Bound(List<PNode> panels, Map<String, String> events, List<SutraProblem> advisories, List<StateEntry> state) {
+
+        /** A use that brings no private state. */
+        public Bound(List<PNode> panels, Map<String, String> events, List<SutraProblem> advisories) {
+            this(panels, events, advisories, List.of());
+        }
+    }
+
+    /**
+     * A use of a fragment that holds private state (S1, LIBRARIES.md 4.4, 7.2): the fragment, its private state names and the ones it
+     * publishes as {@code outputs:} (the screen reads them as {@code state.<as>.<name>}, never writes them).
+     */
+    public record Stateful(String fragment, Set<String> names, Set<String> outputs) { }
 
     /** A column of a table parameter: its local name, its type (EL words), whether a caller may leave it out. */
     record Col(String name, String type, boolean optional) { }
@@ -524,6 +663,10 @@ public final class TypedFragment {
         if (asNode != null && (as == null || !NAME.matcher(as).matches())) {
             out.add(problem(WRONG_TYPE, "as: names this use of fragment " + name + " with a lower-case kebab word, not " + shown(asNode), sutraFile, asNode));
             as = null;
+        }
+        if (!privateState.isEmpty() && as == null) {
+            out.add(problem(MISSING, "fragment " + name + " holds private state (" + String.join(", ", privateState.keySet()) + "): a use of it is named "
+                    + "with as: (its state is then <as>.<name>)", sutraFile, use));
         }
         Map<String, Map<String, Col>> locals = new LinkedHashMap<>();
         for (Param p : params.values()) {
@@ -631,6 +774,11 @@ public final class TypedFragment {
                 m.remove("when-bound");
                 p = new PNode(m, p.line(), p.column());
             }
+            if (!privateState.isEmpty() && as != null) {
+                p = ownState(p, as, sutraFile, out);                    // S1: state.<name> and set: { state: <name> } become <as>.<name>
+            } else {
+                foreignWrites(p, sutraFile, out);
+            }
             Columns cols = new Columns(locals, renames, read);
             PNode rowsOf = p.map().get("rows");             // the rows the panel reads: a table's own (renamed), fixed fields, or refused
             com.ash.rachana.el.FragmentColumns.Rows over = rowsOf == null || rowsOf.text() == null ? null
@@ -691,14 +839,31 @@ public final class TypedFragment {
                                 + ")", sutraFile, e.getValue()));
                         continue;
                     }
-                    PNode wired = effect(panels.get(at), e.getKey(), e.getValue(), sutraFile, out, locals, renames);
+                    PNode wired = panels.get(at);
+                    for (PNode one : e.getValue().isList() ? e.getValue().list() : List.of(e.getValue())) {   // I1: a list of effects, in order
+                        if (wired == null) {
+                            break;
+                        }
+                        wired = one.isMap() && one.map().get("set") != null && one.map().get("set").isMap()
+                                ? stateEffect(wired, e.getKey(), one, sutraFile, out)
+                                : effect(wired, e.getKey(), one, sutraFile, out, locals, renames);
+                    }
                     if (wired != null) {
                         panels.set(at, wired);
                     }
                 }
             }
         }
-        return out.size() > before ? null : new Bound(panels, events, advisories);
+        List<StateEntry> state = new ArrayList<>();                      // S1: the use's private state, <as>.<name>
+        if (!privateState.isEmpty() && as != null) {
+            for (Map.Entry<String, PNode> e : privateState.entrySet()) {
+                StateEntry st = new EffectsReader(file, out).entry(e.getKey(), e.getValue(), as, outputs.containsKey(e.getKey()), "state");
+                if (st != null) {
+                    state.add(st);
+                }
+            }
+        }
+        return out.size() > before ? null : new Bound(panels, events, advisories, state);
     }
 
     /** The events it declares, in order. */
@@ -1035,6 +1200,61 @@ public final class TypedFragment {
         Map<String, PNode> m = new LinkedHashMap<>(panel.map());
         m.put("on-select", new PNode(sel, v.line(), v.column()));
         return new PNode(m, panel.line(), panel.column());
+    }
+
+    private static final Pattern EVENT_READ = Pattern.compile("(?<![A-Za-z0-9_.$@])event\\.([A-Za-z_][A-Za-z0-9_-]*)");
+
+    /**
+     * An event wired at the use to {@code set: { state: <id>, to: <expression> }} (I1; LIBRARIES.md 6.1): the expression reads the event's
+     * payload as {@code event.<name>}, put in as the payload's own expression over the clicked row; the effect joins the {@code on:} of the
+     * panel that raises the event, under the trigger it emits on. The state is the screen's (a fragment's private state is never written
+     * from outside, {@code RCH-2117}, checked with the Sutra).
+     */
+    private PNode stateEffect(PNode panel, String ev, PNode effect, String sutraFile, List<SutraProblem> out) {
+        PNode set = effect.map().get("set");
+        if (effect.map().size() != 1 || set.map().get("state") == null || set.map().get("state").text() == null || set.map().get("to") == null
+                || EffectsReader.expression(set.map().get("to")) == null) {
+            out.add(problem(WRONG_TYPE, "on." + ev + " of fragment " + name + ": a state effect is { set: { state: <id>, to: <expression> } }", sutraFile, effect));
+            return null;
+        }
+        String trigger = null;
+        PNode e = panel.map().get("emits");
+        for (PNode x : e == null ? List.<PNode>of() : e.list()) {
+            if (x.isMap() && ev.equals(text(x.map().get("name")))) {
+                trigger = text(x.map().get("on"));
+            }
+        }
+        String to = EffectsReader.expression(set.map().get("to"));
+        Matcher m = EVENT_READ.matcher(to);
+        StringBuilder sb = new StringBuilder();
+        int copied = 0;
+        while (m.find()) {
+            String expr = payloadExpr(panel, ev, m.group(1));
+            if (expr == null) {
+                out.add(problem(UNKNOWN, "event " + ev + " of fragment " + name + " carries no '" + m.group(1) + "' (it carries "
+                        + String.join(", ", payload(ev)) + ")", sutraFile, set.map().get("to")));
+                return null;
+            }
+            sb.append(to, copied, m.start()).append('(').append(expr).append(')');
+            copied = m.end();
+        }
+        sb.append(to, copied, to.length());
+        Map<String, PNode> st = new LinkedHashMap<>();
+        st.put("state", set.map().get("state"));
+        st.put("to", new PNode(sb.toString(), set.map().get("to").line(), set.map().get("to").column()));
+        Map<String, PNode> one = new LinkedHashMap<>();
+        one.put("set", new PNode(st, set.line(), set.column()));
+        Map<String, PNode> on = new LinkedHashMap<>();
+        PNode had = panel.map().get(com.ash.rachana.model.Effects.KEY);
+        if (had != null && had.isMap()) {
+            on.putAll(had.map());
+        }
+        List<PNode> list = new ArrayList<>(on.get(trigger) != null && on.get(trigger).isList() ? on.get(trigger).list() : List.of());
+        list.add(new PNode(one, effect.line(), effect.column()));
+        on.put(trigger, new PNode(list, effect.line(), effect.column()));
+        Map<String, PNode> m2 = new LinkedHashMap<>(panel.map());
+        m2.put(com.ash.rachana.model.Effects.KEY, new PNode(on, effect.line(), effect.column()));
+        return new PNode(m2, panel.line(), panel.column());
     }
 
     /** The payload names the panel's event {@code ev} carries. */

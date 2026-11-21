@@ -308,6 +308,19 @@ public final class SutraBlocks {
         public List<SutraProblem> advisories() {
             return advisories;
         }
+
+        private final List<com.ash.rachana.model.StateEntry> state = new ArrayList<>();
+        private final Map<String, TypedFragment.Stateful> stateful = new LinkedHashMap<>();
+
+        /** The private state the uses brought ({@code <as>.<name>}, S1), in order. */
+        public List<com.ash.rachana.model.StateEntry> state() {
+            return state;
+        }
+
+        /** The uses that hold private state, by their {@code as}: what the screen may read of each (its outputs). */
+        public Map<String, TypedFragment.Stateful> stateful() {
+            return stateful;
+        }
     }
 
     /**
@@ -409,6 +422,10 @@ public final class SutraBlocks {
                 }
                 List<PNode> brought = bound.panels();
                 calls.events.putAll(bound.events());
+                if (!bound.state().isEmpty()) {                           // S1: the use's private state, <as>.<name>
+                    calls.state.addAll(bound.state());
+                    calls.stateful.put(bound.state().get(0).owner(), new TypedFragment.Stateful(b.name(), t.stateNames(), t.outputs().keySet()));
+                }
                 calls.advisories.addAll(bound.advisories());
                 List<String> deeper = new ArrayList<>(chain);
                 deeper.add(b.name());

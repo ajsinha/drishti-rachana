@@ -32,6 +32,10 @@ import java.util.Map;
  *     contract-1.1 kind ({@link #KINDS_1_1}) or a map with points, else {@code 1.0}; a stamp given lower than that is raised
  * @param datasets rows by name that panels of the kinds {@code grid}, {@code tree} and {@code chart} read (contract 1.1); left out
  *     when there are none
+ * @param state the screen's state values (contract 1.2, SUTRA_EXPANSION S1): each with its value now, whether the host keeps it in the
+ *     address, and the parts that read it; left out when the Sutra holds none. A painter keeps the values, writes them as a row's or a
+ *     bar's {@code set} says when it is clicked, and sends them back with the next bind ({@code state.<id>=...}); an older painter
+ *     ignores it
  */
 @Include(Include.Rule.NON_NULL)
 public record ViewModel(
@@ -48,16 +52,24 @@ public record ViewModel(
         Map<String, Object> layout,
         String contract,
         @Include(Include.Rule.NON_EMPTY) Map<String, Object> phone,
-        @Include(Include.Rule.NON_EMPTY) Map<String, Dataset> datasets) {
+        @Include(Include.Rule.NON_EMPTY) Map<String, Dataset> datasets,
+        @Include(Include.Rule.NON_EMPTY) List<StateView> state) {
 
     /** The contract a ViewModel that uses nothing newer speaks (VIEWMODEL.md section 8): the minor moves for additions, the major for a break. */
     public static final String CONTRACT = "1.0";
 
     /** The newest contract minor this library writes. */
-    public static final String NEWEST = "1.1";
+    public static final String NEWEST = "1.2";
 
     /** The panel kinds contract 1.1 adds: panels that read a dataset. */
     public static final List<String> KINDS_1_1 = List.of("grid", "tree", "chart");
+
+    /** A view with its datasets and no state. */
+    public ViewModel(Ref ref, String mnemonic, TitleView title, List<Cell> strip, List<PanelView> panels, List<KeyView> keys,
+            Provenance provenance, Map<String, Double> timings, List<ControlView> controls, List<SelectView> selects, Map<String, Object> layout,
+            String contract, Map<String, Object> phone, Map<String, Dataset> datasets) {
+        this(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, null);
+    }
 
     /** A view with its contract and phone settings, and no datasets. */
     public ViewModel(Ref ref, String mnemonic, TitleView title, List<Cell> strip, List<PanelView> panels, List<KeyView> keys,
@@ -89,13 +101,22 @@ public record ViewModel(
         controls = controls == null ? List.of() : List.copyOf(controls);
         selects = selects == null ? List.of() : List.copyOf(selects);
         datasets = datasets == null || datasets.isEmpty() ? null : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(datasets));
-        contract = stamp(contract == null || contract.isBlank() ? CONTRACT : contract, panels, datasets);
+        state = state == null || state.isEmpty() ? null : List.copyOf(state);
+        contract = stamp(contract == null || contract.isBlank() ? CONTRACT : contract, panels, datasets, state);
     }
 
     /** The stamp: the one given, raised to {@code 1.1} when the document uses what contract 1.1 adds (the smallest minor that describes it). */
     static String stamp(String given, List<PanelView> panels, Map<String, Dataset> datasets) {
-        boolean newer = datasets != null && !datasets.isEmpty() || uses11(panels);
-        if (!newer || !given.startsWith("1.")) {
+        return stamp(given, panels, datasets, null);
+    }
+
+    /**
+     * The stamp: the one given, raised to the smallest minor that describes the document: {@code 1.2} when it has state, else {@code 1.1}
+     * when it uses what contract 1.1 adds.
+     */
+    static String stamp(String given, List<PanelView> panels, Map<String, Dataset> datasets, List<StateView> state) {
+        int needed = state != null && !state.isEmpty() ? 2 : datasets != null && !datasets.isEmpty() || uses11(panels) ? 1 : 0;
+        if (needed == 0 || !given.startsWith("1.")) {
             return given;
         }
         int minor;
@@ -104,7 +125,7 @@ public record ViewModel(
         } catch (NumberFormatException e) {
             return given;
         }
-        return minor >= 1 ? given : NEWEST;
+        return minor >= needed ? given : "1." + needed;
     }
 
     private static boolean uses11(List<PanelView> panels) {
@@ -137,28 +158,43 @@ public record ViewModel(
 
     /** The same view with another provenance. */
     public ViewModel withProvenance(Provenance p) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, p, timings, controls, selects, layout, contract, phone, datasets);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, p, timings, controls, selects, layout, contract, phone, datasets, state);
     }
 
     /** The same view with its controls and selects. */
     public ViewModel withControls(List<ControlView> controls, List<SelectView> selects) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, state);
     }
 
     /** The same view with its screen layout (RACHANA_REFERENCE.md 13). */
     public ViewModel withLayout(Map<String, Object> layout) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, state);
     }
 
     /** The same view with its datasets (contract 1.1), or none (null or empty); the stamp follows. */
     public ViewModel withDatasets(Map<String, Dataset> datasets) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, state);
     }
 
     /** The same view with what its Sutra says about the phone (docs/guides/BUILD_GUIDE.md section 5), or none (null). */
     public ViewModel withPhone(Map<String, Object> phone) {
-        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets);
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, state);
     }
+
+    /** The same view with its state values (contract 1.2), or none (null or empty); the stamp follows. */
+    public ViewModel withState(List<StateView> state) {
+        return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, state);
+    }
+
+    /**
+     * A state value of the screen (contract 1.2, SUTRA_EXPANSION S1).
+     *
+     * @param id the state's id ({@code state.<id>}; a fragment use's private state {@code <as>.<name>})
+     * @param value its value now: text, a number, a boolean, an ISO date text, a list of text, or null when empty
+     * @param url whether the host keeps it in the address (the view-state document, S4)
+     * @param reads ids of the panels (and {@code strip} or {@code title}) whose expressions read it (only those are rebuilt when it changes)
+     */
+    public record StateView(String id, @Include(Include.Rule.ALWAYS) Object value, boolean url, List<String> reads) {}
 
     /** One option of a control: the value that is set and the text shown. */
     public record Opt(String value, String label) {}

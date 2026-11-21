@@ -53,6 +53,7 @@ class public final class com.ash.rachana.bind.ViewBuilder
 class public final class com.ash.rachana.control.ControlReads
 class public final class com.ash.rachana.control.ControlResolver
 class public final class com.ash.rachana.control.RelativeDates
+class public final class com.ash.rachana.control.ScreenState
 class public final class com.ash.rachana.design.ops.OpApplier
 class public final class com.ash.rachana.design.ops.OpException
 class public final class com.ash.rachana.design.ops.Ops
@@ -69,6 +70,7 @@ class public final class com.ash.rachana.el.Functions
 class public final class com.ash.rachana.el.MeasureFunctions
 class public final class com.ash.rachana.el.Printer
 class public final class com.ash.rachana.el.SafeRegex
+class public final class com.ash.rachana.el.StateTypes
 class public final class com.ash.rachana.el.Template
 class public final class com.ash.rachana.el.Values
 class public final class com.ash.rachana.el.check.Checker
@@ -84,12 +86,14 @@ class public final class com.ash.rachana.lib.LibrarySet
 class public final class com.ash.rachana.lib.Rlib
 class public final class com.ash.rachana.lib.Sha384
 class public final class com.ash.rachana.model.ControlRules
+class public final class com.ash.rachana.model.Effects
 class public final class com.ash.rachana.model.FormExpr
 class public final class com.ash.rachana.model.ModelVersion
 class public final class com.ash.rachana.model.PanelOptions
 class public final class com.ash.rachana.parse.BlockLibrary
 class public final class com.ash.rachana.parse.BlockUses
 class public final class com.ash.rachana.parse.DeclarationsReader
+class public final class com.ash.rachana.parse.EffectsReader
 class public final class com.ash.rachana.parse.Json
 class public final class com.ash.rachana.parse.PositionalYamlReader
 class public final class com.ash.rachana.parse.SutraBlocks
@@ -137,6 +141,7 @@ class public final record com.ash.rachana.bind.Layout
 class public final record com.ash.rachana.bind.PanelLimits
 class public final record com.ash.rachana.bind.PivotLimits
 class public final record com.ash.rachana.control.ControlValues
+class public final record com.ash.rachana.control.StateValues
 class public final record com.ash.rachana.control.ViewState
 class public final record com.ash.rachana.design.ops.AddPanel
 class public final record com.ash.rachana.design.ops.Bind
@@ -170,6 +175,7 @@ class public final record com.ash.rachana.model.Refresh
 class public final record com.ash.rachana.model.ScreenLayout
 class public final record com.ash.rachana.model.ScreenPhone
 class public final record com.ash.rachana.model.SourceLocation
+class public final record com.ash.rachana.model.StateEntry
 class public final record com.ash.rachana.model.StripItem
 class public final record com.ash.rachana.model.Sutra
 class public final record com.ash.rachana.model.Title
@@ -274,6 +280,7 @@ class public static final record com.ash.rachana.el.Expr$RowOrRoot
 class public static final record com.ash.rachana.el.Expr$Slice
 class public static final record com.ash.rachana.el.Expr$Spread
 class public static final record com.ash.rachana.el.Expr$Src
+class public static final record com.ash.rachana.el.Expr$State
 class public static final record com.ash.rachana.el.Expr$SutraLet
 class public static final record com.ash.rachana.el.Expr$Ternary
 class public static final record com.ash.rachana.el.Expr$UserCall
@@ -294,6 +301,7 @@ class public static final record com.ash.rachana.el.check.Signatures$Signature
 class public static final record com.ash.rachana.lib.Library$Trust
 class public static final record com.ash.rachana.lib.LibraryLock$Entry
 class public static final record com.ash.rachana.model.Control$Choice
+class public static final record com.ash.rachana.model.Effects$SetState
 class public static final record com.ash.rachana.model.Form$Field
 class public static final record com.ash.rachana.model.Form$Hint
 class public static final record com.ash.rachana.model.Form$Issue
@@ -316,11 +324,13 @@ class public static final record com.ash.rachana.model.Wiring$Source
 class public static final record com.ash.rachana.parse.BlockLibrary$Contribution
 class public static final record com.ash.rachana.parse.BlockUses$Brought
 class public static final record com.ash.rachana.parse.BlockUses$Use
+class public static final record com.ash.rachana.parse.EffectsReader$Read
 class public static final record com.ash.rachana.parse.PositionalYamlReader$Issue
 class public static final record com.ash.rachana.parse.SutraBlocks$Block
 class public static final record com.ash.rachana.parse.TypedFragment$Bound
 class public static final record com.ash.rachana.parse.TypedFragment$Param
 class public static final record com.ash.rachana.parse.TypedFragment$Slot
+class public static final record com.ash.rachana.parse.TypedFragment$Stateful
 class public static final record com.ash.rachana.table.DataRecord$Rows
 class public static final record com.ash.rachana.table.LiveTableSpec$Column
 class public static final record com.ash.rachana.table.LiveTableSpec$Retention
@@ -387,6 +397,7 @@ class public static final record com.ash.rachana.view.ViewModel$Ref
 class public static final record com.ash.rachana.view.ViewModel$RefreshView
 class public static final record com.ash.rachana.view.ViewModel$SelectView
 class public static final record com.ash.rachana.view.ViewModel$ServerRef
+class public static final record com.ash.rachana.view.ViewModel$StateView
 class public static final record com.ash.rachana.view.ViewModel$TitleView
 class public static final record com.ash.rachana.view.ViewModel$Wire
 class public static final record com.ash.rachana.wire.ScreenWire$ChildrenView
@@ -1034,9 +1045,12 @@ com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.Entity c
 com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.Layout com.ash.rachana.bind.ViewBuilder$Request.layout()
 com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.Masker com.ash.rachana.bind.ViewBuilder$Request.viewer()
 com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request com.ash.rachana.bind.ViewBuilder$Request.withAsOf(com.ash.rachana.bind.AsOf)
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request com.ash.rachana.bind.ViewBuilder$Request.withState(com.ash.rachana.control.StateValues)
 com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request com.ash.rachana.bind.ViewBuilder$Request.withValues(com.ash.rachana.control.ControlValues)
 com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request(com.ash.rachana.bind.Entity,com.ash.rachana.model.Sutra,com.ash.rachana.bind.Layout,com.ash.rachana.bind.AsOf,com.ash.rachana.bind.Masker,com.ash.rachana.control.ControlValues,java.lang.Object)
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.bind.ViewBuilder$Request(com.ash.rachana.bind.Entity,com.ash.rachana.model.Sutra,com.ash.rachana.bind.Layout,com.ash.rachana.bind.AsOf,com.ash.rachana.bind.Masker,com.ash.rachana.control.ControlValues,java.lang.Object,com.ash.rachana.control.StateValues)
 com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.control.ControlValues com.ash.rachana.bind.ViewBuilder$Request.values()
+com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.control.StateValues com.ash.rachana.bind.ViewBuilder$Request.state()
 com.ash.rachana.bind.ViewBuilder$Request :: public com.ash.rachana.model.Sutra com.ash.rachana.bind.ViewBuilder$Request.sutra()
 com.ash.rachana.bind.ViewBuilder$Request :: public final boolean com.ash.rachana.bind.ViewBuilder$Request.equals(java.lang.Object)
 com.ash.rachana.bind.ViewBuilder$Request :: public final int com.ash.rachana.bind.ViewBuilder$Request.hashCode()
@@ -1082,6 +1096,22 @@ com.ash.rachana.control.RelativeDates$Range :: public final int com.ash.rachana.
 com.ash.rachana.control.RelativeDates$Range :: public final java.lang.String com.ash.rachana.control.RelativeDates$Range.toString()
 com.ash.rachana.control.RelativeDates$Range :: public java.time.LocalDate com.ash.rachana.control.RelativeDates$Range.from()
 com.ash.rachana.control.RelativeDates$Range :: public java.time.LocalDate com.ash.rachana.control.RelativeDates$Range.to()
+com.ash.rachana.control.ScreenState :: public static java.util.List<com.ash.rachana.view.ViewModel$StateView> com.ash.rachana.control.ScreenState.views(com.ash.rachana.model.Sutra,java.util.Map<java.lang.String, java.lang.Object>)
+com.ash.rachana.control.ScreenState :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.control.ScreenState.resolve(com.ash.rachana.model.Sutra,com.ash.rachana.control.StateValues)
+com.ash.rachana.control.ScreenState :: public static java.util.Map<java.lang.String, java.util.Set<java.lang.String>> com.ash.rachana.control.ScreenState.reads(com.ash.rachana.model.Sutra)
+com.ash.rachana.control.StateValues :: public com.ash.rachana.control.StateValues(java.util.Map<java.lang.String, java.lang.String>)
+com.ash.rachana.control.StateValues :: public final boolean com.ash.rachana.control.StateValues.equals(java.lang.Object)
+com.ash.rachana.control.StateValues :: public final int com.ash.rachana.control.StateValues.hashCode()
+com.ash.rachana.control.StateValues :: public final java.lang.String com.ash.rachana.control.StateValues.toString()
+com.ash.rachana.control.StateValues :: public java.lang.String com.ash.rachana.control.StateValues.get(java.lang.String)
+com.ash.rachana.control.StateValues :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.control.StateValues.asParams()
+com.ash.rachana.control.StateValues :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.control.StateValues.raw()
+com.ash.rachana.control.StateValues :: public static com.ash.rachana.control.StateValues com.ash.rachana.control.StateValues.of(java.util.Map<java.lang.String, java.lang.String[]>)
+com.ash.rachana.control.StateValues :: public static final com.ash.rachana.control.StateValues com.ash.rachana.control.StateValues.NONE
+com.ash.rachana.control.StateValues :: public static final int com.ash.rachana.control.StateValues.MAX_KEY
+com.ash.rachana.control.StateValues :: public static final int com.ash.rachana.control.StateValues.MAX_STATES
+com.ash.rachana.control.StateValues :: public static final int com.ash.rachana.control.StateValues.MAX_VALUE
+com.ash.rachana.control.StateValues :: public static final java.lang.String com.ash.rachana.control.StateValues.PREFIX
 com.ash.rachana.control.ViewState :: public boolean com.ash.rachana.control.ViewState.hasFilters()
 com.ash.rachana.control.ViewState :: public boolean com.ash.rachana.control.ViewState.isEmpty()
 com.ash.rachana.control.ViewState :: public com.ash.rachana.control.ControlValues com.ash.rachana.control.ViewState.controls()
@@ -1274,9 +1304,11 @@ com.ash.rachana.el.DatePartFunctions :: public static java.lang.String com.ash.r
 com.ash.rachana.el.DatePartFunctions :: public static java.time.LocalDate com.ash.rachana.el.DatePartFunctions.shift(java.time.LocalDate,int,java.lang.String,com.ash.rachana.el.Calendars$Calendar)
 com.ash.rachana.el.Declarations :: public boolean com.ash.rachana.el.Declarations.isEmpty()
 com.ash.rachana.el.Declarations :: public com.ash.rachana.el.Declarations(java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function>,java.util.Map<java.lang.String, java.lang.String>)
+com.ash.rachana.el.Declarations :: public com.ash.rachana.el.Declarations(java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function>,java.util.Map<java.lang.String, java.lang.String>,java.util.Map<java.lang.String, java.lang.String>)
 com.ash.rachana.el.Declarations :: public java.lang.String com.ash.rachana.el.Declarations.id()
 com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, com.ash.rachana.el.Declarations$Function> com.ash.rachana.el.Declarations.functions()
 com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations.lets()
+com.ash.rachana.el.Declarations :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations.states()
 com.ash.rachana.el.Declarations :: public java.util.Set<java.lang.String> com.ash.rachana.el.Declarations.libraries()
 com.ash.rachana.el.Declarations :: public static <T> T com.ash.rachana.el.Declarations.within(com.ash.rachana.el.Declarations,java.util.function.Supplier<T>)
 com.ash.rachana.el.Declarations :: public static boolean com.ash.rachana.el.Declarations.coreName(java.lang.String)
@@ -1324,6 +1356,7 @@ com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.
 com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withRow(java.lang.Object,int)
 com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withRows(java.util.List<?>)
 com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withScope(com.ash.rachana.el.EvalContext$Scope)
+com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withState(java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withToday(java.time.LocalDate)
 com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext$Locals com.ash.rachana.el.EvalContext.locals()
 com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext$Scope com.ash.rachana.el.EvalContext.scope()
@@ -1341,10 +1374,12 @@ com.ash.rachana.el.EvalContext :: public java.lang.Object com.ash.rachana.el.Eva
 com.ash.rachana.el.EvalContext :: public java.lang.Object com.ash.rachana.el.EvalContext.parent(int)
 com.ash.rachana.el.EvalContext :: public java.lang.Object com.ash.rachana.el.EvalContext.row()
 com.ash.rachana.el.EvalContext :: public java.lang.Object com.ash.rachana.el.EvalContext.src()
+com.ash.rachana.el.EvalContext :: public java.lang.Object com.ash.rachana.el.EvalContext.state(java.lang.String)
 com.ash.rachana.el.EvalContext :: public java.time.LocalDate com.ash.rachana.el.EvalContext.asOf()
 com.ash.rachana.el.EvalContext :: public java.time.LocalDate com.ash.rachana.el.EvalContext.today()
 com.ash.rachana.el.EvalContext :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.el.EvalContext.ctl()
 com.ash.rachana.el.EvalContext :: public static com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.of(com.ash.rachana.api.Node,com.ash.rachana.format.Formats)
+com.ash.rachana.el.EvalContext :: public static final java.lang.String com.ash.rachana.el.EvalContext.STATE_KEY
 com.ash.rachana.el.EvalContext$Locals :: public com.ash.rachana.el.EvalContext$Locals com.ash.rachana.el.EvalContext$Locals.outer()
 com.ash.rachana.el.EvalContext$Locals :: public com.ash.rachana.el.EvalContext$Locals(java.lang.String,java.lang.Object,com.ash.rachana.el.EvalContext$Locals)
 com.ash.rachana.el.EvalContext$Locals :: public final boolean com.ash.rachana.el.EvalContext$Locals.equals(java.lang.Object)
@@ -1637,6 +1672,12 @@ com.ash.rachana.el.Expr$Src :: public final boolean com.ash.rachana.el.Expr$Src.
 com.ash.rachana.el.Expr$Src :: public final int com.ash.rachana.el.Expr$Src.hashCode()
 com.ash.rachana.el.Expr$Src :: public final java.lang.String com.ash.rachana.el.Expr$Src.toString()
 com.ash.rachana.el.Expr$Src :: public java.lang.Object com.ash.rachana.el.Expr$Src.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$State :: public com.ash.rachana.el.Expr$State(java.lang.String)
+com.ash.rachana.el.Expr$State :: public final boolean com.ash.rachana.el.Expr$State.equals(java.lang.Object)
+com.ash.rachana.el.Expr$State :: public final int com.ash.rachana.el.Expr$State.hashCode()
+com.ash.rachana.el.Expr$State :: public final java.lang.String com.ash.rachana.el.Expr$State.toString()
+com.ash.rachana.el.Expr$State :: public java.lang.Object com.ash.rachana.el.Expr$State.eval(com.ash.rachana.el.EvalContext)
+com.ash.rachana.el.Expr$State :: public java.lang.String com.ash.rachana.el.Expr$State.id()
 com.ash.rachana.el.Expr$SutraLet :: public com.ash.rachana.el.Expr com.ash.rachana.el.Expr$SutraLet.value()
 com.ash.rachana.el.Expr$SutraLet :: public com.ash.rachana.el.Expr$SutraLet(java.lang.String,com.ash.rachana.el.Expr)
 com.ash.rachana.el.Expr$SutraLet :: public final boolean com.ash.rachana.el.Expr$SutraLet.equals(java.lang.Object)
@@ -1794,6 +1835,9 @@ com.ash.rachana.el.SafeRegex$Limits :: public int com.ash.rachana.el.SafeRegex$L
 com.ash.rachana.el.SafeRegex$Limits :: public long com.ash.rachana.el.SafeRegex$Limits.maxSteps()
 com.ash.rachana.el.SafeRegex$Limits :: public static com.ash.rachana.el.SafeRegex$Limits com.ash.rachana.el.SafeRegex$Limits.defaults()
 com.ash.rachana.el.SafeRegex$Limits :: public static final com.ash.rachana.el.SafeRegex$Limits com.ash.rachana.el.SafeRegex$Limits.DEFAULTS
+com.ash.rachana.el.StateTypes :: public static boolean com.ash.rachana.el.StateTypes.known(java.lang.String)
+com.ash.rachana.el.StateTypes :: public static java.lang.Object com.ash.rachana.el.StateTypes.json(java.lang.Object)
+com.ash.rachana.el.StateTypes :: public static java.lang.Object com.ash.rachana.el.StateTypes.of(java.lang.String,java.lang.Object)
 com.ash.rachana.el.Template :: public com.ash.rachana.el.Template$Lenient com.ash.rachana.el.Template.renderLenient(com.ash.rachana.el.EvalContext,java.lang.String)
 com.ash.rachana.el.Template :: public java.lang.String com.ash.rachana.el.Template.render(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Template :: public void com.ash.rachana.el.Template.paths(java.util.function.Consumer<java.lang.String>)
@@ -2199,6 +2243,17 @@ com.ash.rachana.model.DataEntry$Form :: public static final com.ash.rachana.mode
 com.ash.rachana.model.DataEntry$Form :: public static final com.ash.rachana.model.DataEntry$Form com.ash.rachana.model.DataEntry$Form.ROWS
 com.ash.rachana.model.DataEntry$Form :: public static final com.ash.rachana.model.DataEntry$Form com.ash.rachana.model.DataEntry$Form.TABLE
 com.ash.rachana.model.DataEntry$Form :: public static final com.ash.rachana.model.DataEntry$Form com.ash.rachana.model.DataEntry$Form.URL
+com.ash.rachana.model.Effects :: public static final java.lang.String com.ash.rachana.model.Effects.KEY
+com.ash.rachana.model.Effects :: public static final java.util.List<java.lang.String> com.ash.rachana.model.Effects.EFFECTS
+com.ash.rachana.model.Effects :: public static final java.util.List<java.lang.String> com.ash.rachana.model.Effects.TRIGGERS
+com.ash.rachana.model.Effects :: public static final java.util.Map<java.lang.String, java.util.List<java.lang.String>> com.ash.rachana.model.Effects.BUILT
+com.ash.rachana.model.Effects :: public static java.util.List<com.ash.rachana.model.Effects$SetState> com.ash.rachana.model.Effects.sets(com.ash.rachana.model.Panel,java.lang.String)
+com.ash.rachana.model.Effects$SetState :: public com.ash.rachana.model.Effects$SetState(java.lang.String,java.lang.String)
+com.ash.rachana.model.Effects$SetState :: public final boolean com.ash.rachana.model.Effects$SetState.equals(java.lang.Object)
+com.ash.rachana.model.Effects$SetState :: public final int com.ash.rachana.model.Effects$SetState.hashCode()
+com.ash.rachana.model.Effects$SetState :: public final java.lang.String com.ash.rachana.model.Effects$SetState.toString()
+com.ash.rachana.model.Effects$SetState :: public java.lang.String com.ash.rachana.model.Effects$SetState.state()
+com.ash.rachana.model.Effects$SetState :: public java.lang.String com.ash.rachana.model.Effects$SetState.to()
 com.ash.rachana.model.Form :: public boolean com.ash.rachana.model.Form.editableBy(com.ash.rachana.model.Form$Field,java.util.List<java.lang.String>)
 com.ash.rachana.model.Form :: public boolean com.ash.rachana.model.Form.enterableBy(com.ash.rachana.model.Form$Field,java.util.List<java.lang.String>)
 com.ash.rachana.model.Form :: public com.ash.rachana.model.Form$Save com.ash.rachana.model.Form.save()
@@ -2552,6 +2607,19 @@ com.ash.rachana.model.SourceLocation :: public int com.ash.rachana.model.SourceL
 com.ash.rachana.model.SourceLocation :: public java.lang.String com.ash.rachana.model.SourceLocation.file()
 com.ash.rachana.model.SourceLocation :: public java.lang.String com.ash.rachana.model.SourceLocation.toString()
 com.ash.rachana.model.SourceLocation :: public static final com.ash.rachana.model.SourceLocation com.ash.rachana.model.SourceLocation.UNKNOWN
+com.ash.rachana.model.StateEntry :: public boolean com.ash.rachana.model.StateEntry.output()
+com.ash.rachana.model.StateEntry :: public boolean com.ash.rachana.model.StateEntry.url()
+com.ash.rachana.model.StateEntry :: public boolean com.ash.rachana.model.StateEntry.visible()
+com.ash.rachana.model.StateEntry :: public com.ash.rachana.model.StateEntry(java.lang.String,java.lang.String,java.lang.Object,boolean,java.lang.String,boolean)
+com.ash.rachana.model.StateEntry :: public final boolean com.ash.rachana.model.StateEntry.equals(java.lang.Object)
+com.ash.rachana.model.StateEntry :: public final int com.ash.rachana.model.StateEntry.hashCode()
+com.ash.rachana.model.StateEntry :: public final java.lang.String com.ash.rachana.model.StateEntry.toString()
+com.ash.rachana.model.StateEntry :: public java.lang.Object com.ash.rachana.model.StateEntry.dflt()
+com.ash.rachana.model.StateEntry :: public java.lang.String com.ash.rachana.model.StateEntry.id()
+com.ash.rachana.model.StateEntry :: public java.lang.String com.ash.rachana.model.StateEntry.owner()
+com.ash.rachana.model.StateEntry :: public java.lang.String com.ash.rachana.model.StateEntry.type()
+com.ash.rachana.model.StateEntry :: public static final int com.ash.rachana.model.StateEntry.MAX
+com.ash.rachana.model.StateEntry :: public static final java.util.List<java.lang.String> com.ash.rachana.model.StateEntry.TYPES
 com.ash.rachana.model.StripItem :: public boolean com.ash.rachana.model.StripItem.emphasis()
 com.ash.rachana.model.StripItem :: public com.ash.rachana.model.SourceLocation com.ash.rachana.model.StripItem.location()
 com.ash.rachana.model.StripItem :: public com.ash.rachana.model.StripItem(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,com.ash.rachana.model.SourceLocation)
@@ -2587,6 +2655,7 @@ com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.SutraProble
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.Control> com.ash.rachana.model.Sutra.controls()
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.DataEntry> com.ash.rachana.model.Sutra.data()
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.Panel> com.ash.rachana.model.Sutra.panels()
+com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.StateEntry> com.ash.rachana.model.Sutra.state()
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.StripItem> com.ash.rachana.model.Sutra.strip()
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.UsedLibrary> com.ash.rachana.model.Sutra.libraries()
 com.ash.rachana.model.Sutra :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.model.Sutra.extensions()
@@ -2597,6 +2666,7 @@ com.ash.rachana.model.Sutra :: public static final int com.ash.rachana.model.Sut
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.ADVISORIES
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.DECLARATIONS
 com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.LIBRARIES
+com.ash.rachana.model.Sutra :: public static final java.lang.String com.ash.rachana.model.Sutra.STATE
 com.ash.rachana.model.Title :: public com.ash.rachana.model.Title(java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.model.Title :: public final boolean com.ash.rachana.model.Title.equals(java.lang.Object)
 com.ash.rachana.model.Title :: public final int com.ash.rachana.model.Title.hashCode()
@@ -2737,6 +2807,18 @@ com.ash.rachana.parse.DeclarationsReader :: public static final int com.ash.rach
 com.ash.rachana.parse.DeclarationsReader :: public static final java.lang.String com.ash.rachana.parse.DeclarationsReader.RESERVED
 com.ash.rachana.parse.DeclarationsReader :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.DeclarationsReader.FUNCTION_KEYS
 com.ash.rachana.parse.DeclarationsReader :: public static final java.util.regex.Pattern com.ash.rachana.parse.DeclarationsReader.NAME
+com.ash.rachana.parse.EffectsReader :: public com.ash.rachana.parse.EffectsReader$Read com.ash.rachana.parse.EffectsReader.panel(java.lang.String,com.ash.rachana.parse.PNode)
+com.ash.rachana.parse.EffectsReader :: public com.ash.rachana.parse.EffectsReader(java.lang.String,java.util.List<com.ash.rachana.SutraProblem>)
+com.ash.rachana.parse.EffectsReader :: public java.util.List<com.ash.rachana.model.StateEntry> com.ash.rachana.parse.EffectsReader.state(com.ash.rachana.parse.PNode,java.util.Set<java.lang.String>)
+com.ash.rachana.parse.EffectsReader :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.EffectsReader.STATE_KEYS
+com.ash.rachana.parse.EffectsReader :: public static final java.util.regex.Pattern com.ash.rachana.parse.EffectsReader.ID
+com.ash.rachana.parse.EffectsReader :: public void com.ash.rachana.parse.EffectsReader.check(java.util.List<com.ash.rachana.model.Panel>,java.util.List<com.ash.rachana.model.StateEntry>)
+com.ash.rachana.parse.EffectsReader$Read :: public com.ash.rachana.parse.EffectsReader$Read(java.util.Map<java.lang.String, java.util.List<java.util.Map<java.lang.String, java.lang.Object>>>,java.util.Map<java.lang.String, java.lang.Object>)
+com.ash.rachana.parse.EffectsReader$Read :: public final boolean com.ash.rachana.parse.EffectsReader$Read.equals(java.lang.Object)
+com.ash.rachana.parse.EffectsReader$Read :: public final int com.ash.rachana.parse.EffectsReader$Read.hashCode()
+com.ash.rachana.parse.EffectsReader$Read :: public final java.lang.String com.ash.rachana.parse.EffectsReader$Read.toString()
+com.ash.rachana.parse.EffectsReader$Read :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.parse.EffectsReader$Read.onSelect()
+com.ash.rachana.parse.EffectsReader$Read :: public java.util.Map<java.lang.String, java.util.List<java.util.Map<java.lang.String, java.lang.Object>>> com.ash.rachana.parse.EffectsReader$Read.sets()
 com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Collection<java.lang.String> com.ash.rachana.parse.FragmentResolver.names()
 com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.FragmentResolver.find(java.lang.String)
 com.ash.rachana.parse.FragmentResolver :: public default java.util.Optional<java.lang.String> com.ash.rachana.parse.FragmentResolver.contract(com.ash.rachana.parse.SutraBlocks$Block,java.lang.String)
@@ -2806,6 +2888,8 @@ com.ash.rachana.parse.SutraBlocks$Block :: public java.util.Map<java.lang.String
 com.ash.rachana.parse.SutraBlocks$Calls :: public com.ash.rachana.parse.PNode com.ash.rachana.parse.SutraBlocks$Calls.contract(com.ash.rachana.parse.SutraBlocks$Block,java.lang.String)
 com.ash.rachana.parse.SutraBlocks$Calls :: public com.ash.rachana.parse.SutraBlocks$Calls(java.util.function.Function<java.lang.String, java.util.Map<java.lang.String, java.lang.String>>)
 com.ash.rachana.parse.SutraBlocks$Calls :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.SutraBlocks$Calls.advisories()
+com.ash.rachana.parse.SutraBlocks$Calls :: public java.util.List<com.ash.rachana.model.StateEntry> com.ash.rachana.parse.SutraBlocks$Calls.state()
+com.ash.rachana.parse.SutraBlocks$Calls :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Stateful> com.ash.rachana.parse.SutraBlocks$Calls.stateful()
 com.ash.rachana.parse.SutraBlocks$Calls :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.SutraBlocks$Calls.columns(java.lang.String)
 com.ash.rachana.parse.SutraDocstring :: public static final int com.ash.rachana.parse.SutraDocstring.SUMMARY_MAX
 com.ash.rachana.parse.SutraDocstring :: public static final java.lang.String com.ash.rachana.parse.SutraDocstring.CODE
@@ -2829,6 +2913,8 @@ com.ash.rachana.parse.TypedFragment :: public java.util.List<com.ash.rachana.par
 com.ash.rachana.parse.TypedFragment :: public java.util.List<java.lang.String> com.ash.rachana.parse.TypedFragment.declaredEvents()
 com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Param> com.ash.rachana.parse.TypedFragment.params()
 com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, com.ash.rachana.parse.TypedFragment$Slot> com.ash.rachana.parse.TypedFragment.slots()
+com.ash.rachana.parse.TypedFragment :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.TypedFragment.outputs()
+com.ash.rachana.parse.TypedFragment :: public java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.stateNames()
 com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.parse.TypedFragment.fits(java.lang.String,java.lang.String)
 com.ash.rachana.parse.TypedFragment :: public static boolean com.ash.rachana.parse.TypedFragment.isTyped(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.TypedFragment :: public static com.ash.rachana.parse.TypedFragment com.ash.rachana.parse.TypedFragment.of(com.ash.rachana.parse.SutraBlocks$Block)
@@ -2848,10 +2934,12 @@ com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.la
 com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.TONES
 com.ash.rachana.parse.TypedFragment :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment.VALUE_TYPES
 com.ash.rachana.parse.TypedFragment$Bound :: public com.ash.rachana.parse.TypedFragment$Bound(java.util.List<com.ash.rachana.parse.PNode>,java.util.Map<java.lang.String, java.lang.String>,java.util.List<com.ash.rachana.SutraProblem>)
+com.ash.rachana.parse.TypedFragment$Bound :: public com.ash.rachana.parse.TypedFragment$Bound(java.util.List<com.ash.rachana.parse.PNode>,java.util.Map<java.lang.String, java.lang.String>,java.util.List<com.ash.rachana.SutraProblem>,java.util.List<com.ash.rachana.model.StateEntry>)
 com.ash.rachana.parse.TypedFragment$Bound :: public final boolean com.ash.rachana.parse.TypedFragment$Bound.equals(java.lang.Object)
 com.ash.rachana.parse.TypedFragment$Bound :: public final int com.ash.rachana.parse.TypedFragment$Bound.hashCode()
 com.ash.rachana.parse.TypedFragment$Bound :: public final java.lang.String com.ash.rachana.parse.TypedFragment$Bound.toString()
 com.ash.rachana.parse.TypedFragment$Bound :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.TypedFragment$Bound.advisories()
+com.ash.rachana.parse.TypedFragment$Bound :: public java.util.List<com.ash.rachana.model.StateEntry> com.ash.rachana.parse.TypedFragment$Bound.state()
 com.ash.rachana.parse.TypedFragment$Bound :: public java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.TypedFragment$Bound.panels()
 com.ash.rachana.parse.TypedFragment$Bound :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.TypedFragment$Bound.events()
 com.ash.rachana.parse.TypedFragment$Caller :: public abstract java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.TypedFragment$Caller.columns(java.lang.String)
@@ -2881,6 +2969,13 @@ com.ash.rachana.parse.TypedFragment$Slot :: public int com.ash.rachana.parse.Typ
 com.ash.rachana.parse.TypedFragment$Slot :: public java.lang.String com.ash.rachana.parse.TypedFragment$Slot.accepts()
 com.ash.rachana.parse.TypedFragment$Slot :: public java.lang.String com.ash.rachana.parse.TypedFragment$Slot.doc()
 com.ash.rachana.parse.TypedFragment$Slot :: public java.lang.String com.ash.rachana.parse.TypedFragment$Slot.name()
+com.ash.rachana.parse.TypedFragment$Stateful :: public com.ash.rachana.parse.TypedFragment$Stateful(java.lang.String,java.util.Set<java.lang.String>,java.util.Set<java.lang.String>)
+com.ash.rachana.parse.TypedFragment$Stateful :: public final boolean com.ash.rachana.parse.TypedFragment$Stateful.equals(java.lang.Object)
+com.ash.rachana.parse.TypedFragment$Stateful :: public final int com.ash.rachana.parse.TypedFragment$Stateful.hashCode()
+com.ash.rachana.parse.TypedFragment$Stateful :: public final java.lang.String com.ash.rachana.parse.TypedFragment$Stateful.toString()
+com.ash.rachana.parse.TypedFragment$Stateful :: public java.lang.String com.ash.rachana.parse.TypedFragment$Stateful.fragment()
+com.ash.rachana.parse.TypedFragment$Stateful :: public java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment$Stateful.names()
+com.ash.rachana.parse.TypedFragment$Stateful :: public java.util.Set<java.lang.String> com.ash.rachana.parse.TypedFragment$Stateful.outputs()
 com.ash.rachana.parse.YamlSyntaxException :: public com.ash.rachana.parse.YamlSyntaxException(java.lang.String,int,int)
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.column()
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.line()
@@ -2988,6 +3083,7 @@ com.ash.rachana.table.LiveScreen :: public java.util.List<com.ash.rachana.view.F
 com.ash.rachana.table.LiveScreen :: public java.util.List<java.lang.String> com.ash.rachana.table.LiveScreen.tableNames()
 com.ash.rachana.table.LiveScreen :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.table.LiveScreen.plan(java.util.Map<java.lang.String, com.ash.rachana.table.TableSchema>)
 com.ash.rachana.table.LiveScreen :: public void com.ash.rachana.table.LiveScreen.controls(java.util.Map<java.lang.String, ?>)
+com.ash.rachana.table.LiveScreen :: public void com.ash.rachana.table.LiveScreen.state(java.util.Map<java.lang.String, ?>)
 com.ash.rachana.table.LiveScreen :: public void com.ash.rachana.table.LiveScreen.table(java.lang.String,com.ash.rachana.table.TableSchema,java.util.List<java.util.Map<java.lang.String, java.lang.Object>>)
 com.ash.rachana.table.LiveTableSpec :: public boolean com.ash.rachana.table.LiveTableSpec.newestFirst()
 com.ash.rachana.table.LiveTableSpec :: public boolean com.ash.rachana.table.LiveTableSpec.tray()
@@ -3099,8 +3195,10 @@ com.ash.rachana.view.MaskCount$Result :: public final int com.ash.rachana.view.M
 com.ash.rachana.view.MaskCount$Result :: public final java.lang.String com.ash.rachana.view.MaskCount$Result.toString()
 com.ash.rachana.view.MaskCount$Result :: public int com.ash.rachana.view.MaskCount$Result.count()
 com.ash.rachana.view.MaskCount$Result :: public java.util.List<java.lang.String> com.ash.rachana.view.MaskCount$Result.panels()
+com.ash.rachana.view.PanelData$Bar :: public com.ash.rachana.view.PanelData$Bar com.ash.rachana.view.PanelData$Bar.withSet(java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Bar :: public com.ash.rachana.view.PanelData$Bar(java.lang.String,double,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Bar :: public com.ash.rachana.view.PanelData$Bar(java.lang.String,double,java.lang.String,java.lang.String,java.lang.String)
+com.ash.rachana.view.PanelData$Bar :: public com.ash.rachana.view.PanelData$Bar(java.lang.String,double,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Bar :: public double com.ash.rachana.view.PanelData$Bar.value()
 com.ash.rachana.view.PanelData$Bar :: public final boolean com.ash.rachana.view.PanelData$Bar.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$Bar :: public final int com.ash.rachana.view.PanelData$Bar.hashCode()
@@ -3109,6 +3207,7 @@ com.ash.rachana.view.PanelData$Bar :: public java.lang.String com.ash.rachana.vi
 com.ash.rachana.view.PanelData$Bar :: public java.lang.String com.ash.rachana.view.PanelData$Bar.label()
 com.ash.rachana.view.PanelData$Bar :: public java.lang.String com.ash.rachana.view.PanelData$Bar.text()
 com.ash.rachana.view.PanelData$Bar :: public java.lang.String com.ash.rachana.view.PanelData$Bar.tone()
+com.ash.rachana.view.PanelData$Bar :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Bar.set()
 com.ash.rachana.view.PanelData$Bars :: public com.ash.rachana.view.PanelData$Bars(java.util.List<com.ash.rachana.view.PanelData$Bar>)
 com.ash.rachana.view.PanelData$Bars :: public com.ash.rachana.view.PanelData$Bars(java.util.List<com.ash.rachana.view.PanelData$Bar>,java.lang.String,java.lang.String)
 com.ash.rachana.view.PanelData$Bars :: public final boolean com.ash.rachana.view.PanelData$Bars.equals(java.lang.Object)
@@ -3393,11 +3492,13 @@ com.ash.rachana.view.PanelData$Point :: public java.lang.String com.ash.rachana.
 com.ash.rachana.view.PanelData$Point :: public java.lang.String com.ash.rachana.view.PanelData$Point.yText()
 com.ash.rachana.view.PanelData$Row :: public boolean com.ash.rachana.view.PanelData$Row.highlight()
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row com.ash.rachana.view.PanelData$Row.kidsTotal()
+com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row com.ash.rachana.view.PanelData$Row.withSet(java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row(java.util.List<com.ash.rachana.view.ViewModel$Cell>,boolean,java.lang.String)
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row(java.util.List<com.ash.rachana.view.ViewModel$Cell>,boolean,java.lang.String,java.util.List<com.ash.rachana.view.PanelData$Row>)
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row(java.util.List<com.ash.rachana.view.ViewModel$Cell>,boolean,java.lang.String,java.util.List<com.ash.rachana.view.PanelData$Row>,java.lang.String)
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row(java.util.List<com.ash.rachana.view.ViewModel$Cell>,boolean,java.lang.String,java.util.List<com.ash.rachana.view.PanelData$Row>,java.lang.String,java.lang.String,com.ash.rachana.view.PanelData$Row)
 com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row(java.util.List<com.ash.rachana.view.ViewModel$Cell>,boolean,java.lang.String,java.util.List<com.ash.rachana.view.PanelData$Row>,java.lang.String,java.lang.String,com.ash.rachana.view.PanelData$Row,java.lang.String)
+com.ash.rachana.view.PanelData$Row :: public com.ash.rachana.view.PanelData$Row(java.util.List<com.ash.rachana.view.ViewModel$Cell>,boolean,java.lang.String,java.util.List<com.ash.rachana.view.PanelData$Row>,java.lang.String,java.lang.String,com.ash.rachana.view.PanelData$Row,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.PanelData$Row :: public final boolean com.ash.rachana.view.PanelData$Row.equals(java.lang.Object)
 com.ash.rachana.view.PanelData$Row :: public final int com.ash.rachana.view.PanelData$Row.hashCode()
 com.ash.rachana.view.PanelData$Row :: public final java.lang.String com.ash.rachana.view.PanelData$Row.toString()
@@ -3407,6 +3508,7 @@ com.ash.rachana.view.PanelData$Row :: public java.lang.String com.ash.rachana.vi
 com.ash.rachana.view.PanelData$Row :: public java.lang.String com.ash.rachana.view.PanelData$Row.pick()
 com.ash.rachana.view.PanelData$Row :: public java.util.List<com.ash.rachana.view.PanelData$Row> com.ash.rachana.view.PanelData$Row.children()
 com.ash.rachana.view.PanelData$Row :: public java.util.List<com.ash.rachana.view.ViewModel$Cell> com.ash.rachana.view.PanelData$Row.cells()
+com.ash.rachana.view.PanelData$Row :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.PanelData$Row.set()
 com.ash.rachana.view.PanelData$Scatter :: public boolean com.ash.rachana.view.PanelData$Scatter.sized()
 com.ash.rachana.view.PanelData$Scatter :: public com.ash.rachana.view.PanelData$Scatter(java.util.List<com.ash.rachana.view.PanelData$Point>,java.util.List<java.lang.String>,java.lang.String,java.lang.String,boolean,int)
 com.ash.rachana.view.PanelData$Scatter :: public final boolean com.ash.rachana.view.PanelData$Scatter.equals(java.lang.Object)
@@ -3551,6 +3653,7 @@ com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel com.ash.
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel com.ash.rachana.view.ViewModel.withLayout(java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel com.ash.rachana.view.ViewModel.withPhone(java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel com.ash.rachana.view.ViewModel.withProvenance(com.ash.rachana.view.ViewModel$Provenance)
+com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel com.ash.rachana.view.ViewModel.withState(java.util.List<com.ash.rachana.view.ViewModel$StateView>)
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel$Provenance com.ash.rachana.view.ViewModel.provenance()
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel$Ref com.ash.rachana.view.ViewModel.ref()
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel$TitleView com.ash.rachana.view.ViewModel.title()
@@ -3560,6 +3663,7 @@ com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel(com.ash.
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel(com.ash.rachana.view.ViewModel$Ref,java.lang.String,com.ash.rachana.view.ViewModel$TitleView,java.util.List<com.ash.rachana.view.ViewModel$Cell>,java.util.List<com.ash.rachana.view.ViewModel$PanelView>,java.util.List<com.ash.rachana.view.ViewModel$KeyView>,com.ash.rachana.view.ViewModel$Provenance,java.util.Map<java.lang.String, java.lang.Double>,java.util.List<com.ash.rachana.view.ViewModel$ControlView>,java.util.List<com.ash.rachana.view.ViewModel$SelectView>,java.util.Map<java.lang.String, java.lang.Object>,java.lang.String)
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel(com.ash.rachana.view.ViewModel$Ref,java.lang.String,com.ash.rachana.view.ViewModel$TitleView,java.util.List<com.ash.rachana.view.ViewModel$Cell>,java.util.List<com.ash.rachana.view.ViewModel$PanelView>,java.util.List<com.ash.rachana.view.ViewModel$KeyView>,com.ash.rachana.view.ViewModel$Provenance,java.util.Map<java.lang.String, java.lang.Double>,java.util.List<com.ash.rachana.view.ViewModel$ControlView>,java.util.List<com.ash.rachana.view.ViewModel$SelectView>,java.util.Map<java.lang.String, java.lang.Object>,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel(com.ash.rachana.view.ViewModel$Ref,java.lang.String,com.ash.rachana.view.ViewModel$TitleView,java.util.List<com.ash.rachana.view.ViewModel$Cell>,java.util.List<com.ash.rachana.view.ViewModel$PanelView>,java.util.List<com.ash.rachana.view.ViewModel$KeyView>,com.ash.rachana.view.ViewModel$Provenance,java.util.Map<java.lang.String, java.lang.Double>,java.util.List<com.ash.rachana.view.ViewModel$ControlView>,java.util.List<com.ash.rachana.view.ViewModel$SelectView>,java.util.Map<java.lang.String, java.lang.Object>,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>,java.util.Map<java.lang.String, com.ash.rachana.view.ViewModel$Dataset>)
+com.ash.rachana.view.ViewModel :: public com.ash.rachana.view.ViewModel(com.ash.rachana.view.ViewModel$Ref,java.lang.String,com.ash.rachana.view.ViewModel$TitleView,java.util.List<com.ash.rachana.view.ViewModel$Cell>,java.util.List<com.ash.rachana.view.ViewModel$PanelView>,java.util.List<com.ash.rachana.view.ViewModel$KeyView>,com.ash.rachana.view.ViewModel$Provenance,java.util.Map<java.lang.String, java.lang.Double>,java.util.List<com.ash.rachana.view.ViewModel$ControlView>,java.util.List<com.ash.rachana.view.ViewModel$SelectView>,java.util.Map<java.lang.String, java.lang.Object>,java.lang.String,java.util.Map<java.lang.String, java.lang.Object>,java.util.Map<java.lang.String, com.ash.rachana.view.ViewModel$Dataset>,java.util.List<com.ash.rachana.view.ViewModel$StateView>)
 com.ash.rachana.view.ViewModel :: public final boolean com.ash.rachana.view.ViewModel.equals(java.lang.Object)
 com.ash.rachana.view.ViewModel :: public final int com.ash.rachana.view.ViewModel.hashCode()
 com.ash.rachana.view.ViewModel :: public final java.lang.String com.ash.rachana.view.ViewModel.toString()
@@ -3570,6 +3674,7 @@ com.ash.rachana.view.ViewModel :: public java.util.List<com.ash.rachana.view.Vie
 com.ash.rachana.view.ViewModel :: public java.util.List<com.ash.rachana.view.ViewModel$KeyView> com.ash.rachana.view.ViewModel.keys()
 com.ash.rachana.view.ViewModel :: public java.util.List<com.ash.rachana.view.ViewModel$PanelView> com.ash.rachana.view.ViewModel.panels()
 com.ash.rachana.view.ViewModel :: public java.util.List<com.ash.rachana.view.ViewModel$SelectView> com.ash.rachana.view.ViewModel.selects()
+com.ash.rachana.view.ViewModel :: public java.util.List<com.ash.rachana.view.ViewModel$StateView> com.ash.rachana.view.ViewModel.state()
 com.ash.rachana.view.ViewModel :: public java.util.Map<java.lang.String, com.ash.rachana.view.ViewModel$Dataset> com.ash.rachana.view.ViewModel.datasets()
 com.ash.rachana.view.ViewModel :: public java.util.Map<java.lang.String, java.lang.Double> com.ash.rachana.view.ViewModel.timings()
 com.ash.rachana.view.ViewModel :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.view.ViewModel.layout()
@@ -3774,6 +3879,14 @@ com.ash.rachana.view.ViewModel$ServerRef :: public final boolean com.ash.rachana
 com.ash.rachana.view.ViewModel$ServerRef :: public final int com.ash.rachana.view.ViewModel$ServerRef.hashCode()
 com.ash.rachana.view.ViewModel$ServerRef :: public final java.lang.String com.ash.rachana.view.ViewModel$ServerRef.toString()
 com.ash.rachana.view.ViewModel$ServerRef :: public java.lang.String com.ash.rachana.view.ViewModel$ServerRef.url()
+com.ash.rachana.view.ViewModel$StateView :: public boolean com.ash.rachana.view.ViewModel$StateView.url()
+com.ash.rachana.view.ViewModel$StateView :: public com.ash.rachana.view.ViewModel$StateView(java.lang.String,java.lang.Object,boolean,java.util.List<java.lang.String>)
+com.ash.rachana.view.ViewModel$StateView :: public final boolean com.ash.rachana.view.ViewModel$StateView.equals(java.lang.Object)
+com.ash.rachana.view.ViewModel$StateView :: public final int com.ash.rachana.view.ViewModel$StateView.hashCode()
+com.ash.rachana.view.ViewModel$StateView :: public final java.lang.String com.ash.rachana.view.ViewModel$StateView.toString()
+com.ash.rachana.view.ViewModel$StateView :: public java.lang.Object com.ash.rachana.view.ViewModel$StateView.value()
+com.ash.rachana.view.ViewModel$StateView :: public java.lang.String com.ash.rachana.view.ViewModel$StateView.id()
+com.ash.rachana.view.ViewModel$StateView :: public java.util.List<java.lang.String> com.ash.rachana.view.ViewModel$StateView.reads()
 com.ash.rachana.view.ViewModel$TitleView :: public com.ash.rachana.view.ViewModel$Cell com.ash.rachana.view.ViewModel$TitleView.with()
 com.ash.rachana.view.ViewModel$TitleView :: public com.ash.rachana.view.ViewModel$TitleView(java.lang.String,java.lang.String,com.ash.rachana.view.ViewModel$Cell)
 com.ash.rachana.view.ViewModel$TitleView :: public final boolean com.ash.rachana.view.ViewModel$TitleView.equals(java.lang.Object)

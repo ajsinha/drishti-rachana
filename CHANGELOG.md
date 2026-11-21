@@ -34,6 +34,21 @@ Entries are written per release; the regime's unreleased work is listed after th
   the caller's context: the template as a whole value, `concat(...)` of its parts inside an expression; `@`, `^`, `#index` refused.
   A plain `text` keeps its text as written. `FragmentColumns.templateParts` (API addition).
 
+### Screen state and the effect list's set (G2 lane A5)
+
+- **S1 + I1 (first step), level 1.2** (SPEC 2.8; decision S1-OPEN): a Sutra's `state:` (typed `text`, `number`, `boolean`,
+  `date`, `list`; a default; at most 40 with fragments' private state; `url` and `remember` refused until S4), read as
+  `state.<id>` (`Expr.State`, parsed only while a Sutra that holds state is in force; an undeclared id does not compile), and
+  a panel's `on:` (`row-click` on tables and ladders, `bar-click` on hbars) with the effect `set`: `{ state, to }` evaluated
+  per row (`Row.set`, `Bar.set`), or `set: <control>` (with `field:`), which is the panel's `on-select`. The bind request
+  carries `StateValues` beside `ControlValues` (`state.<id>=...`; `ViewBuilder.Request.withState`, `LiveScreen.state`), and
+  the ViewModel lists `state[] {id, value, url, reads}` (contract 1.2, `ViewModel.NEWEST`; an older painter ignores it).
+  Fragments: private `state:` held as `<as>.<name>` (a stateful fragment needs `as:`, `RCH-2115`), `outputs:` read by the
+  screen as `state.<as>.<name>`, never written (`RCH-2117`); a use's `on:` takes an effect list that writes the screen's
+  state from the event's payload (`event.<name>`). Cases `sutra/state` (6), `problem/state` (9), `sutra/fragments-state`
+  (2), `problem/fragments-state` (4); conformance `given.state`. Not yet: the painter side (Elements lane), the other
+  triggers and effects, `state` name parameters (LIBRARIES 6.3), S4.
+
 ### Named arguments by the catalogue; stable wire keys; Sutra let and functions, library functions (G2 lane A4)
 
 - **X41 + S2 + X42, level 1.2** (SPEC 2.7): a Sutra's `let:` (named values, each reading the ones before it, no current

@@ -423,7 +423,7 @@ public final class Cases {
 
     /**
      * One screen of a {@code sutra} or {@code patch} case (Core's {@code LiveScreen}): the Sutra over {@code given.record} (the entity's
-     * data; {@code given.today} the business date, {@code given.ctl} the control values as a request carries them) and the tables of
+     * data; {@code given.today} the business date, {@code given.ctl} the control values as a request carries them, {@code given.state} the state values) and the tables of
      * {@code given.tables} (by table name: a list of rows, or {@code {schema, rows}}), held as keyed rows so that a patch can change
      * them. A host's fields (reference, mnemonic, provenance, timings) are not set, so not written.
      */
@@ -434,6 +434,11 @@ public final class Cases {
         Map<String, Object> ctl = new LinkedHashMap<>();
         obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? l.stream().map(Cases::text).toList() : text(v)));
         var s = new com.ash.rachana.table.LiveScreen(at(c), parse(c), today, g.containsKey("record") ? node(g.get("record")) : null, ctl);
+        if (g.containsKey("state")) {                                       // level 1.2, S1: the state values the bind request carries
+            Map<String, Object> state = new LinkedHashMap<>();
+            obj(g.get("state")).forEach((k, v) -> state.put(k, v instanceof List<?> l ? l.stream().map(Cases::text).toList() : v == null ? "" : text(v)));
+            s.state(state);
+        }
         for (Map.Entry<String, Object> e : obj(g.get("tables")).entrySet()) {
             Object t = e.getValue();
             var schema = t instanceof Map<?, ?> m && m.containsKey("schema") ? com.ash.rachana.table.TableSchema.of(m.get("schema")) : null;

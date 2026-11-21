@@ -41,6 +41,7 @@ final class ViewRecords {
                 ViewJson.put(m, "text", r.text(), Rule.ALWAYS);
                 ViewJson.put(m, "tone", r.tone(), Rule.ALWAYS);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
+                ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Bars r -> {
@@ -329,6 +330,7 @@ final class ViewRecords {
                 ViewJson.put(m, "crumb", r.crumb(), Rule.NON_NULL);
                 ViewJson.put(m, "kidsTotal", r.kidsTotal(), Rule.NON_NULL);
                 ViewJson.put(m, "ev", r.ev(), Rule.NON_NULL);
+                ViewJson.put(m, "set", r.set(), Rule.NON_EMPTY);
                 yield m;
             }
             case PanelData.Scatter r -> {
@@ -472,6 +474,7 @@ final class ViewRecords {
                 ViewJson.put(m, "contract", r.contract(), Rule.NON_NULL);
                 ViewJson.put(m, "phone", r.phone(), Rule.NON_EMPTY);
                 ViewJson.put(m, "datasets", r.datasets(), Rule.NON_EMPTY);
+                ViewJson.put(m, "state", r.state(), Rule.NON_EMPTY);
                 yield m;
             }
             case ViewModel.ArrowRef r -> {
@@ -649,6 +652,14 @@ final class ViewRecords {
             case ViewModel.ServerRef r -> {
                 Map<String, Object> m = new LinkedHashMap<>();
                 ViewJson.put(m, "url", r.url(), Rule.NON_DEFAULT);
+                yield m;
+            }
+            case ViewModel.StateView r -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                ViewJson.put(m, "id", r.id(), Rule.ALWAYS);
+                ViewJson.put(m, "value", r.value(), Rule.ALWAYS);
+                ViewJson.put(m, "url", r.url(), Rule.ALWAYS);
+                ViewJson.put(m, "reads", r.reads(), Rule.ALWAYS);
                 yield m;
             }
             case ViewModel.TitleView r -> {

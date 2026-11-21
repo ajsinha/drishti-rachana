@@ -1,0 +1,182 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/state
+since: "1.2"
+profile: core
+verified: true
+description: "A screen's state: (SUTRA_EXPANSION S1) and the effect list's set (I1), level 1.2: typed state values with defaults, read as state.<id>, carried back by the bind request (StateValues), listed in the ViewModel's state[] (contract 1.2) and written by a click."
+cases:
+
+  - id: defaults-of-every-type
+    kind: sutra
+    source: "SUTRA_EXPANSION S1 (typed, default; state[] {id, value, url, reads}); decision S1-OPEN b"
+    note: "Each type's default as the ViewModel writes it; reads names the panels whose expressions read the state; a state nothing reads has an empty reads; the stamp is the smallest minor that describes the document (1.2)."
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Orders'" }
+      state:
+        order:   { type: text }
+        limit:   { type: number, default: 2.5 }
+        compare: { type: boolean, default: false }
+        since:   { type: date, default: "2026-11-02" }
+        desks:   { type: list, default: [ FX, Rates ] }
+      panels:
+        - { id: chosen, kind: metric, label: Chosen, value: "state.order ?? 'none'" }
+        - { id: twice, kind: metric, label: Twice, value: "state.limit * 2" }
+        - { id: desks, kind: metric, label: Desks, value: "size(state.desks)" }
+        - { id: note, kind: markdown, text: "Since ${state.since}; compare ${state.compare}" }
+    expect:
+      at:
+        /contract: "1.2"
+        /panels/0/data/value/text: "none"
+        /panels/1/data/value/text: "5"
+        /panels/2/data/value/text: "2"
+        /panels/3/data/text: "Since 2026-11-02; compare false"
+        /state/0: { id: order, value: null, url: false, reads: [ chosen ] }
+        /state/1: { id: limit, value: 2.5, url: false, reads: [ twice ] }
+        /state/2: { id: compare, value: false, url: false, reads: [ note ] }
+        /state/3: { id: since, value: "2026-11-02", url: false, reads: [ note ] }
+        /state/4: { id: desks, value: [ FX, Rates ], url: false, reads: [ desks ] }
+
+  - id: the-request-carries-the-values
+    kind: sutra
+    source: decision S1-OPEN a (StateValues beside ControlValues; the host keeps them per reader)
+    note: "The request's text per type (a list's items as a list); a value that does not fit its type keeps the default (limit), an id the Sutra does not hold is ignored."
+    given:
+      state: { order: O-7, limit: "ten", compare: "true", desks: [ Credit ], ghost: x }
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Orders'" }
+      state:
+        order:   { type: text }
+        limit:   { type: number, default: 2.5 }
+        compare: { type: boolean, default: false }
+        desks:   { type: list, default: [ FX, Rates ] }
+      panels:
+        - { id: chosen, kind: metric, label: Chosen, value: "state.order ?? 'none'" }
+        - { id: twice, kind: metric, label: Twice, value: "state.limit * 2" }
+        - { id: flag, kind: metric, label: Compare, value: "if(state.compare, 'yes', 'no')" }
+        - { id: desks, kind: metric, label: Desks, value: "state.desks[0]" }
+    expect:
+      at:
+        /panels/0/data/value/text: "O-7"
+        /panels/1/data/value/text: "5"
+        /panels/2/data/value/text: "yes"
+        /panels/3/data/value/text: "Credit"
+        /state/0/value: "O-7"
+        /state/1/value: 2.5
+        /state/2/value: true
+        /state/3/value: [ Credit ]
+
+  - id: a-row-click-sets-state
+    kind: sutra
+    source: "SUTRA_EXPANSION I1 (on: row-click, set: { state, to }; @ the row, evaluated per row)"
+    note: "Each row carries what its click writes (set), already evaluated for it and in the state's type; the panel that reads the state filters by it."
+    given:
+      state: { order: B }
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Orders'" }
+      data:
+        orders: { rows: [ { id: A, qty: 10 }, { id: B, qty: 25 } ] }
+      state:
+        order: { type: text }
+        size:  { type: number }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-click: [ { set: { state: order, to: "@.id" } }, { set: { state: size, to: "@.qty / 10" } } ]
+        - { id: detail, kind: metric, label: Quantity, value: "$.orders[?@.id == state.order][0].qty" }
+    expect:
+      at:
+        /panels/0/data/rows/0/set: { order: A, size: 1 }
+        /panels/0/data/rows/1/set: { order: B, size: 2.5 }
+        /panels/1/data/value/text: "25"
+        /state/0: { id: order, value: B, url: false, reads: [ detail ] }
+        /state/1: { id: size, value: null, url: false, reads: [] }
+
+  - id: a-bar-click-sets-state
+    kind: sutra
+    source: SUTRA_EXPANSION I1 (bar-click on an hbar)
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Desks'" }
+      data:
+        desks: { rows: [ { desk: FX, pnl: 3 }, { desk: Rates, pnl: -1 } ] }
+      state:
+        desk: { type: text, default: FX }
+      panels:
+        - id: by-desk
+          kind: hbar
+          rows: $.desks
+          label: desk
+          value: pnl
+          on:
+            bar-click: [ { set: { state: desk, to: "@.desk" } } ]
+    expect:
+      at:
+        /panels/0/data/bars/0/set: { desk: FX }
+        /panels/0/data/bars/1/set: { desk: Rates }
+        /state/0: { id: desk, value: FX, url: false, reads: [] }
+
+  - id: set-a-control-is-on-select
+    kind: sutra
+    source: "SUTRA_EXPANSION I1 (set: <control> keeps its meaning and its output; one mechanism)"
+    note: "set: <control> with field: is the panel's on-select: the view lists the select and each row its pick, as on-select writes them."
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Orders'" }
+      data:
+        orders: { rows: [ { id: A, desk: FX }, { id: B, desk: Rates } ] }
+      controls:
+        - { id: desk, kind: dropdown, options: [ FX, Rates ] }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-click: [ { set: desk, field: desk } ]
+    expect:
+      at:
+        /selects/0: { panel: orders, by: desk, filter: [] }
+        /panels/0/data/rows/0/pick: FX
+        /panels/0/data/rows/1/pick: Rates
+        /contract: "1.0"
+
+  - id: a-let-reads-state
+    kind: sutra
+    source: SUTRA_EXPANSION S1, S2 (a let reads the state; the panels that read the let read the state)
+    given:
+      state: { desk: Rates }
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      title: { id: "'Desks'" }
+      data:
+        trades: { rows: [ { desk: FX, notional: 100 }, { desk: Rates, notional: 600 }, { desk: Rates, notional: 50 } ] }
+      state:
+        desk: { type: text, default: FX }
+      let:
+        mine: "$.trades[?@.desk == state.desk]"
+        total: "sum(mine, 'notional')"
+      panels:
+        - { id: total, kind: metric, label: Total, value: "total" }
+        - { id: count, kind: metric, label: Trades, value: "size($.trades)" }
+    expect:
+      at:
+        /panels/0/data/value/text: "650"
+        /state/0: { id: desk, value: Rates, url: false, reads: [ total ] }

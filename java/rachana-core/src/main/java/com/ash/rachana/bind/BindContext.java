@@ -4,55 +4,41 @@
  */
 package com.ash.rachana.bind;
 
-import com.ash.drishti.api.EntityDocument;
-import com.ash.drishti.api.EntityRef;
-import com.ash.drishti.common.Fingerprint;
-import com.ash.drishti.graph.LinkRef;
-import com.ash.drishti.inference.EffectiveLayout;
 import com.ash.rachana.el.EvalContext;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Everything one view binding needs. Immutable; shared by the panel binders running in parallel.
- *
- * @param doc the entity document
- * @param layout the effective layout
- * @param fingerprint the document's shape fingerprint
- * @param eval evaluation context over the document
- * @param links references discovered in the document
- * @param linked linked documents fetched within the budget (absent ones are pending or missing)
- * @param pending linked entities not fetched in time
- * @param denied sourced entities the caller may not open: never fetched, their panels show "no access"
- * @param maps per {@code map} panel id, what its link and shade read across a kind
+ * What one view's panels bind against: the entity viewed ({@code doc}, may be null for a view of no entity), its layout, the
+ * evaluation context, the linked entities fetched ({@code linked}), those still being fetched ({@code pending}) and those the viewer may
+ * not open ({@code denied}), the map panels' lookups, and {@code host}: what the host's own panel binders read (its links, provenance,
+ * fingerprint; Core never reads it).
  */
 public record BindContext(
-        EntityDocument doc,
-        EffectiveLayout layout,
-        Fingerprint fingerprint,
+        Entity doc,
+        Layout layout,
         EvalContext eval,
-        List<LinkRef> links,
-        Map<EntityRef, EntityDocument> linked,
-        java.util.Set<EntityRef> pending,
-        java.util.Set<EntityRef> denied,
-        Map<String, MapSupport.Lookup> maps) {
+        Map<EntityRef, Entity> linked,
+        Set<EntityRef> pending,
+        Set<EntityRef> denied,
+        Map<String, MapSupport.Lookup> maps,
+        Object host) {
 
     public BindContext {
+        layout = layout == null ? Layout.written(null) : layout;
+        linked = linked == null ? Map.of() : linked;
+        pending = pending == null ? Set.of() : pending;
+        denied = denied == null ? Set.of() : denied;
         maps = maps == null ? Map.of() : maps;
     }
 
-    public BindContext(EntityDocument doc, EffectiveLayout layout, Fingerprint fingerprint, EvalContext eval, List<LinkRef> links,
-            Map<EntityRef, EntityDocument> linked, java.util.Set<EntityRef> pending) {
-        this(doc, layout, fingerprint, eval, links, linked, pending, java.util.Set.of(), Map.of());
-    }
-
-    public BindContext(EntityDocument doc, EffectiveLayout layout, Fingerprint fingerprint, EvalContext eval, List<LinkRef> links,
-            Map<EntityRef, EntityDocument> linked, java.util.Set<EntityRef> pending, java.util.Set<EntityRef> denied) {
-        this(doc, layout, fingerprint, eval, links, linked, pending, denied, Map.of());
+    /** A context of one entity with nothing linked. */
+    public static BindContext of(Entity doc, Layout layout, EvalContext eval) {
+        return new BindContext(doc, layout, eval, null, null, null, null, null);
     }
 
     /** The same binding read in another evaluation context (a tab's element is {@code @}). */
     public BindContext withEval(EvalContext next) {
-        return new BindContext(doc, layout, fingerprint, next, links, linked, pending, denied, maps);
+        return new BindContext(doc, layout, next, linked, pending, denied, maps, host);
     }
 }

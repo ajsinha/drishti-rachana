@@ -4,18 +4,12 @@
  */
 package com.ash.rachana.bind;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.EntityDocument;
-import com.ash.drishti.api.EntityRef;
-import com.ash.drishti.engine.command.Mnemonics;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.view.PanelData;
 import com.ash.rachana.view.ViewModel.Cell;
 import com.ash.rachana.view.ViewModel.LinkView;
 import com.ash.rachana.view.ViewModel.PanelView;
-import com.ash.drishti.graph.BadgeRenderer;
-import com.ash.drishti.graph.LinkRef;
-import com.ash.drishti.graph.ReferenceCatalog;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.RachanaCode;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.EvalContext;
 import com.ash.rachana.el.Expr;
@@ -40,43 +34,43 @@ public final class Binder {
 
     private final ElCompiler el;
     private final Formats formats;
-    private final ReferenceCatalog catalog;
-    private final BadgeRenderer badges;
-    private final Mnemonics mnemonics;
+    private final LinkResolver catalog;
+    private final BindHooks hooks;
     private final ChartBinder charts;
     private final PivotBinder pivots;
     private final MapBinder maps;
     private final PanelLimits limits;
 
-    /** The limits this binder applies (the map support reads its own from them). */
+    /** The limits panels are drawn with. */
     public PanelLimits limits() {
         return limits;
     }
 
-    public Binder(ElCompiler el, Formats formats, ReferenceCatalog catalog, BadgeRenderer badges, Mnemonics mnemonics) {
-        this(el, formats, catalog, badges, mnemonics, PanelLimits.defaults());
+    /** What the host plugged in. */
+    public BindHooks hooks() {
+        return hooks;
     }
 
-    public Binder(ElCompiler el, Formats formats, ReferenceCatalog catalog, BadgeRenderer badges, Mnemonics mnemonics, PanelLimits limits) {
-        this(el, formats, catalog, badges, mnemonics, limits, com.ash.drishti.engine.pivot.PivotProperties.defaults());
+    /** Core alone: no kinds, no profile panels, no pivot engine. */
+    public Binder(ElCompiler el, Formats formats) {
+        this(el, formats, BindHooks.core(), PivotEngine.NONE);
     }
 
-    public Binder(ElCompiler el, Formats formats, ReferenceCatalog catalog, BadgeRenderer badges, Mnemonics mnemonics, PanelLimits limits,
-            com.ash.drishti.engine.pivot.PivotProperties pivot) {
+    /** With a host's hooks and pivot engine. */
+    public Binder(ElCompiler el, Formats formats, BindHooks hooks, PivotEngine pivotEngine) {
         this.el = el;
         this.formats = formats;
-        this.catalog = catalog;
-        this.badges = badges;
-        this.mnemonics = mnemonics;
-        this.limits = limits;
-        this.charts = new ChartBinder(this, formats, catalog, limits);
-        this.pivots = new PivotBinder(el, catalog, this, pivot);
+        this.hooks = hooks == null ? BindHooks.core() : hooks;
+        this.catalog = this.hooks.links();
+        this.limits = this.hooks.limits();
+        this.charts = new ChartBinder(this, formats, catalog, limits, pivotEngine == null ? PivotEngine.NONE : pivotEngine);
+        this.pivots = new PivotBinder(el, catalog, this, this.hooks.pivot(), this.hooks.labels());
         this.maps = new MapBinder(el);
     }
 
     /**
      * A table's or ladder's rows as raw values of its pivot's fields, for Pivot (the pivot screen) (every row up to
-     * {@code drishti.pivot.max-records}, whatever the table's {@code limit}).
+     * {@link PivotLimits#maxRecords()}, whatever the table's {@code limit}).
      *
      * @throws IllegalArgumentException when the panel offers no pivot
      */
@@ -101,9 +95,8 @@ public final class Binder {
                 case LINE -> line(p, c);
                 case AREA -> area(p, c);
                 case HBAR -> bars(p, c);
-                case LINKS -> links(c);
+                case LINKS, PROVENANCE -> profilePanel(p, c);
                 case STATUS -> status(p, c);
-                case PROVENANCE -> provenance(c);
                 case MARKDOWN -> new PanelData.Text(el.template(p.option("text").orElse("")).render(c.eval()));
                 case GAUGE -> gauge(p, c);
                 case SURFACE -> surface(p, c);
@@ -124,9 +117,9 @@ public final class Binder {
                     p.span().orElse(null), p.height().orElse(null), "no access to " + e.kind());
         } catch (RuntimeException | StackOverflowError e) {
             // one panel whose data does not fit its Sutra must never take the view down; nor one whose expressions
-            // are too deep to evaluate (bounded at load by drishti.rachana.max-expression-depth, so only if lifted)
-            String error = e instanceof StackOverflowError ? ErrorCode.EL_EVAL.code() + " an expression of this panel is nested too "
-                    + "deeply to evaluate (drishti.rachana.max-expression-depth)" : String.valueOf(e.getMessage());
+            // are too deep to evaluate (bounded at load by the expression depth limit, so only if lifted)
+            String error = e instanceof StackOverflowError ? RachanaCode.EL_EVAL.code() + " an expression of this panel is nested too "
+                    + "deeply to evaluate (the expression depth limit)" : String.valueOf(e.getMessage());
             return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer(), explanation, null,
                     error, true, p.span().orElse(null), p.height().orElse(null));
         }
@@ -186,7 +179,7 @@ public final class Binder {
     }
 
     public LinkView linkView(String kind, String id) {
-        return new LinkView(kind, id, mnemonics.codeFor(kind));
+        return new LinkView(kind, id, catalog.codeFor(kind));
     }
 
     /** The first document path an expression reads, used to address live patches. */
@@ -204,7 +197,7 @@ public final class Binder {
      * The rows of {@code all} the panel's {@code where} keeps ({@code where: "within(@.payDate, ctl.when)"}, with {@code @} the row):
      * the indexes in {@code all}, or null when the panel has no {@code where}. A row whose condition is masked or fails is left out.
      */
-    public int[] originals(Panel p, DataNode all, EvalContext ctx) {
+    public int[] originals(Panel p, Node all, EvalContext ctx) {
         if (!(p.options().get(Panel.WHERE) instanceof String where) || where.isBlank()) {
             return null;
         }
@@ -225,16 +218,16 @@ public final class Binder {
         return java.util.Arrays.copyOf(kept, n);
     }
 
-    private static DataNode keep(DataNode all, int[] origin) {
-        List<DataNode> kept = new ArrayList<>(origin.length);
+    private static Node keep(Node all, int[] origin) {
+        List<Node> kept = new ArrayList<>(origin.length);
         for (int i : origin) {
             kept.add(all.get(i));
         }
-        return new DataNode.Arr(kept);
+        return Node.list(kept);
     }
 
     /** {@code rows} with the panel's {@code where} applied (see {@link #originals}). */
-    DataNode where(Panel p, DataNode rows, EvalContext ctx) {
+    Node where(Panel p, Node rows, EvalContext ctx) {
         int[] origin = originals(p, rows, ctx);
         return origin == null ? rows : keep(rows, origin);
     }
@@ -264,16 +257,16 @@ public final class Binder {
         return null;
     }
 
-    private static String pick(DataNode row, String field) {
+    private static String pick(Node row, String field) {
         if (field == null) {
             return null;
         }
-        DataNode v = row.get(field);
+        Node v = row.get(field);
         return v.isMasked() || v.asText() == null || v.asText().isEmpty() ? null : v.asText();
     }
 
-    private DataNode node(Object v) {
-        return v instanceof DataNode n ? n : DataNode.missing();
+    private Node node(Object v) {
+        return v instanceof Node n ? n : Node.missing();
     }
 
     // ---- kinds --------------------------------------------------------------------------------
@@ -288,11 +281,11 @@ public final class Binder {
         for (Column col : p.columns()) {
             fields.add(cell(col, ctx, rows.isPresent() ? null : pathOf(col.bind())));
         }
-        if (p.columns().isEmpty() && rows.isPresent() && ctx.row() instanceof DataNode.Obj o) {
+        if (p.columns().isEmpty() && rows.isPresent() && ctx.row() instanceof Node o && o.kind() == Node.Kind.OBJECT) {
             // a record read at bind time (a Sutra Next source, $src) that layout inference could not see: its plain fields, in order
             o.fields().forEach((k, v) -> {
-                if (!k.startsWith("_") && !(v instanceof DataNode.Obj) && !(v instanceof DataNode.Arr)) {
-                    fields.add(cell(com.ash.drishti.inference.Semantics.humanize(k), v, null, null, false, null));
+                if (!k.startsWith("_") && v.kind() != Node.Kind.OBJECT && v.kind() != Node.Kind.ARRAY) {
+                    fields.add(cell(hooks.labels().apply(k), v, null, null, false, null));
                 }
             });
         }
@@ -314,9 +307,9 @@ public final class Binder {
     }
 
     private PanelData table(Panel p, BindContext c) {
-        DataNode all = node(eval(p.option("rows").orElseThrow(), c.eval()));
+        Node all = node(eval(p.option("rows").orElseThrow(), c.eval()));
         int[] origin = originals(p, all, c.eval());                        // rows left after the panel's where, as indexes in the data
-        DataNode rows = origin == null ? all : keep(all, origin);
+        Node rows = origin == null ? all : keep(all, origin);
         String rowsPath = pathOf(p.option("rows").get());
         int limit = limitOf(p, c.eval());
         String pickField = pickField(p);
@@ -419,9 +412,9 @@ public final class Binder {
     /**
      * A table whose rows drill into deeper levels ({@code levels:}): every row carries its breadcrumb name, the rows it opens to
      * (bound with that level's columns, {@code @} the row of the level above) and their total row; the first level keeps the
-     * table's own where, limit, highlight and total. Bounded like a tree by {@code drishti.panels.tree-rows}.
+     * table's own where, limit, highlight and total. Bounded like a tree by {@link PanelLimits#treeRows()}.
      */
-    private PanelData drillTable(Panel p, BindContext c, DataNode rows, int[] origin, String rowsPath, int limit, List<Column> cols,
+    private PanelData drillTable(Panel p, BindContext c, Node rows, int[] origin, String rowsPath, int limit, List<Column> cols,
             List<String> headers, List<Boolean> numeric, String highlight, List<LevelSpec> levels, int[] budget) {
         String crumb = p.option("crumb").orElse(null);
         List<PanelData.Row> out = new ArrayList<>();
@@ -469,12 +462,12 @@ public final class Binder {
         PanelData.Row kidsTotal = null;
         if (depth < levels.size()) {
             LevelSpec level = levels.get(depth);
-            DataNode under = node(eval(level.rows(), rc));
-            boolean single = under.type() == com.ash.drishti.api.NodeType.OBJECT;
+            Node under = node(eval(level.rows(), rc));
+            boolean single = under.kind() == Node.Kind.OBJECT;
             List<EvalContext> contexts = new ArrayList<>();
             for (int j = 0; j < (single ? 1 : under.size()) && budget[0] > 0; j++) {
-                DataNode kid = single ? under : under.get(j);
-                if (kid.type() != com.ash.drishti.api.NodeType.OBJECT) {
+                Node kid = single ? under : under.get(j);
+                if (kid.kind() != Node.Kind.OBJECT) {
                     continue;
                 }
                 budget[0]--;
@@ -526,13 +519,13 @@ public final class Binder {
     private PanelData.Row treeRow(List<Column> cols, EvalContext rc, String path, String childrenExpr, String highlight, double[] totals,
             boolean[] masked, boolean emit, int depth, int[] budget) {
         List<PanelData.Row> sub = new ArrayList<>();
-        DataNode kids = depth < limits.treeDepth() ? node(eval(childrenExpr, rc)) : DataNode.missing();
+        Node kids = depth < limits.treeDepth() ? node(eval(childrenExpr, rc)) : Node.missing();
         int walked = 0;
         // children are records: one object is one child; scalars and nulls in a list are not rows
-        boolean single = kids.type() == com.ash.drishti.api.NodeType.OBJECT;
+        boolean single = kids.kind() == Node.Kind.OBJECT;
         for (int j = 0; j < (single ? 1 : kids.size()) && budget[0] > 0; j++) {
-            DataNode kid = single ? kids : kids.get(j);
-            if (kid.type() != com.ash.drishti.api.NodeType.OBJECT) {
+            Node kid = single ? kids : kids.get(j);
+            if (kid.kind() != Node.Kind.OBJECT) {
                 continue;
             }
             budget[0]--;
@@ -585,7 +578,7 @@ public final class Binder {
     }
 
     private PanelData tabs(Panel p, BindContext c) {
-        DataNode each = node(eval(p.option("each").orElseThrow(), c.eval()));
+        Node each = node(eval(p.option("each").orElseThrow(), c.eval()));
         String tabTitle = p.option("tabTitle").orElse("'#' + (#index + 1)");
         List<PanelData.Tab> tabs = new ArrayList<>();
         for (int i = 0; i < each.size(); i++) {
@@ -619,14 +612,14 @@ public final class Binder {
         if (c.denied().contains(src.get())) {
             throw new SourceDeniedException(src.get());
         }
-        EntityDocument d = c.linked().get(src.get());
+        Entity d = c.linked().get(src.get());
         if (d == null && c.pending().contains(src.get())) {
             throw new IllegalStateException("waiting for " + src.get().id());
         }
         // an entity the link names but no source holds (a page per value not built yet, a pack checked before it is deployed): the panel
         // has nothing to show, as a missing branch of the document has; it is not broken
-        return new BindContext(c.doc(), c.layout(), c.fingerprint(), EvalContext.of(d == null ? DataNode.missing() : d.data(), formats), c.links(),
-                c.linked(), c.pending(), c.denied());
+        return new BindContext(c.doc(), c.layout(), EvalContext.of(d == null ? Node.missing() : d.data(), formats), c.linked(), c.pending(),
+                c.denied(), null, c.host());
     }
 
     /** The linked entity a panel reads its data from, when it names one with {@code source}. */
@@ -643,7 +636,7 @@ public final class Binder {
             if (c.denied().contains(src.get())) {
                 throw new SourceDeniedException(src.get());
             }
-            EntityDocument d = c.linked().get(src.get());
+            Entity d = c.linked().get(src.get());
             if (d == null) {
                 throw new IllegalStateException(c.pending().contains(src.get()) ? "waiting for " + src.get().id() : src.get().id() + " not found");
             }
@@ -654,15 +647,15 @@ public final class Binder {
         List<Double> ys = new ArrayList<>();
         if (p.option("values").isPresent()) {
             // a vector: the y values are a list of numbers (a scenario's rates), the x labels another list (its dates) or the position
-            DataNode values = node(eval(p.option("values").get(), data));
+            Node values = node(eval(p.option("values").get(), data));
             Optional<String> labelExpr = p.option("labels");
-            DataNode labels = labelExpr.isPresent() ? node(eval(labelExpr.get(), data)) : null;
+            Node labels = labelExpr.isPresent() ? node(eval(labelExpr.get(), data)) : null;
             for (int i = 0; i < values.size(); i++) {
                 ys.add(values.get(i).asDouble());
                 xs.add(labels != null && i < labels.size() ? labels.get(i).asText() : String.valueOf(i));
             }
         } else {
-            DataNode rows = where(p, node(eval(p.option("rows").orElse("points"), data)), data);
+            Node rows = where(p, node(eval(p.option("rows").orElse("points"), data)), data);
             String x = p.option("x").orElse("tenor");
             String y = p.option("y").orElse("value");
             for (int i = 0; i < rows.size(); i++) {
@@ -683,7 +676,7 @@ public final class Binder {
     }
 
     private PanelData area(Panel p, BindContext c) {
-        DataNode rows = where(p, node(eval(p.option("rows").orElseThrow(), c.eval())), c.eval());
+        Node rows = where(p, node(eval(p.option("rows").orElseThrow(), c.eval())), c.eval());
         String x = p.option("x").orElse("tenor");
         List<String> xs = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
@@ -707,9 +700,9 @@ public final class Binder {
     }
 
     private PanelData bars(Panel p, BindContext c) {
-        DataNode all = node(eval(p.option("rows").orElseThrow(), c.eval()));
+        Node all = node(eval(p.option("rows").orElseThrow(), c.eval()));
         int[] origin = originals(p, all, c.eval());
-        DataNode rows = origin == null ? all : keep(all, origin);
+        Node rows = origin == null ? all : keep(all, origin);
         boolean emits = p.wiring().emits().stream().anyMatch(e -> "bar-click".equals(e.on()));
         String label = p.option("label").orElse("label");
         String value = p.option("value").orElse("value");
@@ -718,7 +711,7 @@ public final class Binder {
         List<PanelData.Bar> bars = new ArrayList<>();
         double total = 0;
         for (int i = 0; i < rows.size(); i++) {
-            DataNode r = rows.get(i);
+            Node r = rows.get(i);
             double v = Values.number(r.get(value));
             if (!Double.isFinite(v)) {
                 continue;   // a row without a usable number is not a bar
@@ -731,23 +724,13 @@ public final class Binder {
         return new PanelData.Bars(bars, shape, shape == null ? null : formats.format(fmt, Values.normalise(total)));
     }
 
-    private PanelData links(BindContext c) {
-        List<PanelData.LinkItem> items = new ArrayList<>();
-        for (LinkRef r : c.links()) {
-            EntityDocument d = c.linked().get(r.target());
-            String status = d != null ? "resolved" : c.pending().contains(r.target()) ? "pending" : "missing";
-            String badge = d == null ? "" : badges.badge(r.target().kind(), d.data());
-            items.add(new PanelData.LinkItem(r.label(), r.target().id(), linkView(r.target().kind(), r.target().id()), badge, status));
+    /** A panel kind a profile adds ({@code links}, {@code provenance}): its profile's binder, else an error the panel shows. */
+    private PanelData profilePanel(Panel p, BindContext c) {
+        PanelBinder b = hooks.panels().get(p.kind());
+        if (b == null) {
+            throw new IllegalStateException("panel kind '" + p.kind().id() + "' needs the profile that adds it");
         }
-        return new PanelData.Links(items);
-    }
-
-    private PanelData provenance(BindContext c) {
-        var pv = c.doc().provenance();
-        return new PanelData.Fields(List.of(
-                Cell.of("Layout", c.layout().label()),
-                Cell.of("Fingerprint", c.fingerprint().shortForm()),
-                Cell.of("Source", pv.source() + ", gen " + pv.generation())));
+        return b.bind(p, c, this);
     }
 
     private PanelData metric(Panel p, BindContext c) {
@@ -790,13 +773,13 @@ public final class Binder {
         double max = p.option("max").map(m -> Values.number(eval(m, c.eval()))).filter(Double::isFinite).orElse(1.0);
         String fmt = p.option("fmt").orElse("pct0");
         if (!Double.isFinite(v)) {
-            return new PanelData.Gauge(Double.NaN, max, Values.masked(value) ? DataNode.MASK : "—", p.option("label").orElse(null));
+            return new PanelData.Gauge(Double.NaN, max, Values.masked(value) ? Node.MASK : "—", p.option("label").orElse(null));
         }
         return new PanelData.Gauge(v, max, formats.format(fmt, v / (max == 0 ? 1 : max)), p.option("label").orElse(null));
     }
 
     private PanelData surface(Panel p, BindContext c) {
-        DataNode rows = where(p, node(eval(p.option("rows").orElseThrow(), c.eval())), c.eval());
+        Node rows = where(p, node(eval(p.option("rows").orElseThrow(), c.eval())), c.eval());
         String y = p.option("y").orElseThrow();
         List<Column> cols = p.columns();
         List<String> ys = new ArrayList<>();

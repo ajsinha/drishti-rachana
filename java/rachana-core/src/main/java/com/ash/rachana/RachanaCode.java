@@ -27,7 +27,11 @@ public enum RachanaCode {
     /** A checked expression names a field or function its scope does not have. */
     NAME_UNKNOWN("RCH-9152"),
     /** A checked expression filters, sorts or ranks by a field that is masked for the reader. */
-    MASKED_FIELD("RCH-9161");
+    MASKED_FIELD("RCH-9161"),
+    /** A request names a panel, event, row or value the view does not have (the binder's events and drill-downs). */
+    BAD_REQUEST("RCH-5001"),
+    /** The viewer may not read what a request asks for (a denied source, a switched-off pivot). */
+    FORBIDDEN("RCH-5002");
 
     private final String code;
 

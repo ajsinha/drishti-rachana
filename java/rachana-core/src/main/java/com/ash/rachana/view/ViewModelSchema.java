@@ -4,10 +4,7 @@
  */
 package com.ash.rachana.view;
 
-import com.ash.rachana.view.Frame;
-import com.ash.rachana.view.Patch;
 import com.ash.rachana.model.PanelKind;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
@@ -24,7 +21,7 @@ import java.util.Map;
  * ({@code GET /api/v1/viewmodel/schema}, docs/architecture/VIEWMODEL.md section 9).
  *
  * <p>Generated from the records themselves, so a field added to {@link ViewModel}, {@link PanelData}, {@link Frame} or
- * {@link Patch} is in the schema at once. Each record's Jackson inclusion decides what is required and what may be null:
+ * {@link Patch} is in the schema at once. Each record's {@link Include} rule decides what is required and what may be null:
  * a component that is always written is required, and nullable when it is a reference; one left out when null, empty or
  * default is optional and never null. On top of the generated shape sit the few rules the types cannot say: the panel
  * kind that goes with each {@code data} record ({@link #DATA_BY_KIND}), the closed sets of words ({@link #ENUMS}), the
@@ -90,7 +87,7 @@ public final class ViewModelSchema {
             Map.entry("Metric", "data of metric"),
             Map.entry("GeoMap", "data of map"));
 
-    public static final String ID = "https://drishti.local/schema/viewmodel.json";
+    public static final String ID = "https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json";
 
     private ViewModelSchema() {}
 
@@ -161,12 +158,8 @@ public final class ViewModelSchema {
         def.put("type", "object");
         Map<String, Object> props = new LinkedHashMap<>();
         List<String> required = new ArrayList<>(REQUIRED.getOrDefault(name, List.of()));
-        JsonInclude classLevel = c.getAnnotation(JsonInclude.class);
         for (RecordComponent rc : c.getRecordComponents()) {
-            JsonInclude own = rc.getAccessor().getAnnotation(JsonInclude.class);
-            JsonInclude.Include inc = own != null && own.value() != JsonInclude.Include.USE_DEFAULTS ? own.value()
-                    : classLevel != null ? classLevel.value() : JsonInclude.Include.ALWAYS;
-            boolean always = inc == JsonInclude.Include.ALWAYS || inc == JsonInclude.Include.USE_DEFAULTS;
+            boolean always = ViewJson.rule(c, rc) == Include.Rule.ALWAYS;
             String key = name + "." + rc.getName();
             Map<String, Object> type;
             if (ENUMS.containsKey(key)) {

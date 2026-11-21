@@ -4,13 +4,7 @@
  */
 package com.ash.rachana.bind;
 
-import com.ash.drishti.api.AsOf;
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.EntityDocument;
-import com.ash.drishti.api.EntityHit;
-import com.ash.drishti.api.EntityRef;
-import com.ash.drishti.engine.source.SourceFailures;
-import com.ash.drishti.engine.source.SourceRouter;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.view.PanelData;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.EvalContext;
@@ -18,8 +12,7 @@ import com.ash.rachana.el.Values;
 import com.ash.rachana.format.Formats;
 import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.PanelKind;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.ash.rachana.internal.TtlCache;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,9 +29,9 @@ import java.util.regex.Pattern;
  * What a {@code map} panel reads across a whole kind, before the panels are bound: which entities of its {@code link} kind
  * exist (so a country with no page is not clickable) and the {@code shade} field of every entity of its {@code shade} kind.
  * The entities are read once per kind (in a cluster, once per kind and caller signature: peers list and mask for the caller) and kept
- * briefly ({@code drishti.panels.map-cache-seconds}), then the caller's masks
+ * briefly ({@link PanelLimits#mapCacheSeconds()}), then the caller's masks
  * are applied to each: a masked field shades nothing and is never added up or ranked, and a kind the caller may not open is
- * never listed (the panel says so). Read within {@code drishti.panels.map-budget-millis}; a slower read leaves the map
+ * never listed (the panel says so). Read within {@link PanelLimits#mapBudgetMillis()}; a slower read leaves the map
  * unshaded, with the reason in its note.
  */
 public final class MapSupport {
@@ -53,26 +46,27 @@ public final class MapSupport {
      */
     public record Lookup(PanelData.GeoLink link, PanelData.GeoShade shade) {}
 
-    private final SourceRouter router;
+    private final TableProvider router;
     private final ElCompiler el;
     private final Formats formats;
     private final PanelLimits limits;
-    private final Cache<String, Map<EntityRef, EntityDocument>> documents;
-    private final Cache<String, List<EntityRef>> listings;
+    private final TtlCache<String, Map<EntityRef, Entity>> documents;
+    private final TtlCache<String, List<EntityRef>> listings;
 
-    public MapSupport(SourceRouter router, ElCompiler el, Formats formats, PanelLimits limits) {
+    public MapSupport(TableProvider router, ElCompiler el, Formats formats, PanelLimits limits) {
         this.router = router;
         this.el = el;
         this.formats = formats;
         this.limits = limits;
         Duration ttl = Duration.ofSeconds(limits.mapCacheSeconds());
-        this.documents = Caffeine.newBuilder().maximumSize(8).expireAfterWrite(ttl).build();
-        this.listings = Caffeine.newBuilder().maximumSize(32).expireAfterWrite(ttl).build();
+        this.documents = new TtlCache<>(8, ttl);
+        this.listings = new TtlCache<>(32, ttl);
     }
 
     /** What the map panels among {@code panels} read across kinds, by panel id. */
-    public Map<String, Lookup> resolve(List<Panel> panels, java.util.function.Predicate<String> wanted, AsOf asOf,
-            UnaryOperator<DataNode> redact, Predicate<String> mayOpen) {
+    public Map<String, Lookup> resolve(List<Panel> panels, java.util.function.Predicate<String> wanted, AsOf asOf, Masker viewer) {
+        UnaryOperator<Node> redact = viewer::mask;
+        Predicate<String> mayOpen = viewer::mayOpen;
         Map<String, Lookup> out = new LinkedHashMap<>();
         for (Panel p : panels) {
             if (p.kind() == PanelKind.MAP && wanted.test(p.id())) {
@@ -118,14 +112,14 @@ public final class MapSupport {
         return listings.get(kind + "|" + asOf.businessDate() + "|" + router.partition(), k -> {
             Duration budget = Duration.ofMillis(limits.mapBudgetMillis());
             // with the peers' entities: a node that reads the kind only from a peer lists it too (QA4-02)
-            List<EntityHit> hits = router.listAcross(kind, limits.mapEntities(), budget, asOf, new SourceFailures()).hits();
+            List<EntityHit> hits = router.listAcross(kind, limits.mapEntities(), budget, asOf, new SourceFailures());
             List<EntityRef> refs = new ArrayList<>();
             hits.forEach(h -> refs.add(h.ref()));
             return refs;
         });
     }
 
-    private PanelData.GeoShade shade(Panel p, AsOf asOf, UnaryOperator<DataNode> redact, Predicate<String> mayOpen) {
+    private PanelData.GeoShade shade(Panel p, AsOf asOf, UnaryOperator<Node> redact, Predicate<String> mayOpen) {
         if (!(p.options().get("shade") instanceof Map<?, ?> m)) {
             return null;
         }
@@ -138,7 +132,7 @@ public final class MapSupport {
         if (!mayOpen.test(kind)) {
             return new PanelData.GeoShade(label, unit, List.of(), "no access to " + kind);
         }
-        Map<EntityRef, EntityDocument> docs;
+        Map<EntityRef, Entity> docs;
         try {
             docs = documents(kind, asOf);
         } catch (RuntimeException e) {
@@ -148,7 +142,7 @@ public final class MapSupport {
         boolean masked = false;
         var fieldExpr = el.compile(field);
         var byExpr = el.compile(by);
-        for (EntityDocument d : docs.values()) {
+        for (Entity d : docs.values()) {
             EvalContext ctx = EvalContext.of(redact.apply(d.data()), formats);
             try {
                 Object code = byExpr.eval(ctx);
@@ -171,7 +165,7 @@ public final class MapSupport {
         return new PanelData.GeoShade(label, unit, items, items.isEmpty() ? "no " + kind + " entity has " + field : null);
     }
 
-    private Map<EntityRef, EntityDocument> documents(String kind, AsOf asOf) {
-        return documents.get(kind + "|" + asOf.businessDate() + "|" + router.partition(), k -> router.fetchAll(listing(kind, asOf), Duration.ofMillis(limits.mapBudgetMillis()), asOf));
+    private Map<EntityRef, Entity> documents(String kind, AsOf asOf) {
+        return documents.get(kind + "|" + asOf.businessDate() + "|" + router.partition(), k -> router.fetchAll(listing(kind, asOf), Duration.ofMillis(limits.mapBudgetMillis()), asOf, new SourceFailures()));
     }
 }

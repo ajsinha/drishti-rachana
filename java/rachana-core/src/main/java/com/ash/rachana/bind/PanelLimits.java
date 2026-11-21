@@ -4,8 +4,6 @@
  */
 package com.ash.rachana.bind;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 /**
  * How much of a document the chart and aggregate panel kinds read, so one very long list cannot make a view slow
  * or a page heavy. A panel that stops short says so ({@code more}, {@code dropped}).
@@ -24,11 +22,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param pivotColumns column keys a {@code pivot} shows (default 40); values under further keys are left out of the grid
  *     but still counted in the row totals
  */
-@ConfigurationProperties("drishti.panels")
 public record PanelLimits(Integer maxValues, Integer maxPoints, Integer maxNodes, Integer maxEvents, Integer pivotRows,
         Integer pivotColumns, Integer treeDepth, Integer treeRows, Integer mapEntities, Integer mapCacheSeconds, Integer mapBudgetMillis) {
 
-    @org.springframework.boot.context.properties.bind.ConstructorBinding
     public PanelLimits {
         maxValues = positive(maxValues, 100_000);
         maxPoints = positive(maxPoints, 5_000);

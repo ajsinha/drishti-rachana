@@ -4,17 +4,18 @@
  */
 package com.ash.rachana.wire;
 
-import com.ash.drishti.api.AsOf;
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.EntityDocument;
-import com.ash.drishti.api.EntityHit;
-import com.ash.drishti.api.EntityRef;
-import com.ash.drishti.api.error.DrishtiException;
-import com.ash.drishti.api.error.ErrorCode;
+import com.ash.rachana.bind.AsOf;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.bind.Entity;
+import com.ash.rachana.bind.EntityHit;
+import com.ash.rachana.bind.EntityRef;
+import com.ash.rachana.bind.Masker;
+import com.ash.rachana.RachanaException;
+import com.ash.rachana.RachanaCode;
 import com.ash.rachana.bind.BindContext;
 import com.ash.rachana.bind.Binder;
-import com.ash.drishti.engine.source.SourceFailures;
-import com.ash.drishti.engine.source.SourceRouter;
+import com.ash.rachana.bind.SourceFailures;
+import com.ash.rachana.bind.TableProvider;
 import com.ash.rachana.view.ViewModel;
 import com.ash.rachana.view.ViewModel.PanelView;
 import com.ash.rachana.SutraWiring;
@@ -57,29 +58,29 @@ public final class ScreenWire {
     /**
      * One fired event: the panel, the event, the payload as the viewer saw it and the payload the server follows (never sent out).
      */
-    public record Selection(String panel, String event, DataNode seen, DataNode raw) {}
+    public record Selection(String panel, String event, Node seen, Node raw) {}
 
     /**
      * One request's screen: the Sutra, its documents raw and as the viewer sees them, the binding context (seen) and the raw
      * evaluation context, the business date, the viewer's masks and kinds, and the events fired so far.
      */
     public record Screen(Sutra sutra, Map<String, SutraWiring.Node> nodes, BindContext ctx, EvalContext rawEval, AsOf asOf,
-            com.ash.drishti.engine.ViewerContext viewer, Map<String, Map<String, Selection>> fired, Map<String, Pair> cache) {
+            Masker viewer, Map<String, Map<String, Selection>> fired, Map<String, Pair> cache) {
 
         public Screen {
-            viewer = viewer == null ? com.ash.drishti.engine.ViewerContext.SYSTEM : viewer;
+            viewer = viewer == null ? Masker.NONE : viewer;
             fired = fired == null ? Map.of() : fired;
             cache = cache == null ? new ConcurrentHashMap<>() : cache;
         }
 
         /** The viewer's masks. */
-        public UnaryOperator<DataNode> redact() {
-            return viewer.redact();
+        public UnaryOperator<Node> redact() {
+            return viewer::mask;
         }
 
         /** The kinds the viewer may open. */
         public Predicate<String> mayOpen() {
-            return viewer.mayOpen();
+            return viewer::mayOpen;
         }
 
         Screen withFired(Map<String, Map<String, Selection>> next) {
@@ -97,19 +98,19 @@ public final class ScreenWire {
      * the document's provenance when it read one entity (its panel's own freshness, RACHANA_REFERENCE.md 9), else null; {@code failed}
      * when the source could not be read (it failed or did not answer in time), so the panel says so instead of drawing its empty text.
      */
-    public record Pair(Object seen, Object raw, String denied, com.ash.drishti.api.Provenance from, ViewModel.PanelCompute failed) {
+    public record Pair(Object seen, Object raw, String denied, Entity.Origin from, ViewModel.PanelCompute failed) {
         public Pair(Object seen, Object raw, String denied) {
             this(seen, raw, denied, null, null);
         }
 
-        public Pair(Object seen, Object raw, String denied, com.ash.drishti.api.Provenance from) {
+        public Pair(Object seen, Object raw, String denied, Entity.Origin from) {
             this(seen, raw, denied, from, null);
         }
 
         /** A source that could not be read: nothing to draw, and why (the panel's failed state, never "no data"). */
         static Pair unread(Wiring.Source src, String what, SourceFailures failures) {
             Map.Entry<String, String> first = failures.asMap().entrySet().iterator().next();
-            return new Pair(DataNode.missing(), DataNode.missing(), null, null, new ViewModel.PanelCompute("failed", "", first.getKey(),
+            return new Pair(Node.missing(), Node.missing(), null, null, new ViewModel.PanelCompute("failed", "", first.getKey(),
                     "reading " + src.kind() + (what == null ? "" : " " + what) + " failed: " + first.getValue() + " (reload the page to try again)",
                     null, false, null));
         }
@@ -119,9 +120,9 @@ public final class ScreenWire {
      * The provenance of a panel with its own source (RACHANA_REFERENCE.md 9): the connector that answered (the one the document names, else the
      * kind's first route), when the document was fetched, and that connector's last update, threshold and whether it is past it.
      */
-    public static ViewModel.PanelProvenance provenance(SourceRouter router, String kind, com.ash.drishti.api.Provenance from) {
+    public static ViewModel.PanelProvenance provenance(TableProvider router, String kind, Entity.Origin from) {
         String named = from == null ? null : from.source();
-        com.ash.drishti.engine.source.SourceRegistry.Freshness f = soft(() -> router.freshness(kind, named));
+        TableProvider.Freshness f = soft(() -> router.freshness(kind, named));
         String source = f != null && f.source() != null ? f.source() : named;
         return new ViewModel.PanelProvenance(source, kind, from == null || from.fetchedAt() == null ? null : from.fetchedAt().toString(),
                 f == null || f.lastUpdate() == null ? null : f.lastUpdate().toString(), f == null || f.staleAfter() == null ? null : f.staleAfter().toString(),
@@ -140,15 +141,15 @@ public final class ScreenWire {
      */
     public record Result(Selection selection, List<PanelView> panels, List<ChildrenView> children, List<String> cleared) {}
 
-    private final SourceRouter router;
+    private final TableProvider router;
     private final Binder binder;
     private final ElCompiler el;
     private final Duration budget;
-    private final BiFunction<EntityDocument, AsOf, EntityDocument> augment;
+    private final BiFunction<Entity, AsOf, Entity> augment;
     /** The table layer's reads for {@code source: { table }} (the server sets it once; none: every table source says so). */
     private volatile TableRows tables = TableRows.NONE;
 
-    public ScreenWire(SourceRouter router, Binder binder, ElCompiler el, Duration budget) {
+    public ScreenWire(TableProvider router, Binder binder, ElCompiler el, Duration budget) {
         this(router, binder, el, budget, (d, at) -> d);
     }
 
@@ -156,7 +157,7 @@ public final class ScreenWire {
      * As above; {@code augment} adds to a panel's sourced entity what a view of it shows (the view pipeline's augmenters, such as the
      * VaR engine's figures on a position): applied to a source naming one entity by id, never to a search or a list of many.
      */
-    public ScreenWire(SourceRouter router, Binder binder, ElCompiler el, Duration budget, BiFunction<EntityDocument, AsOf, EntityDocument> augment) {
+    public ScreenWire(TableProvider router, Binder binder, ElCompiler el, Duration budget, BiFunction<Entity, AsOf, Entity> augment) {
         this.router = router;
         this.binder = binder;
         this.el = el;
@@ -188,7 +189,7 @@ public final class ScreenWire {
         }
         return FormViews.attach(p, v, s.redact(), FormViews.rows(p, el, s.ctx().eval()), src -> {
             Pair got = read(s, src, s.rawEval());
-            return got.seen() instanceof DataNode.Arr a ? a.elements() : List.of();
+            return got.seen() instanceof Node a && a.kind() == Node.Kind.ARRAY ? List.<Node>copyOf(a.elements()) : List.of();
         }, src -> entities(s, src));
     }
 
@@ -196,7 +197,7 @@ public final class ScreenWire {
      * The records a form's entity field offers (RACHANA_REFERENCE.md 10): each with its id, as the viewer sees it; of a kind the viewer may
      * open only, the ones a {@code where} keeps or a {@code search} finds (else the kind's first), at most the source's limit.
      */
-    private List<Map.Entry<String, DataNode>> entities(Screen s, Wiring.Source src) {
+    private List<Map.Entry<String, Node>> entities(Screen s, Wiring.Source src) {
         if (!s.mayOpen().test(src.kind())) {
             return List.of();
         }
@@ -207,17 +208,17 @@ public final class ScreenWire {
             String text = Values.text(soft(() -> Values.simplify(el.compile(src.search()).eval(lookup))));
             refs = text == null || text.isBlank() ? List.of() : router.search(src.kind(), text, src.limit(), budget, at).stream().map(EntityHit::ref).toList();
         } else {
-            refs = router.listAcross(src.kind(), WHERE_SCAN, budget, at, new SourceFailures()).hits().stream().map(EntityHit::ref).toList();
+            refs = router.listAcross(src.kind(), WHERE_SCAN, budget, at, new SourceFailures()).stream().map(EntityHit::ref).toList();
         }
-        Map<EntityRef, EntityDocument> docs = refs.isEmpty() ? Map.of() : router.fetchAll(new LinkedHashSet<>(refs), budget, at);
+        Map<EntityRef, Entity> docs = refs.isEmpty() ? Map.of() : router.fetchAll(new LinkedHashSet<>(refs), budget, at, new SourceFailures());
         var cond = src.where() == null ? null : el.compile(src.where());
-        List<Map.Entry<String, DataNode>> out = new ArrayList<>();
+        List<Map.Entry<String, Node>> out = new ArrayList<>();
         for (EntityRef r : refs) {
-            EntityDocument d = docs.get(r);
+            Entity d = docs.get(r);
             if (d == null || out.size() >= src.limit()) {
                 continue;
             }
-            DataNode visible = s.redact().apply(d.data());
+            Node visible = s.redact().apply(d.data());
             int i = out.size();
             if (cond == null || Values.truthy(soft(() -> cond.eval(lookup.withRow(visible, i))))) {
                 out.add(Map.entry(r.id(), visible));
@@ -279,7 +280,7 @@ public final class ScreenWire {
      * A click on row {@code row} (its place in the panel's data) of {@code panelId}, firing {@code event}: the payload evaluated as
      * the viewer, the panels that read it rebound, the clicked panel's children filled, the selections it makes stale cleared.
      *
-     * @throws DrishtiException {@code DRS-5001} for a panel, event or row the screen does not have, {@code DRS-5002} for a panel the
+     * @throws RachanaException {@code RCH-5001} for a panel, event or row the screen does not have, {@code RCH-5002} for a panel the
      *     viewer may not read
      */
     public Result event(Screen s, String panelId, String event, int row) {
@@ -312,34 +313,34 @@ public final class ScreenWire {
     Selection click(Screen s, String panelId, String event, int row) {
         SutraWiring.Node n = node(s, panelId);
         Panel p = n.panel();
-        Wiring.Emit emit = p.wiring().emit(event).orElseThrow(() -> new DrishtiException(ErrorCode.BAD_REQUEST,
+        Wiring.Emit emit = p.wiring().emit(event).orElseThrow(() -> new RachanaException(RachanaCode.BAD_REQUEST,
                 "panel " + panelId + " emits no event '" + event + "'"));
         if (missing(s, n).isPresent()) {
-            throw new DrishtiException(ErrorCode.BAD_REQUEST, "panel " + panelId + " is waiting for an event and has no rows to click");
+            throw new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " is waiting for an event and has no rows to click");
         }
         Ctx c = context(s, n);
         if (c.denied != null) {
-            throw new DrishtiException(ErrorCode.FORBIDDEN, "panel " + panelId + ": " + c.denied);
+            throw new RachanaException(RachanaCode.FORBIDDEN, "panel " + panelId + ": " + c.denied);
         }
-        String rowsExpr = p.option("rows").orElseThrow(() -> new DrishtiException(ErrorCode.BAD_REQUEST, "panel " + panelId + " has no rows"));
-        DataNode seenAll = node(el.compile(rowsExpr).eval(c.seen.eval()));
-        DataNode rawAll = node(el.compile(rowsExpr).eval(c.raw));
+        String rowsExpr = p.option("rows").orElseThrow(() -> new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " has no rows"));
+        Node seenAll = node(el.compile(rowsExpr).eval(c.seen.eval()));
+        Node rawAll = node(el.compile(rowsExpr).eval(c.raw));
         int[] kept = binder.originals(p, seenAll, c.seen.eval());
         boolean shown = row >= 0 && row < seenAll.size() && (kept == null || java.util.Arrays.stream(kept).anyMatch(k -> k == row));
         if (!shown) {
-            throw new DrishtiException(ErrorCode.BAD_REQUEST, "panel " + panelId + " shows no row " + row);
+            throw new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " shows no row " + row);
         }
-        DataNode seenRow = seenAll.get(row);
-        DataNode rawRow = rawAll.size() == seenAll.size() ? rawAll.get(row) : null;   // a list shaped by a masked field: follow only what was seen
+        Node seenRow = seenAll.get(row);
+        Node rawRow = rawAll.size() == seenAll.size() ? rawAll.get(row) : null;   // a list shaped by a masked field: follow only what was seen
         Map<String, Object> seen = new LinkedHashMap<>();
         Map<String, Object> raw = new LinkedHashMap<>();
         emit.payload().forEach((field, f) -> {
             Object sv = soft(() -> Values.simplify(el.compile(f.bind()).eval(c.seen.eval().withRow(seenRow, row))));
             Object rv = rawRow == null ? sv : soft(() -> Values.simplify(el.compile(f.bind()).eval(c.raw.withRow(rawRow, row))));
-            seen.put(field, sv instanceof DataNode d && d.isMissing() ? null : sv);
-            raw.put(field, rv instanceof DataNode d && d.isMissing() ? null : rv);
+            seen.put(field, sv instanceof Node d && d.isMissing() ? null : sv);
+            raw.put(field, rv instanceof Node d && d.isMissing() ? null : rv);
         });
-        return new Selection(panelId, event, DataNode.of(seen), DataNode.of(raw));
+        return new Selection(panelId, event, Node.of(seen), Node.of(raw));
     }
 
     // ---- contexts and sources -------------------------------------------------------------------------------------------------
@@ -357,7 +358,7 @@ public final class ScreenWire {
     /** The state of a computed source's document, or null for a document that is read, not computed. */
     @SuppressWarnings("unchecked")
     public static ViewModel.PanelCompute computeOf(Object doc) {
-        if (!(doc instanceof DataNode d) || !(d.get(COMPUTE_FIELD) instanceof DataNode.Obj c)) {
+        if (!(doc instanceof Node d) || !(d.get(COMPUTE_FIELD) instanceof Node c && c.kind() == Node.Kind.OBJECT)) {
             return null;
         }
         Object progress = c.get("progress").unwrap();
@@ -409,16 +410,16 @@ public final class ScreenWire {
 
     /** The events a panel reads: every panel's ({@code @<id>}) and, for a child, its parent's ({@code @parent}). */
     private static EvalContext.Scope scope(Screen s, SutraWiring.Node n, boolean raw) {
-        Map<String, DataNode> events = new HashMap<>();
+        Map<String, Node> events = new HashMap<>();
         s.fired().forEach((panel, byEvent) -> events.put(panel, payloads(byEvent, raw)));
-        DataNode parent = n.parent() == null ? null : events.get(n.parent().id());
+        Node parent = n.parent() == null ? null : events.get(n.parent().id());
         return new EvalContext.Scope(events, parent, null);
     }
 
-    private static DataNode payloads(Map<String, Selection> byEvent, boolean raw) {
-        Map<String, DataNode> out = new LinkedHashMap<>();
+    private static Node payloads(Map<String, Selection> byEvent, boolean raw) {
+        Map<String, Node> out = new LinkedHashMap<>();
         byEvent.forEach((e, sel) -> out.put(e, raw ? sel.raw() : sel.seen()));
-        return new DataNode.Obj(out);
+        return Node.of(out);
     }
 
     /**
@@ -438,7 +439,7 @@ public final class ScreenWire {
             try {
                 asOf = d == null || d.isBlank() ? asOf : AsOf.of(java.time.LocalDate.parse(d.substring(0, Math.min(10, d.length()))));
             } catch (java.time.format.DateTimeParseException e) {
-                return new Pair(DataNode.missing(), DataNode.missing(), null);
+                return new Pair(Node.missing(), Node.missing(), null);
             }
         }
         AsOf at = asOf;
@@ -449,7 +450,7 @@ public final class ScreenWire {
             }
             String id = v == null ? "" : Values.text(v);
             if (id == null || id.isBlank()) {
-                return new Pair(DataNode.missing(), DataNode.missing(), null);
+                return new Pair(Node.missing(), Node.missing(), null);
             }
             if (!src.params().isEmpty()) {                          // a computed kind: the question and its parameters in one id
                 Map<String, Object> params = new java.util.TreeMap<>();
@@ -463,18 +464,18 @@ public final class ScreenWire {
                         params.put(e.getKey(), pv instanceof Number ? pv : t);
                     }
                 }
-                id = com.ash.drishti.api.compute.ComputeRef.format(id, params);
+                id = router.computedId(id, params);
             }
             String asked = id;
             return s.cache().computeIfAbsent(src.kind() + "|" + asked + "|" + at, k -> {
                 EntityRef ref = EntityRef.of(src.kind(), asked);
                 SourceFailures failures = new SourceFailures();
-                EntityDocument fetched = router.fetchAll(Set.of(ref), budget, at, failures).get(ref);
+                Entity fetched = router.fetchAll(Set.of(ref), budget, at, failures).get(ref);
                 if (fetched == null && !failures.isEmpty()) {
                     return Pair.unread(src, asked, failures);           // failed or timed out: not the same as "no such entity"
                 }
-                EntityDocument d = fetched == null ? null : augment.apply(fetched, at);
-                return d == null ? new Pair(DataNode.missing(), DataNode.missing(), null) : new Pair(s.redact().apply(d.data()), d.data(), null, d.provenance());
+                Entity d = fetched == null ? null : augment.apply(fetched, at);
+                return d == null ? new Pair(Node.missing(), Node.missing(), null) : new Pair(s.redact().apply(d.data()), d.data(), null, d.origin());
             });
         }
         List<EntityRef> refs;
@@ -482,27 +483,27 @@ public final class ScreenWire {
         if (src.search() != null) {
             String text = Values.text(soft(() -> Values.simplify(el.compile(src.search()).eval(lookup))));
             if (text == null || text.isBlank() || Values.masked(text)) {
-                return new Pair(new DataNode.Arr(List.of()), new DataNode.Arr(List.of()), null);
+                return new Pair(Node.list(List.of()), Node.list(List.of()), null);
             }
-            refs = router.list(src.kind(), text, src.limit(), budget, at, failures).hits().stream().map(EntityHit::ref).toList();
+            refs = router.list(src.kind(), text, src.limit(), budget, at, failures).stream().map(EntityHit::ref).toList();
         } else {
-            refs = router.listAcross(src.kind(), WHERE_SCAN, budget, at, failures).hits().stream().map(EntityHit::ref).toList();
+            refs = router.listAcross(src.kind(), WHERE_SCAN, budget, at, failures).stream().map(EntityHit::ref).toList();
         }
         String key = src.kind() + "|" + (src.where() != null ? "w:" + src.where() : "s:" + src.search()) + "|" + at + "|" + lookup.scope().events();
         return s.cache().computeIfAbsent(key, k -> {
-            Map<EntityRef, EntityDocument> docs = refs.isEmpty() ? Map.of() : router.fetchAll(new LinkedHashSet<>(refs), budget, at, failures);
+            Map<EntityRef, Entity> docs = refs.isEmpty() ? Map.of() : router.fetchAll(new LinkedHashSet<>(refs), budget, at, failures);
             if (docs.isEmpty() && !failures.isEmpty()) {
                 return Pair.unread(src, null, failures);             // nothing read because a source failed: not an empty list
             }
-            List<DataNode> seen = new ArrayList<>();
-            List<DataNode> raw = new ArrayList<>();
+            List<Node> seen = new ArrayList<>();
+            List<Node> raw = new ArrayList<>();
             var cond = src.where() == null ? null : el.compile(src.where());
             for (EntityRef r : refs) {
-                EntityDocument d = docs.get(r);
+                Entity d = docs.get(r);
                 if (d == null || seen.size() >= src.limit()) {
                     continue;
                 }
-                DataNode visible = s.redact().apply(d.data());
+                Node visible = s.redact().apply(d.data());
                 if (cond != null) {
                     int i = seen.size();
                     if (!Values.truthy(soft(() -> cond.eval(lookup.withRow(visible, i))))) {
@@ -512,7 +513,7 @@ public final class ScreenWire {
                 seen.add(visible);
                 raw.add(d.data());
             }
-            return new Pair(new DataNode.Arr(seen), new DataNode.Arr(raw), null);
+            return new Pair(Node.list(seen), Node.list(raw), null);
         });
     }
 
@@ -528,21 +529,21 @@ public final class ScreenWire {
             try {
                 day = d == null || d.isBlank() ? day : java.time.LocalDate.parse(d.substring(0, Math.min(10, d.length())));
             } catch (java.time.format.DateTimeParseException e) {
-                return new Pair(new DataNode.Arr(List.of()), new DataNode.Arr(List.of()), null);
+                return new Pair(Node.list(List.of()), Node.list(List.of()), null);
             }
         }
         java.time.LocalDate at = day;
         String key = "table|" + src.table() + "|" + src.where() + "|" + src.limit() + "|" + at + "|" + lookup.scope().events();
         return s.cache().computeIfAbsent(key, k -> {
-            List<DataNode> rows;
+            List<Node> rows;
             try {
                 rows = tables.rows(s.viewer(), src.table(), at);
             } catch (TableRows.Refused e) {
                 return new Pair(null, null, e.getMessage());
             }
             var cond = src.where() == null ? null : el.compile(src.where());
-            List<DataNode> kept = new ArrayList<>();
-            for (DataNode row : rows) {
+            List<Node> kept = new ArrayList<>();
+            for (Node row : rows) {
                 if (kept.size() >= src.limit()) {
                     break;
                 }
@@ -554,7 +555,7 @@ public final class ScreenWire {
                 }
                 kept.add(row);
             }
-            DataNode arr = new DataNode.Arr(kept);
+            Node arr = Node.list(kept);
             return new Pair(arr, arr, null);
         });
     }
@@ -622,7 +623,7 @@ public final class ScreenWire {
     private static SutraWiring.Node node(Screen s, String panelId) {
         SutraWiring.Node n = s.nodes().get(panelId);
         if (n == null) {
-            throw new DrishtiException(ErrorCode.BAD_REQUEST, "this screen has no panel '" + panelId + "'");
+            throw new RachanaException(RachanaCode.BAD_REQUEST, "this screen has no panel '" + panelId + "'");
         }
         return n;
     }
@@ -653,8 +654,8 @@ public final class ScreenWire {
         return p.area().name().toLowerCase(java.util.Locale.ROOT);
     }
 
-    private static DataNode node(Object v) {
-        return v instanceof DataNode n ? n : DataNode.missing();
+    private static Node node(Object v) {
+        return v instanceof Node n ? n : Node.missing();
     }
 
     private static <T> T soft(java.util.function.Supplier<T> f) {

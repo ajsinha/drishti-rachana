@@ -4,8 +4,8 @@
  */
 package com.ash.rachana.wire;
 
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.engine.ViewerContext;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.bind.Masker;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,7 +23,7 @@ public interface TableRows {
      * @param date the business date, or null for the table's latest
      * @throws Refused when the viewer may not read the table, or it cannot be read; its message is what the panel says
      */
-    List<DataNode> rows(ViewerContext who, String table, LocalDate date);
+    List<Node> rows(Masker who, String table, LocalDate date);
 
     /** A read refused, in words the panel shows. */
     final class Refused extends RuntimeException {

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class ScreenGridTest {
 
     private static Sutra parse(String text) {
-        return new SutraParser().parse(text, "t.sutra.yaml", "x");
+        return com.ash.rachana.TestGrammar.parser().parse(text, "t.sutra.yaml", "x");
     }
 
     @Test

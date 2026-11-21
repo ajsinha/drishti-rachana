@@ -4,7 +4,6 @@
  */
 package com.ash.rachana.bind;
 
-import com.ash.drishti.api.EntityRef;
 
 /** A panel's {@code source} names an entity of a kind the caller may not open: the panel shows "no access", not data. */
 public final class SourceDeniedException extends RuntimeException {

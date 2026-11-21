@@ -4,12 +4,10 @@
  */
 package com.ash.rachana.control;
 
-import com.ash.drishti.api.AsOf;
-import com.ash.drishti.api.DataNode;
-import com.ash.drishti.api.NodeType;
-import com.ash.drishti.common.BusinessCalendar;
-import com.ash.drishti.engine.source.SourceRouter;
-import com.ash.drishti.engine.time.BusinessDates;
+import com.ash.rachana.bind.AsOf;
+import com.ash.rachana.api.Node;
+import com.ash.rachana.el.BusinessCalendar;
+import com.ash.rachana.bind.TableProvider;
 import com.ash.rachana.view.ViewModel.ControlView;
 import com.ash.rachana.view.ViewModel.Opt;
 import com.ash.rachana.el.ElCompiler;
@@ -40,11 +38,11 @@ import java.util.function.Predicate;
 public final class ControlResolver {
 
     private final ElCompiler el;
-    private final BusinessDates dates;
-    private final SourceRouter router;
+    private final BusinessDays dates;
+    private final TableProvider router;
     private final Duration lookupBudget;
 
-    public ControlResolver(ElCompiler el, BusinessDates dates, SourceRouter router, Duration lookupBudget) {
+    public ControlResolver(ElCompiler el, BusinessDays dates, TableProvider router, Duration lookupBudget) {
         this.el = el;
         this.dates = dates;
         this.router = router;
@@ -78,7 +76,7 @@ public final class ControlResolver {
         if (s.controls().isEmpty()) {
             return Resolved.NONE;
         }
-        LocalDate today = dates.resolve(asOf).businessDate();
+        LocalDate today = dates.today(asOf);
         BusinessCalendar cal = dates.calendar();
         Map<String, Object> ctl = new LinkedHashMap<>();
         List<ControlView> views = new ArrayList<>();
@@ -107,7 +105,7 @@ public final class ControlResolver {
                 if (c.kind().multiple()) {
                     multi = multiple(c, raw, known);
                     value = String.join(",", multi);
-                    ctl.put(c.id(), DataNode.of(multi));
+                    ctl.put(c.id(), Node.of(multi));
                 } else {
                     value = single(c, raw, known);
                     ctl.put(c.id(), c.kind() == ControlKind.TOP_N && !value.isEmpty() ? (Object) Long.valueOf(value) : value);
@@ -178,26 +176,26 @@ public final class ControlResolver {
         if (Values.masked(v) || s == null) {
             return;
         }
-        if (s instanceof DataNode n && n.type() == NodeType.ARRAY) {
+        if (s instanceof Node n && n.kind() == Node.Kind.ARRAY) {
             for (int i = 0; i < n.size(); i++) {
-                DataNode e = n.get(i);
-                if (e.type() == NodeType.OBJECT) {
+                Node e = n.get(i);
+                if (e.kind() == Node.Kind.OBJECT) {
                     e = e.get("id").isMissing() ? e.get("ID") : e.get("id");   // a list of records offers their ids (ID, upper snake)
                 }
                 add(e, into);
             }
-        } else if (!(s instanceof DataNode)) {
+        } else if (!(s instanceof Node)) {
             add(v, into);
         }
     }
 
     private static void add(Object e, Set<String> into) {
         Object s = Values.simplify(e);
-        if (s == null || Values.masked(e) || s instanceof DataNode) {
+        if (s == null || Values.masked(e) || s instanceof Node) {
             return;
         }
         String t = Values.text(s);
-        if (!t.isEmpty() && !DataNode.MASK.equals(t)) {
+        if (!t.isEmpty() && !Node.MASK.equals(t)) {
             into.add(t);
         }
     }

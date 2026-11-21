@@ -4,7 +4,7 @@
  */
 package com.ash.rachana.wire;
 
-import com.ash.drishti.api.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.view.ViewModel.PanelView;
 import com.ash.rachana.el.ElCompiler;
 import com.ash.rachana.el.Values;
@@ -44,17 +44,17 @@ public final class FormViews {
      * @param rows the panel's rows as the viewer sees them (null when it has none)
      * @param lookup the entities a lookup's source names, as the viewer sees them
      */
-    public static PanelView attach(Panel p, PanelView v, java.util.function.UnaryOperator<DataNode> redact, DataNode rows,
-            Function<Wiring.Source, List<DataNode>> lookup) {
+    public static PanelView attach(Panel p, PanelView v, java.util.function.UnaryOperator<Node> redact, Node rows,
+            Function<Wiring.Source, List<Node>> lookup) {
         return attach(p, v, redact, rows, lookup, src -> List.of());
     }
 
     /**
-     * As {@link #attach(Panel, PanelView, java.util.function.UnaryOperator, DataNode, Function)}, with the records an entity field
+     * As {@link #attach(Panel, PanelView, java.util.function.UnaryOperator, Node, Function)}, with the records an entity field
      * offers: {@code entities} gives (id, the record as the viewer sees it) for a source.
      */
-    public static PanelView attach(Panel p, PanelView v, java.util.function.UnaryOperator<DataNode> redact, DataNode rows,
-            Function<Wiring.Source, List<DataNode>> lookup, Function<Wiring.Source, List<Map.Entry<String, DataNode>>> entities) {
+    public static PanelView attach(Panel p, PanelView v, java.util.function.UnaryOperator<Node> redact, Node rows,
+            Function<Wiring.Source, List<Node>> lookup, Function<Wiring.Source, List<Map.Entry<String, Node>>> entities) {
         if (v == null || p.form().isEmpty()) {
             return v;
         }
@@ -140,16 +140,17 @@ public final class FormViews {
             put(m, "step", h.step());
             return m;
         }).toList());
-        if (f.edit() != null && rows instanceof DataNode.Arr arr) {
+        if (f.edit() != null && rows != null && rows.kind() == Node.Kind.ARRAY) {
+            Node arr = rows;
             List<Map<String, Object>> rv = new ArrayList<>();
-            for (DataNode r : arr.elements()) {
+            for (Node r : arr.elements()) {
                 if (rv.size() >= MAX_ROWS) {
                     break;
                 }
                 Map<String, Object> values = new LinkedHashMap<>();
                 List<String> rowMasked = new ArrayList<>();
                 for (Form.Field fd : f.fields()) {
-                    DataNode n = r.get(fd.recordField());
+                    Node n = r.get(fd.recordField());
                     if (masked.contains(fd.id()) || n != null && n.isMasked()) {
                         rowMasked.add(fd.id());
                     } else {
@@ -168,14 +169,14 @@ public final class FormViews {
     }
 
     /** The panel's rows (its {@code rows:} option over the viewer's context), or null. */
-    public static DataNode rows(Panel p, ElCompiler el, com.ash.rachana.el.EvalContext eval) {
+    public static Node rows(Panel p, ElCompiler el, com.ash.rachana.el.EvalContext eval) {
         Object expr = p.options().get("rows");
         if (!(expr instanceof String s) || p.form().map(Form::edit).isEmpty()) {
             return null;
         }
         try {
             Object v = el.compile(s).eval(eval);
-            return v instanceof DataNode n ? n : null;
+            return v instanceof Node n ? n : null;
         } catch (RuntimeException e) {
             return null;
         }
@@ -206,17 +207,17 @@ public final class FormViews {
         return out;
     }
 
-    private static List<Map<String, Object>> choices(Form.Lookup l, Function<Wiring.Source, List<DataNode>> lookup) {
+    private static List<Map<String, Object>> choices(Form.Lookup l, Function<Wiring.Source, List<Node>> lookup) {
         List<Map<String, Object>> out = new ArrayList<>();
         java.util.Set<String> seen = new java.util.HashSet<>();
-        List<DataNode> found;
+        List<Node> found;
         try {
             found = lookup.apply(l.source());
         } catch (RuntimeException e) {
             return out;
         }
-        for (DataNode d : found) {
-            DataNode v = d.get(l.value());
+        for (Node d : found) {
+            Node v = d.get(l.value());
             if (v == null || v.isMasked() || Values.simplify(v) == null) {
                 continue;                                      // a masked value is never offered: it would be typed back unseen
             }
@@ -224,11 +225,11 @@ public final class FormViews {
             if (!seen.add(value)) {
                 continue;
             }
-            DataNode lb = d.get(l.label());
+            Node lb = d.get(l.label());
             Map<String, Object> carry = new LinkedHashMap<>();
             for (String c : l.carry()) {
-                DataNode cv = d.get(c);
-                carry.put(c, cv == null ? null : cv.isMasked() ? DataNode.MASK : Values.simplify(cv));
+                Node cv = d.get(c);
+                carry.put(c, cv == null ? null : cv.isMasked() ? Node.MASK : Values.simplify(cv));
             }
             Map<String, Object> o = new LinkedHashMap<>();
             o.put("value", value);
@@ -240,20 +241,20 @@ public final class FormViews {
     }
 
     /** An entity field's choices: each record's id (or its {@code value} field) and label, its carried values as the viewer sees them. */
-    private static List<Map<String, Object>> records(Form.Lookup l, Function<Wiring.Source, List<Map.Entry<String, DataNode>>> entities) {
+    private static List<Map<String, Object>> records(Form.Lookup l, Function<Wiring.Source, List<Map.Entry<String, Node>>> entities) {
         List<Map<String, Object>> out = new ArrayList<>();
         java.util.Set<String> seen = new java.util.HashSet<>();
-        List<Map.Entry<String, DataNode>> found;
+        List<Map.Entry<String, Node>> found;
         try {
             found = entities.apply(l.source());
         } catch (RuntimeException e) {
             return out;
         }
-        for (Map.Entry<String, DataNode> e : found) {
-            DataNode d = e.getValue();
+        for (Map.Entry<String, Node> e : found) {
+            Node d = e.getValue();
             String value = e.getKey();
             if (l.value() != null) {
-                DataNode v = d.get(l.value());
+                Node v = d.get(l.value());
                 if (v == null || v.isMasked() || Values.simplify(v) == null) {
                     continue;                                  // a masked value is never offered
                 }
@@ -262,11 +263,11 @@ public final class FormViews {
             if (value == null || !seen.add(value)) {
                 continue;
             }
-            DataNode lb = l.label() == null ? null : d.get(l.label());
+            Node lb = l.label() == null ? null : d.get(l.label());
             Map<String, Object> carry = new LinkedHashMap<>();
             for (String c : l.carry()) {
-                DataNode cv = d.get(c);
-                carry.put(c, cv == null ? null : cv.isMasked() ? DataNode.MASK : Values.simplify(cv));
+                Node cv = d.get(c);
+                carry.put(c, cv == null ? null : cv.isMasked() ? Node.MASK : Values.simplify(cv));
             }
             Map<String, Object> o = new LinkedHashMap<>();
             o.put("value", value);
@@ -277,12 +278,12 @@ public final class FormViews {
         return out;
     }
 
-    private static boolean masked(java.util.function.UnaryOperator<DataNode> redact, String field) {
+    private static boolean masked(java.util.function.UnaryOperator<Node> redact, String field) {
         if (redact == null) {
             return false;
         }
-        DataNode probe = redact.apply(new DataNode.Obj(Map.of(field, DataNode.of("x"))));
-        DataNode got = probe.get(field);
+        Node probe = redact.apply(Node.of(Map.of(field, Node.of("x"))));
+        Node got = probe.get(field);
         return got != null && got.isMasked();
     }
 

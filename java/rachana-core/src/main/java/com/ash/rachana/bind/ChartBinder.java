@@ -4,11 +4,10 @@
  */
 package com.ash.rachana.bind;
 
-import com.ash.drishti.api.DataNode;
+import com.ash.rachana.api.Node;
 import com.ash.rachana.view.PanelData;
 import com.ash.rachana.view.ViewModel.Cell;
 import com.ash.rachana.view.ViewModel.LinkView;
-import com.ash.drishti.graph.ReferenceCatalog;
 import com.ash.rachana.el.Link;
 import com.ash.rachana.el.Values;
 import com.ash.rachana.format.Formats;
@@ -41,10 +40,12 @@ final class ChartBinder {
 
     private final Binder binder;
     private final Formats formats;
-    private final ReferenceCatalog catalog;
+    private final LinkResolver catalog;
+    private final PivotEngine pivotEngine;
     private final PanelLimits limits;
 
-    ChartBinder(Binder binder, Formats formats, ReferenceCatalog catalog, PanelLimits limits) {
+    ChartBinder(Binder binder, Formats formats, LinkResolver catalog, PanelLimits limits, PivotEngine pivotEngine) {
+        this.pivotEngine = pivotEngine;
         this.binder = binder;
         this.formats = formats;
         this.catalog = catalog;
@@ -53,14 +54,14 @@ final class ChartBinder {
 
     // ---- shared -------------------------------------------------------------------------------
 
-    private DataNode list(Panel p, String option, BindContext c) {
+    private Node list(Panel p, String option, BindContext c) {
         Object v = binder.eval(p.option(option).orElseThrow(), c.eval());
-        DataNode n = v instanceof DataNode d ? d : DataNode.missing();
+        Node n = v instanceof Node d ? d : Node.missing();
         return "rows".equals(option) ? binder.where(p, n, c.eval()) : n;
     }
 
     /** A row's value: an expression over the row when {@code spec} reads like one, else a field or dotted path. */
-    private Object field(String spec, DataNode row, int index, BindContext c) {
+    private Object field(String spec, Node row, int index, BindContext c) {
         if (spec == null) {
             return null;
         }
@@ -70,7 +71,7 @@ final class ChartBinder {
         if (spec.indexOf('.') >= 0) {
             return row.at(spec);
         }
-        DataNode v = row.get(spec);
+        Node v = row.get(spec);
         // a panel's default field names (open, close, label, value, date ...) read the UPPER_SNAKE attribute when the row has that instead
         return v.isMissing() ? row.get(spec.toUpperCase(java.util.Locale.ROOT)) : v;
     }
@@ -100,7 +101,7 @@ final class ChartBinder {
     // ---- waterfall ----------------------------------------------------------------------------
 
     PanelData waterfall(Panel p, BindContext c) {
-        DataNode rows = list(p, "rows", c);
+        Node rows = list(p, "rows", c);
         String label = p.option("label").orElse("label");
         String value = p.option("value").orElse("value");
         String total = p.option("total").orElse("total");
@@ -115,7 +116,7 @@ final class ChartBinder {
         boolean masked = false;
         int n = Math.min(rows.size(), limits.maxPoints());
         for (int i = 0; i < n; i++) {
-            DataNode row = rows.get(i);
+            Node row = rows.get(i);
             Object x = field(value, row, i, c);
             masked |= Values.masked(x);
             double v = Values.number(x);
@@ -133,7 +134,7 @@ final class ChartBinder {
         }
         String sum = p.option("sum").orElse(null);
         if (sum != null && !steps.isEmpty()) {
-            steps.add(new PanelData.Step(sum, run, 0, run, masked ? DataNode.MASK : format(fmt, run), "muted", true));
+            steps.add(new PanelData.Step(sum, run, 0, run, masked ? Node.MASK : format(fmt, run), "muted", true));
         }
         return new PanelData.Waterfall(steps, p.option("unit").orElse(null));
     }
@@ -141,7 +142,7 @@ final class ChartBinder {
     // ---- histogram ----------------------------------------------------------------------------
 
     PanelData histogram(Panel p, BindContext c) {
-        DataNode rows = list(p, "rows", c);
+        Node rows = list(p, "rows", c);
         String value = p.option("value").orElse(null);
         String fmt = p.option("fmt").orElse(null);
         double[] xs = new double[Math.min(rows.size(), limits.maxValues())];
@@ -207,7 +208,7 @@ final class ChartBinder {
     // ---- scatter ------------------------------------------------------------------------------
 
     PanelData scatter(Panel p, BindContext c) {
-        DataNode rows = list(p, "rows", c);
+        Node rows = list(p, "rows", c);
         String x = p.option("x").orElseThrow();
         String y = p.option("y").orElseThrow();
         String size = p.option("size").orElse(null);
@@ -219,7 +220,7 @@ final class ChartBinder {
         List<PanelData.Point> points = new ArrayList<>();
         int more = 0;
         for (int i = 0; i < rows.size(); i++) {
-            DataNode row = rows.get(i);
+            Node row = rows.get(i);
             double xv = Values.number(field(x, row, i, c));
             double yv = Values.number(field(y, row, i, c));
             if (!Double.isFinite(xv) || !Double.isFinite(yv)) {
@@ -248,7 +249,7 @@ final class ChartBinder {
     // ---- candlestick --------------------------------------------------------------------------
 
     PanelData candlestick(Panel p, BindContext c) {
-        DataNode rows = list(p, "rows", c);
+        Node rows = list(p, "rows", c);
         String x = p.option("x").orElse("date");
         String[] ohlc = {p.option("open").orElse("open"), p.option("high").orElse("high"), p.option("low").orElse("low"),
             p.option("close").orElse("close")};
@@ -257,7 +258,7 @@ final class ChartBinder {
         List<PanelData.Candle> candles = new ArrayList<>();
         boolean anyVolume = false;
         for (int i = Math.max(0, rows.size() - limits.maxPoints()); i < rows.size(); i++) {
-            DataNode row = rows.get(i);
+            Node row = rows.get(i);
             double[] v = new double[4];
             boolean ok = true;
             for (int k = 0; k < 4; k++) {
@@ -296,8 +297,8 @@ final class ChartBinder {
     // ---- graph --------------------------------------------------------------------------------
 
     PanelData graph(Panel p, BindContext c) {
-        DataNode nodes = list(p, "nodes", c);
-        DataNode edges = p.option("edges").isPresent() ? list(p, "edges", c) : DataNode.missing();
+        Node nodes = list(p, "nodes", c);
+        Node edges = p.option("edges").isPresent() ? list(p, "edges", c) : Node.missing();
         String label = p.option("label").orElse("label");
         String group = p.option("group").orElse("type");
         String self = c.doc().ref().id();
@@ -305,7 +306,7 @@ final class ChartBinder {
         Set<String> ids = new HashSet<>();
         int more = 0;
         for (int i = 0; i < nodes.size(); i++) {
-            DataNode n = nodes.get(i);
+            Node n = nodes.get(i);
             String id = either(n, "id").asText();
             if (id.isEmpty() || !ids.add(id)) {
                 continue;   // a node needs an id, once
@@ -323,7 +324,7 @@ final class ChartBinder {
         }
         List<PanelData.Edge> lines = new ArrayList<>();
         for (int i = 0; i < edges.size() && lines.size() < 2 * limits.maxNodes(); i++) {
-            DataNode e = edges.get(i);
+            Node e = edges.get(i);
             String from = either(e, "from").asText();
             String to = either(e, "to").asText();
             if (ids.contains(from) && ids.contains(to)) {
@@ -335,15 +336,15 @@ final class ChartBinder {
     }
 
     /** A node's or an edge's own field (id, kind, from, to, label), as the document writes it: lower case or UPPER_SNAKE (ID, FROM). */
-    private static DataNode either(DataNode n, String field) {
-        DataNode v = n.get(field);
+    private static Node either(Node n, String field) {
+        Node v = n.get(field);
         return v.isMissing() ? n.get(field.toUpperCase(java.util.Locale.ROOT)) : v;
     }
 
     // ---- timeline -----------------------------------------------------------------------------
 
     PanelData timeline(Panel p, BindContext c) {
-        DataNode rows = list(p, "rows", c);
+        Node rows = list(p, "rows", c);
         String date = p.option("date").orElse("date");
         String label = p.option("label").orElse("event");
         String detail = p.option("detail").orElse("description");
@@ -351,7 +352,7 @@ final class ChartBinder {
         String tone = p.option("tone").orElse("status");
         List<PanelData.Event> events = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
-            DataNode row = rows.get(i);
+            Node row = rows.get(i);
             String d = text(field(date, row, i, c));
             String l = text(field(label, row, i, c));
             if (d.isEmpty() && l.isEmpty()) {
@@ -420,7 +421,7 @@ final class ChartBinder {
             case "count" -> "sum(v)";                                     // v is 1 for a row whose input is not empty, else 0
             case "sum", "avg", "min", "max", "median", "percentile", "variance", "stddev", "variance_pop", "stddev_pop" ->
                     ("variance_pop".equals(call.name()) ? "var_pop" : call.name()) + "(v" + args + ")";
-            default -> throw new com.ash.drishti.api.error.DrishtiException(com.ash.drishti.api.error.ErrorCode.EL_EVAL, "a pivot panel's value is "
+            default -> throw new com.ash.rachana.RachanaException(com.ash.rachana.RachanaCode.EL_EVAL, "a pivot panel's value is "
                     + "one aggregate of one number per row (sum, count, avg, min, max, median, percentile, variance, stddev); "
                     + call.name() + " is not (use a table's pivot: for it)");
         };
@@ -441,7 +442,7 @@ final class ChartBinder {
      * {@code pivotRows} leaf rows.
      */
     PanelData pivot(Panel p, BindContext c) {
-        DataNode rows = list(p, "rows", c);
+        Node rows = list(p, "rows", c);
         List<String> bys = pivotBy(p);
         String across = p.option("across").orElseThrow();
         String value = p.option("value").orElse(null);
@@ -455,19 +456,19 @@ final class ChartBinder {
         boolean totals = !Boolean.FALSE.equals(p.options().get("totals"));
         boolean nested = bys.size() > 1;
         int k = bys.size();
-        List<com.ash.drishti.kernel.api.pivot.PivotProvider.Field> fields = new ArrayList<>();
+        List<PivotEngine.Field> fields = new ArrayList<>();
         for (int j = 0; j < k; j++) {
-            fields.add(new com.ash.drishti.kernel.api.pivot.PivotProvider.Field("b" + j, "string", bys.get(j), ""));
+            fields.add(new PivotEngine.Field("b" + j, "string", bys.get(j), ""));
         }
-        fields.add(new com.ash.drishti.kernel.api.pivot.PivotProvider.Field("x", "string", across, ""));
-        fields.add(new com.ash.drishti.kernel.api.pivot.PivotProvider.Field("v", "number", value == null ? "rows" : value, ""));
+        fields.add(new PivotEngine.Field("x", "string", across, ""));
+        fields.add(new PivotEngine.Field("v", "number", value == null ? "rows" : value, ""));
         Group root = new Group("", List.of());
         LinkedHashSet<String> columns = new LinkedHashSet<>();
         List<Object[]> data = new ArrayList<>();
         int n = Math.min(rows.size(), limits.maxValues());
         boolean masked = false;
         for (int i = 0; i < n; i++) {
-            DataNode row = rows.get(i);
+            Node row = rows.get(i);
             Object x;
             if (call != null) {
                 Object in = call.input().eval(c.eval().withRow(row, i));
@@ -529,8 +530,7 @@ final class ChartBinder {
     private static final String MORE = "\u0000more";
 
     /** Every cell, subtotal and total of the rows, by the pivot engine: {@code rowKey|colKey} to the cell's entry. */
-    @SuppressWarnings("unchecked")
-    private static Map<String, Map<String, Object>> engineCells(List<com.ash.drishti.kernel.api.pivot.PivotProvider.Field> fields, List<Object[]> data,
+    private Map<String, Map<String, Object>> engineCells(List<PivotEngine.Field> fields, List<Object[]> data,
             int k, String function) {
         List<Object> rowDims = new ArrayList<>();
         for (int j = 0; j < k; j++) {
@@ -542,13 +542,7 @@ final class ChartBinder {
         view.put("columns", List.of("x"));
         view.put("values", List.of(Map.of("measure", function, "as", "v")));
         view.put("expandTo", Map.of("rows", Math.max(1, k), "columns", 1));
-        com.ash.drishti.bicompute.core.PivotCore core = new com.ash.drishti.bicompute.core.PivotCore(
-                List.of(new com.ash.drishti.bicompute.rows.RowsProvider("panel", "panel", fields, data)),
-                com.ash.drishti.bicompute.cache.StateCache.none(),
-                new com.ash.drishti.bicompute.core.PivotCore.Settings(5_000_000, 5_000_000, Integer.MAX_VALUE, 1, 10, 1, 60, Long.MAX_VALUE));
-        Map<String, Object> answer = core.query(com.ash.drishti.kernel.api.pivot.Viewer.of(""),
-                com.ash.drishti.kernel.api.pivot.PivotView.parse(view));
-        return (Map<String, Map<String, Object>>) answer.get("cells");
+        return pivotEngine.cells(view, fields, data);
     }
 
     /** The engine's figure of a row key and a column key ({@code *}: the total), NaN when the cell has none. */
@@ -560,12 +554,12 @@ final class ChartBinder {
     }
 
     /** A group's row key as the engine writes it: its levels' coordinates ({@code b0=…|b1=…}). */
-    private static String rowKey(List<String> path) {
+    private String rowKey(List<String> path) {
         Map<String, String> m = new java.util.TreeMap<>();
         for (int j = 0; j < path.size(); j++) {
             m.put("b" + j, path.get(j));
         }
-        return com.ash.drishti.kernel.api.pivot.CellKey.of(m).canonical();
+        return pivotEngine.key(m);
     }
 
     /**
@@ -616,7 +610,7 @@ final class ChartBinder {
     /** A pivot whose value field is masked: the groups stay, every value and total reads the mask (never added up). */
     private static PanelData maskedPivot(String by, List<String> columns, List<PanelData.PivotRow> rows, List<Cell> foot, String agg,
             int more, List<String> levels, Integer expand, String across) {
-        Cell mask = Cell.of(null, DataNode.MASK);
+        Cell mask = Cell.of(null, Node.MASK);
         List<PanelData.PivotRow> out = new ArrayList<>(rows.size());
         List<Cell> cells = java.util.Collections.nCopies(columns.size(), mask);
         List<Double> values = java.util.Collections.nCopies(columns.size(), (Double) null);

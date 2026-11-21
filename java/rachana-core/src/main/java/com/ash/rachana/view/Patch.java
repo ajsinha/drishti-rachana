@@ -4,8 +4,6 @@
  */
 package com.ash.rachana.view;
 
-import com.ash.rachana.view.ViewModel;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * One change to a rendered view.
@@ -19,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * @param provenance the new provenance
  * @param at when the source deleted the entity, for {@code deleted}
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Include(Include.Rule.NON_NULL)
 public record Patch(String op, Integer index, ViewModel.Cell cell, ViewModel.PanelView panel, ViewModel.Provenance provenance,
         java.time.Instant at) {
 

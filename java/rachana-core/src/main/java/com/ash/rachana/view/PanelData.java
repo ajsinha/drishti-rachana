@@ -6,7 +6,6 @@ package com.ash.rachana.view;
 
 import com.ash.rachana.view.ViewModel.Cell;
 import com.ash.rachana.view.ViewModel.LinkView;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
 /** Kind-specific panel content. One record per panel kind (some kinds share one). */
@@ -30,7 +29,7 @@ public sealed interface PanelData {
      * @param root the first step of the breadcrumb (Sutra {@code root}, read against the document), or null
      * @param emptyLabel the words shown when there are no rows (Sutra {@code empty}), or null for the usual "No data available"
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Table(List<String> columns, List<Boolean> numeric, List<Row> rows, Row total, String more, boolean search,
             java.util.Map<String, Object> pivot, Integer expand, List<Level> levels, String root, String emptyLabel) implements PanelData {
 
@@ -62,9 +61,9 @@ public sealed interface PanelData {
      * @param crumb on a table with {@code levels}: the row's name in the breadcrumb ("Leg 2 · Float"), else absent
      * @param kidsTotal on a table with {@code levels}: the total row of the rows this one drills into, else absent
      */
-    record Row(List<Cell> cells, boolean highlight, String path, @JsonInclude(JsonInclude.Include.NON_EMPTY) List<Row> children,
-            @JsonInclude(JsonInclude.Include.NON_NULL) String pick, @JsonInclude(JsonInclude.Include.NON_NULL) String crumb,
-            @JsonInclude(JsonInclude.Include.NON_NULL) Row kidsTotal, @JsonInclude(JsonInclude.Include.NON_NULL) String ev) {
+    record Row(List<Cell> cells, boolean highlight, String path, @Include(Include.Rule.NON_EMPTY) List<Row> children,
+            @Include(Include.Rule.NON_NULL) String pick, @Include(Include.Rule.NON_NULL) String crumb,
+            @Include(Include.Rule.NON_NULL) Row kidsTotal, @Include(Include.Rule.NON_NULL) String ev) {
 
         /** A row without an event key ({@code ev}: on a panel that emits on row-click, the row's place in the data, sent back by a click). */
         public Row(List<Cell> cells, boolean highlight, String path, List<Row> children, String pick, String crumb, Row kidsTotal) {
@@ -106,7 +105,7 @@ public sealed interface PanelData {
      * @param fields the tab's own fields (the tabs panel's {@code body})
      * @param panels the panels inside the tab ({@code panels:}), bound with {@code @} the tab's element; absent without any
      */
-    record Tab(String title, List<Cell> fields, @JsonInclude(JsonInclude.Include.NON_EMPTY) List<ViewModel.PanelView> panels) {
+    record Tab(String title, List<Cell> fields, @Include(Include.Rule.NON_EMPTY) List<ViewModel.PanelView> panels) {
 
         public Tab {
             panels = panels == null ? List.of() : panels;
@@ -130,7 +129,7 @@ public sealed interface PanelData {
      * @param unit axis unit
      * @param step drawn as steps (a value holds until the next point: a notional schedule), or null for a plain line
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel,
             LinkView source, String unit, Boolean step) implements PanelData {
 
@@ -142,7 +141,7 @@ public sealed interface PanelData {
     record Series(String label, List<Double> values, String tone) {}
 
     /** {@code hbar}: bars scaled to the largest absolute value. */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Bars(List<Bar> bars, String shape, String total) implements PanelData {
 
         public Bars(List<Bar> bars) {
@@ -150,7 +149,7 @@ public sealed interface PanelData {
         }
     }
 
-    record Bar(String label, double value, String text, String tone, @JsonInclude(JsonInclude.Include.NON_NULL) String ev) {
+    record Bar(String label, double value, String text, String tone, @Include(Include.Rule.NON_NULL) String ev) {
 
         /** A bar without an event key ({@code ev}: on an hbar that emits on bar-click, the bar's row in the data). */
         public Bar(String label, double value, String text, String tone) {
@@ -177,7 +176,7 @@ public sealed interface PanelData {
      * {@code surface}: {@code z[row][column]} over {@code x} (the columns' labels) and {@code y} (one per row);
      * null where the document has no number. {@code view} is {@code heatmap} (default) or {@code 3d}.
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Surface(List<String> x, List<String> y, List<List<Double>> z, Double min, Double max, String fmt, String unit, String view)
             implements PanelData {}
 
@@ -200,7 +199,7 @@ public sealed interface PanelData {
      * @param link what a click opens, or null when the map is only a picture
      * @param shade the per-country figures that colour the map, or null
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record GeoMap(String mode, String highlight, String region, GeoLink link, GeoShade shade, String unit) implements PanelData {}
 
     /**
@@ -211,7 +210,7 @@ public sealed interface PanelData {
      * @param codes the codes (of the template's token) for which an entity exists: the others are not clickable
      * @param note why nothing is clickable (no access to the kind, or none listed), or null
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record GeoLink(String kind, String template, List<String> codes, String note) {}
 
     /**
@@ -221,7 +220,7 @@ public sealed interface PanelData {
      * @param items one figure per place that has one
      * @param note why the map is not shaded (masked, no access, not read in time), or null
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record GeoShade(String label, String unit, List<ShadeItem> items, String note) {}
 
     /** One place's figure: its code, the number and the formatted text. */
@@ -236,7 +235,7 @@ public sealed interface PanelData {
      * @param steps in order; a total step is drawn from zero
      * @param unit axis unit, or null
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Waterfall(List<Step> steps, String unit) implements PanelData {}
 
     /**
@@ -260,7 +259,7 @@ public sealed interface PanelData {
      * @param fmt the format of bin edges and markers
      * @param unit axis unit
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Histogram(List<Bin> bins, List<Marker> markers, int count, int dropped, String fmt, String unit) implements PanelData {}
 
     /** One bin: {@code [from, to)}, the last one closed; {@code label} is its range formatted. */
@@ -279,11 +278,11 @@ public sealed interface PanelData {
      * @param sized whether points carry a size
      * @param more points left out beyond the configured maximum
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Scatter(List<Point> points, List<String> groups, String xLabel, String yLabel, boolean sized, int more) implements PanelData {}
 
     /** A point: its measures and their text, an optional size, label, group and the entity the label names. */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link) {}
 
     /**
@@ -294,7 +293,7 @@ public sealed interface PanelData {
      * @param last the last close, formatted
      * @param change the change over the last bar, formatted, with its {@code tone}
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Candles(List<Candle> candles, boolean volume, String last, String change, String tone, String fmt, String unit)
             implements PanelData {}
 
@@ -304,7 +303,7 @@ public sealed interface PanelData {
      * @param openText the open price in the panel's {@code fmt}; likewise {@code highText}, {@code lowText}, {@code closeText}
      * @param volumeText the volume as text, or null without a volume
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Candle(String x, double open, double high, double low, double close, Double volume,
             String openText, String highText, String lowText, String closeText, String volumeText) {
         /** A bar without its texts (a client then prints the numbers as they are). */
@@ -330,10 +329,10 @@ public sealed interface PanelData {
      * @param link the entity it opens, or null
      * @param focus the node is the entity this view shows
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Node(String id, String label, String group, LinkView link, boolean focus) {}
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Edge(String from, String to, String label) {}
 
     /** {@code timeline}: dated events, oldest first; {@code more} events left out beyond the configured maximum. */
@@ -346,7 +345,7 @@ public sealed interface PanelData {
      * @param status the status text, or null
      * @param tone the status tone ({@code ok}, {@code warn}, {@code bad}), or null
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Event(String date, String label, String detail, String status, String tone) {}
 
     /**
@@ -365,7 +364,7 @@ public sealed interface PanelData {
      * @param expand levels shown open at first (Sutra {@code expand}); present only with {@code levels}
      * @param across the column field's name; present only with {@code levels}
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record Pivot(String by, List<String> columns, List<PivotRow> rows, List<Cell> totals, String agg, boolean heat, Double min, Double max,
             int more, List<String> levels, Integer expand, String across) implements PanelData {
 
@@ -383,7 +382,7 @@ public sealed interface PanelData {
      * @param path in a nested pivot, the keys from the outermost level down to this row; null in a single-level pivot
      * @param group in a nested pivot, true for a group row (its cells are the subtotals of the rows after it that extend its path)
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     record PivotRow(String label, List<Cell> cells, List<Double> values, Cell total, List<String> path, Boolean group) {
 
         public PivotRow(String label, List<Cell> cells, List<Double> values, Cell total) {

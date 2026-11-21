@@ -5,6 +5,19 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (toward v0.10.0, the untangling)
 
+- **A13, the binder behind hooks**: the binder and its neighbours (Drishti's engine `bind`, `view`, `control`, `wire`, and the live
+  `Frame` and `Patch` records) moved here with their history (84 commits, `tools/split/a13-paths.txt`) into
+  `com.ash.rachana.{bind,view,control,wire}`, and every host type behind a hook: `LinkResolver` (which kind an id names, a kind's
+  code), `TableProvider` (list, search, fetch, freshness; `computedId`), `Masker` (the viewer's masks and kinds), `PanelBinder` per
+  profile kind (`links`, `provenance`), `PivotEngine` (a pivot panel's cells), `BusinessDays` (a request's business date and calendar),
+  a label function; `BindHooks` holds them (`BindHooks.core()`: Core alone). Core's own `EntityRef`, `Entity` (with `Origin`),
+  `EntityHit`, `AsOf`, `SourceFailures`, `Layout`, `PivotLimits`, `RelativeDates`. `BindContext` carries a `host` object Core never
+  reads. The ViewModel records carry Core's `@Include` (Jackson's rules); `ViewJson` is Core's canonical writer (records in field order,
+  the rules applied) and `MaskCount` and `ViewModelSchema` read it; the map cache is Core's `TtlCache` (no Caffeine). New codes
+  `RCH-5001` (bad request) and `RCH-5002` (forbidden). Changed answers (for review): a panel too deep to evaluate names "the expression
+  depth limit"; the ViewModel schema's `$id` is this specification's address. Host words in Core: still 2 files. Conformance
+  byte-identical (2,110 of 2,112 identical to the reference, the 2 known; 0 verified failing); `BindHooksTest` and the 5 moved unit
+  tests; the API baseline gains the four packages (104 types).
 - **A7, the model and parser split along the Core/profile line**: each instance has a `Grammar` (`rachana.grammar()`, its parser
   `rachana.parser()`, its schema `rachana.schema(formats)`): Core's keys and kinds plus what its profiles add. A profile adds top-level
   keys (`SutraKey`: reader, the panels it brings, schema fragment), brings the profile panel kinds (`links`, `provenance`), the `kind`

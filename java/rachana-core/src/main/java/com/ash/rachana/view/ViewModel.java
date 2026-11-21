@@ -4,7 +4,6 @@
  */
 package com.ash.rachana.view;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import java.util.Map;
 
@@ -28,9 +27,9 @@ import java.util.Map;
  *     series, figures, tab}}}, {@code order}, {@code default} and the {@code summary} line read against the document; null when it says
  *     nothing (the console then uses each panel kind's default tier)
  * @param contract the ViewModel contract this view speaks, {@code major.minor} ({@link #CONTRACT}; VIEWMODEL.md section 8): a client
- *     refuses a major it does not know (the renderer's {@code DRS-9105}) and ignores what a newer minor adds
+ *     refuses a major it does not know (the renderer's unknown-contract error) and ignores what a newer minor adds
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Include(Include.Rule.NON_NULL)
 public record ViewModel(
         Ref ref,
         String mnemonic,
@@ -40,11 +39,11 @@ public record ViewModel(
         List<KeyView> keys,
         Provenance provenance,
         Map<String, Double> timings,
-        @JsonInclude(JsonInclude.Include.NON_EMPTY) List<ControlView> controls,
-        @JsonInclude(JsonInclude.Include.NON_EMPTY) List<SelectView> selects,
+        @Include(Include.Rule.NON_EMPTY) List<ControlView> controls,
+        @Include(Include.Rule.NON_EMPTY) List<SelectView> selects,
         Map<String, Object> layout,
         String contract,
-        @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, Object> phone) {
+        @Include(Include.Rule.NON_EMPTY) Map<String, Object> phone) {
 
     /** The contract every ViewModel this server builds speaks (VIEWMODEL.md section 8): the minor moves for additions, the major for a break. */
     public static final String CONTRACT = "1.0";
@@ -126,7 +125,7 @@ public record ViewModel(
      * @param reads ids of the panels (and {@code strip} or {@code title}) whose expressions read it
      * @param truncated whether the options were cut at the limit
      */
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Include(Include.Rule.NON_EMPTY)
     public record ControlView(String id, String kind, String label, String placement, String panel, String parent, List<Opt> options,
             String value, List<String> values, boolean required, boolean remember, String min, String max, String step, boolean range,
             List<String> reads, boolean truncated) {}
@@ -162,7 +161,7 @@ public record ViewModel(
      * @param emphasis draw highlighted
      * @param path document path the value came from, for live patches
      */
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @Include(Include.Rule.NON_DEFAULT)
     public record Cell(String label, String text, String tone, LinkView link, boolean emphasis, String path) {
 
         public static Cell of(String label, String text) {
@@ -184,7 +183,7 @@ public record ViewModel(
      * @param panel target panel id for {@code panel}
      * @param link target for {@code link}
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     public record KeyView(String key, String label, String action, String panel, LinkView link) {}
 
     /**
@@ -207,7 +206,7 @@ public record ViewModel(
      */
     public record Provenance(String layout, String fingerprint, String source, long generation, String fetchedAt, boolean live,
             String businessDate, String updatedAt, String staleAfter, boolean stale, String sutra, int masked, List<String> maskedPanels,
-            @JsonInclude(JsonInclude.Include.NON_DEFAULT) boolean partial, @JsonInclude(JsonInclude.Include.NON_EMPTY) List<String> missing) {
+            @Include(Include.Rule.NON_DEFAULT) boolean partial, @Include(Include.Rule.NON_EMPTY) List<String> missing) {
 
         public Provenance {
             maskedPanels = maskedPanels == null ? List.of() : List.copyOf(maskedPanels);
@@ -227,7 +226,7 @@ public record ViewModel(
 
         /**
          * The same provenance marked partial: the document says some of what makes it did not answer (a grouped page gathered across
-         * Drishti*net with a node down: {@code partial: true} and {@code missing}, one line per node), so the page says so.
+         * a cluster with a node down: {@code partial: true} and {@code missing}, one line per node), so the page says so.
          */
         public Provenance withPartial(List<String> what) {
             return new Provenance(layout, fingerprint, source, generation, fetchedAt, live, businessDate, updatedAt, staleAfter, stale, sutra, masked,
@@ -267,7 +266,7 @@ public record ViewModel(
      * @param source the kind (and pack) of the source it reads, or null
      * @param parent the parent panel's id for a child panel, or null
      */
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Include(Include.Rule.NON_EMPTY)
     public record Wire(List<Map<String, String>> emits, String waits, List<Map<String, String>> children, Map<String, String> source, String parent) {}
 
     /**
@@ -290,7 +289,7 @@ public record ViewModel(
      * @param staleAfter the connector's threshold (ISO-8601 duration), or null
      * @param stale older than {@code staleAfter}
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     public record PanelProvenance(String source, String kind, String fetchedAt, String updatedAt, String staleAfter, boolean stale) {}
 
     /**
@@ -306,11 +305,11 @@ public record ViewModel(
      * @param hasResult whether a result (current or last good) is shown
      * @param stamp the result's stamp (pin, computedAt, engine, inputs), or null
      */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     public record PanelCompute(String state, String requestId, String connector, String message, Map<String, Object> progress, boolean hasResult,
             Map<String, Object> stamp) {}
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Include(Include.Rule.NON_NULL)
     /**
      * @param empty nothing to show (the document lacks what the panel asks for); the console says "No data available"
      * @param span the Sutra's width for the panel in columns of a 12-column grid, or null (the whole column)

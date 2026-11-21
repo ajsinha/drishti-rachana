@@ -16,6 +16,13 @@ Entries are written per release; the regime's unreleased work is listed after th
   `IdentityHashMap` in any main source (it replaces the narrower ViewModel-only guard). New cases `sutra/binder/layout` (areas with a
   split, tabs, sticky, phone, tablet; a flow grid with sections) and a server test of the home page with several Sutras over three
   starts; the conformance lane runs the JVM a second time at the newest level and compares the bytes.
+- **A fragment of another level is refused (G3 gate F2, owner decision O1)**: the compiler accepted a fragment's `rachana:` key and
+  expanded the fragment at the level of the Sutra using it, so a 1.0 fragment's `0.1 + 0.2` silently became exact inside a 1.2
+  Sutra. A use of a fragment or block whose level (its key; none is 1.0) is not the Sutra's is now `RCH-2008` naming both levels and
+  `rachana upgrade` (SPEC 2.1 rule 4). The conformance cases' fragments declare the level of the Sutras that use them (90 keys raised;
+  the synthetic `demo` library's manifests and pins follow: `6f945cc7…` → `e5087749…`); cases `problem/level-declaration` (another,
+  a missing and a later level refused; the same level read) and `sutra/level-declaration` (1.0 keeps doubles, 1.2 is exact, each
+  through a fragment of its own level).
 
 - **Duplicate leftovers (i7b audit S10, D6)**: `Signatures.Signature` loses its `legacy` component and `signatures.yaml` its four `del:` lines
   (DEL's names for functions; DEL is folded away and nothing read them; logged in `java/api-removals.txt`). The deprecated function

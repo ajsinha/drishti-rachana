@@ -12,7 +12,7 @@ cases:
     source: "decision S1-OPEN c (a stateful fragment requires as:)"
     files: &picker
       picker.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: picker
         version: 1
         doc:
@@ -89,7 +89,7 @@ cases:
     source: "LIBRARIES 6.2 (set on its own state only)"
     files:
       tagger.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: tagger
         version: 1
         doc:
@@ -133,7 +133,7 @@ cases:
     source: "LIBRARIES 7.2 (outputs name private state)"
     files:
       bad.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: bad
         version: 1
         doc:
@@ -173,7 +173,7 @@ cases:
     source: "LIBRARIES 6.2 (a fragment returns events; the Sutra that uses it decides); SUTRA_EXPANSION I1 (host)"
     files:
       caller.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: caller
         version: 1
         doc:

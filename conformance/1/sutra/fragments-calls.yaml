@@ -11,7 +11,7 @@ cases:
     source: L-21 (2, 3); LIBRARIES 5.1
     files: &desk
       desk-list.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-list
         version: 1
         doc:
@@ -146,7 +146,7 @@ cases:
           "columns": [ { "name": "desk", "type": "string", "doc": "The desk" },
                        { "name": "amount", "type": "decimal", "doc": "The amount" } ] }
       desk-total.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-total
         version: 1
         doc:
@@ -177,7 +177,7 @@ cases:
     note: "sum's field is a column parameter (role: column): its text 'amount' is renamed to the caller's MTM_USD at compile time, as @.amount is; so are @.<column> in a filter or a per-element argument over the table, a lambda element's field, the field of first(...) or of an index of the table's rows, the key and aggregate texts of group, and the same inside a template's ${...}. The pipe and take keep the table's rows."
     files: &figures
       desk-figures.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-figures
         version: 1
         doc:
@@ -246,7 +246,7 @@ cases:
     note: "difference and intersect give rows of their first list, union rows of one table when both lists are: a filter's @.amount over them is renamed to the caller's MTM_USD."
     files:
       desk-sets.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-sets
         version: 1
         doc:
@@ -285,7 +285,7 @@ cases:
     note: "score is fn(number) -> number: the use writes a lambda in its own context; where the fragment calls it, arg.score(x) is the lambda bound by let around the expression; where it passes it whole (sort's key), the lambda itself. The lambda reads the caller's column names, as the rows it gets are the caller's."
     files: &ranked
       ranked-desks.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: ranked-desks
         version: 1
         doc:

@@ -12,7 +12,7 @@ cases:
     note: "pair uses picker twice (l, r); the screen uses pair twice (a, b): four picker instances a-l, a-r, b-l, b-r. pair reads its inner uses' output as written (state.l.chosen) and publishes its own."
     files: &nest
       picker.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: picker
         version: 1
         doc:
@@ -35,7 +35,7 @@ cases:
             on:
               row-click: [ { set: { state: chosen, to: "@.id" } } ]
       pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: pair
         version: 1
         doc:
@@ -100,7 +100,7 @@ cases:
     note: "An outer fragment that holds no state of its own, used as t: its nested picker is t-p, its state t-p.chosen; the outer reads the output as state.p.chosen."
     files:
       picker.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: picker
         version: 1
         doc:
@@ -123,7 +123,7 @@ cases:
             on:
               row-click: [ { set: { state: chosen, to: "@.id" } } ]
       titled.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: titled
         version: 1
         doc:

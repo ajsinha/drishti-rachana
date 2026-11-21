@@ -95,6 +95,24 @@ public final class SutraBlocks {
         public String ref() {
             return name + "@" + version;
         }
+
+        /**
+         * The language level its {@code rachana:} key declares (SPEC 2.1 rule 4: {@code 1} or {@code 1.0} is 1.0, {@code 1.N} is 1.N),
+         * {@code 1.0} when it has no key, or the key's text as written when that is no level ({@code rachana: 2}).
+         */
+        public String level() {
+            try {
+                String masked = text.replace("%{", "pXq{");
+                PNode lang = parse(masked, file).map().get("rachana");
+                if (lang == null) {
+                    return com.ash.rachana.profile.Grammar.LEVEL_1_0;
+                }
+                String l = SutraParser.level(lang, masked);
+                return l != null ? l : String.valueOf(lang.value());
+            } catch (SutraException e) {
+                return com.ash.rachana.profile.Grammar.LEVEL_1_0;
+            }
+        }
     }
 
 
@@ -449,6 +467,13 @@ public final class SutraBlocks {
                 continue;
             }
             calls.texts.put(b.file(), b.text());
+            String own = level == null ? null : b.level();
+            if (own != null && !own.equals(level)) {                    // SPEC 2.1 rule 4: one level per screen, no second meaning inside it
+                problems.add(new SutraProblem("RCH-2008", "fragment " + b.ref() + " is written for Rachana " + own + " and the Sutra that uses it for "
+                        + level + ": a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)",
+                        new SourceLocation(file, p.line(), p.column())));
+                continue;
+            }
             PNode typedRoot = typedRoot(b);
             if (typedRoot != null) {                                   // the typed form: checked parameters, tokens, slots (C1)
                 if (!atLeast(level, TypedFragment.SINCE)) {

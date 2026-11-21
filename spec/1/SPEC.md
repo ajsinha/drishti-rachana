@@ -60,9 +60,12 @@ problem codes). A profile MUST NOT change the meaning of anything in Core and MU
    later level in a Sutra that declares a lower one is `RCH-2008` with the Sutra's words ("'grid' panels need Rachana 1.1; this
    Sutra is written for 1.0 (declare rachana: 1.1 or later at its top)"). This key is the one place a level is declared: no project
    file, command-line flag or element attribute sets it. A fragment's `rachana:` key is its level in exactly the same way (`1` or
-   `1.0` is 1.0, `1.N` is 1.N); a fragment without the key is level 1.0. `rachana upgrade` rewrites a Sutra or a fragment to a later
-   level, keeping its meaning, and writes the new level into its key; a file already at that level is left untouched
-   (cases `problem/level-declaration`, `sutra/level-declaration`).
+   `1.0` is 1.0, `1.N` is 1.N); a fragment without the key is level 1.0. **A Sutra uses fragments of its own level only**: a use of a
+   fragment or block (directly or inside another fragment) whose level is not the Sutra's is `RCH-2008` naming both levels ("fragment
+   total@1 is written for Rachana 1.0 and the Sutra that uses it for 1.2: a Sutra uses fragments of its own level only (rachana upgrade
+   raises the lower one, keeping its meaning)"), so one screen never mixes two meanings of the same text. `rachana upgrade` rewrites a
+   Sutra or a fragment to a later level, keeping its meaning, and writes the new level into its key; a file already at that level is
+   left untouched (cases `problem/level-declaration`, `sutra/level-declaration`).
 5. An unknown key is an error with its position (`RCH-2011`; `RCH-2023` for a panel option), never ignored. A key that
    belongs to a profile the implementation does not have is `RCH-2060` with words that name the profile, not "unknown".
 

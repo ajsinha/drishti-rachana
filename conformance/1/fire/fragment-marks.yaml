@@ -16,7 +16,7 @@ cases:
     note: "The local columns row, column and value are mapped to SCEN, DESK and PNL: the pivot reads the caller's columns, the payload reads the cell."
     files:
       scenario-square.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: scenario-square
         version: 1
         doc:
@@ -75,7 +75,7 @@ cases:
     note: "The local columns y, x and z are mapped to EXPIRY, K90 and K110: the binds read the caller's columns, the payload reads the point."
     files:
       smile.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: smile
         version: 1
         doc:
@@ -132,7 +132,7 @@ cases:
     note: "Regression: on a table, @ in the payload is the clicked row, so row and value are the caller's NAME and AMT."
     files:
       named-list.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: named-list
         version: 1
         doc:

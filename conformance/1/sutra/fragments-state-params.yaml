@@ -12,7 +12,7 @@ cases:
     note: "into: desk hands state.desk over; the fragment writes it with set: { state: %{into} }; two uses write two states."
     files:
       chooser.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: chooser
         version: 1
         doc:

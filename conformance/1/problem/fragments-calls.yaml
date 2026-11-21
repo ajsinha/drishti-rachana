@@ -11,7 +11,7 @@ cases:
     source: L-21 (1, 4); LIBRARIES 4.4 (RCH-2117)
     files:
       peek.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: peek
         version: 1
         doc:
@@ -43,7 +43,7 @@ cases:
     source: L-21 (5); LIBRARIES 5.1 (RCH-2114)
     files: &desk
       desk-list.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-list
         version: 1
         doc:
@@ -287,8 +287,8 @@ cases:
       rachana_libs/demo/MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
-        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
-        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        efeff0b56cf42b9fd8768afceed7c2bf573b16d3aa2a2bf485444a1b68a8728afaef9f10c74a7425f071652de5effa61  fragments/figure-pair.v1.fragment.yaml
+        ab6e8ed131731de52fa0dbe668334867122306f7dca70b1de8eab22cf2926e1e399fbaf145bd98327e935a488d49f281  fragments/key-figure.v1.fragment.yaml
       rachana_libs/demo/demo.rachana-lib.yaml: |
         rachana: 1
         library: demo
@@ -305,7 +305,7 @@ cases:
             - { name: figure-pair, majors: [1] }
             - { name: key-figure, majors: [1] }
       rachana_libs/demo/fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -320,7 +320,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       rachana_libs/demo/fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:
@@ -341,7 +341,7 @@ cases:
       rachana.lock: |
         lock: 1
         libraries:
-          demo: { version: 1.0.0, sha384: "6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843" }
+          demo: { version: 1.0.0, sha384: "e508774901fed4086abf9915f1a177c0d442f34e95914140d7bb840cd9aeaeb2b2abb2971ee3024f1d0c8e9202dd9b03" }
     sutra: |
       rachana: 1.2
       sutra: lib-demo
@@ -355,14 +355,14 @@ cases:
       ok: true
       problems: []
       libraries:
-      - { name: demo, version: 1.0.0, sha384: 6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843 }
+      - { name: demo, version: 1.0.0, sha384: e508774901fed4086abf9915f1a177c0d442f34e95914140d7bb840cd9aeaeb2b2abb2971ee3024f1d0c8e9202dd9b03 }
 
   - id: column-parameter-given-a-computed-text
     kind: problem
     source: L-21 (3); functions.yaml role column (RCH-2121)
     files:
       desk-total.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-total
         version: 1
         doc:
@@ -404,7 +404,7 @@ cases:
     source: L-21 (3); library finding (core library 1.0.0), never silent
     files:
       desk-mapped.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-mapped
         version: 1
         doc:
@@ -445,7 +445,7 @@ cases:
     source: L-21 (3) (RCH-2121)
     files:
       desk-list.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-list
         version: 1
         doc:
@@ -490,7 +490,7 @@ cases:
     source: L-21 (3) (RCH-2121)
     files:
       desk-total.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-total
         version: 1
         doc:
@@ -531,7 +531,7 @@ cases:
     source: L-21 (1, 3) (RCH-2121)
     files:
       desk-total.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-total
         version: 1
         doc:
@@ -572,7 +572,7 @@ cases:
     source: LIBRARIES 4.2 (fn); EL_EXPANSION X13 (RCH-2116)
     files: &scored
       scored.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: scored
         version: 1
         doc:
@@ -658,7 +658,7 @@ cases:
     source: LIBRARIES 4.2 (fn); EL_EXPANSION X8
     files:
       bad.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: bad
         version: 1
         doc:

@@ -11,7 +11,7 @@ cases:
     source: L-21 (3), never silent; core library finding (ranked-bars)
     files: &ranked
       top-desks.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: top-desks
         version: 1
         doc:
@@ -66,7 +66,7 @@ cases:
     source: LIBRARIES 4.2 (list<record{...}>); core library finding (status-badges, entry-form)
     files: &badges
       badges.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: badges
         version: 1
         doc:
@@ -141,7 +141,7 @@ cases:
     source: "LIBRARIES 4.2 (text, dynamic: true); core library finding (alert-banner, source-note)"
     files:
       banner.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: banner
         version: 1
         doc:
@@ -179,7 +179,7 @@ cases:
     source: SUTRA_EXPANSION I1 (point-click; marks carry ev); core library finding (events only on rows and bars)
     files:
       trend.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: trend
         version: 1
         doc:

@@ -3442,6 +3442,7 @@
 [experimental] com.ash.rachana.parse.SutraBlocks$Block :: public int com.ash.rachana.parse.SutraBlocks$Block.version()
 [experimental] com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Block.description()
 [experimental] com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Block.file()
+[experimental] com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Block.level()
 [experimental] com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Block.name()
 [experimental] com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Block.path()
 [experimental] com.ash.rachana.parse.SutraBlocks$Block :: public java.lang.String com.ash.rachana.parse.SutraBlocks$Block.ref()

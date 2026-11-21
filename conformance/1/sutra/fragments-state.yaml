@@ -12,7 +12,7 @@ cases:
     note: "Two uses, two instances: each use's state is <as>.<name>; the fragment's own row-click writes its own state; the screen reads the output as state.<as>.<name>."
     files: &picker
       picker.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: picker
         version: 1
         doc:
@@ -75,7 +75,7 @@ cases:
     note: "on: <event>: [ { set: { state, to } } ] reads the payload as event.<name>; it joins the effects of the panel that raises the event, beside the fragment's own."
     files:
       desk-list.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-list
         version: 1
         doc:

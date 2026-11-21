@@ -16,8 +16,8 @@ cases:
       MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
-        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
-        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        efeff0b56cf42b9fd8768afceed7c2bf573b16d3aa2a2bf485444a1b68a8728afaef9f10c74a7425f071652de5effa61  fragments/figure-pair.v1.fragment.yaml
+        ab6e8ed131731de52fa0dbe668334867122306f7dca70b1de8eab22cf2926e1e399fbaf145bd98327e935a488d49f281  fragments/key-figure.v1.fragment.yaml
       demo.rachana-lib.yaml: |
         rachana: 1
         library: demo
@@ -34,7 +34,7 @@ cases:
             - { name: figure-pair, majors: [1] }
             - { name: key-figure, majors: [1] }
       fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -49,7 +49,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:
@@ -74,7 +74,7 @@ cases:
       fragments:
       - figure-pair
       - key-figure
-      sha384: 6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843
+      sha384: e508774901fed4086abf9915f1a177c0d442f34e95914140d7bb840cd9aeaeb2b2abb2971ee3024f1d0c8e9202dd9b03
 
   - id: no-manifest-hashes
     kind: lib
@@ -99,7 +99,7 @@ cases:
             - { name: figure-pair, majors: [1] }
             - { name: key-figure, majors: [1] }
       fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -114,7 +114,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:
@@ -153,8 +153,8 @@ cases:
       MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
-        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
-        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        efeff0b56cf42b9fd8768afceed7c2bf573b16d3aa2a2bf485444a1b68a8728afaef9f10c74a7425f071652de5effa61  fragments/figure-pair.v1.fragment.yaml
+        ab6e8ed131731de52fa0dbe668334867122306f7dca70b1de8eab22cf2926e1e399fbaf145bd98327e935a488d49f281  fragments/key-figure.v1.fragment.yaml
       demo.rachana-lib.yaml: |
         rachana: 1
         library: demo
@@ -171,7 +171,7 @@ cases:
             - { name: figure-pair, majors: [1] }
             - { name: key-figure, majors: [1] }
       fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -186,7 +186,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:
@@ -225,8 +225,8 @@ cases:
       MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         13f64110035896af0fc8e28f40d3ce87cdefd1a74adc45ce99f02d4c9f8f540c626ff0a98653d6fbac1f51e2ae4262a7  demo.rachana-lib.yaml
-        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
-        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        efeff0b56cf42b9fd8768afceed7c2bf573b16d3aa2a2bf485444a1b68a8728afaef9f10c74a7425f071652de5effa61  fragments/figure-pair.v1.fragment.yaml
+        ab6e8ed131731de52fa0dbe668334867122306f7dca70b1de8eab22cf2926e1e399fbaf145bd98327e935a488d49f281  fragments/key-figure.v1.fragment.yaml
         55a93465caf76f177cb6ad377a99ccbe4b5466ea48e8a96a60e6be4d2ecbf7f1ef247bee07a4b69bbe2875acbeb6d6f3  fragments/run.js
       demo.rachana-lib.yaml: |
         rachana: 1
@@ -244,7 +244,7 @@ cases:
             - { name: figure-pair, majors: [1] }
             - { name: key-figure, majors: [1] }
       fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -259,7 +259,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:
@@ -308,8 +308,8 @@ cases:
       MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         fe4026d3ea952831a60056fd7e1dafb37e8d9a2bdcdd76ad39b4178a122084927ab38ea47229617af367a21ccf2fedb8  demo.rachana-lib.yaml
-        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
-        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        efeff0b56cf42b9fd8768afceed7c2bf573b16d3aa2a2bf485444a1b68a8728afaef9f10c74a7425f071652de5effa61  fragments/figure-pair.v1.fragment.yaml
+        ab6e8ed131731de52fa0dbe668334867122306f7dca70b1de8eab22cf2926e1e399fbaf145bd98327e935a488d49f281  fragments/key-figure.v1.fragment.yaml
       demo.rachana-lib.yaml: |
         rachana: 1
         library: demo
@@ -327,7 +327,7 @@ cases:
             - { name: gone, majors: [1] }
             - { name: key-figure, majors: [1] }
       fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -342,7 +342,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:
@@ -381,8 +381,8 @@ cases:
       MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         64db9e73a412dd335dae81e6c84a57971ace13f462a6754b3d66d6d59933eb34c2b4a91d55c385c47477292f8efc1ace  demo.rachana-lib.yaml
-        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
-        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        efeff0b56cf42b9fd8768afceed7c2bf573b16d3aa2a2bf485444a1b68a8728afaef9f10c74a7425f071652de5effa61  fragments/figure-pair.v1.fragment.yaml
+        ab6e8ed131731de52fa0dbe668334867122306f7dca70b1de8eab22cf2926e1e399fbaf145bd98327e935a488d49f281  fragments/key-figure.v1.fragment.yaml
       demo.rachana-lib.yaml: |
         rachana: 1
         library: demo
@@ -399,7 +399,7 @@ cases:
             - { name: figure-pair, majors: [1] }
             - { name: key-figure, majors: [1] }
       fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -414,7 +414,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:
@@ -453,8 +453,8 @@ cases:
       MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         d5d7d2a1e897aee1dc8dabe5fd616b6b9708993273ea6d8db428fc61f0068b74eec03f6ab3eb3a8d0ce4a14def824aff  demo.rachana-lib.yaml
-        ffa4a721af68e464a69af6601b1b41d5087a7a9dfe45e7f3428a96ecf1478ed2c57a14757188ac2fb01b096336783125  fragments/figure-pair.v1.fragment.yaml
-        ed8664e4712e40a59644f92fe471dfa5d53aa71e1959c95f0cc0122d85fe6e4cad5c24d1ea7ef665cd83199028f5f622  fragments/key-figure.v1.fragment.yaml
+        efeff0b56cf42b9fd8768afceed7c2bf573b16d3aa2a2bf485444a1b68a8728afaef9f10c74a7425f071652de5effa61  fragments/figure-pair.v1.fragment.yaml
+        ab6e8ed131731de52fa0dbe668334867122306f7dca70b1de8eab22cf2926e1e399fbaf145bd98327e935a488d49f281  fragments/key-figure.v1.fragment.yaml
       demo.rachana-lib.yaml: |
         rachana: 1
         library: demo
@@ -473,7 +473,7 @@ cases:
         functions:
           sum: { params: { x: number }, is: "x" }
       fragments/figure-pair.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: figure-pair
         version: 1
         doc:
@@ -488,7 +488,7 @@ cases:
           - { use: demo/key-figure@1, with: { id: right, value: arg.right, label: Right } }
           - { slot: below }
       fragments/key-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: key-figure
         version: 1
         doc:

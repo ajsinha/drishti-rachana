@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 class SutraParserTest {
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     @Test
     void everySutraDeclaresTheLanguageVersionItIsWrittenIn() {

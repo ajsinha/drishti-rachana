@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 /** A screen's {@code layout:} (RACHANA_REFERENCE.md 13): the grammar, each panel's place, and lint RCH-2059. */
 class ScreenLayoutTest {
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     private static String sutra(String layout, String panels) {
         return "rachana: 1\nsutra: book-desk\nversion: 1\nmatch: { kind: book }\n" + (layout.isEmpty() ? "" : "layout:\n" + layout.indent(2))

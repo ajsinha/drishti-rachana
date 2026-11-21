@@ -157,6 +157,7 @@ flowchart LR
 ```
 
 - This repository contains **nothing Drishti-specific**. Drishti's extra panel kinds, document matching and domain panels live in Drishti's **profile**, an extension of Sutra Core that Drishti owns.
+- Each `Rachana` instance reads Sutras by its **grammar**: Core's keys and kinds plus what its profiles register (top-level keys, the `links` and `provenance` kinds, `kind` sources, `form.save`, a fragment resolver). Core alone reads a screen with no `match:` and refuses the additions.
 - The specification is open; the runtime (compiler, Views, SDKs) is proprietary.
 - Every release carries UI speed budgets, as with Drishti Elements.
 - The painter (`<elements-view>`, the `drishti-views` library) is Drishti Elements code, vendored here at a pin;
@@ -167,7 +168,7 @@ flowchart LR
 | Module | Packages | Depends on |
 |---|---|---|
 | `rachana-api` | `com.ash.rachana.api` (`Node`, the value interface every reader uses; Rachana's own nodes behind `Node.of`) | the JDK |
-| `rachana-core` | `com.ash.rachana` (writer, text, expressions, wiring, schema, editors, problems), `.el`, `.el.check`, `.format`, `.model`, `.parse`, `.design.ops`, `.profile` | `rachana-api`; Jackson as a split exemption ([java/SPLIT_EXEMPTIONS.md](../java/SPLIT_EXEMPTIONS.md)) until A8b |
+| `rachana-core` | `com.ash.rachana` (writer, text, expressions, wiring, schema, editors, problems, `SutraStore`), `.el`, `.el.check`, `.format`, `.model`, `.parse` (own YAML and JSON, `FragmentResolver`), `.design.ops`, `.profile` (`Profile`, the instance's `Grammar`, `SutraKey`; `Entities`, the entity additions a host's profile takes until it owns them) | `rachana-api` only |
 | `rachana-conformance` | `JvmRuntime`, the conformance runtime program | `rachana-core` |
 | `rachana-compat` | the compatibility regime's tests | JUnit |
 | `rachana-guards` | the guards over the reactor | JUnit |

@@ -5,6 +5,18 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (toward v0.10.0, the untangling)
 
+- **A7, the model and parser split along the Core/profile line**: each instance has a `Grammar` (`rachana.grammar()`, its parser
+  `rachana.parser()`, its schema `rachana.schema(formats)`): Core's keys and kinds plus what its profiles add. A profile adds top-level
+  keys (`SutraKey`: reader, the panels it brings, schema fragment), brings the profile panel kinds (`links`, `provenance`), the `kind`
+  source form, `form.save` and a fragment resolver (`FragmentResolver`; Core's default is the folder library). What a profile key
+  reads is kept in `Sutra.extensions()`; `match()` and `domain()` read it. `Entities.addTo(profile)` holds the entity additions
+  (`match`, `domain`, `links`, `provenance`, kind sources, `form.save`) until the host's profile module takes them; Core alone reads a
+  Sutra with none of them and refuses them (`RCH-2011`, `RCH-2021`, `RCH-2010`, `RCH-2058`); `setMatch` is refused without the `match`
+  key. `new SutraParser()`, `new OpApplier()` and the editors' no-argument constructors are Core's grammar alone; the others take the
+  instance's parser. Core `SutraStore` (`name@version`, newest wins, listeners). Removed (planned):
+  `RachanaSchema.build(formats, kinds)`, now `build(formats, grammar)`; the schema's `$id` is `urn:rachana:schema:sutra:1`. Host words
+  left in Core: 2 files (the limit messages' setting names, which change conformance words, and `signatures.yaml`). Conformance
+  byte-identical to before (2,110 of 2,112 identical to the reference, the 2 known; 0 verified failing); `GrammarTest` new.
 - **A6, registries per instance**: `Rachana.with(options, profiles…)` builds one instance (its own `FunctionTable`, compiler and
   cache, format table); `Profile.core()` and `Profile.named(name).functions(…).formats(…).calendars(…).build()`. Nothing is
   process-wide: `Functions.register` and `Calendars.use` are gone, providers are no longer found by `ServiceLoader` (a profile hands

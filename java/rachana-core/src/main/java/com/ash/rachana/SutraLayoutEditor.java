@@ -43,7 +43,17 @@ public final class SutraLayoutEditor {
 
     private static final List<String> SIZE_KEYS = List.of("area", Panel.SPAN, Panel.HEIGHT);
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser;
+
+    /** An editor of Core's grammar alone. */
+    public SutraLayoutEditor() {
+        this(new SutraParser());
+    }
+
+    /** An editor that reads the Sutra with this parser ({@link Rachana#parser()}: Core's grammar and the instance's profiles'). */
+    public SutraLayoutEditor(SutraParser parser) {
+        this.parser = java.util.Objects.requireNonNull(parser, "a parser");
+    }
     private final PositionalYamlReader reader = new PositionalYamlReader();
 
     /**

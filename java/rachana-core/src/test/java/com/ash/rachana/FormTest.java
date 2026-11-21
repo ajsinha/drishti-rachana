@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /** A panel's {@code form:} (RACHANA_REFERENCE.md 10): the grammar, its lint (RCH-2058), the expressions and the checks the server runs. */
 class FormTest {
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
     private static final LocalDate TODAY = LocalDate.of(2026, 10, 24);
 
     static final String SUTRA = """
@@ -187,7 +187,7 @@ class FormTest {
 
     @Test
     void theJsonSchemaDescribesForms() {
-        String schema = RachanaSchema.build(List.of("amount0"), List.of("trade")).toString();
+        String schema = RachanaSchema.build(List.of("amount0"), com.ash.rachana.TestGrammar.grammar(java.util.List.of("trade"))).toString();
         assertThat(schema).contains("form=").contains("editable-by").contains("drawer").contains("money").contains("datetime").contains("entity")
                 .contains("tz=");
     }

@@ -71,7 +71,7 @@ public final class JvmRuntime {
 
     /**
      * The instance the cases run on (split step A6): the first file is Core's format table, the others the format names of the first
-     * profile named after {@code core} ({@code drishti}: the profile object of the conformance suite, which registers no function).
+     * profile named after {@code core} ({@code drishti}: the profile object of the conformance suite, which registers no function and takes the entity additions, split step A7).
      */
     static com.ash.rachana.Rachana instance(String profiles, List<String> files) {
         List<String> names = new ArrayList<>(List.of(profiles.split(",")));
@@ -81,6 +81,9 @@ public final class JvmRuntime {
         List<com.ash.rachana.profile.Profile> ps = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
             com.ash.rachana.profile.Profile.Builder b = com.ash.rachana.profile.Profile.named(names.get(i).trim());
+            if (i == 0) {
+                com.ash.rachana.profile.Entities.addTo(b);      // A7: match, domain, links, provenance, kind sources, form.save
+            }
             if (i == 0 && files.size() > 1) {
                 b.formats(files.subList(1, files.size()).toArray(String[]::new));
             }
@@ -153,7 +156,7 @@ public final class JvmRuntime {
         List<com.ash.rachana.SutraProblem> ps = new ArrayList<>();
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         try {
-            var sutra = new com.ash.rachana.parse.SutraParser().parse(text(c.get("sutra")), file, "conformance");
+            var sutra = rachana.parser().parse(text(c.get("sutra")), file, "conformance");
             ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions())).check(sutra));
         } catch (com.ash.rachana.SutraException e) {
             ps.addAll(e.problems());
@@ -183,7 +186,7 @@ public final class JvmRuntime {
         String text = sutra;
         StringBuilder ps = new StringBuilder();
         try {
-            var r = new com.ash.rachana.design.ops.OpApplier().apply(sutra, com.ash.rachana.design.ops.Ops.parse((Object) List.of(op)));
+            var r = new com.ash.rachana.design.ops.OpApplier(rachana.parser()).apply(sutra, com.ash.rachana.design.ops.Ops.parse((Object) List.of(op)));
             text = r.yaml();
             for (var p : r.problems()) { editProblem(ps, p.code(), p.message(), p.line()); }
         } catch (com.ash.rachana.design.ops.Ops.FormatException e) {

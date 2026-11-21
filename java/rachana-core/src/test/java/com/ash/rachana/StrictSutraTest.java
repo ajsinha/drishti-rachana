@@ -22,7 +22,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 class StrictSutraTest {
 
     static final String HEAD = "rachana: 1\nsutra: qa-strict\nversion: 1\nmatch: { kind: trade }\ntitle: { id: $.tradeId }\n";
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     private List<SutraProblem> problems(String yaml) {
         try {

@@ -40,7 +40,8 @@ A **column**: `name` and `type` (required); `nullable` (default true), `label`, 
 column is masked for this reader). A `list` column MUST give `items`.
 
 `can` values: `page` (cursor paging), `offset`, `sort`, `filter`, `group` (aggregation push-down), `count` (an exact `total` is
-cheap), `snapshot` (consistent paging and `asOf`), `arrow`, `arrow.lz4`, `changes`, `changes.filter`, `replay`. A reader MUST NOT
+cheap), `snapshot` (consistent paging and `asOf`), `arrow`, `arrow.lz4`, `changes`, `changes.filter`, `replay`, and for a live table
+(section 16) `changes.window`, `write` and `narrow`. A reader MUST NOT
 use a capability the table does not declare; a table with none is read whole.
 
 ## 3. Types and the JSON encoding of values
@@ -293,6 +294,11 @@ the events protocol's `err` frame with the same `code` and the words in `detail`
 | `rdp.table.no-key` | 422 | changes asked of a table without a key | not live |
 | `rdp.unavailable` | 503 | the source is down; `retry: true` | `stale` if rows are held, else `error` |
 | `rdp.internal` | 500 | the host's fault | `error` |
+| `rdp.query.narrow` | 422 | a list of a table with `narrow` that fixes none of its columns; `anyOf` names them (section 16) | the search form |
+| `rdp.write.unsupported` | 405 | a write to a table without `can: write` (section 16) | read-only |
+| `rdp.write.forbidden` | 403 | a write refused: the site switch is off, no right, a column not editable; the reason in words | read-only |
+| `rdp.write.conflict` | 409 | a write on an old version; `current: { version, by, at }` | re-read the row |
+| `rdp.write.invalid` | 422 | a write breaking a field rule; `fields: [{ column, rule, message }]` | show the rules |
 
 A failed table fails only the panels that read it. A host's own codes in the `rdp.` family MUST be treated by a reader as
 `rdp.internal` unless it knows them.
@@ -324,6 +330,8 @@ message channel. Every message is a JSON object `{ "rdp": 1, "t": …}` ([bridge
 | host → view | `res.arrow` | `re`, `buffer` | Arrow IPC bytes (base64 in JSON; a platform with transferable buffers uses them in the same field) |
 | view → host | `sub`, `unsub` | `id`, `table`, `after?`, `filter?`, `conflate?` | subscribe to changes, with the position held (absent: from now), an optional filter tree and conflation (8.4); answered by `res` whose `body` is `{ recovered, version }` (`recovered: false`: read the rows again and subscribe from their version); `unsub` (the `id` of the `sub`) by `res` with an empty `body` |
 | host → view | `msg` | `sub`, `table`, `epoch`, `seq`, `first?`, `data` | a patch (section 8.1) of the subscription `sub`; the rules of 8.3 apply |
+| view → host | `win` | `id`, `sub`, `keys`, `top?` | changes the window of the subscription `sub` (section 16); answered by `res` with an empty `body` |
+| view → host | `write` | `id`, `table`, `body` (a change, section 16) | a write (`can: write`); answered by `res` whose `body` is `{ change, state, message, version? }` |
 | host → view | `table` | `name`, `schema`, rows (either form), `version?` | **push**: a whole table without being asked |
 | view → host | `action` | `view`, `panel?`, `name`, `payload?` | what the reader did; `name` is `select`, `open`, `control`, `key`, `submit`, `ready` or `error` |
 | host → view | `control` | `view`, `set: [{ id, value }]` | the host sets control values |
@@ -358,8 +366,8 @@ A limit hit is `rdp.limit.rows` (size) or `rdp.limit.time`; a query document bey
 
 The major is in the base document (`"v": 1`), the bridge `hello` and, by convention, the path. Within v1 a field, a `can` value, an
 operation of section 7 or a message type MAY be added; **both sides MUST ignore fields, `can` values and message types they do not
-know**. A change that breaks is v2. A schema change during a stream is a new `epoch`. Not in v1: writes (forms submit through the
-host's own endpoints and signal `submit`), joins (a host exposes a joined table under a name), expression text, binary WebSocket
+know**. A change that breaks is v2. A schema change during a stream is a new `epoch`. Writes only under `can: write` (section 16;
+other forms submit through the host's own endpoints and signal `submit`). Not in v1: joins (a host exposes a joined table under a name), expression text, binary WebSocket
 frames for patches.
 
 ## 15. Conformance
@@ -377,3 +385,43 @@ that need the live parts use three conventions of the adapter (the cases' paths,
 | `GET /_test/bridge/out` | the host → view messages the channel pushed since the last read (`msg` of its subscriptions), as a JSON array |
 
 The adapter's paths exist only under test and are not part of the protocol.
+
+## 16. Live tables (additions under `can`)
+
+A **live table** ([LIVE_TABLES](../../../docs/design/LIVE_TABLES.md)) is a table the host keeps current from a durable snapshot and
+a live stream, merged by key and record version. Everything here is an addition to v1 under new `can` values (section 14);
+a reader that does not know them reads the table as any other.
+
+**Schema fields** (section 2; [schema.json](schema.json)): `rowVersion`, `changedBy`, `changedAt` (column names); `live: { state:
+up | paused, reason? }` (a paused stream serves its snapshot and is never an error); `capped` (a table read whole stopped at its
+row cap); `narrow: { anyOf }`; a column's `heavy` (never in a list page or a patch: read by fetching one row by key); `view: {
+sort, groupBy, subtotals, widths }` (the table's own presentation); and, for a reader who may edit, `write: { columns: { <name>:
+<field rules> }, reason }`.
+
+**Windowed subscription** (`can: changes.window`; [patch.json](patch.json) `$defs/window`): a reader that shows a page of the table
+subscribes with `meta.window: { keys: [[…]], top?: bool }` (the bridge `sub` carries `window`), the keys its page shows. It is sent
+patches for those keys only, plus its new `total` when rows outside its page changed (a patch with no rows and a `total`). With
+`top: true` (its page starts at the first row of the table's own order) and an order that is newest first (descending by
+`changedAt` or `rowVersion`), a new or changed row is sent to insert on top and listed in the patch's `top`; any other reader gets
+the total only. The window is changed by a `win` message (bridge, events) `{ sub, keys, top }`, or `POST {base}/changes/{sub}/window`
+in the minimal SSE form, whose first frame is `subd` with the `sub` id. Only the stream's own caller may change it; anyone else gets
+`rdp.table.unknown`. A reader whose window falls more than the host's capacity behind gets a `gap` (`recoverable: false`) for itself
+only and reads its page again. A subscription without a window gets every patch (section 8).
+
+**Patch fields** (8.1): `total` (the reader's count after the patch) and `top` (keys to insert first). A patch with neither rows
+nor these is still sent when the numbering needs it.
+
+**Narrowing** (`can: narrow`): `rows` or `query` without a filter that fixes one of `narrow.anyOf` (an `==` or `in` on the column,
+and-ed at the top of the filter) answers `422 rdp.query.narrow` naming them and reads nothing. Heavy columns are left out of list
+pages and patches; `query` with a filter fixing the whole key returns them.
+
+**Writes** (`can: write`): `POST {base}/tables/{name}/write`, bridge `t: write`, with `{ id, op: update | add | remove, key, basedOn,
+set: { col: value }, from?: { col: value }, reason? }`; answered `{ change, state: applied | queued | held | refused, message,
+version? }`. The same `id` again answers the first answer again. A write is accepted only when the table's declaration edits the
+column, the host's switch is on, the host has a write path and the reader may edit that row and column; a row outside the
+reader's scope is `404` as if absent. The reader's own pending changes are the table `<name>.changes` (key `change`; columns
+`state`, `key`, `set`, `by`, `at`, `message`), live like any table. Errors: `rdp.write.unsupported`, `rdp.write.forbidden`,
+`rdp.write.conflict`, `rdp.write.invalid` (section 10.1).
+
+**Readers.** Every page, total, patch and change is the reader's: rows outside their scope are never counted, shown or sent;
+masked values are `{ "$masked": true }` and never pick, order or filter a row. The rights are the host's alone.

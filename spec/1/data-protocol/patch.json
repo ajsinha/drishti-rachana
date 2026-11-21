@@ -11,12 +11,19 @@
     "reset": { "type": ["array", "null"], "items": { "$ref": "#/$defs/row" }, "description": "Present and an array: replaces every row. Null or absent: no reset." },
     "remove": { "type": "array", "items": { "$ref": "#/$defs/key" } },
     "update": { "type": "array", "items": { "$ref": "#/$defs/row" } },
-    "add": { "type": "array", "items": { "$ref": "#/$defs/row" } }
+    "add": { "type": "array", "items": { "$ref": "#/$defs/row" } },
+    "total": { "type": "integer", "minimum": 0, "description": "A windowed subscription (section 16): the reader's row count after this patch." },
+    "top": { "type": "array", "items": { "$ref": "#/$defs/key" }, "description": "A windowed subscription with top: keys of rows to insert at the top of the reader's page." }
   },
   "$defs": {
     "row": { "type": "object" },
     "key": { "type": "array", "minItems": 1, "items": { "type": ["string", "number", "boolean"] } },
     "stream": { "type": "object", "required": ["epoch", "seq"], "properties": { "epoch": { "type": "string" }, "seq": { "type": "integer", "minimum": 0 } } },
+    "window": {
+      "description": "A windowed subscription (section 16, can: changes.window): the keys the reader's page shows, and whether that page starts at the first row of the table's own order.",
+      "type": "object", "required": ["keys"],
+      "properties": { "keys": { "type": "array", "items": { "$ref": "#/$defs/key" } }, "top": { "type": "boolean", "default": false } }
+    },
     "topic": { "type": "string", "pattern": "^rdp(\\.[A-Za-z0-9_~:-]+)+$" },
     "subFrame": {
       "description": "Client to server. after maps the stream (the topic) to the position the reader holds.",
@@ -25,7 +32,7 @@
         "t": { "const": "sub" }, "id": { "type": ["string", "integer"] }, "topic": { "$ref": "#/$defs/topic" },
         "after": { "type": "object", "additionalProperties": { "$ref": "#/$defs/stream" } },
         "conflate": { "type": "object", "properties": { "everyMs": { "type": "integer", "minimum": 1 } } },
-        "meta": { "type": "object", "properties": { "filter": { "$ref": "filter.json#/$defs/node" } } }
+        "meta": { "type": "object", "properties": { "filter": { "$ref": "filter.json#/$defs/node" }, "window": { "$ref": "#/$defs/window" } } }
       }
     },
     "subdFrame": {

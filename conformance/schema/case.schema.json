@@ -244,7 +244,7 @@
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,79}$" },
         "kind": {
-          "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol", "lib"]
+          "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol", "lib", "live"]
         },
         "since": { "$ref": "#/$defs/minor" },
         "profile": { "$ref": "#/$defs/profile" },
@@ -265,7 +265,8 @@
         { "if": { "properties": { "kind": { "const": "plan" } } }, "then": { "$ref": "#/$defs/planCase" } },
         { "if": { "properties": { "kind": { "const": "edit" } } }, "then": { "$ref": "#/$defs/editCase" } },
         { "if": { "properties": { "kind": { "const": "protocol" } } }, "then": { "$ref": "#/$defs/protocolCase" } },
-        { "if": { "properties": { "kind": { "const": "lib" } } }, "then": { "$ref": "#/$defs/libCase" } }
+        { "if": { "properties": { "kind": { "const": "lib" } } }, "then": { "$ref": "#/$defs/libCase" } },
+        { "if": { "properties": { "kind": { "const": "live" } } }, "then": { "$ref": "#/$defs/liveCase" } }
       ],
       "unevaluatedProperties": false
     },
@@ -380,6 +381,23 @@
           "properties": {
             "viewModel": { "type": "object" },
             "at": { "$ref": "#/$defs/atMap" }
+          }
+        }
+      }
+    },
+    "liveCase": {
+      "description": "FORMAT 5.14: a live table's declaration read and checked (LIVE_TABLES section 2).",
+      "required": ["declaration", "expect"],
+      "properties": {
+        "declaration": { "type": "string" },
+        "file": { "type": "string" },
+        "profileKeys": { "type": "array", "items": { "type": "string" } },
+        "expect": {
+          "type": "object", "additionalProperties": false, "minProperties": 1,
+          "properties": {
+            "ok": { "type": "boolean" },
+            "problems": { "type": "array", "items": { "$ref": "#/$defs/problem" } },
+            "schema": { "type": ["object", "null"] }
           }
         }
       }

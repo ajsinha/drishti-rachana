@@ -1,7 +1,13 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Rachana Data Protocol v1: design
 
-Status: **design, phase R0; built in R1.** Nothing here is implemented in this repository yet. The live part is
+Status: **design, phase R0; built in G2 (lane C) as v1's JSON forms.** The normative text is
+[spec/1/data-protocol/PROTOCOL.md](../../spec/1/data-protocol/PROTOCOL.md). Built: Core's half (`com.ash.rachana.table`: the `data:`
+entries, schema decoding, keyed patches, the filter tree both ways, the plan, `LiveScreen`; one implementation, compiled to the
+JavaScript bundles), the in-memory host and reference server, the JVM `TableClient` (`java/rachana-data`), the JavaScript client and
+`<rachana-view>` (`js/packages/rachana/src`), and `tools/conformance/protocol_check.py` over `conformance/1/protocol`. Not yet:
+Arrow IPC and NDJSON (the reference host answers `406`), the bridge's subscriptions (`sub`/`msg` over the channel), conflation
+`everyMs`, filtered subscriptions (`changes.filter`). The live part is
 aligned with the events wire protocol designed for Drishti Elements (`EVENTING_DESIGN.md` section 8, branch
 `design/eventing`) and the row patches of the Views design (`VIEWS_DESIGN.md` section 5); both are designs, not
 released code, so this document will be re-checked against them when they ship.

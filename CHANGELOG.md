@@ -3,6 +3,39 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased (G2)
+
+### `data:` and the Data Protocol; `<rachana-view>` (lane C: SPLIT_PLAN steps 15 and 16, B1 to B3)
+
+- **`data:`** at language level 1.1 (SPEC 2.4, D10): entries `{ table }`, `{ url }` (or an address), `{ rows }`, `{ record }`, each a
+  field of `$`; `key`, `fields`, `as`, `where` (reads controls), `limit`, `refresh`, `live`, `mode`, `format`, `path`. Problems
+  `RCH-2073` (not exactly one source, a bad name), `RCH-2072` (live without a key), `RCH-2011`, `RCH-2012`. At level 1.0 `data` stays an
+  unknown key (`RCH-2011`): the level-1.0 replay is identical.
+- **Core, `com.ash.rachana.table`** (one implementation; the JavaScript bundles are the same code): `TableSchema` (cells decoded by type:
+  decimals exact, big integers, masked), `KeyedRows` (patches in the order of PROTOCOL 8.1; keys compared as JSON text; append windows),
+  `FilterTree` (a row condition as the protocol's filter tree with controls and constants folded; a received tree checked and spelt as
+  the Rachana-EL condition of the same meaning), `DataPlan` (the plan document: per table the query, the readers and what stays local;
+  a panel's `where` is pushed down only for the table's sole reader; `RCH-2070`, `RCH-2071`), `DataRecord`, `LiveScreen`; `ViewDiff`
+  (ViewModel frames: `strip`, `panel`, `rows` patches).
+- **`java/rachana-data`**: `MemoryHost` (the protocol transport-free: schema, rows, query with filter, sort with the key as tie-breaker,
+  cursor paging, grouping with exact decimal totals, the change log, gaps, the bridge), `ReferenceServer` (JDK HTTP server, the minimal
+  SSE stream, the test adapter of PROTOCOL 15, static files for a page), `TableClient` (the JVM client: the plan's queries, paging, the
+  stream into a `LiveScreen`).
+- **JavaScript** (`js/packages/rachana/src`): the bundles export `patch`, `plan` and `screen(op, request)`; `DataClient` (transport only:
+  fetch, cursor paging, the SSE stream or a host's `subscribe` hook, the origin allow-list), `Screen`, and `<rachana-view>` painting with
+  `<elements-view>` from Drishti Elements 3.1.0, vendored (`js/vendor/drishti-elements/3.1.0`, the release's `pack` of core, views and
+  events, with its SHA-384 manifest).
+- **Conformance**: the runner answers the kinds `patch` and `plan` (`steps` compared per step); new cases `sutra/data` (9),
+  `problem/data` (8), `plan/plan` (8), `patch/patch` (5), `protocol/host` (10); the frozen example `plan/examples/plan` corrected as its
+  note said (`select` is not a control kind). `tools/conformance/protocol_check.py --reference` runs the 40 protocol cases on the
+  reference server: 39 pass; `protocol/examples/bridge#bridge-rows-request-answered-once` sorts a table that does not declare `sort`,
+  which PROTOCOL 4 refuses (unverified; `protocol/host#bridge-rows-of-a-sortable-table` is the corrected case). JVM and JavaScript agree
+  on all 2,160 cases at levels 1.0 and 1.1; budgets: runtime 379 KB, tools 399 KB Brotli. Tests: Core `TablesTest`, `MemoryHostTest`,
+  `TableClientTest` (JVM end to end), `js/packages/rachana/test/data_client.test.mjs` (Node end to end),
+  `runners/view_browser.py` (`<rachana-view>` live in Chromium).
+- Not yet: Arrow IPC and NDJSON, bridge subscriptions, conflation, filtered subscriptions, checked mode over table schemas, exact
+  decimal arithmetic in aggregates (the decimals item, X2).
+
 ## v0.11.0 (2026-11-21): the JavaScript build, ViewModel contract 1.1 and the G1 gate
 
 ### ViewModel contract 1.1 and language level 1.1 (datasets; grid, tree, chart)

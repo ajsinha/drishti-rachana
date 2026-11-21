@@ -38,8 +38,28 @@ final class ControlsReader {
     private final List<SutraProblem> problems;
 
     ControlsReader(String file, List<SutraProblem> problems) {
+        this(file, problems, false);
+    }
+
+    /** {@code effects}: the language level reads a control's {@code on:} (1.2, I1: the {@code change} trigger). */
+    ControlsReader(String file, List<SutraProblem> problems, boolean effects) {
         this.file = file;
         this.problems = problems;
+        this.effects = effects;
+    }
+
+    private final boolean effects;
+    private final Map<String, Map<String, List<Map<String, Object>>>> on = new LinkedHashMap<>();
+    private final Map<String, SourceLocation> onAt = new LinkedHashMap<>();
+
+    /** The controls' effect lists read (level 1.2), by control id: trigger to effects; empty when none has one. */
+    Map<String, Map<String, List<Map<String, Object>>>> effects() {
+        return on;
+    }
+
+    /** Where each control with an effect list is written, by id. */
+    Map<String, SourceLocation> effectsAt() {
+        return onAt;
     }
 
     List<Control> read(PNode n, Set<String> panelIds) {
@@ -74,7 +94,7 @@ final class ControlsReader {
         }
         Map<String, PNode> m = n.map();
         m.forEach((k, v) -> {
-            if (!KEYS.contains(k)) {
+            if (!KEYS.contains(k) && !(effects && com.ash.rachana.model.Effects.KEY.equals(k))) {
                 problem("RCH-2011", "unknown key '" + k + "' in control", v);
             }
         });
@@ -87,6 +107,13 @@ final class ControlsReader {
             problem("RCH-2034", "control id '" + id + "' must be a letter, then letters, digits and underscores (it is read as ctl." + id + ")",
                     m.get("id"));
             return null;
+        }
+        if (effects && m.get(com.ash.rachana.model.Effects.KEY) != null) {          // level 1.2, I1: on: { change: [ effects ] }
+            Map<String, List<Map<String, Object>>> read = new EffectsReader(file, problems).control(id, m.get(com.ash.rachana.model.Effects.KEY));
+            if (read != null && !read.isEmpty()) {
+                on.put(id, read);
+                onAt.put(id, loc(n));
+            }
         }
         String kindText = text(m.get("kind"));
         ControlKind kind = kindText == null ? null : ControlKind.parse(kindText).orElse(null);

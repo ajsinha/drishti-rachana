@@ -305,6 +305,22 @@ public final class Binder {
     }
 
     /**
+     * The effect lists of control {@code control} of {@code s} (level 1.2, I1: {@code change}) for the view, evaluated over the screen
+     * ({@code rc}, no row); a value read from the event ({@code event}: the control's new value) is filled in when it fires. Null when
+     * it has none.
+     */
+    public Map<String, Object> controlOn(com.ash.rachana.model.Sutra s, String control, EvalContext rc) {
+        Map<String, Object> out = new java.util.LinkedHashMap<>();
+        for (String t : com.ash.rachana.model.Effects.CONTROL_TRIGGERS) {
+            List<Map<String, Object>> list = com.ash.rachana.model.Effects.control(s, control, t);
+            if (!list.isEmpty()) {
+                out.put(t, effects(list, rc));
+            }
+        }
+        return out.isEmpty() ? null : out;
+    }
+
+    /**
      * The buttons of a panel's {@code actions:} (level 1.2, I1) for the view: {@code {id, label, tone?, confirm?, requires?, effects}}, the
      * label and question rendered and the effects evaluated over the panel's context (no row); null when it has none.
      */

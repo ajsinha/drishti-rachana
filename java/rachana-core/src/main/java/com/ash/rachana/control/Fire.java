@@ -103,12 +103,40 @@ public final class Fire {
     }
 
     /**
+     * A control's {@code change} (level 1.2, I1) as a painter fires it: control {@code control} of {@code vm} takes {@code value} (a text, a
+     * list for a multi-select, {@code from..to} for a range) and the effects its {@code on.change} carries run in order, {@code event} the
+     * new value. A control the screen does not have is a refusal ({@link #REFUSED}): nothing runs. The new value itself goes into the next
+     * bind request with the state the effects wrote.
+     */
+    public static Result change(ViewModel vm, String control, Object value) {
+        Map<String, Object> tree = map(ViewJson.tree(vm));
+        Map<String, Object> state = state(tree);
+        if (tree.get("controls") instanceof List<?> l) {
+            for (Object o : l) {
+                Map<String, Object> c = map(o);
+                if (control.equals(c.get("id"))) {
+                    return new Result(state, runEvent(map(c.get("on")).get("change"), state, value), List.of());
+                }
+            }
+        }
+        return refused(state, "no control '" + control + "' on the screen");
+    }
+
+    /**
      * Runs an effect list as the view carries it (EffectView): {@code set}, {@code toggle} and {@code clear} change {@code state}; a value
      * read from the event ({@code event}, {@code withEvent}) is filled in from {@code event}; the others are handed over as they are.
      *
      * @return the effects run, in order, each with its value
      */
     public static List<Map<String, Object>> run(Object list, Map<String, Object> state, Map<String, Object> event) {
+        return runEvent(list, state, event);
+    }
+
+    /**
+     * As {@link #run(Object, Map, Map)} with any event: a form's values (a mapping), or a control's new value ({@code change}), read whole
+     * as {@code event}.
+     */
+    public static List<Map<String, Object>> runEvent(Object list, Map<String, Object> state, Object event) {
         List<Map<String, Object>> effects = new ArrayList<>();
         if (!(list instanceof List<?> l)) {
             return effects;
@@ -145,10 +173,10 @@ public final class Fire {
     }
 
     /** The value at {@code path} (dotted; empty: the whole event) of {@code event}, or null. */
-    static Object read(Map<String, Object> event, String path) {
+    static Object read(Object event, String path) {
         Object at = event;
         if (path.isEmpty()) {
-            return new LinkedHashMap<>(event);
+            return event instanceof Map<?, ?> m ? new LinkedHashMap<>(m) : event instanceof List<?> l ? new ArrayList<>(l) : event;
         }
         for (String part : path.split("\\.")) {
             at = at instanceof Map<?, ?> m ? m.get(part) : null;

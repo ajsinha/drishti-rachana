@@ -124,7 +124,18 @@ public final class ViewBuilder {
         return com.ash.rachana.el.Declarations.within(r.sutra().declarations(), () -> built(r));   // level 1.2: its let and functions
     }
 
-    private ViewModel built(Request r) {
+    /**
+     * The screen a request binds (its Sutra, documents raw and as the viewer sees them, contexts, business date and viewer; no event fired
+     * yet), as {@link #build} binds it: what {@link ScreenWire}'s events, children, form sends and control changes take.
+     */
+    public ScreenWire.Screen screen(Request r) {
+        return com.ash.rachana.el.Declarations.within(r.sutra().declarations(), () -> prepared(r).screen());
+    }
+
+    /** One request made ready to bind: the state, the controls, the evaluation context, the binding context and the screen. */
+    private record Prepared(Map<String, Object> state, ControlResolver.Resolved resolved, EvalContext eval, BindContext ctx, ScreenWire.Screen screen) {}
+
+    private Prepared prepared(Request r) {
         Sutra s = r.sutra();
         Masker viewer = r.viewer();
         Node raw = r.doc() == null ? Node.missing() : r.doc().data();
@@ -162,6 +173,17 @@ public final class ViewBuilder {
         Map<String, MapSupport.Lookup> lookups = maps.resolve(s.panels(), r.values()::builds, at, viewer);
         BindContext ctx = new BindContext(seen, r.layout(), eval, linked, Set.of(), denied, lookups, r.host());
         ScreenWire.Screen screen = new ScreenWire.Screen(s, SutraWiring.nodes(s), ctx, eval.withRoot(raw), at, viewer, Map.of(), null);
+        return new Prepared(state, resolved, eval, ctx, screen);
+    }
+
+    private ViewModel built(Request r) {
+        Sutra s = r.sutra();
+        Prepared pr = prepared(r);
+        Map<String, Object> state = pr.state();
+        ControlResolver.Resolved resolved = pr.resolved();
+        EvalContext eval = pr.eval();
+        BindContext ctx = pr.ctx();
+        ScreenWire.Screen screen = pr.screen();
         List<PanelView> panels = new ArrayList<>();
         for (Panel p : s.panels()) {
             boolean wired = ScreenWire.wired(p);
@@ -181,7 +203,7 @@ public final class ViewBuilder {
         }
         ViewModel.TitleView title = title(s, eval, r.doc() == null ? null : r.doc().ref());
         ViewModel view = new ViewModel(null, null, title, strip, panels, keys(s, panels, eval), null, null)
-                .withControls(resolved.views(), selects(s))
+                .withControls(controlViews(s, resolved.views(), eval), selects(s))
                 .withLayout(ScreenGrid.of(s))
                 .withPhone(PhoneView.of(s, s.phone() == null || s.phone().summary() == null ? null
                         : soft(() -> el.template(s.phone().summary()).render(eval))))
@@ -193,6 +215,14 @@ public final class ViewBuilder {
     /** How many values the viewer's masks replaced in a built view, and in which panels (zero when nothing was masked). */
     public static MaskCount.Result masked(ViewModel v) {
         return MaskCount.of(v.title(), v.strip(), v.panels());
+    }
+
+    /** The controls' views, each with its effect lists (level 1.2, I1: {@code change}) evaluated over the screen. */
+    private List<ViewModel.ControlView> controlViews(Sutra s, List<ViewModel.ControlView> views, EvalContext eval) {
+        if (com.ash.rachana.model.Effects.controls(s).isEmpty()) {
+            return views;
+        }
+        return views.stream().map(v -> v.withOn(binder.controlOn(s, v.id(), eval))).toList();
     }
 
     /** The panels of {@code s} whose rows or bars set a control when clicked. */

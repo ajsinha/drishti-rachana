@@ -308,7 +308,8 @@ ViewModel lists them: a table's rows, depth first through a tree's or a drill ta
 mark of a metric, gauge or record (`point-click`); a panel's buttons in order (`action`); the one form of a `form` panel
 (`submit`, `cancel`, with `values` its field values: a `submit` is checked first against the form's fields and rules, each
 failing check a problem `RCH-5003` and nothing runs, a value for no field `RCH-5001`; the effects read `values` where they
-say `event`). The effects the mark
+say `event`); or a control's change, `{ control, trigger: change, value }`: the control takes `value` (a text, a list for a
+multi-select) and its `on.change` effects run with `event` the value (a control the screen lacks is `RCH-5001`). The effects the mark
 carries run in order; the state they write goes into the next bind request and the view is built again. The actual,
 per step: `state` (every state value of the screen after the step, id to value), `effects` (the effects run, in order:
 `{do: set, state, value}`, and the ones handed to the host), `problems` (the refusals: a panel, trigger or mark the

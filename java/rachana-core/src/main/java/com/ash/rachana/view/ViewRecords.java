@@ -546,6 +546,7 @@ final class ViewRecords {
                 ViewJson.put(m, "range", r.range(), Rule.NON_EMPTY);
                 ViewJson.put(m, "reads", r.reads(), Rule.NON_EMPTY);
                 ViewJson.put(m, "truncated", r.truncated(), Rule.NON_EMPTY);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
             case ViewModel.DataField r -> {

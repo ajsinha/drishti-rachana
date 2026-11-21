@@ -111,6 +111,8 @@ public final class SutraExpressions {
             expr(c.from(), c.location(), out);
             expr(c.min(), c.location(), out);
             expr(c.max(), c.location(), out);
+            com.ash.rachana.model.Effects.controls(s).getOrDefault(c.id(), Map.of()).values()
+                    .forEach(list -> effects(list, c.location(), out));     // level 1.2, I1: a control's change
         });
         if (s.match() != null) {
             expr(s.match().where(), s.location(), out);
@@ -195,26 +197,29 @@ public final class SutraExpressions {
                 template(q, p.location(), out);
             }
         }
-        {
-            for (Map<String, Object> e : com.ash.rachana.model.Effects.every(p)) {   // level 1.2, I1: each effect's expressions, @ the clicked row
-                for (String k : List.of("to", "when")) {
-                    if (e.get(k) instanceof String x && !("to".equals(k) && com.ash.rachana.model.Effects.eventPath(x) != null)) {
-                        expr(x, p.location(), out);                         // event.<field>: filled in when the trigger fires
-                    }
-                }
-                if (e.get("with") instanceof Map<?, ?> w) {
-                    w.values().stream().filter(x -> com.ash.rachana.model.Effects.eventPath(x) == null).forEach(x -> expr(String.valueOf(x), p.location(), out));
-                }
-                if ("notify".equals(e.get("do")) && e.get("text") instanceof String t) {
-                    template(t, p.location(), out);
-                }
-            }
-        }
+        effects(com.ash.rachana.model.Effects.every(p), p.location(), out);   // level 1.2, I1: each effect's expressions, @ the clicked row
         if (p.body() != null) {
             panel(p.body(), out);
         }
         p.parts().forEach(part -> panel(part, out));
         wiring(p.wiring(), p.location(), out);
+    }
+
+    /** Each effect's expressions and templates; a value read from the event ({@code event}, {@code event.<field>}) is filled in when it fires. */
+    private void effects(List<Map<String, Object>> list, SourceLocation at, Run out) {
+        for (Map<String, Object> e : list) {
+            for (String k : List.of("to", "when")) {
+                if (e.get(k) instanceof String x && !("to".equals(k) && com.ash.rachana.model.Effects.eventPath(x) != null)) {
+                    expr(x, at, out);
+                }
+            }
+            if (e.get("with") instanceof Map<?, ?> w) {
+                w.values().stream().filter(x -> com.ash.rachana.model.Effects.eventPath(x) == null).forEach(x -> expr(String.valueOf(x), at, out));
+            }
+            if ("notify".equals(e.get("do")) && e.get("text") instanceof String t) {
+                template(t, at, out);
+            }
+        }
     }
 
     /** A panel's source and payload expressions, and its children's panels (RACHANA_REFERENCE.md 6 to 8). */

@@ -358,6 +358,11 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    do: [effects]}`: `label` and `confirm` are templates (`confirm: true` asks without words), `requires` a permission name
    the host answers, `id` (default: the button's place) unique in the panel (`RCH-2024`); `do` is an effect list as in item
    4, evaluated over the panel's context (no row), `set: <control>` excepted (`RCH-2012`). Carried as `PanelView.actions`.
+7. **A control's `on:`** (I1): `on: { change: [effects] }` on a control runs its effects when the reader picks a new
+   value (the control takes it as always): the effects of item 4, evaluated over the screen, `event` the new value read
+   whole (a text, a multi-select's list, a range's `from..to`; `event.<name>` and `set: <control>` are `RCH-2012`). A
+   control fires `change` only (any other trigger `RCH-2023`). Carried as `ControlView.on` (contract 1.2); a host runs
+   them with `ScreenWire.change`. Below level 1.2 `on` in a control is `RCH-2011`.
 
 ## 3. Where expressions appear
 

@@ -161,7 +161,7 @@ final class SutraBuilder {
         PhoneReader phoneReader = new PhoneReader(file, problems);            // phone: order, default tier, summary (docs/guides/BUILD_GUIDE.md 5.2)
         ScreenPhone phone = phoneReader.screen(m.get(ScreenPhone.KEY));
         phoneReader.check(phone, panels, m.getOrDefault(ScreenPhone.KEY, root));
-        ControlsReader controlsReader = new ControlsReader(file, problems);
+        ControlsReader controlsReader = new ControlsReader(file, problems, SutraBlocks.atLeast(grammar.level(), "1.2"));
         List<com.ash.rachana.model.Control> controls = controlsReader.read(m.get("controls"), ids);
         controlsReader.checkSelects(panels, controls);
         Map<String, String> keyMap = new LinkedHashMap<>();
@@ -214,6 +214,10 @@ final class SutraBuilder {
                     + "this one holds " + state.size(), m.getOrDefault("state", root));
         }
         effects.check(panels, state);
+        effects.checkControls(controlsReader.effects(), state, controlsReader.effectsAt());
+        if (!controlsReader.effects().isEmpty()) {
+            extensions.put(com.ash.rachana.model.Effects.CONTROLS_KEY, java.util.Collections.unmodifiableMap(new LinkedHashMap<>(controlsReader.effects())));
+        }
         if (!calls.stateful().isEmpty()) {
             privateState(root, calls.stateful(), calls.nested());
         }

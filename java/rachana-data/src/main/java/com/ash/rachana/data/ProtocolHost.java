@@ -285,9 +285,26 @@ public final class ProtocolHost {
             if (old != null) {
                 old.close();
             }
-            Subscription sub = pr.subscribe(name, new TableProvider.Subscribe(after, m.get("filter"), every, null, false), f -> {
+            List<List<Object>> window = null;
+            boolean top = false;
+            if (m.get("window") instanceof Map<?, ?> w) {
+                window = keys(w.get("keys"));
+                top = Boolean.TRUE.equals(w.get("top"));
+            }
+            Subscription sub = pr.subscribe(name, new TableProvider.Subscribe(after, m.get("filter"), every, window, top), f -> {
                 Map<String, Object> msg = new LinkedHashMap<>();
                 msg.put("rdp", 1L);
+                if ("gap".equals(f.get("t"))) {                     // behind by more than its window's capacity: read the page again
+                    msg.put("t", "gap");
+                    msg.put("sub", id);
+                    msg.put("table", name);
+                    msg.put("epoch", f.get("epoch"));
+                    msg.put("seq", f.get("seq"));
+                    msg.put("recoverable", false);
+                    subs.remove(id);
+                    push.accept(msg);
+                    return;
+                }
                 msg.put("t", "msg");
                 msg.put("sub", id);
                 msg.put("table", name);
@@ -310,6 +327,17 @@ public final class ProtocolHost {
         }
     }
 
+    /** A list of keys ({@code [[…], …]}; a bare value is a one-part key). */
+    static List<List<Object>> keys(Object o) {
+        List<List<Object>> out = new ArrayList<>();
+        if (o instanceof List<?> l) {
+            for (Object k : l) {
+                out.add(k instanceof List<?> kl ? new ArrayList<>(kl) : java.util.Collections.singletonList(k));
+            }
+        }
+        return out;
+    }
+
     @SuppressWarnings("unchecked")
     private Map<String, Object> answer(Map<String, Object> m, Bridge channel, Object caller) {
         Map<String, Object> out = new LinkedHashMap<>();
@@ -329,6 +357,18 @@ public final class ProtocolHost {
                     out.put("error", e.error());
                 } catch (FilterTree.Refused r) {
                     out.put("error", refused(r));
+                }
+            }
+            case "win" -> {                                     // PROTOCOL 16: a subscription's window changed
+                out.put("t", "res");
+                out.put("re", m.get("id"));
+                Subscription s = channel == null ? null : channel.subs.get(String.valueOf(m.get("sub")));
+                if (s == null || !s.windowed()) {
+                    out.put("error", ProtocolError.of("rdp.table.unknown", 404, "no windowed subscription '" + m.get("sub") + "' on this channel",
+                            "operation", "win").error());
+                } else {
+                    s.window(keys(m.get("keys")), Boolean.TRUE.equals(m.get("top")));
+                    out.put("body", Map.of());
                 }
             }
             case "unsub" -> {

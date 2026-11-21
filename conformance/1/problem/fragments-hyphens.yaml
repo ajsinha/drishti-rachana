@@ -11,7 +11,7 @@ cases:
     source: L-21 (3), never silent (RCH-2121); SPEC 2.3a field-name options
     files:
       desk-tree.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-tree
         version: 1
         doc:

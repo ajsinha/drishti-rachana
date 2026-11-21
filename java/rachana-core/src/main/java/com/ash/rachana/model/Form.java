@@ -13,13 +13,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.LinkedHashSet;
 
 /**
  * A panel's {@code form:} (RACHANA_REFERENCE.md 10): the typed fields people may edit, the rules they must keep (an error stops the
@@ -81,17 +81,17 @@ public record Form(String title, String key, String edit, String create, String 
     private static final Pattern ID = Pattern.compile("^[a-z][a-z0-9_]{0,39}$");
     private static final Pattern BIND = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]{0,63}$");
     private static final Pattern ROLE = Pattern.compile("^[a-z0-9][a-z0-9_-]{0,39}$");
-    private static final Set<String> TOP = Set.of("title", "key", "edit", "new", "new-label", "roles", "steps", "fields", "rules", "hints", "save");
-    private static final Set<String> SAVE = Set.of("kind", "target", "connector", "command", "create", "approval", "reason");
+    private static final Set<String> TOP = Ordered.set("title", "key", "edit", "new", "new-label", "roles", "steps", "fields", "rules", "hints", "save");
+    private static final Set<String> SAVE = Ordered.set("kind", "target", "connector", "command", "create", "approval", "reason");
     private static final Pattern NAME = Pattern.compile("^[a-z0-9][a-z0-9-]{0,63}$");
-    private static final Set<String> FIELD = Set.of("id", "label", "type", "bind", "required", "min", "max", "pattern", "max-length",
+    private static final Set<String> FIELD = Ordered.set("id", "label", "type", "bind", "required", "min", "max", "pattern", "max-length",
             "options", "editable-by", "readonly", "reason", "step", "placeholder", "fmt", "new", "currency", "tz", "default");
     private static final Pattern CURRENCY = Pattern.compile("^[A-Z]{3}$");
     private static final Pattern AMOUNT = Pattern.compile("^\\s*(-?[0-9][0-9,]*(?:\\.[0-9]+)?)\\s*(k|m|mm|bn|b)?\\s*$", Pattern.CASE_INSENSITIVE);
-    private static final Set<String> LOOKUP = Set.of("source", "value", "label", "carry");
-    private static final Set<String> SOURCE = Set.of("pack", "kind", "where", "search", "limit");
-    private static final Set<String> RULE = Set.of("rule", "message", "severity", "fields");
-    private static final Set<String> HINT = Set.of("label", "value", "of", "fmt", "step");
+    private static final Set<String> LOOKUP = Ordered.set("source", "value", "label", "carry");
+    private static final Set<String> SOURCE = Ordered.set("pack", "kind", "where", "search", "limit");
+    private static final Set<String> RULE = Ordered.set("rule", "message", "severity", "fields");
+    private static final Set<String> HINT = Ordered.set("label", "value", "of", "fmt", "step");
 
     /** The keys a form is read with, by place ({@code form}, {@code form.save}, {@code form.field}, ...): the parser's own sets, for the generated language files. */
     public static Map<String, Set<String>> keySets() {
@@ -209,7 +209,7 @@ public record Form(String title, String key, String edit, String create, String 
             out.add("a form says how it opens: edit: beside, edit: cells or new: drawer");
         }
         roles(m.get("roles"), "form.roles", out);
-        Set<String> steps = new HashSet<>();
+        Set<String> steps = new LinkedHashSet<>();
         if (m.get("steps") != null) {
             if (!(m.get("steps") instanceof List<?> l) || l.isEmpty()) {
                 out.add("'form.steps' is a list of { id, label }");

@@ -126,7 +126,7 @@ cases:
     source: "LIBRARIES 6.2"
     files:
       bar.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: bar
         version: 1
         doc:

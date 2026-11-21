@@ -11,7 +11,7 @@ cases:
     source: L-21 (3), never silent (RCH-2121); SPEC 2.8 (pivot cell as @)
     files:
       desk-square.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: desk-square
         version: 1
         doc:
@@ -50,7 +50,7 @@ cases:
     source: L-21 (3), never silent (RCH-2121); SPEC 2.8 (surface point as @)
     files:
       smile.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: smile
         version: 1
         doc:

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Business-day calendars for financial centres (USNY, GBLO, EUTA, JPTO, CATO) and joint calendars such as
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class BusinessCalendar implements Calendars.Calendar {
 
-    private static final Set<String> KNOWN = Set.of("USNY", "GBLO", "EUTA", "JPTO", "CATO", "WEEKENDS");
+    private static final Set<String> KNOWN = Ordered.set("USNY", "GBLO", "EUTA", "JPTO", "CATO", "WEEKENDS");
     private final List<String> centers;
     private final Map<Integer, java.util.SortedMap<LocalDate, String>> cache = new ConcurrentHashMap<>();
 

@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The typed form of a fragment (SUTRA_EXPANSION C1, LIBRARIES.md 4; language level 1.2): a fragment whose every {@code params:} entry is
@@ -57,17 +58,17 @@ public final class TypedFragment {
     public static final String SINCE = "1.2";
 
     /** The value types (LIBRARIES.md 4.2; X8's type language without {@code fn}, which waits for lambdas, X13). */
-    public static final Set<String> VALUE_TYPES = Set.of("text", "number", "integer", "decimal", "boolean", "date", "datetime", "duration", "money");
+    public static final Set<String> VALUE_TYPES = Ordered.set("text", "number", "integer", "decimal", "boolean", "date", "datetime", "duration", "money");
     /** The name types: checked tokens. */
-    public static final Set<String> NAME_TYPES = Set.of("id", "format", "tone", "icon", "variant", "area", "palette", "key", "enum", "columns");
+    public static final Set<String> NAME_TYPES = Ordered.set("id", "format", "tone", "icon", "variant", "area", "palette", "key", "enum", "columns");
     /** The name types that name the user's state or selection (LIBRARIES.md 6.3), written beside {@link #NAME_TYPES}. */
-    static final Set<String> HANDED_TYPES = Set.of("state", "selection");
+    static final Set<String> HANDED_TYPES = Ordered.set("state", "selection");
     /** The tone words a {@code tone} parameter may take (SPEC 2.6). */
-    public static final Set<String> TONES = Set.of("pos", "neg", "ok", "warn", "bad", "link", "accent");
+    public static final Set<String> TONES = Ordered.set("pos", "neg", "ok", "warn", "bad", "link", "accent");
     /** What a slot may accept at this level. */
     public static final Set<String> SLOT_KINDS = Set.of("panels");
     /** The keys a typed fragment file may have at this level. */
-    public static final Set<String> KEYS = Set.of("rachana", "fragment", "version", "description", "doc", "params", "slots", "emits", "panels",
+    public static final Set<String> KEYS = Ordered.set("rachana", "fragment", "version", "description", "doc", "params", "slots", "emits", "panels",
             "budget", "examples", "state", "outputs");
     /** The most parameters and slots a fragment declares (LIBRARIES.md 18). */
     public static final int MAX_PARAMS = 40;
@@ -207,11 +208,11 @@ public final class TypedFragment {
     }
 
     /** The keys a parameter declaration takes (LIBRARIES.md 4.2 and 5.1); any other is refused, never read as part of the interface. */
-    static final Set<String> PARAM_KEYS = Set.of("type", "doc", "default", "required", "optional", "columns", "contract", "min", "max",
+    static final Set<String> PARAM_KEYS = Ordered.set("type", "doc", "default", "required", "optional", "columns", "contract", "min", "max",
             "options", "pattern", "max-rows", "live", "key", "window", "dynamic", "of");
 
     /** The keys a column of a table parameter takes (LIBRARIES.md 5.1). */
-    static final Set<String> COLUMN_KEYS = Set.of("type", "doc", "optional");
+    static final Set<String> COLUMN_KEYS = Ordered.set("type", "doc", "optional");
 
     /**
      * The words for a key {@code what} does not take. A key with spaces is almost always the rest of an unquoted flow-mapping text cut at
@@ -726,11 +727,11 @@ public final class TypedFragment {
     /** Advisory: a use maps a column the fragment never reads (a warning, never refused). */
     public static final String UNUSED_MAPPING = "RCH-2120";
     /** The keys of a declared event. */
-    static final Set<String> EVENT_KEYS = Set.of("name", "payload", "doc");
+    static final Set<String> EVENT_KEYS = Ordered.set("name", "payload", "doc");
     /** The keys of one effect in a use's {@code on:} at this level: set a control from the event's payload. */
-    static final Set<String> EFFECT_KEYS = Set.of("set", "field");
+    static final Set<String> EFFECT_KEYS = Ordered.set("set", "field");
     /** Panel options that hold a field name of the panel's rows (renamed by a column mapping). */
-    static final Set<String> FIELD_OPTIONS = Set.of("x", "y", "label", "value", "size", "group", "open", "high", "low", "close", "volume", "date",
+    static final Set<String> FIELD_OPTIONS = Ordered.set("x", "y", "label", "value", "size", "group", "open", "high", "low", "close", "volume", "date",
             "detail", "status", "by", "across", "node", "parent", "path", "rowKey", "series", "dataset-key");
     /** A caller's column name a mapping may give: letters, digits, {@code _} and {@code -} ({@code bid-size} is read as {@code @['bid-size']}). */
     private static final Pattern FIELD = Pattern.compile("[A-Za-z_][A-Za-z0-9_-]*");
@@ -1091,7 +1092,7 @@ public final class TypedFragment {
     public static boolean fits(String local, String theirs) {
         String l = elType(local).replace("?", "");
         String t = elType(theirs).replace("?", "");
-        Set<String> numbers = Set.of("number", "integer", "decimal", "money");
+        Set<String> numbers = Ordered.set("number", "integer", "decimal", "money");
         return l.isEmpty() || t.isEmpty() || l.equals(t) || numbers.contains(l) && numbers.contains(t) || "datetime".equals(l) && "date".equals(t);
     }
 

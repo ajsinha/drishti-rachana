@@ -5,6 +5,7 @@
 package com.ash.rachana.el;
 
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The Core function names held for later minors (SPEC 4.15 rule 2, {@code spec/1/reserved.yaml}: its {@code names}, less {@code range}, a Core aggregate since split step A9
@@ -16,7 +17,7 @@ final class ReservedNames {
 
     private ReservedNames() {}
 
-    static final Set<String> NAMES = Set.of(
+    static final Set<String> NAMES = Ordered.set(
             "add_tenor", "adjust", "age", "ago", "all", "amount", "annualise", "any", "append", "approx_distinct", "approx_percentile", "approx_top",
             "arg_max", "arg_min", "asof_join", "at_zone", "avedev", "avg_once", "bachelier_price", "backtest_exceptions", "badge", "bar", "base64",
             "bbox", "bearing", "beta", "between", "between_time", "bin", "black76_price", "bond_duration", "bond_price", "bond_yield", "bottom",

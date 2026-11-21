@@ -263,7 +263,7 @@ public final class Cases {
         return c.get("since") == null ? "1.0" : text(c.get("since"));
     }
 
-    private static final Map<String, com.ash.rachana.Rachana> AT = new java.util.HashMap<>();
+    private static final Map<String, com.ash.rachana.Rachana> AT = new LinkedHashMap<>();
 
     /** The instance at the case's language level. */
     static com.ash.rachana.Rachana at(Map<String, Object> c) {

@@ -11,7 +11,7 @@ cases:
     source: L-21 (3), never silent (RCH-2121)
     files:
       grouped.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: grouped
         version: 1
         doc:
@@ -58,7 +58,7 @@ cases:
     source: LIBRARIES 4.2 (list<record{...}>, RCH-2116)
     files: &badges
       badges.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: badges
         version: 1
         doc:
@@ -127,7 +127,7 @@ cases:
     source: LIBRARIES 4.2 (value types)
     files:
       bad-types.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: bad-types
         version: 1
         doc:
@@ -177,7 +177,7 @@ cases:
     source: "LIBRARIES 4.2 (text, dynamic: true)"
     files:
       banner.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: banner
         version: 1
         doc:
@@ -215,7 +215,7 @@ cases:
     source: "LIBRARIES 4.2 (text, dynamic: true)"
     files:
       banner.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: banner
         version: 1
         doc:

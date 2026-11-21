@@ -6,9 +6,9 @@ package com.ash.rachana.design.ops;
 
 import com.ash.rachana.SutraText;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * The lines of one panel item ({@code - id: x} with keys below, or {@code - { id: x, ... }}): set or remove a key, and
@@ -38,7 +38,7 @@ final class PanelLines {
         int d = dashLine(block, dash);
         String first = block.get(d);
         if (isFlow(block, dash)) {
-            Map<String, String> m = new HashMap<>();
+            Map<String, String> m = new LinkedHashMap<>();
             m.put(key, rendered);
             SutraText.flow(block, d, m);
             return;

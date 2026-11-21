@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import com.ash.rachana.model.Ordered;
 
 /**
  * A configured table's rows, read whole ({@link SnapshotSource.Tier#WHOLE}; the engine filters, pages and diffs): a file, a JDBC query or
@@ -44,7 +45,7 @@ abstract class TableSource implements SnapshotSource {
 
     /** The column types ({@code name -> type}) every read is shaped to; set once, from the declaration or the first read. */
     void types(Map<String, String> t) {
-        types = Map.copyOf(new LinkedHashMap<>(t));
+        types = Ordered.copy(t);
     }
 
     Map<String, String> types() {

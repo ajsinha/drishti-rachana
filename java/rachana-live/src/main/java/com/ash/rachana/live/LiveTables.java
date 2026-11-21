@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * The live tables of a host (LIVE_TABLES): a Data Protocol {@link TableProvider} that keeps each declared table current from its snapshot
@@ -244,19 +246,20 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         return LiveScreens.screen(spec(name));
     }
 
-    /** The declarations set aside, by file, with their problems. */
+    /** The declarations set aside, by file (sorted: the map behind it has no order), with their problems. */
     public Map<String, List<SutraProblem>> problems() {
-        return Map.copyOf(problems);
+        return Ordered.copy(new java.util.TreeMap<>(problems));
     }
 
+    /** The declared tables, by name. */
     public List<LiveTableSpec> specs() {
-        return List.copyOf(specs.values());
+        return specs.values().stream().sorted(java.util.Comparator.comparing(LiveTableSpec::name)).toList();
     }
 
     /** Figures for a host's health page: one entry per open table. */
     public List<Map<String, Object>> describe() {
         List<Map<String, Object>> out = new ArrayList<>();
-        open.values().forEach(t -> out.add(t.describe()));
+        new java.util.TreeMap<>(open).values().forEach(t -> out.add(t.describe()));
         return out;
     }
 
@@ -298,7 +301,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
     /** Trims each open table's live side and closes the tables nobody has read for {@code idleCloseMs} (the upkeep thread's job). */
     public void upkeep() {
         long now = clock.millis();
-        for (Map.Entry<String, LiveTable> e : open.entrySet()) {
+        for (Map.Entry<String, LiveTable> e : new java.util.TreeMap<>(open).entrySet()) {
             LiveTable t = e.getValue();
             try {
                 t.trim();
@@ -374,13 +377,13 @@ public final class LiveTables implements TableProvider, AutoCloseable {
             event(caller, name, "read-refused", "the caller has no name");
             throw ProtocolError.of("rdp.forbidden", 403, "a tray lists the caller's own changes: this caller has no name", "table", name);
         }
-        Object mine = Map.of("op", "==", "args", List.of(Map.of("col", "by"), Map.of("lit", who)));
+        Object mine = Ordered.map("op", "==", "args", List.of(Map.of("col", "by"), Map.of("lit", who)));
         if (!a.approves(caller, base)) {
             return reader(spec, new ReaderView("by:" + who, mine, Set.of(), null, null, Set.of(), "a tray is read only"));
         }
         Predicate<Map<String, Object>> test = row -> who.equals(row.get("by"))
                 || "held".equals(row.get("state")) && inScope(base, b, row.get("key"));
-        Set<String> masked = new java.util.HashSet<>();
+        Set<String> masked = new LinkedHashSet<>();
         for (String c : b.schema().names()) {
             if (b.schema().column(c).masked()) {
                 masked.add(c);
@@ -644,7 +647,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
      */
     @SuppressWarnings("unchecked")
     static boolean fixes(Object filter, List<String> columns, boolean all) {
-        Set<String> fixed = new java.util.HashSet<>();
+        Set<String> fixed = new LinkedHashSet<>();
         collectFixed(filter, fixed);
         return all ? !columns.isEmpty() && fixed.containsAll(columns) : columns.stream().anyMatch(fixed::contains);
     }

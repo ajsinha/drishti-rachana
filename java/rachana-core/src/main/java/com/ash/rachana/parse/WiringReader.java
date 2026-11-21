@@ -10,13 +10,14 @@ import com.ash.rachana.model.PanelKind;
 import com.ash.rachana.model.SourceLocation;
 import com.ash.rachana.model.Wiring;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * Reads a panel's Sutra Next wiring (RACHANA_REFERENCE.md 6 to 8): {@code source:} written as a mapping, {@code emits:}, {@code waits:} and
@@ -31,12 +32,12 @@ final class WiringReader {
     static final String EVENTS = "RCH-2057";
     static final String CHILDREN = "RCH-2056";
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]{0,63}");
-    private static final Set<String> SOURCE_KEYS = Set.of("pack", "kind", "id", "where", "search", "limit", "as-of", "model", "params", "table");
+    private static final Set<String> SOURCE_KEYS = Ordered.set("pack", "kind", "id", "where", "search", "limit", "as-of", "model", "params", "table");
     /** A virtual table's name: {@code <domain>.<name>} (bi/TABLES_AND_MODELS.md section 2), with an optional major ({@code @1}). */
     private static final Pattern TABLE = Pattern.compile("[a-z][a-z0-9_]{0,62}\\.[a-z][a-z0-9_]{0,62}(@\\^?[0-9]+)?");
     private static final Pattern PARAM = Pattern.compile("[A-Za-z][A-Za-z0-9_-]{0,63}");
-    private static final Set<String> EMIT_KEYS = Set.of("name", "on", "payload");
-    private static final Set<String> GROUP_KEYS = Set.of("place", "show", "source", "waits", "panels");
+    private static final Set<String> EMIT_KEYS = Ordered.set("name", "on", "payload");
+    private static final Set<String> GROUP_KEYS = Ordered.set("place", "show", "source", "waits", "panels");
 
     private final String file;
     private final List<SutraProblem> problems;
@@ -199,7 +200,7 @@ final class WiringReader {
             return List.of();
         }
         List<Wiring.Emit> out = new ArrayList<>();
-        Set<String> names = new HashSet<>();
+        Set<String> names = new LinkedHashSet<>();
         for (PNode e : n.list()) {
             if (!e.isMap()) {
                 problem(EVENTS, "an event is a mapping: { name, on, payload }", e);

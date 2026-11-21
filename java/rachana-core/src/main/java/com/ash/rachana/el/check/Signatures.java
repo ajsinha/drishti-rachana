@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The signatures of the functions checked mode knows (docs/architecture/ARCHITECTURE.md §28 2.1 and 2.5): names, parameters (positional and named),
@@ -104,14 +105,14 @@ public final class Signatures {
             m.put("status", status);
             m.put("since", since);
             m.put("description", description);
-            m.put("examples", examples.stream().map(e -> Map.of("expr", e.expr(), "says", e.says())).toList());
+            m.put("examples", examples.stream().map(e -> Ordered.map("expr", e.expr(), "says", e.says())).toList());
             m.put("edgeCases", edgeCases);
             return m;
         }
     }
 
     /** The families whose functions edit the filter context or the time of an aggregate (BI_DESIGN 3.3.5: nesting at most three deep). */
-    public static final Set<String> CONTEXT_FAMILIES = Set.of("filter context", "time travel");
+    public static final Set<String> CONTEXT_FAMILIES = Ordered.set("filter context", "time travel");
     /** How deep {@code calc}, {@code share_of}, {@code parent_of} and {@code as_of} nest (rule 2 of BI_DESIGN 3.3.5). */
     public static final int MAX_CONTEXT_DEPTH = 3;
 

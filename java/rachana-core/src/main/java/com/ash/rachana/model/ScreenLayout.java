@@ -115,7 +115,7 @@ public record ScreenLayout(
             m.put("columns", columns);
         }
         if (split != null) {
-            m.put("split", Map.of("between", List.of(split.left(), split.right()), "resizable", split.resizable(), "remember", split.remember()));
+            m.put("split", Ordered.map("between", List.of(split.left(), split.right()), "resizable", split.resizable(), "remember", split.remember()));
         }
         if (!tabs.isEmpty()) {
             m.put("tabs", tabs);
@@ -123,7 +123,7 @@ public record ScreenLayout(
         if (!sections.isEmpty()) {
             List<Map<String, Object>> s = new ArrayList<>();
             for (Section x : sections) {
-                s.add(Map.of("id", x.id(), "title", x.title() == null ? x.id() : x.title(), "collapsed", x.collapsed()));
+                s.add(Ordered.map("id", x.id(), "title", x.title() == null ? x.id() : x.title(), "collapsed", x.collapsed()));
             }
             m.put("sections", s);
         }

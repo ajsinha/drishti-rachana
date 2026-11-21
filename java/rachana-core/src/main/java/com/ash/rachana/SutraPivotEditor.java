@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Turns a user's pivot arrangement into the text of the next version of a Sutra: the panel's {@code pivot:} key is
@@ -27,7 +28,7 @@ import java.util.regex.Pattern;
 public final class SutraPivotEditor {
 
     private static final Pattern PLAIN = Pattern.compile("[A-Za-z_][A-Za-z0-9_./ -]*");
-    private static final java.util.Set<String> RESERVED = java.util.Set.of("true", "false", "yes", "no", "on", "off", "null", "y", "n", "~");
+    private static final java.util.Set<String> RESERVED = Ordered.set("true", "false", "yes", "no", "on", "off", "null", "y", "n", "~");
 
     private final SutraParser parser;
 

@@ -9,7 +9,6 @@ import com.ash.rachana.live.spi.SnapshotSource;
 import com.ash.rachana.parse.Json;
 import com.ash.rachana.table.KeyedRows;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,7 @@ public final class PollingDiff implements LiveStream {
     private final long refreshMs;
     private final List<Listener> listeners = new java.util.concurrent.CopyOnWriteArrayList<>();
     private Map<String, String> last;                                // key text -> the row's JSON
-    private Map<String, List<Object>> lastKeys = new HashMap<>();
+    private Map<String, List<Object>> lastKeys = new LinkedHashMap<>();
 
     public PollingDiff(SnapshotSource source, List<String> key, long refreshMs) {
         this.source = source;
@@ -61,7 +60,7 @@ public final class PollingDiff implements LiveStream {
     public synchronized void poll() {
         Map<String, String> now = new LinkedHashMap<>();
         Map<String, Map<String, Object>> rows = new LinkedHashMap<>();
-        Map<String, List<Object>> nowKeys = new HashMap<>();
+        Map<String, List<Object>> nowKeys = new LinkedHashMap<>();
         try {
             source.read(null, r -> {
                 String k = keys.keyOf(r);

@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * One library version, read and checked (LIBRARIES.md 3, 12): its manifest, its fragments and its identity. {@link #load} refuses a
@@ -54,7 +56,7 @@ public final class Library {
     private static final Pattern VERSION = Pattern.compile("([0-9]+)\\.([0-9]+)\\.([0-9]+)");
     private static final Pattern DEPEND = Pattern.compile("([a-z][a-z0-9-]{0,31})@([0-9]+)");
     private static final Pattern USE = Pattern.compile("(?m)^\\s*-?\\s*\\{?\\s*use:\\s*[\"']?([^\\s,}\"']+)");
-    private static final Set<String> KEYS = Set.of("rachana", "library", "version", "title", "summary", "publisher", "licence", "scope", "profiles",
+    private static final Set<String> KEYS = Ordered.set("rachana", "library", "version", "title", "summary", "publisher", "licence", "scope", "profiles",
             "depends", "needs", "categories", "exports", "functions", "formats");
 
     private final String name;
@@ -475,7 +477,7 @@ public final class Library {
             out.add(problem(INVALID, "contract " + path + " is { contract: " + fm.group(1) + ", columns: [ { name, type, doc } ] }", where, 1));
             return;
         }
-        Set<String> seen = new java.util.HashSet<>();
+        Set<String> seen = new LinkedHashSet<>();
         for (PNode col : cols.list()) {
             String n = col.isMap() ? text(col.map().get("name")) : null;
             if (n == null || !n.matches("[A-Za-z_][A-Za-z0-9_]*") || !seen.add(n) || text(col.map().get("type")) == null) {

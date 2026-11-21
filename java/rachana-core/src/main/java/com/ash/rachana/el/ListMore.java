@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * More list functions (FUNCTION_CATALOGUE.md section 6), MATLAB's and Octave's that are not aggregates: {@code fillmissing},
@@ -28,10 +29,10 @@ final class ListMore {
     private ListMore() {}
 
     /** The fill methods of {@code fillmissing}. */
-    static final Set<String> FILLS = Set.of("previous", "next", "linear", "nearest", "constant");
+    static final Set<String> FILLS = Ordered.set("previous", "next", "linear", "nearest", "constant");
 
     /** The methods of {@code interp1}. */
-    static final Set<String> INTERPOLATIONS = Set.of("linear", "previous", "next", "nearest");
+    static final Set<String> INTERPOLATIONS = Ordered.set("linear", "previous", "next", "nearest");
 
     static void register(Functions.Table t) {
         FinanceFunctions.fn(t, "fillmissing", 2, 3, (a, c) -> fillmissing(a));

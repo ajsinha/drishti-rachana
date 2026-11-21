@@ -27,12 +27,12 @@ public record ScreenPhone(List<String> order, String defaultTier, String summary
     public static final String KEY = "phone";
 
     /** The compact options of a glance panel, by the panel kinds each fits (docs/guides/BUILD_GUIDE.md section 5.3). */
-    public static final Map<String, Set<String>> COMPACT = Map.of(
-            "rows", Set.of("table", "ladder", "hbar", "timeline", "links", "map", "waterfall"),
-            "columns", Set.of("table", "ladder"),
-            "sort", Set.of("table", "ladder"),
-            "series", Set.of("line", "area", "candlestick"),
-            "figures", Set.of("kv", "status"),
+    public static final Map<String, Set<String>> COMPACT = Ordered.map(
+            "rows", Ordered.set("table", "ladder", "hbar", "timeline", "links", "map", "waterfall"),
+            "columns", Ordered.set("table", "ladder"),
+            "sort", Ordered.set("table", "ladder"),
+            "series", Ordered.set("line", "area", "candlestick"),
+            "figures", Ordered.set("kv", "status"),
             "tab", Set.of("tabs"));
 
     public ScreenPhone {

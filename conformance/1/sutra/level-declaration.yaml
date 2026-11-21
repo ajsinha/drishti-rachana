@@ -61,3 +61,43 @@ cases:
     expect:
       at:
         /panels/0/data/value/text: "6"
+
+  - id: a-fragment-of-level-1-0-keeps-doubles-in-a-sutra-of-1-0
+    kind: sutra
+    source: SPEC 2.1 rule 4, 4.16 (G3 gate F2)
+    files:
+      total.v1.block.yaml: |
+        rachana: 1
+        block: total
+        version: 1
+        panels:
+          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
+    sutra: |
+      rachana: 1
+      sutra: lv
+      version: 1
+      panels:
+        - { use: total@1 }
+    expect:
+      at:
+        /panels/0/data/value/text: "0.30000000000000004"
+
+  - id: a-fragment-of-level-1-2-is-exact-in-a-sutra-of-1-2
+    kind: sutra
+    source: SPEC 2.1 rule 4, 4.16 (G3 gate F2)
+    files:
+      total.v1.block.yaml: |
+        rachana: 1.2
+        block: total
+        version: 1
+        panels:
+          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
+    sutra: |
+      rachana: 1.2
+      sutra: lv
+      version: 1
+      panels:
+        - { use: total@1 }
+    expect:
+      at:
+        /panels/0/data/value/text: "0.3"

@@ -6,7 +6,6 @@ package com.ash.rachana.el;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,7 +163,7 @@ public final class Declarations {
     /** The declarations of the Sutra being checked or bound, and its let values memoised for that bind. */
     static final class Scope {
         final Declarations declarations;
-        final Map<String, Object[]> memo = new HashMap<>();
+        final Map<String, Object[]> memo = new LinkedHashMap<>();
 
         Scope(Declarations declarations) {
             this.declarations = declarations;

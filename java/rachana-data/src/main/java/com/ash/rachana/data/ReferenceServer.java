@@ -16,6 +16,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashMap;
 
 /**
  * The reference Data Protocol server (small, for conformance and for trying a view): a {@link ProtocolHost} over the JDK's HTTP server
@@ -37,7 +39,7 @@ public final class ReferenceServer implements AutoCloseable {
     private final String base;
     private final Path statics;
     private volatile boolean closed;
-    private final Map<Object, Channel> channels = new java.util.HashMap<>();          // the test bridge's channels, one per caller
+    private final Map<Object, Channel> channels = new LinkedHashMap<>();          // the test bridge's channels, one per caller
     private final ProtocolHttp http;
     private final Map<String, java.util.function.Function<Object, ProtocolHost.Answer>> testPaths = new java.util.concurrent.ConcurrentHashMap<>();
     private volatile Object caller;
@@ -197,7 +199,7 @@ public final class ReferenceServer implements AutoCloseable {
         }
     }
 
-    private static final Map<String, String> TYPES = Map.of(".html", "text/html; charset=utf-8", ".js", "text/javascript; charset=utf-8",
+    private static final Map<String, String> TYPES = Ordered.map(".html", "text/html; charset=utf-8", ".js", "text/javascript; charset=utf-8",
             ".mjs", "text/javascript; charset=utf-8", ".css", "text/css; charset=utf-8", ".json", "application/json", ".yaml",
             "text/plain; charset=utf-8", ".svg", "image/svg+xml");
 

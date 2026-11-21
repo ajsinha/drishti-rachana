@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * Knows which Sutra values are Rachana-EL and compiles them all at load time, so a typo in an expression
@@ -25,29 +27,16 @@ import java.util.Set;
 public final class SutraExpressions {
 
     /** Per panel kind, the options that hold expressions (the rest are field names or literals). */
-    static final Map<PanelKind, Set<String>> EL_OPTIONS = Map.ofEntries(
-            Map.entry(PanelKind.KV, Set.of("rows")), Map.entry(PanelKind.TABLE, Set.of("rows", "where", "limit", "moreLabel", "highlight", "children", "crumb", "root")),
-            Map.entry(PanelKind.TABS, Set.of("each", "tabTitle")), Map.entry(PanelKind.LINE, Set.of("rows", "where", "source", "mark")),
-            Map.entry(PanelKind.AREA, Set.of("where", "rows", "limit")), Map.entry(PanelKind.HBAR, Set.of("where", "rows")),
-            Map.entry(PanelKind.LADDER, Set.of("rows", "where", "highlight", "children", "crumb", "root")), Map.entry(PanelKind.GAUGE, Set.of("value", "max")),
-            Map.entry(PanelKind.LINKS, Set.of()), Map.entry(PanelKind.STATUS, Set.of()),
-            Map.entry(PanelKind.PROVENANCE, Set.of()), Map.entry(PanelKind.MARKDOWN, Set.of()), Map.entry(PanelKind.SURFACE, Set.of("where", "rows")),
-            Map.entry(PanelKind.WATERFALL, Set.of("where", "rows")), Map.entry(PanelKind.HISTOGRAM, Set.of("where", "rows")),
-            Map.entry(PanelKind.SCATTER, Set.of("where", "rows")), Map.entry(PanelKind.CANDLESTICK, Set.of("where", "rows")),
-            Map.entry(PanelKind.GRAPH, Set.of("nodes", "edges")), Map.entry(PanelKind.TIMELINE, Set.of("where", "rows")),
-            Map.entry(PanelKind.PIVOT, Set.of("where", "rows", "across", "value")), Map.entry(PanelKind.METRIC, Set.of("value", "delta")),
-            Map.entry(PanelKind.MAP, Set.of("highlight", "region")),
-            Map.entry(PanelKind.GRID, Set.of("rows", "where")), Map.entry(PanelKind.TREE, Set.of("rows", "where")),
-            Map.entry(PanelKind.CHART, Set.of("rows", "where")));
+    static final Map<PanelKind, Set<String>> EL_OPTIONS = Ordered.map(PanelKind.KV, Set.of("rows"), PanelKind.TABLE, Ordered.set("rows", "where", "limit", "moreLabel", "highlight", "children", "crumb", "root"), PanelKind.TABS, Ordered.set("each", "tabTitle"), PanelKind.LINE, Ordered.set("rows", "where", "source", "mark"), PanelKind.AREA, Ordered.set("where", "rows", "limit"), PanelKind.HBAR, Ordered.set("where", "rows"), PanelKind.LADDER, Ordered.set("rows", "where", "highlight", "children", "crumb", "root"), PanelKind.GAUGE, Ordered.set("value", "max"), PanelKind.LINKS, Set.of(), PanelKind.STATUS, Set.of(), PanelKind.PROVENANCE, Set.of(), PanelKind.MARKDOWN, Set.of(), PanelKind.SURFACE, Ordered.set("where", "rows"), PanelKind.WATERFALL, Ordered.set("where", "rows"), PanelKind.HISTOGRAM, Ordered.set("where", "rows"), PanelKind.SCATTER, Ordered.set("where", "rows"), PanelKind.CANDLESTICK, Ordered.set("where", "rows"), PanelKind.GRAPH, Ordered.set("nodes", "edges"), PanelKind.TIMELINE, Ordered.set("where", "rows"), PanelKind.PIVOT, Ordered.set("where", "rows", "across", "value"), PanelKind.METRIC, Ordered.set("value", "delta"), PanelKind.MAP, Ordered.set("highlight", "region"), PanelKind.GRID, Ordered.set("rows", "where"), PanelKind.TREE, Ordered.set("rows", "where"), PanelKind.CHART, Ordered.set("rows", "where"));
 
     /** The expression options of a panel kind: its own, and {@code source} for every kind that reads data. */
     static Set<String> expressionOptions(PanelKind kind) {
-        Set<String> own = new java.util.HashSet<>(EL_OPTIONS.getOrDefault(kind, Set.of()));
+        Set<String> own = new LinkedHashSet<>(EL_OPTIONS.getOrDefault(kind, Set.of()));
         own.add(com.ash.rachana.model.Panel.WHEN);                        // every kind may be shown only when ...
         if (!kind.readsData() || own.contains("source")) {
             return own;
         }
-        Set<String> all = new java.util.HashSet<>(own);
+        Set<String> all = new LinkedHashSet<>(own);
         all.add("source");
         return all;
     }
@@ -106,7 +95,7 @@ public final class SutraExpressions {
     }
 
     private List<SutraProblem> checked(Sutra s) {
-        Run out = new Run(s.controls().stream().map(Control::id).collect(java.util.stream.Collectors.toSet()));
+        Run out = new Run(s.controls().stream().map(Control::id).collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new)));
         s.controls().forEach(c -> {
             expr(c.from(), c.location(), out);
             expr(c.min(), c.location(), out);

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The screen a declaration gives (LIVE_TABLES 2.2, LT-12): a Sutra that calls the library fragment {@code core/live-table@1} with the
@@ -79,12 +80,12 @@ final class LiveScreens {
     private static Map<String, Object> order(LiveTableSpec spec) {
         if (!spec.sort().isEmpty()) {
             Map<String, Object> s = spec.sort().get(0);
-            return Map.of("col", String.valueOf(s.get("col")), "dir", "asc".equals(s.get("dir")) ? "asc" : "desc");
+            return Ordered.map("col", String.valueOf(s.get("col")), "dir", "asc".equals(s.get("dir")) ? "asc" : "desc");
         }
         if (spec.version() != null) {
-            return Map.of("col", spec.version(), "dir", "desc");
+            return Ordered.map("col", spec.version(), "dir", "desc");
         }
-        return Map.of("col", spec.key().get(0), "dir", "asc");
+        return Ordered.map("col", spec.key().get(0), "dir", "asc");
     }
 
     /** A Sutra's name from a table's: letters, digits and '-' ({@code trade.changes} gives {@code trade-changes-live}). */

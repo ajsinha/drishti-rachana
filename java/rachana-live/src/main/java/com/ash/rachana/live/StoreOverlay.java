@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import com.ash.rachana.model.Ordered;
 
 /**
  * A paged live table's pages (LIVE_TABLES 1.3, 1.5, 7): the snapshot stays in the source and the table holds the live side only. For a
@@ -113,7 +113,7 @@ final class StoreOverlay {
         final List<List<Object>> keyValues;
         final Object[] values;
         final int width;
-        final Map<String, Integer> position = new HashMap<>();
+        final Map<String, Integer> position = new LinkedHashMap<>();
 
         Index(String version, long builtAt, String[] keys, List<List<Object>> keyValues, Object[] values, int width) {
             this.version = version;
@@ -157,7 +157,7 @@ final class StoreOverlay {
 
     private final LiveTable table;
     private final Map<String, Index> indexes = new LinkedHashMap<>(16, 0.75f, true);
-    private final Map<String, Long> lastTotals = new HashMap<>();
+    private final Map<String, Long> lastTotals = new LinkedHashMap<>();
 
     StoreOverlay(LiveTable table) {
         this.table = table;
@@ -187,7 +187,7 @@ final class StoreOverlay {
         if (b == null) {
             return a;
         }
-        return Map.of("op", "&&", "args", List.of(a, b));
+        return Ordered.map("op", "&&", "args", List.of(a, b));
     }
 
     // ---- pages -----------------------------------------------------------------------------------------------------
@@ -288,7 +288,7 @@ final class StoreOverlay {
                 want.add(idx.keyValues.get(pos));
             }
         }
-        Map<String, Map<String, Object>> fetched = new HashMap<>();
+        Map<String, Map<String, Object>> fetched = new LinkedHashMap<>();
         if (!want.isEmpty()) {
             try {
                 for (Map<String, Object> r : table.source.fetch(want)) {
@@ -490,7 +490,7 @@ final class StoreOverlay {
         KeyedRows kr = new KeyedRows(table.spec.key(), List.of(), 0);
         try {
             table.source.scan(cols, and(table.spec.whereTree(), reader.rowFilter()), v -> {
-                Map<String, Object> raw = new HashMap<>();
+                Map<String, Object> raw = new LinkedHashMap<>();
                 for (int i = 0; i < cols.size() && i < v.length; i++) {
                     raw.put(cols.get(i), v[i]);
                 }

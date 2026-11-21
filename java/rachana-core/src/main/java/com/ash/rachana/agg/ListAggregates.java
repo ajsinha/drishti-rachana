@@ -13,6 +13,7 @@ import com.ash.rachana.el.Values;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The engine's aggregates over a Rachana list (docs/architecture/ARCHITECTURE.md part 2): the list's values made a {@link Batch} and run through the very
@@ -30,21 +31,7 @@ final class ListAggregates {
     private ListAggregates() {}
 
     /** Rachana's name to the engine's built-in name. */
-    static final Map<String, String> ENGINE_NAME = Map.ofEntries(Map.entry("sum", "sum"), Map.entry("count", "count"),
-            Map.entry("avg", "avg"), Map.entry("min", "min"), Map.entry("max", "max"), Map.entry("median", "median"),
-            Map.entry("percentile", "percentile"), Map.entry("distinct", "count_distinct"), Map.entry("wavg", "wavg"),
-            Map.entry("variance", "var_samp"), Map.entry("stddev", "stddev_samp"), Map.entry("variance_pop", "var_pop"),
-            Map.entry("stddev_pop", "stddev_pop"), Map.entry("sum_once", "sum_once"), Map.entry("count_once", "count_once"),
-            Map.entry("avg_once", "avg_once"), Map.entry("nmiss", "nmiss"), Map.entry("range", "range"), Map.entry("mode", "mode"),
-            Map.entry("iqr", "iqr"), Map.entry("stderr", "stderr"), Map.entry("cv", "cv"), Map.entry("skewness", "skewness"),
-            Map.entry("kurtosis", "kurtosis"), Map.entry("geomean", "geomean"), Map.entry("harmean", "harmean"),
-            Map.entry("trimmean", "trimmean"), Map.entry("corr", "corr"), Map.entry("covar", "covar"), Map.entry("slope", "slope"),
-            Map.entry("intercept", "intercept"), Map.entry("rsq", "rsq"), Map.entry("kth_largest", "kth_largest"),
-            Map.entry("kth_smallest", "kth_smallest"), Map.entry("string_agg", "string_agg"), Map.entry("skewness_pop", "skewness_pop"),
-            Map.entry("devsq", "devsq"), Map.entry("covar_pop", "covar_pop"), Map.entry("steyx", "steyx"),
-            Map.entry("sumproduct", "sumproduct"), Map.entry("sumsq", "sumsq"), Map.entry("product", "product"),
-            Map.entry("avedev", "avedev"), Map.entry("percentile_exc", "percentile_exc"), Map.entry("rank_avg", "rank_avg"),
-            Map.entry("percent_rank_of", "percent_rank_of"), Map.entry("mode_multi", "mode_multi"));
+    static final Map<String, String> ENGINE_NAME = Ordered.map("sum", "sum", "count", "count", "avg", "avg", "min", "min", "max", "max", "median", "median", "percentile", "percentile", "distinct", "count_distinct", "wavg", "wavg", "variance", "var_samp", "stddev", "stddev_samp", "variance_pop", "var_pop", "stddev_pop", "stddev_pop", "sum_once", "sum_once", "count_once", "count_once", "avg_once", "avg_once", "nmiss", "nmiss", "range", "range", "mode", "mode", "iqr", "iqr", "stderr", "stderr", "cv", "cv", "skewness", "skewness", "kurtosis", "kurtosis", "geomean", "geomean", "harmean", "harmean", "trimmean", "trimmean", "corr", "corr", "covar", "covar", "slope", "slope", "intercept", "intercept", "rsq", "rsq", "kth_largest", "kth_largest", "kth_smallest", "kth_smallest", "string_agg", "string_agg", "skewness_pop", "skewness_pop", "devsq", "devsq", "covar_pop", "covar_pop", "steyx", "steyx", "sumproduct", "sumproduct", "sumsq", "sumsq", "product", "product", "avedev", "avedev", "percentile_exc", "percentile_exc", "rank_avg", "rank_avg", "percent_rank_of", "percent_rank_of", "mode_multi", "mode_multi");
 
     /** {@code name} over the evaluated arguments of a call. */
     static Object apply(String name, List<Object> args) {

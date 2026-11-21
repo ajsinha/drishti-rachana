@@ -21,6 +21,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import com.ash.rachana.model.Ordered;
 
 /**
  * Shared panel blocks and the fragment library: panels written once in a block file ({@code <name>.v<N>.block.yaml} beside the Sutras) and used by many
@@ -93,6 +94,24 @@ public final class SutraBlocks {
         /** {@code name@version}. */
         public String ref() {
             return name + "@" + version;
+        }
+
+        /**
+         * The language level its {@code rachana:} key declares (SPEC 2.1 rule 4: {@code 1} or {@code 1.0} is 1.0, {@code 1.N} is 1.N),
+         * {@code 1.0} when it has no key, or the key's text as written when that is no level ({@code rachana: 2}).
+         */
+        public String level() {
+            try {
+                String masked = text.replace("%{", "pXq{");
+                PNode lang = parse(masked, file).map().get("rachana");
+                if (lang == null) {
+                    return com.ash.rachana.profile.Grammar.LEVEL_1_0;
+                }
+                String l = SutraParser.level(lang, masked);
+                return l != null ? l : String.valueOf(lang.value());
+            } catch (SutraException e) {
+                return com.ash.rachana.profile.Grammar.LEVEL_1_0;
+            }
         }
     }
 
@@ -186,7 +205,7 @@ public final class SutraBlocks {
                 throw new SutraException(doc);
             }
         }
-        return new Block(name, version, text, Map.copyOf(params), file, path);
+        return new Block(name, version, text, Ordered.copy(params), file, path);
     }
 
     /** The problems placed in the fragment file they were found in (SPEC 6.1: {@code path} and {@code range} of that file's text). */
@@ -448,6 +467,13 @@ public final class SutraBlocks {
                 continue;
             }
             calls.texts.put(b.file(), b.text());
+            String own = level == null ? null : b.level();
+            if (own != null && !own.equals(level)) {                    // SPEC 2.1 rule 4: one level per screen, no second meaning inside it
+                problems.add(new SutraProblem("RCH-2008", "fragment " + b.ref() + " is written for Rachana " + own + " and the Sutra that uses it for "
+                        + level + ": a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)",
+                        new SourceLocation(file, p.line(), p.column())));
+                continue;
+            }
             PNode typedRoot = typedRoot(b);
             if (typedRoot != null) {                                   // the typed form: checked parameters, tokens, slots (C1)
                 if (!atLeast(level, TypedFragment.SINCE)) {
@@ -596,9 +622,9 @@ public final class SutraBlocks {
     }
 
     /** Keys a use may carry beside use and with (RACHANA_REFERENCE.md 6 to 8): put on every panel it brings. */
-    private static final java.util.Set<String> USE_ON_ALL = java.util.Set.of("source", "when", "waits", "refresh", "section", "collapsible", "order", "phone");
+    private static final java.util.Set<String> USE_ON_ALL = Ordered.set("source", "when", "waits", "refresh", "section", "collapsible", "order", "phone");
     /** Keys a use may carry only when it brings one panel: that panel's events, children and size. */
-    private static final java.util.Set<String> USE_ON_ONE = java.util.Set.of("emits", "children", "span", "height", "area", "form");
+    private static final java.util.Set<String> USE_ON_ONE = Ordered.set("emits", "children", "span", "height", "area", "form");
 
     /**
      * The panels a use brings with the use's own wiring and size on them ({@code { use: series-line@1, with: {...}, source: {...} }}): source,

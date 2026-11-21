@@ -4,8 +4,8 @@
  */
 package com.ash.rachana.internal;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * Core's text rules, owned by Core so that every runtime (any JVM, the JavaScript build) gives the same answer: upper and lower
@@ -138,7 +138,7 @@ public final class CoreText {
     }
 
     private static Map<Integer, Integer> runs(String table) {
-        Map<Integer, Integer> m = new HashMap<>();
+        Map<Integer, Integer> m = new LinkedHashMap<>();
         for (String run : table.split(";")) {
             String[] f = run.split(",");
             int start = Integer.parseInt(f[0], 36);
@@ -153,7 +153,7 @@ public final class CoreText {
     }
 
     private static Map<Integer, String> expansions(String table) {
-        Map<Integer, String> m = new HashMap<>();
+        Map<Integer, String> m = new LinkedHashMap<>();
         for (String e : table.split(";")) {
             int colon = e.indexOf(':');
             StringBuilder b = new StringBuilder();

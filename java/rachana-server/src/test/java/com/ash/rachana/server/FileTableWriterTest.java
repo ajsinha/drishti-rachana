@@ -80,6 +80,15 @@ class FileTableWriterTest {
         assertEquals(2L, Rows.csv(Files.readString(f)).size());
     }
 
+    /** A CSV that holds its header only keeps that column order for the first row added (the header read by Tools' CsvReader). */
+    @Test
+    void aHeaderOnlyCsvKeepsItsColumnOrder() throws Exception {
+        Path f = tmp.resolve("orders.csv");
+        Files.writeString(f, "ID,V,\"QTY\",NOTE,BY_USER,AT\n");
+        assertEquals(1L, writer(f).write(change("c1", "add", "a", null, Map.of("NOTE", "=1+1, as typed", "QTY", 3))));
+        assertEquals("ID,V,QTY,NOTE,BY_USER,AT\na,1,3,\"=1+1, as typed\",alice,2026-11-21T10:00:00Z\n", Files.readString(f));
+    }
+
     @Test
     void aChangeLeftAtWritingByACrashIsRecognisedOnce() throws Exception {
         Path f = tmp.resolve("orders.jsonl");

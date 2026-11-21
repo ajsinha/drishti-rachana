@@ -9,12 +9,13 @@ import com.ash.rachana.model.Panel;
 import com.ash.rachana.model.ScreenLayout;
 import com.ash.rachana.model.SourceLocation;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 /**
  * Reads a screen's {@code layout:} (RACHANA_REFERENCE.md 13) and checks it against the panels: {@code RCH-2059} for every layout problem
@@ -25,7 +26,7 @@ final class LayoutReader {
 
     static final String CODE = "RCH-2059";
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]{0,31}");
-    private static final Set<String> KEYS = Set.of("areas", "columns", "split", "tabs", "sections", "sticky", "user-can-arrange", "phone", "tablet");
+    private static final Set<String> KEYS = Ordered.set("areas", "columns", "split", "tabs", "sections", "sticky", "user-can-arrange", "phone", "tablet");
 
     private final String file;
     private final List<SutraProblem> problems;
@@ -80,14 +81,14 @@ final class LayoutReader {
                 problem("'tablet' is a mapping: { areas: [...], columns: [...] }, the picture at tablet width", t);
             } else {
                 t.map().forEach((k, v) -> {
-                    if (!Set.of("areas", "columns").contains(k)) {
+                    if (!Ordered.set("areas", "columns").contains(k)) {
                         problem("unknown key '" + k + "' in layout.tablet; expected areas, columns", v);
                     }
                 });
                 tablet = picture(t.map().get("areas"), "tablet areas");
                 tabletColumns = t.map().get("columns") == null ? List.of() : units(t.map().get("columns"), "tablet columns");
                 checkPicture(tablet, tabletColumns, t.map().get("areas"), t.map().get("columns"));
-                if (!tablet.isEmpty() && !new HashSet<>(ScreenLayout.names(tablet)).equals(new HashSet<>(ScreenLayout.names(areas)))) {
+                if (!tablet.isEmpty() && !new LinkedHashSet<>(ScreenLayout.names(tablet)).equals(new LinkedHashSet<>(ScreenLayout.names(areas)))) {
                     problem("the tablet picture must hold the same areas as 'areas' (" + String.join(", ", ScreenLayout.names(areas)) + ")", t);
                 }
             }
@@ -101,9 +102,9 @@ final class LayoutReader {
      * one), {@code section} a section, {@code span} fits; split, tabs, sticky and phone name what exists.
      */
     void check(ScreenLayout layout, List<Panel> panels, PNode at) {
-        Set<String> areaNames = new HashSet<>(layout == null ? List.of() : layout.areaNames());
-        Set<String> ids = new HashSet<>();
-        Map<String, Integer> perArea = new HashMap<>();
+        Set<String> areaNames = new LinkedHashSet<>(layout == null ? List.of() : layout.areaNames());
+        Set<String> ids = new LinkedHashSet<>();
+        Map<String, Integer> perArea = new LinkedHashMap<>();
         for (Panel p : panels) {
             ids.add(p.id());
             String named = p.option(Panel.GRID_AREA).orElse(null);
@@ -294,7 +295,7 @@ final class LayoutReader {
         }
         Map<String, PNode> m = n.map();
         m.forEach((k, v) -> {
-            if (!Set.of("between", "resizable", "remember").contains(k)) {
+            if (!Ordered.set("between", "resizable", "remember").contains(k)) {
                 problem("unknown key '" + k + "' in split; expected between, resizable, remember", v);
             }
         });
@@ -323,7 +324,7 @@ final class LayoutReader {
             problem("'sections' is a list: - { id: risk, title: Risk, collapsed: false }", n);
             return out;
         }
-        Set<String> seen = new HashSet<>();
+        Set<String> seen = new LinkedHashSet<>();
         for (PNode s : n.list()) {
             if (!s.isMap()) {
                 problem("a section is a mapping: { id, title, collapsed }", s);
@@ -331,7 +332,7 @@ final class LayoutReader {
             }
             Map<String, PNode> m = s.map();
             m.forEach((k, v) -> {
-                if (!Set.of("id", "title", "collapsed").contains(k)) {
+                if (!Ordered.set("id", "title", "collapsed").contains(k)) {
                     problem("unknown key '" + k + "' in a section; expected id, title, collapsed", v);
                 }
             });

@@ -131,7 +131,7 @@ cases:
     note: "The fragment's form emits submit carrying every value (payload values: event); the use's on: reads event.values.qty and hands event.values to the host, both filled in when the form is sent."
     files:
       ticket.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: ticket
         version: 1
         doc:

@@ -32,7 +32,7 @@ public final class Effects {
             "close", "submit", "cancel");
 
     /** The triggers built at this level, each with the panel kinds that fire it. */
-    public static final Map<String, List<String>> BUILT = Map.of("row-click", List.of("table", "ladder"), "bar-click", List.of("hbar"),
+    public static final Map<String, List<String>> BUILT = Ordered.map("row-click", List.of("table", "ladder"), "bar-click", List.of("hbar"),
             "point-click", Wiring.POINT_KINDS.stream().sorted().toList(), "submit", List.of("form"), "cancel", List.of("form"));
 
     /**
@@ -105,7 +105,7 @@ public final class Effects {
     public static final String ACTIONS = "actions";
 
     /** The keys of one action: {@code label} and {@code do} (its effects) required. */
-    public static final java.util.Set<String> ACTION_KEYS = java.util.Set.of("id", "label", "tone", "confirm", "requires", "do");
+    public static final java.util.Set<String> ACTION_KEYS = Ordered.set("id", "label", "tone", "confirm", "requires", "do");
 
     /** The most actions a panel has. */
     public static final int MAX_ACTIONS = 8;
@@ -164,11 +164,11 @@ public final class Effects {
     public static final List<String> BUILT_EFFECTS = List.of("set", "toggle", "clear", "notify", "host");
 
     /** The keys an effect takes beside its word and {@code when}, by word. */
-    public static final Map<String, java.util.Set<String>> EXTRAS_OF = Map.of("set", java.util.Set.of("field"), "host", java.util.Set.of("with"),
+    public static final Map<String, java.util.Set<String>> EXTRAS_OF = Ordered.map("set", java.util.Set.of("field"), "host", java.util.Set.of("with"),
             "notify", java.util.Set.of("tone"));
 
     /** Every key of {@link #EXTRAS_OF}. */
-    public static final java.util.Set<String> EXTRAS = java.util.Set.of("field", "with", "tone");
+    public static final java.util.Set<String> EXTRAS = Ordered.set("field", "with", "tone");
 
     /** The tones of a {@code notify}. */
     public static final List<String> TONES = List.of("ok", "warn", "bad", "accent");

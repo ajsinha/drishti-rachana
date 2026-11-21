@@ -9,9 +9,9 @@ import com.ash.rachana.internal.CoreMath;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * The built-in functions (ARCHITECTURE.md section 26.3), each with its state, its exact merge and its SQL state form. Mergeable: {@link Sum}
@@ -660,7 +660,7 @@ public final class Builtins {
 
         @Override
         public Object start() {
-            return new HashSet<String>();
+            return new LinkedHashSet<String>();
         }
 
         @Override
@@ -682,7 +682,7 @@ public final class Builtins {
             if (a instanceof Final || b instanceof Final) {
                 throw new IllegalStateException("count_distinct is holistic: a figure computed by the engine is never merged");
             }
-            Set<String> out = new HashSet<>((Set<String>) a);
+            Set<String> out = new LinkedHashSet<>((Set<String>) a);
             out.addAll((Set<String>) b);
             return out;
         }
@@ -711,7 +711,7 @@ public final class Builtins {
             if (Final.isEncoded(b)) {
                 return Final.decode(b);
             }
-            Set<String> out = new HashSet<>();
+            Set<String> out = new LinkedHashSet<>();
             String s = new String(b, 1, b.length - 1, StandardCharsets.UTF_8);
             for (String x : s.split("\u0000")) {
                 if (!x.isEmpty()) {

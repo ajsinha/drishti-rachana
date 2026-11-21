@@ -11,9 +11,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import com.ash.tools.csv.CsvReader;
 
 /**
- * Rows read from a source, shaped for the Data Protocol: CSV text parsed (RFC 4180), column types inferred when the configuration declares
+ * Rows read from a source, shaped for the Data Protocol: CSV text parsed (RFC 4180, Drishti Tools' reader), column types inferred when the configuration declares
  * none, and each cell given the protocol's JSON form for its type (an integer a number, a decimal its exact text, a date its ISO text).
  * Stateless.
  */
@@ -27,49 +28,13 @@ final class Rows {
     private Rows() {
     }
 
-    /** CSV text as rows of text cells (RFC 4180: quotes, doubled quotes, line breaks in quotes); the first line names the columns. */
+    /**
+     * CSV text as rows of text cells (RFC 4180, read by Drishti Tools' {@code CsvReader}: quotes, doubled quotes, line breaks in quotes, a
+     * byte-order mark dropped); the first line names the columns, blank lines are skipped and an empty cell is null.
+     */
     static List<Map<String, Object>> csv(String text) {
-        List<List<String>> lines = new ArrayList<>();
-        List<String> row = new ArrayList<>();
-        StringBuilder cell = new StringBuilder();
-        boolean q = false;
-        int i = text.startsWith("﻿") ? 1 : 0;
-        for (; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (q) {
-                if (c == '"') {
-                    if (i + 1 < text.length() && text.charAt(i + 1) == '"') {
-                        cell.append('"');
-                        i++;
-                    } else {
-                        q = false;
-                    }
-                } else {
-                    cell.append(c);
-                }
-            } else if (c == '"') {
-                q = true;
-            } else if (c == ',') {
-                row.add(cell.toString());
-                cell.setLength(0);
-            } else if (c == '\n' || c == '\r') {
-                if (c == '\r' && i + 1 < text.length() && text.charAt(i + 1) == '\n') {
-                    i++;
-                }
-                row.add(cell.toString());
-                cell.setLength(0);
-                if (row.size() > 1 || !row.get(0).isEmpty()) {
-                    lines.add(row);
-                }
-                row = new ArrayList<>();
-            } else {
-                cell.append(c);
-            }
-        }
-        if (cell.length() > 0 || !row.isEmpty()) {
-            row.add(cell.toString());
-            lines.add(row);
-        }
+        List<List<String>> lines = new ArrayList<>(CsvReader.parse(text));
+        lines.removeIf(CsvReader::blank);
         List<Map<String, Object>> out = new ArrayList<>();
         if (lines.isEmpty()) {
             return out;

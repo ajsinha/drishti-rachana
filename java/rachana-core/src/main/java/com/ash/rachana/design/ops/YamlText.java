@@ -10,12 +10,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /** Writes plain Java values (maps, lists, text, numbers, booleans, null) as one-line YAML flow text. Stateless. */
 final class YamlText {
 
     private static final Pattern PLAIN = Pattern.compile("[A-Za-z_$][A-Za-z0-9_$@.]*");
-    private static final Set<String> WORDS = Set.of("true", "false", "null", "yes", "no", "on", "off", "y", "n");
+    private static final Set<String> WORDS = Ordered.set("true", "false", "null", "yes", "no", "on", "off", "y", "n");
 
     private YamlText() {}
 

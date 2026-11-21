@@ -7,6 +7,8 @@ package com.ash.rachana.el;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashMap;
 
 /**
  * What language level 1.1 changes in Core's functions, bound by the parser at that level (level 1.0 keeps the functions as they were):
@@ -20,33 +22,14 @@ final class Level11 {
 
     private record Fn(int min, int max, ElFunction fn) {}
 
-    private static final Map<String, Fn> FUNCTIONS = strictLists(Map.ofEntries(
-            Map.entry("range", new Fn(1, 3, (a, c) -> Ranges.range(a))),
-            Map.entry("span", new Fn(1, 2, (a, c) -> FunctionTable.core().get("range").apply(a, c))),
-            Map.entry("left", new Fn(2, 2, (a, c) -> part("left", a, true))),
-            Map.entry("right", new Fn(2, 2, (a, c) -> part("right", a, false))),
-            Map.entry("mid", new Fn(3, 3, (a, c) -> mid(a))),
-            Map.entry("find", new Fn(2, 3, (a, c) -> position("find", a))),
-            Map.entry("search", new Fn(2, 3, (a, c) -> position("search", a))),
-            Map.entry("pad", new Fn(2, 4, Level11::pad)),
-            Map.entry("least", new Fn(1, 64, (a, c) -> pick("least", a, true))),
-            Map.entry("greatest", new Fn(1, 64, (a, c) -> pick("greatest", a, false))),
-            Map.entry("sum", new Fn(1, 2, Level11::sum)),
-            Map.entry("avg", new Fn(1, 2, Level11::avg)),
-            Map.entry("min", new Fn(1, 8, (a, c) -> pickOne("min", a, c))),
-            Map.entry("max", new Fn(1, 8, (a, c) -> pickOne("max", a, c))),
-            Map.entry("standardize", new Fn(3, 3, Level11::standardize)),
-            Map.entry("regex_extract", regexAsValueError("regex_extract", 2, 3)),
-            Map.entry("regex_replace", regexAsValueError("regex_replace", 3, 3)),
-            Map.entry("matches", regexAsValueError("matches", 2, 2)),
-            Map.entry("matches_case", regexAsValueError("matches_case", 2, 2))));
+    private static final Map<String, Fn> FUNCTIONS = strictLists(Ordered.map("range", new Fn(1, 3, (a, c) -> Ranges.range(a)), "span", new Fn(1, 2, (a, c) -> FunctionTable.core().get("range").apply(a, c)), "left", new Fn(2, 2, (a, c) -> part("left", a, true)), "right", new Fn(2, 2, (a, c) -> part("right", a, false)), "mid", new Fn(3, 3, (a, c) -> mid(a)), "find", new Fn(2, 3, (a, c) -> position("find", a)), "search", new Fn(2, 3, (a, c) -> position("search", a)), "pad", new Fn(2, 4, Level11::pad), "least", new Fn(1, 64, (a, c) -> pick("least", a, true)), "greatest", new Fn(1, 64, (a, c) -> pick("greatest", a, false)), "sum", new Fn(1, 2, Level11::sum), "avg", new Fn(1, 2, Level11::avg), "min", new Fn(1, 8, (a, c) -> pickOne("min", a, c)), "max", new Fn(1, 8, (a, c) -> pickOne("max", a, c)), "standardize", new Fn(3, 3, Level11::standardize), "regex_extract", regexAsValueError("regex_extract", 2, 3), "regex_replace", regexAsValueError("regex_replace", 3, 3), "matches", regexAsValueError("matches", 2, 2), "matches_case", regexAsValueError("matches_case", 2, 2)));
 
     /**
      * Level 1.1 (SPEC 5.1): an aggregate over a list refuses a first argument that is not a list ({@code RCH-2102}); level 1.0 recorded
      * an empty answer (0 for a sum). The aggregate itself is Core's, or this level's own ({@code sum}, {@code span}).
      */
     private static Map<String, Fn> strictLists(Map<String, Fn> own) {
-        Map<String, Fn> out = new java.util.HashMap<>(own);
+        Map<String, Fn> out = new LinkedHashMap<>(own);
         for (String name : com.ash.rachana.agg.CoreAggregates.LIST_FIRST) {
             Fn f = own.get(name);
             int[] arity = f != null ? new int[] {f.min(), f.max()} : FunctionTable.core().arityOf(name);
@@ -56,7 +39,7 @@ final class Level11 {
                 return (inner != null ? inner : FunctionTable.core().get(name)).apply(a, c);
             }));
         }
-        return Map.copyOf(out);
+        return Ordered.copy(out);
     }
 
     /** A refused pattern met at evaluation is the function's value error {@code RCH-2102} at level 1.1 (decision N5), not {@code RCH-4010}. */

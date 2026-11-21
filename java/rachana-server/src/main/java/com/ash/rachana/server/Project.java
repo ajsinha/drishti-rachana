@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The project folder the server serves: its Sutras ({@code sutras/**}{@code /*.sutra.yaml}, each checked at load with Core, problems
@@ -190,7 +191,7 @@ final class Project {
             }
             sutras.put(name, new Sutra(name, f, text, ps));
         }
-        return new State(Map.copyOf(sutras), java.util.Collections.unmodifiableMap(files), List.copyOf(problems), stamp);
+        return new State(Ordered.copy(sutras), java.util.Collections.unmodifiableMap(files), List.copyOf(problems), stamp);
     }
 
     /** The libraries, in order of sources; a name twice with different contents is refused (a problem) and offered from neither. */

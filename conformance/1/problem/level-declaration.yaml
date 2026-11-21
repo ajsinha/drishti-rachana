@@ -147,3 +147,96 @@ cases:
       ok: false
       problems:
         - { code: RCH-2008, severity: error, message: "this Sutra is written for Rachana 1.2; this host runs 1.1 (raise the host's language level)", path: /rachana }
+
+  - id: a-fragment-of-another-level-is-refused
+    kind: problem
+    source: SPEC 2.1 rule 4 (G3 gate F2, owner decision O1)
+    files:
+      total.v1.block.yaml: |
+        rachana: 1
+        block: total
+        version: 1
+        panels:
+          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
+    sutra: |
+      rachana: 1.2
+      sutra: lv
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { use: total@1 }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2008
+        severity: error
+        message: "fragment total@1 is written for Rachana 1.0 and the Sutra that uses it for 1.2: a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)"
+        range: { start: { line: 6, column: 5 } }
+
+  - id: a-fragment-without-the-key-is-level-1-0
+    kind: problem
+    source: SPEC 2.1 rule 4 (G3 gate F2, owner decision O1)
+    files:
+      total.v1.block.yaml: |
+        block: total
+        version: 1
+        panels:
+          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
+    sutra: |
+      rachana: 1.1
+      sutra: lv
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { use: total@1 }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2008
+        severity: error
+        message: "fragment total@1 is written for Rachana 1.0 and the Sutra that uses it for 1.1: a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)"
+        range: { start: { line: 6, column: 5 } }
+
+  - id: a-fragment-of-a-later-level-is-refused
+    kind: problem
+    source: SPEC 2.1 rule 4 (G3 gate F2, owner decision O1)
+    files:
+      total.v1.block.yaml: |
+        rachana: 1.2
+        block: total
+        version: 1
+        panels:
+          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
+    sutra: |
+      rachana: 1
+      sutra: lv
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { use: total@1 }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2008
+        severity: error
+        message: "fragment total@1 is written for Rachana 1.2 and the Sutra that uses it for 1.0: a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)"
+        range: { start: { line: 6, column: 5 } }
+
+  - id: a-fragment-of-the-sutras-level-is-read
+    kind: problem
+    source: SPEC 2.1 rule 4 (G3 gate F2)
+    files:
+      total.v1.block.yaml: |
+        rachana: 1.1
+        block: total
+        version: 1
+        panels:
+          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
+    sutra: |
+      rachana: 1.1
+      sutra: lv
+      version: 1
+      match: { kind: demo }
+      panels:
+        - { use: total@1 }
+    expect: {"ok": true, "problems": []}

@@ -12,7 +12,7 @@ cases:
     source: "LIBRARIES 4.2 (a name parameter is checked against the user's declared state)"
     files: &chooser
       chooser.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: chooser
         version: 1
         doc:
@@ -78,7 +78,7 @@ cases:
     source: "LIBRARIES 6.3 (not two-way binding: the fragment reads the value as an ordinary value parameter)"
     files:
       peek.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: peek
         version: 1
         doc:
@@ -113,7 +113,7 @@ cases:
     source: "LIBRARIES 4.2 (selection: a name of the user's selections, I2)"
     files:
       feeder.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: feeder
         version: 1
         doc:

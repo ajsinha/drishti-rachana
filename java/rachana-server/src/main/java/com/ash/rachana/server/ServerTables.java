@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The configured tables as live tables ({@code rachana-live}): one {@link LiveTables} provider, each table a declaration made in code
@@ -78,7 +79,7 @@ final class ServerTables implements AutoCloseable {
         ServerConfig.Edits ed = config.edits();
         if (ed != null && ed.journal() != null) {                      // the edit path: the outbox over its journal, writing through JDBC
             writer = new JdbcWriter(drivers);
-            java.util.Set<String> hold = java.util.Set.copyOf(config.approvals().hold());
+            java.util.Set<String> hold = Ordered.copySet(config.approvals().hold());
             com.ash.rachana.live.spi.ChangeWriter route = ch -> {
                 if (!fileWriter.writes(ch.table())) {
                     return writer.write(ch);
@@ -113,7 +114,7 @@ final class ServerTables implements AutoCloseable {
             th.setDaemon(true);
             return th;
         });
-        retry.scheduleWithFixedDelay(() -> pending.keySet().forEach(n -> {
+        retry.scheduleWithFixedDelay(() -> new java.util.TreeSet<>(pending.keySet()).forEach(n -> {
             if (sources.containsKey(n) && declare(sources.get(n))) {
                 pending.remove(n);
             }
@@ -212,9 +213,9 @@ final class ServerTables implements AutoCloseable {
         return live;
     }
 
-    /** Tables not served yet (their first read failed), with the reason. */
+    /** Tables not served yet (their first read failed), with the reason; by name (the map behind it has no order). */
     Map<String, String> pending() {
-        return Map.copyOf(pending);
+        return Ordered.copy(new java.util.TreeMap<>(pending));
     }
 
     /** Declares a table once its columns are known; false (logged) when the first read failed. */

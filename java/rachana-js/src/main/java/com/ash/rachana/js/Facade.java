@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The minimal facade both bundles export (split step A15): JSON text in, JSON text out, every answer the document the conformance
@@ -100,7 +101,7 @@ final class Facade {
 
     /** The language levels this runtime reads and the default of the tools: {@code {"default": "1.2", "levels": ["1.0", ...]}} (Grammar.DEFAULT_LEVEL, the one place). */
     static String levels() {
-        return Json.write(java.util.Map.of("default", com.ash.rachana.profile.Grammar.DEFAULT_LEVEL, "levels", com.ash.rachana.profile.Grammar.LEVELS));
+        return Json.write(Ordered.map("default", com.ash.rachana.profile.Grammar.DEFAULT_LEVEL, "levels", com.ash.rachana.profile.Grammar.LEVELS));
     }
 
     /**

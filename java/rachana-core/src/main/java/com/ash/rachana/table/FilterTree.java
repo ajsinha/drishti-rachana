@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The filter syntax tree of the Data Protocol (section 7, {@code spec/1/data-protocol/filter.json}) in both directions:
@@ -33,17 +34,17 @@ public final class FilterTree {
     }
 
     /** Operations of exactly two arguments. */
-    public static final Set<String> TWO = Set.of("==", "!=", "<", "<=", ">", ">=", "-", "/", "%", "contains", "starts_with", "ends_with", "has",
+    public static final Set<String> TWO = Ordered.set("==", "!=", "<", "<=", ">", ">=", "-", "/", "%", "contains", "starts_with", "ends_with", "has",
             "any_of", "all_of", "in", "not-in");
     /** Operations of two or more. */
-    public static final Set<String> MANY = Set.of("&&", "||", "+", "*");
+    public static final Set<String> MANY = Ordered.set("&&", "||", "+", "*");
     /** Operations of exactly one. */
-    public static final Set<String> ONE = Set.of("!", "neg", "is-null", "lower", "upper", "len", "abs", "floor", "ceiling", "year", "quarter",
+    public static final Set<String> ONE = Ordered.set("!", "neg", "is-null", "lower", "upper", "len", "abs", "floor", "ceiling", "year", "quarter",
             "month", "day");
     /** Functions of the subset (the calls that may appear in a tree by name). */
-    public static final Set<String> FUNCTIONS = Set.of("coalesce", "lower", "upper", "contains", "starts_with", "ends_with", "len", "abs",
+    public static final Set<String> FUNCTIONS = Ordered.set("coalesce", "lower", "upper", "contains", "starts_with", "ends_with", "len", "abs",
             "round", "floor", "ceiling", "year", "quarter", "month", "day", "has", "any_of", "all_of");
-    private static final Set<String> BINARY = Set.of("==", "!=", "<", "<=", ">", ">=", "+", "-", "*", "/", "%");
+    private static final Set<String> BINARY = Ordered.set("==", "!=", "<", "<=", ">", ">=", "+", "-", "*", "/", "%");
 
     /** A refusal of a received tree: the Data Protocol code ({@code rdp.query.invalid}, {@code rdp.column.unknown}) and its fields. */
     public static final class Refused extends RuntimeException {
@@ -353,7 +354,7 @@ public final class FilterTree {
         if (m.containsKey("lit")) {
             Object type = m.get("type");
             if (type != null) {
-                if (!(m.get("lit") instanceof String s) || !Set.of("date", "timestamp", "decimal").contains(type)) {
+                if (!(m.get("lit") instanceof String s) || !Ordered.set("date", "timestamp", "decimal").contains(type)) {
                     throw invalid("a literal's type is date, timestamp or decimal, on a text literal");
                 }
                 boolean ok = switch ((String) type) {

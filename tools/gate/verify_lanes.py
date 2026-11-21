@@ -4,7 +4,8 @@
 """The lanes of `./mvnw verify` that are not Java tests (G2 gate F3, owner decision O3): everything G2 built runs in the build, nothing is
 skipped. rachana-guards runs one lane per Maven execution (phase verify, after every module is packaged):
 
-    conformance  the suite at EVERY language level on the JVM runtime and on the Node bundle (tools), byte for byte the same results; the
+    conformance  the suite at EVERY language level on the JVM runtime and on the Node bundle (tools), byte for byte the same results, and
+                 a second JVM run at the newest level, byte for byte the first; the
                  runtime bundle against the tools bundle (tools/js/build_js.py --check-only); no failing case, verified or not
     protocol     the Data Protocol cases against the JVM reference, the Python host and the JVM live server (every case, live tables too)
     pytest       the Python SDK's tests with the bundles in place, the V8 engine and both web adapters: any skipped test fails the lane
@@ -66,6 +67,13 @@ def conformance(env: dict[str, str]) -> list[str]:
             if all(p.is_file() for p in made.values()):
                 same = made["jvm"].read_bytes() == made["node"].read_bytes()
                 need(same, f"level {level}: the JVM and the Node bundle answered different bytes", failures)
+        # G3 gate F1: a second JVM process at the newest level answers the same bytes as the first (an order drawn afresh per run,
+        # like Map.of's, shows here even where Node happens to agree with one of the runs)
+        first, again = Path(tmp) / f"jvm-{levels[-1]}.jsonl", Path(tmp) / "jvm-again.jsonl"
+        r = run([sys.executable, driver, "--jvm", "--profiles", "core,drishti", "--language", levels[-1], "--out", again,
+                 "--summary", Path(tmp) / "jvm-again.summary.json"], env, quiet=True)
+        need(r.returncode == 0 and first.is_file() and again.is_file() and first.read_bytes() == again.read_bytes(),
+             f"level {levels[-1]}: two JVM runs answered different bytes", failures)
     r = run([sys.executable, ROOT / "tools" / "js" / "build_js.py", "--check-only"], env, quiet=True)
     need(r.returncode == 0, "the runtime bundle differs from the tools bundle (build_js.py --check-only)", failures)
     from build_js import brotli_size, size_guard

@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The additions of a host that serves <em>entities of kinds</em> (split step A7; docs/design/CORE_AND_PROFILES.md section 1): the
@@ -113,7 +114,7 @@ public final class Entities {
                     return new Match("?", null, 0);
                 }
                 n.map().forEach((k, v) -> {
-                    if (!Set.of("kind", "where", "priority").contains(k)) {
+                    if (!Ordered.set("kind", "where", "priority").contains(k)) {
                         c.problem("RCH-2011", "unknown key '" + k + "' in match", v);
                     }
                 });
@@ -165,9 +166,9 @@ public final class Entities {
                 Collection<String> served = kinds.get();
                 Map<String, Object> props = new LinkedHashMap<>();
                 props.put("kind", served == null || served.isEmpty() ? text("The entity kind")
-                        : Map.of("type", "string", "enum", List.copyOf(new TreeSet<>(served)), "description", "The entity kind"));
+                        : Ordered.map("type", "string", "enum", List.copyOf(new TreeSet<>(served)), "description", "The entity kind"));
                 props.put("where", text(EL + " that must be true for the Sutra to apply"));
-                props.put("priority", Map.of("type", "integer", "description", "Higher wins when several Sutras match"));
+                props.put("priority", Ordered.map("type", "integer", "description", "Higher wins when several Sutras match"));
                 Map<String, Object> o = new LinkedHashMap<>();
                 o.put("type", "object");
                 o.put("properties", props);
@@ -179,7 +180,7 @@ public final class Entities {
     }
 
     private static Map<String, Object> text(String description) {
-        return Map.of("type", "string", "description", description);
+        return Ordered.map("type", "string", "description", description);
     }
 
     private static Object plain(PNode n) {

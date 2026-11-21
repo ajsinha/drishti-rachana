@@ -60,7 +60,7 @@ cases:
       rachana_libs/fin/MANIFEST.sha384: |
         db106a3e6b152c7ece984ce582ece8dd99f8763e70e5e6044dc18b57593f5d444618670e9ea8df096e01d179adcf0520  LICENSE
         37a8aeb54bf07e1b10c17e6b95de371f6c87c5e894ac195cf346f4506da6cd97fc36f07287b149f91aa88061b1a911d5  fin.rachana-lib.yaml
-        7faeedc7c498df8f710f94bf5962e8ff4502b71d2a0d1736878e01095c77bfa24036f6b51b3228313151fc9925b9292f  fragments/carry-figure.v1.fragment.yaml
+        1d8a7ad1b4c69e0add4c77bbb5800b24de76a581576680f134a6d2d2d0ff44e1a60be648f70be9217e20ed1a7863b905  fragments/carry-figure.v1.fragment.yaml
         e6fb42724369644d1d98dda4ee6c45fb249de01c2ab035e9624441d7af93c5066abde41ab0b055cea2f8e90cddd50982  functions/carry.yaml
       rachana_libs/fin/fin.rachana-lib.yaml: |
         rachana: 1
@@ -84,7 +84,7 @@ cases:
           params: { notional: decimal, rate: decimal, days: integer }
           is: "round(notional * fin.bp(rate) / 10000 * days / 360, 2)"
       rachana_libs/fin/fragments/carry-figure.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: carry-figure
         version: 1
         doc:

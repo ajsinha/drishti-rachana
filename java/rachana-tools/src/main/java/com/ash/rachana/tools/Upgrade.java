@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * {@code rachana upgrade}: a Sutra written for language level 1.0 (and the fragments it uses) rewritten for a later level with the same
@@ -60,23 +61,23 @@ public final class Upgrade {
     }
 
     /** The expression options a Sutra and a fragment write (SutraExpressions' tables, by key name). */
-    static final Set<String> EXPRESSION_KEYS = Set.of("bind", "rows", "where", "when", "value", "delta", "max", "min", "highlight", "each",
+    static final Set<String> EXPRESSION_KEYS = Ordered.set("bind", "rows", "where", "when", "value", "delta", "max", "min", "highlight", "each",
             "nodes", "edges", "limit", "children", "crumb", "root", "across", "region", "from", "to", "field", "by", "tabTitle", "source", "mark",
             "moreLabel");
     /** The template options. */
-    static final Set<String> TEMPLATE_KEYS = Set.of("title", "text", "pill", "waits", "confirm");
+    static final Set<String> TEMPLATE_KEYS = Ordered.set("title", "text", "pill", "waits", "confirm");
     /** Subtrees that hold prose or another profile's expressions (the form profile reads alike at every level, DECISIONS A7b). */
-    static final Set<String> SKIPPED = Set.of("doc", "description", "notes", "form", "label", "examples", "params", "tone", "fmt", "kind", "id",
+    static final Set<String> SKIPPED = Ordered.set("doc", "description", "notes", "form", "label", "examples", "params", "tone", "fmt", "kind", "id",
             "code", "key", "area", "keys", "phone", "layout", "options");
 
     /** Functions whose value is a whole number however their arguments are written. */
-    private static final Set<String> WHOLE = Set.of("size", "len", "count", "days", "year", "quarter", "month", "week", "weekday", "day", "find",
+    private static final Set<String> WHOLE = Ordered.set("size", "len", "count", "days", "year", "quarter", "month", "week", "weekday", "day", "find",
             "search", "code", "days_between", "business_days_between", "days360");
     /** The functions whose positions or order of texts count code points from 1.1 (Level11), less the others rules name. */
-    private static final Set<String> TEXT_FUNCTIONS = Set.of("left", "right", "mid", "find", "search", "pad", "least", "greatest", "sort");
+    private static final Set<String> TEXT_FUNCTIONS = Ordered.set("left", "right", "mid", "find", "search", "pad", "least", "greatest", "sort");
     /** The list aggregates that refuse a first argument that is not a list from 1.1 (Level11). */
-    private static final Set<String> AGGREGATES = Set.of("avedev", "avg", "corr", "count", "covar", "covar_pop", "cv", "devsq", "distinct", "geomean", "harmean", "intercept", "iqr", "kth_largest", "kth_smallest", "kurtosis", "median", "mode", "mode_multi", "nmiss", "percent_rank_of", "percentile", "percentile_exc", "product", "rank_avg", "rsq", "skewness", "skewness_pop", "slope", "stddev", "stddev_pop", "stderr", "steyx", "string_agg", "sumproduct", "sumsq", "trimmean", "variance", "variance_pop", "wavg", "sum");
-    private static final Set<String> REGEX = Set.of("regex_extract", "regex_replace", "matches", "matches_case");
+    private static final Set<String> AGGREGATES = Ordered.set("avedev", "avg", "corr", "count", "covar", "covar_pop", "cv", "devsq", "distinct", "geomean", "harmean", "intercept", "iqr", "kth_largest", "kth_smallest", "kurtosis", "median", "mode", "mode_multi", "nmiss", "percent_rank_of", "percentile", "percentile_exc", "product", "rank_avg", "rsq", "skewness", "skewness_pop", "slope", "stddev", "stddev_pop", "stderr", "steyx", "string_agg", "sumproduct", "sumsq", "trimmean", "variance", "variance_pop", "wavg", "sum");
+    private static final Set<String> REGEX = Ordered.set("regex_extract", "regex_replace", "matches", "matches_case");
 
     /** As {@link #upgrade(String, String, String, FunctionTable)} over Core's functions. */
     public static Result upgrade(String file, String text, String to) {
@@ -386,7 +387,7 @@ public final class Upgrade {
         }
 
         static boolean isOperator(ElSource.Tok t) {
-            return t != null && "OP".equals(t.type()) && Set.of("+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=").contains(t.text());
+            return t != null && "OP".equals(t.type()) && Ordered.set("+", "-", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=").contains(t.text());
         }
 
         void treeRules(YamlScalarSpans.Scalar s, String written, String src, ElSource.Parsed p) {
@@ -398,7 +399,7 @@ public final class Upgrade {
                     if (why != null) {
                         exact.add(why);
                     }
-                    if (Set.of("<", "<=", ">", ">=").contains(b.op()) && !numeric(b.l(), src, p) && !numeric(b.r(), src, p)) {
+                    if (Ordered.set("<", "<=", ">", ">=").contains(b.op()) && !numeric(b.l(), src, p) && !numeric(b.r(), src, p)) {
                         textOrder[0] = true;
                     }
                 } else if (e instanceof Expr.Call c) {
@@ -497,8 +498,8 @@ public final class Upgrade {
             if (e instanceof Expr.Lit lit) {
                 return lit.value() instanceof Number || lit.value() instanceof String t && ElSource.readsAsNumber(t, true);
             }
-            return e instanceof Expr.Index || e instanceof Expr.Binary b && Set.of("+", "-", "*", "/", "%").contains(b.op())
-                    || e instanceof Expr.Neg || e instanceof Expr.Call c && (WHOLE.contains(c.name()) || Set.of("sum", "avg", "min", "max", "abs",
+            return e instanceof Expr.Index || e instanceof Expr.Binary b && Ordered.set("+", "-", "*", "/", "%").contains(b.op())
+                    || e instanceof Expr.Neg || e instanceof Expr.Call c && (WHOLE.contains(c.name()) || Ordered.set("sum", "avg", "min", "max", "abs",
                     "round", "floor", "ceiling", "median", "percentile", "wavg").contains(c.name()));
         }
 

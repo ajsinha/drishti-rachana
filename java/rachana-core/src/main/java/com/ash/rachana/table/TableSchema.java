@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * A table's schema document (Data Protocol section 2, {@code spec/1/data-protocol/schema.json}): name, columns, key, capabilities, and
@@ -27,7 +28,7 @@ import java.util.Set;
 public record TableSchema(String name, List<Column> columns, List<String> key, Set<String> can, Map<String, Object> doc) {
 
     /** The types of section 3.1. */
-    public static final Set<String> TYPES = Set.of("string", "integer", "decimal", "number", "boolean", "date", "timestamp", "time", "list", "object");
+    public static final Set<String> TYPES = Ordered.set("string", "integer", "decimal", "number", "boolean", "date", "timestamp", "time", "list", "object");
 
     /** One column: {@code name}, {@code type}, whether it may be null, and whether it is masked for this reader. */
     public record Column(String name, String type, boolean nullable, boolean masked) {}
@@ -35,7 +36,7 @@ public record TableSchema(String name, List<Column> columns, List<String> key, S
     public TableSchema {
         columns = List.copyOf(columns);
         key = List.copyOf(key);
-        can = Set.copyOf(can);
+        can = Ordered.copySet(can);
     }
 
     /** A schema from its JSON document (plain values: maps, lists, text, numbers). Unknown fields are ignored (section 14). */

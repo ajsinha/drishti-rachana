@@ -128,7 +128,8 @@ apps, `rachana lint` and the Node commands.
 ### Where the artifacts go
 
 An install writes `~/.m2/repository/com/ash/rachana/...` (Windows `C:\Users\<user>\.m2\repository\com\ash\rachana\...`). The install order
-is **Rachana (tag) → Lake (tag) → Drishti**: each one's tag is installed, never a branch, before the next one builds.
+is **Drishti Tools (tag) → Rachana (tag) → Lake (tag) → Drishti**: each one's tag is installed, never a branch, before the next one
+builds (`rachana-server` uses Tools' `tools-csv`, version `drishti.tools.version` in `java/pom.xml`; no other module uses Tools).
 
 ### Windows and company networks: `PKIX path building failed`
 

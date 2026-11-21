@@ -5,6 +5,7 @@
 package com.ash.rachana.el.check;
 
 import java.util.Map;
+import com.ash.rachana.model.Ordered;
 
 /**
  * How the checker words a problem's fix: in Rachana's own spelling, or in DEL's while DEL is still read (its checker calls this one
@@ -14,7 +15,7 @@ import java.util.Map;
 public enum Spelling {
     RACHANA("true or false", "!= null", "== null", " = ", "c ? a : b", "x > 0 || x != null", Map.of()),
     DEL("True or False", "is not None", "is None", "=", "a if c else b", "x > 0 or x is not None",
-            Map.of("starts_with", "startswith", "ends_with", "endswith", "latest", "last", "earliest", "first"));
+            Ordered.map("starts_with", "startswith", "ends_with", "endswith", "latest", "last", "earliest", "first"));
 
     private final String booleans;
     private final String notNull;

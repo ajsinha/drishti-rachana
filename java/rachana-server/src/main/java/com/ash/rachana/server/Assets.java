@@ -19,6 +19,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The page assets, from the jar (copied there from the repository at build time; never from a CDN): {@code <rachana-view>} and its
@@ -35,13 +36,7 @@ final class Assets {
     static final String ROOT = "rachana-server/assets/";
     static final String STUB_CSS = "/* the rules of this sheet are in the pack's drishti-elements.css */\n";
     private static final Pattern SAFE = Pattern.compile("[A-Za-z0-9_+@.-]+(/[A-Za-z0-9_+@.-]+)*");
-    private static final Map<String, String> TYPES = Map.ofEntries(Map.entry("html", "text/html; charset=utf-8"),
-            Map.entry("js", "text/javascript; charset=utf-8"), Map.entry("mjs", "text/javascript; charset=utf-8"),
-            Map.entry("css", "text/css; charset=utf-8"), Map.entry("json", "application/json"), Map.entry("yaml", "text/plain; charset=utf-8"),
-            Map.entry("yml", "text/plain; charset=utf-8"), Map.entry("svg", "image/svg+xml"), Map.entry("png", "image/png"),
-            Map.entry("jpg", "image/jpeg"), Map.entry("jpeg", "image/jpeg"), Map.entry("gif", "image/gif"), Map.entry("ico", "image/x-icon"),
-            Map.entry("woff", "font/woff"), Map.entry("woff2", "font/woff2"), Map.entry("txt", "text/plain; charset=utf-8"),
-            Map.entry("md", "text/plain; charset=utf-8"), Map.entry("csv", "text/csv; charset=utf-8"), Map.entry("wasm", "application/wasm"));
+    private static final Map<String, String> TYPES = Ordered.map("html", "text/html; charset=utf-8", "js", "text/javascript; charset=utf-8", "mjs", "text/javascript; charset=utf-8", "css", "text/css; charset=utf-8", "json", "application/json", "yaml", "text/plain; charset=utf-8", "yml", "text/plain; charset=utf-8", "svg", "image/svg+xml", "png", "image/png", "jpg", "image/jpeg", "jpeg", "image/jpeg", "gif", "image/gif", "ico", "image/x-icon", "woff", "font/woff", "woff2", "font/woff2", "txt", "text/plain; charset=utf-8", "md", "text/plain; charset=utf-8", "csv", "text/csv; charset=utf-8", "wasm", "application/wasm");
 
     private final String version;
     private final String elements;
@@ -69,7 +64,7 @@ final class Assets {
                 s.add(elementsDir() + "/" + m.group(1));
             }
         }
-        this.stubs = Set.copyOf(s);
+        this.stubs = Ordered.copySet(s);
     }
 
     String version() {

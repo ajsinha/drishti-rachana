@@ -6,6 +6,10 @@ file keeps its meaning on a 1.2 host without any change. `rachana upgrade` is fo
 rewrites a level-1.0 Sutra or fragment for a later level **with the same meaning**, and tells you about every place where the meaning
 could differ.
 
+A Sutra uses fragments of its own level only: a level-1.2 Sutra that uses a fragment still at 1.0 (or without the key, which is 1.0)
+is refused with `RCH-2008` naming both levels, never read at either level. Upgrade a Sutra and the fragments it uses together (one
+run over their folders does).
+
 ## 1. Run it
 
 ```bash

@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.ash.rachana.model.Ordered;
 
 /**
  * The {@code form} profile of Rachana-EL (split step A7b, owner 2026-11-21): a form's rules, hints and {@code =} defaults are Rachana-EL,
@@ -30,7 +31,7 @@ public final class FormRules {
     /** The most characters of one expression. */
     public static final int MAX_LENGTH = 400;
 
-    private static final Map<String, Integer> FUNCTIONS = Map.of("empty", 1, "len", 1, "abs", 1, "min", 2, "max", 2);
+    private static final Map<String, Integer> FUNCTIONS = Ordered.map("empty", 1, "len", 1, "abs", 1, "min", 2, "max", 2);
 
     /** The profile's one function the Core table does not have: {@code empty(x)} (the others are Core's names, read with this meaning). */
     private static final FunctionProvider FORM = new FunctionProvider() {

@@ -5,13 +5,13 @@
 package com.ash.rachana.el;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 /**
  * The one table of Rachana-EL functions, filled by the families: {@link LogicFunctions} and {@link InfoFunctions}, {@link MathFunctions}
@@ -118,13 +118,13 @@ public final class Functions {
     /** What the families register into, with the parts of one table their functions use; each name once. */
     static final class Table {
         final Map<String, int[]> arity = new TreeMap<>();
-        final Map<String, ElFunction> functions = new HashMap<>();
-        final Map<String, ElForm> forms = new HashMap<>();
-        final Set<String> syntax = new HashSet<>();
-        final Set<String> passMask = new HashSet<>();
-        final Map<String, Function<List<Expr>, String>> checks = new HashMap<>();
-        final Map<String, String> old = new HashMap<>();
-        final Map<String, String> family = new HashMap<>();
+        final Map<String, ElFunction> functions = new LinkedHashMap<>();
+        final Map<String, ElForm> forms = new LinkedHashMap<>();
+        final Set<String> syntax = new LinkedHashSet<>();
+        final Set<String> passMask = new LinkedHashSet<>();
+        final Map<String, Function<List<Expr>, String>> checks = new LinkedHashMap<>();
+        final Map<String, String> old = new LinkedHashMap<>();
+        final Map<String, String> family = new LinkedHashMap<>();
         private final Aggregates aggregates;
         private final Calendars calendars;
         private final Regexes regexes;

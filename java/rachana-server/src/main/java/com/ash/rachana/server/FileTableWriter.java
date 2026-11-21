@@ -18,12 +18,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedHashSet;
+import com.ash.tools.csv.CsvReader;
+import com.ash.tools.csv.CsvWriter;
 
 /**
  * The server's {@link ChangeWriter} over a file table (LIVE_TABLES 10): a change to a live table whose snapshot is a CSV, JSON (an array, or
@@ -274,15 +276,13 @@ final class FileTableWriter implements ChangeWriter {
             return new Doc(form, new ArrayList<>(cols), rows, wrapper);
         }
 
-        /** The CSV's column names from its first line (the file may hold no row yet). */
+        /** The CSV's column names from its first record (the file may hold no row yet), trimmed as {@link Rows#csv} names them. */
         private static List<String> header(String text) {
-            int nl = text.indexOf('\n');
-            String first = nl < 0 ? text : text.substring(0, nl);
-            if (first.isBlank()) {
+            List<List<String>> records = CsvReader.parse(text);
+            if (records.isEmpty() || CsvReader.blank(records.get(0))) {
                 return new ArrayList<>();
             }
-            List<Map<String, Object>> one = Rows.csv(first.replace("\r", "") + "\n\"\"\n");
-            return one.isEmpty() ? new ArrayList<>() : new ArrayList<>(one.get(0).keySet());
+            return new ArrayList<>(records.get(0).stream().map(String::trim).toList());
         }
 
         /** A value as this file holds it: a CSV's text, a JSON value as it is. */
@@ -322,24 +322,21 @@ final class FileTableWriter implements ChangeWriter {
 
         private String csv() {
             List<String> cols = new ArrayList<>(columns);
-            Set<String> seen = new HashSet<>(cols);
+            Set<String> seen = new LinkedHashSet<>(cols);
             rows.forEach(r -> r.keySet().forEach(k -> {
                 if (seen.add(k)) {
                     cols.add(k);
                 }
             }));
             StringBuilder b = new StringBuilder();
-            b.append(String.join(",", cols.stream().map(Doc::quote).toList())).append('\n');
+            // Drishti Tools' writer (RFC 4180 quoting), LF ends as the files are read; no formula guard: the file is the table's own
+            // source, read back by this server, so a cell is written exactly as the editor gave it
+            CsvWriter w = CsvWriter.to(b).lineEnd("\n");
+            w.row(cols);
             for (Map<String, Object> r : rows) {
-                List<String> cells = new ArrayList<>();
-                cols.forEach(c -> cells.add(r.get(c) == null ? "" : quote(String.valueOf(r.get(c)))));
-                b.append(String.join(",", cells)).append('\n');
+                w.row(cols.stream().map(r::get).toList());
             }
             return b.toString();
-        }
-
-        private static String quote(String s) {
-            return s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r") ? "\"" + s.replace("\"", "\"\"") + "\"" : s;
         }
     }
 }

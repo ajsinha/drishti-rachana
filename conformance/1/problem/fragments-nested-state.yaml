@@ -12,7 +12,7 @@ cases:
     source: "LIBRARIES 7.2 (outputs: the private state a user may read, never write)"
     files: &nest
       picker.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: picker
         version: 1
         doc:
@@ -31,7 +31,7 @@ cases:
             on:
               row-click: [ { set: { state: chosen, to: "@.id" } } ]
       peek.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: peek
         version: 1
         doc:
@@ -68,7 +68,7 @@ cases:
     source: "LIBRARIES 7.2 (everything else inside is invisible to the user)"
     files:
       picker.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: picker
         version: 1
         doc:
@@ -84,7 +84,7 @@ cases:
             rows: arg.rows
             columns: [ { label: Id, bind: "@.id" } ]
       wrap.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: wrap
         version: 1
         doc:
@@ -119,7 +119,7 @@ cases:
     source: "decision S1-OPEN c (a stateful fragment requires as:); LIBRARIES 7.2 (two uses are two instances only with as:)"
     files:
       picker.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: picker
         version: 1
         doc:
@@ -134,7 +134,7 @@ cases:
             rows: arg.rows
             columns: [ { label: Id, bind: "@.id" } ]
       wrap.v1.fragment.yaml: |
-        rachana: 1
+        rachana: 1.2
         fragment: wrap
         version: 1
         doc:

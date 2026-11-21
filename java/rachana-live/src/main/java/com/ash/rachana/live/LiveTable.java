@@ -27,7 +27,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import com.ash.rachana.model.Ordered;
+import java.util.LinkedHashSet;
 
 /**
  * One live table (LIVE_TABLES 1.1 to 1.4): a declaration's snapshot merged by key and record version with its stream's changes, shared by
@@ -63,7 +64,7 @@ final class LiveTable implements LiveStream.Listener {
     private final KeyedRows keys;
 
     private final Map<String, Row> rows = new LinkedHashMap<>();     // whole: every row; paged: the live side
-    private final Set<String> removed = new HashSet<>();               // paged: keys the live side deleted or that left the condition
+    private final Set<String> removed = new LinkedHashSet<>();               // paged: keys the live side deleted or that left the condition
     private final List<Map<String, Object>> log = new ArrayList<>();
     final List<Subscription> subs = new CopyOnWriteArrayList<>();
     private final Deque<Object[]> early = new ArrayDeque<>();
@@ -358,9 +359,9 @@ final class LiveTable implements LiveStream.Listener {
         } catch (UnsupportedOperationException e) {
             List<Object> eq = new ArrayList<>();
             for (int i = 0; i < spec.key().size(); i++) {
-                eq.add(Map.of("op", "==", "args", List.of(Map.of("col", spec.key().get(i)), Map.of("lit", key.get(i)))));
+                eq.add(Ordered.map("op", "==", "args", List.of(Map.of("col", spec.key().get(i)), Map.of("lit", key.get(i)))));
             }
-            Map<String, Object> page = source.page(Map.of("filter", eq.size() == 1 ? eq.get(0) : Map.of("op", "&&", "args", eq), "limit", 1L));
+            Map<String, Object> page = source.page(Ordered.map("filter", eq.size() == 1 ? eq.get(0) : Ordered.map("op", "&&", "args", eq), "limit", 1L));
             got = com.ash.rachana.data.TableClient.rows(page);
         }
         if (got.isEmpty() || !where.test(got.get(0))) {
@@ -482,7 +483,7 @@ final class LiveTable implements LiveStream.Listener {
     synchronized Object[] liveSide() {
         Map<String, Map<String, Object>> live = new LinkedHashMap<>();
         rows.forEach((k, r) -> live.put(k, r.row()));
-        return new Object[] {live, new HashSet<>(removed)};
+        return new Object[] {live, new LinkedHashSet<>(removed)};
     }
 
     String keyOf(Map<String, Object> row) {

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import com.ash.rachana.model.Ordered;
 
 /**
  * What one reader may see of one table (LIVE_TABLES 5), made by the host's {@link Authoriser} for each request and never kept beyond it
@@ -26,8 +27,8 @@ public record ReaderView(String audience, Object rowFilter, Set<String> maskedCo
 
     public ReaderView {
         audience = audience == null ? "" : audience;
-        maskedColumns = maskedColumns == null ? Set.of() : Set.copyOf(maskedColumns);
-        editableColumns = editableColumns == null ? Set.of() : Set.copyOf(editableColumns);
+        maskedColumns = maskedColumns == null ? Set.of() : Ordered.copySet(maskedColumns);
+        editableColumns = editableColumns == null ? Set.of() : Ordered.copySet(editableColumns);
     }
 
     /** A reader who sees every row as stored and may edit nothing. */

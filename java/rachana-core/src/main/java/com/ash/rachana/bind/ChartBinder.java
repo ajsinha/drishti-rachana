@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -371,7 +370,7 @@ final class ChartBinder {
         String group = p.option("group").orElse("type");
         String self = c.doc().ref().id();
         List<PanelData.Node> out = new ArrayList<>();
-        Set<String> ids = new HashSet<>();
+        Set<String> ids = new LinkedHashSet<>();
         int more = 0;
         for (int i = 0; i < nodes.size(); i++) {
             Node n = nodes.get(i);

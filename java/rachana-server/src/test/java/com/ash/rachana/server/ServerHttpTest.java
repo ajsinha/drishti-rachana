@@ -164,6 +164,33 @@ class ServerHttpTest {
         assertEquals(400, get("/static/%2e%2e/users.yaml", alice).statusCode());
     }
 
+    /** G3 gate F1: the home page lists the Sutras by name, the same bytes at every start (never Map.copyOf's order). */
+    @Test
+    void theHomePageListsTheSutrasByNameAtEveryStart() throws Exception {
+        server.close();
+        for (String n : List.of("zeta", "alpha", "mid", "beta")) {
+            Files.writeString(tmp.resolve("project/sutras/" + n + ".sutra.yaml"), Fixture.SUTRA.replace("sutra: sales", "sutra: " + n));
+        }
+        String first = null;
+        for (int start = 0; start < 3; start++) {
+            server = RachanaServer.start(ServerConfig.read(fx.config), fx.log);
+            String alice = signIn("alice", Fixture.PASSWORD);
+            String body = get("/", alice).body();
+            List<Integer> at = List.of("alpha", "beta", "mid", "sales", "zeta").stream().map(n -> body.indexOf("/v/" + n + "\"")).toList();
+            assertTrue(at.stream().allMatch(i -> i >= 0), body);
+            assertEquals(at.stream().sorted().toList(), at, "the Sutras by name: " + body);
+            String list = body.substring(at.get(0), at.get(4));
+            if (first == null) {
+                first = list;
+            } else {
+                assertEquals(first, list);
+            }
+            if (start < 2) {
+                server.close();
+            }
+        }
+    }
+
     @Test
     void signOutNeedsTheSessionsToken() throws Exception {
         String alice = signIn("alice", Fixture.PASSWORD);

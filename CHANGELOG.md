@@ -15,6 +15,9 @@ Entries are written per release; the regime's unreleased work is listed after th
   catalogue (Brotli runtime 463 KB, tools 483 KB).
 - **Deterministic ViewModel bytes**: an event's `wire.emits` keys (`name`, `on`) and a child group's keys in declaration order (were
   `Map.of`'s, varying from run to run); the same for a plan's `&&` filter and the chart binder's engine view. `ScreenWireOrderTest`.
+- **L-21, never silent over derived rows** (library finding): `difference` and `intersect` keep their first list's rows (`union` when
+  both lists are one table's), so a filter's `@.<column>` over them is renamed; a filter over rows the mapping cannot follow
+  (`map(arg.rows, @)[?@.amount > 0]`) is `RCH-2121`, never a silent read of nothing. Cases sutra +1, problem +1.
 
 ### Live tables, read side (G2 lane L, LIVE_TABLES L1 to L6)
 

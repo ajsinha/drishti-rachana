@@ -240,6 +240,45 @@ cases:
         /panels/3/data/value/text: Rates
         /panels/7/data/text: Total 12 over 2 desks
 
+  - id: set-operations-keep-the-tables-rows
+    kind: sutra
+    source: L-21 (3); library finding (core library 1.0.0)
+    note: "difference and intersect give rows of their first list, union rows of one table when both lists are: a filter's @.amount over them is renamed to the caller's MTM_USD."
+    files:
+      desk-sets.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-sets
+        version: 1
+        doc:
+          summary: Large amounts among sets of desks.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - { id: rest, kind: metric, label: Rest, value: "count(difference(arg.rows, take(arg.rows, 1))[?@.amount > 1000])" }
+          - { id: both, kind: metric, label: Both, value: "count(intersect(arg.rows, arg.rows)[?@.amount > 1000])" }
+          - { id: any, kind: metric, label: Any, value: "count(union(arg.rows, arg.rows)[?@.amount > 1000])" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 }, { BOOK_DESK: Credit, MTM_USD: 2000 } ] }
+      panels:
+        - use: desk-sets@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      at:
+        /panels/0/data/value/text: "1"
+        /panels/1/data/value/text: "2"
+        /panels/2/data/value/text: "2"
+
   - id: function-parameter-takes-the-callers-lambda
     kind: sutra
     source: L-21 (2); LIBRARIES 4.2 (fn); EL_EXPANSION X13

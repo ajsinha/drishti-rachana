@@ -17,6 +17,10 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **Instances and return values**: `as:` scopes ids (`<as>-<id>`); `emits: [{name, payload, doc}]` declared and checked
   against the inner panel that raises it; the screen reads `@<as>.<event>.<field>`; `on: {<event>: {set, field}}` sets a
   control from the event's row (`on-select`). `TypedFragment.bind`, `TypedFragment.Caller`, `SutraBlocks.Calls`.
+- **Resolvers for the carriers** (LIBRARIES 10, 11.2): `LibraryResolver.classpath(ClassLoader)` reads
+  `META-INF/rachana/libs/<name>/` by its `MANIFEST.sha384` (index `META-INF/rachana/libraries`);
+  `LibraryResolver.packages(roots)` reads npm packages declaring `"rachana": {"library", "folder"}` and Python distributions
+  declaring the entry point group `rachana.libraries`, as data (nothing is run). Same bytes, same SHA-384 as the folder.
 - **Compile result records library hashes**: `Sutra.libraries()` (`UsedLibrary`: name, exact version, SHA-384), from
   `LibrarySet.fragments(..., Consumer<Library>)`; the `problem` case output carries `libraries` (FORMAT 5.8, schema).
 - **Conformance**: `sutra/fragments-calls` (6), `problem/fragments-calls` (11), verified; JVM and both JavaScript bundles

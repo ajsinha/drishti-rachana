@@ -7,6 +7,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, join, resolve, sep, dirname } from "node:path";
 import { UsageError } from "./errors.js";
 import { findSutras, libraryFiles } from "./lint.js";
+import { projectLevel } from "./project.js";
 import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, tableFiles, viewPage } from "./site.js";
 
 const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".csv": "text/csv", ".yaml": "application/yaml", ".jsonl": "application/x-ndjson" };
@@ -51,7 +52,7 @@ export async function preview(target, flags, io) {
   const dataDir = flags.data ?? (existsSync(join(root, "data")) ? join(root, "data") : existsSync(join(root, "..", "data")) ? join(root, "..", "data") : null);
   const lib = libraryFiles(root, flags, (m) => io.err(`rachana: ${m}`));
   if (lib.problems.length) return 1;
-  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, flags.level ?? "", lib.files);
+  const handle = handler(new Map(files.map((f) => [nameOf(f), f])), dataDir, flags.level ?? projectLevel(root) ?? "", lib.files);
   const server = createServer((req, res) => {
     try { const [s, t, b] = handle(req.url); res.writeHead(s, { "content-type": t, "cache-control": "no-store" }); res.end(b); }
     catch (e) { res.writeHead(500); res.end(String(e.message)); }

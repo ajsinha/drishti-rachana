@@ -515,7 +515,9 @@ every result.
 2. Both sides as numbers; if both are numbers the comparison is numeric (`'10' > '9'` → `true`), exact between exact
    numbers and as doubles when either is a double (4.16).
 3. If either is not a number **and both are texts**, compared as text, character by character by Unicode **code point**
-   (ISO dates order correctly: `'2026-01-31' < '2026-02-01'` → `true`; `'｡' < '😀'` → `true`) (4.13) [CS].
+   (ISO dates order correctly: `'2026-01-31' < '2026-02-01'` → `true`; `'｡' < '😀'` → `true`) (4.13) [CS]. **At language level 1.0
+   the order is by UTF-16 code unit** (the reference's recorded behaviour, `el/determinism#d-u02-a`: there `'｡' < '😀'` is `false`);
+   from level 1.1 it is by code point, as written here.
 4. Otherwise `false`: anything against empty, a number against a non-numeric text, a list or object.
 
 A chain `0 < x < 10` parses as `(0 < x) < 10` (a boolean against 10, numerically); write `0 < x && x < 10`.
@@ -626,7 +628,9 @@ X31): every length, position and order of a text value is counted in code points
    later minor's functions (X31), not the meaning of a length.
 2. **Order.** Texts are ordered code point by code point, then the shorter first (4.7, `sort`, and `least` and
    `greatest` over texts): U+FF61 `'｡'` sorts before U+1F600 `'😀'`, although its UTF-16 code unit is larger. No
-   locale collation and no case folding: `'B' < 'a'` → `true`.
+   locale collation and no case folding: `'B' < 'a'` → `true`. This is the rule **from level 1.1**; **level 1.0 orders by UTF-16
+   code unit** (the recorded answers of 1.0 are never changed; see 4.16 for the same split of numbers and 7.2 rule 6), and there
+   `'｡' < '😀'` is `false`.
 3. **Lone surrogates.** A text from the host may hold an unpaired surrogate (U+D800 to U+DFFF); it counts as one code
    point with that value. An expression's own text cannot hold one (the file is UTF-8).
 4. **Source positions are not text values.** The offsets of a problem (6.1, `expr.start`, `range`) and the `at <offset>`
@@ -1065,6 +1069,12 @@ less the profile keys. Settled additions ([planned] above: optional `version`, t
    (the dataset kinds of section 2.3), 1.2 (typed fragments, `libraries:`, library uses; section 2.5). The generated `rachana.lang.json` and `sutra.schema.json` still describe 1.0
    (they are generated from the reference's tables); the 1.1 names are listed here until the generator reads Rachana's own.
 
+   **The level of a document that names none.** A Sutra's own `rachana:` key names the major (`1`); the minor is the host's. Where
+   a host names no level there are two defaults, both deliberate. The Java library's `Rachana.core()` starts at **1.0**, so that
+   a host that names nothing is never moved by an upgrade. The tools (the Node command, `<rachana-view>`, the server, Studio and
+   the Python command) run at the **newest level built**, `Grammar.DEFAULT_LEVEL` (written once, in Core). `rachana new` writes
+   an explicit `rachana:` level into every Sutra it creates, so a tool upgrade never re-levels a project silently.
+
 ### 7.3 Majors
 
 A major is cut only for a change that cannot be an addition. Every runtime of major N reads N and N−1, the latter for
@@ -1107,7 +1117,7 @@ to be settled with the conformance suite.
 2. **Checked-mode syntax errors** are reported as `RCH-9127` by the reference, not `RCH-2101`.
 3. **Template error offsets** are relative to the part, except an unclosed `${` (relative to the template) (4.11).
 4. **Ordering by UTF-16 code unit**, where the design said code point (4.7, 4.13). **Settled** (XD4, 2026-11-19): code
-   point; the reference changes (cases `el/text-code-points`).
+   point from level 1.1 (cases `el/text-code-points`); level 1.0 keeps the UTF-16 code unit order it was recorded with.
 5. **`+` with booleans** joins text (`true + 1` → `'true1'`) while `*` and `==` treat `true` as 1 (4.5, 4.6).
 6. **Links in a list literal** become their display text (the link is lost) (4.2).
 7. **Named keyword-only arguments** of profile functions compile in Core and fail only at evaluation (4.10).

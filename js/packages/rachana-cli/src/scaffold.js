@@ -5,10 +5,11 @@
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { UsageError } from "./errors.js";
+import { languageLevels } from "./lint.js";
 
 const TEMPLATES = {
   basic: {
-    "rachana.yaml": "# Rachana project\nmode: static          # static | embedded | python | server\nsutras: sutras/\ndata: data/\n",
+    "rachana.yaml": "# Rachana project\nmode: static          # static | embedded | python | server\nlevel: %LEVEL%          # the language level this project runs at: raise it on purpose\nsutras: sutras/\ndata: data/\n",
     "sutras/overview.sutra.yaml": `rachana: 1
 sutra: overview
 version: 1
@@ -25,12 +26,14 @@ panels:
 };
 
 /** rachana new <dir>: writes a starter folder; refuses a folder that already has files. */
-export function scaffold(dir, template = "basic", io) {
+export async function scaffold(dir, template = "basic", io) {
   if (!dir) throw new UsageError("rachana new <dir>");
   const t = TEMPLATES[template];
   if (!t) throw new UsageError(`unknown template '${template}' (known: ${Object.keys(TEMPLATES).join(", ")})`);
   if (existsSync(dir) && readdirSync(dir).length) throw new UsageError(`${dir} exists and is not empty`);
-  for (const [name, text] of Object.entries(t)) {
+  const level = (await languageLevels()).default;      // the newest built level, written into the project (SPEC 7.2 rule 6)
+  for (const [name, text0] of Object.entries(t)) {
+    const text = text0.replace("%LEVEL%", level);
     const f = join(dir, name);
     mkdirSync(join(f, ".."), { recursive: true });
     writeFileSync(f, text);

@@ -68,6 +68,10 @@ def conformance(env: dict[str, str]) -> list[str]:
                 need(same, f"level {level}: the JVM and the Node bundle answered different bytes", failures)
     r = run([sys.executable, ROOT / "tools" / "js" / "build_js.py", "--check-only"], env, quiet=True)
     need(r.returncode == 0, "the runtime bundle differs from the tools bundle (build_js.py --check-only)", failures)
+    from build_js import brotli_size, size_guard
+    dist = ROOT / "js" / "packages" / "rachana" / "dist"
+    for m in size_guard({b: brotli_size(dist / b) for b in ("rachana.runtime.js", "rachana.tools.js")}):
+        failures.append("size guard: " + m)
     return failures
 
 
@@ -114,7 +118,7 @@ def browser(env: dict[str, str]) -> list[str]:
     failures: list[str] = []
     base = ["uv", "run", "-q", "--with", PLAYWRIGHT, "python"]
     r = run(base + ["-m", "playwright", "install", "chromium"], env, quiet=True)
-    need(r.returncode == 0, "playwright could not install Chromium", failures)
+    need(r.returncode == 0, f"the pinned Chromium is missing and could not be installed (a browser lane never skips): uv run --with {PLAYWRIGHT} python -m playwright install chromium", failures)
     scripts = [(["js/packages/rachana/runners/view_browser.py", "--browsers", "chromium"], "painted"),
                (["js/packages/rachana/runners/form_browser.py"], "submitted"),
                (["js/packages/rachana/runners/state_browser.py"], "state"),

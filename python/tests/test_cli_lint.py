@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""``rachana lint`` / ``python -m drishti_rachana lint`` (docs/design/COMPILER_AND_RUNTIMES.md 8): exit codes and output formats."""
+"""``python -m drishti_rachana lint`` (docs/design/COMPILER_AND_RUNTIMES.md 8): exit codes and output formats."""
 import json
 
 import pytest

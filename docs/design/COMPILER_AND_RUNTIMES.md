@@ -331,7 +331,7 @@ One command name, `rachana`. Each command is a function of `rachana-tools`; laun
 | `rachana mcp` | start the generic MCP server on stdio (AI_GENUI.md) |
 
 Launchers: **npm** (`npx drishti-rachana-cli`, Node, the JavaScript build; the primary one: it needs no JVM and
-serves `dev` and `build`); **PyPI** (`rachana` console script: `lint`, `fix`, `fmt`, `explain`, `schema`,
+serves `dev` and `build`); **PyPI** (`python -m drishti_rachana`, no console script: `lint`, `fix`, `fmt`, `explain`, `schema`,
 `conformance` over WASM; `dev` for Python apps); **jar** (`java -jar rachana-cli.jar …`, every command, for JVM
 shops). Output of `lint --format json` is identical across the three and is a conformance case.
 

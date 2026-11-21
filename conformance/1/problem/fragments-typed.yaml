@@ -321,6 +321,8 @@ cases:
       - code: RCH-2048
         severity: error
         message: 'fragment key-figure mixes the typed and the text form: parameter floor is a mapping with a type in the typed form'
+        file: key-figure.v1.fragment.yaml
+        path: "/params/floor"
         range:
           start:
             line: 11
@@ -328,6 +330,8 @@ cases:
       - code: RCH-2048
         severity: error
         message: fragment key-figure reads arg.floor, which is not a value or table parameter it declares ([value, label, fmt, id])
+        file: key-figure.v1.fragment.yaml
+        path: "/panels/0/caption"
         range:
           start:
             line: 18
@@ -378,6 +382,8 @@ cases:
         severity: error
         message: 'fragment key-figure writes %{value}: in the typed form %{...} names a name-class parameter ([area, columns, enum, format, icon, id, key,
           palette, tone, variant]); read a value as arg.value'
+        file: key-figure.v1.fragment.yaml
+        path: "/panels/0/value"
         range:
           start:
             line: 16

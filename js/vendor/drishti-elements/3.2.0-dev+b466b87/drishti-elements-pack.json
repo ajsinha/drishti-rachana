@@ -1,14 +1,14 @@
 {
-  "elements": "3.1.0",
+  "elements": "3.2.0-dev+b466b87",
   "libraries": {
-    "drishti-core": "3.1.0",
-    "drishti-views": "3.1.0",
-    "drishti-events": "3.1.0",
-    "drishti-inputs": "3.1.0",
-    "drishti-chart": "3.1.0",
-    "drishti-grid": "3.1.0",
-    "drishti-graph": "3.1.0",
-    "drishti-tree": "3.1.0"
+    "drishti-core": "3.2.0-dev+b466b87",
+    "drishti-views": "3.2.0-dev+b466b87",
+    "drishti-events": "3.2.0-dev+b466b87",
+    "drishti-inputs": "3.2.0-dev+b466b87",
+    "drishti-chart": "3.2.0-dev+b466b87",
+    "drishti-grid": "3.2.0-dev+b466b87",
+    "drishti-graph": "3.2.0-dev+b466b87",
+    "drishti-tree": "3.2.0-dev+b466b87"
   },
   "requested": [
     "core",
@@ -33,12 +33,12 @@
       "integrity": "sha384-kpZwpA7EaAwT79FkrPeAXmakxie1lecbdFtAoqBOEGKmp8hIqNMiaPfQJj3mPts5"
     },
     "drishti-elements.css": {
-      "bytes": 172126,
-      "integrity": "sha384-eSyyOlYKsybwB7hjoze59kUP/+KeT8AzIyFFY8s6u13u2qoNr2rU32sVL96BC0q/"
+      "bytes": 172234,
+      "integrity": "sha384-QQlD7Z02z3bHbPuIQ7D0DslkLUuXT+DaLRmKs/zxZrhL7Rbxc2LgulrsEskQEDME"
     },
     "drishti-elements.js": {
-      "bytes": 3116381,
-      "integrity": "sha384-BSAgsdX2i+ArDnH6GvZ/g0wqvD6ljYmiZYMZoZ00agQp9RUCYp/3Kt9vK0vZMLwz"
+      "bytes": 3116585,
+      "integrity": "sha384-jfe+FFkaFzMWCuQWYLxpVMCpIFhRWFgNphg5eFTUPrYh4JCQF/xWobZLgtOd7sJF"
     },
     "vendor/codemirror/LICENSE": {
       "bytes": 1113,

@@ -6,6 +6,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 import { tools } from "./bundle.js";
 import { UsageError } from "./errors.js";
+import { projectLevel } from "./project.js";
 import { projectLibraries, bundleFiles } from "../../rachana-studio/server/library_files.js";
 
 /** The language levels and the default of the tools, from the bundle (Core's Grammar.DEFAULT_LEVEL: the one place the default is written). */
@@ -85,7 +86,7 @@ export async function lint(paths, flags, io) {
   const fmt = flags.format ?? "text";
   if (!["text", "json", "sarif"].includes(fmt)) throw new UsageError("--format is text, json or sarif");
   const known = await languageLevels();
-  const level = flags.level ?? known.default;
+  const level = flags.level ?? projectLevel(paths[0] && existsSync(paths[0]) && statSync(paths[0]).isDirectory() ? paths[0] : ".") ?? known.default;
   if (!known.levels.includes(level)) throw new UsageError(`--level is ${known.levels.join(", ")}`);
   const lib = libraryFiles(paths[0] && existsSync(paths[0]) && statSync(paths[0]).isDirectory() ? paths[0] : ".", flags, (m) => io.err(`rachana: ${m}`));
   const results = await lintFiles(findSutras(paths, [SUFFIX, LIVE_SUFFIX]), flags.profiles ?? "core", level, lib.files);

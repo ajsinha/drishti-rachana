@@ -148,6 +148,14 @@ public final class Rachana {
         return level.equals(grammar.level()) ? this : new Rachana(options, profiles, functions, formats, grammar.atLevel(level));
     }
 
+    /**
+     * The same instance reading libraries from this set (LIBRARIES.md 10): {@code libraries: [name@N]} and {@code use: name/fragment@N}
+     * from language level 1.2. The set holds the resolver, the lock and the trust; it caches each library by content hash.
+     */
+    public Rachana libraries(com.ash.rachana.lib.LibrarySet set) {
+        return new Rachana(options, profiles, functions, formats, grammar.withLibraries(set));
+    }
+
     /** The language level its grammar reads ({@code 1.0} unless raised with {@link #language(String)}). */
     public String language() {
         return grammar.level();

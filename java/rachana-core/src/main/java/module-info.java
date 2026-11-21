@@ -19,6 +19,7 @@ module com.ash.rachana.core {
     exports com.ash.rachana.el;
     exports com.ash.rachana.el.check;
     exports com.ash.rachana.format;
+    exports com.ash.rachana.lib;
     exports com.ash.rachana.model;
     exports com.ash.rachana.parse;
     exports com.ash.rachana.profile;

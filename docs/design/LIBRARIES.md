@@ -1,8 +1,21 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Sutra libraries: the fragment-library framework
 
-Status: **planning (design proposal for the owner, 2026-11-19).** Nothing here is built. Syntax is a sketch: every
-key, word and default below is settled only when it enters `spec/1/SPEC.md` with a `since` and conformance cases.
+Status: **framework partly built (G2, 2026-11-21), the rest planning.** Built at language level 1.2 (SPEC 2.5, with
+conformance cases; the CHANGELOG's Unreleased section lists the classes): the typed form (section 4.2's three parameter
+classes, `required`/`default`/`optional`, `min`/`max`/`options`, `when-bound`, slots of `panels`; problems `RCH-2114` to
+`2118`), `libraries:` and `use: <library>/<fragment>@N` and the long form (7.1), the manifest and its checks (3.2, 3.3:
+file types, `exports` staleness, `depends` without cycles and at most 4 deep, `scope` with `profiles`), the resolvers
+memory, folder and archive (10; classpath and package wait for the carriers of 11.2), the lock (9.3), the deterministic
+`.rlib` with SHA-384 per file and per archive, Ed25519 signatures with a trust list and `require-signed` (12; verified
+on the JVM by `rachana-tools`), the hermetic check of a public library's typed fragments (4.4, `RCH-2117`) and the
+`FragmentResolver` adapter (10). One choice made while building: a `text` parameter takes its text as written at the
+use (a label, a title), not as an expression. Not built yet: `as:`, `emits`/`on:`, private state, `let`, outputs,
+overlays, `fn` parameters, the `{from, columns}` mapping and contract files (5), library functions (X41), section 14 to
+17 (documents, gates LG1 to LG9 beyond what `lib` cases check, the AI kit, Studio), the CLI commands of 22 (the work is in
+`LibraryTool`). Per L-12 no library content lives here: the conformance suite carries a tiny synthetic `demo` library.
+The rest of this document is the design; syntax not listed above is settled only when it enters `spec/1/SPEC.md` with a
+`since` and conformance cases.
 Sizes are builder-days for compiler, tools, cases and documents together.
 
 Owner direction (2026-11-19): Rachana and Elements are to be complete products in themselves, and Rachana is to ship

@@ -39,7 +39,7 @@ public final class Cases {
     /** The runtime's greeting line (RUNNER 5) for a runtime name ({@code jvm}, {@code node}, {@code chromium}...). */
     public static String hello(String runtime) {
         return "{\"runtime\":" + str(runtime) + ",\"runtimeVersion\":\"rachana-" + VERSION + "\",\"language\":\"1.0\",\"profiles\":" + jsonList(profiles)
-                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"plan\"]}";
+                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"plan\",\"lib\"]}";
     }
 
     /** One case line answered: its results line (RUNNER 4), without the line end. */
@@ -58,6 +58,7 @@ public final class Cases {
                 case "sutra" -> sutra(c, sb);
                 case "patch" -> patch(c, sb);
                 case "plan" -> plan(c, sb);
+                case "lib" -> lib(c, sb);
                 default -> throw new IllegalStateException("kind not implemented: " + kind);
             }
         } catch (Throwable t) {
@@ -190,12 +191,90 @@ public final class Cases {
         return "1.0".equals(l) ? rachana : AT.computeIfAbsent(l, rachana::language);
     }
 
+    /**
+     * The grammar a case reads with (FORMAT 5.7): the instance's at the case's level, and with {@code files}, those files in place of
+     * the host's: fragment files ({@code <name>.v<N>.fragment.yaml}, {@code .block.yaml}) as its fragment resolver, the folders
+     * {@code rachana_libs/<library>/} as its libraries and {@code rachana.lock} as their lock. A fragment file that does not read adds
+     * its problems to {@code problems}.
+     */
+    static com.ash.rachana.profile.Grammar grammar(com.ash.rachana.profile.Grammar base, Map<String, Object> c, List<com.ash.rachana.SutraProblem> problems) {
+        Map<String, Object> files = obj(c.get("files"));
+        if (files.isEmpty()) {
+            return base;
+        }
+        List<com.ash.rachana.parse.SutraBlocks.Block> blocks = new ArrayList<>();
+        Map<String, Map<String, String>> libs = new TreeMap<>();
+        com.ash.rachana.lib.LibraryLock lock = null;
+        for (Map.Entry<String, Object> f : files.entrySet()) {
+            String path = f.getKey(), body = text(f.getValue());
+            if (path.startsWith("rachana_libs/")) {
+                String rest = path.substring("rachana_libs/".length());
+                int slash = rest.indexOf('/');
+                libs.computeIfAbsent(rest.substring(0, slash), k -> new TreeMap<>()).put(rest.substring(slash + 1), body);
+            } else if (path.equals(com.ash.rachana.lib.LibraryLock.FILE)) {
+                lock = com.ash.rachana.lib.LibraryLock.read(body);
+            } else if (path.endsWith(".fragment.yaml") || path.endsWith(".block.yaml")) {
+                try {
+                    blocks.add(com.ash.rachana.parse.SutraBlocks.read(body, path.substring(path.lastIndexOf('/') + 1), path));
+                } catch (com.ash.rachana.SutraException e) {
+                    problems.addAll(e.problems());
+                }
+            }
+        }
+        List<com.ash.rachana.lib.LibraryBundle> bundles = new ArrayList<>();
+        libs.forEach((n, fs) -> bundles.add(com.ash.rachana.lib.LibraryBundle.ofText(n, fs, "folder:rachana_libs/" + n)));
+        com.ash.rachana.lib.LibrarySet set = com.ash.rachana.lib.LibrarySet.of(com.ash.rachana.lib.LibraryResolver.of(bundles));
+        return base.withFragments(com.ash.rachana.parse.FragmentResolver.of(blocks)).withLibraries(lock == null ? set : set.locked(lock));
+    }
+
+    /**
+     * FORMAT 5.13 {@code lib}: the library whose files {@code files} gives (paths inside the library folder), named {@code library},
+     * read and checked (LIBRARIES.md 3, 12): {@code {ok, problems, version, sha384, fragments}}, the last three null when it is refused.
+     */
+    public static void lib(Map<String, Object> c, StringBuilder sb) {
+        Map<String, String> files = new TreeMap<>();
+        obj(c.get("files")).forEach((k, v) -> files.put(k, text(v)));
+        var bundle = com.ash.rachana.lib.LibraryBundle.ofText(text(c.get("library")), files, "case");
+        List<com.ash.rachana.SutraProblem> ps = new ArrayList<>();
+        com.ash.rachana.lib.Library lib = null;
+        try {
+            lib = com.ash.rachana.lib.Library.load(bundle, com.ash.rachana.lib.Library.Trust.NONE);
+        } catch (com.ash.rachana.SutraException e) {
+            ps.addAll(e.problems());
+        }
+        sb.append("{\"ok\":").append(ps.isEmpty()).append(",\"problems\":");
+        problems(ps, sb);
+        sb.append(",\"version\":").append(lib == null ? "null" : str(lib.version())).append(",\"sha384\":").append(lib == null ? "null" : str(lib.sha384()))
+                .append(",\"fragments\":");
+        if (lib == null) {
+            sb.append("null");
+        } else {
+            sb.append('[');
+            boolean f = true;
+            for (String n : lib.fragmentNames()) { if (!f) { sb.append(','); } f = false; sb.append(str(n)); }
+            sb.append(']');
+        }
+        sb.append('}');
+    }
+
+    static void problems(List<com.ash.rachana.SutraProblem> ps, StringBuilder sb) {
+        sb.append('[');
+        boolean f = true;
+        for (var p : ps) {
+            if (!f) { sb.append(','); } f = false;
+            sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":\"error\",\"message\":").append(str(p.message()))
+                    .append(",\"range\":{\"start\":{\"line\":").append(p.location().line()).append(",\"column\":").append(p.location().column()).append("}}}");
+        }
+        sb.append(']');
+    }
+
     /** The Sutra is parsed, then its expressions are checked: the problems in the order found. */
     public static void problem(Map<String, Object> c, StringBuilder sb) {
         List<com.ash.rachana.SutraProblem> ps = new ArrayList<>();
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         try {
-            var sutra = at(c).parser().parse(text(c.get("sutra")), file, "conformance");
+            var g = grammar(at(c).grammar(), c, ps);
+            var sutra = (g == at(c).grammar() ? at(c).parser() : new com.ash.rachana.parse.SutraParser(g)).parse(text(c.get("sutra")), file, "conformance");
             ps.addAll(new com.ash.rachana.SutraExpressions(new ElCompiler(10_000, ElLimits.DEFAULTS, rachana.functions())).check(sutra));
         } catch (com.ash.rachana.SutraException e) {
             ps.addAll(e.problems());
@@ -290,8 +369,13 @@ public final class Cases {
     static com.ash.rachana.model.Sutra parse(Map<String, Object> c) {
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         boolean coreOnly = "core".equals(text(c.get("profile")));          // a Core case is read with Core's grammar alone
-        return (coreOnly ? new com.ash.rachana.parse.SutraParser(com.ash.rachana.profile.Grammar.core().atLevel(level(c)))
-                : at(c).parser()).parse(text(c.get("sutra")), file, "conformance");
+        List<com.ash.rachana.SutraProblem> unread = new ArrayList<>();
+        var base = coreOnly ? com.ash.rachana.profile.Grammar.core().atLevel(level(c)) : at(c).grammar();
+        var gr = grammar(base, c, unread);                                 // FORMAT 5.7: files in place of the host's fragments and libraries
+        if (!unread.isEmpty()) {
+            throw new com.ash.rachana.SutraException(unread);
+        }
+        return (coreOnly || gr != base ? new com.ash.rachana.parse.SutraParser(gr) : at(c).parser()).parse(text(c.get("sutra")), file, "conformance");
     }
 
     /**

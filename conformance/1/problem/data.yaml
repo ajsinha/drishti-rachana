@@ -8,7 +8,7 @@ cases:
   - id: data-is-not-a-key-of-level-1-0
     kind: problem
     since: "1.0"
-    source: SPEC 2.4, 7.2 (data is a 1.1 key)
+    source: SPEC 2.4, 7.2 rule 6 (data is a 1.1 key; a later level's name below it is RCH-2008, one rule with libraries at 1.2)
     sutra: |
       rachana: 1
       sutra: data-at-1-0
@@ -19,7 +19,7 @@ cases:
     expect:
       ok: false
       problems:
-        - { code: RCH-2011 }
+        - { code: RCH-2008 }
 
   - id: two-sources-in-one-entry
     kind: problem

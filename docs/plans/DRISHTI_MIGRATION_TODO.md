@@ -283,3 +283,16 @@ here. What Drishti must do when the migration starts, in this order:
 | `design.ops.Ops.toJson` | `ObjectNode` / `ArrayNode` | `Map<String,Object>` / `List<Map<String,Object>>` (same bytes when written) | `DesignRebase` |
 | `el.check.Signatures.parse(JsonNode, String)` | Jackson tree | `parse(Object, String)` | none found |
 
+
+## 9. Typed fragments and libraries (G2, language level 1.2): nothing required
+
+Drishti stays at level 1.0 and its `FragmentResolver` keeps its signature and behaviour: the kit's and the packs' fragments (the
+text form) expand to the same bytes (CG3 byte-identical). Optional, each at a Drishti release of its own choosing (LIBRARIES 21.1):
+
+- [ ] 9.1 Raise the host's level (`Rachana.language("1.2")`) only when a screen wants typed fragments or libraries; the level-1.0
+      replay and the corpus must stay identical.
+- [ ] 9.2 Give the instance libraries: `Rachana.libraries(LibrarySet.of(LibraryResolver.folder(<site>/rachana_libs)).locked(<rachana.lock>)
+      .trusting(new Library.Trust(com.ash.rachana.tools.Ed25519.VERIFIER, <trusted keys>, true)))`; the libraries come from the private
+      companion repository (L-12).
+- [ ] 9.3 Step 1 of LIBRARIES 21.1 (a manifest beside the kit and each pack that ships fragments) only when the gallery, palette or AI
+      cards need it; no fragment file and no Sutra changes.

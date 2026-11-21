@@ -424,7 +424,7 @@ cases:
 
   - id: "min-1"
     kind: "expr"
-    verified: false
+    verified: true
     source: "functions.yaml#min"
     expr: "min([3, 1, 2])"
     expect: {"value": 1}
@@ -437,7 +437,7 @@ cases:
 
   - id: "max-1"
     kind: "expr"
-    verified: false
+    verified: true
     source: "functions.yaml#max"
     expr: "max([3, 1, 2])"
     expect: {"value": 3}

@@ -2,7 +2,7 @@
 suite: protocol/examples/page
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: A page of rows in the JSON forms (PROTOCOL 5.1, 3.2, 6.2).
 cases:
   - id: page-columnar-default

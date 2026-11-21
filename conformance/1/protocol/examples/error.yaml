@@ -2,7 +2,7 @@
 suite: protocol/examples/error
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: The error body and its status (PROTOCOL 10).
 cases:
   - id: error-unknown-table

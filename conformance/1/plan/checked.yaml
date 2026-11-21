@@ -91,6 +91,7 @@ cases:
         /problems/0/entry: sales
 
   - id: an-unknown-column-stays-rch-2071
+    verified: true
     kind: plan
     source: SPEC 6.2 (RCH-2071 names the column, checked mode adds nothing for it)
     sutra: |

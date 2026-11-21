@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: held-changes-example
+version: 1
+libraries: [core@1]
+title: { id: "'Pending changes'" }
+data:
+  pending: { table: trade.changes, key: CHANGE_ID, live: true }
+panels:
+  - use: core/held-changes@1
+    with:
+      changes: { from: $.pending, columns: { change: CHANGE_ID, state: STATE, summary: SUMMARY, by: MADE_BY, at: MADE_AT, message: NOTE } }
+      order: MADE_AT

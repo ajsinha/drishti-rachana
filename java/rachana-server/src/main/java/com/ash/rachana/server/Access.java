@@ -18,13 +18,22 @@ import java.util.TreeSet;
  * leak. Columns listed under {@code unmask} are masked for callers without one of their roles; the reader's audience is the set of masked
  * columns, so callers who see the same share the engine's indexes and nobody else does. Edits ({@code access.tables.<name>.edit}): a
  * caller with one of its roles may edit its columns (none listed: every column the declaration edits); everyone else reads only, and
- * {@link #mayEdit} refuses them again on every write (a forged request). The caller's name is the principal's.
+ * {@link #mayEdit} refuses them again on every write (a forged request). The caller's name is the principal's. Four eyes
+ * ({@code access.tables.<name>.approve}): a caller with one of its roles approves the held changes of others ({@link #approves},
+ * {@link #mayDecide}).
  */
 final class Access implements Authoriser {
 
     private final ServerConfig.Access access;
     private final java.util.Map<String, ServerConfig.TableEdit> edits;
     private final java.util.function.Function<String, List<String>> declared;
+    private volatile java.util.Map<String, List<String>> approve = java.util.Map.of();
+
+    /** Four eyes: the roles that approve each table's held changes ({@code access.tables.<name>.approve}). */
+    Access approvers(java.util.Map<String, List<String>> roles) {
+        approve = roles == null ? java.util.Map.of() : java.util.Map.copyOf(roles);
+        return this;
+    }
 
     /**
      * @param declared a live table's columns its declaration edits (empty: none)
@@ -68,6 +77,21 @@ final class Access implements Authoriser {
             return new Decision.Refuse("none of the roles that may edit " + table);
         }
         return new Decision.Allow();
+    }
+
+    @Override
+    public boolean approves(Object caller, String table) {
+        List<String> roles = approve.get(table);
+        return caller instanceof Users.Principal p && roles != null && !roles.isEmpty() && allowed(p, roles);
+    }
+
+    /** An approver decides the held changes of others, never their own (four eyes). */
+    @Override
+    public Decision mayDecide(Object caller, String table, java.util.Map<String, Object> change) {
+        if (!approves(caller, table)) {
+            return new Decision.Refuse("none of the roles that approve " + table);
+        }
+        return who(caller).equals(change.get("by")) ? new Decision.Refuse("four eyes: an approver never decides their own change") : new Decision.Allow();
     }
 
     @Override

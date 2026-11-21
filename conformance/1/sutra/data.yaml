@@ -2,7 +2,7 @@
 suite: sutra/data
 since: "1.1"
 profile: core
-verified: false
+verified: true
 description: data entries become fields of $ (SPEC 2.4, decision D10); tables from given.tables (FORMAT 4), decoded by their schema (PROTOCOL 3).
 given:
   today: "2026-01-15"
@@ -60,6 +60,7 @@ cases:
         /panels/1/data/rows/1/cells/0/text: South
 
   - id: decimal-cells-are-exact
+    verified: false
     kind: sutra
     source: PROTOCOL 3.1 (decimal as text)
     note: The cell keeps its scale (0.10, not 0.1). Exact decimal arithmetic is the decimals item (X2), not data.
@@ -127,6 +128,7 @@ cases:
         /panels/0/data/value/text: "3"
 
   - id: table-as-record-is-its-first-row
+    verified: false
     kind: sutra
     source: SPEC 2.4 (as)
     given:
@@ -166,6 +168,7 @@ cases:
         /panels/1/data/value/text: Desk A
 
   - id: missing-table-reads-as-no-rows
+    verified: false
     kind: sutra
     source: SPEC 2.4
     sutra: |

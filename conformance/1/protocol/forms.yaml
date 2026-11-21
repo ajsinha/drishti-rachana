@@ -2,7 +2,7 @@
 suite: protocol/forms
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: The row forms other than JSON (PROTOCOL 5.2 Arrow IPC, 5.3 NDJSON, 12 res.arrow), compared as the JSON page they stand for (tools/conformance/protocol_check.py; Arrow steps need pyarrow).
 cases:
   - id: ndjson-is-a-header-then-one-line-per-row
@@ -81,6 +81,7 @@ cases:
               - [b, "9007199254740993", null, null, false, null, null, "23:59:59.250", null, null, "3.5"]
 
   - id: arrow-of-a-grouped-query-with-totals
+    verified: false
     kind: protocol
     source: PROTOCOL 5.2, 6.3 (totals in the metadata rachana.totals)
     fixture:

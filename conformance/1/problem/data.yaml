@@ -2,10 +2,11 @@
 suite: problem/data
 since: "1.1"
 profile: [core, drishti]
-verified: false
+verified: true
 description: The data block's problems (SPEC 2.4, 6.2 codes RCH-2070 to 2079).
 cases:
   - id: data-is-not-a-key-of-level-1-0
+    verified: false
     kind: problem
     since: "1.0"
     source: SPEC 2.4, 7.2 rule 6 (data is a 1.1 key; a later level's name below it is RCH-2008, one rule with libraries at 1.2)
@@ -82,6 +83,7 @@ cases:
         - { code: RCH-2011 }
 
   - id: a-name-that-is-not-a-field-name
+    verified: false
     kind: problem
     source: SPEC 2.4 (each entry is a field of $)
     sutra: |

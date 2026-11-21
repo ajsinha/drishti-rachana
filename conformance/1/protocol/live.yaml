@@ -2,7 +2,7 @@
 suite: protocol/live
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Subscriptions over the bridge (PROTOCOL 12 sub, unsub, msg), filtered subscriptions (8.2 changes.filter) and conflation (8.4 everyMs), run by tools/conformance/protocol_check.py; GET /_test/bridge/out reads the host → view messages pushed since the last read (PROTOCOL 15).
 cases:
   - id: bridge-sub-then-msg
@@ -108,6 +108,7 @@ cases:
         expect: { status: 200, body: [ { t: gap, recoverable: false } ] }
 
   - id: a-conflated-stream-merges-by-key
+    verified: false
     kind: protocol
     source: PROTOCOL 8.4 (conflate everyMs, a later remove cancels an earlier add, the merged message has first and seq)
     fixture: *live

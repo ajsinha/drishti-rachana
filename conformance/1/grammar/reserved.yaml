@@ -3,7 +3,7 @@
 suite: grammar/reserved
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "The reserved tokens of rachana-el.ebnf (SPEC 4.15): refused wherever an expression stands, characters inside a text, and the near spellings that stay valid."
 cases:
 

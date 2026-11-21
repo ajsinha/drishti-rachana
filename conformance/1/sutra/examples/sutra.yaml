@@ -2,7 +2,7 @@
 suite: sutra/examples/sutra
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Sutra + data -> ViewModel (TRANSLATION). Parts checked with at until the ViewModel schema (F3) fixes key order.
 given:
   today: "2026-01-15"

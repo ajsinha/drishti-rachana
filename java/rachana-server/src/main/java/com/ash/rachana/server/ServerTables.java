@@ -40,10 +40,12 @@ final class ServerTables implements AutoCloseable {
     private final Map<String, TableSource> sources = new ConcurrentHashMap<>();
     private final Map<String, LiveStream> streams = new ConcurrentHashMap<>();
     private final Map<String, String> pending = new ConcurrentHashMap<>();
+    private final Map<String, String> snapshots = new ConcurrentHashMap<>();         // a declared table -> the configured table it reads
     private final LiveTables live;
     private final Log log;
     private final ServerConfig config;
     private final JdbcWriter writer;
+    private final FileTableWriter fileWriter = new FileTableWriter();
     private final Outbox outbox;
     private final ScheduledExecutorService retry;
 
@@ -76,8 +78,21 @@ final class ServerTables implements AutoCloseable {
         ServerConfig.Edits ed = config.edits();
         if (ed != null && ed.journal() != null) {                      // the edit path: the outbox over its journal, writing through JDBC
             writer = new JdbcWriter(drivers);
+            java.util.Set<String> hold = java.util.Set.copyOf(config.approvals().hold());
+            com.ash.rachana.live.spi.ChangeWriter route = ch -> {
+                if (!fileWriter.writes(ch.table())) {
+                    return writer.write(ch);
+                }
+                Object v = fileWriter.write(ch);
+                LiveStream poll = streams.get(snapshotOf(ch.table()) + ".poll");
+                if (poll instanceof BaselinedPoll bp) {
+                    bp.poll().poll();                                  // the change shows as soon as the file is read again
+                }
+                return v;
+            };
             try {
-                outbox = new Outbox(new FileOutboxStore(ed.journal(), 10_000), writer, null, null, 5, 10_000).start(2_000);
+                outbox = new Outbox(new FileOutboxStore(ed.journal(), 10_000), route,
+                        hold.isEmpty() ? null : ch -> hold.contains(ch.table()) ? "waiting for an approver" : null, null, 5, 10_000).start(2_000);
             } catch (IOException e) {
                 throw new IllegalStateException("edits.journal " + ed.journal() + " could not be opened", e);
             }
@@ -137,11 +152,22 @@ final class ServerTables implements AutoCloseable {
                     }
                     if (spec.edit() != null) {                        // edits need the snapshot's writer and the outbox
                         ServerConfig.TableWrite w = config.edits().writes().get(spec.snapshot());
-                        if (writer == null || w == null) {
+                        ServerConfig.FileWrite fw = config.fileWrites().get(spec.snapshot());
+                        ServerConfig.Table st = config.tables().get(spec.snapshot());
+                        if (writer == null || w == null && fw == null) {
                             refuse(file, spec.name() + ": 'edit:' needs tables." + spec.snapshot() + ".write and edits.journal");
                             continue;
                         }
-                        writer.target(new JdbcWriter.Target(spec, config.tables().get(spec.snapshot()), w));
+                        if (fw != null && st.refreshMs() <= 0) {
+                            refuse(file, spec.name() + ": 'edit:' on a file table needs tables." + spec.snapshot() + ".refresh (a change shows when the file is read again)");
+                            continue;
+                        }
+                        if (fw != null) {
+                            fileWriter.target(new FileTableWriter.Target(spec, st, fw.journal()));
+                        } else {
+                            writer.target(new JdbcWriter.Target(spec, st, w));
+                        }
+                        snapshots.put(spec.name(), spec.snapshot());
                     }
                     if (src.types() == null) {                         // its own first read may still be pending: the declared columns type it
                         Map<String, String> types = new LinkedHashMap<>();
@@ -160,6 +186,10 @@ final class ServerTables implements AutoCloseable {
                 }
             }
         }
+    }
+
+    private String snapshotOf(String table) {
+        return snapshots.getOrDefault(table, table);
     }
 
     private void refuse(String file, String why) {

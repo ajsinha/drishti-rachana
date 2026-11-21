@@ -78,7 +78,7 @@ public enum PanelKind {
      * subscribes with that window and applies the patches as they come; {@code top} inserts new rows on top (a newest-first order).
      * {@code columns} each read one field ({@code bind: "@.qty"}); {@code bars} names the number fields drawn with a bar in the cell.
      */
-    LIVE(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "search", "empty", "window", "top", "bars")),
+    LIVE(Set.of("rows"), Set.of("dataset", "rowKey", "group", "sort", "search", "empty", "window", "top", "bars", "edit")),
     /** Language 1.2: rows as rectangles sized by {@code value}, nested by {@code group}, toned by the sign of {@code color}. */
     TREEMAP(Set.of("rows"), Set.of("label", "value", "group", "color", "fmt")),
     /**

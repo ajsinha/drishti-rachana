@@ -2,7 +2,7 @@
 suite: protocol/examples/filter
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: The query document and the filter syntax tree (PROTOCOL 6, 7).
 cases:
   - id: filter-and-sort

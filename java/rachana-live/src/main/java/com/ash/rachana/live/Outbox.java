@@ -54,6 +54,7 @@ public final class Outbox implements ChangeSink, AutoCloseable {
     private final OutboxStore store;
     private final ChangeWriter writer;
     private final Function<Change, String> hold;
+    private final boolean holds;
     private final Clock clock;
     private final int maxTries;
     private final Map<String, Held> byId = new LinkedHashMap<>();
@@ -81,6 +82,7 @@ public final class Outbox implements ChangeSink, AutoCloseable {
         this.store = store;
         this.writer = writer;
         this.hold = hold == null ? c -> null : hold;
+        this.holds = hold != null;
         this.clock = clock == null ? Clock.systemUTC() : clock;
         this.maxTries = Math.max(1, maxTries);
         for (Map<String, Object> r : store.replay()) {
@@ -161,6 +163,12 @@ public final class Outbox implements ChangeSink, AutoCloseable {
     @Override
     public void watch(Listener listener) {
         listeners.add(listener);
+    }
+
+    /** True when the host gave a {@code hold} rule. */
+    @Override
+    public boolean holds() {
+        return holds;
     }
 
     @Override

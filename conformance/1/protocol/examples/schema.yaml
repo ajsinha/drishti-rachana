@@ -2,7 +2,7 @@
 suite: protocol/examples/schema
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: The table schema, the base document and the catalogue (PROTOCOL 2, 3, 4). The test adapter serves only the fixture, so the catalogue has one table.
 cases:
   - id: schema-all-types

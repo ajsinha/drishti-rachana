@@ -3,7 +3,7 @@
 library: core
 version: 1.0.0
 summary: Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
-fragments: 31
+fragments: 33
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
 
-31 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+33 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Figures
 
@@ -165,6 +165,35 @@ Dated items with a headline, a source and a link: news, announcements, filings.
 Events: `open`
 
 Example: `examples/headline-list.sutra.yaml`.
+
+### `core/held-changes@1`
+
+The changes waiting on a live table - your own, and for an approver the others' held changes to decide.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `changes` | table(change, state, summary, by, at, message) | required. The pending changes of a live table (<name>.changes) |
+| `decide` | enum | default 'cells'. How an approver decides a held change: in the state cell, in a record panel beside the list, or not here (none) |
+| `order` | id | default 'at'. The field of when a change was made or last moved, newest first (at; name your own when you map the columns: a mapping does not rename an order) |
+| `title` | text | default 'Pending changes'. The panel's title |
+
+Example: `examples/held-changes.sutra.yaml`.
+
+### `core/live-table@1`
+
+A live table of the host, read a window at a time and kept current by key, optionally with the host's edits.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `rows` | table(key) | required. The live table (a data entry with table and key), one row per record |
+| `columns` | columns | required. The columns: a list of { label, bind: "@.field", fmt, tone }, each reading one field |
+| `order` | id | required. The field the rows are ordered by (a time or a version) |
+| `direction` | enum | default 'desc'. The order's direction: desc (newest first, new rows on top) or asc |
+| `edit` | enum | default 'none'. How the host's edits are offered: none (read only), cells (in the grid) or beside (a record panel) |
+| `title` | text | default 'Live table'. The panel's title |
+| `window` | integer | default 200. The rows read and followed at a time |
+
+Example: `examples/live-table.sutra.yaml`.
 
 ### `core/measure-table@1`
 

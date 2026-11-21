@@ -247,7 +247,11 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   2.8) is private to each use and held as `<as>.<name>`; a fragment that has state is used with `as:` (`RCH-2115`); its own
   panels read it as `state.<name>` and write it with `set` (any other state is `RCH-2117`). `outputs: {name: type}` names
   private state (of that type; `RCH-2048` otherwise) the screen reads as `state.<as>.<name>`; reading any other private state,
-  or writing one, outputs included, is `RCH-2117`. A compile result lists the libraries it was built from with their exact
+  or writing one, outputs included, is `RCH-2117`. **Nested uses**: a use named `x` inside a fragment used as `a` is the
+  instance `a-x`: its ids are `a-x-<id>`, its private state `a-x.<name>`, its events `@a-x.<event>`, so two uses of the outer
+  fragment, or two inner uses of one fragment, never collide. The outer fragment reads the inner use as written
+  (`state.x.<output>`, `@x.<event>`) and reads only its outputs (`RCH-2117`); the screen reads no nested instance
+  (`RCH-2117`), only the outputs of its own uses. A compile result lists the libraries it was built from with their exact
   version and SHA-384 (`Sutra.libraries()`). Not yet at this level: a fragment's `let`, overlays, host actions in `on:`, a
   `state` name parameter (LIBRARIES 6.3).
 - **Libraries** [since 1.2, X42; LIBRARIES 3, 7, 9 to 12]: `libraries: [demo@1]` names each library and its major;

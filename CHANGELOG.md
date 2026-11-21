@@ -19,6 +19,13 @@ Entries are written per release; the regime's unreleased work is listed after th
   unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
   placeholder. Built from Drishti Elements 3.1.0 widgets only; `<rachana-view>` takes a `files` property (the libraries). Vendored js-yaml 4.1.0.
 
+### Nested stateful fragments, the rest of the effect list (G2 lane A7)
+
+- **Nested uses are instances of the outer use** (SPEC 2.5; LIBRARIES 7.2): a use named `x` inside a fragment used as `a`
+  is `a-x` (ids `a-x-<id>`, private state `a-x.<name>`, events `@a-x.<event>`); before, two uses of a fragment holding a
+  stateful use collided. The outer fragment reads only the inner use's outputs, and the screen no nested instance
+  (`RCH-2117`). Cases `sutra/fragments-nested-state` (2), `problem/fragments-nested-state` (3).
+
 ### Screen state and the effect list's set (G2 lane A5)
 
 - **S1 + I1 (first step), level 1.2** (SPEC 2.8; decision S1-OPEN): a Sutra's `state:` (typed `text`, `number`, `boolean`,

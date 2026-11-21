@@ -472,6 +472,7 @@ public final class TypedFragment {
 
     /** {@code s} without its reads of the fragment's own private state ({@code state.<name>}: its own, not the screen's). */
     private String ownReads(String s) {
+        s = NestedUses.withoutReads(s, NestedUses.names(root.map().get("panels")));   // a nested use's outputs: checked once bound
         if (privateState.isEmpty() || !s.contains("state.")) {
             return s;
         }
@@ -693,6 +694,7 @@ public final class TypedFragment {
         }));
         if (as != null) {
             panels = scoped(panels, own, as);
+            panels = NestedUses.prefixed(panels, own, as, NestedUses.names(root.map().get("panels")));   // a nested use is <as>-<its as>
         }
         String scope = as;
         Map<String, String> events = new LinkedHashMap<>();

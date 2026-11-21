@@ -1,0 +1,163 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/fragments-nested-state
+since: "1.2"
+profile: core
+verified: true
+description: "Problems of stateful fragments used inside fragments (LIBRARIES 4.4, 7.2; SUTRA_EXPANSION S1), level 1.2: only the fragment that holds a use reads that use's outputs."
+given: {}
+cases:
+
+  - id: an-outer-fragment-reads-only-the-inner-outputs
+    kind: problem
+    source: "LIBRARIES 7.2 (outputs: the private state a user may read, never write)"
+    files: &nest
+      picker.v1.fragment.yaml: |
+        rachana: 1
+        fragment: picker
+        version: 1
+        doc:
+          summary: A list whose clicked row is remembered.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+        state:
+          chosen: { type: text, default: none }
+          seen: { type: number, default: 0 }
+        outputs: { chosen: text }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { set: { state: chosen, to: "@.id" } } ]
+      peek.v1.fragment.yaml: |
+        rachana: 1
+        fragment: peek
+        version: 1
+        doc:
+          summary: A picker and what it has seen.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+        panels:
+          - use: picker@1
+            as: p
+            with: { rows: arg.rows }
+          - { id: seen, kind: metric, label: Seen, value: "state.p.seen" }
+    sutra: |
+      rachana: 1
+      sutra: nested-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      panels:
+        - use: peek@1
+          as: k
+          with: { rows: $.left }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2117
+        message: "fragment peek reads state.p.seen, which is private to its use p of fragment picker; it reads that use's outputs: chosen"
+
+  - id: the-screen-reads-no-nested-instance
+    kind: problem
+    source: "LIBRARIES 7.2 (everything else inside is invisible to the user)"
+    files:
+      picker.v1.fragment.yaml: |
+        rachana: 1
+        fragment: picker
+        version: 1
+        doc:
+          summary: A list whose clicked row is remembered.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+        state:
+          chosen: { type: text, default: none }
+        outputs: { chosen: text }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+      wrap.v1.fragment.yaml: |
+        rachana: 1
+        fragment: wrap
+        version: 1
+        doc:
+          summary: A picker inside.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+        panels:
+          - use: picker@1
+            as: p
+            with: { rows: arg.rows }
+    sutra: |
+      rachana: 1
+      sutra: nested-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      panels:
+        - use: wrap@1
+          as: w
+          with: { rows: $.left }
+        - { id: m, kind: metric, label: Chosen, value: "state.w-p.chosen" }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2117
+        message: "state.w-p.chosen belongs to a use of fragment picker made inside another fragment: the screen reads only the outputs of its own uses"
+
+  - id: two-uses-of-an-outer-without-as-collide
+    kind: problem
+    source: "decision S1-OPEN c (a stateful fragment requires as:); LIBRARIES 7.2 (two uses are two instances only with as:)"
+    files:
+      picker.v1.fragment.yaml: |
+        rachana: 1
+        fragment: picker
+        version: 1
+        doc:
+          summary: A list whose clicked row is remembered.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+        state:
+          chosen: { type: text, default: none }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+      wrap.v1.fragment.yaml: |
+        rachana: 1
+        fragment: wrap
+        version: 1
+        doc:
+          summary: A picker inside.
+        params:
+          rows: { type: table, required: true, doc: The items, columns: { id: { type: text, doc: The item } } }
+        panels:
+          - use: picker@1
+            as: p
+            with: { rows: arg.rows }
+    sutra: |
+      rachana: 1
+      sutra: nested-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      panels:
+        - use: wrap@1
+          with: { rows: $.left }
+        - use: wrap@1
+          with: { rows: $.left }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2024
+        message: "duplicate panel id 'p-list'"

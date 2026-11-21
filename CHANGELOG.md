@@ -5,6 +5,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Elements pack 3.2.0-dev+6972989** vendored (the painter's `requires` fails closed: a button naming a permission is enabled only when the host's `allowed` answers `true`; G2 gate F10, O8); the server refuses `auth: users` on a non-loopback bind unless `server.behind-tls-proxy: true` (F17); a test run leaves no temporary folder (`tools/gate/tmp_leaks.py`, F16).
 - **G2 gate fixes (B)**: `./mvnw verify` runs what G2 built (`tools/gate/verify_lanes.py`, four executions of `rachana-guards`, nothing skipped):
   conformance at every language level on the JVM and on the Node bundle with identical bytes, the protocol cases on the JVM reference, the
   Python host and the live server, the Python SDK tests (the case reader takes the `fire` and `live` kinds), and a Chromium lane

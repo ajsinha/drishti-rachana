@@ -12,8 +12,24 @@ import java.util.Map;
 /** Kind-specific panel content. One record per panel kind (some kinds share one). */
 public sealed interface PanelData {
 
+    /**
+     * Language 1.2: a standalone form ({@code form} panel): the panel's {@code form} (PanelView.form) drawn as fields with Submit and
+     * Cancel. {@code values} are the fields' starting values ({@code initial:} over the screen's state and controls, then each field's
+     * default); {@code on} the effect lists of {@code submit} and {@code cancel} (EffectView; an effect may read a submitted value,
+     * {@code event}), run only after the form's own rules pass.
+     */
+    record FormPanel(@Include(Include.Rule.ALWAYS) Map<String, Object> values, @Include(Include.Rule.NON_NULL) String submitLabel,
+            @Include(Include.Rule.NON_NULL) String cancelLabel,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) implements PanelData {}
+
     /** Label/value fields for {@code kv}, {@code status} and {@code provenance}. */
-    record Fields(List<Cell> fields, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) implements PanelData {
+    record Fields(List<Cell> fields, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) implements PanelData {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Fields(List<Cell> fields, String ev, Map<String, Object> set) {
+            this(fields, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
         public Fields(List<Cell> fields, String ev) {
@@ -78,7 +94,13 @@ public sealed interface PanelData {
     record Row(List<Cell> cells, boolean highlight, String path, @Include(Include.Rule.NON_EMPTY) List<Row> children,
             @Include(Include.Rule.NON_NULL) String pick, @Include(Include.Rule.NON_NULL) String crumb,
             @Include(Include.Rule.NON_NULL) Row kidsTotal, @Include(Include.Rule.NON_NULL) String ev,
-            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Row(List<Cell> cells, boolean highlight, String path, List<Row> children, String pick, String crumb, Row kidsTotal, String ev, Map<String, Object> set) {
+            this(cells, highlight, path, children, pick, crumb, kidsTotal, ev, set, null);
+        }
 
         /** A row that writes no state. */
         public Row(List<Cell> cells, boolean highlight, String path, List<Row> children, String pick, String crumb, Row kidsTotal, String ev) {
@@ -157,7 +179,13 @@ public sealed interface PanelData {
     @Include(Include.Rule.NON_NULL)
     record Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel,
             LinkView source, String unit, Boolean step, @Include(Include.Rule.NON_EMPTY) List<String> ev,
-            @Include(Include.Rule.NON_EMPTY) List<Map<String, Object>> set) implements PanelData {
+            @Include(Include.Rule.NON_EMPTY) List<Map<String, Object>> set,
+            @Include(Include.Rule.NON_EMPTY) List<Map<String, Object>> on) implements PanelData {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel, LinkView source, String unit, Boolean step, List<String> ev, List<Map<String, Object>> set) {
+            this(x, series, mark, markText, limit, limitLabel, source, unit, step, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): beside {@code x}, what a point-click on each point writes into the screen's state. */
         public Chart(List<String> x, List<Series> series, String mark, String markText, Double limit, String limitLabel, LinkView source, String unit,
@@ -202,7 +230,13 @@ public sealed interface PanelData {
     }
 
     record Bar(String label, double value, String text, String tone, @Include(Include.Rule.NON_NULL) String ev,
-            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Bar(String label, double value, String text, String tone, String ev, Map<String, Object> set) {
+            this(label, value, text, tone, ev, set, null);
+        }
 
         /** A bar that writes no state ({@code set}: what a click on it writes into the screen's state, contract 1.2, I1). */
         public Bar(String label, double value, String text, String tone, String ev) {
@@ -251,7 +285,13 @@ public sealed interface PanelData {
      * @param unit a short unit, or null
      * @param caption small text under the figure, or null
      */
-    record Metric(Cell value, Cell delta, String unit, String caption, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) implements PanelData {
+    record Metric(Cell value, Cell delta, String unit, String caption, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) implements PanelData {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Metric(Cell value, Cell delta, String unit, String caption, String ev, Map<String, Object> set) {
+            this(value, delta, unit, caption, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
         public Metric(Cell value, Cell delta, String unit, String caption, String ev) {
@@ -324,7 +364,13 @@ public sealed interface PanelData {
     record ShadeItem(String code, double value, String text) {}
 
     /** {@code gauge}. */
-    record Gauge(double value, double max, String text, String label, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) implements PanelData {
+    record Gauge(double value, double max, String text, String label, @Include(Include.Rule.NON_NULL) String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) implements PanelData {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Gauge(double value, double max, String text, String label, String ev, Map<String, Object> set) {
+            this(value, max, text, label, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
         public Gauge(double value, double max, String text, String label, String ev) {
@@ -356,7 +402,13 @@ public sealed interface PanelData {
      * @param total drawn as a full bar from zero
      */
     record Step(String label, double value, double from, double to, String text, String tone, boolean total, @Include(Include.Rule.NON_NULL) String ev,
-            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Step(String label, double value, double from, double to, String text, String tone, boolean total, String ev, Map<String, Object> set) {
+            this(label, value, from, to, text, tone, total, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
         public Step(String label, double value, double from, double to, String text, String tone, boolean total, String ev) {
@@ -404,7 +456,13 @@ public sealed interface PanelData {
     /** A point: its measures and their text, an optional size, label, group and the entity the label names. */
     @Include(Include.Rule.NON_NULL)
     record Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link, String ev,
-            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link, String ev, Map<String, Object> set) {
+            this(x, y, size, xText, yText, label, group, link, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
         public Point(double x, double y, Double size, String xText, String yText, String label, String group, LinkView link, String ev) {
@@ -437,7 +495,13 @@ public sealed interface PanelData {
      */
     @Include(Include.Rule.NON_NULL)
     record Candle(String x, double open, double high, double low, double close, Double volume,
-            String openText, String highText, String lowText, String closeText, String volumeText, String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+            String openText, String highText, String lowText, String closeText, String volumeText, String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Candle(String x, double open, double high, double low, double close, Double volume, String openText, String highText, String lowText, String closeText, String volumeText, String ev, Map<String, Object> set) {
+            this(x, open, high, low, close, volume, openText, highText, lowText, closeText, volumeText, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
         public Candle(String x, double open, double high, double low, double close, Double volume, String openText, String highText, String lowText,
@@ -491,7 +555,13 @@ public sealed interface PanelData {
      * @param tone the status tone ({@code ok}, {@code warn}, {@code bad}), or null
      */
     @Include(Include.Rule.NON_NULL)
-    record Event(String date, String label, String detail, String status, String tone, String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set) {
+    record Event(String date, String label, String detail, String status, String tone, String ev, @Include(Include.Rule.NON_EMPTY) Map<String, Object> set,
+            @Include(Include.Rule.NON_EMPTY) Map<String, Object> on) {
+
+        /** As it was before {@code on} (contract 1.2): {@code on} is the whole effect list a click on the mark runs (trigger to its effects, evaluated for the mark) when it holds more than state writes. */
+        public Event(String date, String label, String detail, String status, String tone, String ev, Map<String, Object> set) {
+            this(date, label, detail, status, tone, ev, set, null);
+        }
 
         /** As it was before {@code set} (contract 1.2): {@code set} is what a point-click on the mark writes into the screen's state. */
         public Event(String date, String label, String detail, String status, String tone, String ev) {

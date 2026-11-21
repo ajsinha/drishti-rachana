@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The panel kinds of the grammar (twenty-two at level 1.0). Each declares which options it requires and which it accepts,
+ * The panel kinds of the grammar. Each declares which options it requires and which it accepts,
  * so the validator can reject a Sutra before it ever meets data.
  */
 public enum PanelKind {
@@ -82,15 +82,34 @@ public enum PanelKind {
      * Language 1.2: one figure on a band against a {@code limit} (one-sided, from {@code min}) or between {@code lower} and {@code upper}
      * (two-sided), with warning zones within {@code warnAt} (0.8) of a bound.
      */
-    BULLET(Set.of("value"), Set.of("label", "fmt", "min", "limit", "lower", "upper", "warnAt", "tone", "caption"));
+    BULLET(Set.of("value"), Set.of("label", "fmt", "min", "limit", "lower", "upper", "warnAt", "tone", "caption")),
+    /**
+     * Language 1.2: a standalone form (its {@code form:}, required, with no {@code edit} or {@code new}): the fields drawn with Submit and
+     * Cancel; {@code initial} maps a field to the expression of its starting value (over state and controls), {@code submitLabel} and
+     * {@code cancelLabel} name the buttons; {@code on: { submit, cancel }} run only after the form's rules pass.
+     */
+    FORM(Set.of(), Set.of("initial", "submitLabel", "cancelLabel"));
+
+
 
     /** The language level that brought each kind not of level 1.0 (SUTRA_EXPANSION 6.2). */
     private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1", LIVE, "1.2", TREEMAP, "1.2",
-            BULLET, "1.2");
+            BULLET, "1.2", FORM, "1.2");
 
     /** The options a later level added to a kind of an earlier one, with that level: used below it they are {@code RCH-2008}. */
     private static final java.util.Map<PanelKind, java.util.Map<String, String>> OPTION_SINCE = java.util.Map.of(
             GRID, java.util.Map.of("bars", "1.2"), LINE, java.util.Map.of("layers", "1.2", "by", "1.2"));
+
+    /** The options this kind accepts but does not require at a language level (a later level's option left out). */
+    public Set<String> optional(String level) {
+        Set<String> out = new java.util.TreeSet<>();
+        for (String o : optional) {
+            if (compareLevels(since(o), level) <= 0) {
+                out.add(o);
+            }
+        }
+        return out;
+    }
 
     /** The language level that brought an option of this kind ({@link #since()} for the kind's own options). */
     public String since(String option) {

@@ -1,0 +1,55 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/actions
+since: "1.2"
+profile: core
+verified: true
+description: "A panel's actions: (I1, level 1.2): buttons in its header, each an effect list evaluated over the panel's context (labels and questions rendered, when guards evaluated), carried as PanelView.actions (contract 1.2); pressing one (trigger action, mark = its place) runs its state effects and hands notify and host to the host, which also answers requires."
+cases:
+
+  - id: buttons-run-their-effects
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (actions), LIBRARIES 6.2"
+    sutra: |
+      rachana: 1
+      sutra: orders
+      version: 1
+      title: { id: "'Orders'" }
+      data:
+        orders: { rows: [ { id: A }, { id: B } ] }
+      state:
+        order: { type: text, default: A }
+        wide:  { type: boolean, default: false }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          actions:
+            - { label: "Cancel ${state.order}", tone: bad, requires: order.cancel, confirm: "Cancel order ${state.order}?",
+                do: [ { host: order.cancel, with: { id: state.order } }, { notify: "Cancelled ${state.order}", tone: ok } ] }
+            - { id: wide, label: Wide, do: [ { toggle: wide }, { set: { state: order, to: "'B'" }, when: "state.wide" } ] }
+            - { id: reset, label: Reset, confirm: true, do: [ { clear: order } ] }
+    steps:
+      - { panel: orders, trigger: action }
+      - { panel: orders, trigger: action, mark: 1 }
+      - { panel: orders, trigger: action, mark: 2 }
+      - { panel: orders, trigger: action, mark: 3 }
+      - { panel: orders, trigger: row-click }
+    expect:
+      at:
+        /panels/0/actions:
+          - { id: "0", label: "Cancel A", tone: bad, confirm: "Cancel order A?", requires: order.cancel, effects: [ { do: host, action: order.cancel, with: { id: A } }, { do: notify, text: "Cancelled A", tone: ok } ] }
+          - { id: wide, label: Wide, effects: [ { do: toggle, state: wide } ] }
+          - { id: reset, label: Reset, confirm: true, effects: [ { do: clear, state: order } ] }
+      steps:
+        - state: { order: A, wide: false }
+          effects: [ { do: host, action: order.cancel, with: { id: A } }, { do: notify, text: "Cancelled A", tone: ok } ]
+        - state: { order: A, wide: true }
+          effects: [ { do: toggle, state: wide, value: true } ]
+          at:
+            /panels/0/actions/1/effects: [ { do: toggle, state: wide }, { do: set, state: order, value: B } ]
+        - state: { order: A, wide: true }
+          effects: [ { do: clear, state: order, value: null } ]
+        - effects: []
+          problems: [ { code: RCH-5001, message: "panel 'orders' has no action 3 (it has 3)" } ]
+        - { effects: [], problems: [] }

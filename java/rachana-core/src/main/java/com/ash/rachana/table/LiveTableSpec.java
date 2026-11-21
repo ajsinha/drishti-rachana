@@ -825,7 +825,7 @@ public final class LiveTableSpec {
         }
         m.put("columns", cols);
         List<String> can = new ArrayList<>(List.of("page", "sort", "filter", "count", "group", "offset", "changes", "changes.filter",
-                "changes.window", "replay"));
+                "changes.window", "replay", "arrow"));
         if (!narrow.isEmpty()) {
             can.add("narrow");
         }

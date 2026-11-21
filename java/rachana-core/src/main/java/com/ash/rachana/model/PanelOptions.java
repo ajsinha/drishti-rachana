@@ -76,6 +76,11 @@ public final class PanelOptions {
             PanelKind.AREA, Map.of("series", "{ label, value, tone }"));
     private static final Set<String> MARKER_KEYS = Set.of("label", "value", "tone");
 
+    /** The keys of a histogram marker (for the generated language files). */
+    public static Set<String> markerKeys() {
+        return MARKER_KEYS;
+    }
+
     private PanelOptions() {}
 
     /** The allowed values of {@code option} on {@code kind}; empty when any text is accepted. */

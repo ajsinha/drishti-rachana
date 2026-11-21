@@ -11,6 +11,9 @@ import com.ash.rachana.live.spi.Authoriser;
 import com.ash.rachana.live.spi.LiveStream;
 import com.ash.rachana.live.spi.SnapshotSource;
 import com.ash.rachana.table.LiveTableSpec;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,7 +56,8 @@ final class ServerTables implements AutoCloseable {
 
             @Override
             public LiveStream stream(String name) {
-                return streams.get(name);
+                LiveStream s = streams.get(name);
+                return s != null ? s : streams.get(name + ".poll");     // a declaration may name the table whose poll it follows
             }
         }, LiveTables.Options.DEFAULTS, null).authoriser(authoriser).audit(e -> {
             if ("read-refused".equals(e.get("event"))) {
@@ -66,16 +70,71 @@ final class ServerTables implements AutoCloseable {
             sources.put(t.name(), s);
             declare(s);                                              // a failed first read is pending (declare says why) and retried
         }
+        loadDeclarations(config);
         retry = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread th = new Thread(r, "rachana-server-tables");
             th.setDaemon(true);
             return th;
         });
         retry.scheduleWithFixedDelay(() -> pending.keySet().forEach(n -> {
-            if (declare(sources.get(n))) {
+            if (sources.containsKey(n) && declare(sources.get(n))) {
                 pending.remove(n);
             }
         }), RETRY_MS, RETRY_MS, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * The {@code *.live.yaml} declarations of the project folder (and its {@code live/} folder): each one's {@code snapshot} (and
+     * {@code stream}) names a configured table, whose rows it serves under the declared name, columns and rules. A declaration with
+     * problems, or naming a table that is not configured, is set aside and listed with the pending tables, never half-served.
+     */
+    private void loadDeclarations(ServerConfig config) {
+        Path root = config.project().dir();
+        if (root == null) {
+            return;
+        }
+        for (Path dir : List.of(root, root.resolve("live"))) {
+            if (!Files.isDirectory(dir)) {
+                continue;
+            }
+            List<Path> files;
+            try (var l = Files.list(dir)) {
+                files = l.filter(f -> f.getFileName().toString().endsWith(LiveTableSpec.SUFFIX)).sorted().toList();
+            } catch (IOException e) {
+                log.warn("live-declarations-unreadable", "dir", dir.toString());
+                continue;
+            }
+            for (Path f : files) {
+                String file = f.getFileName().toString();
+                try {
+                    LiveTableSpec spec = LiveTableSpec.read(Files.readString(f), file, Set.of(), null);
+                    TableSource src = sources.get(spec.snapshot());
+                    if (src == null) {
+                        refuse(file, spec.name() + ": snapshot '" + spec.snapshot() + "' is not a configured table");
+                        continue;
+                    }
+                    if (src.types() == null) {                         // its own first read may still be pending: the declared columns type it
+                        Map<String, String> types = new LinkedHashMap<>();
+                        for (Object c : (List<?>) spec.schema().get("columns")) {
+                            Map<?, ?> cm = (Map<?, ?>) c;
+                            types.put(String.valueOf(cm.get("name")), String.valueOf(cm.get("type")));
+                        }
+                        src.types(types);
+                    }
+                    live.declare(spec);
+                    log.info("table", "table", spec.name(), "file", file, "snapshot", spec.snapshot());
+                } catch (SutraException e) {
+                    refuse(file, file + ": " + e.problems().stream().map(p -> p.code() + " " + p.message()).toList());
+                } catch (IOException | IllegalStateException e) {
+                    refuse(file, file + ": " + e.getClass().getSimpleName());
+                }
+            }
+        }
+    }
+
+    private void refuse(String file, String why) {
+        pending.put(file, why);
+        log.warn("table-refused", "file", file, "reason", why);
     }
 
     /** The provider to mount on the protocol host. */

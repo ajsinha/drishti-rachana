@@ -45,6 +45,7 @@ public final class Emptiness {
             case PanelData.Grid g -> false;              // a dataset's panels: the binder says empty from the dataset's rows
             case PanelData.Tree t -> false;
             case PanelData.DataChart c -> false;
+            case PanelData.FormPanel f -> false;        // a form is never empty: its fields are there to fill
         };
     }
 

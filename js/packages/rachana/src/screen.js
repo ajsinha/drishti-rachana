@@ -45,6 +45,7 @@ export class Screen {
     this.reads = new Map();     // table -> {version, live}
     this.stops = [];
     this.plan = null;
+    this.stateDelta = null;     // the state values the host's bind carries now (level 1.2): text per id, null for a cleared one
   }
 
   /** Reads every table through the plan (push-down where the table can); tables the host lacks read as no rows. */
@@ -55,7 +56,7 @@ export class Screen {
         try { schemas[t] = await this.client.schema(t); } catch (e) { if (e.code !== 'rdp.table.unknown') throw e; }
       }
     }
-    this.plan = call(this.rt, 'plan', { id: this.id, schemas: this.client ? schemas : undefined, ctl: this.ctl });
+    this.plan = call(this.rt, 'plan', { id: this.id, schemas: this.client ? schemas : undefined, ctl: this.ctl, state: this.stateDelta || undefined });
     for (const t of this.plan.tables) {
       if (!schemas[t.name] || this.reads.has(t.name)) continue;
       // a table read only by live panels (plan window, level 1.2): one page types the fields; the painter reads and follows it
@@ -67,7 +68,7 @@ export class Screen {
   }
 
   /** The ViewModel now. */
-  view() { return call(this.rt, 'view', { id: this.id, ctl: this.ctl }).viewModel; }
+  view() { return call(this.rt, 'view', { id: this.id, ctl: this.ctl, state: this.stateDelta || undefined }).viewModel; }
 
   /** Applies a keyed patch to a table: {frames} (maybe empty) or, when the screen's shape changed, {viewModel}. */
   patch(table, patch) { return call(this.rt, 'patch', { id: this.id, table, patch }); }
@@ -112,6 +113,18 @@ export class Screen {
   /** New control values: the plan may change (pushed-down filters read them), so the tables are read again. */
   async controls(next) {
     Object.assign(this.ctl, next);
+    this.stop();
+    this.reads.clear();
+    await this.load();
+    return this.view();
+  }
+
+  /**
+   * New state values (level 1.2, S1), as the painter's bind carries them: text per state id, null for a cleared one (its default stands). The plan may
+   * read them (pushed-down filters), so the tables are read again, then the ViewModel is built.
+   */
+  async setState(next) {
+    this.stateDelta = Object.assign({}, next);
     this.stop();
     this.reads.clear();
     await this.load();

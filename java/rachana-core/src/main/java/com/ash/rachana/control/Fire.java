@@ -15,8 +15,8 @@ import java.util.Map;
  * A trigger fired on a ViewModel as a painter fires it (SUTRA_EXPANSION I1, level 1.2; conformance kind {@code fire}): the mark the trigger
  * lands on (a table's rows, depth first through a tree's or a drill table's children; an {@code hbar}'s bars; a chart's points, steps,
  * events, candles or x positions; the one mark of a metric, a gauge or a record), the effects that mark carries, run in order, and the
- * state the screen holds after them. Rachana runs only the effects on its own state; the others ({@code host}, {@code go}, ...) are
- * handed to the host, which decides. A trigger the panel does not fire, or a mark it does not show, is a refusal ({@code RCH-5001}):
+ * state the screen holds after them. Rachana runs only the effects on its own state ({@code set}, {@code toggle}, {@code clear}); the
+ * others ({@code notify}, {@code host}) are handed to the host, which decides. A trigger the panel does not fire, or a mark it does not show, is a refusal ({@code RCH-5001}):
  * nothing runs.
  */
 public final class Fire {
@@ -39,6 +39,20 @@ public final class Fire {
      * Fires {@code trigger} on mark {@code mark} (0-based, in the order the ViewModel lists the marks) of panel {@code panel} of {@code vm}.
      */
     public static Result fire(ViewModel vm, String panel, String trigger, int mark) {
+        return fire(vm, null, panel, trigger, mark, null, null);
+    }
+
+    /** The refusal code of a form whose own rules do not pass: nothing runs; one refusal per problem, with its {@code field}. */
+    public static final String FORM_REFUSED = "RCH-5003";
+
+    /**
+     * As {@link #fire(ViewModel, String, String, int)}, with a form's values ({@code submit}, {@code cancel}: {@code values} the fields'
+     * values, read by the effects as {@code event}) and the Sutra the view was built from, whose form rules a {@code submit} must pass
+     * first (each failing check a refusal {@link #FORM_REFUSED}, its message the form's, and nothing runs). The trigger {@code action} presses the panel's button
+     * {@code mark} (its place among the panel's actions).
+     */
+    public static Result fire(ViewModel vm, com.ash.rachana.model.Sutra sutra, String panel, String trigger, int mark, Map<String, Object> values,
+            java.time.LocalDate today) {
         Map<String, Object> tree = map(ViewJson.tree(vm));
         Map<String, Object> state = state(tree);
         Map<String, Object> p = find(tree.get("panels"), panel);
@@ -46,12 +60,35 @@ public final class Fire {
             return refused(state, "no panel '" + panel + "' on the screen");
         }
         Map<String, Object> data = map(p.get("data"));
+        if (com.ash.rachana.model.Effects.ACTION.equals(trigger)) {             // a button of the panel's header
+            List<?> actions = p.get("actions") instanceof List<?> l ? l : List.of();
+            if (mark < 0 || mark >= actions.size()) {
+                return refused(state, "panel '" + panel + "' has no action " + mark + " (it has " + actions.size() + ")");
+            }
+            return new Result(state, run(map(actions.get(mark)).get("effects"), state, Map.of()), List.of());
+        }
+        if (com.ash.rachana.model.Effects.AT_FIRE.contains(trigger)) {           // a standalone form: submit, cancel
+            if (!"form".equals(p.get("kind")) || mark != 0) {
+                return refused(state, "panel '" + panel + "' (" + p.get("kind") + ") does not fire " + trigger + (mark != 0 ? " on mark " + mark : ""));
+            }
+            Map<String, Object> event = values == null ? Map.of() : values;
+            if ("submit".equals(trigger)) {
+                List<Map<String, Object>> problems = formProblems(sutra, panel, event, today);
+                if (!problems.isEmpty()) {
+                    return new Result(state, List.of(), problems);
+                }
+            }
+            return new Result(state, run(map(data.get("on")).get(trigger), state, event), List.of());
+        }
         List<Map<String, Object>> marks = marks(trigger, data);
         if (marks == null) {
             return refused(state, "panel '" + panel + "' (" + p.get("kind") + ") does not fire " + trigger);
         }
         if (mark < 0 || mark >= marks.size()) {
             return refused(state, "panel '" + panel + "' shows no mark " + mark + " (it shows " + marks.size() + ")");
+        }
+        if (map(marks.get(mark).get("on")).get(trigger) instanceof List<?> list) {     // the whole list: state writes run here, the rest is handed over
+            return new Result(state, run(list, state, Map.of()), List.of());
         }
         List<Map<String, Object>> effects = new ArrayList<>();
         map(marks.get(mark).get("set")).forEach((id, value) -> {
@@ -63,6 +100,106 @@ public final class Fire {
             state.put(id, value);
         });
         return new Result(state, effects, List.of());
+    }
+
+    /**
+     * Runs an effect list as the view carries it (EffectView): {@code set}, {@code toggle} and {@code clear} change {@code state}; a value
+     * read from the event ({@code event}, {@code withEvent}) is filled in from {@code event}; the others are handed over as they are.
+     *
+     * @return the effects run, in order, each with its value
+     */
+    public static List<Map<String, Object>> run(Object list, Map<String, Object> state, Map<String, Object> event) {
+        List<Map<String, Object>> effects = new ArrayList<>();
+        if (!(list instanceof List<?> l)) {
+            return effects;
+        }
+        for (Object o : l) {
+            Map<String, Object> e = new LinkedHashMap<>(map(o));
+            String id = String.valueOf(e.get("state"));
+            if (e.get("event") instanceof String path) {
+                e.remove("event");
+                e.put("value", read(event, path));
+            }
+            if (e.get("withEvent") instanceof Map<?, ?> we) {
+                Map<String, Object> w = new LinkedHashMap<>(map(e.get("with")));
+                we.forEach((k, path) -> w.put(String.valueOf(k), read(event, String.valueOf(path))));
+                e.remove("withEvent");
+                e.put("with", w);
+            }
+            switch (String.valueOf(e.get("do"))) {
+                case "set" -> state.put(id, e.get("value"));
+                case "toggle" -> {
+                    boolean v = !Boolean.TRUE.equals(state.get(id));
+                    e.put("value", v);
+                    state.put(id, v);
+                }
+                case "clear" -> {
+                    e.put("value", null);
+                    state.put(id, null);
+                }
+                default -> { }
+            }
+            effects.add(e);
+        }
+        return effects;
+    }
+
+    /** The value at {@code path} (dotted; empty: the whole event) of {@code event}, or null. */
+    static Object read(Map<String, Object> event, String path) {
+        Object at = event;
+        if (path.isEmpty()) {
+            return new LinkedHashMap<>(event);
+        }
+        for (String part : path.split("\\.")) {
+            at = at instanceof Map<?, ?> m ? m.get(part) : null;
+        }
+        return at;
+    }
+
+    /** The refusals of a submitted form ({@link #FORM_REFUSED}, one per failing check), or none. */
+    private static List<Map<String, Object>> formProblems(com.ash.rachana.model.Sutra sutra, String panel, Map<String, Object> values,
+            java.time.LocalDate today) {
+        com.ash.rachana.model.Form f = sutra == null ? null : formOf(sutra.panels(), panel);
+        List<Map<String, Object>> out = new ArrayList<>();
+        if (f == null) {
+            return out;
+        }
+        for (String k : values.keySet()) {
+            if (f.field(k).isEmpty()) {
+                Map<String, Object> r = new LinkedHashMap<>();
+                r.put("code", REFUSED);
+                r.put("message", "the form of panel '" + panel + "' has no field '" + k + "'");
+                out.add(r);
+            }
+        }
+        java.util.Set<String> all = new java.util.LinkedHashSet<>();
+        f.fields().forEach(x -> all.add(x.id()));
+        for (com.ash.rachana.model.Form.Issue i : f.check(values, all, today == null ? java.time.LocalDate.now(java.time.ZoneOffset.UTC) : today)) {
+            if (!i.error()) {
+                continue;                                                  // a warning is said, never stops the form
+            }
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("code", FORM_REFUSED);
+            r.put("message", i.message());
+            out.add(r);
+        }
+        return out;
+    }
+
+    /** The form of panel {@code id} among {@code panels} (children and tab parts included), or null. */
+    public static com.ash.rachana.model.Form formOf(List<com.ash.rachana.model.Panel> panels, String id) {
+        for (com.ash.rachana.model.Panel p : panels) {
+            if (id.equals(p.id())) {
+                return p.form().orElse(null);
+            }
+            List<com.ash.rachana.model.Panel> inner = new ArrayList<>(p.parts());
+            p.wiring().children().forEach(g -> inner.addAll(g.panels()));
+            com.ash.rachana.model.Form f = inner.isEmpty() ? null : formOf(inner, id);
+            if (f != null) {
+                return f;
+            }
+        }
+        return null;
     }
 
     /** The state values {@code vm} holds (id to value, as its {@code state[]} lists them). */
@@ -106,10 +243,14 @@ public final class Fire {
                 }
                 if (data.get("series") instanceof List<?> && data.get("x") instanceof List<?> x) {      // a line or area chart: one mark per x
                     List<?> sets = data.get("set") instanceof List<?> s ? s : List.of();
+                    List<?> ons = data.get("on") instanceof List<?> o ? o : List.of();
                     for (int i = 0; i < x.size(); i++) {
                         Map<String, Object> m = new LinkedHashMap<>();
                         if (i < sets.size()) {
                             m.put("set", sets.get(i));
+                        }
+                        if (i < ons.size()) {
+                            m.put("on", ons.get(i));
                         }
                         out.add(m);
                     }

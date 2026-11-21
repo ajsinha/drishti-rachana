@@ -70,44 +70,17 @@ public final class EffectsReader {
             }
             List<Map<String, Object>> list = new ArrayList<>();
             for (PNode x : e.getValue().list()) {
-                if (x.isMap() && x.map().containsKey("when")) {
-                    problem("RCH-2023", "an effect's 'when' comes with a later step of the effect list", x.map().get("when"));
-                    continue;
-                }
-                if (!x.isMap() || x.map().size() != 1 && !(x.map().containsKey("set") && x.map().keySet().stream().allMatch(k -> Set.of("set", "field").contains(k)))) {
-                    problem("RCH-2012", "an effect is a mapping with one effect word (" + String.join(", ", Effects.EFFECTS) + ")", x);
-                    continue;
-                }
-                String word = x.map().keySet().iterator().next();
-                if (!"set".equals(word)) {
-                    problem("RCH-2023", Effects.EFFECTS.contains(word) || "when".equals(word)
-                            ? "the effect '" + word + "' comes with a later step of the effect list; this level has set"
-                            : "unknown effect '" + word + "'; the effects are " + String.join(", ", Effects.EFFECTS), x);
-                    continue;
-                }
-                PNode set = x.map().get("set");
-                if (set.isMap()) {
-                    Map<String, Object> st = stateSet(set, x);
-                    if (st != null) {
-                        list.add(st);
-                    }
-                } else if (set.text() != null && !set.text().isBlank()) {
+                Object one = effect(x, !Effects.AT_FIRE.contains(trigger), Effects.AT_FIRE.contains(trigger));
+                if (one instanceof OnSelect sel) {
                     if (onSelect != null) {
                         problem("RCH-2038", "a panel's click sets one control; this one sets two", x);
                         continue;
                     }
-                    onSelect = new LinkedHashMap<>();
-                    onSelect.put("by", set.text());
-                    PNode f = x.map().get("field");
-                    if (f != null) {
-                        if (f.text() == null) {
-                            problem("RCH-2012", "'field' is the row field whose value is set", f);
-                            continue;
-                        }
-                        onSelect.put("field", f.text());
-                    }
-                } else {
-                    problem("RCH-2012", "set is { state: <id>, to: <expression> } or the id of a control (set: region, field: REGION)", set);
+                    onSelect = sel.value();
+                } else if (one instanceof Map<?, ?>) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> m = (Map<String, Object>) one;
+                    list.add(m);
                 }
             }
             if (!list.isEmpty()) {
@@ -116,6 +89,243 @@ public final class EffectsReader {
         }
         return problems.size() > before ? null : new Read(sets, onSelect);
     }
+
+    /** {@code set: <control>} read: the panel's on-select ({@code {by, field?}}). */
+    private record OnSelect(Map<String, Object> value) {}
+
+    /**
+     * One effect of a list: a plain state write {@code {state, to}}, {@code {do: <word>, ..., when?}}, or ({@code control} true, a click's
+     * list) {@code set: <control>} as an {@link OnSelect}; null when it has a problem (reported).
+     */
+    private Object effect(PNode x, boolean control, boolean atFire) {
+        Object one = effect(x, control);
+        if (!atFire && one instanceof Map<?, ?> m && (Effects.eventPath(m.get("to")) != null
+                || m.get("with") instanceof Map<?, ?> w && w.values().stream().anyMatch(v -> Effects.eventPath(v) != null))) {
+            problem("RCH-2012", "event" + " values are read by the effects of submit and cancel, filled in when the form is sent; here write an "
+                    + "expression", x);
+            return null;
+        }
+        return one;
+    }
+
+    private Object effect(PNode x, boolean control) {
+        String word = x.isMap() ? x.map().keySet().stream().filter(k -> !"when".equals(k) && !Effects.EXTRAS.contains(k)).findFirst().orElse(null) : null;
+        if (word == null || x.map().keySet().stream().filter(k -> !"when".equals(k) && !Effects.EXTRAS.contains(k)).count() != 1) {
+            problem("RCH-2012", "an effect is a mapping with one effect word (" + String.join(", ", Effects.EFFECTS) + "), and an optional when", x);
+            return null;
+        }
+        if (!Effects.BUILT_EFFECTS.contains(word)) {
+            problem("RCH-2023", Effects.EFFECTS.contains(word)
+                    ? "the effect '" + word + "' comes with a later step of the effect list; this level has " + String.join(", ", Effects.BUILT_EFFECTS)
+                    : "unknown effect '" + word + "'; the effects are " + String.join(", ", Effects.EFFECTS), x);
+            return null;
+        }
+        for (String k : x.map().keySet()) {
+            if (!k.equals(word) && !"when".equals(k) && !Effects.EXTRAS_OF.getOrDefault(word, Set.of()).contains(k)) {
+                problem("RCH-2011", "unknown key '" + k + "' in the effect " + word, x.map().get(k));
+            }
+        }
+        String when = null;
+        if (x.map().containsKey("when")) {
+            when = expression(x.map().get("when"));
+            if (when == null) {
+                problem("RCH-2012", "an effect's when is an expression (the effect runs only where it is true)", x.map().get("when"));
+                return null;
+            }
+        }
+        PNode set = x.map().get(word);
+        if (!"set".equals(word)) {
+            Map<String, Object> g = general(word, set, x);
+            if (g != null && when != null) {
+                g.put("when", when);
+            }
+            return g;
+        }
+        if (set.isMap()) {
+            Map<String, Object> st = stateSet(set, x);
+            if (st != null && when != null) {
+                Map<String, Object> g = new LinkedHashMap<>();
+                g.put("do", "set");
+                g.putAll(st);
+                g.put("when", when);
+                st = g;
+            }
+            return st;
+        }
+        if (!control) {
+            problem("RCH-2012", "an action's set writes a state: set: { state: <id>, to: <expression> }", set);
+            return null;
+        }
+        if (when != null) {
+            problem("RCH-2012", "set: <control> takes no when (it is the panel's on-select)", x.map().get("when"));
+            return null;
+        }
+        if (set.text() == null || set.text().isBlank()) {
+            problem("RCH-2012", "set is { state: <id>, to: <expression> } or the id of a control (set: region, field: REGION)", set);
+            return null;
+        }
+        Map<String, Object> onSelect = new LinkedHashMap<>();
+        onSelect.put("by", set.text());
+        PNode f = x.map().get("field");
+        if (f != null) {
+            if (f.text() == null) {
+                problem("RCH-2012", "'field' is the row field whose value is set", f);
+                return null;
+            }
+            onSelect.put("field", f.text());
+        }
+        return new OnSelect(onSelect);
+    }
+
+    /**
+     * A panel's {@code actions:} (I1, level 1.2): buttons in its header, each {@code {id?, label, tone?, confirm?, requires?, do: [effects]}};
+     * {@code label} and {@code confirm} are templates ({@code confirm: true} asks without words), {@code requires} a permission name the
+     * host answers, {@code id} (default: the action's place) unique in the panel. Kept as {@code {id, label, tone?, confirm?, requires?, do}};
+     * null when it has a problem (reported).
+     */
+    public List<Map<String, Object>> actions(PNode n) {
+        int before = problems.size();
+        if (!n.isList() || n.list().isEmpty()) {
+            problem("RCH-2012", "actions: is a list of buttons ({ label: Cancel, do: [ { host: order.cancel } ] })", n);
+            return null;
+        }
+        if (n.list().size() > Effects.MAX_ACTIONS) {
+            problem("RCH-2029", "a panel has at most " + Effects.MAX_ACTIONS + " actions; this one has " + n.list().size(), n);
+            return null;
+        }
+        List<Map<String, Object>> out = new ArrayList<>();
+        Set<String> ids = new java.util.HashSet<>();
+        for (PNode a : n.list()) {
+            if (!a.isMap()) {
+                problem("RCH-2012", "an action is { label, do: [ effects ] }", a);
+                continue;
+            }
+            for (String k : a.map().keySet()) {
+                if (!Effects.ACTION_KEYS.contains(k)) {
+                    problem("RCH-2011", "unknown key '" + k + "' in an action; it takes " + String.join(", ", new java.util.TreeSet<>(Effects.ACTION_KEYS)), a.map().get(k));
+                }
+            }
+            Map<String, Object> m = new LinkedHashMap<>();
+            PNode label = a.map().get("label");
+            if (label == null || label.text() == null || label.text().isBlank()) {
+                problem("RCH-2012", "an action needs a label (a template: \"Cancel ${state.order}\")", label == null ? a : label);
+                continue;
+            }
+            PNode id = a.map().get("id");
+            String idText = id == null ? String.valueOf(n.list().indexOf(a)) : id.text();
+            if (id != null && (idText == null || !ACTION.matcher(idText).matches())) {
+                problem("RCH-2020", "an action's id is a name of letters, digits, _ and -", id);
+                continue;
+            }
+            if (!ids.add(idText)) {
+                problem("RCH-2024", "two actions of this panel are called '" + idText + "'", a);
+                continue;
+            }
+            m.put("id", idText);
+            m.put("label", label.text());
+            PNode tone = a.map().get("tone");
+            if (tone != null) {
+                if (tone.text() == null || !Effects.TONES.contains(tone.text())) {
+                    problem("RCH-2020", "an action's tone is one of " + String.join(", ", Effects.TONES), tone);
+                    continue;
+                }
+                m.put("tone", tone.text());
+            }
+            PNode confirm = a.map().get("confirm");
+            if (confirm != null) {
+                if (confirm.isMap() || confirm.isList() || confirm.value() == null || Boolean.FALSE.equals(confirm.value())) {
+                    problem("RCH-2012", "confirm is true (ask before running) or the question, a template", confirm);
+                    continue;
+                }
+                m.put("confirm", confirm.value() instanceof Boolean ? Boolean.TRUE : confirm.text());
+            }
+            PNode requires = a.map().get("requires");
+            if (requires != null) {
+                if (requires.text() == null || !ACTION.matcher(requires.text()).matches()) {
+                    problem("RCH-2020", "requires names a permission the host answers (a dotted name: order.cancel)", requires);
+                    continue;
+                }
+                m.put("requires", requires.text());
+            }
+            PNode does = a.map().get("do");
+            if (does == null || !does.isList() || does.list().isEmpty()) {
+                problem("RCH-2012", "an action's do is a list of effects, run in order", does == null ? a : does);
+                continue;
+            }
+            List<Map<String, Object>> effects = new ArrayList<>();
+            for (PNode x : does.list()) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> one = (Map<String, Object>) effect(x, false, false);
+                if (one != null) {
+                    effects.add(one);
+                }
+            }
+            m.put("do", effects);
+            out.add(m);
+        }
+        return problems.size() > before ? null : out;
+    }
+
+    /**
+     * One effect other than {@code set} ({@code toggle: <state>}, {@code clear: <state>}, {@code host: <action>} with {@code with: { name:
+     * <expression> }}, {@code notify: <template>} with {@code tone:}), as the panel keeps it: {@code {do: <word>, ...}}; null when it has a
+     * problem (reported).
+     */
+    private Map<String, Object> general(String word, PNode v, PNode at) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("do", word);
+        String text = v == null || v.isMap() || v.isList() ? null : v.text();
+        if (text == null || text.isBlank()) {
+            problem("RCH-2012", switch (word) {
+                case "toggle", "clear" -> word + " names a state (" + word + ": <id>)";
+                case "host" -> "host names the host's action (host: order.cancel, with: { id: \"@.id\" })";
+                default -> "notify is a message template (notify: \"Saved ${@.id}\", tone: ok)";
+            }, v == null ? at : v);
+            return null;
+        }
+        switch (word) {
+            case "toggle", "clear" -> out.put("state", text);
+            case "host" -> {
+                if (!ACTION.matcher(text).matches()) {
+                    problem("RCH-2020", "host action '" + text + "' is a dotted name of letters, digits, _ and -", v);
+                    return null;
+                }
+                out.put("action", text);
+                PNode with = at.map().get("with");
+                if (with != null) {
+                    if (!with.isMap()) {
+                        problem("RCH-2012", "with is a mapping of name to expression, evaluated when the panel binds", with);
+                        return null;
+                    }
+                    Map<String, Object> w = new LinkedHashMap<>();
+                    for (Map.Entry<String, PNode> f : with.map().entrySet()) {
+                        String x = expression(f.getValue());
+                        if (x == null) {
+                            problem("RCH-2012", "with." + f.getKey() + " is an expression (or a literal)", f.getValue());
+                            return null;
+                        }
+                        w.put(f.getKey(), x);
+                    }
+                    out.put("with", w);
+                }
+            }
+            default -> {
+                out.put("text", text);
+                PNode tone = at.map().get("tone");
+                if (tone != null) {
+                    if (tone.text() == null || !Effects.TONES.contains(tone.text())) {
+                        problem("RCH-2020", "notify tone is one of " + String.join(", ", Effects.TONES), tone);
+                        return null;
+                    }
+                    out.put("tone", tone.text());
+                }
+            }
+        }
+        return out;
+    }
+
+    /** A host action's name: dotted words ({@code order.cancel}). */
+    static final java.util.regex.Pattern ACTION = java.util.regex.Pattern.compile("[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z][A-Za-z0-9_-]*)*");
 
     private Map<String, Object> stateSet(PNode set, PNode at) {
         for (String k : set.map().keySet()) {
@@ -157,11 +367,16 @@ public final class EffectsReader {
         Set<String> ids = new java.util.LinkedHashSet<>();
         state.forEach(e -> ids.add(e.id()));
         for (Panel p : panels) {
-            for (String trigger : Effects.BUILT.keySet()) {
-                for (Effects.SetState s : Effects.sets(p, trigger)) {
-                    if (!ids.contains(s.state())) {
-                        problems.add(new SutraProblem("RCH-2020", "panel '" + p.id() + "' sets state '" + s.state() + "', which the Sutra does not hold"
+            for (Map<String, Object> e : Effects.every(p)) {
+                {
+                    if (!(e.get("state") instanceof String s)) {
+                        continue;
+                    }
+                    if (!ids.contains(s)) {
+                        problems.add(new SutraProblem("RCH-2020", "panel '" + p.id() + "' sets state '" + s + "', which the Sutra does not hold"
                                 + (ids.isEmpty() ? " (declare it under state:)" : " (it holds " + String.join(", ", ids) + ")"), p.location()));
+                    } else if ("toggle".equals(e.get("do")) && state.stream().anyMatch(x -> x.id().equals(s) && !"boolean".equals(x.type()))) {
+                        problems.add(new SutraProblem("RCH-2020", "panel '" + p.id() + "' toggles state '" + s + "', which is not a boolean", p.location()));
                     }
                 }
             }

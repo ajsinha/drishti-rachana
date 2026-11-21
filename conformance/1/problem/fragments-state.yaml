@@ -163,3 +163,44 @@ cases:
         message: "fragment bad: output query is number, its state is text"
       - code: RCH-2048
         messageStart: "no block bad@1"
+
+  - id: a-fragment-never-calls-the-host
+    kind: problem
+    source: "LIBRARIES 6.2 (a fragment returns events; the Sutra that uses it decides); SUTRA_EXPANSION I1 (host)"
+    files:
+      caller.v1.fragment.yaml: |
+        rachana: 1
+        fragment: caller
+        version: 1
+        doc:
+          summary: A list that would cancel orders itself.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per item
+            columns:
+              id: { type: text, doc: The item }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" } ]
+            on:
+              row-click: [ { host: order.cancel, with: { id: "@.id" } } ]
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        left: { rows: [ { id: X } ] }
+      panels:
+        - use: caller@1
+          with: { rows: $.left }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2117
+        message: "fragment caller runs the host action 'order.cancel': a fragment never calls the host; it returns an event and the Sutra that uses it decides"

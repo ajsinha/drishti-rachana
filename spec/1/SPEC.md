@@ -348,17 +348,35 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    fit its type, is ignored and the default stands. The ViewModel lists every value (contract 1.2, VIEWMODEL.md): `state[]
    {id, value, url, reads}`, `reads` naming the parts whose expressions read it, directly or through a `let`.
 4. **`on:`** (I1) on a panel maps a trigger to a list of effects, run in order. Built at this level: the triggers
-   `row-click` (table, ladder), `bar-click` (hbar) and `point-click` (`line`, `area`, `scatter`, `waterfall`, `timeline`,
+   `row-click` (table, ladder; on a tree, `children:`, and a drill table, `levels:`, every node at every level, `@`
+   that node), `bar-click` (hbar) and `point-click` (`line`, `area`, `scatter`, `waterfall`, `timeline`,
    `candlestick`: the mark's row; `metric`, `gauge`, `kv`, `status`: one mark, read in the panel's context), and the effect
    `set` in two forms: `set: { state: <id>, to: <expression> }` writes a state value, the expression read with `@` the
    clicked row and evaluated per row when the panel binds (the mark's `set` in the ViewModel; a value that fails or does
    not fit the state's type stops the list there);
    `set: <control>` with an optional `field:` sets a control from the clicked row and is the panel's `on-select` (one
-   control per click, `RCH-2038`). A `set` naming a state the Sutra does not hold is `RCH-2020`. The other triggers of the
-   closed list (`row-dblclick`, `cell-click`, `change`, `open`, `close`, and the standalone form's `submit`
-   and `cancel`, whose effects run only once the form's own rules pass), a trigger the panel's kind does not
-   fire, and the other effects (`toggle`, `clear`, `open`, `close`, `go`, `fire`, `submit`, `refresh`, `export`, `copy`,
-   `notify`, `host`) and `when` are `RCH-2023` until their step. `on:` is not offered inside a tab.
+   control per click, `RCH-2038`). A `set` naming a state the Sutra does not hold is `RCH-2020`. Also built: `toggle:
+   <state>` (a boolean state, `RCH-2020` otherwise), `clear: <state>` (back to its default), `notify: <template>` (with
+   `tone:` one of `ok`, `warn`, `bad`, `accent`) and `host: <action>` (a dotted name, with `with: { name: <expression> }`):
+   the host's own action, handed over and never run by Rachana (the host decides; a typed fragment never names one,
+   `RCH-2117`). Any effect but `set: <control>` takes `when: <expression>`, evaluated per mark: false leaves the effect
+   out for that mark. A list that holds only plain state writes is carried as the mark's `set`; any other list as the
+   mark's `on` (VIEWMODEL contract 1.2, `EffectView`). The other triggers of the closed list (`row-dblclick`,
+   `cell-click`, `change`, `open`, `close`), a trigger the panel's kind does not fire, and the other effects (`open`,
+   `close`, `go`, `fire`, `submit`, `refresh`, `export`, `copy`) are `RCH-2023` until their step. `on:` is not offered
+   inside a tab.
+5. **The form panel** (`kind: form`, SUTRA_EXPANSION 3.6): a standalone form, its `form:` required (`RCH-2022`) and the
+   panel itself (no `edit`, `new`, `new-label` or `key`, `RCH-2058`; the fields, rules and hints of RACHANA_REFERENCE 10).
+   `initial: { <field>: <expression> }` gives starting values over state and controls (a name that is not a field,
+   `RCH-2029`), then each field's `default`; `submitLabel` and `cancelLabel` name the buttons. Its triggers are `submit`
+   and `cancel`: a `submit`'s effects run only after the form's own checks pass (a refused form runs none; each failing
+   check is said, `ScreenWire.submit`); `cancel` runs without checks. Their effects may read the sent values: a `to:` or a
+   `with:` value written `event` or `event.<field>` is filled in when the form is sent (elsewhere `RCH-2012`). Always
+   carried as the panel's `on` (`FormPanel`, VIEWMODEL contract 1.2).
+6. **`actions:`** (I1): buttons in a panel's header (at most 8, `RCH-2029`), each `{id?, label, tone?, confirm?, requires?,
+   do: [effects]}`: `label` and `confirm` are templates (`confirm: true` asks without words), `requires` a permission name
+   the host answers, `id` (default: the button's place) unique in the panel (`RCH-2024`); `do` is an effect list as in item
+   4, evaluated over the panel's context (no row), `set: <control>` excepted (`RCH-2012`). Carried as `PanelView.actions`.
 
 ## 3. Where expressions appear
 

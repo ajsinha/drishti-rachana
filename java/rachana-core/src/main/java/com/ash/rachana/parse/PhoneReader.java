@@ -205,4 +205,14 @@ final class PhoneReader {
     private void problem(String message, PNode at) {
         problems.add(new SutraProblem(LayoutReader.CODE, message, new SourceLocation(file, at == null ? 0 : at.line(), at == null ? 0 : at.column())));
     }
+
+    /** For {@link KeyTables}. */
+    static Set<String> panelKeys() {
+        return PANEL_KEYS;
+    }
+
+    /** For {@link KeyTables}. */
+    static Set<String> screenKeys() {
+        return SCREEN_KEYS;
+    }
 }

@@ -64,3 +64,7 @@ levels:
   - {case: "el/text-code-points#sort-by-code-point", since: "1.1"}
   - {case: "el/text-code-points#least-of-texts-by-code-point", since: "1.1"}
   - {case: "el/text-code-points#source-offsets-stay-in-utf-16-units", since: "1.1"}
+  - {case: "edit/examples/edit#set-a-title-keeps-comments", withdrawn: "a placeholder: its operation name (set, a path) was never the reference's; the reference's operations, and a title set with the comments kept, are pinned by edit/ops (set-option-title-keeps-comments)"}
+  - {case: "edit/examples/edit#remove-a-required-key-is-refused", withdrawn: "a placeholder: no operation removes a top-level key (remove takes a panel); the operations and their refusals are pinned by edit/ops"}
+  - {case: "problem/examples/problem#profile-key-without-the-profile", since: "1.1"}
+  - {case: "protocol/examples/bridge#bridge-rows-request-answered-once", withdrawn: "it sorts a table that does not declare sort, which PROTOCOL 4 refuses, so no host answered it; protocol/host#bridge-rows-of-a-sortable-table is the corrected case"}

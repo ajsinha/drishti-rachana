@@ -189,8 +189,26 @@ public final class SutraExpressions {
         if (p.kind() == PanelKind.MARKDOWN) {
             p.option("text").ifPresent(t -> template(t, p.location(), out));
         }
-        for (String trigger : com.ash.rachana.model.Effects.BUILT.keySet()) {     // level 1.2, I1: each set's value, @ the clicked row
-            com.ash.rachana.model.Effects.sets(p, trigger).forEach(st -> expr(st.to(), p.location(), out));
+        for (Map<String, Object> a : com.ash.rachana.model.Effects.actions(p)) {   // level 1.2, I1: an action's label and question
+            template(String.valueOf(a.get("label")), p.location(), out);
+            if (a.get("confirm") instanceof String q) {
+                template(q, p.location(), out);
+            }
+        }
+        {
+            for (Map<String, Object> e : com.ash.rachana.model.Effects.every(p)) {   // level 1.2, I1: each effect's expressions, @ the clicked row
+                for (String k : List.of("to", "when")) {
+                    if (e.get(k) instanceof String x && !("to".equals(k) && com.ash.rachana.model.Effects.eventPath(x) != null)) {
+                        expr(x, p.location(), out);                         // event.<field>: filled in when the trigger fires
+                    }
+                }
+                if (e.get("with") instanceof Map<?, ?> w) {
+                    w.values().stream().filter(x -> com.ash.rachana.model.Effects.eventPath(x) == null).forEach(x -> expr(String.valueOf(x), p.location(), out));
+                }
+                if ("notify".equals(e.get("do")) && e.get("text") instanceof String t) {
+                    template(t, p.location(), out);
+                }
+            }
         }
         if (p.body() != null) {
             panel(p.body(), out);

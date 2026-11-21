@@ -83,6 +83,17 @@ class ContractAppendOnlyTest {
         assertEquals(List.of(), breaks(current, current));
     }
 
+    /** The schema's {@code x-contract} is the highest minor it defines (a document's own {@code contract} is the smallest that describes it). */
+    @Test
+    void theSchemasStampIsTheHighestMinorItDefines() throws Exception {
+        String text = Files.readString(Corpus.repoRoot().resolve("spec/1/viewmodel.schema.json"));
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"x-since\": *\"1\\.(\\d+)\"").matcher(text);
+        int highest = 0;
+        while (m.find()) highest = Math.max(highest, Integer.parseInt(m.group(1)));
+        assertTrue(highest >= 2, "the 1.2 additions are marked x-since");
+        assertEquals("1." + highest, ((Map<?, ?>) read(Corpus.repoRoot().resolve("spec/1/viewmodel.schema.json"))).get("x-contract"));
+    }
+
     @Test
     void theCheckSeesEveryKindOfBreak() {
         Object old = Json.parse("{\"type\":\"object\",\"required\":[\"a\"],\"properties\":{\"a\":{\"type\":\"string\",\"enum\":[\"x\",\"y\"]},\"b\":{\"type\":\"number\"}},\"$defs\":{\"D\":{\"type\":\"object\"}}}");

@@ -20,7 +20,4 @@ tools/reference-bridge/RefBridgeSutra.java spec/1/formats.yaml <drishti formats.
 engine's jars bring the pivot engine's function providers, which change the answers of other kinds; `RefBridge.java` keeps the
 compiler-only class path.
 
-`LangDump.java` (plan H4) reads the reference's tables by reflection (the parser's key sets, `PanelKind`, `ControlKind`, the function
-table, the bundled formats, `Tones`, the limits, `RachanaSchema`) and the problem codes from the compiled classes' constant pools, and
-writes `rachana.lang.json` and `sutra.schema.json`: `python3 tools/conformance/spec_files.py --classpath-file CP.txt --formats
-<drishti core pack formats.yaml> [--write]`. `SchemaDump.java` writes the reference's ViewModel schema (H4's comparison).
+The language files are no longer generated here: `java/rachana-tools` `LangFiles` writes them from Rachana's own tables (`tools/conformance/spec_files.py`, `tools/regime/levels.py write`). `SchemaDump.java` writes the reference's ViewModel schema (H4's comparison).

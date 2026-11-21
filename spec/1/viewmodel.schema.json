@@ -3,8 +3,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json",
   "title": "ViewModel",
-  "description": "The JSON a Rachana runtime returns for every screen (contract 1.x, now 1.1: datasets and the kinds grid, tree and chart, map points and the rows patch, appended to 1.0; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
-  "x-contract": "1.1",
+  "description": "The JSON a Rachana runtime returns for every screen (contract 1.x, now 1.2: 1.1 appended datasets, the kinds grid, tree and chart, map points and the rows patch to 1.0; 1.2 appended state, events and effects, the form panel and action buttons; version 1 keeps the reference implementation's field names). $defs.Frame is a frame event of the live stream. TRANSCRIBED BY READING from the reference implementation's Java records (Drishti engine/view/ViewModel, PanelData, ViewModelSchema; engine/live/Frame, Patch); REPLACED by the generated schema in R0 step H4. Each definition's x-java names its record and x-include its Jackson inclusion (ALWAYS: every component written, reference types nullable; NON_NULL, NON_DEFAULT, NON_EMPTY: components left out when null, default or empty, never null).",
+  "x-contract": "1.2",
   "x-status": "draft: transcribed by reading; replaced by the generated schema in R0 step H4",
   "$ref": "#/$defs/ViewModel",
   "$defs": {
@@ -248,6 +248,17 @@
           "type": "object",
           "description": "what a click on the bar writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for this bar's row; absent when the panel's on: bar-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -428,6 +439,17 @@
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -598,6 +620,27 @@
           },
           "description": "on a line or area over rows whose on: point-click writes state: beside x, what a click on each point writes into the screen's state (state id to value; null when its effects failed for that row) (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/EffectView"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "beside x, each point's whole effect list (as a mark's on), null for a point whose list ran nothing (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -748,6 +791,17 @@
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -780,6 +834,17 @@
         "set": {
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -846,6 +911,17 @@
         "set": {
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -1425,6 +1501,17 @@
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -1615,10 +1702,7 @@
           "$ref": "#/$defs/DataChart"
         },
         {
-          "$ref": "#/$defs/Treemap"
-        },
-        {
-          "$ref": "#/$defs/Bullet"
+          "$ref": "#/$defs/FormPanel"
         }
       ]
     },
@@ -1690,6 +1774,7 @@
             "grid",
             "tree",
             "chart",
+            "form",
             "live",
             "treemap",
             "bullet"
@@ -1783,6 +1868,14 @@
             }
           ],
           "description": "state of a computed source"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ActionView"
+          },
+          "description": "the buttons of the panel's header (I1 actions:), in order; absent when it has none (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -2447,6 +2540,32 @@
           "if": {
             "properties": {
               "kind": {
+                "const": "form"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/FormPanel"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
                 "const": "live"
               }
             },
@@ -2838,6 +2957,17 @@
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -3117,6 +3247,17 @@
           "type": "object",
           "description": "what a click on the row writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for this row; absent when the panel's on: row-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -3314,21 +3455,21 @@
         },
         "mark": {
           "type": "string",
-          "description": "how the series is drawn: bar, area or point (absent: a line); a line panel's layers (contract 1.2)",
-          "x-since": "1.2"
+          "x-since": "1.2",
+          "description": "how the series is drawn: bar, area or point (absent: a line); a line panel's layers (contract 1.2)"
         },
         "axis": {
           "type": "string",
-          "description": "right: read against a second axis on the right (absent: the left); a line panel's layers (contract 1.2)",
-          "x-since": "1.2"
+          "x-since": "1.2",
+          "description": "right: read against a second axis on the right (absent: the left); a line panel's layers (contract 1.2)"
         },
         "ev": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "beside x, each point's row in the data (null where the series has no point), on a line split by a field that emits on point-click (contract 1.2)",
-          "x-since": "1.2"
+          "x-since": "1.2",
+          "description": "beside x, each point's row in the data (null where the series has no point), on a line split by a field that emits on point-click (contract 1.2)"
         }
       },
       "required": [
@@ -3469,6 +3610,17 @@
         "set": {
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -3998,8 +4150,8 @@
         },
         "live": {
           "$ref": "#/$defs/LiveRef",
-          "description": "a live table read a window at a time and followed by key (contract 1.2, panel kind live); values are absent",
-          "x-since": "1.2"
+          "x-since": "1.2",
+          "description": "a live table read a window at a time and followed by key (contract 1.2, panel kind live); values are absent"
         }
       },
       "additionalProperties": false,
@@ -4221,8 +4373,8 @@
         },
         "bar": {
           "type": "boolean",
-          "description": "each number drawn with a bar in its cell against the column's largest (contract 1.2); the text still says the value",
-          "x-since": "1.2"
+          "x-since": "1.2",
+          "description": "each number drawn with a bar in its cell against the column's largest (contract 1.2); the text still says the value"
         }
       },
       "required": [
@@ -4521,6 +4673,150 @@
       "x-include": "NON_DEFAULT (lat and lon ALWAYS)",
       "x-since": "1.1"
     },
+    "EffectView": {
+      "description": "One effect of a mark's effect list, evaluated for the mark (SUTRA_EXPANSION I1, contract 1.2). set, toggle and clear write the screen's state (the painter applies them and sends the values back with the next bind); notify and host are handed to the host, which decides (Rachana never runs a host action)",
+      "type": "object",
+      "properties": {
+        "do": {
+          "enum": [
+            "set",
+            "toggle",
+            "clear",
+            "notify",
+            "host"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "description": "set, toggle, clear: the state's id"
+        },
+        "value": {
+          "description": "set: the value, in the state's type (absent when it is read from the event, event)"
+        },
+        "text": {
+          "type": "string",
+          "description": "notify: the message"
+        },
+        "tone": {
+          "enum": [
+            "ok",
+            "warn",
+            "bad",
+            "accent"
+          ]
+        },
+        "action": {
+          "type": "string",
+          "description": "host: the host's action (a dotted name)"
+        },
+        "with": {
+          "type": "object",
+          "description": "host: the arguments, evaluated for the mark"
+        },
+        "event": {
+          "type": "string",
+          "description": "set (submit, cancel): the submitted value the state takes, filled in when the trigger fires: a field of the form (dotted for a value inside one); empty for every value (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "withEvent": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "host (submit, cancel): arguments filled in when the trigger fires, name to the submitted field (as event) (contract 1.2)",
+          "x-since": "1.2"
+        }
+      },
+      "required": [
+        "do"
+      ],
+      "additionalProperties": false,
+      "x-since": "1.2"
+    },
+    "FormPanel": {
+      "description": "data of form (contract 1.2): a standalone form, its fields in PanelView.form, drawn with Submit and Cancel",
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "object",
+          "description": "each field's starting value, field id to value (initial: over state and controls, then the field's default; null when none)"
+        },
+        "submitLabel": {
+          "type": "string",
+          "description": "the Submit button's text (the painter's word when absent)"
+        },
+        "cancelLabel": {
+          "type": "string",
+          "description": "the Cancel button's text (the painter's word when absent)"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the effect lists of submit and cancel (EffectView), run only after the form's own rules pass; the painter hands the values to the host, which submits them (ScreenWire.submit)"
+        }
+      },
+      "required": [
+        "values"
+      ],
+      "additionalProperties": false,
+      "x-since": "1.2"
+    },
+    "ActionView": {
+      "description": "One button of a panel's header (I1 actions:, contract 1.2): pressing it runs its effects in order (after asking, with confirm); requires names a permission the host answers (the painter leaves the button out, or disables it, when the host says no)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "the action's id, unique in the panel"
+        },
+        "label": {
+          "type": "string",
+          "description": "the button's text, rendered"
+        },
+        "tone": {
+          "enum": [
+            "ok",
+            "warn",
+            "bad",
+            "accent"
+          ]
+        },
+        "confirm": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "true: ask before running; a text: the question, rendered"
+        },
+        "requires": {
+          "type": "string",
+          "description": "a permission name the host answers"
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EffectView"
+          },
+          "description": "the effects, evaluated over the panel's context"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "effects"
+      ],
+      "additionalProperties": false,
+      "x-since": "1.2"
+    },
     "LiveRef": {
       "type": "object",
       "properties": {
@@ -4545,8 +4841,8 @@
         "table"
       ],
       "additionalProperties": false,
-      "description": "A live table of the Data Protocol read a window at a time (contract 1.2, panel kind live): the painter reads the first window rows of the query through the page's data client, subscribes with their keys and applies the patches",
-      "x-since": "1.2"
+      "x-since": "1.2",
+      "description": "A live table of the Data Protocol read a window at a time (contract 1.2, panel kind live): the painter reads the first window rows of the query through the page's data client, subscribes with their keys and applies the patches"
     },
     "Treemap": {
       "type": "object",

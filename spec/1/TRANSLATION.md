@@ -433,10 +433,12 @@ them (T7).
 
 Before T4, each `data:` entry is read through its source (SPEC 2.4) and set as the field of `$` of the same name: a
 table as a list of row objects (columns in schema order), a record as an object. `where` and `limit` of the entry apply
-first. A table the host marks server-side is never summed locally: panels over it bind from the host's push-down
+first; `as: record` takes the first row left, or a record with no fields when there is none (SPEC 2.4). A table the host
+marks server-side is never summed locally: panels over it bind from the host's push-down
 answer (Data Protocol). A failed or denied entry makes the panels that read it `error` or `denied` (section 4); the
-others bind. Live changes to a keyed table produce ViewModel patches for the panels and cells whose paths read the
-changed columns.
+others bind. A `table` entry whose table the host does not have is a failed entry (`RCH-2070`), never a table with no rows. Live changes to a keyed table produce ViewModel patches for the panels and cells whose paths read the
+changed columns and whose ViewModel differs afterwards: a panel that reads the change and shows the same as before is not
+patched (FORMAT 5.9, "The frames of a step").
 
 ## 11. Differences found in the reference
 

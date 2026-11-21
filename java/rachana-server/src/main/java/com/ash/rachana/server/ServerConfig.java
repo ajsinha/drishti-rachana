@@ -110,6 +110,18 @@ public final class ServerConfig {
      */
     public record Edits(Path journal, List<String> off, Map<String, TableWrite> writes, Map<String, TableEdit> access) {}
 
+    /**
+     * Where a file table's edits are written ({@code tables.<name>.write.journal}, a CSV, JSON or JSON lines file): the file is replaced
+     * whole and atomically per change, each change id recorded in this visible journal (JSON lines) so a change is applied once.
+     */
+    public record FileWrite(Path journal) {}
+
+    /**
+     * Four eyes ({@code edits.hold}, {@code access.tables.<name>.approve}): the tables whose changes are held for an approver, and per table
+     * the roles that approve. An approver never decides their own change.
+     */
+    public record Approvals(List<String> hold, Map<String, List<String>> approve) {}
+
     private final Path file;
     private final Http http;
     private final Project project;
@@ -120,10 +132,14 @@ public final class ServerConfig {
     private final Auth auth;
     private final Access access;
     private final Edits edits;
+    private final Map<String, FileWrite> fileWrites;
+    private final Approvals approvals;
 
     private ServerConfig(Path file, Http http, Project project, List<Path> libraries, Path runtime, List<Path> drivers, Map<String, Table> tables,
-            Auth auth, Access access, Edits edits) {
+            Auth auth, Access access, Edits edits, Map<String, FileWrite> fileWrites, Approvals approvals) {
         this.edits = edits;
+        this.fileWrites = fileWrites;
+        this.approvals = approvals;
         this.file = file;
         this.http = http;
         this.project = project;
@@ -179,10 +195,20 @@ public final class ServerConfig {
         return edits;
     }
 
+    /** Each file table's {@link FileWrite}, by table. */
+    public Map<String, FileWrite> fileWrites() {
+        return fileWrites;
+    }
+
+    /** Four eyes: the held tables and their approvers' roles. */
+    public Approvals approvals() {
+        return approvals;
+    }
+
     /** The same configuration on another port (0: any free one). */
     public ServerConfig withPort(int port) {
         Http h = new Http(http.bind(), port, http.origins(), http.cookieSecure(), http.sessionIdleMs(), http.sessionMaxMs(), http.maxBody());
-        return new ServerConfig(file, h, project, libraries, runtime, drivers, tables, auth, access, edits);
+        return new ServerConfig(file, h, project, libraries, runtime, drivers, tables, auth, access, edits, fileWrites, approvals);
     }
 
     /** Reads and checks a configuration file. */
@@ -299,13 +325,21 @@ public final class ServerConfig {
         r.keys(ac, "access", "tables", "sutras", "default");
         Map<String, TableAccess> ta = new LinkedHashMap<>();
         Map<String, TableEdit> editAccess = new LinkedHashMap<>();
+        Map<String, List<String>> approve = new LinkedHashMap<>();
         for (Map.Entry<String, Object> e : r.map(ac.get("tables"), "access.tables").entrySet()) {
             String k = "access.tables." + e.getKey();
             if (!tables.containsKey(e.getKey())) {
                 r.problem(k + ": no table '" + e.getKey() + "' in tables");
             }
             Map<String, Object> one = r.map(e.getValue(), k);
-            r.keys(one, k, "read", "unmask", "edit");
+            r.keys(one, k, "read", "unmask", "edit", "approve");
+            if (one.containsKey("approve")) {
+                List<String> roles = r.texts(one.get("approve"), k + ".approve");
+                if (roles.isEmpty()) {
+                    r.problem(k + ".approve: the roles that approve held changes (at least one)");
+                }
+                approve.put(e.getKey(), roles);
+            }
             if (one.containsKey("edit")) {
                 Map<String, Object> ed = r.map(one.get("edit"), k + ".edit");
                 r.keys(ed, k + ".edit", "roles", "columns");
@@ -327,23 +361,30 @@ public final class ServerConfig {
         }
         Access access = new Access(ta, sa, "signed-in".equals(def));
         Map<String, Object> ed = r.map(m.get("edits"), "edits");
-        r.keys(ed, "edits", "journal", "off");
+        r.keys(ed, "edits", "journal", "off", "hold");
         Path journal = ed.get("journal") == null ? null : r.path(ed.get("journal"), "edits.journal", false);
         List<String> off = r.texts(ed.get("off"), "edits.off");
+        List<String> hold = r.texts(ed.get("hold"), "edits.hold");
+        for (String held : hold) {
+            if (!approve.containsKey(held)) {
+                r.problem("edits.hold: " + held + "'s changes wait for an approver, and access.tables." + held + ".approve names none");
+            }
+        }
         Map<String, TableWrite> writes = new LinkedHashMap<>();
         for (Table tw : tables.values()) {
             if (r.writes.containsKey(tw.name())) {
                 writes.put(tw.name(), r.writes.get(tw.name()));
             }
         }
-        if (journal == null && (!writes.isEmpty() || !editAccess.isEmpty())) {
+        if (journal == null && (!writes.isEmpty() || !r.fileWrites.isEmpty() || !editAccess.isEmpty())) {
             r.problem("edits.journal: tables with write or access entries with edit need the outbox's journal file (\"${config}/data/outbox.jsonl\")");
         }
         Edits edits = new Edits(journal, List.copyOf(off), Map.copyOf(writes), Map.copyOf(editAccess));
         if (!r.problems.isEmpty()) {
             throw new Invalid(r.problems);
         }
-        return new ServerConfig(file, http, project, List.copyOf(libraries), runtime, List.copyOf(drivers), tables, auth, access, edits);
+        return new ServerConfig(file, http, project, List.copyOf(libraries), runtime, List.copyOf(drivers), tables, auth, access, edits,
+                Map.copyOf(r.fileWrites), new Approvals(List.copyOf(hold), Map.copyOf(approve)));
     }
 
     /** Whether an address is a loopback one ({@code 127.0.0.1}, {@code ::1}, {@code localhost}). */
@@ -376,6 +417,7 @@ public final class ServerConfig {
         Path projectDir;
         final List<String> problems = new ArrayList<>();
         final Map<String, TableWrite> writes = new LinkedHashMap<>();
+        final Map<String, FileWrite> fileWrites = new LinkedHashMap<>();
 
         Reader(Path configDir) {
             this.configDir = configDir;
@@ -527,13 +569,26 @@ public final class ServerConfig {
                 problem(k + ": a table name is a letter, then letters, digits, '_', '.' or '-' (at most 64)");
             }
             keys(m, k, "title", "key", "file", "jdbc", "query", "params", "rest", "refresh", "timeout", "max-rows", "columns", "where", "write");
-            if (m.containsKey("write")) {
+            if (m.containsKey("write") && m.containsKey("file")) {        // a file table: the file replaced whole, the change ids in a journal
+                Map<String, Object> w = map(m.get("write"), k + ".write");
+                keys(w, k + ".write", "journal");
+                String f = String.valueOf(m.get("file"));
+                if (!f.matches(".*\\.(csv|json|jsonl|ndjson)")) {
+                    problem(k + ".write: only a .csv, .json, .jsonl or .ndjson file is written to (an Arrow file is read only)");
+                }
+                Path journal = w.get("journal") == null ? null : path(w.get("journal"), k + ".write.journal", false);
+                if (journal == null) {
+                    problem(k + ".write.journal: the file recording each applied change id (\"${config}/data/" + name + ".applied.jsonl\")");
+                } else {
+                    fileWrites.put(name, new FileWrite(journal));
+                }
+            } else if (m.containsKey("write")) {
                 Map<String, Object> w = map(m.get("write"), k + ".write");
                 keys(w, k + ".write", "table", "journal-table");
                 String wt = text(w.get("table"), k + ".write.table");
                 String jt = text(w.get("journal-table"), k + ".write.journal-table");
                 if (!m.containsKey("jdbc")) {
-                    problem(k + ".write: only a jdbc table is written to");
+                    problem(k + ".write: only a jdbc or file table is written to");
                 }
                 if (!JdbcWriter.name(wt) || !JdbcWriter.name(jt)) {
                     problem(k + ".write: table and journal-table are plain SQL names (letters, digits, '_', an optional schema.)");

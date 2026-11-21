@@ -2,7 +2,7 @@
 suite: plan/plan
 since: "1.1"
 profile: core
-verified: false
+verified: true
 description: >-
   The plan document (FORMAT 5.10; DataPlan): per table entry, { entry, name, readers, live, query { columns?, filter?, limit? },
   local [ { panel?, where, reason } ] } and the plan's problems. A panel's where is pushed down only when it is the entry's sole reader.
@@ -96,6 +96,7 @@ cases:
         /tables/0/local/0/reason: the table cannot filter
 
   - id: multi-select-control-becomes-an-in-list
+    verified: true
     kind: plan
     source: PROTOCOL 7 (in)
     given:
@@ -134,6 +135,7 @@ cases:
         /tables/0/query/filter: { op: "||", args: [ { op: contains, args: [ { col: note }, { lit: late } ] }, { op: is-null, args: [ { col: note } ] } ] }
 
   - id: unknown-table-is-rch-2070
+    verified: true
     kind: plan
     source: SPEC 6.2 (RCH-2070); PROTOCOL 10.2
     sutra: |
@@ -149,6 +151,7 @@ cases:
         /problems/0/code: RCH-2070
 
   - id: unknown-column-is-rch-2071
+    verified: true
     kind: plan
     source: SPEC 6.2 (RCH-2071); PROTOCOL 10.2
     sutra: |

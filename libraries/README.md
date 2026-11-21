@@ -6,7 +6,7 @@ Typed fragments, grouped by domain, built and released with Rachana. Each librar
 
 | Library | Status | What it holds |
 |---|---|---|
-| [core](core/README.md) | built, 1.0.0 (31 fragments) | generic screens for any domain: figures, records, tables, basic charts, forms, states, history |
+| [core](core/README.md) | built, 1.0.0 (33 fragments) | generic screens for any domain: figures, records, tables, basic charts, forms, states, history |
 | [finance](finance/README.md) | built, 1.0.0 (50 fragments, two examples each) | trading, P&L, market risk, limits, counterparty and collateral, market data, funds; generic terms, every figure arrives as data |
 | genomics | planned | |
 | economy | planned | |
@@ -21,7 +21,7 @@ in the Maven build (`LibrariesCheckTest` in rachana-cli). `rachana studio` offer
 ## Adding your own
 
 The libraries here are one source among others, never the only one. Drop a library folder or an `.rlib` into a folder and name it:
-`rachana lint|build|studio --libs <path>[,<path>]` (Python `rachana lint --libs` too), or `RACHANA_LIBS=<path>[:<path>]`, or
+`rachana lint|build|studio --libs <path>[,<path>]` (`python -m drishti_rachana lint --libs` too), or `RACHANA_LIBS=<path>[:<path>]`, or
 `<project>/rachana_libs`. Nothing in Rachana is modified or rebuilt. A name found twice with different contents is refused with a
 problem, never silently shadowed (rename or remove one).
 

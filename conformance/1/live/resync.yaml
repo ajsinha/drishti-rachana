@@ -2,7 +2,7 @@
 suite: live/resync
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Epochs and resync of a live table (LIVE_TABLES 1.3, LT-15; PROTOCOL 8.3): a stream gap starts a new epoch and every reader resyncs, a paused stream serves the snapshot, a reconnect, a trimmed paged table resyncs. Run against a host with live tables (protocol_check.py --live, PROTOCOL 15)."
 cases:
   - id: a-stream-gap-starts-a-new-epoch

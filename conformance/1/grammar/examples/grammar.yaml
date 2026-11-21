@@ -2,7 +2,7 @@
 suite: grammar/examples/grammar
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: The grammar of spec/1/rachana-el.ebnf accepts or refuses a text; the recogniser and the parser agree.
 cases:
   - id: call-with-path-and-text

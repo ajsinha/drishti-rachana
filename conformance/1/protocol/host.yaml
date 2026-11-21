@@ -2,7 +2,7 @@
 suite: protocol/host
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: More of a host's answers (PROTOCOL 4 to 12), run by tools/conformance/protocol_check.py against the reference server.
 cases:
   - id: bridge-rows-of-a-sortable-table
@@ -85,6 +85,7 @@ cases:
           body: { error: { code: rdp.cursor.invalid } }
 
   - id: offset-needs-can-offset
+    verified: true
     kind: protocol
     source: PROTOCOL 6.2 (offset declared as can offset)
     fixture: *ties
@@ -145,6 +146,7 @@ cases:
           body: { error: { code: rdp.query.unsupported } }
 
   - id: group-count-distinct-min-max
+    verified: true
     kind: protocol
     source: PROTOCOL 6.3
     fixture:

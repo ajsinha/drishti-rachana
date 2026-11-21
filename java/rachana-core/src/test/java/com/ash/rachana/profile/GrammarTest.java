@@ -51,7 +51,8 @@ class GrammarTest {
         Sutra s = core.parse(CORE, "t.sutra.yaml", "rates");
         assertThat(s.match()).isNull();
         assertThat(s.domain()).isNull();
-        assertThat(s.extensions()).containsOnlyKeys(com.ash.rachana.model.Sutra.PLACES, com.ash.rachana.model.Sutra.LEVEL);   // the compile's own index, no profile key
+        assertThat(s.extensions()).isEmpty();                     // no profile key; the compile's own index is read, not listed
+        assertThat(s.extension(com.ash.rachana.model.Sutra.PLACES)).isNotNull();
         assertThat(codes(core, ENTITY)).anyMatch(m -> m.startsWith("RCH-2011 unknown key 'match'")).anyMatch(m -> m.startsWith("RCH-2021 unknown panel kind 'links'"));
         assertThat(codes(core, CORE.replace("value: \"1 + 2\" }", "value: \"1\", source: { kind: trade, id: \"1\" } }")))
                 .anyMatch(m -> m.startsWith("RCH-2010 a source names the table"));
@@ -64,7 +65,8 @@ class GrammarTest {
         Sutra s = host().parser().parse(ENTITY, "t.sutra.yaml", "rates");
         assertThat(s.match()).isEqualTo(new Match("trade", "$.x > 1", 3));
         assertThat(s.domain()).isEqualTo("rates");
-        assertThat(s.extensions()).containsOnlyKeys("domain", "match", com.ash.rachana.model.Sutra.PLACES, com.ash.rachana.model.Sutra.LEVEL);
+        assertThat(s.extensions()).isEmpty();                     // domain and match are the record's own components
+        assertThat(s.extension("domain")).isEqualTo("rates");
         assertThat(codes(host().parser(), CORE)).singleElement().satisfies(m -> assertThat(m).startsWith("RCH-2010 missing 'match'"));
     }
 

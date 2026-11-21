@@ -92,7 +92,7 @@ public final class RachanaServer implements AutoCloseable {
         }
         this.users = config.auth().mode() == ServerConfig.AuthMode.USERS ? new Users(config.auth().users()) : null;
         this.sessions = new Sessions(config.http().sessionIdleMs(), config.http().sessionMaxMs(), Clock.systemUTC());
-        this.access = new Access(config.access(), config.edits().access(), this::declared);
+        this.access = new Access(config.access(), config.edits().access(), this::declared).approvers(config.approvals().approve());
         this.project = new Project(config.project(), config.libraries(), log);
         this.tables = new ServerTables(config, access, log);
         this.protocol = new ProtocolHttp(new ProtocolHost(DATA, tables.provider()), () -> closed);

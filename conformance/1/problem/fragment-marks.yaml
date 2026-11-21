@@ -43,7 +43,7 @@ cases:
       panels:
         - use: desk-square@1
           with: { rows: { from: $.pnl, columns: { desk: DESK, scenario: SCEN, pnl: PNL } } }
-    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment desk-square reads @.desk where @ is the clicked cell of the pivot panel (row, path, column, value), not a row of table rows: the caller's mapping cannot rename it; read the mark's own fields", "range": {"start": {"line": 24, "column": 62}}}]}
+    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment desk-square reads @.desk where @ is the clicked cell of the pivot panel (row, path, column, value), not a row of table rows: the caller's mapping cannot rename it; read the mark's own fields", "file": "desk-square.v1.fragment.yaml", "path": "/panels/0/emits/0/payload/desk", "range": {"start": {"line": 24, "column": 62}}}]}
 
   - id: a-local-column-read-over-a-surface-point
     kind: problem
@@ -82,4 +82,4 @@ cases:
         - use: smile@1
           as: sm
           with: { rows: { from: $.smile, columns: { expiry: EXPIRY, k90: K90 } } }
-    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment smile reads @['expiry'] where @ is the clicked point of the surface panel (x, y, z), not a row of table rows: the caller's mapping cannot rename it; read the mark's own fields", "range": {"start": {"line": 23, "column": 46}}}]}
+    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment smile reads @['expiry'] where @ is the clicked point of the surface panel (x, y, z), not a row of table rows: the caller's mapping cannot rename it; read the mark's own fields", "file": "smile.v1.fragment.yaml", "path": "/panels/0/on/point-click/0/set/to", "range": {"start": {"line": 23, "column": 46}}}]}

@@ -72,6 +72,8 @@ public final class Upgrade {
             "search", "code", "days_between", "business_days_between", "days360");
     /** The functions whose positions or order of texts count code points from 1.1 (Level11), less the others rules name. */
     private static final Set<String> TEXT_FUNCTIONS = Set.of("left", "right", "mid", "find", "search", "pad", "least", "greatest", "sort");
+    /** The list aggregates that refuse a first argument that is not a list from 1.1 (Level11). */
+    private static final Set<String> AGGREGATES = Set.of("avedev", "avg", "corr", "count", "covar", "covar_pop", "cv", "devsq", "distinct", "geomean", "harmean", "intercept", "iqr", "kth_largest", "kth_smallest", "kurtosis", "median", "mode", "mode_multi", "nmiss", "percent_rank_of", "percentile", "percentile_exc", "product", "rank_avg", "rsq", "skewness", "skewness_pop", "slope", "stddev", "stddev_pop", "stderr", "steyx", "string_agg", "sumproduct", "sumsq", "trimmean", "variance", "variance_pop", "wavg", "sum");
     private static final Set<String> REGEX = Set.of("regex_extract", "regex_replace", "matches", "matches_case");
 
     /** As {@link #upgrade(String, String, String, String, FunctionTable)} for a Sutra (or a fragment of level 1.0) over Core's functions. */
@@ -399,6 +401,10 @@ public final class Upgrade {
                             && l.items().stream().anyMatch(x -> "frac".equals(kindOf(x, src, p)))) {
                         exact.add("sum of a list with fractional literals");
                     }
+                    if (AGGREGATES.contains(c.name()) && !c.args().isEmpty() && scalar(c.args().get(0))) {
+                        flag(s, UpgradeRule.AGGREGATE_NOT_A_LIST, "review", written, c.name() + " over a value that is not a list: empty at 1.0, "
+                                + "RCH-2102 from 1.1 (SPEC 5.1)");
+                    }
                     if (TEXT_FUNCTIONS.contains(c.name())) {
                         textOrder[0] = true;
                     }
@@ -467,6 +473,11 @@ public final class Upgrade {
                 return "whole";
             }
             return "unknown";
+        }
+
+        /** A value that is certainly not a list: a number, text or truth literal, arithmetic, a negation, a comparison. */
+        static boolean scalar(Expr e) {
+            return e instanceof Expr.Lit lit && lit.value() != null || e instanceof Expr.Binary || e instanceof Expr.Neg || e instanceof Expr.Not;
         }
 
         static boolean numeric(Expr e, String src, ElSource.Parsed p) {

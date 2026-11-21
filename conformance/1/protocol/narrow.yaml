@@ -2,7 +2,7 @@
 suite: protocol/narrow
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Narrowed and vector-heavy live tables (PROTOCOL 16 narrowing, LIVE_TABLES 2.1): a bare list is refused naming the columns, a narrowed list leaves the heavy columns out, a filter fixing the whole key returns them. Run against a host with live tables (protocol_check.py --live)."
 cases:
   - id: a-bare-list-is-refused-naming-the-columns

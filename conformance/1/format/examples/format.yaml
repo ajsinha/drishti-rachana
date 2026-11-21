@@ -2,7 +2,7 @@
 suite: format/examples/format
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: Formats and tones on their own (R-FMT and R-TONE of TRANSLATION 1.1, SPEC 2.6).
 cases:
   - id: signed-whole-amount-positive-tone

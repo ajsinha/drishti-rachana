@@ -63,6 +63,14 @@ use a capability the table does not declare; a table with none is read whole.
 
 A null is `null` in JSON and an invalid slot in Arrow, for every type. A cell whose column is not nullable MUST NOT be null.
 
+**The text of a decimal.** A decimal sent as a string is plain digits with an optional `-` and fraction, no exponent, and its
+zeros after the point are kept: a column that declares `scale` sends every cell with exactly that many digits after the point
+(`"0.10"` for `scale: 2`), and a reader shows the cell as sent (SPEC 4.16 rule 8). An aggregate over a decimal column (6.3)
+is exact and sent as text by the same rule: `min` and `max` are the cell chosen, as the table holds it; `sum` has as many
+digits after the point as the longest of the values it adds, which is the column's `scale` when the cells carry it (`"1.10"`
+and `"2.20"` sum to `"3.30"`, never `"3.3"`; over the three rows with `"0.05"` the total is `"3.35"`). The values
+an aggregate reads are those of its own group, and for `totals` every row after `filter`.
+
 ### 3.2 Masked values
 
 A value the reader may not see is, in JSON, `{ "$masked": true }` (in any column of any type), and in Arrow a null slot plus a
@@ -85,6 +93,9 @@ All under a base address `{base}` the host chooses. A host SHOULD answer with `C
 Query parameters of `rows`: `limit`, `cursor`, `offset`, `sort` (`-revenue,region`: a `-` prefix is descending), `columns`
 (comma separated), `shape` (`columns`, the default, or `objects`), `schema` (`true`: include the schema document). A host that
 does not declare `sort` and receives `sort` MUST answer `rdp.query.unsupported` (naming `sort`); it MUST NOT ignore it.
+The same holds for `offset`, `filter` and `group`, as a parameter of `rows` or in a query document (section 6): a host that does
+not declare the capability answers `422 rdp.query.unsupported` with `operation` naming it (`offset`, `filter`, `group`) and reads
+nothing. A request it only half understood is never answered with other rows than those asked for.
 
 ## 5. Rows
 
@@ -138,7 +149,8 @@ otherwise in its documentation; numbers and decimals by value; dates and timesta
 
 By **cursor**: `next` of one page is `cursor` of the next. A cursor is opaque, bound to the query that produced it and MAY expire; a
 cursor of another query or an expired one is `rdp.cursor.invalid` (410), and the reader starts again from the first page. A host
-with `offset` in `can` also accepts `offset` (not together with `cursor`). A page carries the `version` it was read at. A host with
+with `offset` in `can` also accepts `offset` (not together with `cursor`); without it, `offset` is `rdp.query.unsupported`
+(`operation: offset`, section 4). A page carries the `version` it was read at. A host with
 `snapshot` pages one consistent snapshot; without it rows may move between pages and a live table is reconciled by the stream.
 `limit` above the host's `pageRows` is lowered, not refused.
 
@@ -170,6 +182,15 @@ Operations and arity (the schema enforces it; `in` and `not-in` take a column or
 | 1 exactly | `!` `neg` `is-null` `lower` `upper` `len` `abs` `floor` `ceiling` `year` `quarter` `month` `day` |
 | 1 or 2 | `round` (value, digits) |
 | 1 or more | `coalesce` |
+
+**What the runtime writes.** Every part of a condition that reads no column of the row is evaluated once by the runtime and
+travels as one literal, never as an operation: a literal, a control's value, and any operator or function over only those
+(`lower(ctl.q)` with `q` `Late` is `{ "lit": "late" }`; `date('2026-01-01')` is `{ "lit": "2026-01-01" }`). A list value
+is a `list`; on the right of `in` a value that is not a list is a list of that one value, and an empty one an empty list. An exact
+decimal that a JSON number cannot hold as a whole number within ±2^53 travels as `{ "lit": "<digits>", "type": "decimal" }`.
+`x == null` is written `{ "op": "is-null", "args": [x] }`. A chain of `&&`, `||`, `+` or `*` is written as one operation with
+all its arguments in order. A condition with any part outside the subset below is not sent in part: the whole condition stays
+with the runtime (the plan's `local`, FORMAT 5.10).
 
 This is the **fixed push-down subset of v1**; a new operation is an addition of a minor of the protocol (section 14), never text.
 Each operation is the Rachana-EL operator or Core function of the same name, at the arity above; three names differ from
@@ -249,7 +270,9 @@ the table's current one with the `gap` frame.
 
 A runtime applies patches at most once per animation frame (or its platform's equivalent); patches arriving faster are merged by key
 in order: a later `remove` cancels an earlier `add` or `update` of that key; a later `add` after a `remove` stands; later fields
-win. A host MAY do the same for a slow reader and MUST send `gap` if it drops instead. A reader MAY ask in `sub` for
+win. "Cancels" means the earlier `add` or `update` is left out of the merged patch; **the `remove` itself stays in it**, also when
+the key was added inside the merged window: the sender cannot know that the reader never held the key (an `add` of a key the
+reader holds is an update, 8.1), and a `remove` of a key the reader does not hold changes nothing. A host MAY do the same for a slow reader and MUST send `gap` if it drops instead. A reader MAY ask in `sub` for
 `conflate: { "everyMs": n }`. A message that merges the messages `first` to `seq` carries both (`first` absent: one message); the
 reader takes `first` as its start for the rules of 8.3, so a merged message is no gap.
 
@@ -299,6 +322,14 @@ the events protocol's `err` frame with the same `code` and the words in `detail`
 | `rdp.write.forbidden` | 403 | a write refused: the site switch is off, no right, a column not editable; the reason in words | read-only |
 | `rdp.write.conflict` | 409 | a write on an old version; `current: { version, by, at }` | re-read the row |
 | `rdp.write.invalid` | 422 | a write breaking a field rule; `fields: [{ column, rule, message }]` | show the rules |
+
+**The `fields` of `rdp.write.invalid`**: each `{ column, rule, message }`. For a value that breaks the declaration's rules `column`
+names the column and `rule` is `required` (no value where one is required), `value` (a value its field refuses: its type, `min`,
+`max`, `options`, a pattern; also a decision's `state` that is neither `released` nor `rejected`) or `rule` (a rule of the form over
+several fields, `column` then `null` or the field it names). For a write that is not well formed `column` is `null` and `rule` is
+the part of the write at fault: `shape`, `id`, `op`, `key`, `set`, `basedOn` (missing, or not the form the table's versions have),
+`from` or `reason` (not text, required by the declaration and not given, or a rejection without one). A write that is not well
+formed lists every such fault and nothing else; a well formed one lists every rule it breaks, in the declaration's order of fields.
 
 A failed table fails only the panels that read it. A host's own codes in the `rdp.` family MUST be treated by a reader as
 `rdp.internal` unless it knows them.
@@ -389,7 +420,30 @@ rows; the table's epoch is the host's own), `POST /_test/as` `{ reader, view? }`
 channel per reader), `POST /_test/stream` (change the source, push the stream's upserts, deletes, gap or state), `POST /_test/upkeep`
 `{ waitMs?, advanceMs? }` (move the host's clock, run retention and idle close), `POST /_test/audit` (the audit events since the
 last read) and, for writes, `POST /_test/outbox` `{ flush?, release?, reject?, by?, reason? }` (send the queued changes, or decide a
-held one as the host; answers `{ sent, entries }`); a fixture's `edit` names the sink and a reader's view its `editable` columns.
+held one as the host; answers `{ sent, entries }`); a fixture's `edit` names the sink and a reader's view its `editable` columns,
+`approve` (the approve right) and `mayDecide` (the host's refusal of a decision).
+
+What the live adapter fixes, so that a case's answers are the same on every host:
+
+- **The clock.** The adapter's clock starts at `2026-11-21T12:00:00Z` with each fixture and moves only by `advanceMs`; every time the
+  host writes (`changed-at` of a written row, `at` of a change and of an audit event, retention, idle close) is read from it.
+- **The source.** A live fixture's `tier` is how its source can be read: `whole` (the default: read into memory), `columns` (a
+  scan of the key and named columns, then rows fetched by key: the paged table) or `query` (the source sorts, filters and pages
+  itself); `sourceColumns` names the columns a `columns` source's scan can give (absent: all). `POST /_test/stream` takes `{ source?:
+  { put?, remove?, version? }, upsert?, delete?, gap?, state? }`: `source` changes the source's rows (`put`, `remove`) without
+  telling the host, or names its new data version (`version`); then the stream's changes are pushed, in that order.
+- **The writer.** With `edit.sink: applied` or `outbox`, the case's writer applies a change to the source once per change id: the row's
+  version plus one, `changed-by` the change's maker, `changed-at` the clock, and pushes it on the stream. `hold: true` holds every
+  change for a decision. The adapter's host refuses a decision on the caller's own change with the message `four eyes: never your
+  own change`, and otherwise with the words of the reader's `mayDecide`.
+- **The audit events** (`POST /_test/audit`, oldest first): each `{ at, caller, table, event, reason, change?, key?, columns?, from?,
+  to?, current?, decidedBy? }`. `event` is `write-submitted` (with `columns`, and `from` and `to`: the values before and asked for),
+  then the answer's `write-applied` or `write-held` (a `queued` answer has no second event); `write-refused` (a `403` or `404`, with `reason` in words) and
+  `write-conflicted` (a `409`, with `current`); and as a queued or held change moves: `write-released` and `write-rejected` (with
+  `decidedBy`, the person who decided; from the outbox path its `by`), `write-sent`, `write-failed`. `caller` is who made the request;
+  on the events of a change moving it is the change's maker, and `table` the table written to (the tray for a decision refused).
+  The audit log itself is the host's (LIVE_TABLES 5); these names and fields are the ones the cases read. An audit event never
+  carries a value the caller may not see.
 
 The adapter's paths exist only under test and are not part of the protocol.
 
@@ -404,6 +458,22 @@ up | paused, reason? }` (a paused stream serves its snapshot and is never an err
 row cap); `narrow: { anyOf }`; a column's `heavy` (never in a list page or a patch: read by fetching one row by key); `view: {
 sort, groupBy, subtotals, widths }` (the table's own presentation); and, for a reader who may edit, `write: { columns: { <name>:
 <field rules> }, reason }`.
+
+**Capabilities.** A live table is served from the host's merged rows, so every live table's schema lists the same `can`, in this
+order: `page`, `sort`, `filter`, `count`, `group`, `offset`, `changes`, `changes.filter`, `changes.window`, `replay`, `arrow`; then
+`narrow` when its declaration narrows it; then, in the schema a host serves, `write` when the table takes writes (below; the tray:
+when the host holds changes for a decision). `can` says what the table can do, for every reader; whether **this** reader may write
+is the schema's `write` object, present only for them. A table without a stream still lists `changes` and `replay` (its snapshot's
+re-reads are its changes). A table paged from its source (below) does not group: its served schema leaves `group` out.
+
+**A table paged from its source.** A host need not hold a large table whole: it may keep an index of its source's keys and sort
+values and overlay the live changes on the source's rows (a changed row shadows the source's, a removed key hides it, a new row
+takes its place in the order; totals follow). Two rules make its pages the same on every host. (1) The source is read **at its
+data version**: rows that appear in the source are served from the source's next version on (a load announces one), never from
+the moment they were written; what changes between versions reaches readers only through the stream. A source that names no
+version is read again when the host's index of it is older than its time-to-live (LIVE_TABLES 1.1: `index-ttl`, default 60 s). (2) An order by a column the
+host's index of the source cannot give treats that column as null for the source's rows: they sort by `nulls` (6.1: last by
+default) and then by key, after the live rows that carry a value; it is never an error and never a partial page.
 
 **Windowed subscription** (`can: changes.window`; [patch.json](patch.json) `$defs/window`): a reader that shows a page of the table
 subscribes with `meta.window: { keys: [[…]], top?: bool }` (the bridge `sub` carries `window`), the keys its page shows. It is sent
@@ -425,11 +495,29 @@ pages and patches; `query` with a filter fixing the whole key returns them.
 
 **Writes** (`can: write`): `POST {base}/tables/{name}/write`, bridge `t: write`, with `{ id, op: update | add | remove, key, basedOn,
 set: { col: value }, from?: { col: value }, reason? }`; answered `{ change, state: applied | queued | held | refused, message,
-version? }`. The same `id` again answers the first answer again. A write is accepted only when the table's declaration edits the
+version? }`. **The same `id` again is never taken twice**: it changes nothing and answers that change as it stands now, which is
+the first answer until the change has moved, and afterwards the state it reached: `sent` (with the row's new `version`) once the
+host's outbox has sent a `queued` change to the source, `rejected` or `failed` (with `message`). A repeat is answered only to the
+change's maker; the same `id` from anyone else is `403 rdp.write.forbidden`. A write is accepted only when the table's declaration edits the
 column, the host's switch is on, the host has a write path and the reader may edit that row and column; a row outside the
-reader's scope is `404` as if absent. The reader's own pending changes are the table `<name>.changes` (key `change`; columns
-`state`, `key`, `set`, `by`, `at`, `message`), live like any table. Errors: `rdp.write.unsupported`, `rdp.write.forbidden`,
-`rdp.write.conflict`, `rdp.write.invalid` (section 10.1).
+reader's scope is `404` (`rdp.table.unknown`) as if absent: the answer never says whether the row exists. The reader's own pending
+changes (`queued`, `held`, `failed`) are the table `<name>.changes` (key `change`; columns `state`, `key`, `set`, `by`, `at`,
+`message`, `op`, `summary`; newest first), live like any table: a new pending change arrives as an `update`, one that is sent,
+rejected or released and sent leaves as a `remove`. `summary` is the change in words: the key values joined by `, `, then `: `, then
+`remove`, or (after `add ` for an add) each `column = value` of `set` in its order joined by `, `, a value masked for the reader
+written `(masked)`: `b: qty = 8, status = DONE`. Errors: `rdp.write.unsupported`,
+`rdp.write.forbidden`, `rdp.write.conflict`, `rdp.write.invalid` (section 10.1).
+
+**Four eyes.** When the host holds changes for a decision, `<name>.changes` takes writes (`can: write`) from an approver (the
+host's right): their tray also lists the `held` changes of others whose rows are in their scope (values masked for them masked in
+`set` and `summary`), and they decide one with `{ id, key: [<change>], basedOn: held, set: { state: released | rejected }, reason? }`
+(a rejection gives its reason, else `422` with `fields: [{ column: null, rule: reason }]`), answered `{ change: <the decision's id>,
+state: applied, message }`; a released change is `queued` and sent by the outbox, a rejected one is never sent. Without the right,
+or when the host refuses (an approver never decides their own change), `403` with the host's reason as `message`, audited; a change
+not listed for them `404` (`rdp.table.unknown`, whether or not it exists); a change no longer held `409` with `current: { version:
+<its state>, by: <its maker>, at }`. A decision's `id` repeats as a change's does: the same answer to its maker, `403` to anyone
+else. For an approver the tray's schema carries `write: { columns: { state: { type: enum, options: [released, rejected] } }, reason:
+optional }`. Otherwise the tray is read only (`405`).
 
 **Readers.** Every page, total, patch and change is the reader's: rows outside their scope are never counted, shown or sent;
 masked values are `{ "$masked": true }` and never pick, order or filter a row. The rights are the host's alone.

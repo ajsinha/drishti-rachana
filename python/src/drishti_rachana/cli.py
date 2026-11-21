@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""``rachana`` command line (PyPI launcher): ``rachana lint`` (compile and lint Sutras on V8; needs the ``v8`` extra) and
-``rachana conformance run`` (conformance/RUNNER.md 2). ``python -m drishti_rachana`` is the same program."""
+"""``python -m drishti_rachana`` command line: ``lint`` (compile and lint Sutras on V8; needs the ``v8`` extra) and ``conformance run``
+(conformance/RUNNER.md 2). The program named ``rachana`` is the Node CLI (``js/packages/rachana-cli``); Python installs no script of that name."""
 from __future__ import annotations
 
 import argparse
@@ -17,7 +17,7 @@ def _csv(s: Optional[str]) -> tuple[str, ...]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="rachana")
+    p = argparse.ArgumentParser(prog="python -m drishti_rachana")
     top = p.add_subparsers(dest="group", required=True)
     lint = top.add_parser("lint", help="compile and lint Sutra files (exit 1 on errors; needs drishti-rachana[v8])")
     lint.add_argument("paths", nargs="*", default=["."], help="files or folders (*.sutra.yaml); default: the current folder")

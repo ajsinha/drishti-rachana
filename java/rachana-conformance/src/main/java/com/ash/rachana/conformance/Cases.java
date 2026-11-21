@@ -364,11 +364,15 @@ public final class Cases {
     }
 
     static void problems(Map<String, Object> c, List<com.ash.rachana.SutraProblem> ps, StringBuilder sb) {
+        problems(c, ps, null, sb);
+    }
+
+    static void problems(Map<String, Object> c, List<com.ash.rachana.SutraProblem> ps, String main, StringBuilder sb) {
         sb.append('[');
         boolean f = true;
         for (var p : ps) {
             if (!f) { sb.append(','); } f = false;
-            problem(p, !"1.0".equals(level(c)), sb);
+            problem(p, !"1.0".equals(level(c)), main, sb);
         }
         sb.append(']');
     }
@@ -380,7 +384,15 @@ public final class Cases {
      * which a later runtime replays byte for byte). A problem of another file (a fragment, a library) has its start only.
      */
     static void problem(com.ash.rachana.SutraProblem p, boolean full, StringBuilder sb) {
+        problem(p, full, null, sb);
+    }
+
+    /** As above; a problem located in a file other than {@code main} (a fragment) carries that file's name in {@code file} (SPEC 6.1). */
+    static void problem(com.ash.rachana.SutraProblem p, boolean full, String main, StringBuilder sb) {
         sb.append("{\"code\":").append(str(p.code())).append(",\"severity\":").append(str(p.severity())).append(",\"message\":").append(str(p.message()));
+        if (full && main != null && p.location().file() != null && !p.location().file().equals(main)) {
+            sb.append(",\"file\":").append(str(p.location().file()));
+        }
         if (full && p.path() != null) {
             sb.append(",\"path\":").append(str(p.path()));
         }
@@ -415,7 +427,7 @@ public final class Cases {
         for (int i = 0; i < ps.size() + warnings.size(); i++) {           // errors, then advisories (severity warning; ok stays true)
             var p = i < ps.size() ? ps.get(i) : warnings.get(i - ps.size());
             if (!f) { sb.append(','); } f = false;
-            problem(p, !"1.0".equals(level(c)), sb);
+            problem(p, !"1.0".equals(level(c)), file, sb);
         }
         sb.append(']');
         if (!libraries.isEmpty()) {                                        // the compile result's library hashes (level 1.2)
@@ -634,7 +646,10 @@ public final class Cases {
         return c;
     }
 
-    static Node node(Object n) { return Node.of(plain(n)); }
+    /** How a case's documents become nodes: Rachana's own, or a host's ({@code JvmRuntime --host-nodes}, {@link HostNodes}). */
+    static java.util.function.Function<Object, Node> documents = Node::of;
+
+    static Node node(Object n) { return documents.apply(plain(n)); }
 
     /** JSON to Java values; the tags of FORMAT 4 become the reference's own values. */
     static Object plain(Object n) {

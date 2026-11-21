@@ -154,6 +154,17 @@ cases:
     flags: [regex-code:info]
     same: true
 
+  - id: an-aggregate-over-a-number-is-flagged
+    record: { n: 5 }
+    before: |
+      rachana: 1
+      sutra: up
+      version: 1
+      panels:
+        - { id: m, kind: metric, label: Mean, value: "avg($.n + 1)" }
+    changes: [declare]
+    flags: [aggregate-not-a-list:review]
+
   - id: a-bare-lambda-blocks-the-file
     record: { lambda: 7 }
     before: |

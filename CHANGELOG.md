@@ -22,6 +22,28 @@ Entries are written per release; the regime's unreleased work is listed after th
   **Proof** (`UpgradeCorpusTest`, report `compat/upgrade/drishti-compat-corpus-2.9.11.i7a.report.json`): the 478 Sutras and 42
   fragments of the Drishti corpus upgraded to 1.2 compile to the recorded documents and bind to the recorded ViewModels byte for byte
   (stamp aside); 0 refused, 0 blocked; 18 review and 6 info flags, none of which changed a recorded view.
+- **Ready for a host's move onto Core (G4 rehearsal, pass 2)**: aggregates over a host's nodes give the figure (the rehearsal's P4: the
+  0 came from the host test's own oracle, which read only its node type) and are never a silent 0: a value Core cannot read is
+  `RCH-2102` at every level, a first argument that is not a list from level 1.1 (level 1.0 as recorded); a host scalar without
+  `value()` is read through its accessors. `NodeFactory` (`Node.nodes()`): lists and records an expression builds come out in the
+  host's node type. `Rachana.formats()` is live (`Formats.live`, `reload`). `Printer.print(e, level)`: 1.0 writes `&&`, `where = `
+  (unchanged); 1.1 and later Python's `and`, `or`, `not`, `a if c else b`, `where=`. A Sutra's record components are its JSON
+  (`domain`, `match` in their places; `extensions` lists only profile data). `Rachana.at(level, options, profiles...)`. A profile
+  function (or grouping) with a Core name is refused with the reason. Conformance: `el/aggregates-host-values`, the host-node fixture
+  (`JvmRuntime --host-nodes`, `HostNodeConformanceTest`).
+
+- **Live tables, the screen and four eyes (L9, L10 file writers; experimental)**: the live panel takes `edit: none | cells | beside`
+  (language 1.2; contract 1.2 `LiveRef.edit`); core library fragments `core/live-table@1` and `core/held-changes@1`;
+  `LiveTables.screen(name)` gives the Sutra a declaration needs. The approvers' tray: `Authoriser.approves`/`mayDecide`,
+  `ChangeSink.holds`; an approver's `<name>.changes` lists others' held changes in scope and decides one by writing `state`
+  (`released`/`rejected`); suite `protocol/approve` (10, unverified). `rachana-server`: file-table writers (CSV, JSON, JSON lines:
+  atomic replace, visible journal, each change id applied once), `edits.hold` and `access.tables.<name>.approve`.
+
+- **G2 golden fixes**: a problem inside a fragment file carries `file` and `path` (SPEC 6.1); one program is named `rachana` (the Node
+  CLI; Python runs as `python -m drishti_rachana`, no console script); a size guard on both bundles (`tools/js/bundle-size-guard.json`,
+  Brotli 11, measured + 5%, changed deliberately with a reason); the vendored Elements pack says the version of its folder; the
+  default-level rule stated (SPEC 7.2) (the project-level `level:` of `rachana.yaml` it added is superseded the same day: the Sutra's `rachana:` key declares the level); level 1.0's
+  UTF-16 text order stated (SPEC 4.7, 4.13); `FROZEN.sha384` lists every case file.
 
 - **Live tables, the edit path (L7, L8 client, L10 writes; experimental)**: writes are Data Protocol v1 additions under `can: write`
   (`POST {base}/tables/{name}/write`, bridge `write`): a change `{id, op, key, basedOn, set, from?, reason?}` is answered `{change,
@@ -41,6 +63,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **The conformance runner binds pivots**: `CasePivots`, a small pivot engine (sum, count, avg, min, max with subtotals and totals) in
   the runner every runtime shares (JVM, both bundles, Python on V8), handed to `LiveScreen.pivots`; pivot-cell clicks run as `fire`
   cases (`fire/pivot-cells`), not only in JUnit.
+- **Elements pack re-vendored `3.2.0-dev+2f21158`** (Elements g2/integration with g3/one-escape): one `escapeHtml` in drishti-core (& < > " ') replaces six hand-written copies, one of which left out the double quote; references moved.
 - **Elements pack re-vendored `3.2.0-dev+b466b87`** (Elements g2/integration 6972989 with g3/surface-click): the surface heatmap's tooltip no longer asks for ECharts' arrow, whose inline
   style a strict CSP refused (found by Elements' new Chromium test that clicks a surface point, heatmap and 3D); references moved.
 - **Elements pack 3.2.0-dev+6972989** vendored (the painter's `requires` fails closed: a button naming a permission is enabled only when the host's `allowed` answers `true`; G2 gate F10, O8); the server refuses `auth: users` on a non-loopback bind unless `server.behind-tls-proxy: true` (F17); a test run leaves no temporary folder (`tools/gate/tmp_leaks.py`, F16).
@@ -186,6 +209,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+- **The last unverified conformance cases closed (the spec-gap pass)**: 24 decisions (`SG-1` to `SG-24`, `conformance/1/VERIFIED.md`)
+  written into the specification: SPEC 2.2 and 2.4 (`data` is a key of 1.1, a data name is a field name, `as: record` is the first
+  row, a table the host does not have fails its panels), 4.2 and 4.16 (a decimal cell prints the digits the host sent), 4.10 (real-number
+  results and the tolerance), 4.14 "Checked mode in detail" (the join of types, the 36 functions typed, `in`, literal parameters);
+  PROTOCOL 3.1 (the text of a decimal and of its aggregates), 4 and 6.2 (a capability not declared is refused), 7 (what the runtime
+  writes), 8.4 (a conflated `remove` stays), 10.1 (the `fields` of `rdp.write.invalid`), 15 (the adapter's clock, source, writer, audit
+  events), 16 (a live table's `can`, a table paged from its source, a repeated change id answers the change as it stands, the tray,
+  four eyes); FORMAT 5.2, 5.9 (the frames of a step), 5.10 (the plan document); VIEWMODEL (frame header). 51 cases flipped to
+  verified (three `el/determinism` cases first given a tolerance in place of their text); one left (`sutra/data#missing-table-reads-as-no-rows`),
+  with five code fixes listed for a builder lane (`CF-1` to `CF-5`). `FROZEN.sha384` regenerated (pre-release).
 - **F13, the binder comparison over the customer corpus** (lane A10): `compat/customers/drishti/2.9.11.i7a/binds/` holds, per shipped Sutra (478), a recording (`<file>.json`: a synthetic record made from the Sutra's own paths, the business date, and the answers of the host's own panel binders, `provenance` and `links`) and the i7a reference binder's ViewModel (`<file>.view.json`) or why it could not bind (`<file>.error.txt`); written by `tools/regime/corpus_binds.py` with `CorpusBind.java` over Drishti's engine jars at `v2.9.11.i_7a` (a scratch clone, read only). `CustomerCorpusTest` replays every recording through a `RecordedHost` into Core's binder (`CoreBinds`) and compares byte for byte: 445 identical; 33 listed in `tools/split/known-differences.txt` with their reasons (the reference's `Map.of` key order, its null source router, the host's pivot engine); no Core bug found. VERSION.json `binds`, manifest rewritten.
 - **A control's `change` trigger and a Screen test harness** (I1, level 1.2, lane A10): `on: { change: [effects] }` on a control, the one effect model (the effects of a panel's list, evaluated over the screen; `event` the new value read whole; `event.<name>`, `set: <control>` and any other trigger refused, `RCH-2012`/`RCH-2023`; state names checked, `RCH-2020`); carried as `ControlView.on` (contract 1.2 appended; the stamp follows); `ScreenWire.change` runs them for a host; `Fire.change` and the conformance step `{ control, trigger: change, value }` (FORMAT 5.15, case schema); `Binder.controlOn`, `Fire.runEvent`; `ViewBuilder.screen(Request)`, the screen `build` binds, so `ScreenWire`'s paths have JUnit coverage of their own (`ScreenHarness`, `ScreenWireTest`: submit, cancel, change, row-click events, children, downstream). Cases fire/change, problem/control-change; SPEC 2.8 item 7, VIEWMODEL. API additions only.
 - **Form fragments** (lane A9): `core/entry-form` and `core/stepped-form` (fields as `list<record>` placed whole, rules, submit/cancel events carrying `values`), `finance/order-ticket` (side, quantity, type, limit price, time in force; checks before send; `submit {order}`) and `finance/what-if-shocks` (shocks as a form beside the caller's mapped sensitivities; `change {shocks}`; the estimate is the host's); examples, goldens, gallery pages; differences from the catalogue in `libraries/README.md`. A use's `on:` now takes any built effect (`toggle`, `clear`, `notify`, `host`, with `when`), its `event.<name>` reads put in as the payload's expression; a form panel emits on `submit`/`cancel` with payload `event` (the sent values); a fragment's `actions:` never name a host action (`RCH-2117`). The gallery reads examples with YAML 1.2 booleans (`on:` stays a key).

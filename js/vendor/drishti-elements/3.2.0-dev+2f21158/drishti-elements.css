@@ -13,7 +13,7 @@
  *
  * See the LICENSE file in the root of this repository.
  */
-/* Drishti Elements 3.1.0, packed by tools/elements/cli.py pack: drishti-core 3.1.0, drishti-views 3.1.0, drishti-events 3.1.0, drishti-inputs 3.1.0, drishti-chart 3.1.0, drishti-grid 3.1.0, drishti-graph 3.1.0, drishti-tree 3.1.0.
+/* Drishti Elements 3.2.0-dev+2f21158, packed by tools/elements/cli.py pack: drishti-core 3.2.0-dev+2f21158, drishti-views 3.2.0-dev+2f21158, drishti-events 3.2.0-dev+2f21158, drishti-inputs 3.2.0-dev+2f21158, drishti-chart 3.2.0-dev+2f21158, drishti-grid 3.2.0-dev+2f21158, drishti-graph 3.2.0-dev+2f21158, drishti-tree 3.2.0-dev+2f21158.
    Theme: every theme (data-theme on <html>; the default without one). Override a token after this sheet: :root { --d-accent: #0a6; } */
 /* ---- the design tokens ---- */
 /* Drishti design tokens. Colours are defined here and nowhere else.

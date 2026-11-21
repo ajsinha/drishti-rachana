@@ -55,12 +55,17 @@ final class Aggregates {
         for (FunctionProvider p : providers) {
             for (FunctionProvider.Provided f : p.functions()) {
                 if (byName.putIfAbsent(f.name(), f) != null) {
-                    throw new IllegalStateException("Rachana-EL function " + f.name() + " is provided twice (" + from.get(f.name())
-                            + ", " + p.source() + ")");
+                    throw com.ash.rachana.agg.CoreAggregates.SOURCE.equals(from.get(f.name())) ? redefines(f.name(), p.source())
+                            : new IllegalStateException("Rachana-EL function " + f.name() + " is provided twice (" + from.get(f.name())
+                                    + ", " + p.source() + ")");
                 }
                 from.put(f.name(), p.source());
             }
-            if (g == null && p.grouping() != null) {
+            if (p.grouping() != null) {
+                if (g != null) {
+                    throw com.ash.rachana.agg.CoreAggregates.SOURCE.equals(gFrom) ? redefines("group", p.source())
+                            : new IllegalStateException("Rachana-EL function group is provided twice (" + gFrom + ", " + p.source() + ")");
+                }
                 g = p.grouping();
                 gFrom = p.source();
             }
@@ -69,6 +74,15 @@ final class Aggregates {
         this.source = Collections.unmodifiableMap(from);
         this.grouping = g;
         this.groupingSource = gFrom;
+    }
+
+    /**
+     * One way per job (CORE_AND_PROFILES): a profile adds functions and never redefines one of Core's; the table is not built. A host
+     * that kept its own copy of a Core function drops it from its provider: Core's is the one every Sutra reads.
+     */
+    static IllegalStateException redefines(String name, String source) {
+        return new IllegalStateException("Rachana-EL function " + name + " is Core's: a profile cannot redefine it (" + source
+                + " provides it too; drop it from that provider, Core's " + name + " is the one)");
     }
 
     /**
@@ -83,8 +97,7 @@ final class Aggregates {
                 continue;
             }
             if (t.arity.containsKey(f.name())) {
-                throw new IllegalStateException("Rachana-EL function " + f.name() + " is Core's: a profile cannot redefine it ("
-                        + source.get(f.name()) + ")");
+                throw redefines(f.name(), source.get(f.name()));
             }
             t.fn(f.name(), f.minArgs(), f.maxArgs(), f.function());
         }

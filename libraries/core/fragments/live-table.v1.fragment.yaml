@@ -1,0 +1,40 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: live-table
+version: 1
+doc:
+  summary: A live table of the host, read a window at a time and kept current by key, optionally with the host's edits.
+  description: >-
+    Give a live table of the host (a data entry with table and key) and the columns to show, each reading one field. The first rows
+    in your order are read and followed: new rows arrive on top, changed rows change in place, the count stays current, and the table
+    is never read whole. With edit cells or beside, the columns the table offers you for editing (its write rules, for you) can be
+    changed in the cells or in a record panel beside the grid; each change goes to the host as a write and shows when the table
+    sends it back. Pair it with held-changes for the changes still waiting.
+  category: tables
+  tags: [live, blotter, edit, stream, table]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    key: required
+    doc: The live table (a data entry with table and key), one row per record
+    columns:
+      key: { type: text, optional: true, doc: The row's key }
+  columns: { type: columns, required: true, doc: "The columns: a list of { label, bind: \"@.field\", fmt, tone }, each reading one field" }
+  order:   { type: id, required: true, doc: The field the rows are ordered by (a time or a version) }
+  direction: { type: enum, options: [desc, asc], default: desc, doc: "The order's direction: desc (newest first, new rows on top) or asc" }
+  edit:    { type: enum, options: [none, cells, beside], default: none, doc: "How the host's edits are offered: none (read only), cells (in the grid) or beside (a record panel)" }
+  title:   { type: text, default: Live table, doc: The panel's title }
+  window:  { type: integer, default: 200, min: 1, max: 5000, doc: The rows read and followed at a time }
+panels:
+  - id: table
+    kind: live
+    title: arg.title
+    rows: arg.rows
+    columns: "%{columns}"
+    sort: "%{order} %{direction}"
+    top: true
+    window: arg.window
+    edit: "%{edit}"

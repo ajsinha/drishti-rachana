@@ -43,7 +43,8 @@ import java.util.function.UnaryOperator;
  * keeps to it (row scope pushed down, masks applied before a value can pick, order or filter a row; LIVE_TABLES 3, 5). Without an
  * authoriser every read is refused unless the host says it is a single-application bridge host ({@link #openReads()}). Writes (the
  * guarded edit path, LIVE_TABLES 1.6) need a declaration with {@code edit:}, an authoriser and a bound {@link ChangeSink} ({@link #sink});
- * a table with edits and {@code tray: true} also serves its pending changes as {@code <name>.changes}. One {@code LiveTable} per declaration however many readers; tables open on their first read and close when
+ * a table with edits and {@code tray: true} also serves its pending changes as {@code <name>.changes}, where an approver (when the sink holds
+ * changes) also sees and decides the others' held changes. One {@code LiveTable} per declaration however many readers; tables open on their first read and close when
  * nobody has read them for {@code idleCloseMs}. Mount it on a {@code ProtocolHost}. Thread-safe.
  */
 public final class LiveTables implements TableProvider, AutoCloseable {
@@ -233,6 +234,16 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         }
     }
 
+    /**
+     * The screen a declaration gives (LIVE_TABLES 2.2, LT-12): a Sutra (text) that calls {@code core/live-table@1} with the declaration's
+     * columns, order and edit mode, and {@code core/held-changes@1} over {@code <name>.changes} for a table with edits and a tray.
+     *
+     * @throws com.ash.rachana.data.ProtocolError {@code rdp.table.unknown} when no such table is declared
+     */
+    public String screen(String name) {
+        return LiveScreens.screen(spec(name));
+    }
+
     /** The declarations set aside, by file, with their problems. */
     public Map<String, List<SutraProblem>> problems() {
         return Map.copyOf(problems);
@@ -350,9 +361,13 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         return reader(spec, v);
     }
 
-    /** A tray's reader: whoever may read the table reads their own pending changes of it (by their name), nothing else. */
+    /**
+     * A tray's reader: whoever may read the table reads their own pending changes of it (by their name). An approver of the table
+     * ({@link Authoriser#approves}) also reads the {@code held} changes of others whose rows are in their scope of the table, with the
+     * values of columns masked for them masked in {@code set}, and may decide them (the column {@code state}).
+     */
     private Reader trayReader(Object caller, String name, String base, LiveTableSpec spec) {
-        reader(caller, base);                                           // may they read the table at all (refusals as for it)
+        Reader b = reader(caller, base);                                // may they read the table at all (refusals as for it)
         Authoriser a = authoriser;
         String who = a == null ? null : a.who(caller);
         if (who == null) {
@@ -360,7 +375,48 @@ public final class LiveTables implements TableProvider, AutoCloseable {
             throw ProtocolError.of("rdp.forbidden", 403, "a tray lists the caller's own changes: this caller has no name", "table", name);
         }
         Object mine = Map.of("op", "==", "args", List.of(Map.of("col", "by"), Map.of("lit", who)));
-        return reader(spec, new ReaderView("by:" + who, mine, Set.of(), null, null, Set.of(), "a tray is read only"));
+        if (!a.approves(caller, base)) {
+            return reader(spec, new ReaderView("by:" + who, mine, Set.of(), null, null, Set.of(), "a tray is read only"));
+        }
+        Predicate<Map<String, Object>> test = row -> who.equals(row.get("by"))
+                || "held".equals(row.get("state")) && inScope(base, b, row.get("key"));
+        Set<String> masked = new java.util.HashSet<>();
+        for (String c : b.schema().names()) {
+            if (b.schema().column(c).masked()) {
+                masked.add(c);
+            }
+        }
+        UnaryOperator<Map<String, Object>> redact = masked.isEmpty() ? null : row -> {
+            if (!(row.get("set") instanceof Map<?, ?> set)) {
+                return row;
+            }
+            Map<String, Object> shown = new LinkedHashMap<>();
+            set.forEach((k, v) -> shown.put(String.valueOf(k), masked.contains(String.valueOf(k)) ? Map.of("$masked", true) : v));
+            Map<String, Object> out = new LinkedHashMap<>(row);
+            out.put("set", shown);
+            out.put("summary", WriteGuard.summary((String) row.get("op"), row.get("key") instanceof List<?> k ? new ArrayList<>(k) : List.of(), shown));
+            return out;
+        };
+        return reader(spec, new ReaderView("approve:" + who + "|" + b.audience(), null, Set.of(), test, redact, Set.of(WriteGuard.STATE),
+                null));
+    }
+
+    /** Whether the row a change names is in the reader's scope of the table (an unreadable or absent row is not). */
+    private boolean inScope(String base, Reader b, Object key) {
+        if (!(key instanceof List<?> k)) {
+            return false;
+        }
+        try {
+            Map<String, Object> row = table(base).row(new ArrayList<>(k));
+            return row != null && b.scope().test(row);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** The table a tray lists the changes of, or null when the name is not a tray. */
+    String trayBase(String name) {
+        return trays.get(name);
     }
 
     private Reader reader(LiveTableSpec spec, ReaderView v) {
@@ -479,7 +535,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
     /** A table's {@code can}: the declaration's, with {@code write} when it takes writes. */
     private Object can(LiveTableSpec spec) {
         Object c = spec.schema().get("can");
-        if (guard.writable(spec) && c instanceof List<?> l) {
+        if ((guard.writable(spec) || trays.containsKey(spec.name()) && guard.decides()) && c instanceof List<?> l) {
             List<Object> out = new ArrayList<>(l);
             out.add("write");
             return out;

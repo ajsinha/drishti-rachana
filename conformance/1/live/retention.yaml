@@ -2,7 +2,7 @@
 suite: live/retention
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Retention of a live table's live side and idle close (LIVE_TABLES 1.4): ttl by a column and by arrival, max-rows oldest first, a table nobody reads closed and reopened. The adapter's clock starts at 2026-11-21T12:00:00Z; POST /_test/upkeep moves it and runs the upkeep (PROTOCOL 15). Run with protocol_check.py --live."
 cases:
   - id: ttl-by-a-column

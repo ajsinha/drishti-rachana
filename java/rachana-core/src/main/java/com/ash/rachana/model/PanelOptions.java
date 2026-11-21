@@ -50,6 +50,12 @@ public final class PanelOptions {
     /** Language 1.2: the rows a live panel reads and follows at a time, and the default. */
     public static final int MAX_WINDOW = 5_000;
     public static final int WINDOW = 200;
+    /**
+     * Language 1.2: how a live panel offers the host's guarded edit path (PROTOCOL 16 Writes): {@code none} (the default), {@code cells}
+     * (in the grid's cells) or {@code beside} (a record panel beside the grid). The columns offered are those the table's schema lists under
+     * {@code write} for the reader; a table without {@code write} stays read only.
+     */
+    public static final List<String> LIVE_EDITS = List.of("none", "cells", "beside");
 
     /** The most bins a histogram may ask for. */
     public static final int MAX_BINS = 200;
@@ -58,7 +64,7 @@ public final class PanelOptions {
             PanelKind.PIVOT, Map.of("agg", AGGREGATIONS),
             PanelKind.GRAPH, Map.of("layout", GRAPH_LAYOUTS),
             PanelKind.WATERFALL, Map.of("colors", WATERFALL_COLORS), PanelKind.HBAR, Map.of("shape", BAR_SHAPES),
-            PanelKind.TREE, Map.of("mode", TREE_MODES),
+            PanelKind.TREE, Map.of("mode", TREE_MODES), PanelKind.LIVE, Map.of("edit", LIVE_EDITS),
             PanelKind.CHART, Map.of("type", CHART_TYPES, "agg", DATASET_AGGREGATIONS, "stack", CHART_STACKS));
     private static final Map<PanelKind, Set<String>> BOOLEANS = Map.of(PanelKind.PIVOT, Set.of("heat", "totals"),
             PanelKind.TABLE, Set.of("search"), PanelKind.LADDER, Set.of("search"), PanelKind.LINE, Set.of("step"),

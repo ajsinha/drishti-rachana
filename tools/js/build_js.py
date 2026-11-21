@@ -32,6 +32,24 @@ def brotli_size(path: Path) -> int:
     return int(subprocess.run(["node", "-e", js, str(path)], check=True, capture_output=True, text=True).stdout)
 
 
+SIZE_GUARD = ROOT / "tools" / "js" / "bundle-size-guard.json"
+
+
+def size_guard(sizes: dict[str, int]) -> list[str]:
+    """The size guard (tools/js/bundle-size-guard.json): the problems found; a bundle over its 'max' (Brotli 11) is one. Bigger is allowed
+    when deliberate: the guard file is changed in the same commit, with its reason."""
+    guard = json.loads(SIZE_GUARD.read_text(encoding="utf-8"))["bundles"]
+    out = []
+    for b, n in sizes.items():
+        g = guard.get(b)
+        if g is None:
+            out.append(f"{b} has no entry in {SIZE_GUARD.name}")
+        elif n > g["max"]:
+            out.append(f"{b} is {n:,} bytes (Brotli 11), over its guard of {g['max']:,} (measured {g['measured']:,} + 5%): if the growth is deliberate, "
+                       f"update {SIZE_GUARD.relative_to(ROOT)} in the same commit with the reason")
+    return out
+
+
 def check_bundles(dist: Path, work: Path) -> int:
     """Runs the conformance suite on both bundles at every level. Fails (1) on any error or verified failing case in either bundle,
     on a case the runtime bundle answers differently from the tools bundle, or on a case only the tools bundle answers whose kind
@@ -107,12 +125,15 @@ def main(argv=None) -> int:
     # the Python engine checks every bundle against this file before it runs it (python/src/drishti_rachana/engine.py)
     sums = "".join(f"{report[b]['sha256']}  {b}\n" for b in BUNDLES)
     (ROOT / "python" / "src" / "drishti_rachana" / "bundle" / "SHA256SUMS").write_text(sums, encoding="utf-8")
+    over = size_guard({b: report[b]["brotli11"] for b in BUNDLES})
+    for m in over:
+        print("build_js: size guard: " + m, file=sys.stderr)
     if a.json:
         Path(a.json).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     if check_bundles(dist, work):
         print("build_js: the conformance check FAILED (above); do not ship these bundles", file=sys.stderr)
         return 1
-    return 0
+    return 1 if over else 0
 
 
 if __name__ == "__main__":

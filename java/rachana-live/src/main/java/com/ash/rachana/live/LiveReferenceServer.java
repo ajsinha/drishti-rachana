@@ -51,7 +51,9 @@ import java.util.function.Consumer;
  *       (retention, idle close); answers {@code {open: [names]}}</li>
  *   <li>{@code POST /_test/audit}: the audit events since the last read, as a JSON array (their {@code at} left out)</li>
  *   <li>The edit path (PROTOCOL 16 Writes): a fixture's {@code edit: {sink?: outbox|applied|refuse|none (default outbox), hold?: bool,
- *       switch?: on|off, writerFails?: n}}; a reader's view takes {@code editable: [columns]} and {@code mayEdit: <reason to refuse>}. The
+ *       switch?: on|off, writerFails?: n}}; a reader's view takes {@code editable: [columns]}, {@code mayEdit: <reason to refuse>}, {@code approve: true} (the approve right: the
+ *       tray lists others' held changes in the reader's scope, decided by writing {@code state}) and {@code mayDecide: <reason to refuse>}
+ *       (the adapter's host always refuses a decision on one's own change: four eyes). The
  *       case's writer applies a change to the source (the version plus one, {@code changed-by} the writer, {@code changed-at} the clock) and
  *       pushes it on the stream, once per change id. {@code POST /_test/outbox} {@code {flush?, release?, reject?, by?, reason?}}: sends the
  *       outbox's queued changes, or decides a held one as the host; answers {@code {sent, entries: [{change, state}]}}</li>
@@ -282,6 +284,21 @@ public final class LiveReferenceServer implements AutoCloseable {
                     Map<String, Object> v = caller == null ? null : readers.get(String.valueOf(caller));
                     return v != null && v.get("mayEdit") != null ? new Decision.Refuse(String.valueOf(v.get("mayEdit"))) : new Decision.Allow();
                 }
+
+                @Override
+                public boolean approves(Object caller, String table) {
+                    Map<String, Object> v = caller == null ? null : readers.get(String.valueOf(caller));
+                    return v != null && Boolean.TRUE.equals(v.get("approve"));
+                }
+
+                @Override
+                public Decision mayDecide(Object caller, String table, Map<String, Object> change) {
+                    Map<String, Object> v = readers.get(String.valueOf(caller));
+                    if (String.valueOf(caller).equals(change.get("by"))) {
+                        return new Decision.Refuse("four eyes: never your own change");
+                    }
+                    return v != null && v.get("mayDecide") != null ? new Decision.Refuse(String.valueOf(v.get("mayDecide"))) : new Decision.Allow();
+                }
             });
         }
         written.clear();
@@ -292,7 +309,7 @@ public final class LiveReferenceServer implements AutoCloseable {
         boolean hold = Boolean.TRUE.equals(edit.get("hold"));
         try {
             switch (sinkKind) {
-                case "outbox" -> ob = new Outbox(new MemoryStore(), this::writeBack, ch -> hold ? "waiting for a second person" : null, c, 3, 1_000);
+                case "outbox" -> ob = new Outbox(new MemoryStore(), this::writeBack, hold ? ch -> "waiting for a second person" : null, c, 3, 1_000);
                 case "applied" -> lt.sink(new com.ash.rachana.live.spi.ChangeSink() {
                     @Override
                     public Outcome accept(com.ash.rachana.live.spi.Change ch) throws Exception {

@@ -2,7 +2,7 @@
 suite: protocol/window
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Windowed subscriptions of a live table (PROTOCOL 16, LIVE_TABLES 1.5): patches for the window's keys, the reader's total when rows outside it change, top inserts in a newest-first order, win, the caller's own window, overflow, resume; the minimal SSE form's subd and window route. Run against a host with live tables (protocol_check.py --live): the fixture is a live table loaded with POST /_test/live; POST /_test/stream changes it, POST /_test/as names the reader (PROTOCOL 15)."
 cases:
   - id: window-by-keys

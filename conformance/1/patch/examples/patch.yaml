@@ -2,7 +2,7 @@
 suite: patch/examples/patch
 since: "1.1"
 profile: core
-verified: false
+verified: true
 description: Keyed table patches -> ViewModel patch frames, no transport (FORMAT 5.9).
 cases:
   - id: update-remove-and-a-no-op

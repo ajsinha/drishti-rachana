@@ -43,6 +43,8 @@ tables:                                 # each a Data Protocol table, kept live 
       - { name: region, type: string, label: Region }
       - { name: month, type: date, label: Month }
       - { name: revenue, type: decimal, label: Revenue, fmt: amount0 }
+    # write: { journal: "${config}/data/sales.applied.jsonl" }   # a .csv/.json/.jsonl table a *.live.yaml with edit: changes: each change
+                                        # replaces the file atomically (the rest kept as read; needs refresh), its id recorded once here
   orders:
     jdbc:
       url: "jdbc:postgresql://db.internal:5432/sales"   # no password in the address
@@ -76,12 +78,14 @@ auth:
 access:
   default: signed-in                    # a table or Sutra without an entry: every signed-in caller (signed-in) or nobody (closed)
   tables:
-    orders: { read: [sales, admin], unmask: { amount: [admin] }, edit: { roles: [admin], columns: [amount] } }
+    orders: { read: [sales, admin], unmask: { amount: [admin] }, edit: { roles: [admin], columns: [amount] }, approve: [checker] }
                                         # read: the roles that may read; unmask: column -> roles that see it; edit: who may edit which
-                                        # columns of a live table whose declaration has edit: (writes need X-Rachana-CSRF from the page)
+                                        # columns of a live table whose declaration has edit: (writes need X-Rachana-CSRF from the page);
+                                        # approve: the roles that release or reject others' held changes in the tray <name>.changes
   sutras:
     finance: [admin]                    # the roles that may open sutras/finance.sutra.yaml
 
 edits:                                  # the edit path of live tables (LIVE_TABLES 1.6): absent, no table takes writes
   journal: "${config}/data/outbox.jsonl"   # the outbox: each change written here before it is acknowledged, then sent once
   off: []                               # tables whose edits are switched off (writes refused and logged)
+  hold: [orders]                        # four eyes: these tables' changes wait for an approver (access.tables.<name>.approve), never their maker

@@ -25,6 +25,32 @@ public final class CoreAggregates implements FunctionProvider {
     private CoreAggregates() {
     }
 
+    /**
+     * The aggregates whose first argument is the list they aggregate, which level 1.1 and later refuse anything else for (SPEC 5.1):
+     * Core's list aggregates but {@code min} and {@code max} (several arguments: least and greatest) and {@code range} (Python's
+     * sequence from 1.1); {@code span} is 1.1's name of the aggregate max − min.
+     */
+    public static final java.util.Set<String> LIST_FIRST = listFirst();
+
+    private static java.util.Set<String> listFirst() {
+        java.util.Set<String> out = new java.util.TreeSet<>();
+        for (Provided f : INSTANCE.functions()) {
+            if (ListAggregates.ENGINE_NAME.containsKey(f.name()) && !List.of("min", "max", "range").contains(f.name())) {
+                out.add(f.name());
+            }
+        }
+        out.add("span");
+        return java.util.Collections.unmodifiableSet(out);
+    }
+
+    /**
+     * Refuses an aggregate's first argument that is not a list, empty or masked ({@code RCH-2102}, naming the function and the value):
+     * what level 1.1 and later check before {@link #LIST_FIRST}'s functions run.
+     */
+    public static void requireList(String name, List<Object> args) {
+        ListAggregates.requireList(name, args);
+    }
+
     @Override
     public String source() {
         return SOURCE;

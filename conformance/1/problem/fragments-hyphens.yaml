@@ -34,4 +34,4 @@ cases:
       panels:
         - use: desk-tree@1
           with: { rows: { from: $.desks, columns: { desk: book-desk, parent: PARENT } } }
-    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment desk-tree names column desk of table rows in a field-name option, and the caller maps it to 'book-desk', which is not a name ([A-Za-z_][A-Za-z0-9_]*): give the rows renamed in place of the mapping (rows: \"map(<the caller's table>, {desk: @['book-desk'], ...})\")", "range": {"start": {"line": 15, "column": 48}}}]}
+    expect: {"ok": false, "problems": [{"code": "RCH-2121", "severity": "error", "message": "fragment desk-tree names column desk of table rows in a field-name option, and the caller maps it to 'book-desk', which is not a name ([A-Za-z_][A-Za-z0-9_]*): give the rows renamed in place of the mapping (rows: \"map(<the caller's table>, {desk: @['book-desk'], ...})\")", "file": "desk-tree.v1.fragment.yaml", "path": "/panels/0/node", "range": {"start": {"line": 15, "column": 48}}}]}

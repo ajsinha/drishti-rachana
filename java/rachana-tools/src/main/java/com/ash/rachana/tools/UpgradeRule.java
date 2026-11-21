@@ -64,6 +64,12 @@ public enum UpgradeRule {
                     "level11:left", "level11:right", "level11:mid", "level11:find", "level11:search", "level11:pad", "level11:least",
                     "level11:greatest", "level11:sort")),
 
+    AGGREGATE_NOT_A_LIST(Action.FLAG, "review", "An aggregate over something that is not a list",
+            "level 1.0 answers an aggregate whose first argument is not a list with empty (0 for a sum); from 1.1 it is RCH-2102 (SPEC 5.1, "
+                    + "G4 rehearsal P4): a first argument written as a number, a text, a truth value or arithmetic is flagged; a path that "
+                    + "holds a scalar in the host's data is the same unless the data holds one",
+            List.of("case:el/aggregates-host-values#*", "level11:avedev", "level11:avg", "level11:corr", "level11:count", "level11:covar", "level11:covar_pop", "level11:cv", "level11:devsq", "level11:distinct", "level11:geomean", "level11:harmean", "level11:intercept", "level11:iqr", "level11:kth_largest", "level11:kth_smallest", "level11:kurtosis", "level11:median", "level11:mode", "level11:mode_multi", "level11:nmiss", "level11:percent_rank_of", "level11:percentile", "level11:percentile_exc", "level11:product", "level11:rank_avg", "level11:rsq", "level11:skewness", "level11:skewness_pop", "level11:slope", "level11:stddev", "level11:stddev_pop", "level11:stderr", "level11:steyx", "level11:string_agg", "level11:sumproduct", "level11:sumsq", "level11:trimmean", "level11:variance", "level11:variance_pop", "level11:wavg")),
+
     REGEX_CODE(Action.FLAG, "info", "A refused pattern met at evaluation is RCH-2102",
             "level 1.0 raises RCH-4010 for a regular expression refused at evaluation, 1.1 RCH-2102 (N5): only a pattern computed at run time "
                     + "can be refused there",

@@ -39,6 +39,16 @@ class ElementsPinGuardTest {
     }
 
     @Test
+    void thePacksOwnMetadataSaysTheVersionOfItsFolder() throws Exception {
+        String record = Files.readString(repo().resolve("js/vendor/drishti-elements").resolve(pinned()).resolve("drishti-elements-pack.json"));
+        Matcher m = Pattern.compile("\"elements\": \"([^\"]+)\"").matcher(record);
+        assertTrue(m.find(), "the pack record names its version");
+        assertEquals(pinned(), m.group(1), "the pack's record says what its folder says (build it with: tools/elements/cli.py pack --label <folder name>)");
+        assertTrue(Files.readString(repo().resolve("js/vendor/drishti-elements").resolve(pinned()).resolve("drishti-elements.js")).contains("Drishti Elements " + pinned() + ","),
+                "the pack's script header says what its folder says");
+    }
+
+    @Test
     void coreBundlesItsTablesFromThePinnedFolderOnly() throws Exception {
         String pom = Files.readString(repo().resolve("java/rachana-core/pom.xml"));
         assertTrue(pom.contains("js/vendor/drishti-elements/${drishti.elements.version}/data"), "core's resources come from the pinned pack's data folder");

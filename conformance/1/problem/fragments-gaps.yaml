@@ -43,10 +43,14 @@ cases:
       - code: RCH-2121
         severity: error
         message: "fragment grouped names column desk of table rows over rows derived from it that the caller's mapping cannot follow ('map(arg.rows, @)'): read the table's own rows (arg.rows, filtered or through sort, take, drop, unique), or reshape them to fixed names (map(arg.rows, {label: @.desk}))"
+        file: grouped.v1.fragment.yaml
+        path: "/panels/0/label"
         range: { start: { line: 15, column: 62 } }
       - code: RCH-2121
         severity: error
         message: "fragment grouped names column amount of table rows over rows derived from it that the caller's mapping cannot follow ('map(arg.rows, @)'): read the table's own rows (arg.rows, filtered or through sort, take, drop, unique), or reshape them to fixed names (map(arg.rows, {label: @.amount}))"
+        file: grouped.v1.fragment.yaml
+        path: "/panels/0/value"
         range: { start: { line: 15, column: 75 } }
 
   - id: list-of-records-checked-item-by-item
@@ -148,14 +152,20 @@ cases:
       - code: RCH-2048
         severity: error
         message: "parameter nested of fragment bad-types has type 'record{inner: record{a: text}}': a value type ([boolean, date, datetime, decimal, duration, integer, money, number, text], list<T>, record{...}, T?, fn(T, ...) -> U with one name or more), a name type ([area, columns, enum, format, icon, id, key, palette, tone, variant]) or table"
+        file: bad-types.v1.fragment.yaml
+        path: "/params/nested/type"
         range: { start: { line: 7, column: 19 } }
       - code: RCH-2048
         severity: error
         message: "parameter deep of fragment bad-types has type 'list<list<record{a: text}>>': a value type ([boolean, date, datetime, decimal, duration, integer, money, number, text], list<T>, record{...}, T?, fn(T, ...) -> U with one name or more), a name type ([area, columns, enum, format, icon, id, key, palette, tone, variant]) or table"
+        file: bad-types.v1.fragment.yaml
+        path: "/params/deep/type"
         range: { start: { line: 8, column: 17 } }
       - code: RCH-2048
         severity: error
         message: "parameter loose of fragment bad-types has type 'record{a text}': a value type ([boolean, date, datetime, decimal, duration, integer, money, number, text], list<T>, record{...}, T?, fn(T, ...) -> U with one name or more), a name type ([area, columns, enum, format, icon, id, key, palette, tone, variant]) or table"
+        file: bad-types.v1.fragment.yaml
+        path: "/params/loose/type"
         range: { start: { line: 9, column: 18 } }
       - code: RCH-2048
         severity: error
@@ -192,6 +202,8 @@ cases:
       - code: RCH-2048
         severity: error
         message: "parameter count of fragment banner: dynamic: true is for a text parameter (the use may write a template)"
+        file: banner.v1.fragment.yaml
+        path: "/params/count/dynamic"
         range: { start: { line: 8, column: 35 } }
       - code: RCH-2048
         severity: error

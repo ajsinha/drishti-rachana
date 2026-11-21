@@ -3,11 +3,12 @@
 # reference's actual result (Drishti's compiler, Java 21), recorded by tools/proofs; verified stays false until H1 and a review.
 # d-m04-c and d-m05-a expect Core's own maths (A5, P2-1: fdlibm on every runtime), one unit in the last place from the reference;
 # d-m01-a too (A15: exp through Core's maths; gate finding F9).
+# SG-4 (VERIFIED.md): these three state a tolerance and no text, because Core's digits are not the correctly rounded ones (SPEC 4.10 rule 7).
 # d-n20-b/c, d-n25-a/b/c and d-o02-a/b expect Core's aggregates (A9); the reference had no engine and refused them (RCH-2102).
 suite: el/determinism
 since: "1.0"
 profile: core
-verified: false
+verified: true
 description: "Determinism probes: number text and reading, text order and case, dates, booleans, regular expressions, limits, real-number functions."
 cases:
 
@@ -229,6 +230,7 @@ cases:
     expect: {"value": 2.68, "type": "decimal", "text": "2.68"}
 
   - id: "d-n11-a"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "trunc(1e300)"
@@ -236,6 +238,7 @@ cases:
     expect: {"error": {"code": "RCH-2101"}}
 
   - id: "d-n11-b"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "int(-1e300)"
@@ -243,6 +246,7 @@ cases:
     expect: {"error": {"code": "RCH-2101"}}
 
   - id: "d-n11-c"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "trunc(0/0)"
@@ -320,6 +324,7 @@ cases:
     expect: {"value": 0.3, "type": "decimal", "text": "0.3"}
 
   - id: "d-n20-b"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "sum([0.1, 0.2, 0.3])"
@@ -327,6 +332,7 @@ cases:
     expect: {"value": 0.6, "type": "number", "text": "0.6"}
 
   - id: "d-n20-c"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "sum([1e16, 1, -1e16])"
@@ -425,6 +431,7 @@ cases:
     expect: {"value": 1234.5, "type": "decimal", "text": "1234.5"}
 
   - id: "d-n25-a"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "percentile([1,2,3,4], 0.3)"
@@ -432,6 +439,7 @@ cases:
     expect: {"value": 1.9, "type": "number", "text": "1.9"}
 
   - id: "d-n25-b"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "median([1, 2])"
@@ -439,6 +447,7 @@ cases:
     expect: {"value": 1.5, "type": "number", "text": "1.5"}
 
   - id: "d-n25-c"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "stddev([1, 2, 3, 4])"
@@ -1398,6 +1407,7 @@ cases:
     expect: {"value": false, "type": "boolean", "text": "false"}
 
   - id: "d-o02-a"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "size(group($.rows, 'k', 'v'))"
@@ -1405,6 +1415,7 @@ cases:
     expect: {"value": 500, "type": "number", "text": "500"}
 
   - id: "d-o02-b"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "group($.rows, 'k', 'v')"
@@ -1412,6 +1423,7 @@ cases:
     expect: {"value": [{"label": "k0", "value": 78, "count": 4}, {"label": "k1", "value": 57, "count": 3}, {"label": "k10", "value": 63, "count": 3}, {"label": "k11", "value": 42, "count": 3}, {"label": "k12", "value": 60, "count": 3}, {"label": "k2", "value": 75, "count": 3}, {"label": "k3", "value": 54, "count": 3}, {"label": "k4", "value": 72, "count": 3}, {"label": "k5", "value": 51, "count": 3}, {"label": "k6", "value": 69, "count": 3}, {"label": "k7", "value": 48, "count": 3}, {"label": "k8", "value": 66, "count": 3}, {"label": "k9", "value": 45, "count": 3}], "type": "list", "text": "[13]"}
 
   - id: "d-o03-a"
+    verified: true
     kind: "expr-error"
     tags: ["determinism"]
     expr: "sumx(1)"
@@ -1486,11 +1498,12 @@ cases:
     expect: {"error": {"code": "RCH-2102"}}
 
   - id: "d-m01-a"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "exp(1)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 2.7182818284590455, "type": "number", "text": "2.7182818284590455"}
+    expect: {"value": 2.7182818284590455, "type": "number", "tolerance": {"rel": 1e-15}}
 
   - id: "d-m01-b"
     kind: "expr"
@@ -1647,11 +1660,12 @@ cases:
     expect: {"value": 0.27933299665393785, "type": "number", "text": "0.27933299665393785"}
 
   - id: "d-m04-c"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "rate(10, -100, 800)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 0.042774978035111426, "type": "number", "text": "0.042774978035111426"}
+    expect: {"value": 0.042774978035111426, "type": "number", "tolerance": {"rel": 1e-15}}
 
   - id: "d-m04-d"
     kind: "expr"
@@ -1668,11 +1682,12 @@ cases:
     expect: {"value": -1073.6432460242725, "type": "number", "text": "-1073.6432460242725"}
 
   - id: "d-m05-a"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "fisher(0.5)"
     given: {"today": "2026-11-17"}
-    expect: {"value": 0.5493061443340548, "type": "number", "text": "0.5493061443340548"}
+    expect: {"value": 0.5493061443340548, "type": "number", "tolerance": {"rel": 1e-15}}
 
   - id: "d-m05-b"
     kind: "expr"
@@ -1773,6 +1788,7 @@ cases:
     expect: {"value": 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, "type": "decimal", "text": "1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
 
   - id: "d-m07-e"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "trunc(1e19)"
@@ -1780,6 +1796,7 @@ cases:
     expect: {"error": {"code": "RCH-2101"}}
 
   - id: "d-m07-f"
+    verified: true
     kind: "expr"
     tags: ["determinism"]
     expr: "int(-1e19)"

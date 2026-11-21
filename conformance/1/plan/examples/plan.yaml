@@ -2,7 +2,7 @@
 suite: plan/examples/plan
 since: "1.1"
 profile: core
-verified: false
+verified: true
 description: What a runtime asks of each table (FORMAT 5.10). The plan document is B1's; these cases use at.
 cases:
   - id: control-filter-pushed-down-as-a-tree

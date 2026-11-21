@@ -60,6 +60,8 @@ cases:
       problems:
       - code: RCH-2117
         message: "fragment peek reads state.p.seen, which is private to its use p of fragment picker; it reads that use's outputs: chosen"
+        file: peek.v1.fragment.yaml
+        path: "/panels/1/value"
 
   - id: the-screen-reads-no-nested-instance
     kind: problem

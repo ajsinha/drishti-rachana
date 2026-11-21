@@ -671,7 +671,15 @@ public record ViewModel(
      * @param window the rows read and followed at a time
      * @param top whether new rows are inserted on top
      * @param filter the rows' condition as a filter tree (PROTOCOL 7), or none
+     * @param edit how the painter offers the table's guarded edit path: {@code cells} or {@code beside}; null: read only (the panel's
+     *     {@code edit}, language 1.2). The columns offered are those the table's schema lists under {@code write} for the reader
      */
     @Include(Include.Rule.NON_DEFAULT)
-    public record LiveRef(String table, int window, boolean top, Map<String, Object> filter) {}
+    public record LiveRef(String table, int window, boolean top, Map<String, Object> filter, String edit) {
+
+        /** A read-only live table. */
+        public LiveRef(String table, int window, boolean top, Map<String, Object> filter) {
+            this(table, window, top, filter, null);
+        }
+    }
 }

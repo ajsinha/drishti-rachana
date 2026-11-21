@@ -22,7 +22,10 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- The adapter test speaks HTTP with the JDK client (TableClient takes one). -->
-        <configuration><argLine>${rachana.arrow.opens} --add-reads com.ash.rachana.live=java.net.http</argLine></configuration>
+        <configuration>
+          <argLine>${rachana.arrow.opens} --add-reads com.ash.rachana.live=java.net.http</argLine>
+          <systemPropertyVariables><rachana.repo.root>${rachana.repo.root}</rachana.repo.root></systemPropertyVariables>
+        </configuration>
       </plugin>
       <!-- The live test adapter's module path (LiveReferenceServer), for tools/conformance/protocol_check.py live. -->
       <plugin>

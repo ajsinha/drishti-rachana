@@ -10,7 +10,7 @@ import { join, resolve } from "node:path";
 import { main } from "../src/index.js";
 import { handler } from "../src/serve.js";
 import { ELEMENTS_VERSION } from "../src/site.js";
-import { libraryFiles } from "../src/lint.js";
+import { libraryFiles, languageLevels } from "../src/lint.js";
 import { libCommand } from "../src/lib.js";
 import { serverCommand } from "../src/server.js";
 import { distDir } from "../src/bundle.js";
@@ -34,6 +34,9 @@ test("new scaffolds a project and refuses a non-empty folder", async () => {
   const d = tmp(); const p = join(d, "p");
   assert.equal(await main(["new", p], io().io), 0);
   for (const f of ["rachana.yaml", "sutras/overview.sutra.yaml", "data/sales.csv"]) assert.ok(existsSync(join(p, f)), f);
+  const want = (await languageLevels()).default;
+  assert.doesNotMatch(readFileSync(join(p, "rachana.yaml"), "utf8"), /^level:/m, "no project-level level: the Sutra declares it");
+  assert.ok(readFileSync(join(p, "sutras/overview.sutra.yaml"), "utf8").startsWith(`rachana: ${want}\n`), "rachana new writes the newest level into the Sutra");
   assert.equal(await main(["new", p], io().io), 2);
   assert.equal(await main(["new", join(d, "q"), "--template", "zzz"], io().io), 2);
   rmSync(d, { recursive: true });

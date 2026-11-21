@@ -24,7 +24,7 @@ public interface Expr {
 
     record Lit(Object value) implements Expr {
         public Object eval(EvalContext c) {
-            return value;
+            return value instanceof Node ? Values.adopt(value, c) : value;
         }
     }
 
@@ -77,7 +77,7 @@ public interface Expr {
             for (int i = 0; i < a.size(); i++) {
                 out.add(a.get(i).get(name));
             }
-            return Node.list(out);
+            return Values.adopt(Node.list(out), c);
         }
 
         public void paths(Consumer<String> sink) {
@@ -189,7 +189,7 @@ public interface Expr {
                     kept.add(a.get(i));
                 }
             }
-            return Node.list(kept);
+            return Values.adopt(Node.list(kept), c);
         }
 
         public void paths(Consumer<String> sink) {
@@ -375,7 +375,7 @@ public interface Expr {
                 values.add(v);
             }
             // a function of a masked value is masked (coalesce only passes it on when it is the first value it has)
-            return masked && !Functions.passesMask(name) ? Values.mask() : fn.apply(values, c);
+            return masked && !Functions.passesMask(name) ? Values.mask() : Values.adopt(fn.apply(values, c), c);
         }
 
         public void paths(Consumer<String> sink) {
@@ -387,7 +387,7 @@ public interface Expr {
     /** A call of a form ({@link ElForm}): its arguments handed over unevaluated ({@code map}, {@code iferror} …). */
     record Form(String name, ElForm fn, List<Expr> args) implements Expr {
         public Object eval(EvalContext c) {
-            return fn.apply(args, c);
+            return Values.adopt(fn.apply(args, c), c);
         }
 
         /** The same form over other arguments (a compiler rewriting a tree). */
@@ -457,7 +457,7 @@ public interface Expr {
                 }
                 values.add(e.eval(c));
             }
-            return Args.list(values);
+            return Values.adopt(Args.list(values), c);
         }
 
         public void paths(Consumer<String> sink) {
@@ -688,7 +688,7 @@ public interface Expr {
                     throw new ElException(RachanaCode.EL_EVAL, "a record holds at most " + Parser.MAX_RECORD_FIELDS + " fields");
                 }
             }
-            return Node.of(out);
+            return Values.adopt(Node.of(out), c);
         }
 
         public void paths(Consumer<String> sink) {
@@ -709,7 +709,7 @@ public interface Expr {
             if (Values.masked(t) || Values.masked(a) || Values.masked(b) || Values.masked(s)) {
                 return Values.mask();
             }
-            return Ranges.slice(t, a, b, s);
+            return Values.adopt(Ranges.slice(t, a, b, s), c);
         }
 
         public void paths(Consumer<String> sink) {

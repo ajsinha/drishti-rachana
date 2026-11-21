@@ -103,6 +103,8 @@ cases:
       problems:
       - code: RCH-2048
         message: "fragment peek writes %{into} outside set: { state: %{into} }: a state parameter names the one state it may write; read a value as a value parameter"
+        file: peek.v1.fragment.yaml
+        path: "/panels/0/value"
       - code: RCH-2048
         message: "no block peek@1 (no block files are loaded)"
 
@@ -133,5 +135,7 @@ cases:
       problems:
       - code: RCH-2023
         message: "parameter feeds of fragment feeder: a selection parameter comes with selections (SUTRA_EXPANSION I2); not at this level"
+        file: feeder.v1.fragment.yaml
+        path: "/params/feeds/type"
       - code: RCH-2048
         message: "no block feeder@1 (no block files are loaded)"

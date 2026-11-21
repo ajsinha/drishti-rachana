@@ -68,7 +68,10 @@ zeros after the point are kept: a column that declares `scale` sends every cell 
 (`"0.10"` for `scale: 2`), and a reader shows the cell as sent (SPEC 4.16 rule 8). An aggregate over a decimal column (6.3)
 is exact and sent as text by the same rule: `min` and `max` are the cell chosen, as the table holds it; `sum` has as many
 digits after the point as the longest of the values it adds, which is the column's `scale` when the cells carry it (`"1.10"`
-and `"2.20"` sum to `"3.30"`, never `"3.3"`; over the three rows with `"0.05"` the total is `"3.35"`). The values
+and `"2.20"` sum to `"3.30"`, never `"3.3"`; over the three rows with `"0.05"` the total is `"3.35"`). `avg` is exact too: that
+sum divided by the count of values as SPEC 4.16 rule 3 divides (decimal128: rounded half to even to 34 significant digits), and,
+being a computed value, sent without trailing zeros after the point (`"1"`, `"2"` and `"2"` average to
+`"1.666666666666666666666666666666667"`; `"1.00"` and `"3.00"` to `"2"`). Every runtime gives the same digits. The values
 an aggregate reads are those of its own group, and for `totals` every row after `filter`.
 
 ### 3.2 Masked values
@@ -158,7 +161,8 @@ with `offset` in `can` also accepts `offset` (not together with `cursor`); witho
 
 `group` (only when `can` has `group`): `by` (columns), `values` (`{ name, agg, col?, p? }`), `totals`. `agg`: `sum`, `count`,
 `min`, `max`, `avg`, `distinct`, `median`, `percentile` (needs `p`, 0 to 1 exclusive). `count` without `col` counts rows; every
-other `agg` needs `col`. The answer's columns are the `by` columns then each value's `name`. With `totals: true` the answer has
+other `agg` needs `col`. Over no value (no row, or every cell of `col` null) `sum` is `0` (`"0"` for a decimal column) and `count`
+and `distinct` are `0`; every other `agg` is `null`. The answer's columns are the `by` columns then each value's `name`. With `totals: true` the answer has
 `totals`: `{ name: value }` over all rows after `filter`. A runtime never sums what it was not sent in full.
 
 ## 7. The filter syntax tree

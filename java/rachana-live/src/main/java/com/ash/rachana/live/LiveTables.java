@@ -532,15 +532,44 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         return doc;
     }
 
-    /** A table's {@code can}: the declaration's, with {@code write} when it takes writes. */
+    /**
+     * A table's {@code can}: the declaration's, without {@code group} when the table is paged from its source (it cannot group: a capability
+     * is never declared and then refused, PROTOCOL 2, 16), with {@code write} when it takes writes.
+     */
     private Object can(LiveTableSpec spec) {
         Object c = spec.schema().get("can");
-        if ((guard.writable(spec) || trays.containsKey(spec.name()) && guard.decides()) && c instanceof List<?> l) {
-            List<Object> out = new ArrayList<>(l);
-            out.add("write");
-            return out;
+        if (!(c instanceof List<?> l)) {
+            return c;
         }
-        return c;
+        boolean write = guard.writable(spec) || trays.containsKey(spec.name()) && guard.decides();
+        boolean ungrouped = l.contains("group") && paged(spec);
+        if (!write && !ungrouped) {
+            return c;
+        }
+        List<Object> out = new ArrayList<>(l);
+        if (ungrouped) {
+            out.remove("group");
+        }
+        if (write) {
+            out.add("write");
+        }
+        return out;
+    }
+
+    /** Whether the table is paged from its source (a source of tier columns or query): the open table's, else its source's tier. */
+    private boolean paged(LiveTableSpec spec) {
+        LiveTable t = open.get(spec.name());
+        if (t != null) {
+            return t.paged;
+        }
+        if (trays.containsKey(spec.name())) {
+            return false;                                             // a tray is read whole
+        }
+        try {
+            return resolver.snapshot(spec.snapshot()).tier() != SnapshotSource.Tier.WHOLE;
+        } catch (RuntimeException e) {
+            return false;                                             // the source's own error is answered when the table is read
+        }
     }
 
     /**

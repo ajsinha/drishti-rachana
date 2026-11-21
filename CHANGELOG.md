@@ -5,6 +5,20 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **The spec-gap code fixes CF-1 to CF-5 and the host aggregates decided** (conformance/1/VERIFIED.md, the third pass). A `table`
+  entry whose table the host does not have is a failed entry: each panel that reads it is `error: "RCH-2070 the host has no table
+  '<t>' (data '<e>')"` with `empty: true`, never read as no rows (`LiveScreen.missing`, called by `TableClient.load` and the JS `Screen` on `rdp.table.unknown`; the JS bundles' screen
+  operation `missing`; a view built without a host is unchanged); the case
+  `sutra/data#missing-table-reads-as-no-rows` is replaced by `#a-missing-table-fails-its-panels`. Checked mode joins the types of a
+  value chosen among several in any order (SPEC 4.14 rule 1: `?:`, `??`, `switch`, `if`, `coalesce`, `least`, `greatest`; `switch`,
+  `if` and `coalesce` values that do not fit are `RCH-9127`) and accepts a timestamp text ending in `Z` or `±hh:mm`; these change
+  checked mode at level 1.0 in corners no case pinned before (listed in VERIFIED.md). The Python host's decimal `sum` has the digits of
+  the values it adds and `min`/`max` give the cell as held (PROTOCOL 3.1). A table paged from its source no longer lists `group` in
+  `can`. **Decided** (PROTOCOL 3.1, 6.3): `sum` over no value is `0` (`"0"` for a decimal) on every runtime (the Python host gave
+  `null`); `avg` of a decimal column is the exact sum divided to 34 digits half to even, trailing zeros dropped, the same digits
+  everywhere (the JVM host gave 16 digits, the Python host rounded to the column's scale). 16 cases added; the 12 cases of
+  `el/aggregates-host-values` verified on an independent review against SPEC 5.1; no case of the suite is unverified.
+
 - **A Sutra declares its language level in its `rachana:` key** (owner, 2026-11-21; SPEC 2.1 rule 4): `rachana: 1` (or `1.0`) is level
   1.0, `rachana: 1.2` is 1.2. A host reads each Sutra at the level it declares, at most its own (`Grammar.declaredAt`,
   `Declarations.atLevel`, `SutraParser.declaredLevel`, `Sutra.level()`): a host of 1.2 reads a `rachana: 1` Sutra exactly as a host of

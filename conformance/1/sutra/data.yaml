@@ -167,11 +167,10 @@ cases:
         /panels/0/data/value/text: "1"
         /panels/1/data/value/text: Desk A
 
-  - id: missing-table-reads-as-no-rows
-    verified: false
+  - id: a-missing-table-fails-its-panels
     kind: sutra
-    source: SPEC 2.4
-    note: SG-16 (VERIFIED.md). This expectation is wrong and stays unverified. A table the host does not have is a failed entry (SPEC 2.4, TRANSLATION 10, PROTOCOL 10.1), its panels are in the state error. Code fix CF-1 replaces this case.
+    source: SPEC 2.4 (a table the host does not have); TRANSLATION 10; PROTOCOL 10.1
+    note: SG-16 and code fix CF-1 (VERIFIED.md); replaces missing-table-reads-as-no-rows, whose expectation (0) read a failed entry as no rows.
     sutra: |
       rachana: 1.1
       sutra: data-missing
@@ -182,4 +181,29 @@ cases:
         - { id: n, kind: metric, label: N, value: "count($.t)" }
     expect:
       at:
-        /panels/0/data/value/text: "0"
+        /panels/0/error: "RCH-2070 the host has no table 'nothing-here' (data 't')"
+        /panels/0/empty: true
+
+  - id: a-missing-table-leaves-the-other-panels
+    kind: sutra
+    source: SPEC 2.4 (a table the host does not have); TRANSLATION 10 (the others bind)
+    note: code fix CF-1; the panel that reads the failed entry is error, the panel that reads a table the host handed binds.
+    given:
+      today: "2026-01-15"
+      tables:
+        t: [ { id: a } ]
+    sutra: |
+      rachana: 1.1
+      sutra: data-missing-one
+      version: 1
+      data:
+        t: { table: t }
+        u: { table: nothing-here }
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.t)" }
+        - { id: m, kind: metric, label: M, value: "count($.u)" }
+    expect:
+      at:
+        /panels/0/data/value/text: "1"
+        /panels/1/error: "RCH-2070 the host has no table 'nothing-here' (data 'u')"
+        /panels/1/empty: true

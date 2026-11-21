@@ -169,3 +169,78 @@ cases:
             columns: [d, n, dq, lo, hi, s]
             values: [ [A, 2, 1, "1.10", "2.20", "3.30"], [B, 1, 1, "0.05", "0.05", "0.05"] ]
             totals: { n: 3, dq: 2, lo: "0.05", hi: "2.20", s: "3.35" }
+
+  - id: a-decimal-sum-has-the-digits-of-its-own-group
+    verified: true
+    kind: protocol
+    source: PROTOCOL 3.1 (the text of a decimal), 6.3
+    note: code fix CF-4 (SG-12); each group's sum has the longest digits after the point among its own values, min and max are the cell as held
+    fixture:
+      name: rdp-grp-scale
+      schema:
+        name: rdp-grp-scale
+        columns: [ { name: d, type: string }, { name: px, type: decimal } ]
+        can: [page, sort, group]
+      rows: [ { d: A, px: "1.1" }, { d: A, px: "2.25" }, { d: B, px: "1.5" } ]
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-grp-scale/query
+          body:
+            group: { by: [d], values: [ { name: s, agg: sum, col: px }, { name: lo, agg: min, col: px }, { name: hi, agg: max, col: px } ], totals: true }
+            sort: [ { col: d } ]
+        expect:
+          status: 200
+          body:
+            columns: [d, s, lo, hi]
+            values: [ [A, "3.35", "1.1", "2.25"], [B, "1.5", "1.5", "1.5"] ]
+            totals: { s: "4.85", lo: "1.1", hi: "2.25" }
+
+  - id: a-sum-of-nothing-is-0
+    verified: true
+    kind: protocol
+    source: PROTOCOL 6.3 (a sum over no value is 0; every other aggregate but count is null)
+    fixture:
+      name: rdp-grp-none
+      schema:
+        name: rdp-grp-none
+        columns: [ { name: d, type: string }, { name: q, type: integer }, { name: px, type: decimal } ]
+        can: [page, sort, group]
+      rows: [ { d: A, q: 2, px: "1.50" }, { d: B, q: null, px: null } ]
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-grp-none/query
+          body:
+            group: { by: [d], values: [ { name: sq, agg: sum, col: q }, { name: sp, agg: sum, col: px }, { name: ap, agg: avg, col: px }, { name: lo, agg: min, col: px }, { name: n, agg: count, col: px } ] }
+            sort: [ { col: d } ]
+        expect:
+          status: 200
+          body:
+            columns: [d, sq, sp, ap, lo, n]
+            values: [ [A, 2, "1.50", "1.5", "1.50", 1], [B, 0, "0", null, null, 0] ]
+
+  - id: a-decimal-avg-is-divided-to-34-digits
+    verified: true
+    kind: protocol
+    source: PROTOCOL 3.1 (the text of a decimal), 6.3; SPEC 4.16 rule 3
+    fixture:
+      name: rdp-grp-avg
+      schema:
+        name: rdp-grp-avg
+        columns: [ { name: d, type: string }, { name: px, type: decimal } ]
+        can: [page, sort, group]
+      rows: [ { d: A, px: "1" }, { d: A, px: "2" }, { d: A, px: "2" }, { d: B, px: "1.00" }, { d: B, px: "3.00" } ]
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-grp-avg/query
+          body:
+            group: { by: [d], values: [ { name: a, agg: avg, col: px } ], totals: true }
+            sort: [ { col: d } ]
+        expect:
+          status: 200
+          body:
+            columns: [d, a]
+            values: [ [A, "1.666666666666666666666666666666667"], [B, "2"] ]
+            totals: { a: "1.8" }

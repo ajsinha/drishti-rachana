@@ -308,7 +308,7 @@ public final class RowQuery {
         return cols;
     }
 
-    /** One aggregate over rows, in the JSON form of the column's type (a decimal sum is exact and sent as text). */
+    /** One aggregate over rows, in the JSON form of the column's type (a decimal sum is exact and sent as text; a sum of nothing is 0). */
     private static Object aggregate(TableSchema s, Map<?, ?> v, List<Map<String, Object>> rows) {
         String agg = (String) v.get("agg");
         String col = v.get("col") instanceof String c ? c : null;
@@ -365,8 +365,8 @@ public final class RowQuery {
             for (BigDecimal n : ns) {
                 sum = sum.add(n);
             }
-            BigDecimal avg = sum.divide(BigDecimal.valueOf(ns.size()), MathContext.DECIMAL64);
-            return "decimal".equals(type) ? avg.toPlainString() : (Object) avg.doubleValue();
+            BigDecimal avg = sum.divide(BigDecimal.valueOf(ns.size()), MathContext.DECIMAL128);     // PROTOCOL 3.1: X2's `/`, 34 digits half-even
+            return "decimal".equals(type) ? avg.stripTrailingZeros().toPlainString() : (Object) avg.doubleValue();
         }
         ns.sort(BigDecimal::compareTo);
         double p = agg.equals("median") ? 0.5 : v.get("p") instanceof Number n ? n.doubleValue() : 0.5;

@@ -45,6 +45,7 @@ public final class LiveScreen {
     private final Map<String, Object> ctl = new LinkedHashMap<>();
     private final Map<String, TableSchema> schemas = new LinkedHashMap<>();
     private final Map<String, KeyedRows> tables = new LinkedHashMap<>();
+    private final java.util.Set<String> missing = new java.util.LinkedHashSet<>();
     private ViewModel last;
     private long seq;
 
@@ -74,8 +75,19 @@ public final class LiveScreen {
         return this;
     }
 
+    /**
+     * Says the host does not have this table ({@code rdp.table.unknown}, or not among the tables a runner was given): every {@code table}
+     * entry that reads it is a failed entry (SPEC 2.4), until the table is handed ({@link #table}).
+     */
+    public void missing(String name) {
+        missing.add(name);
+        tables.remove(name);
+        schemas.remove(name);
+    }
+
     /** Sets (or replaces) a host table's rows, in their JSON form; the key is the schema's, else the first entry's that reads it. */
     public void table(String name, TableSchema schema, List<Map<String, Object>> rows) {
+        missing.remove(name);
         List<String> entryKey = sutra.data().stream().filter(d -> name.equals(d.table())).findFirst().map(DataEntry::key).orElse(List.of());
         TableSchema s = schema == null ? TableSchema.untyped(name, entryKey) : schema;
         int window = s.doc().get("append") instanceof Map<?, ?> a && a.get("window") instanceof Number w ? w.intValue() : 0;
@@ -123,14 +135,44 @@ public final class LiveScreen {
 
     /** Builds the ViewModel now (and remembers it as the base of the next frames). */
     public ViewModel view() {
+        last = failed(built());
+        return last;
+    }
+
+    /**
+     * The view with every panel that reads a failed entry in the state {@code error} (SPEC 2.4 "A table the host does not have";
+     * TRANSLATION 10): a {@code table} entry whose table the host does not have ({@link #missing}) is failed, never a table with no rows.
+     * Such a panel has no data, is empty and says {@code RCH-2070 the host has no table '<table>' (data '<entry>')}; the others bind.
+     */
+    private ViewModel failed(ViewModel v) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        for (DataEntry e : sutra.data()) {
+            if (e.form() == DataEntry.Form.TABLE && missing.contains(e.table())) {
+                String error = "RCH-2070 the host has no table '" + e.table() + "' (data '" + e.name() + "')";
+                DataPlan.readers(sutra, e.name()).forEach(id -> errors.putIfAbsent(id, error));
+            }
+        }
+        if (errors.isEmpty()) {
+            return v;
+        }
+        List<ViewModel.PanelView> panels = new ArrayList<>();
+        for (ViewModel.PanelView p : v.panels()) {
+            String error = errors.get(p.id());
+            panels.add(error == null ? p : new ViewModel.PanelView(p.id(), p.kind(), p.title(), p.code(), p.key(), p.area(), p.inferred(),
+                    p.explanation(), null, error, true, p.span(), p.height()));
+        }
+        return new ViewModel(v.ref(), v.mnemonic(), v.title(), v.strip(), panels, v.keys(), v.provenance(), v.timings(), v.controls(),
+                v.selects(), v.layout(), v.contract(), v.phone(), v.datasets(), v.state());
+    }
+
+    private ViewModel built() {
         var views = rachana.views(BindHooks.core(), pivots, TableProvider.NONE,
                 BusinessDays.of(today, BusinessCalendar.of("WEEKENDS")), Duration.ofSeconds(2));
         Map<String, String> texts = new LinkedHashMap<>();
         ctl.forEach((k, v) -> texts.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(String::valueOf).toList()) : v == null ? "" : String.valueOf(v)));
         var doc = new Entity(EntityRef.of("record", "case"), record(true));
-        last = views.build(new ViewBuilder.Request(doc, sutra, null, AsOf.of(today), null, new ControlValues(texts, java.util.Set.of()), null,
+        return views.build(new ViewBuilder.Request(doc, sutra, null, AsOf.of(today), null, new ControlValues(texts, java.util.Set.of()), null,
                 state.isEmpty() ? null : new com.ash.rachana.control.StateValues(state)));
-        return last;
     }
 
     /**

@@ -16,7 +16,7 @@ import threading
 import uuid
 import zlib
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_HALF_EVEN, Context, Decimal, InvalidOperation
 from typing import Any, Callable, Iterable, Iterator, Optional
 
 from .protocol import Column, ProtocolError, TableSchema, Version
@@ -234,25 +234,49 @@ def _ordered(rows: list[dict], col: str, desc: bool, nulls_first: bool, ctype: s
     return empty + full if nulls_first else full + empty
 
 
-def _decimal_text(d: Decimal, scale: int) -> str:
-    return f"{d:.{scale}f}"
+_EXACT = Context(prec=10_000)                                  # a decimal sum is exact (PROTOCOL 3.1)
+_X2 = Context(prec=34, rounding=ROUND_HALF_EVEN)               # `/` of SPEC 4.16 rule 3: decimal128, half to even
 
 
-def _aggregate(rows: list[dict], v: dict, ctype: str, scale: int) -> Any:
+def _plain(d: Decimal) -> str:
+    """A decimal as PROTOCOL 3.1 sends it: plain digits, no exponent, never a negative zero."""
+    return format(d.copy_abs() if d.is_zero() else d, "f")
+
+
+def _aggregate(rows: list[dict], v: dict, ctype: str) -> Any:
+    """One aggregate of PROTOCOL 6.3 over ``rows`` (its own group, or every row after ``filter`` for ``totals``). Over a numeric
+    column: ``sum`` of nothing is ``0``; a decimal ``sum`` is exact, with as many digits after the point as the longest value it
+    adds; ``min`` and ``max`` are the cell as held; a decimal ``avg`` is the exact sum divided as X2 (34 digits, half to even),
+    trailing zeros dropped; the answers equal the JVM host's (RowQuery)."""
     agg, col = v["agg"], v.get("col")
     vals = [r.get(col) for r in rows if r.get(col) is not None] if col else []
     if agg == "count":
         return len(rows) if not col else len(vals)
     if agg == "distinct":
         return len({json.dumps(x, sort_keys=True) for x in vals})
-    if not vals:
-        return None
     if ctype in _NUMERIC:
         nums = [_number(x) for x in vals]
-        r = {"sum": lambda: sum(nums), "min": lambda: min(nums), "max": lambda: max(nums), "avg": lambda: sum(nums) / len(nums)}[agg]()
-        if ctype == "decimal":
-            return _decimal_text(Decimal(r), scale)
-        return int(r) if ctype == "integer" and agg != "avg" else float(r)
+        if agg in ("min", "max"):
+            if not nums:
+                return None
+            best = (min if agg == "min" else max)(nums)
+            return _plain(best) if ctype == "decimal" else int(best) if ctype == "integer" else float(best)
+        if agg == "sum":
+            total = _EXACT.create_decimal(0)
+            for n in nums:
+                total = _EXACT.add(total, n)
+            return _plain(total) if ctype == "decimal" else int(total) if ctype == "integer" else float(total)
+        if agg == "avg":
+            if not nums:
+                return None
+            total = _EXACT.create_decimal(0)
+            for n in nums:
+                total = _EXACT.add(total, n)
+            mean = _X2.divide(total, Decimal(len(nums)))
+            return _plain(_X2.normalize(mean)) if ctype == "decimal" else float(mean)
+        raise ProtocolError("rdp.query.invalid", f"{agg} is not answered by this host", column=col)
+    if not vals:
+        return 0 if agg == "sum" else None
     if agg in ("min", "max"):
         return (min if agg == "min" else max)(vals, key=str)
     raise ProtocolError("rdp.query.invalid", f"{agg} needs a numeric column", column=col)
@@ -433,10 +457,7 @@ class DataHost:
 
         def agg(rs: list[dict], v: dict) -> Any:
             c = column(v["col"]) if v.get("col") else {}
-            scale = c.get("scale")
-            if scale is None:
-                scale = max((len(str(x).partition(".")[2]) for x in (r.get(v.get("col")) for r in rows) if x is not None), default=0)
-            return _aggregate(rs, v, c.get("type", "string"), int(scale))
+            return _aggregate(rs, v, c.get("type", "string"))
 
         out_rows = [[rs[0].get(c) for c in by] + [agg(rs, v) for v in values] for rs in groups.values()]
         names = by + [v["name"] for v in values]

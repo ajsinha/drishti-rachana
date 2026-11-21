@@ -195,3 +195,93 @@ cases:
     types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "status": "string", "n": "integer"}}
     expr: "date('09/10/2026') < $.tradeDate"
     expect: {"type": null, "problems": [{"code": "RCH-9127"}]}
+
+  - id: "check-join-is-order-independent-0-mtm"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 1 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "$.n > 0 ? 0 : $.mtm"
+    expect: {"type": "decimal", "problems": []}
+
+  - id: "check-join-date-and-timestamp"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 1 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "$.n > 0 ? $.tradeDate : $.ts"
+    expect: {"type": "timestamp", "problems": []}
+
+  - id: "check-switch-joins-its-answers"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rules 1, 2 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "switch($.status, 'A', 1, 'B', 2.5, 0)"
+    expect: {"type": "decimal", "problems": []}
+
+  - id: "check-switch-answers-that-do-not-fit"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rules 1, 2 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "switch($.status, 'A', 1, 'B', 'x')"
+    expect: {"type": null, "problems": [{"code": "RCH-9127", "message": "the values of switch have different types (integer and string)", "expr": {"start": 30, "end": 33}}]}
+
+  - id: "check-coalesce-joins-its-arguments"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 1 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "coalesce($.mtm, $.n)"
+    expect: {"type": "decimal", "problems": []}
+
+  - id: "check-coalesce-arguments-that-do-not-fit"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 1 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "coalesce($.mtm, 'x')"
+    expect: {"type": null, "problems": [{"code": "RCH-9127", "message": "the values of coalesce have different types (decimal and string)", "expr": {"start": 16, "end": 19}}]}
+
+  - id: "check-if-joins-its-two-values"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 1 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "if($.n > 0, 1, $.mtm)"
+    expect: {"type": "decimal", "problems": []}
+
+  - id: "check-least-joins-its-arguments"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 1 (code fix CF-2)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "least($.n, $.mtm)"
+    expect: {"type": "decimal", "problems": []}
+
+  - id: "check-timestamp-with-z"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 6; SPEC 4.2; PROTOCOL 3.1 (code fix CF-3)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "timestamp('2026-11-17T09:30:00Z') < $.ts"
+    expect: {"type": "boolean", "problems": []}
+
+  - id: "check-timestamp-with-an-offset"
+    verified: true
+    kind: "check"
+    source: "SPEC 4.14 checked mode in detail rule 6; PROTOCOL 3.1 (code fix CF-3)"
+    scope: "data"
+    types: {"record": {"NOTIONAL": "decimal", "mtm": "decimal", "desk": "string", "tradeDate": "date", "ts": "timestamp", "status": "string", "n": "integer"}}
+    expr: "timestamp('2026-11-17T09:30:00+05:30') < $.ts"
+    expect: {"type": "boolean", "problems": []}

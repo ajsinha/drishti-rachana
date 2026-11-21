@@ -58,6 +58,10 @@ final class Screens {
                     get(r).table(String.valueOf(r.get("name")), r.get("schema") == null ? null : TableSchema.of(r.get("schema")), rows);
                     yield "{}";
                 }
+                case "missing" -> {                                    // the host has no such table (rdp.table.unknown): its entries fail
+                    get(r).missing(String.valueOf(r.get("name")));
+                    yield "{}";
+                }
                 case "view" -> {
                     LiveScreen s = get(r);
                     if (r.get("ctl") instanceof Map<?, ?>) {

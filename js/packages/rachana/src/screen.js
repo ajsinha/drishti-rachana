@@ -56,12 +56,15 @@ export class Screen {
     this.stateDelta = null;     // the state values the host's bind carries now (level 1.2): text per id, null for a cleared one
   }
 
-  /** Reads every table through the plan (push-down where the table can); tables the host lacks read as no rows. */
+  /** Reads every table through the plan (push-down where the table can); a table the host lacks is missing: its panels are error (RCH-2070, SPEC 2.4). */
   async load() {
     const schemas = {};
     if (this.client) {
       for (const t of this.tables) {
-        try { schemas[t] = await this.client.schema(t); } catch (e) { if (e.code !== 'rdp.table.unknown') throw e; }
+        try { schemas[t] = await this.client.schema(t); } catch (e) {
+          if (e.code !== 'rdp.table.unknown') throw e;
+          call(this.rt, 'missing', { id: this.id, name: t });
+        }
       }
     }
     this.plan = call(this.rt, 'plan', { id: this.id, schemas: this.client ? schemas : undefined, ctl: this.ctl, state: this.stateDelta || undefined });

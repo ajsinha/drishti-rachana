@@ -115,7 +115,8 @@ public final class TableClient {
 
     /**
      * Reads every table a screen reads, through its plan (the filters and columns pushed down to tables that can take them), into the
-     * screen. A table the host does not have reads as no rows; the screen's own plan says so ({@code RCH-2070}).
+     * screen. A table the host does not have is {@link LiveScreen#missing}: a failed entry, whose panels the screen shows as {@code error}
+     * ({@code RCH-2070}, SPEC 2.4), never as no rows.
      *
      * @return the reads, by table name
      */
@@ -129,6 +130,7 @@ public final class TableClient {
                 if (!"rdp.table.unknown".equals(e.code())) {
                     throw e;
                 }
+                screen.missing(t);
             }
         }
         Map<String, Object> plan = screen.plan(schemas);

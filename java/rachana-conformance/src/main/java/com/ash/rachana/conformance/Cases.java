@@ -603,6 +603,11 @@ public final class Cases {
             items(t instanceof Map<?, ?> m ? m.get("rows") : t).forEach(r -> rows.add((Map<String, Object>) r));
             s.table(e.getKey(), schema, rows);
         }
+        for (String t : s.tableNames()) {                                   // given.tables are the host's tables: any other is missing (SPEC 2.4)
+            if (!obj(g.get("tables")).containsKey(t)) {
+                s.missing(t);
+            }
+        }
         return s;
     }
 

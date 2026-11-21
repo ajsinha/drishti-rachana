@@ -17,6 +17,11 @@ Decisions `SG-1` to `SG-24` and code fixes `CF-1` to `CF-5` are in the section [
 that one alone is unverified. The 12 cases of `el/aggregates-host-values` arrived with the merge of `g2/integration` at `0bd6013`,
 after this pass was made; their commit leaves them for the independent review lane, and this pass did not flip them.
 
+**The code-fix pass** (2026-11-21, branch `g2/cf-fixes` off `g2/integration` at `6f621dc`) built `CF-1` to `CF-5` and the two lead
+decisions on the host's aggregates (`L-1`, `L-2`), added 16 cases for them (verified against the decided text), replaced the case CF-1
+waited for, and flipped the 12 cases of `el/aggregates-host-values` on an independent review. See [Code fixes built](#code-fixes-built-the-third-pass).
+**No case below `conformance/1/` is unverified.**
+
 ## Flipped
 
 ### `conformance/1/el/determinism.yaml`
@@ -704,7 +709,7 @@ implements) with pyarrow. Where the implementation was sound and the same on eve
 | SG-13 | `in` against a scalar in checked mode? | Refused: `in` and `not in` take a list written in the expression; each item must fit the value's type, each misfit its own `RCH-9127` at the item. The list of one of SPEC 4.8 is an implicit cast and stays the unchecked meaning | SPEC 4.14 "Checked mode in detail" rule 4 | `el/check#check-status-in-n`, `el/check#check-status-in-1-2` | flip |
 | SG-14 | Which functions have no signature in checked mode? | Checked mode types 36 Core functions (listed by name); every other Core function, `let(...)`, a record literal, a slice and a lambda are `RCH-9129`. `functions.yaml` is the unchecked catalogue; its signatures do not make a function typed | SPEC 4.14 "Checked mode in detail" rule 3 | `el/check#check-concat-status-x`, `el/check#check-let-x-n-x-2` | flip |
 | SG-15 | What is a valid data name? | A field name, `[A-Za-z_][A-Za-z0-9_]*`, because it is read as `$.<name>`; otherwise `RCH-2073` at the name | SPEC 2.4, 6.2 (`2073`) | `problem/data#a-name-that-is-not-a-field-name` | flip |
-| SG-16 | A `table` entry whose table the host does not have? | A **failed entry**: `RCH-2070` wherever the host's tables are known, and in a view built all the same every panel that reads it is `error` with those words. Never a table with no rows. The existing text already said so (TRANSLATION 10 "a failed entry"; PROTOCOL 10.1 `rdp.table.unknown` → panel state `error`); the implementation and the case read it as no rows, which shows `0` for data that is not there | SPEC 2.4 "A table the host does not have"; TRANSLATION 10 | `sutra/data#missing-table-reads-as-no-rows` | **code**: CF-1; not flipped |
+| SG-16 | A `table` entry whose table the host does not have? | A **failed entry**: `RCH-2070` wherever the host's tables are known, and in a view built all the same every panel that reads it is `error` with those words. Never a table with no rows. The existing text already said so (TRANSLATION 10 "a failed entry"; PROTOCOL 10.1 `rdp.table.unknown` → panel state `error`); the implementation and the case read it as no rows, which shows `0` for data that is not there | SPEC 2.4 "A table the host does not have"; TRANSLATION 10 | `sutra/data#missing-table-reads-as-no-rows` | **code**: CF-1, built in the third pass; the case replaced by `sutra/data#a-missing-table-fails-its-panels` |
 | SG-17 | Does a conflated `remove` survive when it cancels an `add` of the same window? | Yes: the `add` or `update` is dropped, the `remove` stays (the sender cannot know the reader never held the key; a `remove` of an absent key changes nothing) | PROTOCOL 8.4 | `protocol/live#a-conflated-stream-merges-by-key` | flip |
 | SG-18 | A step that changes a row a panel reads, with the same figure? | No frame: a patch is made only for what differs in the ViewModel | FORMAT 5.9 "The frames of a step"; TRANSLATION 10 | `patch/examples/patch#update-remove-and-a-no-op` | flip |
 | SG-19 | A repeated change id after the change moved (the case contradicted PROTOCOL 16)? | **The text changed, not the case.** A repeated id is never taken twice and answers the change as it stands now: the first answer until it has moved, then `sent` (with `version`), `rejected` or `failed`; only to its maker, `403` to anyone else. "The first answer again" would leave a retry after a lost answer saying `queued` for ever. Writes are a `can` addition never released, so no released behaviour changes | PROTOCOL 16 "Writes" | `protocol/write#a-repeated-change-id-answers-the-first-answer` | flip |
@@ -728,8 +733,8 @@ Each is behaviour the text now states and the implementation does not have. No f
 
 ### Seen while reading, not decided here
 
-- `avg` of a decimal column: the Java hosts answer the quotient to 16 significant digits as text, the Python host rounds to the column's scale; PROTOCOL 6.3 does not say and no case pins it.
-- `sum` over no value (every cell null, or no row): the Java hosts answer `0` (`"0"` for a decimal), the Python host `null`; not specified, no case.
+- `avg` of a decimal column: the Java hosts answer the quotient to 16 significant digits as text, the Python host rounds to the column's scale; PROTOCOL 6.3 does not say and no case pins it. **Decided by the lead: `L-2` (third pass).**
+- `sum` over no value (every cell null, or no row): the Java hosts answer `0` (`"0"` for a decimal), the Python host `null`; not specified, no case. **Decided by the lead: `L-1` (third pass).**
 - The generated `rachana.lang.json` and `sutra.schema.json` still describe 1.0 (SPEC 7.2 rule 6), so `data` carries its `since 1.1` only in SPEC 2.2 until the generator reads Rachana's own tables.
 
 ### Flipped in the second pass
@@ -788,9 +793,67 @@ Each is behaviour the text now states and the implementation does not have. No f
 | `sutra/data#decimal-cells-are-exact` | SG-20 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
 | `sutra/data#table-as-record-is-its-first-row` | SG-6 | jvm and nodet pass at every level from the case's own with the same bytes, noder the same wherever it answers |
 
+## Code fixes built (the third pass)
+
+Each fix makes the implementation do what the text (SG-1 to SG-24) already said, on every runtime: the JVM, the Node tools and runtime
+bundles and the Python V8 engine (both bundles) give the same results line byte for byte at 1.0, 1.1 and 1.2 (2673 cases; the runtime
+bundle equal to the tools bundle on every case it answers); `protocol_check.py --live` 147 of 147, `--python` 57 pass (the rest
+unsupported: no live tables). Against `g2/integration` at `6f621dc` with the same case files, the JVM's results differ on the new
+cases only: every case that existed before answers byte for byte as before, at every level.
+
+| Id | Built in | Behaviour now |
+|---|---|---|
+| CF-1 | `rachana-core` `LiveScreen` (`missing`, `DataPlan.readers`), so the JS bundles (screen operation `missing`); `TableClient.load` and `screen.js` mark a table answered `rdp.table.unknown` missing; the conformance runner marks every table not in `given.tables` missing | a `table` entry whose table the host does not have is failed: every panel that reads `$.<entry>` (itself, its parts or body) is `error: "RCH-2070 the host has no table '<table>' (data '<entry>')"`, `empty: true`, no `data`; the others bind |
+| CF-2 | `rachana-core` `ElType.join`, `Checker` (`?:`, `??`, `switch`, `if`, `coalesce`, `least`, `greatest`) | one order-independent join (SPEC 4.14 rule 1); a misfit among the values of `switch`, `if`, `coalesce` is `RCH-9127` at the value: "the values of switch have different types (integer and string)" |
+| CF-3 | `Checker.isoDate` | a timestamp text may end in `Z` or `±hh:mm` (SPEC 4.14 rule 6), in `date('…')`, `timestamp('…')` and a text compared with a date |
+| CF-4 | Python `server.py` `_aggregate` | a decimal `sum` exact with the digits of the values it adds (its own group), `min`/`max` the cell as held; the JVM host (`RowQuery`) already did |
+| CF-5 | `rachana-live` `LiveTables.can` | a table paged from its source (tier `columns` or `query`) leaves `group` out of `can`, in the table list (from its source's tier before it is open) and in its schema |
+
+**Lead decisions** (written into PROTOCOL 3.1 and 6.3):
+
+| Id | Decision | Built in |
+|---|---|---|
+| L-1 | `sum` over no value (no row, or every cell null) is `0` (`"0"` for a decimal column); `count` and `distinct` `0`; every other aggregate `null` | Python `server.py` (it gave `null`); the JVM `RowQuery` and the JS bundles (the same `RowQuery`) already did |
+| L-2 | `avg` of a decimal column is exact: the exact sum divided as SPEC 4.16 rule 3 divides (decimal128, 34 significant digits, half to even), trailing zeros dropped (a computed value) | `RowQuery` (it gave 16 digits), so the JS bundles; Python `server.py` (it rounded to the column's scale) |
+
+**Level 1.0 behaviour.** Only checked mode changes at 1.0 (it is not level-bound), in corners no case pinned before: a conditional
+whose first branch is an integer and the second a decimal (`$.n > 0 ? 0 : $.mtm`) is `decimal`, was `integer`; `date` against
+`timestamp` branches give `timestamp`, was `date`; `switch` is the join of its answers (was its first answer's type) and answers that
+do not fit are `RCH-9127` (were accepted); `if(c, a, b)` is the join of `a` and `b` (was the first value's type), a misfit `RCH-9127`;
+`coalesce`, `least` and `greatest` are the join of their arguments (were the last argument's type), a `coalesce` misfit `RCH-9127`
+(was accepted); `timestamp('…Z')`, `timestamp('…+05:30')`, the same in `date('…')` and a timestamp text with a zone compared with a
+date or timestamp are accepted (were `RCH-9127`). Unchecked evaluation, the ViewModel at 1.0 and every 1.0 case are unchanged.
+
+### Cases added or replaced
+
+| Case id | For | Evidence |
+|---|---|---|
+| `el/check#check-join-is-order-independent-0-mtm` | CF-2 | SPEC 4.14 rule 1 read; jvm, nodet, pyv8t (and noder, pyv8r where they answer) pass with the same bytes at 1.0, 1.1, 1.2; fails before the fix (`integer`) |
+| `el/check#check-join-date-and-timestamp` | CF-2 | as above (before: `date`) |
+| `el/check#check-switch-joins-its-answers` | CF-2 | SPEC 4.14 rules 1, 2; as above (before: `integer`) |
+| `el/check#check-switch-answers-that-do-not-fit` | CF-2 | as above (before: `integer`, no problem) |
+| `el/check#check-coalesce-joins-its-arguments` | CF-2 | as above (before: `integer`) |
+| `el/check#check-coalesce-arguments-that-do-not-fit` | CF-2 | as above (before: `string`, no problem) |
+| `el/check#check-if-joins-its-two-values` | CF-2 | as above (before: `integer`) |
+| `el/check#check-least-joins-its-arguments` | CF-2 | as above (passed before too: the last argument was the decimal) |
+| `el/check#check-timestamp-with-z` | CF-3 | SPEC 4.14 rule 6, 4.2, PROTOCOL 3.1; as above (before: `RCH-9127`) |
+| `el/check#check-timestamp-with-an-offset` | CF-3 | as above (before: `RCH-9127`) |
+| `sutra/data#a-missing-table-fails-its-panels` | CF-1 | replaces `sutra/data#missing-table-reads-as-no-rows` (VERIFIED SG-16); SPEC 2.4, TRANSLATION 10 read; jvm, nodet, noder, pyv8t, pyv8r pass with the same bytes at 1.1 and 1.2 |
+| `sutra/data#a-missing-table-leaves-the-other-panels` | CF-1 | as above (the other panel binds) |
+| `live/overlay#a-paged-table-does-not-offer-group` | CF-5 | PROTOCOL 2, 16 read; `protocol_check.py --live` pass |
+| `protocol/host#a-decimal-sum-has-the-digits-of-its-own-group` | CF-4 | PROTOCOL 3.1, 6.3 read, arithmetic recomputed; `--live` and `--python` pass |
+| `protocol/host#a-sum-of-nothing-is-0` | L-1 | PROTOCOL 6.3; `--live` and `--python` pass (the Python host gave `null` before) |
+| `protocol/host#a-decimal-avg-is-divided-to-34-digits` | L-2 | PROTOCOL 3.1, SPEC 4.16 rule 3; `--live` and `--python` pass (before: `1.666666666666667` on the JVM, rounded to the column's scale in Python) |
+
+The JS bundles' `query` (the static-files host, `RowQuery` compiled by TeaVM) gives the same answers for `L-1` and `L-2` as the JVM host
+(checked by calling both bundles' `query` on the cases' tables).
+
+### Flipped in the third pass
+
+| Case id | Evidence |
+|---|---|
+| `el/aggregates-host-values` (all 12: `sum-of-a-filtered-list`, `net-of-two-filtered-lists`, `sum-of-nothing-is-0`, `sum-of-an-absent-list-is-0`, `avg-of-an-absent-list-is-empty`, `sum-of-a-masked-list-is-masked`, `sum-of-a-number-is-a-problem`, `sum-of-a-text-is-a-problem`, `sum-of-a-record-is-a-problem`, `avg-of-a-text-is-a-problem`, `sum-of-a-number-at-1-0-is-0`, `avg-of-a-text-at-1-0-is-empty`) | read against SPEC 5.1 by an independent reviewer (a Fable review lane that neither built the cases nor this fix), who found every expectation in agreement; jvm, nodet, pyv8t (and noder, pyv8r where they answer) pass with the same bytes at 1.0, 1.1 and 1.2 |
+
 ## Not flipped
 
-| Case id | Reason | Detail |
-|---|---|---|
-| `sutra/data#missing-table-reads-as-no-rows` | code fix CF-1 (SG-16) | the expectation (`0`) is what the implementation does and is wrong against SPEC 2.4, TRANSLATION 10 and PROTOCOL 10.1; the case is replaced when CF-1 is built |
-| `el/aggregates-host-values` (12 cases) | outside this pass | added on `g2/integration` (`230b507`) after this pass; left for the independent review lane (read against SPEC 5.1, 5.7, 4.9) |
+None: every case below `conformance/1/` is verified.

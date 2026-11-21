@@ -193,7 +193,7 @@ public final class Checker {
                     err(Problem.LANGUAGE, "the two values of '??' have different types (" + a.word() + " and " + b.word() + ")",
                             "make both numbers, or both texts", x);
                 }
-                yield a == ElType.NONE ? b : a;
+                yield ElType.join(a, b);
             }
             case Expr.RecordLit r -> err(Problem.LATER, "a record is not yet in a table or a model", null, r);
             case Expr.Slice x -> err(Problem.LATER, "a slice is not yet in a table or a model", null, x);
@@ -247,7 +247,7 @@ public final class Checker {
                     err(Problem.LANGUAGE, "the two values of '" + spelling.conditional() + "' have different types (" + a.word() + " and "
                             + b.word() + ")", "make both numbers, or both texts", x);
                 }
-                yield a == ElType.NONE ? b : a;
+                yield ElType.join(a, b);
             }
             case Expr.Binary b -> COMPARISONS.contains(b.op()) ? compare(b, b.op(), b.l(), b.r()) : arithmetic(b, b.op(), b.l(), b.r());
             case Expr.In i -> in(i);
@@ -481,9 +481,9 @@ public final class Checker {
                 || b.temporal() && left instanceof Expr.Lit s2 && s2.value() instanceof String t2 && isoDate(t2);
     }
 
-    /** True for a text in ISO date or timestamp form. */
+    /** True for a text in ISO 8601 date or timestamp form (SPEC 4.14 rule 6): a timestamp with no zone, {@code Z} or an offset {@code ±hh:mm}. */
     public static boolean isoDate(String s) {
-        return s.matches("\\d{4}-\\d{2}-\\d{2}([T ]\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?)?");
+        return s.matches("\\d{4}-\\d{2}-\\d{2}([T ]\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})?)?");
     }
 
     private void masked(Expr side, String op) {
@@ -573,6 +573,7 @@ public final class Checker {
                     + " deep", "make the inner part a measure", at);
         }
         ElType first = ElType.ANY;
+        List<List<ElType>> typed = new ArrayList<>();
         try {
             for (int i = 0; i < f.params().size(); i++) {
                 Signatures.Param p = f.params().get(i);
@@ -580,6 +581,7 @@ public final class Checker {
                 if (rowCondition) {
                     aggregateDepth++;
                 }
+                typed.add(new ArrayList<>());
                 try {
                     for (Expr a : bound.get(i)) {
                         if (a instanceof Expr.ListLit l && i == 1 && ("any_of".equals(f.name()) || "all_of".equals(f.name()))) {
@@ -587,6 +589,7 @@ public final class Checker {
                             continue;
                         }
                         ElType t = argument(f, shown, p, a);
+                        typed.get(i).add(t);
                         if (i == 0) {
                             first = t;
                         }
@@ -608,10 +611,52 @@ public final class Checker {
         if (f.takesAggregate()) {
             sawAggregate = true;
         }
-        if ("switch".equals(name) && args.size() >= 3) {
-            return visitQuietly(args.get(2));
+        switch (f.name()) {                                                    // a value chosen among several: their join (SPEC 4.14 rule 1)
+            case "switch" -> {
+                if (args.size() < 3) {
+                    break;
+                }
+                List<Expr> answers = new ArrayList<>();
+                for (int i = 2; i < args.size(); i += 2) {
+                    answers.add(args.get(i));
+                }
+                if (args.size() % 2 == 0) {
+                    answers.add(args.get(args.size() - 1));                    // the else
+                }
+                return join(shown, answers.stream().map(this::visitQuietly).toList(), answers);
+            }
+            case "if" -> {
+                List<Expr> values = new ArrayList<>(bound.get(1));
+                values.addAll(bound.get(2));
+                List<ElType> types = new ArrayList<>(typed.get(1));
+                types.addAll(typed.get(2));
+                return join(shown, types, values);
+            }
+            case "coalesce", "least", "greatest" -> {
+                return join(shown, typed.get(0), bound.get(0));
+            }
+            default -> {
+            }
         }
         return "same".equals(f.returns()) ? first : ElType.ofReturn(f.returns());
+    }
+
+    /** The join of the values a function chooses among (SPEC 4.14 rule 1): each value that does not fit the ones before is RCH-9127 at it. */
+    private ElType join(String shown, List<ElType> types, List<Expr> at) {
+        if (types.isEmpty()) {
+            return ElType.ANY;
+        }
+        ElType j = ElType.NONE;
+        for (int i = 0; i < types.size(); i++) {
+            ElType t = types.get(i);
+            if (!j.comparable(t)) {
+                err(Problem.LANGUAGE, "the values of " + shown + " have different types (" + j.word() + " and " + t.word() + ")",
+                        "make them all numbers, or all texts", at.get(i));
+                continue;
+            }
+            j = ElType.join(j, t);
+        }
+        return j;
     }
 
     /** The type of an argument already checked (the problems it has are already recorded). */

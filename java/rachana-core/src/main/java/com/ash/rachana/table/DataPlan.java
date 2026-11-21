@@ -270,6 +270,23 @@ public final class DataPlan {
         return true;
     }
 
+    /**
+     * The ids of the screen's panels (as the ViewModel lists them: a panel with its parts and body) that read {@code $.<entry>}, in the
+     * order written: the readers a failed entry turns to {@code error} (SPEC 2.4, TRANSLATION 10).
+     */
+    static List<String> readers(Sutra sutra, String entry) {
+        Pattern reads = Pattern.compile("\\$\\." + Pattern.quote(entry) + "(?![A-Za-z0-9_])");
+        List<String> out = new ArrayList<>();
+        for (Panel p : sutra.panels()) {
+            List<Panel> all = new ArrayList<>();
+            flatten(List.of(p), all);
+            if (all.stream().anyMatch(x -> mentions(x, reads))) {
+                out.add(p.id());
+            }
+        }
+        return out;
+    }
+
     private static void flatten(List<Panel> in, List<Panel> out) {
         for (Panel p : in) {
             out.add(p);

@@ -163,3 +163,16 @@ cases:
         expect: { status: 204 }
       - request: { method: POST, path: /tables/orders/query, body: { columns: [id], sort: [ { col: id } ], filter: { op: "==", args: [ { col: book }, { lit: A } ] } } }
         expect: { status: 200, body: { values: [ [a], [b], [c] ], total: 3 } }
+
+  - id: a-paged-table-does-not-offer-group
+    kind: protocol
+    source: "PROTOCOL 2 (a capability is never declared and then refused), 16 (Capabilities; a table paged from its source)"
+    note: code fix CF-5 (SG-1); the table list (before the table is open) and the schema say the same; a grouped query stays refused
+    fixture: *paged
+    steps:
+      - request: { method: GET, path: /tables }
+        expect: { status: 200, body: { tables: [ { name: orders, can: [page, sort, filter, count, offset, changes, changes.filter, changes.window, replay, arrow] } ] } }
+      - request: { method: GET, path: /tables/orders }
+        expect: { status: 200, body: { can: [page, sort, filter, count, offset, changes, changes.filter, changes.window, replay, arrow] } }
+      - request: { method: POST, path: /tables/orders/query, body: { group: { by: [book], values: [ { name: n, agg: count } ] } } }
+        expect: { status: 422, body: { error: { code: rdp.query.unsupported, operation: group } } }

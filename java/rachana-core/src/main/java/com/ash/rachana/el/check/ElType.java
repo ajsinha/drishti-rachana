@@ -61,6 +61,30 @@ public enum ElType {
         return NUMBER;
     }
 
+    /**
+     * The join of two types (SPEC 4.14 checked mode in detail, rule 1), whatever the order: {@link #ANY} with anything is {@link #ANY}; {@link
+     * #NONE} gives the other; equal types that type; two numeric types as {@code +} joins them; {@code date} with {@code timestamp} gives
+     * {@code timestamp}. Types that do not fit each other have no join: the caller reports them and keeps the first.
+     */
+    public static ElType join(ElType a, ElType b) {
+        if (a == ANY || b == ANY) {
+            return ANY;
+        }
+        if (a == NONE || a == b) {
+            return b;
+        }
+        if (b == NONE) {
+            return a;
+        }
+        if (a.numeric() && b.numeric()) {
+            return arithmetic(a, b);
+        }
+        if (a.temporal() && b.temporal()) {
+            return TIMESTAMP;
+        }
+        return a;
+    }
+
     /** The type of a column type word ({@code string}, {@code integer}, {@code decimal}, {@code boolean}, {@code date}, {@code timestamp}). */
     public static ElType ofColumn(String type) {
         if (type == null) {

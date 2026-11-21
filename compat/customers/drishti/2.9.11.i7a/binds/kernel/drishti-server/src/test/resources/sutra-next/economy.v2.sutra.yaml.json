@@ -1,0 +1,105 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/economy.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "GROWTH_PATH": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SECTORS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "GDP_PATH": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "ECONOMY_ID": "ECONOMY_ID-U1",
+    "NAME": "NAME-X1",
+    "REGION_NAME": "REGION_NAME-P1",
+    "GDP_USD_BN": 22,
+    "GDP_PER_CAPITA": -4,
+    "GROWTH": 155,
+    "INFLATION": 291.11,
+    "UNEMPLOYMENT": 461,
+    "DEBT_TO_GDP": 754,
+    "ISO3": -103,
+    "REGION_GROUP": "REGION_GROUP-Y1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "economy"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

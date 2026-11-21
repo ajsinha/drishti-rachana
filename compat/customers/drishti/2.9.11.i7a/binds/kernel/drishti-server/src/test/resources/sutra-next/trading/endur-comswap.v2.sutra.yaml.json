@@ -1,0 +1,96 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/trading/endur-comswap.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/trading",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "SOURCE_SYSTEM": "SOURCE_SYSTE-B1",
+    "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
+    "TRADE_ID": "TRADE_ID-P1",
+    "COUNTERPARTY": "COUNTERPARTY-N1",
+    "RISK_LINKS": {
+     "TRADE_CURRENCY": "TRADE_CURREN-P1",
+     "TRADE_CURRENCY_FROM": "2026-01-10"
+    },
+    "CURRENCY": "CURRENCY-Z1",
+    "BUY_SELL_CODE": "BUY_SELL_COD-F1",
+    "LEGS": [
+     {
+      "LEG_ID": "LEG_ID-R1",
+      "INDEX": {
+       "NAME": "NAME-X1"
+      },
+      "FLOAT_SPREAD": 553,
+      "INDEX_LOCATION_NAME": "INDEX_LOCATI-W1",
+      "RESET_CONVENTION": 300.59
+     },
+     {
+      "LEG_ID": "LEG_ID-S2",
+      "INDEX": {
+       "NAME": "NAME-Y2"
+      },
+      "FLOAT_SPREAD": 903,
+      "INDEX_LOCATION_NAME": "INDEX_LOCATI-X2",
+      "RESET_CONVENTION": 650.59
+     },
+     {
+      "LEG_ID": "LEG_ID-T3",
+      "INDEX": {
+       "NAME": "NAME-Z3"
+      },
+      "FLOAT_SPREAD": 1003,
+      "INDEX_LOCATION_NAME": "INDEX_LOCATI-Y3",
+      "RESET_CONVENTION": 750.59
+     }
+    ],
+    "QUANTITY": 294,
+    "TRADE_DATE": "2026-02-11",
+    "MATURITY_DATE": "2026-03-12",
+    "TRADE_STATUS": "TRADE_STATUS-U1",
+    "TRADE_VERSION": 628,
+    "PORTFOLIO": -233,
+    "PRODUCT_SUB_TYPE": "PRODUCT_SUB_-G1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "endur-comswap"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

@@ -1,0 +1,96 @@
+{
+ "file": "modules/market-data/packs/market-data/sutras/market-data/bond.v1.sutra.yaml",
+ "group": "modules/market-data/packs/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TERMS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "COUPONS": [
+     {
+      "DATE": "2026-04-22",
+      "AMOUNT": 146
+     },
+     {
+      "DATE": "2026-05-25",
+      "AMOUNT": 496
+     },
+     {
+      "DATE": "2026-06-10",
+      "AMOUNT": 596
+     }
+    ],
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "ISIN": "ISIN-H1",
+    "ISSUER_NAME": "ISSUER_NAME-B1",
+    "COUPON": 305.93,
+    "MATURITY": "2026-02-20",
+    "PRICE": 757,
+    "YIELD": 605.45,
+    "Z_SPREAD": 566.53,
+    "MOD_DURATION": 535.85,
+    "RATING": "RATING-N1",
+    "ISSUER": 116
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "bond"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

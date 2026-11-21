@@ -1,0 +1,83 @@
+{
+ "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/cyber-incident.v1.sutra.yaml",
+ "group": "examples/packs/operational-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "timeline": [
+     {
+      "at": "2026-04-13",
+      "step": 140
+     },
+     {
+      "at": "2026-05-16",
+      "step": 490
+     },
+     {
+      "at": "2026-06-19",
+      "step": 590
+     }
+    ],
+    "systems": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "incidentId": "INCIDENTID-L1",
+    "title": 181,
+    "severity": 694,
+    "detectHours": 456.01,
+    "containHours": -8.77,
+    "recordsAffected": 897.65,
+    "status": "STATUS-Y1",
+    "legalEntity": "LEGALENTITY-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "cyber-incident"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

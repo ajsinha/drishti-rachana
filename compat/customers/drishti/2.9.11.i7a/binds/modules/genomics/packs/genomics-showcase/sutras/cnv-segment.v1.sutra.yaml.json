@@ -1,0 +1,25 @@
+{
+ "file": "modules/genomics/packs/genomics-showcase/sutras/cnv-segment.v1.sutra.yaml",
+ "group": "modules/genomics/packs/genomics-showcase",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "SEGMENT_ID": "SEGMENT_ID-P1",
+    "SAMPLE_ID": "SAMPLE_ID-G1",
+    "CHROM": 343,
+    "COPY_NUMBER": 608,
+    "CALL": 120,
+    "START": "2026-05-14",
+    "END": "2026-03-21",
+    "GENE": 442
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

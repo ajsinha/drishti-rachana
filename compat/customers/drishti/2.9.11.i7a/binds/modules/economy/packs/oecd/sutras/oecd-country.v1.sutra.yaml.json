@@ -1,0 +1,84 @@
+{
+ "file": "modules/economy/packs/oecd/sutras/oecd-country.v1.sutra.yaml",
+ "group": "modules/economy/packs/oecd",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "MEASURES": [
+     {
+      "OECD_SERIES": 589.87,
+      "TITLE": "TITLE-X1",
+      "LATEST": 449.41,
+      "UNIT": 271,
+      "PERIOD": -199.39,
+      "CHANGE": 436.25
+     },
+     {
+      "OECD_SERIES": 689.87,
+      "TITLE": "TITLE-Y2",
+      "LATEST": 549.41,
+      "UNIT": 621,
+      "PERIOD": 150.61,
+      "CHANGE": 786.25
+     },
+     {
+      "OECD_SERIES": 539.87,
+      "TITLE": "TITLE-Z3",
+      "LATEST": 399.41,
+      "UNIT": 721,
+      "PERIOD": 250.61,
+      "CHANGE": 886.25
+     }
+    ],
+    "COUNTRY_ID": "COUNTRY_ID-P1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "LEADING_INDICATOR": 874.33,
+    "UNEMPLOYMENT": 461,
+    "INFLATION": 291.11,
+    "GDP_GROWTH": 208.67,
+    "INFLATION_PERIOD": 321,
+    "ISO3": -103
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "oecd-country"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

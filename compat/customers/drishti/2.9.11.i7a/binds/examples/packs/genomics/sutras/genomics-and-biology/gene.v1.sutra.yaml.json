@@ -1,0 +1,97 @@
+{
+ "file": "examples/packs/genomics/sutras/genomics-and-biology/gene.v1.sutra.yaml",
+ "group": "examples/packs/genomics",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "expression": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "variants": [
+     {
+      "id": "ID-H1",
+      "protein": 210,
+      "significance": -240.13
+     },
+     {
+      "id": "ID-I2",
+      "protein": 310,
+      "significance": 109.87
+     },
+     {
+      "id": "ID-J3",
+      "protein": 160,
+      "significance": 209.87
+     }
+    ],
+    "identifiers": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "geneId": "GENEID-G1",
+    "symbol": 503,
+    "name": "NAME-D1",
+    "location": 134,
+    "length": 264,
+    "strand": 893.89,
+    "transcripts": 218.15,
+    "protein": 210
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "gene"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

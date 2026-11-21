@@ -1,0 +1,42 @@
+{
+ "file": "modules/capital-markets/packs/us-equities/sutras/index-membership.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/us-equities",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ROWS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "INDEX": "INDEX-Q1",
+    "NAME": "NAME-X1",
+    "MEMBERS": 567.35
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

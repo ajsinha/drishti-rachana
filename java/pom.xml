@@ -37,6 +37,7 @@
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->
     <rachana.reference.classpath></rachana.reference.classpath>
     <rachana.compat.runtime>core</rachana.compat.runtime>
+    <rachana.compat.binds.out></rachana.compat.binds.out>
     <rachana.java.root>${maven.multiModuleProjectDirectory}</rachana.java.root>
     <rachana.repo.root>${maven.multiModuleProjectDirectory}/..</rachana.repo.root>
   </properties>

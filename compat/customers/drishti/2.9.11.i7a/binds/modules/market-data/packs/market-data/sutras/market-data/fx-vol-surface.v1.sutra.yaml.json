@@ -1,0 +1,82 @@
+{
+ "file": "modules/market-data/packs/market-data/sutras/market-data/fx-vol-surface.v1.sutra.yaml",
+ "group": "modules/market-data/packs/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "GRID": [
+     {
+      "P_10": 454.97,
+      "P_25": 90,
+      "ATM": -41.29,
+      "C_25": 592.19,
+      "C_10": 351.35,
+      "EXPIRY": "2026-05-14"
+     },
+     {
+      "P_10": 304.97,
+      "P_25": -59,
+      "ATM": 308.71,
+      "C_25": 442.19,
+      "C_10": 701.35,
+      "EXPIRY": "2026-06-17"
+     },
+     {
+      "P_10": 654.97,
+      "P_25": 290,
+      "ATM": 408.71,
+      "C_25": 792.19,
+      "C_10": 801.35,
+      "EXPIRY": "2026-07-20"
+     }
+    ],
+    "SURFACE_ID": "SURFACE_ID-V1",
+    "PAIR": 36,
+    "ATM_1M": 428.87,
+    "ATM_1Y": -203,
+    "RR_1Y": 538.13,
+    "FX_SPOT": 151.09
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "fx-vol-surface"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

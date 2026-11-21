@@ -1,0 +1,22 @@
+{
+ "file": "modules/genomics/packs/protein-engineering/sutras/residue-contact.v1.sutra.yaml",
+ "group": "modules/genomics/packs/protein-engineering",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "CONTACT_ID": "CONTACT_ID-C1",
+    "PROTEIN": 640,
+    "POS_A": 595.01,
+    "POS_B": 312.47,
+    "DISTANCE": 505.97
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

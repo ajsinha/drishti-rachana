@@ -1,0 +1,80 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/region-economy.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "FACTS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "REGION_ID": "REGION_ID-K1",
+    "NAME": "NAME-X1",
+    "REGION_CODE": "REGION_CODE-W1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "POPULATION_M": 318,
+    "GDP_USD_BN": 22,
+    "GDP_PER_CAPITA": -4,
+    "ECONOMY": 141.49
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "region-economy"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

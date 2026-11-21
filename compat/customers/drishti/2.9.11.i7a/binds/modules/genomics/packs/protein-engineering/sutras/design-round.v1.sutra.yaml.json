@@ -1,0 +1,28 @@
+{
+ "file": "modules/genomics/packs/protein-engineering/sutras/design-round.v1.sutra.yaml",
+ "group": "modules/genomics/packs/protein-engineering",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ROUND_ID": "ROUND_ID-C1",
+    "ROUND": 627.29,
+    "METHOD": "METHOD-W1",
+    "BEST_ACTIVITY": 358.07,
+    "MEDIAN_ACTIVITY": 658,
+    "PROTEIN": 640,
+    "STARTED": "2026-06-15",
+    "DESIGNS": 181.93,
+    "BEST_DESIGN": 557.39,
+    "TRAPPED": -195.85,
+    "NOTE": "NOTE-M1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

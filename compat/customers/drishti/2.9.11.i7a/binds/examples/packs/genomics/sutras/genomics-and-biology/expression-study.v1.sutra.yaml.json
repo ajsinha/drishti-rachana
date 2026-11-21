@@ -1,0 +1,65 @@
+{
+ "file": "examples/packs/genomics/sutras/genomics-and-biology/expression-study.v1.sutra.yaml",
+ "group": "examples/packs/genomics",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "results": [
+     {
+      "gene": 87,
+      "log2fc": 553,
+      "baseMean": 527,
+      "padj": 580.67
+     },
+     {
+      "gene": 187,
+      "log2fc": 653,
+      "baseMean": 877,
+      "padj": 930.67
+     },
+     {
+      "gene": 37,
+      "log2fc": 503,
+      "baseMean": 977,
+      "padj": 1030.67
+     }
+    ],
+    "studyId": "STUDYID-I1",
+    "title": 181,
+    "comparison": 281,
+    "sampleCount": 256,
+    "significant": 508
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "expression-study"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,56 @@
+{
+ "file": "modules/banking/packs/trading/sutras/pages/book-desk.v1.sutra.yaml",
+ "group": "modules/banking/packs/trading",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TRADES": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PORTFOLIO": -233,
+    "TRADE_COUNT": 622.07,
+    "NOTIONAL": 155,
+    "PRODUCT_TYPES": "PRODUCT_TYPE-X1",
+    "LAST_MATURITY": "2026-05-23"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "book-desk"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

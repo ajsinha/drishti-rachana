@@ -10,7 +10,7 @@ and Drishti's reference jars, and writes compat/customers/drishti/<version>/:
   compiled/<file>.json   per Sutra: problem list, canonical model text, plan (null in i7a: the reference has no plan)
   problems/ cases/       the Drishti-profile conformance cases of this repository (problem cases; every other kind)
   profile/               the declarative half of the profile (spec/1/rachana.lang.json entries owned by the profile), level.txt
-  binds/                 later (the binder moves into Core at v0.10.0)
+  binds/                 written by corpus_binds.py (the reference binder over synthetic records, gate finding F13)
   MANIFEST.sha384        a hash per file
 
     python3 tools/regime/corpus_export.py --drishti ~/IdeaProjects/drishti --classpath-file CP.txt [--tag v2.9.11.i_7a]

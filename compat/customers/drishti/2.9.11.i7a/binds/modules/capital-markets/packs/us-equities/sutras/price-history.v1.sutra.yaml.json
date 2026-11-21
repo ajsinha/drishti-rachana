@@ -1,0 +1,77 @@
+{
+ "file": "modules/capital-markets/packs/us-equities/sutras/price-history.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/us-equities",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SYMBOL": "SYMBOL-L1",
+    "NAME": "NAME-X1",
+    "PRICE": 757,
+    "CURRENCY": "CURRENCY-Z1",
+    "CHANGE": 436.25,
+    "CHANGE_PCT": 702,
+    "EXCHANGE": 20.17,
+    "AS_OF": "2026-07-25",
+    "ANALYTICS": {
+     "RETURN_1M": -114,
+     "RETURN_3M": 888,
+     "RETURN_6M": 479,
+     "RETURN_PERIOD": 742,
+     "VOLATILITY": 619,
+     "MAX_DRAWDOWN": 270,
+     "BETA": 453.13,
+     "BENCHMARK": 220.61,
+     "CORRELATION": 217.93,
+     "OBSERVATIONS": 757
+    },
+    "DAY_LOW": 897.79,
+    "DAY_HIGH": 144,
+    "FIFTY_TWO_WEEK_LOW": 667,
+    "FIFTY_TWO_WEEK_HIGH": 586.25,
+    "VOLUME": 746.81,
+    "MARKET_STATE": "MARKET_STATE-I1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "price-history"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

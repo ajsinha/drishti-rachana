@@ -1,0 +1,77 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/trading/cmd-swap.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/trading",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "SOURCE_SYSTEM": "SOURCE_SYSTE-B1",
+    "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
+    "TRADE_ID": "TRADE_ID-P1",
+    "COUNTERPARTY": "COUNTERPARTY-N1",
+    "RISK_LINKS": {
+     "TRADE_CURRENCY": "TRADE_CURREN-P1",
+     "TRADE_CURRENCY_FROM": "2026-01-10"
+    },
+    "CURRENCY": "CURRENCY-Z1",
+    "BUY_SELL_CODE": "BUY_SELL_COD-F1",
+    "LEGS": [
+     {
+      "LEG_ID": "LEG_ID-R1"
+     },
+     {
+      "LEG_ID": "LEG_ID-S2"
+     },
+     {
+      "LEG_ID": "LEG_ID-T3"
+     }
+    ],
+    "QUANTITY": 294,
+    "TRADE_DATE": "2026-02-11",
+    "MATURITY_DATE": "2026-03-12",
+    "TRADE_STATUS": "TRADE_STATUS-U1",
+    "TRADE_VERSION": 628,
+    "PORTFOLIO": -233
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "cmd-swap"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

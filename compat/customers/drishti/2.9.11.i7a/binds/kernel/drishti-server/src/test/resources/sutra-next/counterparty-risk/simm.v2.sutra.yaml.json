@@ -1,0 +1,67 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk/simm.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "RISK_CLASSES": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "CALC_ID": "CALC_ID-A1",
+    "TOTAL": 570,
+    "POSTED": 896,
+    "RECEIVED": 127.99,
+    "VERSION": 756,
+    "NETTING_SET": 67
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "simm"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

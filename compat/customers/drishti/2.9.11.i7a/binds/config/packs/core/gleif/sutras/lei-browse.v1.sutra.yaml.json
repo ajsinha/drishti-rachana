@@ -1,0 +1,80 @@
+{
+ "file": "config/packs/core/gleif/sutras/lei-browse.v1.sutra.yaml",
+ "group": "config/packs/core/gleif",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "GROUP_ROWS": [
+     {
+      "NAME": "NAME-X1",
+      "COUNTRY": "COUNTRY-I1",
+      "SEGMENT": 371.87,
+      "GLEIF_GROUP_SIZE": "GLEIF_GROUP_-M1",
+      "LEI": "LEI-Z1"
+     },
+     {
+      "NAME": "NAME-Y2",
+      "COUNTRY": "COUNTRY-J2",
+      "SEGMENT": 721.87,
+      "GLEIF_GROUP_SIZE": "GLEIF_GROUP_-N2",
+      "LEI": "LEI-A2"
+     },
+     {
+      "NAME": "NAME-Z3",
+      "COUNTRY": "COUNTRY-K3",
+      "SEGMENT": 821.87,
+      "GLEIF_GROUP_SIZE": "GLEIF_GROUP_-O3",
+      "LEI": "LEI-B3"
+     }
+    ],
+    "BY_SEGMENT": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "BY_COUNTRY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "GROUP_ID": "GROUP_ID-D1",
+    "NAME": "NAME-X1",
+    "MEMBERS": 567.35,
+    "GROUPS": "GROUPS-X1",
+    "COUNTRIES": 429,
+    "LAPSED": 139.13,
+    "LATE_RENEWALS": 592.93
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

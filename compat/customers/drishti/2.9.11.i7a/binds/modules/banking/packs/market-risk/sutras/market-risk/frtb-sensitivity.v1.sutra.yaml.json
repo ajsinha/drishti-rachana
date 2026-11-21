@@ -1,0 +1,87 @@
+{
+ "file": "modules/banking/packs/market-risk/sutras/market-risk/frtb-sensitivity.v1.sutra.yaml",
+ "group": "modules/banking/packs/market-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "SENSITIVITIES": [
+     {
+      "RISK_CLASS": "RISK_CLASS-Z1",
+      "BUCKET": 626.83,
+      "MEASURE": 215,
+      "VALUE": 855.53
+     },
+     {
+      "RISK_CLASS": "RISK_CLASS-A2",
+      "BUCKET": 726.83,
+      "MEASURE": 565,
+      "VALUE": 705.53
+     },
+     {
+      "RISK_CLASS": "RISK_CLASS-B3",
+      "BUCKET": 576.83,
+      "MEASURE": 665,
+      "VALUE": 1055.53
+     }
+    ],
+    "BY_CLASS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "RESULT_ID": "RESULT_ID-X1",
+    "BOOK": "BOOK-L1",
+    "DELTA_CHARGE": 560,
+    "VEGA_CHARGE": 28,
+    "CURVATURE_CHARGE": 555,
+    "TOTAL": 570
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "frtb-sensitivity"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

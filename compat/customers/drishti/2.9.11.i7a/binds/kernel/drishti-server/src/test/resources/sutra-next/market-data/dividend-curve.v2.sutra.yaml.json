@@ -1,0 +1,65 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/dividend-curve.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "POINTS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "CURVE_ID": "CURVE_ID-Z1",
+    "UNDERLIER": 162,
+    "DIVIDEND_YIELD": "2026-01-19",
+    "UNDERLYING_EQUITY": 582.17
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "dividend-curve"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

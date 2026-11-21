@@ -157,6 +157,24 @@ def _panels(doc):
     return out
 
 
+HOST_KINDS = ("provenance", "links")
+
+
+def host_panels(view_text):
+    """The answers of the host's own panel binders in a reference view (the profile's kinds: provenance, links), as recorded calls
+    {hook: panel, args: [kind, id], answer: the panel's data}, panels of tabs included."""
+    calls = []
+
+    def walk(panels):
+        for p in panels or []:
+            if p.get("kind") in HOST_KINDS and "data" in p:
+                calls.append({"hook": "panel", "args": [p["kind"], p["id"]], "answer": p["data"]})
+            for t in ((p.get("data") or {}).get("tabs") or []) if isinstance(p.get("data"), dict) else []:
+                walk(t.get("panels"))
+    walk(json.loads(view_text).get("panels"))
+    return calls
+
+
 def sha384(b):
     return hashlib.sha384(b).hexdigest()
 
@@ -185,11 +203,15 @@ def main(argv=None):
     ap.add_argument("--corpus", default=str(ROOT / "compat/customers/drishti/2.9.11.i7a"))
     ap.add_argument("--classpath-file", help="the engine class path at the tag, built already (skips the scratch build)")
     ap.add_argument("--java-home", default=os.environ.get("RACHANA_JAVA_HOME", "/usr/lib/jvm/java-21-openjdk-amd64"))
+    ap.add_argument("--from-binds", action="store_true", help="reuse the reference's views already in binds/ (rewrite the recordings and the manifest only)")
+    ap.add_argument("--scratch", help="where the scratch folder is made (default: the system's temporary folder); removed at the end")
     a = ap.parse_args(argv)
     corpus = Path(a.corpus)
-    scratch = Path(tempfile.mkdtemp(prefix="rachana-binds-"))
+    scratch = Path(tempfile.mkdtemp(prefix="rachana-binds-", dir=a.scratch))
     try:
-        if a.classpath_file:
+        if a.from_binds:
+            cp = None
+        elif a.classpath_file:
             cp = Path(a.classpath_file).read_text().strip()
         elif a.drishti:
             cp = engine_classpath(Path(a.drishti).expanduser(), a.tag, scratch, a.java_home)
@@ -208,17 +230,22 @@ def main(argv=None):
                 records[f] = record((corpus / "sutras" / f).read_text(encoding="utf-8"))
         (scratch / "records.json").write_text(json.dumps(records), encoding="utf-8")
         out = scratch / "out"
-        java = str(Path(a.java_home) / "bin" / "java")
-        sh([java, "-cp", cp, str(ROOT / "tools/regime/CorpusBind.java"), str(scratch), str(out), str(ROOT / "spec/1/formats.yaml"),
-            os.environ.get("RACHANA_DRISHTI_FORMATS", str(ROOT / "tools/conformance/profile/drishti-formats.yaml"))])
+        if a.from_binds:
+            shutil.copytree(corpus / "binds", out)
+        else:
+            java = str(Path(a.java_home) / "bin" / "java")
+            sh([java, "-cp", cp, str(ROOT / "tools/regime/CorpusBind.java"), str(scratch), str(out), str(ROOT / "spec/1/formats.yaml"),
+                os.environ.get("RACHANA_DRISHTI_FORMATS", str(ROOT / "tools/conformance/profile/drishti-formats.yaml"))])
         binds = corpus / "binds"
         shutil.rmtree(binds, ignore_errors=True)
         n = 0
         for g in groups:
             for f in g["sutras"]:
+                view = Path(str(out / f) + ".view.json")
                 rec = {"file": f, "group": g["dir"], "hostCalls": [
                     {"hook": "record", "args": [], "answer": records[f]},
-                    {"hook": "calendar.today", "args": [], "answer": TODAY}]}
+                    {"hook": "calendar.today", "args": [], "answer": TODAY}]
+                    + (host_panels(view.read_text(encoding="utf-8")) if view.is_file() else [])}
                 dst = binds / f
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 Path(str(dst) + ".json").write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")

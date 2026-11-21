@@ -1,0 +1,96 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/world-economy/election.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/world-economy",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "RESULTS": [
+     {
+      "PARTY": 46,
+      "SEATS": 318,
+      "SHARE": -225
+     },
+     {
+      "PARTY": -103,
+      "SEATS": 168,
+      "SHARE": 124
+     },
+     {
+      "PARTY": 246,
+      "SEATS": 518,
+      "SHARE": 224
+     }
+    ],
+    "SUMMARY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "ELECTION_ID": "ELECTION_ID-L1",
+    "TITLE": "TITLE-X1",
+    "DATE_TEXT": "2026-01-19",
+    "SYSTEM": "SYSTEM-B1",
+    "WINNER": 705,
+    "NEXT_ELECTION": 126,
+    "JURISDICTION": 584
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "election"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

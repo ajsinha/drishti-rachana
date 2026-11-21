@@ -1,0 +1,97 @@
+{
+ "file": "modules/economy/packs/central-banks/sutras/central-bank.v1.sutra.yaml",
+ "group": "modules/economy/packs/central-banks",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "POLICY_HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SERIES": [
+     {
+      "RATE_SERIES": 592,
+      "TITLE": "TITLE-X1",
+      "LATEST": 449.41,
+      "UNIT": 271,
+      "DATE": "2026-04-22",
+      "CHANGE": 436.25
+     },
+     {
+      "RATE_SERIES": 692,
+      "TITLE": "TITLE-Y2",
+      "LATEST": 549.41,
+      "UNIT": 621,
+      "DATE": "2026-05-25",
+      "CHANGE": 786.25
+     },
+     {
+      "RATE_SERIES": 542,
+      "TITLE": "TITLE-Z3",
+      "LATEST": 399.41,
+      "UNIT": 721,
+      "DATE": "2026-06-10",
+      "CHANGE": 886.25
+     }
+    ],
+    "BANK_ID": "BANK_ID-V1",
+    "NAME": "NAME-X1",
+    "POLICY_RATE": 688,
+    "POLICY_RATE_DATE": "2026-03-21",
+    "LAST_MOVE_DATE": "2026-06-15",
+    "LAST_MOVE_BP": -57.61,
+    "CURRENCY": "CURRENCY-Z1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "WEBSITE": 496.27,
+    "PRESS": 159.41
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "central-bank"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

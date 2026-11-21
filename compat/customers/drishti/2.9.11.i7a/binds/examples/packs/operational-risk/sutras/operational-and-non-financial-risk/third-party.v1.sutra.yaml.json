@@ -1,0 +1,81 @@
+{
+ "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/third-party.v1.sutra.yaml",
+ "group": "examples/packs/operational-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "services": [
+     {
+      "service": -226,
+      "desk": 628.33,
+      "exitPlan": 108.73
+     },
+     {
+      "service": 123,
+      "desk": 728.33,
+      "exitPlan": 208.73
+     },
+     {
+      "service": 223,
+      "desk": 578.33,
+      "exitPlan": 58.73
+     }
+    ],
+    "incidents": [
+     {
+      "date": "2026-09-27",
+      "incident": 150,
+      "impact": 95
+     },
+     {
+      "date": "2026-01-12",
+      "incident": 500,
+      "impact": -54
+     },
+     {
+      "date": "2026-02-15",
+      "incident": 600,
+      "impact": 295
+     }
+    ],
+    "vendorId": "2026-06-24",
+    "name": "NAME-D1",
+    "criticality": 426,
+    "serviceCount": 723.07,
+    "annualSpend": "2026-04-13",
+    "lastAssessed": 671.41,
+    "slaBreaches": 268.99
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "third-party"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

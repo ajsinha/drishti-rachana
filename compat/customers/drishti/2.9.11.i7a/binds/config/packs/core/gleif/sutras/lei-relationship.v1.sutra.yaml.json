@@ -1,0 +1,47 @@
+{
+ "file": "config/packs/core/gleif/sutras/lei-relationship.v1.sutra.yaml",
+ "group": "config/packs/core/gleif",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "PERIODS": [
+     {
+      "TYPE": "TYPE-X1",
+      "START": "2026-05-14",
+      "END": "2026-03-21"
+     },
+     {
+      "TYPE": "TYPE-Y2",
+      "START": "2026-06-17",
+      "END": "2026-04-24"
+     },
+     {
+      "TYPE": "TYPE-Z3",
+      "START": "2026-07-20",
+      "END": "2026-05-27"
+     }
+    ],
+    "RELATIONSHIP_ID": "RELATIONSHIP-V1",
+    "LEVEL": "LEVEL-A1",
+    "RELATIONSHIP_STATUS": "RELATIONSHIP-W1",
+    "START": "2026-05-14",
+    "ACCOUNTING_STANDARD": 122,
+    "REGISTRATION_STATUS": "REGISTRATION-J1",
+    "CHILD_ENTITY": "CHILD_ENTITY-F1",
+    "PARENT_ENTITY": "PARENT_ENTIT-H1",
+    "END": "2026-03-21",
+    "LEI_GROUP": "LEI_GROUP-Q1",
+    "INITIAL_REGISTRATION": 508.49,
+    "LAST_UPDATE": "2026-03-21",
+    "NEXT_RENEWAL": -84
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

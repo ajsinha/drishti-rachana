@@ -1,0 +1,69 @@
+{
+ "file": "modules/economy/packs/world-economy/sutras/politics-and-society/party.v1.sutra.yaml",
+ "group": "modules/economy/packs/world-economy",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "RESULTS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PARTY_ID": "PARTY_ID-L1",
+    "NAME": "NAME-X1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "SEATS": 318,
+    "SEAT_SHARE": 426.29,
+    "CHAMBER": 789,
+    "ELECTION_DATE": "2026-08-26",
+    "ELECTION": -5
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "party"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

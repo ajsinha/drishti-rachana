@@ -1,0 +1,89 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk/sa-ccr.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ADD_ONS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "HEDGING_SETS": [
+     {
+      "ASSET_CLASS": "ASSET_CLASS-P1",
+      "HEDGING_SET": 228.71,
+      "EFFECTIVE_NOTIONAL": 441,
+      "SF": 43.37
+     },
+     {
+      "ASSET_CLASS": "ASSET_CLASS-Q2",
+      "HEDGING_SET": 578.71,
+      "EFFECTIVE_NOTIONAL": 791,
+      "SF": 393.37
+     },
+     {
+      "ASSET_CLASS": "ASSET_CLASS-R3",
+      "HEDGING_SET": 678.71,
+      "EFFECTIVE_NOTIONAL": 891,
+      "SF": 493.37
+     }
+    ],
+    "CALC_ID": "CALC_ID-A1",
+    "REPLACEMENT_COST": 625.91,
+    "ADD_ON": 570,
+    "MULTIPLIER": 736,
+    "EAD": -219,
+    "RWA": 538,
+    "ALPHA": 205,
+    "NETTING_SET": 67
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "sa-ccr"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

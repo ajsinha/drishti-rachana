@@ -1,0 +1,66 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/core/trader.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "BOOKS": [
+     {
+      "ID": "ID-Z1"
+     },
+     {
+      "ID": "ID-A2"
+     },
+     {
+      "ID": "ID-B3"
+     }
+    ],
+    "TRADER_ID": "TRADER_ID-C1",
+    "NAME": "NAME-X1",
+    "DESK_NAME": "DESK_NAME-A1",
+    "TRADE_COUNT": 622.07,
+    "DESK": "DESK-G1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "trader"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

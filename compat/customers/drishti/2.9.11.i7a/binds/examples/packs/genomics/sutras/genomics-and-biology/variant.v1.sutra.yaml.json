@@ -1,0 +1,100 @@
+{
+ "file": "examples/packs/genomics/sutras/genomics-and-biology/variant.v1.sutra.yaml",
+ "group": "examples/packs/genomics",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "frequencies": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "evidence": [
+     {
+      "source": 579.35,
+      "assertion": 497.89,
+      "stars": 520,
+      "date": "2026-09-27"
+     },
+     {
+      "source": 929.35,
+      "assertion": 597.89,
+      "stars": 870,
+      "date": "2026-01-12"
+     },
+     {
+      "source": 1029.35,
+      "assertion": 447.89,
+      "stars": 970,
+      "date": "2026-02-15"
+     }
+    ],
+    "annotation": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "variantId": "VARIANTID-C1",
+    "geneSymbol": 237,
+    "proteinChange": 761,
+    "hgvsC": 598.49,
+    "consequence": 586,
+    "significance": -240.13,
+    "rsid": 526.13,
+    "gene": 87
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "variant"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

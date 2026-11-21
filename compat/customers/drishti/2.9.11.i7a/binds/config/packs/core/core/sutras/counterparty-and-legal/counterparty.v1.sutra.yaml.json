@@ -1,0 +1,58 @@
+{
+ "file": "config/packs/core/core/sutras/counterparty-and-legal/counterparty.v1.sutra.yaml",
+ "group": "config/packs/core/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "NETTING_SETS": [
+     {
+      "ID": "ID-Z1",
+      "AGREEMENT": 679,
+      "TRADES": -235,
+      "NET_MTM": 454.13
+     },
+     {
+      "ID": "ID-A2",
+      "AGREEMENT": 529,
+      "TRADES": 114,
+      "NET_MTM": 304.13
+     },
+     {
+      "ID": "ID-B3",
+      "AGREEMENT": 879,
+      "TRADES": 214,
+      "NET_MTM": 654.13
+     }
+    ],
+    "COUNTERPARTY_ID": "COUNTERPARTY-G1",
+    "NAME": "NAME-X1",
+    "LEI": "LEI-Z1",
+    "RATING": "RATING-N1",
+    "SECTOR": "SECTOR-T1",
+    "COUNTRY_OF_RISK": "COUNTRY_OF_R-C1",
+    "UEN": 460,
+    "TYPE": "TYPE-X1",
+    "NET_MTM": 454.13,
+    "KYC": {
+     "STATUS": "STATUS-Y1",
+     "RISK_RATING": "RISK_RATING-N1",
+     "LAST_REVIEW": 367,
+     "EMIR_CLASSIFICATION": "EMIR_CLASSIF-I1",
+     "PD_1Y": 115.49
+    },
+    "HIERARCHY": {
+     "NODES": 447,
+     "EDGES": 514.49
+    },
+    "GROUP": "GROUP-O1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

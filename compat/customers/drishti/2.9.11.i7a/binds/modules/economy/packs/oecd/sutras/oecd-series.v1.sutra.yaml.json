@@ -1,0 +1,72 @@
+{
+ "file": "modules/economy/packs/oecd/sutras/oecd-series.v1.sutra.yaml",
+ "group": "modules/economy/packs/oecd",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SERIES_ID": "SERIES_ID-G1",
+    "NAME": "NAME-X1",
+    "TITLE": "TITLE-X1",
+    "LATEST": 449.41,
+    "UNIT": 271,
+    "LATEST_PERIOD": 261.91,
+    "CHANGE": 436.25,
+    "OECD_COUNTRY": "OECD_COUNTRY-U1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "FREQUENCY": 236.99,
+    "DATAFLOW": 249.41
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "oecd-series"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

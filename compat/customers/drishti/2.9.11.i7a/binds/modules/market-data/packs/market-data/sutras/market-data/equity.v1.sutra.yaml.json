@@ -1,0 +1,59 @@
+{
+ "file": "modules/market-data/packs/market-data/sutras/market-data/equity.v1.sutra.yaml",
+ "group": "modules/market-data/packs/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "IDENTIFIERS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "OHLC": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "TICKER": "TICKER-K1",
+    "NAME": "NAME-X1",
+    "PRICE": 757,
+    "CHANGE_1D": 468.91,
+    "MARKET_CAP": 483.71,
+    "SECTOR": "SECTOR-T1",
+    "EXCHANGE": 20.17,
+    "CURRENCY": "CURRENCY-Z1",
+    "ISSUER": 116
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

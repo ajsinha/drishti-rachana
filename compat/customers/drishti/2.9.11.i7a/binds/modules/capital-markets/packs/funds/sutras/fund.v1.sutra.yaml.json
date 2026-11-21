@@ -1,0 +1,372 @@
+{
+ "file": "modules/capital-markets/packs/funds/sutras/fund.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/funds",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HOLDINGS": [
+     {
+      "COMPANY": -37.51,
+      "NAME": "NAME-X1",
+      "FUND": 575,
+      "TICKER": "TICKER-K1",
+      "SECTOR": "SECTOR-T1",
+      "PCT": 75.47,
+      "VALUE": 855.53,
+      "VIEW": 592.91,
+      "LEI": "LEI-Z1",
+      "ASSET": 119.21,
+      "ISIN": "ISIN-H1",
+      "CUSIP": "CUSIP-W1",
+      "COUNTRY": "COUNTRY-I1",
+      "ALSO_IN": 423
+     },
+     {
+      "COMPANY": 312.49,
+      "NAME": "NAME-Y2",
+      "FUND": 675,
+      "TICKER": "TICKER-L2",
+      "SECTOR": "SECTOR-U2",
+      "PCT": 425.47,
+      "VALUE": 705.53,
+      "VIEW": 442.91,
+      "LEI": "LEI-A2",
+      "ASSET": 469.21,
+      "ISIN": "ISIN-I2",
+      "CUSIP": "CUSIP-X2",
+      "COUNTRY": "COUNTRY-J2",
+      "ALSO_IN": 523
+     },
+     {
+      "COMPANY": 412.49,
+      "NAME": "NAME-Z3",
+      "FUND": 525,
+      "TICKER": "TICKER-M3",
+      "SECTOR": "SECTOR-V3",
+      "PCT": 525.47,
+      "VALUE": 1055.53,
+      "VIEW": 792.91,
+      "LEI": "LEI-B3",
+      "ASSET": 569.21,
+      "ISIN": "ISIN-J3",
+      "CUSIP": "CUSIP-Y3",
+      "COUNTRY": "COUNTRY-K3",
+      "ALSO_IN": 373
+     }
+    ],
+    "BY_SECTOR": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "ANNUAL_RETURNS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "FLOWS": [
+     {
+      "MONTH": 696.05,
+      "SALES": -112.57,
+      "REDEMPTIONS": 268,
+      "NET_FLOW": 779.69,
+      "RETURN": 54.53
+     },
+     {
+      "MONTH": 546.05,
+      "SALES": 237.43,
+      "REDEMPTIONS": 118,
+      "NET_FLOW": 629.69,
+      "RETURN": -95.47
+     },
+     {
+      "MONTH": 896.05,
+      "SALES": 337.43,
+      "REDEMPTIONS": 468,
+      "NET_FLOW": 979.69,
+      "RETURN": 254.53
+     }
+    ],
+    "BY_ASSET": [
+     {
+      "VIEW": 592.91
+     },
+     {
+      "VIEW": 442.91
+     },
+     {
+      "VIEW": 792.91
+     }
+    ],
+    "BY_ISSUER_TYPE": [
+     {
+      "VIEW": 592.91
+     },
+     {
+      "VIEW": 442.91
+     },
+     {
+      "VIEW": 792.91
+     }
+    ],
+    "DERIVATIVES": [
+     {
+      "VIEW": 592.91,
+      "NAME": "NAME-X1",
+      "REFERENCE": 647.87,
+      "TYPE": "TYPE-X1",
+      "CPTY_LEI": "CPTY_LEI-Z1",
+      "CPTY": 33,
+      "NOTIONAL": 155,
+      "VALUE": 855.53,
+      "EXPIRY": "2026-05-14"
+     },
+     {
+      "VIEW": 442.91,
+      "NAME": "NAME-Y2",
+      "REFERENCE": 997.87,
+      "TYPE": "TYPE-Y2",
+      "CPTY_LEI": "CPTY_LEI-A2",
+      "CPTY": 133,
+      "NOTIONAL": 255,
+      "VALUE": 705.53,
+      "EXPIRY": "2026-06-17"
+     },
+     {
+      "VIEW": 792.91,
+      "NAME": "NAME-Z3",
+      "REFERENCE": 1097.87,
+      "TYPE": "TYPE-Z3",
+      "CPTY_LEI": "CPTY_LEI-B3",
+      "CPTY": -16,
+      "NOTIONAL": 105,
+      "VALUE": 1055.53,
+      "EXPIRY": "2026-07-20"
+     }
+    ],
+    "COUNTERPARTIES": [
+     {
+      "VIEW": 592.91,
+      "LEI": "LEI-Z1",
+      "NAME": "NAME-X1",
+      "POSITIONS": 533,
+      "NOTIONAL": 155,
+      "VALUE": 855.53
+     },
+     {
+      "VIEW": 442.91,
+      "LEI": "LEI-A2",
+      "NAME": "NAME-Y2",
+      "POSITIONS": 883,
+      "NOTIONAL": 255,
+      "VALUE": 705.53
+     },
+     {
+      "VIEW": 792.91,
+      "LEI": "LEI-B3",
+      "NAME": "NAME-Z3",
+      "POSITIONS": 983,
+      "NOTIONAL": 105,
+      "VALUE": 1055.53
+     }
+    ],
+    "ALSO_HELD_BY": [
+     {
+      "VIEW": 592.91,
+      "FUND": 575,
+      "FUND_NAME": "FUND_NAME-C1",
+      "TYPE": "TYPE-X1",
+      "PCT": 75.47,
+      "VALUE": 855.53,
+      "REPORT_DATE": "2026-03-21"
+     },
+     {
+      "VIEW": 442.91,
+      "FUND": 675,
+      "FUND_NAME": "FUND_NAME-D2",
+      "TYPE": "TYPE-Y2",
+      "PCT": 425.47,
+      "VALUE": 705.53,
+      "REPORT_DATE": "2026-04-24"
+     },
+     {
+      "VIEW": 792.91,
+      "FUND": 525,
+      "FUND_NAME": "FUND_NAME-E3",
+      "TYPE": "TYPE-Z3",
+      "PCT": 525.47,
+      "VALUE": 1055.53,
+      "REPORT_DATE": "2026-05-27"
+     }
+    ],
+    "VS_INDEX": {
+     "ROWS": [
+      {
+       "VIEW": 592.91,
+       "COMPANY": -37.51,
+       "NAME": "NAME-X1",
+       "SECTOR": "SECTOR-T1",
+       "FUND_PCT": 70.67,
+       "INDEX_PCT": "INDEX_PCT-S1",
+       "DIFF": 22.79
+      },
+      {
+       "VIEW": 442.91,
+       "COMPANY": 312.49,
+       "NAME": "NAME-Y2",
+       "SECTOR": "SECTOR-U2",
+       "FUND_PCT": 420.67,
+       "INDEX_PCT": "INDEX_PCT-T2",
+       "DIFF": -127.21
+      },
+      {
+       "VIEW": 792.91,
+       "COMPANY": 412.49,
+       "NAME": "NAME-Z3",
+       "SECTOR": "SECTOR-V3",
+       "FUND_PCT": 520.67,
+       "INDEX_PCT": "INDEX_PCT-U3",
+       "DIFF": 222.79
+      }
+     ],
+     "SECTORS": [
+      {
+       "VIEW": 592.91,
+       "SECTOR": "SECTOR-T1",
+       "FUND_PCT": 70.67,
+       "INDEX_PCT": "INDEX_PCT-S1",
+       "TILT": 390
+      },
+      {
+       "VIEW": 442.91,
+       "SECTOR": "SECTOR-U2",
+       "FUND_PCT": 420.67,
+       "INDEX_PCT": "INDEX_PCT-T2",
+       "TILT": 490
+      },
+      {
+       "VIEW": 792.91,
+       "SECTOR": "SECTOR-V3",
+       "FUND_PCT": 520.67,
+       "INDEX_PCT": "INDEX_PCT-U3",
+       "TILT": 340
+      }
+     ],
+     "BASIS": 458.63,
+     "INDEX_NAME": "INDEX_NAME-Y1",
+     "INDEX_ID": "INDEX_ID-O1",
+     "MEMBERS_HELD": 293,
+     "MEMBERS": 567.35,
+     "FUND_IN_INDEX_PCT": "FUND_IN_INDE-H1",
+     "NOT_IN_INDEX_PCT": "NOT_IN_INDEX-V1",
+     "ACTIVE_SHARE": 465.59,
+     "LARGEST_DIFF_NAME": "LARGEST_DIFF-E1",
+     "LARGEST_DIFF": 249,
+     "WEIGHTING": 881.45,
+     "MEMBERS_WEIGHTED": 795,
+     "MEMBERS_NOT_WEIGHTED": 680.77,
+     "AS_OF": "2026-07-25"
+    },
+    "TICKER": "TICKER-K1",
+    "NAME": "NAME-X1",
+    "TYPE": "TYPE-X1",
+    "IS_INDEX": "IS_INDEX-S1",
+    "REPORT_DATE": "2026-03-21",
+    "SERIES_ID": "SERIES_ID-G1",
+    "CIK": 630.53,
+    "NET_ASSETS": -76.81,
+    "EXPENSE_RATIO": 414,
+    "PROSPECTUS_FILED": 280,
+    "HOLDING_COUNT": 388,
+    "EQUITY_PCT": 142.19,
+    "TOP10_PCT": 136,
+    "RETURN_LAST_YEAR": 359,
+    "RETURN_YEAR": 468.83,
+    "TURNOVER": 630.25,
+    "INDEX_ID": "INDEX_ID-O1",
+    "ADVISER_LEI": "ADVISER_LEI-P1",
+    "ADVISER": 399.95,
+    "REGISTRANT": 124.13,
+    "LEI": "LEI-Z1",
+    "TICKERS": "TICKERS-J1",
+    "EXCHANGE": 20.17,
+    "CREATION_UNIT": 703.39,
+    "AP_COUNT": 107,
+    "RANK": 611,
+    "CUSTODIAN_LEI": "CUSTODIAN_LE-D1",
+    "CUSTODIAN": 507.53,
+    "AUDITOR": 93.73,
+    "ADMINISTRATOR": 483.67,
+    "TRANSFER_AGENT": 237,
+    "SUB_ADVISERS": 327,
+    "NCEN_PERIOD": -72.85,
+    "VIEWS": 177,
+    "TOP50_PCT": 774.77,
+    "HHI": 569,
+    "LARGEST": 156,
+    "LARGEST_PCT": 93,
+    "WITH_LEI": "WITH_LEI-F1",
+    "US_COMPANIES": -152.35,
+    "US_COMPANY_PCT": 154.07,
+    "HOLDINGS_SHOWN": 568.49,
+    "HOLDINGS_REST_COUNT": 76,
+    "HOLDINGS_REST_PCT": 224.69,
+    "DERIVATIVE_COUNT": 137,
+    "MOST_HELD_NAME": "MOST_HELD_NA-Z1",
+    "MOST_HELD_COMPANY": 455
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "fund"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

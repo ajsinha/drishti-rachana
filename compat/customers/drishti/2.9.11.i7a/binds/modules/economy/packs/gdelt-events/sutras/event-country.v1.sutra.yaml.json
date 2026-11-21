@@ -1,0 +1,99 @@
+{
+ "file": "modules/economy/packs/gdelt-events/sutras/event-country.v1.sutra.yaml",
+ "group": "modules/economy/packs/gdelt-events",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "BY_CATEGORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "TOP_STORIES": [
+     {
+      "MENTIONS": 273.13,
+      "CATEGORY": "CATEGORY-A1",
+      "URL": "URL-T1"
+     },
+     {
+      "MENTIONS": 373.13,
+      "CATEGORY": "CATEGORY-B2",
+      "URL": "URL-U2"
+     },
+     {
+      "MENTIONS": 223.13,
+      "CATEGORY": "CATEGORY-C3",
+      "URL": "URL-V3"
+     }
+    ],
+    "EVENT_COUNTRY_ID": "EVENT_COUNTR-J1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "DATE": "2026-04-22",
+    "EVENTS": 183.35,
+    "MENTIONS": 273.13,
+    "AVG_TONE": 28,
+    "TONE_CHANGE": 185,
+    "AVG_GOLDSTEIN": 736,
+    "CONFLICT_SHARE": 108,
+    "ISO3": -103
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "event-country"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

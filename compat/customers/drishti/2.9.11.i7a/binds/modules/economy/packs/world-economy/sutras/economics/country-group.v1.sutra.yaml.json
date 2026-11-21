@@ -1,0 +1,111 @@
+{
+ "file": "modules/economy/packs/world-economy/sutras/economics/country-group.v1.sutra.yaml",
+ "group": "modules/economy/packs/world-economy",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TOP_ECONOMIES": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "ROWS": [
+     {
+      "ECONOMY_ID": "ECONOMY_ID-U1",
+      "ECONOMY": 141.49,
+      "GDP_USD_BN": 22,
+      "POPULATION_M": 318,
+      "GROWTH": 155,
+      "INFLATION": 291.11,
+      "YEAR": 728
+     },
+     {
+      "ECONOMY_ID": "ECONOMY_ID-V2",
+      "ECONOMY": 241.49,
+      "GDP_USD_BN": -127,
+      "POPULATION_M": 418,
+      "GROWTH": 505,
+      "INFLATION": 141.11,
+      "YEAR": 578
+     },
+     {
+      "ECONOMY_ID": "ECONOMY_ID-W3",
+      "ECONOMY": 91.49,
+      "GDP_USD_BN": 222,
+      "POPULATION_M": 268,
+      "GROWTH": 605,
+      "INFLATION": 491.11,
+      "YEAR": 928
+     }
+    ],
+    "GDP_PATH": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "GROUP_ID": "GROUP_ID-D1",
+    "NAME": "NAME-X1",
+    "GROUP_TYPE": "GROUP_TYPE-X1",
+    "ECONOMIES": 270,
+    "GDP_USD_BN": 22,
+    "GDP_PER_CAPITA": -4,
+    "POPULATION_M": 318,
+    "GROWTH": 155,
+    "INFLATION": 291.11,
+    "MEMBER_ECONOMIES": 758
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "country-group"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

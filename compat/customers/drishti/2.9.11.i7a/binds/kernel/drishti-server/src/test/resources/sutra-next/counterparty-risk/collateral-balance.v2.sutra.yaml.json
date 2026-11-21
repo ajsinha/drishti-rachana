@@ -1,0 +1,79 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk/collateral-balance.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "POSITIONS": [
+     {
+      "ASSET": 119.21,
+      "DIRECTION": 200.57,
+      "MARKET_VALUE": 386,
+      "HAIRCUT": 697,
+      "VALUE": 855.53
+     },
+     {
+      "ASSET": 469.21,
+      "DIRECTION": 50.57,
+      "MARKET_VALUE": 486,
+      "HAIRCUT": 547,
+      "VALUE": 705.53
+     },
+     {
+      "ASSET": 569.21,
+      "DIRECTION": 400.57,
+      "MARKET_VALUE": 336,
+      "HAIRCUT": 897,
+      "VALUE": 1055.53
+     }
+    ],
+    "BALANCE_ID": "BALANCE_ID-M1",
+    "HELD": 15.95,
+    "POSTED": 896,
+    "NET": 15,
+    "AS_OF": "2026-07-25",
+    "CSA": -204.55
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "collateral-balance"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

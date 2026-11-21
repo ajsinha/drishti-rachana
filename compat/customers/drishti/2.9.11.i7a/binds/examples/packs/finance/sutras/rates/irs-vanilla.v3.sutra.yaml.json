@@ -1,0 +1,206 @@
+{
+ "file": "examples/packs/finance/sutras/rates/irs-vanilla.v3.sutra.yaml",
+ "group": "examples/packs/finance",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "legs": [
+     {
+      "cashflows": [
+       {
+        "n": 652.81,
+        "accrualStart": "2026-05-23",
+        "accrualEnd": "2026-04-22",
+        "payDate": "2026-03-21",
+        "notional": 144,
+        "rate": 593.99,
+        "amount": 555.05,
+        "df": 614,
+        "pv": -103.57
+       },
+       {
+        "n": 752.81,
+        "accrualStart": "2026-06-26",
+        "accrualEnd": "2026-05-25",
+        "payDate": "2026-04-24",
+        "notional": 494,
+        "rate": 443.99,
+        "amount": 905.05,
+        "df": 964,
+        "pv": 246.43
+       },
+       {
+        "n": 602.81,
+        "accrualStart": "2026-07-11",
+        "accrualEnd": "2026-06-10",
+        "payDate": "2026-05-27",
+        "notional": 594,
+        "rate": 793.99,
+        "amount": 1005.05,
+        "df": 1064,
+        "pv": 346.43
+       }
+      ],
+      "label": "LABEL-W1",
+      "projectedFlows": 709.91,
+      "spread": 260,
+      "nextReset": 393,
+      "pv": -103.57
+     },
+     {
+      "cashflows": [
+       {
+        "n": 652.81,
+        "accrualStart": "2026-05-23",
+        "accrualEnd": "2026-04-22",
+        "payDate": "2026-03-21",
+        "notional": 144,
+        "rate": 593.99,
+        "amount": 555.05,
+        "df": 614,
+        "pv": -103.57
+       },
+       {
+        "n": 752.81,
+        "accrualStart": "2026-06-26",
+        "accrualEnd": "2026-05-25",
+        "payDate": "2026-04-24",
+        "notional": 494,
+        "rate": 443.99,
+        "amount": 905.05,
+        "df": 964,
+        "pv": 246.43
+       },
+       {
+        "n": 602.81,
+        "accrualStart": "2026-07-11",
+        "accrualEnd": "2026-06-10",
+        "payDate": "2026-05-27",
+        "notional": 594,
+        "rate": 793.99,
+        "amount": 1005.05,
+        "df": 1064,
+        "pv": 346.43
+       }
+      ],
+      "label": "LABEL-X2",
+      "projectedFlows": 559.91,
+      "spread": 360,
+      "nextReset": 493,
+      "pv": 246.43
+     },
+     {
+      "cashflows": [
+       {
+        "n": 652.81,
+        "accrualStart": "2026-05-23",
+        "accrualEnd": "2026-04-22",
+        "payDate": "2026-03-21",
+        "notional": 144,
+        "rate": 593.99,
+        "amount": 555.05,
+        "df": 614,
+        "pv": -103.57
+       },
+       {
+        "n": 752.81,
+        "accrualStart": "2026-06-26",
+        "accrualEnd": "2026-05-25",
+        "payDate": "2026-04-24",
+        "notional": 494,
+        "rate": 443.99,
+        "amount": 905.05,
+        "df": 964,
+        "pv": 246.43
+       },
+       {
+        "n": 602.81,
+        "accrualStart": "2026-07-11",
+        "accrualEnd": "2026-06-10",
+        "payDate": "2026-05-27",
+        "notional": 594,
+        "rate": 793.99,
+        "amount": 1005.05,
+        "df": 1064,
+        "pv": 346.43
+       }
+      ],
+      "label": "LABEL-Y3",
+      "projectedFlows": 909.91,
+      "spread": 210,
+      "nextReset": 343,
+      "pv": 346.43
+     }
+    ],
+    "dv01ByTenor": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "productType": "PRODUCTTYPE-C1",
+    "tradeId": "TRADEID-Q1",
+    "counterparty": {
+     "id": "ID-H1",
+     "name": "NAME-D1"
+    },
+    "notional": 144,
+    "direction": 541.39,
+    "effectiveDate": "2026-07-16",
+    "maturityDate": "2026-02-11",
+    "fixedRate": 888,
+    "mtm": 499.01,
+    "dv01": 236.63,
+    "book": 573.43,
+    "discountCurve": 68.27,
+    "maturityTenor": "2026-04-13",
+    "nettingSet": 535.01
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "irs-vanilla"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

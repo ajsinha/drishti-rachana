@@ -81,6 +81,7 @@ class public final class com.ash.rachana.format.ListValues
 class public final class com.ash.rachana.format.Tones
 class public final class com.ash.rachana.format.WorldRegions
 class public final class com.ash.rachana.lib.Library
+class public final class com.ash.rachana.lib.LibraryExports
 class public final class com.ash.rachana.lib.LibraryLock
 class public final class com.ash.rachana.lib.LibrarySet
 class public final class com.ash.rachana.lib.Rlib
@@ -2073,6 +2074,12 @@ com.ash.rachana.lib.LibraryBundle :: public java.util.Map<java.lang.String, byte
 com.ash.rachana.lib.LibraryBundle :: public static com.ash.rachana.lib.LibraryBundle com.ash.rachana.lib.LibraryBundle.archive(java.lang.String,byte[],java.lang.String)
 com.ash.rachana.lib.LibraryBundle :: public static com.ash.rachana.lib.LibraryBundle com.ash.rachana.lib.LibraryBundle.ofBytes(java.lang.String,java.util.Map<java.lang.String, byte[]>,java.lang.String)
 com.ash.rachana.lib.LibraryBundle :: public static com.ash.rachana.lib.LibraryBundle com.ash.rachana.lib.LibraryBundle.ofText(java.lang.String,java.util.Map<java.lang.String, java.lang.String>,java.lang.String)
+com.ash.rachana.lib.LibraryExports :: public static java.lang.Object com.ash.rachana.lib.LibraryExports.plain(com.ash.rachana.parse.PNode)
+com.ash.rachana.lib.LibraryExports :: public static java.lang.String com.ash.rachana.lib.LibraryExports.json(java.lang.Object,boolean)
+com.ash.rachana.lib.LibraryExports :: public static java.lang.String com.ash.rachana.lib.LibraryExports.stale(com.ash.rachana.parse.PNode,java.util.Map<java.lang.String, byte[]>)
+com.ash.rachana.lib.LibraryExports :: public static java.util.List<java.lang.String> com.ash.rachana.lib.LibraryExports.lines(java.util.Map<java.lang.String, byte[]>)
+com.ash.rachana.lib.LibraryExports :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.lib.LibraryExports.interfaceOf(java.lang.String)
+com.ash.rachana.lib.LibraryExports :: public static java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>> com.ash.rachana.lib.LibraryExports.entries(java.util.Map<java.lang.String, byte[]>)
 com.ash.rachana.lib.LibraryLock :: public com.ash.rachana.lib.LibraryLock$Entry com.ash.rachana.lib.LibraryLock.get(java.lang.String)
 com.ash.rachana.lib.LibraryLock :: public java.lang.String com.ash.rachana.lib.LibraryLock.write()
 com.ash.rachana.lib.LibraryLock :: public java.util.Map<java.lang.String, com.ash.rachana.lib.LibraryLock$Entry> com.ash.rachana.lib.LibraryLock.entries()

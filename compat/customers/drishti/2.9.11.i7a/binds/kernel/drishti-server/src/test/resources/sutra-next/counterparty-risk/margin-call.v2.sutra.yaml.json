@@ -1,0 +1,75 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk/margin-call.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "EVENTS": [
+     {
+      "AT": "2026-05-14",
+      "EVENT": 815.77,
+      "BY": -119.17
+     },
+     {
+      "AT": "2026-06-17",
+      "EVENT": 915.77,
+      "BY": 230.83
+     },
+     {
+      "AT": "2026-07-20",
+      "EVENT": 765.77,
+      "BY": 330.83
+     }
+    ],
+    "CALL_ID": "CALL_ID-X1",
+    "CALL_DATE": "2026-03-12",
+    "MARGIN_TYPE": "MARGIN_TYPE-J1",
+    "DIRECTION": 200.57,
+    "AMOUNT": 146,
+    "STATUS": "STATUS-Y1",
+    "DISPUTE_AMOUNT": -220.45,
+    "NETTING_SET": 67
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "margin-call"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

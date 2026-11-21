@@ -1,0 +1,71 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/ir-vol-cube.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "GRID": [
+     {
+      "T_1Y": 505,
+      "T_2Y": 799,
+      "T_5Y": 85,
+      "T_10Y": 1.33,
+      "T_30Y": 390.67,
+      "EXPIRY": "2026-05-14"
+     },
+     {
+      "T_1Y": 855,
+      "T_2Y": 899,
+      "T_5Y": 185,
+      "T_10Y": 101.33,
+      "T_30Y": 490.67,
+      "EXPIRY": "2026-06-17"
+     },
+     {
+      "T_1Y": 955,
+      "T_2Y": 749,
+      "T_5Y": 35,
+      "T_10Y": -48.67,
+      "T_30Y": 340.67,
+      "EXPIRY": "2026-07-20"
+     }
+    ],
+    "CUBE_ID": "CUBE_ID-L1",
+    "CURRENCY": "CURRENCY-Z1",
+    "MODEL": "MODEL-M1",
+    "V_1Y_10Y": 220.07,
+    "V_5Y_5Y": 826
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "ir-vol-cube"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,73 @@
+{
+ "file": "config/packs/core/core/sutras/counterparty-and-legal/issuer.v1.sutra.yaml",
+ "group": "config/packs/core/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "BONDS": [
+     {
+      "ISIN": "ISIN-H1",
+      "COUPON": 305.93,
+      "MATURITY": "2026-02-20"
+     },
+     {
+      "ISIN": "ISIN-I2",
+      "COUPON": 155.93,
+      "MATURITY": "2026-03-23"
+     },
+     {
+      "ISIN": "ISIN-J3",
+      "COUPON": 505.93,
+      "MATURITY": "2026-04-26"
+     }
+    ],
+    "ISSUER_ID": "ISSUER_ID-O1",
+    "NAME": "NAME-X1",
+    "RATING": "RATING-N1",
+    "SECTOR": "SECTOR-T1",
+    "COUNTRY": "COUNTRY-I1",
+    "CREDIT_CURVE": 188
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "issuer"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

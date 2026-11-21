@@ -1,0 +1,78 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk/credit-limit.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "BUCKETS": [
+     {
+      "BUCKET": 626.83,
+      "LIMIT": 5,
+      "USED": 674,
+      "UTILISATION": 323.03
+     },
+     {
+      "BUCKET": 726.83,
+      "LIMIT": -144,
+      "USED": 774,
+      "UTILISATION": 173.03
+     },
+     {
+      "BUCKET": 576.83,
+      "LIMIT": 205,
+      "USED": 624,
+      "UTILISATION": 523.03
+     }
+    ],
+    "LIMIT_ID": "LIMIT_ID-T1",
+    "COUNTERPARTY_NAME": "COUNTERPARTY-F1",
+    "MEASURE": 215,
+    "LIMIT": 5,
+    "USED": 674,
+    "UTILISATION": 323.03,
+    "STATUS": "STATUS-Y1",
+    "COUNTERPARTY": "COUNTERPARTY-N1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "credit-limit"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

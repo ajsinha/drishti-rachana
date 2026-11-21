@@ -1,0 +1,98 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/core/desk.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "BOOKS": [
+     {
+      "ID": "ID-Z1",
+      "TRADES": -235,
+      "MTM": 728.03
+     },
+     {
+      "ID": "ID-A2",
+      "TRADES": 114,
+      "MTM": 578.03
+     },
+     {
+      "ID": "ID-B3",
+      "TRADES": 214,
+      "MTM": 928.03
+     }
+    ],
+    "POSITIONS": [
+     {
+      "TRADE_ID": "TRADE_ID-P1",
+      "BOOK": "BOOK-L1",
+      "CURRENCY": "CURRENCY-Z1",
+      "FAMILY": 691,
+      "MTM": 728.03
+     },
+     {
+      "TRADE_ID": "TRADE_ID-Q2",
+      "BOOK": "BOOK-M2",
+      "CURRENCY": "CURRENCY-A2",
+      "FAMILY": 791,
+      "MTM": 578.03
+     },
+     {
+      "TRADE_ID": "TRADE_ID-R3",
+      "BOOK": "BOOK-N3",
+      "CURRENCY": "CURRENCY-B3",
+      "FAMILY": 641,
+      "MTM": 928.03
+     }
+    ],
+    "DESK_ID": "DESK_ID-W1",
+    "NAME": "NAME-X1",
+    "HEAD": 531,
+    "VAR_ENGINE": {
+     "VAR": 290
+    },
+    "MTM": 728.03,
+    "LEGAL_ENTITY": "LEGAL_ENTITY-E1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "desk"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

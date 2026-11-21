@@ -1,0 +1,68 @@
+{
+ "file": "modules/economy/packs/news-and-markets/sutras/news.v1.sutra.yaml",
+ "group": "modules/economy/packs/news-and-markets",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "BY_SOURCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "NEWS_ID": "NEWS_ID-F1",
+    "ENTITY": "ENTITY-X1",
+    "EDITION": -199,
+    "RELEVANCE_FILTER": 88,
+    "COUNT": 267,
+    "FETCHED_AT": "2026-05-14"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "news"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

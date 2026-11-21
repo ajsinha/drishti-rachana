@@ -1,0 +1,86 @@
+{
+ "file": "examples/packs/retail-banking/sutras/retail-banking/customer.v1.sutra.yaml",
+ "group": "examples/packs/retail-banking",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "products": [
+     {
+      "product": 610.57,
+      "id": "ID-H1",
+      "balance": 525
+     },
+     {
+      "product": 710.57,
+      "id": "ID-I2",
+      "balance": 375
+     },
+     {
+      "product": 560.57,
+      "id": "ID-J3",
+      "balance": 725
+     }
+    ],
+    "profile": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "customerId": "CUSTOMERID-E1",
+    "name": "NAME-D1",
+    "segment": 757,
+    "totalDeposits": 46.55,
+    "totalLending": "2026-05-14",
+    "kycRisk": 640.19,
+    "since": -95.47,
+    "branch": 62
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "customer"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

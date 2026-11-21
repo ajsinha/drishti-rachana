@@ -1,0 +1,139 @@
+{
+ "file": "modules/banking/packs/trading/sutras/pages/index-trades.v1.sutra.yaml",
+ "group": "modules/banking/packs/trading",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TRADES": [
+     {
+      "EVENTS": [
+       {
+        "EVENT_DATE": "2026-08-26",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-F1",
+        "EVENT_TYPE": "EVENT_TYPE-A1",
+        "LEG_ID": "LEG_ID-R1",
+        "CURRENCY": "CURRENCY-Z1",
+        "AMOUNT": 146
+       },
+       {
+        "EVENT_DATE": "2026-09-11",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-G2",
+        "EVENT_TYPE": "EVENT_TYPE-B2",
+        "LEG_ID": "LEG_ID-S2",
+        "CURRENCY": "CURRENCY-A2",
+        "AMOUNT": 496
+       },
+       {
+        "EVENT_DATE": "2026-01-14",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-H3",
+        "EVENT_TYPE": "EVENT_TYPE-C3",
+        "LEG_ID": "LEG_ID-T3",
+        "CURRENCY": "CURRENCY-B3",
+        "AMOUNT": 596
+       }
+      ],
+      "VALUE": 855.53,
+      "TRADE_STATUS": "TRADE_STATUS-U1"
+     },
+     {
+      "EVENTS": [
+       {
+        "EVENT_DATE": "2026-08-26",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-F1",
+        "EVENT_TYPE": "EVENT_TYPE-A1",
+        "LEG_ID": "LEG_ID-R1",
+        "CURRENCY": "CURRENCY-Z1",
+        "AMOUNT": 146
+       },
+       {
+        "EVENT_DATE": "2026-09-11",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-G2",
+        "EVENT_TYPE": "EVENT_TYPE-B2",
+        "LEG_ID": "LEG_ID-S2",
+        "CURRENCY": "CURRENCY-A2",
+        "AMOUNT": 496
+       },
+       {
+        "EVENT_DATE": "2026-01-14",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-H3",
+        "EVENT_TYPE": "EVENT_TYPE-C3",
+        "LEG_ID": "LEG_ID-T3",
+        "CURRENCY": "CURRENCY-B3",
+        "AMOUNT": 596
+       }
+      ],
+      "VALUE": 705.53,
+      "TRADE_STATUS": "TRADE_STATUS-V2"
+     },
+     {
+      "EVENTS": [
+       {
+        "EVENT_DATE": "2026-08-26",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-F1",
+        "EVENT_TYPE": "EVENT_TYPE-A1",
+        "LEG_ID": "LEG_ID-R1",
+        "CURRENCY": "CURRENCY-Z1",
+        "AMOUNT": 146
+       },
+       {
+        "EVENT_DATE": "2026-09-11",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-G2",
+        "EVENT_TYPE": "EVENT_TYPE-B2",
+        "LEG_ID": "LEG_ID-S2",
+        "CURRENCY": "CURRENCY-A2",
+        "AMOUNT": 496
+       },
+       {
+        "EVENT_DATE": "2026-01-14",
+        "PAYMENT_TYPE": "PAYMENT_TYPE-H3",
+        "EVENT_TYPE": "EVENT_TYPE-C3",
+        "LEG_ID": "LEG_ID-T3",
+        "CURRENCY": "CURRENCY-B3",
+        "AMOUNT": 596
+       }
+      ],
+      "VALUE": 1055.53,
+      "TRADE_STATUS": "TRADE_STATUS-W3"
+     }
+    ],
+    "INDEX_NAME": "INDEX_NAME-Y1",
+    "TRADE_COUNT": 622.07,
+    "NOTIONAL": 155,
+    "SOURCE_SYSTEMS": "SOURCE_SYSTE-H1",
+    "PRODUCT_TYPES": "PRODUCT_TYPE-X1",
+    "CURRENCIES": 377.63,
+    "LAST_MATURITY": "2026-05-23"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "index-trades"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

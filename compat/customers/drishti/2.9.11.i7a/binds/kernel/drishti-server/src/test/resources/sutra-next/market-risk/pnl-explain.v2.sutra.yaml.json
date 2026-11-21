@@ -1,0 +1,78 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/market-risk/pnl-explain.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/market-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ATTRIBUTION": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "EXPLAIN_STEPS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "RESULT_ID": "RESULT_ID-X1",
+    "DATE": "2026-04-22",
+    "ACTUAL": -51.67,
+    "EXPLAINED": 640,
+    "UNEXPLAINED": 283.79,
+    "BOOK": "BOOK-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "pnl-explain"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

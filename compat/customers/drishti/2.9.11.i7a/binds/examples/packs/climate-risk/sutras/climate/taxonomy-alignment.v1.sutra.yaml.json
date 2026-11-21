@@ -1,0 +1,67 @@
+{
+ "file": "examples/packs/climate-risk/sutras/climate/taxonomy-alignment.v1.sutra.yaml",
+ "group": "examples/packs/climate-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "objectives": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "reportId": "REPORTID-U1",
+    "legalEntityName": "LEGALENTITYN-P1",
+    "gar": 40.91,
+    "eligible": 844.33,
+    "covered": 846,
+    "legalEntity": "LEGALENTITY-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "taxonomy-alignment"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

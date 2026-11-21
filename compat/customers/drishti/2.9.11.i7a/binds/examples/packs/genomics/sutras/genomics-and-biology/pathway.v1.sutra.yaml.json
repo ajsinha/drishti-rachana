@@ -1,0 +1,61 @@
+{
+ "file": "examples/packs/genomics/sutras/genomics-and-biology/pathway.v1.sutra.yaml",
+ "group": "examples/packs/genomics",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "members": [
+     {
+      "symbol": 503,
+      "role": 609.73,
+      "location": 134
+     },
+     {
+      "symbol": 353,
+      "role": 709.73,
+      "location": -15
+     },
+     {
+      "symbol": 703,
+      "role": 559.73,
+      "location": 334
+     }
+    ],
+    "pathwayId": "PATHWAYID-H1",
+    "name": "NAME-D1",
+    "category": 78.05,
+    "geneCount": 271
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "pathway"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

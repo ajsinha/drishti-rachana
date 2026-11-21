@@ -1,0 +1,63 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/commodity-vol-surface.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "GRID": [
+     {
+      "M_90": 470,
+      "M_100": 568.91,
+      "M_110": 665,
+      "MONTH": 696.05
+     },
+     {
+      "M_90": 320,
+      "M_100": 918.91,
+      "M_110": 765,
+      "MONTH": 546.05
+     },
+     {
+      "M_90": 670,
+      "M_100": 1018.91,
+      "M_110": 615,
+      "MONTH": 896.05
+     }
+    ],
+    "SURFACE_ID": "SURFACE_ID-V1",
+    "COMMODITY": 42.95,
+    "ATM_FRONT": 115.39
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "commodity-vol-surface"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

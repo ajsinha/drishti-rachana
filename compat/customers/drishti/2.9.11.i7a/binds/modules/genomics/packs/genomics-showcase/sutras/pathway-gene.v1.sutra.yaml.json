@@ -1,0 +1,21 @@
+{
+ "file": "modules/genomics/packs/genomics-showcase/sutras/pathway-gene.v1.sutra.yaml",
+ "group": "modules/genomics/packs/genomics-showcase",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "PATHWAY_GENE_ID": "PATHWAY_GENE-G1",
+    "PATHWAY": 415,
+    "GENE": 442,
+    "ROLE_IN_PATHWAY": "ROLE_IN_PATH-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

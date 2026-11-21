@@ -1,0 +1,79 @@
+{
+ "file": "modules/market-data/packs/market-data/sutras/market-data/commodity.v1.sutra.yaml",
+ "group": "modules/market-data/packs/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "SPEC": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "OHLC": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "COMMODITY_ID": "COMMODITY_ID-D1",
+    "NAME": "NAME-X1",
+    "FRONT": 520.49,
+    "UNIT": 271,
+    "EXCHANGE": 20.17,
+    "SECTOR": "SECTOR-T1",
+    "COMMODITY_CURVE": 267.59
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "commodity"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

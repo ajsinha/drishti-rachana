@@ -1,0 +1,79 @@
+{
+ "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/oprisk-scenario.v1.sutra.yaml",
+ "group": "examples/packs/operational-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "percentiles": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "context": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "scenarioId": "SCENARIOID-N1",
+    "name": "NAME-D1",
+    "eventType": "EVENTTYPE-Z1",
+    "returnPeriod": 356.15,
+    "p50": 494,
+    "p999": 15,
+    "legalEntity": "LEGALENTITY-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "oprisk-scenario"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

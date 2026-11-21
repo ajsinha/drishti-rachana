@@ -1,0 +1,78 @@
+{
+ "file": "modules/capital-markets/packs/funds/sutras/index-funds.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/funds",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ROWS": [
+     {
+      "FUND": 575,
+      "NAME": "NAME-X1",
+      "TYPE": "TYPE-X1",
+      "NET_ASSETS": -76.81,
+      "EXPENSE_RATIO": 414,
+      "MEMBERS_HELD": 293,
+      "ACTIVE_SHARE": 465.59,
+      "REPORT_DATE": "2026-03-21"
+     },
+     {
+      "FUND": 675,
+      "NAME": "NAME-Y2",
+      "TYPE": "TYPE-Y2",
+      "NET_ASSETS": 273.19,
+      "EXPENSE_RATIO": 764,
+      "MEMBERS_HELD": 143,
+      "ACTIVE_SHARE": 315.59,
+      "REPORT_DATE": "2026-04-24"
+     },
+     {
+      "FUND": 525,
+      "NAME": "NAME-Z3",
+      "TYPE": "TYPE-Z3",
+      "NET_ASSETS": 373.19,
+      "EXPENSE_RATIO": 864,
+      "MEMBERS_HELD": 493,
+      "ACTIVE_SHARE": 665.59,
+      "REPORT_DATE": "2026-05-27"
+     }
+    ],
+    "INDEX": "INDEX-Q1",
+    "NAME": "NAME-X1",
+    "FUNDS": 422.05,
+    "ETFS": 623.39,
+    "TOTAL_NET_ASSETS": -243,
+    "LARGEST": 156
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "index-funds"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

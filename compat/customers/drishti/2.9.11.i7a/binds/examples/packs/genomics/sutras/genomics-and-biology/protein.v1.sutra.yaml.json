@@ -1,0 +1,85 @@
+{
+ "file": "examples/packs/genomics/sutras/genomics-and-biology/protein.v1.sutra.yaml",
+ "group": "examples/packs/genomics",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "domains": [
+     {
+      "name": "NAME-D1",
+      "start": "2026-05-14",
+      "end": "2026-04-22"
+     },
+     {
+      "name": "NAME-E2",
+      "start": "2026-06-17",
+      "end": "2026-05-25"
+     },
+     {
+      "name": "NAME-F3",
+      "start": "2026-07-20",
+      "end": "2026-06-10"
+     }
+    ],
+    "function": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "proteinId": "PROTEINID-R1",
+    "name": "NAME-D1",
+    "accession": 542,
+    "length": 264,
+    "massKda": 345,
+    "subcellular": 556,
+    "gene": 87
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "protein"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "file": "modules/market-data/packs/market-data/sutras/market-data/ir-curve.v1.sutra.yaml",
+ "group": "modules/market-data/packs/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "FORWARDS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "CURVE_ID": "CURVE_ID-Z1",
+    "CURRENCY": "CURRENCY-Z1",
+    "CURVE_TYPE": "CURVE_TYPE-A1",
+    "INDEX": "INDEX-Q1",
+    "TEN_Y": 654.95,
+    "SLOPE_2S_10S": 100,
+    "POINTS": -201.73,
+    "AS_OF": "2026-07-25",
+    "CALENDAR": "2026-06-24"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "ir-curve"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

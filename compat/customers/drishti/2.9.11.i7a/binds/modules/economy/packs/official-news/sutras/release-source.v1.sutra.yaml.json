@@ -1,0 +1,97 @@
+{
+ "file": "modules/economy/packs/official-news/sutras/release-source.v1.sutra.yaml",
+ "group": "modules/economy/packs/official-news",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "LATEST": [
+     {
+      "PUBLISHED": -193.15,
+      "PRESS_RELEASE": 824.03,
+      "TITLE": "TITLE-X1",
+      "CATEGORY": "CATEGORY-A1",
+      "URL": "URL-T1"
+     },
+     {
+      "PUBLISHED": 156.85,
+      "PRESS_RELEASE": 674.03,
+      "TITLE": "TITLE-Y2",
+      "CATEGORY": "CATEGORY-B2",
+      "URL": "URL-U2"
+     },
+     {
+      "PUBLISHED": 256.85,
+      "PRESS_RELEASE": 1024.03,
+      "TITLE": "TITLE-Z3",
+      "CATEGORY": "CATEGORY-C3",
+      "URL": "URL-V3"
+     }
+    ],
+    "BY_CATEGORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SOURCE_ID": "SOURCE_ID-W1",
+    "NAME": "NAME-X1",
+    "PUBLISHER_TYPE": "PUBLISHER_TY-J1",
+    "COUNTRY": "COUNTRY-I1",
+    "RELEASES": 559.39,
+    "LAST_PUBLISHED": 142.91,
+    "LAST_PULL": 862.15,
+    "INTERNAL_ONLY": 384,
+    "WHY_INTERNAL": 62.99,
+    "LICENCE": 77,
+    "TERMS_URL": "TERMS_URL-S1",
+    "WEBSITE": 496.27,
+    "FEED_URL": "FEED_URL-J1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "release-source"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

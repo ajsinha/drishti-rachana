@@ -1,0 +1,71 @@
+{
+ "file": "modules/capital-markets/packs/us-equities/sutras/filing.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/us-equities",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ITEMS": [
+     {
+      "ITEM": -179.89,
+      "DESCRIPTION": "DESCRIPTION-K1"
+     },
+     {
+      "ITEM": 170.11,
+      "DESCRIPTION": "DESCRIPTION-L2"
+     },
+     {
+      "ITEM": 270.11,
+      "DESCRIPTION": "DESCRIPTION-M3"
+     }
+    ],
+    "ACCESSION": 373,
+    "COMPANY": -37.51,
+    "COMPANY_NAME": "COMPANY_NAME-L1",
+    "FORM": 337.49,
+    "FORM_NAME": "FORM_NAME-M1",
+    "FILED": 177.17,
+    "REPORT_DATE": "2026-03-21"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "filing"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

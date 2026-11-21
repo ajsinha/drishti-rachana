@@ -1,0 +1,80 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/core/book.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TOP_TRADES": [
+     {
+      "TRADE_ID": "TRADE_ID-P1",
+      "PRODUCT": "PRODUCT-R1",
+      "NOTIONAL": 155,
+      "MATURITY": "2026-02-20",
+      "MTM": 728.03
+     },
+     {
+      "TRADE_ID": "TRADE_ID-Q2",
+      "PRODUCT": "PRODUCT-S2",
+      "NOTIONAL": 255,
+      "MATURITY": "2026-03-23",
+      "MTM": 578.03
+     },
+     {
+      "TRADE_ID": "TRADE_ID-R3",
+      "PRODUCT": "PRODUCT-T3",
+      "NOTIONAL": 105,
+      "MATURITY": "2026-04-26",
+      "MTM": 928.03
+     }
+    ],
+    "BOOK_ID": "BOOK_ID-D1",
+    "NAME": "NAME-X1",
+    "DESK_NAME": "DESK_NAME-A1",
+    "TRADE_COUNT": 622.07,
+    "MTM": 728.03,
+    "DV01": 112,
+    "DESK": "DESK-G1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "book"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

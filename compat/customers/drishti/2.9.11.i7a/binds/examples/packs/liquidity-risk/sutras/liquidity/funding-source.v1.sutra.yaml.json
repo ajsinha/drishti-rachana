@@ -1,0 +1,69 @@
+{
+ "file": "examples/packs/liquidity-risk/sutras/liquidity/funding-source.v1.sutra.yaml",
+ "group": "examples/packs/liquidity-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "terms": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "fundingId": "FUNDINGID-D1",
+    "counterpartyName": "COUNTERPARTY-N1",
+    "type": "TYPE-Q1",
+    "amount": 555.05,
+    "currency": 257.71,
+    "maturity": "2026-09-18",
+    "runOffRate": 303,
+    "counterparty": 745.87
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "funding-source"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

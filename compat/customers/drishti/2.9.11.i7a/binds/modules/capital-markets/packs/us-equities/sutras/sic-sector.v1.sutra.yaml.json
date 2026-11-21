@@ -1,0 +1,81 @@
+{
+ "file": "modules/capital-markets/packs/us-equities/sutras/sic-sector.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/us-equities",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ROWS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "BY_REVENUE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SIC": 240.37,
+    "DESCRIPTION": "DESCRIPTION-K1",
+    "SECTOR": "SECTOR-T1",
+    "COMPANIES": 829.79,
+    "REVENUE": 647,
+    "NET_INCOME": 111.41,
+    "NET_MARGIN": 864,
+    "NON_USD": 192.43
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "sic-sector"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

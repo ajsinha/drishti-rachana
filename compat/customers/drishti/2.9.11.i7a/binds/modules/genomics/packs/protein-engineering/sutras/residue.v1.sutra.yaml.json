@@ -1,0 +1,30 @@
+{
+ "file": "modules/genomics/packs/protein-engineering/sutras/residue.v1.sutra.yaml",
+ "group": "modules/genomics/packs/protein-engineering",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "RESIDUE_ID": "RESIDUE_ID-L1",
+    "AA": 550.57,
+    "SECONDARY": 144.19,
+    "DOMAIN": 404,
+    "BURIAL": 55,
+    "PROTEIN": 640,
+    "POS": 124,
+    "ACTIVE_SITE": 319,
+    "X": 819.95,
+    "Y": 156,
+    "Z": 763.49,
+    "MEAN_ACTIVITY": 195.59,
+    "MEAN_STABILITY": 590
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

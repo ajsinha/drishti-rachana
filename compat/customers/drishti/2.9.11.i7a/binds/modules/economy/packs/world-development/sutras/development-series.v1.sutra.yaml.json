@@ -1,0 +1,73 @@
+{
+ "file": "modules/economy/packs/world-development/sutras/development-series.v1.sutra.yaml",
+ "group": "modules/economy/packs/world-development",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SERIES_ID": "SERIES_ID-G1",
+    "NAME": "NAME-X1",
+    "INDICATOR": 555,
+    "LATEST": 449.41,
+    "UNIT": 271,
+    "LATEST_YEAR": 542,
+    "PREVIOUS": 148,
+    "CHANGE": 436.25,
+    "WDI_PROFILE": 212,
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "INDICATOR_CODE": "INDICATOR_CO-F1",
+    "DEFINITION": -66.43
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "development-series"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

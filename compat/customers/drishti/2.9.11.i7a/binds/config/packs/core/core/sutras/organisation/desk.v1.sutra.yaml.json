@@ -1,0 +1,98 @@
+{
+ "file": "config/packs/core/core/sutras/organisation/desk.v1.sutra.yaml",
+ "group": "config/packs/core/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "BOOKS": [
+     {
+      "ID": "ID-Z1",
+      "TRADES": -235,
+      "MTM": 728.03
+     },
+     {
+      "ID": "ID-A2",
+      "TRADES": 114,
+      "MTM": 578.03
+     },
+     {
+      "ID": "ID-B3",
+      "TRADES": 214,
+      "MTM": 928.03
+     }
+    ],
+    "POSITIONS": [
+     {
+      "BOOK": "BOOK-L1",
+      "CURRENCY": "CURRENCY-Z1",
+      "MTM": 728.03,
+      "TRADE_ID": "TRADE_ID-P1",
+      "FAMILY": 691
+     },
+     {
+      "BOOK": "BOOK-M2",
+      "CURRENCY": "CURRENCY-A2",
+      "MTM": 578.03,
+      "TRADE_ID": "TRADE_ID-Q2",
+      "FAMILY": 791
+     },
+     {
+      "BOOK": "BOOK-N3",
+      "CURRENCY": "CURRENCY-B3",
+      "MTM": 928.03,
+      "TRADE_ID": "TRADE_ID-R3",
+      "FAMILY": 641
+     }
+    ],
+    "DESK_ID": "DESK_ID-W1",
+    "NAME": "NAME-X1",
+    "HEAD": 531,
+    "VAR_ENGINE": {
+     "VAR": 290
+    },
+    "MTM": 728.03,
+    "LEGAL_ENTITY": "LEGAL_ENTITY-E1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "desk"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

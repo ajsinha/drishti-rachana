@@ -1,0 +1,87 @@
+{
+ "file": "examples/packs/operational-risk/sutras/operational-and-non-financial-risk/loss-event.v1.sutra.yaml",
+ "group": "examples/packs/operational-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "details": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "timeline": [
+     {
+      "date": "2026-09-27",
+      "step": 140,
+      "by": -24
+     },
+     {
+      "date": "2026-01-12",
+      "step": 490,
+      "by": 325
+     },
+     {
+      "date": "2026-02-15",
+      "step": 590,
+      "by": 425
+     }
+    ],
+    "eventId": "EVENTID-N1",
+    "eventType": "EVENTTYPE-Z1",
+    "deskName": "DESKNAME-S1",
+    "grossLoss": 301.31,
+    "recoveries": 868,
+    "netLoss": 458.81,
+    "status": "STATUS-Y1",
+    "occurred": 773,
+    "desk": 628.33
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "loss-event"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

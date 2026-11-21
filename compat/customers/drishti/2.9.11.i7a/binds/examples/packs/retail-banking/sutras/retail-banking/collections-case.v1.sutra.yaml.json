@@ -1,0 +1,75 @@
+{
+ "file": "examples/packs/retail-banking/sutras/retail-banking/collections-case.v1.sutra.yaml",
+ "group": "examples/packs/retail-banking",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "contacts": [
+     {
+      "date": "2026-09-27",
+      "channel": 94.93,
+      "outcome": 373
+     },
+     {
+      "date": "2026-01-12",
+      "channel": 194.93,
+      "outcome": 473
+     },
+     {
+      "date": "2026-02-15",
+      "channel": 44.93,
+      "outcome": 323
+     }
+    ],
+    "caseId": "CASEID-S1",
+    "customerName": "CUSTOMERNAME-H1",
+    "arrears": 512,
+    "daysPastDue": 825.89,
+    "stage": 570.53,
+    "strategy": 89.75,
+    "status": "STATUS-Y1",
+    "customer": 78
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "collections-case"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

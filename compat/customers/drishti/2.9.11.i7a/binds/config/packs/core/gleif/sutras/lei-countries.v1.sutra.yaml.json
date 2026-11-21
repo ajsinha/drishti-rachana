@@ -1,0 +1,82 @@
+{
+ "file": "config/packs/core/gleif/sutras/lei-countries.v1.sutra.yaml",
+ "group": "config/packs/core/gleif",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "COUNTRY_ROWS": [
+     {
+      "label": "LABEL-W1",
+      "value": 418
+     },
+     {
+      "label": "LABEL-X2",
+      "value": 268
+     },
+     {
+      "label": "LABEL-Y3",
+      "value": 618
+     }
+    ],
+    "BY_COUNTRY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "COUNTRY": "COUNTRY-I1",
+    "NAME": "NAME-X1",
+    "COUNTRIES": 429,
+    "ENTITIES": 620.71,
+    "GROUPS_HEADQUARTERED": "GROUPS_HEADQ-K1",
+    "LAPSED": 139.13
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "lei-countries"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

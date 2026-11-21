@@ -1,0 +1,165 @@
+{
+ "file": "modules/banking/packs/market-risk/sutras/market-risk/system-basket.v1.sutra.yaml",
+ "group": "modules/banking/packs/market-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "VAR_ENGINE": {
+     "POSITIONS": [
+      {
+       "POSITION_ID": "POSITION_ID-W1",
+       "INSTRUMENT": 143.11,
+       "DIRECTION": 200.57,
+       "QUANTITY": 294,
+       "MARKET_VALUE": 386,
+       "CURRENCY": "CURRENCY-Z1",
+       "TT_BOOK": "TT_BOOK-V1",
+       "VAR": 290,
+       "COMPONENT_VAR": 181.75,
+       "PCT_OF_VAR": 359.69,
+       "TRADE_ID": "TRADE_ID-P1"
+      },
+      {
+       "POSITION_ID": "POSITION_ID-X2",
+       "INSTRUMENT": 243.11,
+       "DIRECTION": 50.57,
+       "QUANTITY": 144,
+       "MARKET_VALUE": 486,
+       "CURRENCY": "CURRENCY-A2",
+       "TT_BOOK": "TT_BOOK-W2",
+       "VAR": 390,
+       "COMPONENT_VAR": 281.75,
+       "PCT_OF_VAR": 209.69,
+       "TRADE_ID": "TRADE_ID-Q2"
+      },
+      {
+       "POSITION_ID": "POSITION_ID-Y3",
+       "INSTRUMENT": 93.11,
+       "DIRECTION": 400.57,
+       "QUANTITY": 494,
+       "MARKET_VALUE": 336,
+       "CURRENCY": "CURRENCY-B3",
+       "TT_BOOK": "TT_BOOK-X3",
+       "VAR": 240,
+       "COMPONENT_VAR": 131.75,
+       "PCT_OF_VAR": 559.69,
+       "TRADE_ID": "TRADE_ID-R3"
+      }
+     ],
+     "PNL": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "TOP_CONTRIBUTORS": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "BY_PRODUCT": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "BY_CURRENCY": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "BY_DIRECTION": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "POSITION_COUNT": 619.97,
+     "LONG_COUNT": 118.43,
+     "SHORT_COUNT": -213.61,
+     "GROSS_MV": -134.59,
+     "NET_MV": -150,
+     "VAR": 290,
+     "ES": 138,
+     "LIMIT_USE": -204.43,
+     "LIMIT": 5,
+     "NOTE": "NOTE-M1"
+    },
+    "TYPE": "TYPE-X1",
+    "PORTFOLIO_ID": "PORTFOLIO_ID-V1",
+    "NAME": "NAME-X1",
+    "OWNER": 556,
+    "DEFINITION": {
+     "NODE": 333,
+     "RULE": 99,
+     "MEMBERS": 567.35
+    },
+    "ROLLS_UP_TO": {
+     "ID": "ID-Z1"
+    },
+    "VALID_FROM": "2026-07-16",
+    "VALID_TO": 109,
+    "DESCRIPTION": "DESCRIPTION-K1",
+    "VERSION": 756,
+    "UPDATED_BY": "2026-04-13"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "system-basket"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

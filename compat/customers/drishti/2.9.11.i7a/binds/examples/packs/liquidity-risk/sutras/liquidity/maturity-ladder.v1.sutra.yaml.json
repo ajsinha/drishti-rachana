@@ -1,0 +1,79 @@
+{
+ "file": "examples/packs/liquidity-risk/sutras/liquidity/maturity-ladder.v1.sutra.yaml",
+ "group": "examples/packs/liquidity-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "buckets": [
+     {
+      "bucket": 753.07,
+      "inflows": 113.27,
+      "outflows": 498.17,
+      "net": 811.03,
+      "cumulative": 440
+     },
+     {
+      "bucket": 853.07,
+      "inflows": -36.73,
+      "outflows": 848.17,
+      "net": 911.03,
+      "cumulative": 540
+     },
+     {
+      "bucket": 703.07,
+      "inflows": 313.27,
+      "outflows": 948.17,
+      "net": 761.03,
+      "cumulative": 390
+     }
+    ],
+    "ladderId": "LADDERID-W1",
+    "legalEntityName": "LEGALENTITYN-P1",
+    "currency": 257.71,
+    "gap1m": 343.01,
+    "survivalDays": 454,
+    "legalEntity": "LEGALENTITY-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "maturity-ladder"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

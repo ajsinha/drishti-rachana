@@ -1,0 +1,60 @@
+{
+ "file": "modules/capital-markets/packs/funds/sutras/fund-holder.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/funds",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TOP_WEIGHTS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "TICKER": "TICKER-K1",
+    "NAME": "NAME-X1",
+    "COMPANY": -37.51,
+    "FUNDS": 422.05,
+    "ETFS": 623.39,
+    "TOTAL_VALUE": 529,
+    "PCT_OF_SHARES": -175.33,
+    "AVG_WEIGHT": 370.07,
+    "MAX_WEIGHT": -109
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "fund-holder"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

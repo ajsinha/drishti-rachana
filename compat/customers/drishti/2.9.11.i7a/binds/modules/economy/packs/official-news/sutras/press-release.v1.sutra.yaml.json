@@ -1,0 +1,60 @@
+{
+ "file": "modules/economy/packs/official-news/sutras/press-release.v1.sutra.yaml",
+ "group": "modules/economy/packs/official-news",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "RELEASE_ID": "RELEASE_ID-W1",
+    "TITLE": "TITLE-X1",
+    "PUBLISHER_NAME": "PUBLISHER_NA-G1",
+    "PUBLISHED": -193.15,
+    "CATEGORY": "CATEGORY-A1",
+    "COUNTRY": "COUNTRY-I1",
+    "INTERNAL_ONLY": 384,
+    "SUMMARY": 801,
+    "URL": "URL-T1",
+    "RELEASE_SOURCE": "RELEASE_SOUR-K1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "press-release"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

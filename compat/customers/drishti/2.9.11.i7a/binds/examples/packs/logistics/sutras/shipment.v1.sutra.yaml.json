@@ -1,0 +1,113 @@
+{
+ "file": "examples/packs/logistics/sutras/shipment.v1.sutra.yaml",
+ "group": "examples/packs/logistics",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "route": [
+     {
+      "leg": 181,
+      "from": "2026-07-16",
+      "to": 407.05,
+      "mode": 603.53,
+      "departed": 390,
+      "arrived": 106.33,
+      "carrier": 80
+     },
+     {
+      "leg": 531,
+      "from": "2026-08-19",
+      "to": 507.05,
+      "mode": 453.53,
+      "departed": 240,
+      "arrived": 206.33,
+      "carrier": -69
+     },
+     {
+      "leg": 631,
+      "from": "2026-09-22",
+      "to": 357.05,
+      "mode": 803.53,
+      "departed": 590,
+      "arrived": 56.33,
+      "carrier": 280
+     }
+    ],
+    "milestones": [
+     {
+      "date": "2026-09-27",
+      "event": 314,
+      "location": 134
+     },
+     {
+      "date": "2026-01-12",
+      "event": 664,
+      "location": -15
+     },
+     {
+      "date": "2026-02-15",
+      "event": 764,
+      "location": 334
+     }
+    ],
+    "status": "STATUS-Y1",
+    "shipmentId": "SHIPMENTID-O1",
+    "customer": {
+     "name": "NAME-D1"
+    },
+    "origin": 260.21,
+    "destination": 80.45,
+    "eta": 218.81,
+    "etaDelayHours": 412,
+    "weightKg": 194.65,
+    "currency": 257.71,
+    "declaredValue": 369,
+    "incoterm": 203,
+    "commodity": -218,
+    "departed": 390,
+    "container": 495.05,
+    "vessel": 419.53
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "shipment"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

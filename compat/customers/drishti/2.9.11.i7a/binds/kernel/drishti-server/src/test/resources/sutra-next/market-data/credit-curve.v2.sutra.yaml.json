@@ -1,0 +1,78 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/credit-curve.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "POINTS": [
+     {
+      "TENOR": "TENOR-M1",
+      "SPREAD": 586,
+      "HAZARD": 425.57,
+      "SURVIVAL": -158.35
+     },
+     {
+      "TENOR": "TENOR-N2",
+      "SPREAD": 936,
+      "HAZARD": 775.57,
+      "SURVIVAL": 191.65
+     },
+     {
+      "TENOR": "TENOR-O3",
+      "SPREAD": 1036,
+      "HAZARD": 875.57,
+      "SURVIVAL": 291.65
+     }
+    ],
+    "CURVE_ID": "CURVE_ID-Z1",
+    "ISSUER_NAME": "ISSUER_NAME-B1",
+    "SPREAD_5Y": 579.61,
+    "RECOVERY": 212.75,
+    "SENIORITY": 479,
+    "DOC_CLAUSE": 237,
+    "PD_1Y": 115.49,
+    "ISSUER": 116
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "credit-curve"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

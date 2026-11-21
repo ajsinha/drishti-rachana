@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: what-if-shocks-example
+version: 1
+libraries: [finance@1]
+title: { id: "'What if'" }
+data:
+  delta:
+    key: RISK_FACTOR
+    rows:
+      - { RISK_FACTOR: rates, PNL_PER_UNIT: -1250 }
+      - { RISK_FACTOR: fx, PNL_PER_UNIT: 830 }
+panels:
+  - use: finance/what-if-shocks@1
+    as: wi
+    with:
+      sensitivities: { from: $.delta, columns: { factor: RISK_FACTOR, value: PNL_PER_UNIT } }
+      shocks:
+        - { id: rates, label: "Rates, bp", type: number, min: -100, max: 100 }
+        - { id: fx, label: "FX, %", type: number, min: -20, max: 20 }
+    on:
+      change: [ { host: risk.what-if, with: { shocks: event.shocks } } ]

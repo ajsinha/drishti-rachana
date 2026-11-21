@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: order-ticket-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Order ticket'" }
+panels:
+  - use: finance/order-ticket@1
+    as: tk
+    with: { instrument: "'ACME 5Y'" }
+    on:
+      submit: [ { host: order.place, with: { order: event.order } } ]

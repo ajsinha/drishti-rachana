@@ -1,0 +1,45 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: order-ticket
+version: 1
+doc:
+  summary: An order ticket - side, quantity, type, limit price, time in force - checked before it is sent; it sends nothing.
+  description: >-
+    Give the instrument and, if you like, the side and the last price to start from. The ticket checks its fields
+    (a quantity above zero, a limit price for a limit order) and raises submit with the order; the screen that uses it
+    decides what sending means (on: { submit: [ { host: order.place, with: { order: event.order } } ] }).
+  category: trading
+  tags: [order, ticket, entry, trading]
+params:
+  instrument: { type: text, required: true, doc: The instrument ordered }
+  sides:      { type: list<text>, default: [ BUY, SELL ], doc: The sides offered }
+  types:      { type: list<text>, default: [ MARKET, LIMIT ], doc: "The order types offered; LIMIT needs a limit price" }
+  tifs:       { type: list<text>, default: [ DAY, GTC, IOC ], doc: The times in force offered }
+  side:       { type: text, default: "", doc: "The side to start from, an expression (\"'BUY'\", state.side); none when empty" }
+  last:       { type: number, optional: true, doc: The last price, the limit price to start from }
+  title:      { type: text, default: Order ticket, doc: The panel's title }
+  send-label: { type: text, default: Send, doc: The send button's text }
+emits:
+  - { name: submit, payload: { order: record }, doc: "The ticket passed its checks: order, { instrument, side, qty, type, limit, tif }" }
+  - { name: cancel, doc: The ticket was put away }
+panels:
+  - id: ticket
+    kind: form
+    title: arg.title
+    submitLabel: arg.send-label
+    initial: { instrument: arg.instrument, side: arg.side, limit: arg.last }
+    form:
+      fields:
+        - { id: instrument, label: Instrument, readonly: true, reason: "The instrument of this ticket" }
+        - { id: side, label: Side, type: enum, options: arg.sides, required: true }
+        - { id: qty, label: Quantity, type: number, required: true, min: 0 }
+        - { id: type, label: Type, type: enum, options: arg.types, required: true }
+        - { id: limit, label: Limit price, type: number, min: 0 }
+        - { id: tif, label: Time in force, type: enum, options: arg.tifs, default: DAY }
+      rules:
+        - { rule: "qty > 0", message: "The quantity is above zero", fields: [ qty ] }
+        - { rule: "not (type == 'LIMIT' and empty(limit))", message: "A limit order needs a limit price", fields: [ limit ] }
+    emits:
+      - { name: submit, on: submit, payload: { order: event } }
+      - { name: cancel, on: cancel }

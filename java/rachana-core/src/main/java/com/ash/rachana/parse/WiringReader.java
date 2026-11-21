@@ -220,8 +220,13 @@ final class WiringReader {
                 problem(EVENTS, "the panel emits '" + name + "' twice", e);
             }
             String on = text(m.get("on"));
-            boolean point = Wiring.POINT_CLICK.equals(on) && SutraBlocks.atLeast(grammar.level(), Wiring.POINT_SINCE);
-            if (point && (kind == null || !Wiring.POINT_KINDS.contains(kind.id()))) {
+            boolean sent = com.ash.rachana.model.Effects.AT_FIRE.contains(on) && SutraBlocks.atLeast(grammar.level(), "1.2");   // a form sent
+            if (sent && kind != PanelKind.FORM) {
+                problem(EVENTS, "event " + name + ": a " + (kind == null ? "?" : kind.id()) + " panel cannot fire on " + on + " (submit, cancel: form)", m.get("on"));
+                continue;
+            }
+            boolean point = sent || Wiring.POINT_CLICK.equals(on) && SutraBlocks.atLeast(grammar.level(), Wiring.POINT_SINCE);
+            if (point && !sent && (kind == null || !Wiring.POINT_KINDS.contains(kind.id()))) {
                 problem(EVENTS, "event " + name + ": a " + (kind == null ? "?" : kind.id()) + " panel cannot fire on point-click (point-click: "
                         + String.join(", ", new java.util.TreeSet<>(Wiring.POINT_KINDS)) + "; row-click: table, ladder; bar-click: hbar)", m.get("on"));
                 continue;

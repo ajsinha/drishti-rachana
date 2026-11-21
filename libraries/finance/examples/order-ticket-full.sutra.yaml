@@ -1,0 +1,29 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: order-ticket-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Order ticket'" }
+data:
+  quote: { record: { SYMBOL: ACME 5Y, LAST_PRICE: 101.25 } }
+state:
+  sent: { type: text, default: none }
+panels:
+  - use: finance/order-ticket@1
+    as: tk
+    with:
+      instrument: $.quote.SYMBOL
+      last: $.quote.LAST_PRICE
+      side: "'BUY'"
+      types: [ LIMIT, STOP ]
+      title: ACME 5Y
+      send-label: Place order
+    on:
+      submit:
+        - { set: { state: sent, to: event.order.side } }
+        - { host: order.place, with: { order: event.order, qty: event.order.qty } }
+        - { notify: "Order sent", tone: ok }
+      cancel: [ { clear: sent } ]
+  - { id: last-sent, kind: metric, label: Last side sent, value: state.sent }

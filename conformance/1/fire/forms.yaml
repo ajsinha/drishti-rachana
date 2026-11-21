@@ -124,3 +124,52 @@ cases:
         /panels/0/data: { values: { book: B2, qty: 14 }, cancelLabel: Close }
       steps:
         - effects: []
+
+  - id: a-fragments-form-event-wired-at-the-use
+    kind: fire
+    source: "LIBRARIES 6.1, 6.2 (a fragment returns an event; the Sutra decides); SUTRA_EXPANSION I1 (submit)"
+    note: "The fragment's form emits submit carrying every value (payload values: event); the use's on: reads event.values.qty and hands event.values to the host, both filled in when the form is sent."
+    files:
+      ticket.v1.fragment.yaml: |
+        rachana: 1
+        fragment: ticket
+        version: 1
+        doc:
+          summary: A two-field ticket.
+        params:
+          title: { type: text, default: Ticket, doc: The title }
+        emits:
+          - { name: submit, payload: { values: record }, doc: The ticket was sent }
+        panels:
+          - id: form
+            kind: form
+            form:
+              fields:
+                - { id: qty, label: Quantity, type: number, required: true }
+                - { id: note, label: Note }
+            emits: [ { name: submit, on: submit, payload: { values: event } } ]
+    sutra: |
+      rachana: 1
+      sutra: ticket-demo
+      version: 1
+      title: { id: "'Ticket'" }
+      state:
+        qty: { type: number, default: 0 }
+      panels:
+        - use: ticket@1
+          as: tk
+          on:
+            submit:
+              - { set: { state: qty, to: event.values.qty } }
+              - { host: order.place, with: { order: event.values, desk: "'FX'" } }
+    steps:
+      - { panel: tk-form, trigger: submit, values: { note: x } }
+      - { panel: tk-form, trigger: submit, values: { qty: 4, note: x } }
+    expect:
+      at:
+        /panels/0/data/on: { submit: [ { do: set, state: qty, event: qty }, { do: host, action: order.place, with: { desk: FX }, withEvent: { order: "" } } ] }
+      steps:
+        - effects: []
+          problems: [ { code: RCH-5003, message: "Quantity is required" } ]
+        - state: { qty: 4 }
+          effects: [ { do: set, state: qty, value: 4 }, { do: host, action: order.place, with: { desk: FX, order: { qty: 4, note: x } } } ]

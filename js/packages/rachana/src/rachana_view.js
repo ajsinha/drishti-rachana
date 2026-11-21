@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+282ee8a,
-// vendored under js/vendor/drishti-elements/3.2.0-dev+282ee8a: load drishti-elements.js before this module). The element holds no meaning of its own:
+// <rachana-view>: a Sutra compiled and bound in the page and painted by Drishti Elements' painter (<elements-view>, Elements 3.2.0-dev+824d83b,
+// vendored under js/vendor/drishti-elements/3.2.0-dev+824d83b: load drishti-elements.js before this module). The element holds no meaning of its own:
 // the bundle compiles, plans, binds and diffs; the DataClient fetches; the painter paints.
 //
-//   <script src="/vendor/drishti-elements/3.2.0-dev+282ee8a/drishti-elements.js"></script>
+//   <script src="/vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.js"></script>
 //   <script type="module" src="/rachana/src/rachana_view.js"></script>
 //   <rachana-view src="/sutras/sales.sutra.yaml" data="/rdp/v1" runtime="/rachana/dist/rachana.runtime.js"
 //                 formats="/spec/1/formats.yaml" live></rachana-view>

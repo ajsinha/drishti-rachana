@@ -3,7 +3,7 @@
 library: finance
 version: 1.0.0
 summary: Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
-fragments: 48
+fragments: 50
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Trading, P&L, market risk, limits, counterparty and collateral, market data and funds as typed fragments, in generic terms; every figure arrives as data.
 
-48 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+50 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Market data
 
@@ -230,6 +230,25 @@ A trade's life as a timeline - booked, amended, fixed, paid, matured.
 Events: `select`
 
 Example: `examples/lifecycle-events.sutra.yaml`.
+
+### `finance/order-ticket@1`
+
+An order ticket - side, quantity, type, limit price, time in force - checked before it is sent; it sends nothing.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `instrument` | text | required. The instrument ordered |
+| `sides` | list<text> | default ['BUY', 'SELL']. The sides offered |
+| `types` | list<text> | default ['MARKET', 'LIMIT']. The order types offered; LIMIT needs a limit price |
+| `tifs` | list<text> | default ['DAY', 'GTC', 'IOC']. The times in force offered |
+| `side` | text | default ''. The side to start from, an expression ("'BUY'", state.side); none when empty |
+| `last` | number | optional. The last price |
+| `title` | text | default 'Order ticket'. The panel's title |
+| `send-label` | text | default 'Send'. The send button's text |
+
+Events: `submit`, `cancel`
+
+Example: `examples/order-ticket.sutra.yaml`.
 
 ### `finance/payment-schedule@1`
 
@@ -506,6 +525,22 @@ Value-at-risk and expected shortfall as tiles, with the change on the day and th
 | `fmt` | format | default 'amount0'. How the figures are written |
 
 Example: `examples/var-tiles.sutra.yaml`.
+
+### `finance/what-if-shocks@1`
+
+Market shocks entered beside the sensitivities they apply to; sent to the screen, whose host gives the estimate.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `sensitivities` | table(factor, value) | required. One row per factor |
+| `shocks` | list<record{id: text, label: text, type: text, min: number?, max: number?}> | required. The shocks asked for, one field each: { id (the factor), label, type: number, min, max } |
+| `estimate` | number | optional. The host's estimate for the shocks last sent |
+| `title` | text | default 'What if'. The panel's title |
+| `fmt` | format | default 'signed0'. How the sensitivities and the estimate are written |
+
+Events: `change`
+
+Example: `examples/what-if-shocks.sutra.yaml`.
 
 ## Limits
 

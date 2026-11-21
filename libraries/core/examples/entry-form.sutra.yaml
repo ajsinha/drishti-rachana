@@ -1,0 +1,28 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: entry-form-example
+version: 1
+libraries: [core@1]
+title: { id: "'New contact'" }
+state:
+  contact: { type: text, default: none }
+panels:
+  - use: core/entry-form@1
+    as: contact
+    with:
+      title: New contact
+      submit-label: Save
+      fields:
+        - { id: name, label: Name, required: true }
+        - { id: segment, label: Segment, type: enum, options: [ Retail, Wholesale ] }
+        - { id: limit, label: Credit limit, type: number }
+      rules:
+        - { rule: "limit <= 50000", message: "At most 50,000 without approval" }
+    on:
+      submit:
+        - { set: { state: contact, to: event.values.name } }
+        - { host: contact.create, with: { contact: event.values } }
+      cancel: [ { clear: contact } ]
+  - { id: saved, kind: metric, label: Last saved, value: state.contact }

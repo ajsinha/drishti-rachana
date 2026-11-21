@@ -21,6 +21,15 @@ from pathlib import Path
 
 import yaml
 
+
+class Yaml12(yaml.SafeLoader):
+    """YAML 1.2 booleans, as Rachana reads them: only true and false (an effect list's `on:` stays a key, not True)."""
+
+
+Yaml12.yaml_implicit_resolvers = {k: [r for r in v if r[0] != "tag:yaml.org,2002:bool"]
+                                  for k, v in yaml.SafeLoader.yaml_implicit_resolvers.items()}
+Yaml12.add_implicit_resolver("tag:yaml.org,2002:bool", re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF"))
+
 ROOT = Path(__file__).resolve().parents[2]
 CLI = ROOT / "js" / "packages" / "rachana-cli" / "bin" / "rachana.js"
 HEADER = ("# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.\n"
@@ -47,7 +56,7 @@ def fmt_default(v):
 def page(lib_name, manifest, frag, example_text):
     """The Sutra of one fragment's page."""
     name = frag["name"]
-    ex = yaml.safe_load(example_text)
+    ex = yaml.load(example_text, Loader=Yaml12)
     params = frag.get("params") or {}
     rows = []
     for pn, p in params.items():

@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: stepped-form-example
+version: 1
+libraries: [core@1]
+title: { id: "'Open an account'" }
+panels:
+  - use: core/stepped-form@1
+    as: account
+    with:
+      title: Open an account
+      steps: [ { id: party, label: Party }, { id: terms, label: Terms } ]
+      fields:
+        - { id: name, label: Name, step: party, required: true }
+        - { id: country, label: Country, step: party, type: enum, options: [ CA, GB, US ] }
+        - { id: limit, label: Credit limit, step: terms, type: number, required: true }
+        - { id: review, label: Review date, step: terms, type: date }
+      rules:
+        - { rule: "limit > 0", message: "The limit is a positive amount" }
+    on:
+      submit: [ { host: account.open, with: { account: event.values } }, { notify: "Account sent", tone: ok } ]

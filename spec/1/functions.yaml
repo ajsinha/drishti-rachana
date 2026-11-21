@@ -49,6 +49,7 @@
 functions_version: 1
 language: "1.0"
 status: draft
+roles_since: "1.2"
 
 core:
 # ---- logic (21)
@@ -2061,8 +2062,8 @@ core:
   eval: form
   params:
   - {name: "list", type: "list"}
-  - {name: "key", type: "any"}
-  - {name: "aggregate", type: "any", optional: true, default: "empty"}
+  - {name: "key", type: "any", role: "column"}
+  - {name: "aggregate", type: "any", optional: true, default: "empty", role: "column"}
   - {name: "by", type: "text", enum: ["month", "year"], optional: true, default: "empty"}
   returns: "list"
   nulls: {empty: "an empty list gives empty", masked: "a masked key or element gives masked"}
@@ -2223,7 +2224,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "sum of nothing is 0", masked: "masked"}
   errors:
@@ -2239,7 +2240,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list", optional: true, default: "empty"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "integer"
   nulls: {empty: "count of nothing is 0", masked: "masked"}
   errors:
@@ -2254,7 +2255,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "empty list gives empty", masked: "masked"}
   errors:
@@ -2269,7 +2270,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "empty list gives empty", masked: "masked"}
   errors:
@@ -2285,7 +2286,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "fewer than two values gives empty", masked: "masked"}
   errors:
@@ -2301,7 +2302,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "fewer than two values gives empty", masked: "masked"}
   errors:
@@ -2317,7 +2318,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "empty list gives empty", masked: "masked"}
   errors:
@@ -2333,7 +2334,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "empty list gives empty", masked: "masked"}
   errors:
@@ -2349,7 +2350,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "integer"
   nulls: {empty: "empty list gives empty", masked: "masked"}
   errors:
@@ -2364,7 +2365,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   - {name: "p", type: "number"}
   returns: "number"
   nulls: {empty: "empty list gives empty", masked: "masked"}
@@ -2382,8 +2383,8 @@ core:
   eval: eager
   params:
   - {name: "a", type: "list"}
-  - {name: "b", type: "any"}
-  - {name: "c", type: "text", optional: true, default: "empty"}
+  - {name: "b", type: "any", role: "column"}
+  - {name: "c", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "empty list, or weights summing to 0, gives empty", masked: "masked"}
   errors:
@@ -2398,7 +2399,7 @@ core:
   eval: eager
   params:
   - {name: "list", type: "list"}
-  - {name: "field", type: "text", optional: true, default: "empty"}
+  - {name: "field", type: "text", optional: true, default: "empty", role: "column"}
   returns: "number"
   nulls: {empty: "empty when there is no number", masked: "masked"}
   errors:

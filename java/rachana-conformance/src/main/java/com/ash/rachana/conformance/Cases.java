@@ -409,7 +409,7 @@ public final class Cases {
         LocalDate today = g.containsKey("today") ? LocalDate.parse(text(g.get("today"))) : LocalDate.of(2026, 1, 15);
         Map<String, Object> ctl = new LinkedHashMap<>();
         obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? l.stream().map(Cases::text).toList() : text(v)));
-        var s = new com.ash.rachana.table.LiveScreen(rachana, parse(c), today, g.containsKey("record") ? node(g.get("record")) : null, ctl);
+        var s = new com.ash.rachana.table.LiveScreen(at(c), parse(c), today, g.containsKey("record") ? node(g.get("record")) : null, ctl);
         for (Map.Entry<String, Object> e : obj(g.get("tables")).entrySet()) {
             Object t = e.getValue();
             var schema = t instanceof Map<?, ?> m && m.containsKey("schema") ? com.ash.rachana.table.TableSchema.of(m.get("schema")) : null;

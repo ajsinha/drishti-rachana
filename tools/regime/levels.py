@@ -28,7 +28,12 @@ def minor(v):
 
 
 def functions_at(text, level):
-    """spec/1/functions.yaml at a level: the Core entries (`- name:` blocks) whose `since` is later than the level are left out."""
+    """spec/1/functions.yaml at a level: the Core entries (`- name:` blocks) whose `since` is later than the level are left out; before
+    the level of `roles_since` (parameter roles, `role: "column"`) that key and every parameter's `role` are left out too."""
+    roles = re.search(r'^roles_since: "([0-9.]+)"\n', text, re.M)
+    if roles and minor(roles.group(1)) > minor(level):
+        text = text.replace(roles.group(0), "", 1)
+        text = re.sub(r', role: "[a-z]+"\}', "}", text)
     out, block = [], None
     for line in text.splitlines(keepends=True):
         if line.startswith("- ") or not line.startswith(" "):     # a new list item, a comment or a key ends the block

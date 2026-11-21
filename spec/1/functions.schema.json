@@ -11,6 +11,7 @@
     "functions_version": {"const": 1},
     "language": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
     "status": {"enum": ["draft", "complete"]},
+    "roles_since": {"type": "string", "pattern": "^1\\.[0-9]+$", "description": "the language level that brought parameter roles (role on a parameter); a level before it is written without them (tools/regime/levels.py)"},
     "core": {"type": "array", "items": {"$ref": "#/$defs/coreFunction"}},
     "deprecated": {"type": "array", "items": {"$ref": "#/$defs/deprecated"}},
     "drishti_profile": {"type": "array", "items": {"$ref": "#/$defs/profileFunction"}},
@@ -29,6 +30,7 @@
         "type": {"$ref": "#/$defs/paramType"},
         "optional": {"const": true},
         "variadic": {"const": true},
+        "role": {"enum": ["column"], "description": "column: the argument names a column (or a dotted path from one) of the rows of the function's list; a typed fragment's text argument here is renamed to the caller's column at compile time (SPEC 2.5, decision L-21)"},
         "default": {"description": "the value used when the argument is left out; the string \"empty\" means no value (empty)"},
         "enum": {"type": "array", "items": {"type": "string"}, "minItems": 1, "description": "the closed set a literal argument is checked against at compile time"}
       }

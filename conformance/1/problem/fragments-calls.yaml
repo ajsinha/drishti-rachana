@@ -354,3 +354,164 @@ cases:
       problems: []
       libraries:
       - { name: demo, version: 1.0.0, sha384: 6f945cc79032be7b89b7538a0a8b29bcc8856ba352c3cc677f60bbf9b0829480a306501eb1521f58e25694c0d64d0843 }
+
+  - id: column-parameter-given-a-computed-text
+    kind: problem
+    source: L-21 (3); functions.yaml role column (RCH-2121)
+    files:
+      desk-total.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-total
+        version: 1
+        doc:
+          summary: The total of one measure.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+          measure: { type: text, default: amount, doc: The column to total }
+        panels:
+          - { id: total, kind: metric, label: Total, value: "sum(arg.rows, arg.measure)" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-total@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2121
+        severity: error
+        message: "fragment desk-total names a column of table rows in sum(...) by a computed text ('arg.measure'): the caller's mapping cannot rename it; write the column parameter as text (one of desk, amount) or read the column as @.<name>"
+        range: { start: { line: 16, column: 53 } }
+
+  - id: bare-name-of-a-local-column
+    kind: problem
+    source: L-21 (3) (RCH-2121)
+    files:
+      desk-list.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-list
+        version: 1
+        doc:
+          summary: The desks with a positive amount.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            where: "amount > 0"
+            columns: [ { label: Desk, bind: desk } ]
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-list@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2121
+        severity: error
+        message: "fragment desk-list reads 'amount', a local column of table rows, as a bare name: the caller's mapping does not reach a bare name; write @.amount (or the column as text in a Core function's column parameter, sum(arg.rows, 'amount'))"
+        range: { start: { line: 18, column: 12 } }
+
+  - id: local-column-text-over-another-list
+    kind: problem
+    source: L-21 (3) (RCH-2121)
+    files:
+      desk-total.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-total
+        version: 1
+        doc:
+          summary: The total of the amounts.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - { id: total, kind: metric, label: Total, value: "sum(map(arg.rows, @), 'amount')" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-total@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2121
+        severity: error
+        message: "fragment desk-total names 'amount', a local column of table rows, in sum(...) over a list that is not the table: the caller's mapping cannot rename it; call it over the table (sum(arg.rows, 'amount')) or read it as @.amount"
+        range: { start: { line: 15, column: 53 } }
+
+  - id: column-text-the-table-does-not-declare
+    kind: problem
+    source: L-21 (1, 3) (RCH-2121)
+    files:
+      desk-total.v1.fragment.yaml: |
+        rachana: 1
+        fragment: desk-total
+        version: 1
+        doc:
+          summary: The total of the quantities.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - { id: total, kind: metric, label: Total, value: "sum(arg.rows, 'qty')" }
+    sutra: |
+      rachana: 1
+      sutra: calls-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: desk-total@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2121
+        severity: error
+        message: "fragment desk-total names column 'qty' of table rows in sum(...), which it does not declare (it has desk, amount)"
+        range: { start: { line: 15, column: 53 } }

@@ -4040,6 +4040,7 @@
 [experimental] com.ash.rachana.tools.UpgradeRule :: public static com.ash.rachana.tools.UpgradeRule[] com.ash.rachana.tools.UpgradeRule.values()
 [experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.ADDITIONS
 [experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.AGGREGATE_NOT_A_LIST
+[experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.CATALOGUE_ARGUMENTS
 [experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.DECLARE
 [experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.EXACT
 [experimental] com.ash.rachana.tools.UpgradeRule :: public static final com.ash.rachana.tools.UpgradeRule com.ash.rachana.tools.UpgradeRule.KEYWORD

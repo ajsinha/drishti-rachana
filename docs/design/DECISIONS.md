@@ -301,4 +301,4 @@ The Rachana AI kit (prompt kit, validate-and-fix loop, evaluation harness) and t
 
 ### Desktop hosts deferred (owner, 2026-11-21)
 
-The desktop hosts (Electron, Java Swing through JCEF, .NET through WebView2) leave i7b and are parked with no release assigned. The in-process bridge transport of the Data Protocol stays (built in G2), so a host can be added later without protocol changes.
+The desktop hosts are reduced (owner: "do it if it is not a massive effort"): i7b tries **one Java host, a Swing panel over JavaFX WebView (`JFXPanel`)**, because it ships as jars only (no .exe, so it runs on the bank's Windows machine); a 1–2 day spike first checks that `<rachana-view>` paints correctly in JavaFX's WebKit; the host (~8 bd) is built only if the spike passes. Electron (needs its own executable), JCEF (native Chromium binaries) and .NET WebView2 (a C# toolchain) are parked with no release assigned. The in-process bridge transport of the Data Protocol stays (built in G2), so a host can be added later without protocol changes.

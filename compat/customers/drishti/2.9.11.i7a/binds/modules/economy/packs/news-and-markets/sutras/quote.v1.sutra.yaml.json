@@ -1,0 +1,70 @@
+{
+ "file": "modules/economy/packs/news-and-markets/sutras/quote.v1.sutra.yaml",
+ "group": "modules/economy/packs/news-and-markets",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "QUOTE_ID": "QUOTE_ID-D1",
+    "NAME": "NAME-X1",
+    "PRICE": 757,
+    "CURRENCY": "CURRENCY-Z1",
+    "CHANGE": 436.25,
+    "CHANGE_PCT": 702,
+    "MARKET_STATE": "MARKET_STATE-I1",
+    "EXCHANGE": 20.17
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "quote"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

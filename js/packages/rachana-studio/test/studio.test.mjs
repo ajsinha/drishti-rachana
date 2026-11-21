@@ -146,7 +146,7 @@ test("libraries: a folder, an .rlib and a folder of both are found; a bad one is
   assert.equal(readLibrary(join(d, "libs", "alpha")).files["fragments/x.v1.fragment.yaml"], "x");
   assert.throws(() => readZip(zip([["../evil", "x", 0]])), /unsafe/);
   const p = projectLibraries(d, [join(d, "libs")], {});
-  assert.deepEqual(p.libraries.map((l) => l.name).sort(), ["alpha", "beta", "core"], "the bundled core is one source among the others");
+  assert.deepEqual(p.libraries.map((l) => l.name).sort(), ["alpha", "beta", "core", "finance"], "the bundled libraries (core, finance) are sources among the others");
   assert.equal(p.problems.length, 1, "only the junk archive");
   // another folder through RACHANA_LIBS, nothing rebuilt
   mkdirSync(join(d, "more", "gamma"), { recursive: true });

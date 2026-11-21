@@ -1,0 +1,20 @@
+{
+ "file": "modules/market-data/packs/market-data/sutras/market-data/correlation-matrix.v1.sutra.yaml",
+ "group": "modules/market-data/packs/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "MATRIX_ID": "MATRIX_ID-A1",
+    "NAME": "NAME-X1",
+    "FACTORS": 209
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

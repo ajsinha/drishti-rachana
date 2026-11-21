@@ -1,0 +1,71 @@
+{
+ "file": "examples/packs/climate-risk/sutras/climate/climate-scenario.v1.sutra.yaml",
+ "group": "examples/packs/climate-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "carbonPath": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "shocks": [
+     {
+      "sector": 530.87,
+      "shock": 40.87
+     },
+     {
+      "sector": 380.87,
+      "shock": 140.87
+     },
+     {
+      "sector": 730.87,
+      "shock": -9.13
+     }
+    ],
+    "scenarioId": "SCENARIOID-N1",
+    "name": "NAME-D1",
+    "category": 78.05,
+    "warming": 684,
+    "carbon2030": 863,
+    "carbon2050": 346.27
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "climate-scenario"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

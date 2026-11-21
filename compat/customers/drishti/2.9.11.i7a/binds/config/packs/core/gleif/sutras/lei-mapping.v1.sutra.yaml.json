@@ -1,0 +1,25 @@
+{
+ "file": "config/packs/core/gleif/sutras/lei-mapping.v1.sutra.yaml",
+ "group": "config/packs/core/gleif",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "IDENTIFIER": 643,
+    "ENTITY_NAME": "ENTITY_NAME-E1",
+    "TYPE": "TYPE-X1",
+    "ENTITY_LEI": "ENTITY_LEI-U1",
+    "COUNTRY": "COUNTRY-I1",
+    "LEI_GROUP": "LEI_GROUP-Q1",
+    "ISIN_COUNT": "ISIN_COUNT-B1",
+    "MAPPING_FILE": 424.15
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

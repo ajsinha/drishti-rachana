@@ -1,0 +1,131 @@
+{
+ "file": "config/packs/core/gleif/sutras/lei-group.v1.sutra.yaml",
+ "group": "config/packs/core/gleif",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TREE": [
+     {
+      "CHILDREN": 769.61,
+      "LEI": "LEI-Z1",
+      "NAME": "NAME-X1",
+      "COUNTRY": "COUNTRY-I1",
+      "LEVEL": "LEVEL-A1"
+     },
+     {
+      "CHILDREN": 619.61,
+      "LEI": "LEI-A2",
+      "NAME": "NAME-Y2",
+      "COUNTRY": "COUNTRY-J2",
+      "LEVEL": "LEVEL-B2"
+     },
+     {
+      "CHILDREN": 969.61,
+      "LEI": "LEI-B3",
+      "NAME": "NAME-Z3",
+      "COUNTRY": "COUNTRY-K3",
+      "LEVEL": "LEVEL-C3"
+     }
+    ],
+    "ROWS": [
+     {
+      "LEI": "LEI-Z1",
+      "NAME": "NAME-X1",
+      "SEGMENT": 371.87,
+      "US_COMPANY": 236.27
+     },
+     {
+      "LEI": "LEI-A2",
+      "NAME": "NAME-Y2",
+      "SEGMENT": 721.87,
+      "US_COMPANY": 586.27
+     },
+     {
+      "LEI": "LEI-B3",
+      "NAME": "NAME-Z3",
+      "SEGMENT": 821.87,
+      "US_COMPANY": 686.27
+     }
+    ],
+    "BY_COUNTRY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "BY_LEGAL_FORM": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "GROUP_ID": "GROUP_ID-D1",
+    "NAME": "NAME-X1",
+    "MEMBERS": 567.35,
+    "MEMBERS_IN_GLEIF": "MEMBERS_IN_G-F1",
+    "LEVELS": "LEVELS-M1",
+    "COUNTRIES": 429,
+    "LATE_RENEWALS": 592.93,
+    "LEI_COUNTRY": "LEI_COUNTRY-L1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "ENTITY_LEI": "ENTITY_LEI-U1",
+    "LEGAL_FORM": 601,
+    "SEGMENT": 371.87,
+    "US_COMPANY": 236.27,
+    "LAPSED": 139.13,
+    "CAPPED": 506
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "lei-group"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

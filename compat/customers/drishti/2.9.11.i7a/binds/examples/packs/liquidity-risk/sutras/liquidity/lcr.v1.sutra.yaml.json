@@ -1,0 +1,101 @@
+{
+ "file": "examples/packs/liquidity-risk/sutras/liquidity/lcr.v1.sutra.yaml",
+ "group": "examples/packs/liquidity-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "hqlaByLevel": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "flows": [
+     {
+      "category": 78.05,
+      "balance": 525,
+      "rate": 593.99,
+      "flow": 51.11
+     },
+     {
+      "category": -71.95,
+      "balance": 375,
+      "rate": 443.99,
+      "flow": -98.89
+     },
+     {
+      "category": 278.05,
+      "balance": 725,
+      "rate": 793.99,
+      "flow": 251.11
+     }
+    ],
+    "trend": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "lcrId": "LCRID-U1",
+    "legalEntityName": "LEGALENTITYN-P1",
+    "lcr": 585.37,
+    "hqla": 780,
+    "netOutflows": 257,
+    "minimum": 531,
+    "buffer": 33,
+    "asOf": "2026-01-10",
+    "legalEntity": "LEGALENTITY-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "lcr"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

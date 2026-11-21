@@ -1,0 +1,69 @@
+{
+ "file": "examples/packs/liquidity-risk/sutras/liquidity/hqla-holding.v1.sutra.yaml",
+ "group": "examples/packs/liquidity-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "details": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "holdingId": "HOLDINGID-H1",
+    "security": 514,
+    "level": 331.43,
+    "marketValue": 522,
+    "haircut": 839.93,
+    "liquidityValue": 351,
+    "encumbered": -64,
+    "bond": 273
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "hqla-holding"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

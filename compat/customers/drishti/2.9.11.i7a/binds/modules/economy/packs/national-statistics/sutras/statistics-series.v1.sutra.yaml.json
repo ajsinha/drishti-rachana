@@ -1,0 +1,77 @@
+{
+ "file": "modules/economy/packs/national-statistics/sutras/statistics-series.v1.sutra.yaml",
+ "group": "modules/economy/packs/national-statistics",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SERIES_ID": "SERIES_ID-G1",
+    "TITLE": "TITLE-X1",
+    "LATEST": 449.41,
+    "UNIT": 271,
+    "LATEST_PERIOD": 261.91,
+    "CHANGE": 436.25,
+    "CHANGE_PCT": 702,
+    "YEAR_ON_YEAR_PCT": 364,
+    "RELEASED": 258,
+    "TOPIC": 563.27,
+    "TABLE_ID": "TABLE_ID-J1",
+    "TABLE_TITLE": "TABLE_TITLE-L1",
+    "MEMBERS": 567.35,
+    "VECTOR": 123,
+    "FREQUENCY": 236.99,
+    "SCALE": 548
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "statistics-series"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

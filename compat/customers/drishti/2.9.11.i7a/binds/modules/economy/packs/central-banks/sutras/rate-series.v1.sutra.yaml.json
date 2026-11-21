@@ -1,0 +1,76 @@
+{
+ "file": "modules/economy/packs/central-banks/sutras/rate-series.v1.sutra.yaml",
+ "group": "modules/economy/packs/central-banks",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SERIES_ID": "SERIES_ID-G1",
+    "TITLE": "TITLE-X1",
+    "LATEST": 449.41,
+    "UNIT": 271,
+    "LATEST_DATE": "2026-02-20",
+    "CHANGE": 436.25,
+    "CHANGE_1Y": 592.81,
+    "HIGH": 224,
+    "LOW": 645,
+    "CENTRAL_BANK": 376,
+    "SOURCE": "SOURCE-O1",
+    "CODE": "CODE-P1",
+    "FREQUENCY": 236.99,
+    "OBSERVATIONS": 757,
+    "DESCRIPTION": "DESCRIPTION-K1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "rate-series"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

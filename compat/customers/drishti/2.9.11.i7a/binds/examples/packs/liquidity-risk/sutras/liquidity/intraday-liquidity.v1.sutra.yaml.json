@@ -1,0 +1,85 @@
+{
+ "file": "examples/packs/liquidity-risk/sutras/liquidity/intraday-liquidity.v1.sutra.yaml",
+ "group": "examples/packs/liquidity-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "usage": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "largePayments": [
+     {
+      "time": "2026-03-12",
+      "counterparty": 745.87,
+      "amount": 555.05
+     },
+     {
+      "time": "2026-04-15",
+      "counterparty": 845.87,
+      "amount": 905.05
+     },
+     {
+      "time": "2026-05-18",
+      "counterparty": 695.87,
+      "amount": 1005.05
+     }
+    ],
+    "reportId": "REPORTID-U1",
+    "legalEntityName": "LEGALENTITYN-P1",
+    "currency": 257.71,
+    "peakUsage": 236.99,
+    "available": 241.37,
+    "usagePct": -93,
+    "legalEntity": "LEGALENTITY-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "intraday-liquidity"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

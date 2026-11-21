@@ -727,6 +727,17 @@
         "truncated": {
           "type": "boolean",
           "description": "whether the options were cut at the limit"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the control's effect lists (I1): change to the effects a painter runs when the reader picks a new value, evaluated over the screen; an effect that reads the event (event) takes the new value; absent when it has none (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,

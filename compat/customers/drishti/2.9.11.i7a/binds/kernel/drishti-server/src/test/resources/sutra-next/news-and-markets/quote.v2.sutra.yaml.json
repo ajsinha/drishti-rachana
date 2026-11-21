@@ -1,0 +1,92 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/news-and-markets/quote.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/news-and-markets",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "DATE": "2026-04-22",
+      "OPEN": 132.05,
+      "HIGH": 224,
+      "LOW": 645,
+      "CLOSE": 590,
+      "VOLUME": 746.81
+     },
+     {
+      "DATE": "2026-05-25",
+      "OPEN": -17.95,
+      "HIGH": 74,
+      "LOW": 745,
+      "CLOSE": 440,
+      "VOLUME": 596.81
+     },
+     {
+      "DATE": "2026-06-10",
+      "OPEN": 332.05,
+      "HIGH": 424,
+      "LOW": 595,
+      "CLOSE": 790,
+      "VOLUME": 946.81
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "QUOTE_ID": "QUOTE_ID-D1",
+    "NAME": "NAME-X1",
+    "PRICE": 757,
+    "CURRENCY": "CURRENCY-Z1",
+    "CHANGE": 436.25,
+    "CHANGE_PCT": 702,
+    "MARKET_STATE": "MARKET_STATE-I1",
+    "EXCHANGE": 20.17,
+    "DAY_RANGE": 732,
+    "FIFTY_TWO_WEEK_RANGE": 345,
+    "VOLUME": 746.81,
+    "MARKET_CAP": 483.71,
+    "PREVIOUS_CLOSE": 252,
+    "AS_OF": "2026-07-25",
+    "SNAPSHOT": 534.77
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "quote"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

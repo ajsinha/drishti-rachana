@@ -1,0 +1,69 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/market-data/cap-vol-surface.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "GRID": [
+     {
+      "ATM": -41.29,
+      "K_2": 817.15,
+      "K_3": 607,
+      "K_4": 344.69,
+      "K_5": 413.27,
+      "MATURITY": "2026-02-20"
+     },
+     {
+      "ATM": 308.71,
+      "K_2": 917.15,
+      "K_3": 957,
+      "K_4": 194.69,
+      "K_5": 263.27,
+      "MATURITY": "2026-03-23"
+     },
+     {
+      "ATM": 408.71,
+      "K_2": 767.15,
+      "K_3": 1057,
+      "K_4": 544.69,
+      "K_5": 613.27,
+      "MATURITY": "2026-04-26"
+     }
+    ],
+    "SURFACE_ID": "SURFACE_ID-V1",
+    "CURRENCY": "CURRENCY-Z1",
+    "ATM_5Y": 271
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "cap-vol-surface"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

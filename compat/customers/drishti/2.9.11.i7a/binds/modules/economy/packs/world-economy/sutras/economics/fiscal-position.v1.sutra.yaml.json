@@ -1,0 +1,91 @@
+{
+ "file": "modules/economy/packs/world-economy/sutras/economics/fiscal-position.v1.sutra.yaml",
+ "group": "modules/economy/packs/world-economy",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "RATIOS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "DEBT_PATH": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "BALANCE_PATH": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "FISCAL_ID": "FISCAL_ID-X1",
+    "ECONOMY_NAME": "ECONOMY_NAME-N1",
+    "DEBT": 591,
+    "BALANCE": 94,
+    "REVENUE": 647,
+    "SPENDING": "2026-02-11",
+    "MILITARY": 327,
+    "ECONOMY": 141.49
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "fiscal-position"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

@@ -1,0 +1,113 @@
+{
+ "file": "examples/packs/finance/sutras/fx/fx-swap.v2.sutra.yaml",
+ "group": "examples/packs/finance",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "cashflows": [
+     {
+      "payDate": "2026-03-21",
+      "leg": 181,
+      "currency": 257.71,
+      "direction": 541.39,
+      "amount": 555.05,
+      "df": 614,
+      "pvUsd": 441
+     },
+     {
+      "payDate": "2026-04-24",
+      "leg": 531,
+      "currency": 357.71,
+      "direction": 641.39,
+      "amount": 905.05,
+      "df": 964,
+      "pvUsd": 291
+     },
+     {
+      "payDate": "2026-05-27",
+      "leg": 631,
+      "currency": 207.71,
+      "direction": 491.39,
+      "amount": 1005.05,
+      "df": 1064,
+      "pvUsd": 641
+     }
+    ],
+    "risk": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "productType": "PRODUCTTYPE-C1",
+    "tradeId": "TRADEID-Q1",
+    "counterparty": {
+     "id": "ID-H1",
+     "name": "NAME-D1"
+    },
+    "pair": 285.41,
+    "nearValue": 497,
+    "farValue": 746,
+    "nearRate": 136.01,
+    "farRate": 483.83,
+    "swapPoints": 636.19,
+    "mtm": 499.01,
+    "book": 573.43,
+    "legs": -61.21,
+    "confirmation": {
+     "status": "STATUS-Y1",
+     "matched": -231,
+     "clsEligible": 480,
+     "trader": 436
+    },
+    "forwardCurve": 272,
+    "nettingSet": 535.01
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "fx-swap"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

@@ -15,7 +15,9 @@ import org.junit.jupiter.api.Test;
  * CG3, the customer corpus (SUTRA_EXPANSION 6.5, 6.6). Per corpus under compat/customers/: it is exactly as exported (manifest); every
  * Sutra and block it lists is present; every Sutra compiles, with the corpus's blocks, to the recorded problem list, canonical model
  * text and plan, byte for byte, on Core's compiler with the conformance suite's Drishti profile ({@link CoreRuntime}; the reference
- * bridge only when asked for); the recorded binds replay through a RecordedHost (none recorded yet: binds/ is planned before G4). No re-record flag exists here: a corpus arrives only from a release
+ * bridge only when asked for); every recorded bind ({@code binds/}: the
+ * reference binder's ViewModel of each Sutra over a synthetic record, gate finding F13) replays through a RecordedHost into Core's binder
+ * to the same bytes, or is listed with its reason in tools/split/known-differences.txt. No re-record flag exists here: a corpus arrives only from a release
  * of the customer.
  */
 class CustomerCorpusTest {
@@ -84,19 +86,41 @@ class CustomerCorpusTest {
     }
 
     @Test
-    void recordedBindsReplayThroughARecordedHost() throws Exception {
+    void recordedBindsReplayThroughCoresBinderByteForByte() throws Exception {
+        Map<String, String> known = knownBindDifferences();
         for (Corpus c : Corpus.all()) {
             Path binds = c.dir().resolve("binds");
-            if (!Files.isDirectory(binds)) continue;   // the binder moves into Core at v0.10.0; until then CG8 covers binding
-            try (Stream<Path> s = Files.list(binds)) {
-                for (Path f : s.filter(p -> p.toString().endsWith(".json")).toList()) {
-                    Map<String, Object> bind = Json.object(Json.parse(Files.readString(f)));
-                    RecordedHost host = RecordedHost.fromJson(Json.canonical(Map.of("calls", bind.get("hostCalls"))));
-                    assertNotNull(host, f.toString());
-                    fail(f + ": a bind is recorded but Core's binder is not wired to the corpus test yet");
+            if (!Files.isDirectory(binds)) continue;   // a corpus exported before its binds were recorded
+            List<String> diffs = new ArrayList<>();
+            List<String> stale = new ArrayList<>();
+            int replayed = 0;
+            for (CoreBinds.Outcome o : CoreBinds.replay(c)) {
+                replayed++;
+                String id = "binds/" + c.release() + "/" + o.file();
+                if (o.difference() == null) {
+                    if (known.containsKey(id)) stale.add(id);
+                } else if (!known.containsKey(id)) {
+                    diffs.add(o.file() + ": " + o.difference());
                 }
             }
+            assertEquals(List.of(), diffs, c.name() + ": " + diffs.size() + " binds differ from the reference's (a bug to fix, or a known difference with its reason)");
+            assertEquals(List.of(), stale, c.name() + ": listed in known-differences.txt but identical now (remove them)");
+            Map<String, Object> v = Json.object(Json.parse(Files.readString(c.dir().resolve("VERSION.json"))));
+            assertEquals(((java.math.BigDecimal) v.get("binds")).intValue(), replayed, c.name() + ": every recorded bind replayed");
         }
+    }
+
+    /** The accepted bind differences of tools/split/known-differences.txt: {@code binds/<release>/<file> <step>: <why>}, id to reason. */
+    static Map<String, String> knownBindDifferences() throws Exception {
+        Map<String, String> out = new LinkedHashMap<>();
+        for (String l : Files.readAllLines(Corpus.repoRoot().resolve("tools/split/known-differences.txt"))) {
+            if (l.startsWith("binds/")) {
+                int sp = l.indexOf(' ');
+                assertTrue(sp > 0 && !l.substring(sp).isBlank(), "a known difference needs its reason: " + l);
+                out.put(l.substring(0, sp), l.substring(sp + 1).strip());
+            }
+        }
+        return out;
     }
 
     @Test

@@ -1,0 +1,81 @@
+{
+ "file": "modules/economy/packs/world-development/sutras/development-profile.v1.sutra.yaml",
+ "group": "modules/economy/packs/world-development",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "INDICATORS": [
+     {
+      "WDI_SERIES": 806.11,
+      "INDICATOR": 555,
+      "LATEST": 449.41,
+      "UNIT": 271,
+      "YEAR": 728
+     },
+     {
+      "WDI_SERIES": 906.11,
+      "INDICATOR": 405,
+      "LATEST": 549.41,
+      "UNIT": 621,
+      "YEAR": 578
+     },
+     {
+      "WDI_SERIES": 756.11,
+      "INDICATOR": 755,
+      "LATEST": 399.41,
+      "UNIT": 721,
+      "YEAR": 928
+     }
+    ],
+    "PROFILE_ID": "PROFILE_ID-C1",
+    "COUNTRY_NAME": "COUNTRY_NAME-B1",
+    "REGION": "REGION-I1",
+    "INCOME_GROUP": "INCOME_GROUP-M1",
+    "CAPITAL": 412.75,
+    "POPULATION": 866.23,
+    "GDP_PER_CAPITA": -4,
+    "ISO3": -103
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "development-profile"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

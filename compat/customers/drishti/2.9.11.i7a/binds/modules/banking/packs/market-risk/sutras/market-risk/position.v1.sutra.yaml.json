@@ -1,0 +1,134 @@
+{
+ "file": "modules/banking/packs/market-risk/sutras/market-risk/position.v1.sutra.yaml",
+ "group": "modules/banking/packs/market-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "TRADES": [
+     {
+      "TRADE_ID": "TRADE_ID-P1",
+      "DIRECTION": 200.57,
+      "QUANTITY": 294,
+      "PV": 883.19,
+      "TRADE_CURRENCY": "TRADE_CURREN-P1",
+      "COUNTERPARTY": "COUNTERPARTY-N1"
+     },
+     {
+      "TRADE_ID": "TRADE_ID-Q2",
+      "DIRECTION": 50.57,
+      "QUANTITY": 144,
+      "PV": 733.19,
+      "TRADE_CURRENCY": "TRADE_CURREN-Q2",
+      "COUNTERPARTY": "COUNTERPARTY-O2"
+     },
+     {
+      "TRADE_ID": "TRADE_ID-R3",
+      "DIRECTION": 400.57,
+      "QUANTITY": 494,
+      "PV": 1083.19,
+      "TRADE_CURRENCY": "TRADE_CURREN-R3",
+      "COUNTERPARTY": "COUNTERPARTY-P3"
+     }
+    ],
+    "VAR_ENGINE": {
+     "TRADES": [
+      {
+       "TRADE_ID": "TRADE_ID-P1",
+       "DIRECTION": 200.57,
+       "TRADE_CURRENCY": "TRADE_CURREN-P1",
+       "VAR": 290,
+       "COMPONENT_VAR": 181.75
+      },
+      {
+       "TRADE_ID": "TRADE_ID-Q2",
+       "DIRECTION": 50.57,
+       "TRADE_CURRENCY": "TRADE_CURREN-Q2",
+       "VAR": 390,
+       "COMPONENT_VAR": 281.75
+      },
+      {
+       "TRADE_ID": "TRADE_ID-R3",
+       "DIRECTION": 400.57,
+       "TRADE_CURRENCY": "TRADE_CURREN-R3",
+       "VAR": 240,
+       "COMPONENT_VAR": 131.75
+      }
+     ],
+     "PNL": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "VAR": 290,
+     "ES": 138,
+     "COMPONENT_VAR": 181.75,
+     "BOOK_VAR": "BOOK_VAR-Z1",
+     "PCT_OF_BOOK_VAR": "PCT_OF_BOOK_-O1",
+     "NOTE": "NOTE-M1"
+    },
+    "POSITION_ID": "POSITION_ID-W1",
+    "INSTRUMENT": 143.11,
+    "DIRECTION": 200.57,
+    "QUANTITY": 294,
+    "MARKET_VALUE": 386,
+    "TRADE_COUNT": 622.07,
+    "INSTRUMENT_ID": "INSTRUMENT_I-C1",
+    "POSITION_RULE": 445,
+    "TT_BOOK": "TT_BOOK-V1",
+    "DESK": "DESK-G1",
+    "LEGAL_ENTITY": "LEGAL_ENTITY-E1",
+    "PRODUCT_TYPE": "PRODUCT_TYPE-V1",
+    "CURRENCY": "CURRENCY-Z1",
+    "COUNTERPARTY": "COUNTERPARTY-N1",
+    "NOTIONAL": 155,
+    "VAR_SCOPE": 363
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "position"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

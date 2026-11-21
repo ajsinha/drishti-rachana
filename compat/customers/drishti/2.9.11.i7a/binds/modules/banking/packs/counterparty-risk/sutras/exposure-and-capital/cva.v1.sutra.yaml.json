@@ -1,0 +1,85 @@
+{
+ "file": "modules/banking/packs/counterparty-risk/sutras/exposure-and-capital/cva.v1.sutra.yaml",
+ "group": "modules/banking/packs/counterparty-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "COMPONENTS": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "SENSITIVITIES": [
+     {
+      "FACTOR": 640.27,
+      "BUMP": 627.71,
+      "DELTA": 726.95
+     },
+     {
+      "FACTOR": 740.27,
+      "BUMP": 477.71,
+      "DELTA": 576.95
+     },
+     {
+      "FACTOR": 590.27,
+      "BUMP": 827.71,
+      "DELTA": 926.95
+     }
+    ],
+    "RESULT_ID": "RESULT_ID-X1",
+    "CVA": -240.19,
+    "DVA": 757,
+    "FVA": -217,
+    "KVA": -68,
+    "CS01": -136.93,
+    "NETTING_SET": 67
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "cva"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

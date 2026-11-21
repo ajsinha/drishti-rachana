@@ -1,0 +1,80 @@
+{
+ "file": "examples/packs/finance/sutras/books/book-pnl.v1.sutra.yaml",
+ "group": "examples/packs/finance",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "rows": [
+     {
+      "trade": 615,
+      "product": 610.57,
+      "currency": 257.71,
+      "notional": 144,
+      "mtm": 499.01
+     },
+     {
+      "trade": 465,
+      "product": 710.57,
+      "currency": 357.71,
+      "notional": 494,
+      "mtm": 849.01
+     },
+     {
+      "trade": 815,
+      "product": 560.57,
+      "currency": 207.71,
+      "notional": 594,
+      "mtm": 949.01
+     }
+    ],
+    "book": 573.43,
+    "tradeCount": 849,
+    "mtm": 499.01,
+    "dv01": 236.63,
+    "worstMtm": 381.95,
+    "largestNotional": 877,
+    "currencies": 508.73
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "book-pnl"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

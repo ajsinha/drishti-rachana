@@ -12,6 +12,10 @@
   <dependencies>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
+  <properties>
+    <node>node</node>
+    <rachana.node.skip>false</rachana.node.skip>
+  </properties>
   <build>
     <plugins>
       <plugin><artifactId>maven-jar-plugin</artifactId><configuration><skipIfEmpty>true</skipIfEmpty></configuration></plugin>
@@ -24,6 +28,20 @@
             <rachana.repo.root>${rachana.repo.root}</rachana.repo.root>
           </systemPropertyVariables>
         </configuration>
+      </plugin>
+      <!-- the Node tests of the runtime, the command line and the Studio run with every build (so they cannot rot unseen). The Java-dependent
+           ones find the classes of the earlier modules (this module is last); the bundle-dependent ones need js/packages/rachana/dist
+           (python3 tools/js/build_js.py). Node 20+ on the PATH, or -Dnode=/path/to/node; -Drachana.node.skip=true leaves them out. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.6.3</version>
+        <executions>
+          <execution><id>node-tests</id><phase>test</phase><goals><goal>exec</goal></goals><configuration>
+            <skip>${rachana.node.skip}</skip>
+            <executable>${node}</executable>
+            <workingDirectory>${rachana.repo.root}</workingDirectory>
+            <arguments><argument>tools/js/node_tests.mjs</argument><argument>js/packages/*/test</argument></arguments>
+          </configuration></execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

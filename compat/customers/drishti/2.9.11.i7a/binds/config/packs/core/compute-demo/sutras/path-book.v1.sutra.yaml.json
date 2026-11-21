@@ -1,0 +1,21 @@
+{
+ "file": "config/packs/core/compute-demo/sutras/path-book.v1.sutra.yaml",
+ "group": "config/packs/core/compute-demo",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "BOOK_ID": "BOOK_ID-D1",
+    "NAME": "NAME-X1",
+    "DESK": "DESK-G1",
+    "STRIP_COUNT": 709.27
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

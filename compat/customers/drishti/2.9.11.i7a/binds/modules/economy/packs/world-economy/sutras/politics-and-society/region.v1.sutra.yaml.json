@@ -1,0 +1,91 @@
+{
+ "file": "modules/economy/packs/world-economy/sutras/politics-and-society/region.v1.sutra.yaml",
+ "group": "modules/economy/packs/world-economy",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "GOVERNMENT_TYPES": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "LIFE_TREND": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "INTERNET_TREND": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "REGION_ID": "REGION_ID-K1",
+    "NAME": "NAME-X1",
+    "COUNTRIES": 429,
+    "POPULATION_M": 318,
+    "LIFE_EXPECTANCY": 636.89,
+    "WOMEN_PARLIAMENT": 663,
+    "INTERNET": 501.11,
+    "MEMBER_STATES": "MEMBER_STATE-F1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "region"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

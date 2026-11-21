@@ -1,0 +1,9 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+#
+# DEVELOPMENT ONLY. The one user below, dev, has the password  dev-only-pass  (written here so the example runs; it protects nothing).
+# Never reuse it. Make a real hash with:  rachana-server hash-password  (IDE launcher: "Rachana server hash-password").
+users:
+  dev:
+    password: "pbkdf2-sha256$210000$ygZI_fRe5U8IMWMmdiAB_A$zoMAJF8SMk6bqFcwghfro5Aoyr-z_MxJKtzKRRVV0BE"
+    roles: [sales, admin]

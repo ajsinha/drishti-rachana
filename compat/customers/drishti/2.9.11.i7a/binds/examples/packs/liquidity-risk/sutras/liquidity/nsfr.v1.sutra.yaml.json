@@ -1,0 +1,97 @@
+{
+ "file": "examples/packs/liquidity-risk/sutras/liquidity/nsfr.v1.sutra.yaml",
+ "group": "examples/packs/liquidity-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "asf": [
+     {
+      "category": 78.05,
+      "amount": 555.05,
+      "factor": 459.47,
+      "weighted": 79.43
+     },
+     {
+      "category": -71.95,
+      "amount": 905.05,
+      "factor": 809.47,
+      "weighted": -70.57
+     },
+     {
+      "category": 278.05,
+      "amount": 1005.05,
+      "factor": 909.47,
+      "weighted": 279.43
+     }
+    ],
+    "rsf": [
+     {
+      "category": 78.05,
+      "amount": 555.05,
+      "factor": 459.47,
+      "weighted": 79.43
+     },
+     {
+      "category": -71.95,
+      "amount": 905.05,
+      "factor": 809.47,
+      "weighted": -70.57
+     },
+     {
+      "category": 278.05,
+      "amount": 1005.05,
+      "factor": 909.47,
+      "weighted": 279.43
+     }
+    ],
+    "nsfrId": "NSFRID-N1",
+    "legalEntityName": "LEGALENTITYN-P1",
+    "nsfr": 623,
+    "asfTotal": 350.51,
+    "rsfTotal": 191,
+    "minimum": 531,
+    "legalEntity": "LEGALENTITY-L1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "nsfr"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

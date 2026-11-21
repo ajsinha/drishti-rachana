@@ -1,0 +1,59 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/core/ccp.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "ACCOUNTS": [
+     {
+      "ID": "ID-Z1",
+      "IM": 253
+     },
+     {
+      "ID": "ID-A2",
+      "IM": 103
+     },
+     {
+      "ID": "ID-B3",
+      "IM": 453
+     }
+    ],
+    "CCP_ID": "CCP_ID-X1",
+    "NAME": "NAME-X1",
+    "DEFAULT_FUND": 525.53,
+    "IM_POSTED": 422.03,
+    "MARGIN_MODEL": "MARGIN_MODEL-O1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "ccp"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

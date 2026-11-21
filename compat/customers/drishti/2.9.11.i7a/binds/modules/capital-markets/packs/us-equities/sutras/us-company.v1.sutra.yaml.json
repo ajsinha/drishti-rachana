@@ -1,0 +1,45 @@
+{
+ "file": "modules/capital-markets/packs/us-equities/sutras/us-company.v1.sutra.yaml",
+ "group": "modules/capital-markets/packs/us-equities",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "INDEXES": [
+     {
+      "INDEX": "INDEX-Q1",
+      "NAME": "NAME-X1",
+      "SINCE": 444
+     },
+     {
+      "INDEX": "INDEX-R2",
+      "NAME": "NAME-Y2",
+      "SINCE": 794
+     },
+     {
+      "INDEX": "INDEX-S3",
+      "NAME": "NAME-Z3",
+      "SINCE": 894
+     }
+    ],
+    "TICKER": "TICKER-K1",
+    "NAME": "NAME-X1",
+    "SIC_DESCRIPTION": "SIC_DESCRIPT-W1",
+    "FISCAL_YEAR": -240,
+    "REVENUE": 647,
+    "NET_INCOME": 111.41,
+    "FINANCIALS": 536.57,
+    "EPS_DILUTED": 300,
+    "LEI": "LEI-Z1",
+    "PRICE_HISTORY": 868,
+    "SIC_SECTOR": "SIC_SECTOR-T1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

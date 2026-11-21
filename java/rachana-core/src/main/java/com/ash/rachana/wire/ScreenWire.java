@@ -372,6 +372,23 @@ public final class ScreenWire {
         return new Submitted(problems, com.ash.rachana.control.Fire.run(list, new LinkedHashMap<>(), given));
     }
 
+    /**
+     * A control's {@code change} (level 1.2, I1) with the value the reader picked: the control's {@code on.change} effects, bound over the
+     * screen as the viewer, run in order with {@code event} the new value (state writes go into the next bind request with the value
+     * itself; {@code notify} and {@code host} are the host's). Empty when the control has no effects.
+     *
+     * @throws RachanaException {@code RCH-5001} for a control the Sutra does not have
+     */
+    public List<Map<String, Object>> change(Screen s, String control, Object value) {
+        return com.ash.rachana.el.Declarations.within(s.sutra().declarations(), () -> {
+            if (s.sutra().control(control).isEmpty()) {
+                throw new RachanaException(RachanaCode.BAD_REQUEST, "the screen has no control '" + control + "'");
+            }
+            Map<String, Object> on = binder.controlOn(s.sutra(), control, s.ctx().eval());
+            return com.ash.rachana.control.Fire.runEvent(on == null ? null : on.get("change"), new LinkedHashMap<>(), value);
+        });
+    }
+
     /** The selection a click makes, evaluated as the viewer (seen) and as stored (raw, for following it). */
     Selection click(Screen s, String panelId, String event, int row) {
         SutraWiring.Node n = node(s, panelId);

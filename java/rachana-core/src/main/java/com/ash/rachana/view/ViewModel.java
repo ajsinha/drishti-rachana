@@ -106,6 +106,9 @@ public record ViewModel(
         datasets = datasets == null || datasets.isEmpty() ? null : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(datasets));
         state = state == null || state.isEmpty() ? null : List.copyOf(state);
         contract = stamp(contract == null || contract.isBlank() ? CONTRACT : contract, panels, datasets, state);
+        if (controls.stream().anyMatch(c -> c != null && c.on() != null)) {   // a control's effect list is contract 1.2
+            contract = raised(contract, 2);
+        }
     }
 
     /** The stamp: the one given, raised to {@code 1.1} when the document uses what contract 1.1 adds (the smallest minor that describes it). */
@@ -119,6 +122,11 @@ public record ViewModel(
      */
     static String stamp(String given, List<PanelView> panels, Map<String, Dataset> datasets, List<StateView> state) {
         int needed = state != null && !state.isEmpty() || uses12(panels) ? 2 : datasets != null && !datasets.isEmpty() || uses11(panels) ? 1 : 0;
+        return raised(given, needed);
+    }
+
+    /** {@code given} raised to minor {@code needed} of major 1 when it is lower. */
+    private static String raised(String given, int needed) {
         if (needed == 0 || !given.startsWith("1.")) {
             return given;
         }
@@ -256,11 +264,28 @@ public record ViewModel(
      * @param range a slider with two handles (its value is {@code from..to})
      * @param reads ids of the panels (and {@code strip} or {@code title}) whose expressions read it
      * @param truncated whether the options were cut at the limit
+     * @param on its effect lists (contract 1.2, I1): {@code change} to the effects a painter runs when the reader picks a new value
+     *     (EffectView entries, VIEWMODEL contract 1.2, evaluated over the screen; a value read from the event says so, {@code event}: the new value); null
+     *     when it has none
      */
     @Include(Include.Rule.NON_EMPTY)
     public record ControlView(String id, String kind, String label, String placement, String panel, String parent, List<Opt> options,
             String value, List<String> values, boolean required, boolean remember, String min, String max, String step, boolean range,
-            List<String> reads, boolean truncated) {}
+            List<String> reads, boolean truncated, Map<String, Object> on) {
+
+        /** A control without effects. */
+        public ControlView(String id, String kind, String label, String placement, String panel, String parent, List<Opt> options,
+                String value, List<String> values, boolean required, boolean remember, String min, String max, String step, boolean range,
+                List<String> reads, boolean truncated) {
+            this(id, kind, label, placement, panel, parent, options, value, values, required, remember, min, max, step, range, reads, truncated, null);
+        }
+
+        /** The same control with its effect lists (contract 1.2), or none (null or empty). */
+        public ControlView withOn(Map<String, Object> next) {
+            return new ControlView(id, kind, label, placement, panel, parent, options, value, values, required, remember, min, max, step, range, reads,
+                    truncated, next == null || next.isEmpty() ? null : next);
+        }
+    }
 
     /**
      * A panel whose click sets a control: a table row sets {@code by} to the value of its {@code field}; a bar sets it to its label.

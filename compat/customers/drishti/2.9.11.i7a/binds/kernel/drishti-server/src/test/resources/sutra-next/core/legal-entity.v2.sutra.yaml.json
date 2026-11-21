@@ -1,0 +1,73 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/core/legal-entity.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/core",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "DESKS": [
+     {
+      "ID": "ID-Z1",
+      "NAME": "NAME-X1"
+     },
+     {
+      "ID": "ID-A2",
+      "NAME": "NAME-Y2"
+     },
+     {
+      "ID": "ID-B3",
+      "NAME": "NAME-Z3"
+     }
+    ],
+    "VAR_ENGINE": {
+     "BOOKS": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "VAR": 290
+    },
+    "ENTITY_ID": "ENTITY_ID-R1",
+    "NAME": "NAME-X1",
+    "LEI": "LEI-Z1",
+    "JURISDICTION": 584,
+    "REGULATOR": 447
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "legal-entity"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  }
+ ]
+}

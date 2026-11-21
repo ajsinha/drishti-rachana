@@ -1,0 +1,73 @@
+{
+ "file": "modules/market-data/packs/market-data/sutras/market-data/inflation-index.v1.sutra.yaml",
+ "group": "modules/market-data/packs/market-data",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "FIXINGS": [
+     {
+      "MONTH": 696.05,
+      "VALUE": 855.53,
+      "YOY": 151.15
+     },
+     {
+      "MONTH": 546.05,
+      "VALUE": 705.53,
+      "YOY": 251.15
+     },
+     {
+      "MONTH": 896.05,
+      "VALUE": 1055.53,
+      "YOY": 101.15
+     }
+    ],
+    "INDEX_ID": "INDEX_ID-O1",
+    "NAME": "NAME-X1",
+    "LATEST": 449.41,
+    "YOY": 151.15,
+    "LAG": 832,
+    "INFLATION_CURVE": 786
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "inflation-index"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

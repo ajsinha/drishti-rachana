@@ -1,0 +1,100 @@
+{
+ "file": "examples/packs/retail-banking/sutras/retail-banking/mortgage.v1.sutra.yaml",
+ "group": "examples/packs/retail-banking",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "amortisation": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "property": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "payments": [
+     {
+      "due": 573.83,
+      "amount": 555.05,
+      "paid": 59.11,
+      "status": "STATUS-Y1"
+     },
+     {
+      "due": 423.83,
+      "amount": 905.05,
+      "paid": 159.11,
+      "status": "STATUS-Z2"
+     },
+     {
+      "due": 773.83,
+      "amount": 1005.05,
+      "paid": 9.11,
+      "status": "STATUS-A3"
+     }
+    ],
+    "loanId": "LOANID-F1",
+    "borrowerName": "BORROWERNAME-D1",
+    "balance": 525,
+    "rate": 593.99,
+    "ltv": 178.07,
+    "remainingYears": 104.53,
+    "daysPastDue": 825.89,
+    "customer": 78
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "mortgage"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

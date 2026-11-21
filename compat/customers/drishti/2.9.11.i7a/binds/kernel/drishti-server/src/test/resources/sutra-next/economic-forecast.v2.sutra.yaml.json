@@ -1,0 +1,114 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/economic-forecast.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "PROJECTIONS": [
+     {
+      "YEAR": 728,
+      "BASIS": 458.63,
+      "GROWTH": 155,
+      "INFLATION": 291.11,
+      "UNEMPLOYMENT": 461,
+      "CURRENT_ACCOUNT": 102,
+      "DEBT": 591,
+      "NET_LENDING": "2026-03-12",
+      "GDP": 458.45
+     },
+     {
+      "YEAR": 578,
+      "BASIS": 808.63,
+      "GROWTH": 505,
+      "INFLATION": 141.11,
+      "UNEMPLOYMENT": 561,
+      "CURRENT_ACCOUNT": 452,
+      "DEBT": 441,
+      "NET_LENDING": "2026-04-15",
+      "GDP": 308.45
+     },
+     {
+      "YEAR": 928,
+      "BASIS": 908.63,
+      "GROWTH": 605,
+      "INFLATION": 491.11,
+      "UNEMPLOYMENT": 411,
+      "CURRENT_ACCOUNT": 552,
+      "DEBT": 791,
+      "NET_LENDING": "2026-05-18",
+      "GDP": 658.45
+     }
+    ],
+    "PATH": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "PROVENANCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "FORECAST_ID": "FORECAST_ID-X1",
+    "ECONOMY_NAME": "ECONOMY_NAME-N1",
+    "VINTAGE": 6.37,
+    "GROWTH_2027": 511,
+    "INFLATION_2027": 423.83,
+    "DEBT_2030": -9,
+    "ECONOMY": 141.49
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "economic-forecast"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

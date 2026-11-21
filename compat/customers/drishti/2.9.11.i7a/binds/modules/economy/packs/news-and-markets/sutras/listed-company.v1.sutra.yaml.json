@@ -1,0 +1,111 @@
+{
+ "file": "modules/economy/packs/news-and-markets/sutras/listed-company.v1.sutra.yaml",
+ "group": "modules/economy/packs/news-and-markets",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "HISTORY": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "ITEMS": [
+     {
+      "PUBLISHED": -193.15,
+      "SOURCE": "SOURCE-O1",
+      "TITLE": "TITLE-X1",
+      "LINK": 795.37
+     },
+     {
+      "PUBLISHED": 156.85,
+      "SOURCE": "SOURCE-P2",
+      "TITLE": "TITLE-Y2",
+      "LINK": 895.37
+     },
+     {
+      "PUBLISHED": 256.85,
+      "SOURCE": "SOURCE-Q3",
+      "TITLE": "TITLE-Z3",
+      "LINK": 745.37
+     }
+    ],
+    "BY_SOURCE": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "COMPANY_ID": "COMPANY_ID-B1",
+    "NAME": "NAME-X1",
+    "TICKER": "TICKER-K1",
+    "EXCHANGE": 20.17,
+    "SECTOR": "SECTOR-T1",
+    "COUNTRY": "COUNTRY-I1",
+    "ALIAS_TEXT": "ALIAS_TEXT-E1",
+    "QUOTE_ID": "QUOTE_ID-D1",
+    "PRICE": 757,
+    "CURRENCY": "CURRENCY-Z1",
+    "CHANGE": 436.25,
+    "CHANGE_PCT": 702,
+    "MARKET_STATE": "MARKET_STATE-I1",
+    "DAY_RANGE": 732,
+    "FIFTY_TWO_WEEK_RANGE": 345,
+    "VOLUME": 746.81,
+    "MARKET_CAP": 483.71,
+    "AS_OF": "2026-07-25",
+    "NEWS_ID": "NEWS_ID-F1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "listed-company"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

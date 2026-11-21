@@ -1,0 +1,90 @@
+{
+ "file": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk/netting-set.v2.sutra.yaml",
+ "group": "kernel/drishti-server/src/test/resources/sutra-next/counterparty-risk",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "EXPOSURE_ENGINE": {
+     "PROFILE": [
+      {
+       "VALUE": 855.53
+      },
+      {
+       "VALUE": 705.53
+      },
+      {
+       "VALUE": 1055.53
+      }
+     ],
+     "EPE": 810,
+     "PEAK_PFE": 459.61,
+     "STATUS": "STATUS-Y1",
+     "BUSINESS_DATE": "2026-06-24",
+     "RUN_ID": "RUN_ID-A1",
+     "PATHS": 799,
+     "CE": 198,
+     "EEPE": 332.59,
+     "PEAK_PFE_DATE": "2026-05-23",
+     "NOTE": "NOTE-M1"
+    },
+    "TRADES": [
+     {
+      "ASSET_CLASS": "ASSET_CLASS-P1",
+      "PRODUCT": "PRODUCT-R1",
+      "STATUS": "STATUS-Y1",
+      "NOTIONAL": 155,
+      "TRADE_ID": "TRADE_ID-P1",
+      "MATURITY": "2026-02-20",
+      "MTM": 728.03
+     },
+     {
+      "ASSET_CLASS": "ASSET_CLASS-Q2",
+      "PRODUCT": "PRODUCT-S2",
+      "STATUS": "STATUS-Z2",
+      "NOTIONAL": 255,
+      "TRADE_ID": "TRADE_ID-Q2",
+      "MATURITY": "2026-03-23",
+      "MTM": 578.03
+     },
+     {
+      "ASSET_CLASS": "ASSET_CLASS-R3",
+      "PRODUCT": "PRODUCT-T3",
+      "STATUS": "STATUS-A3",
+      "NOTIONAL": 105,
+      "TRADE_ID": "TRADE_ID-R3",
+      "MATURITY": "2026-04-26",
+      "MTM": 928.03
+     }
+    ],
+    "BY_ASSET": [
+     {
+      "VALUE": 855.53,
+      "ASSET": 119.21
+     },
+     {
+      "VALUE": 705.53,
+      "ASSET": 469.21
+     },
+     {
+      "VALUE": 1055.53,
+      "ASSET": 569.21
+     }
+    ],
+    "NETTING_SET_ID": "NETTING_SET_-Y1",
+    "TRADE_COUNT": 622.07,
+    "NET_MTM": 454.13,
+    "COLLATERAL": 460,
+    "LIMIT": 5,
+    "CVA": -240.19,
+    "COUNTERPARTY": "COUNTERPARTY-N1"
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  }
+ ]
+}

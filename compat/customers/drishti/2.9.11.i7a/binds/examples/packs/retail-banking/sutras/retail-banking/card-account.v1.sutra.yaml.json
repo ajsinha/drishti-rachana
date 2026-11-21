@@ -1,0 +1,90 @@
+{
+ "file": "examples/packs/retail-banking/sutras/retail-banking/card-account.v1.sutra.yaml",
+ "group": "examples/packs/retail-banking",
+ "hostCalls": [
+  {
+   "hook": "record",
+   "args": [],
+   "answer": {
+    "spend": [
+     {
+      "VALUE": 855.53
+     },
+     {
+      "VALUE": 705.53
+     },
+     {
+      "VALUE": 1055.53
+     }
+    ],
+    "statements": [
+     {
+      "closing": 239,
+      "balance": 525,
+      "minimum": 531,
+      "paid": 59.11
+     },
+     {
+      "closing": 339,
+      "balance": 375,
+      "minimum": 631,
+      "paid": 159.11
+     },
+     {
+      "closing": 189,
+      "balance": 725,
+      "minimum": 481,
+      "paid": 9.11
+     }
+    ],
+    "cardId": "CARDID-O1",
+    "holderName": "HOLDERNAME-A1",
+    "product": 610.57,
+    "balance": 525,
+    "limit": 504.73,
+    "utilisation": 805.37,
+    "apr": 871,
+    "status": "STATUS-Y1",
+    "customer": 78
+   }
+  },
+  {
+   "hook": "calendar.today",
+   "args": [],
+   "answer": "2026-01-15"
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "provenance",
+    "built"
+   ],
+   "answer": {
+    "fields": [
+     {
+      "label": "Layout",
+      "text": "card-account"
+     },
+     {
+      "label": "Fingerprint",
+      "text": "0000…0000"
+     },
+     {
+      "label": "Source",
+      "text": "conformance, gen 0"
+     }
+    ]
+   }
+  },
+  {
+   "hook": "panel",
+   "args": [
+    "links",
+    "refs"
+   ],
+   "answer": {
+    "links": []
+   }
+  }
+ ]
+}

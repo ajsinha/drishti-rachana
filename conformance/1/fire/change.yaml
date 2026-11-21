@@ -1,0 +1,139 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/change
+since: "1.2"
+profile: core
+verified: true
+description: "A control's change (I1, level 1.2): the control takes the picked value and its on.change effects run in order with event the new value (read whole); the effects are evaluated over the screen; a control the screen lacks is refused."
+cases:
+
+  - id: a-change-writes-the-picked-value-into-state
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (change); SPEC 2.8 item 7"
+    note: "Picking EMEA sets the control, writes the region into state and hands a notify and a host action over; the metric reads the state, the title reads the control."
+    sutra: |
+      rachana: 1
+      sutra: regions
+      version: 1
+      title: { id: "'Region ' + ctl.region" }
+      state:
+        picked: { type: text, default: none }
+        changes: { type: boolean, default: false }
+      controls:
+        - id: region
+          kind: dropdown
+          options: [ AMER, EMEA, APAC ]
+          default: AMER
+          on:
+            change:
+              - { set: { state: picked, to: event } }
+              - { toggle: changes }
+              - { notify: "Region changed", tone: accent }
+              - { host: desk.region, with: { region: event, desk: "'FX'" } }
+      panels:
+        - { id: shown, kind: metric, label: Picked, value: state.picked }
+    steps:
+      - { control: region, trigger: change, value: EMEA }
+      - { control: region, trigger: change, value: APAC }
+    expect:
+      at:
+        /controls/0/value: AMER
+        /controls/0/on: { change: [ { do: set, state: picked, event: "" }, { do: toggle, state: changes }, { do: notify, text: Region changed, tone: accent }, { do: host, action: desk.region, with: { desk: FX }, withEvent: { region: "" } } ] }
+        /contract: "1.2"
+      steps:
+        - state: { picked: EMEA, changes: true }
+          effects:
+            - { do: set, state: picked, value: EMEA }
+            - { do: toggle, state: changes, value: true }
+            - { do: notify, text: Region changed, tone: accent }
+            - { do: host, action: desk.region, with: { desk: FX, region: EMEA } }
+          at:
+            /controls/0/value: EMEA
+            /title/id: Region EMEA
+            /panels/0/data/value/text: EMEA
+        - state: { picked: APAC, changes: false }
+          at:
+            /controls/0/value: APAC
+
+  - id: a-when-guard-reads-the-screen-not-the-event
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (when); SPEC 2.8 items 4 and 7"
+    note: "The guard is evaluated over the screen when the view is bound: with the strict flag off the clear is left out of the list the control carries."
+    sutra: |
+      rachana: 1
+      sutra: strict
+      version: 1
+      title: { id: "'Strict'" }
+      state:
+        strict: { type: boolean, default: false }
+        last: { type: text, default: "" }
+      controls:
+        - id: book
+          kind: dropdown
+          options: [ B1, B2 ]
+          on:
+            change:
+              - { set: { state: last, to: event } }
+              - { clear: last, when: state.strict }
+      panels:
+        - { id: shown, kind: metric, label: Last, value: state.last }
+    steps:
+      - { control: book, trigger: change, value: B2 }
+    expect:
+      at:
+        /controls/0/on: { change: [ { do: set, state: last, event: "" } ] }
+      steps:
+        - state: { strict: false, last: B2 }
+          effects: [ { do: set, state: last, value: B2 } ]
+
+  - id: a-multi-select-change-hands-the-list
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (change); SPEC 2.8 item 7"
+    sutra: |
+      rachana: 1
+      sutra: desks
+      version: 1
+      title: { id: "'Desks'" }
+      controls:
+        - id: desks
+          kind: multi-select
+          options: [ FX, RATES, CREDIT ]
+          on:
+            change: [ { host: desks.picked, with: { desks: event } } ]
+      panels:
+        - { id: note, kind: markdown, text: "Desks" }
+    steps:
+      - { control: desks, trigger: change, value: [ FX, CREDIT ] }
+    expect:
+      steps:
+        - state: {}
+          effects: [ { do: host, action: desks.picked, with: { desks: [ FX, CREDIT ] } } ]
+          at:
+            /controls/0/values: [ FX, CREDIT ]
+
+  - id: a-control-without-effects-only-takes-the-value
+    kind: fire
+    source: "SPEC 2.8 item 7"
+    sutra: |
+      rachana: 1
+      sutra: plain
+      version: 1
+      title: { id: "'Plain ' + ctl.ccy" }
+      controls:
+        - { id: ccy, kind: dropdown, options: [ USD, EUR ], default: USD }
+      panels:
+        - { id: note, kind: markdown, text: "Plain" }
+    steps:
+      - { control: ccy, trigger: change, value: EUR }
+      - { control: nothing, trigger: change, value: X }
+    expect:
+      at:
+        /contract: "1.0"
+      steps:
+        - state: {}
+          effects: []
+          problems: []
+          at:
+            /title/id: Plain EUR
+        - state: {}
+          effects: []
+          problems: [ { code: RCH-5001, message: "no control 'nothing' on the screen" } ]

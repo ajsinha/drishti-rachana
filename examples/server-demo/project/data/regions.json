@@ -1,0 +1,39 @@
+{
+ "rows": [
+  {
+   "code": "N",
+   "name": "North",
+   "office": "Lakeside",
+   "hub": "Harbor Point",
+   "staff": "14"
+  },
+  {
+   "code": "S",
+   "name": "South",
+   "office": "Ridgemont",
+   "hub": "Orchard Bay",
+   "staff": "11"
+  },
+  {
+   "code": "E",
+   "name": "East",
+   "office": "Fairhaven",
+   "hub": "Stonebridge",
+   "staff": "9"
+  },
+  {
+   "code": "W",
+   "name": "West",
+   "office": "Larchfield",
+   "hub": "Pine Crossing",
+   "staff": "12"
+  },
+  {
+   "code": "C",
+   "name": "Central",
+   "office": "Millbrook",
+   "hub": "Copper Hill",
+   "staff": "16"
+  }
+ ]
+}

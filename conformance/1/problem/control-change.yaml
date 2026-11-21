@@ -1,0 +1,120 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/control-change
+since: "1.0"
+profile: core
+verified: true
+description: "What a control's on: refuses (I1, level 1.2; below it the key is unknown): a trigger other than change, a field of the event, a set of another control, a state the Sutra does not hold, an expression that does not compile."
+cases:
+
+  - id: a-control-fires-change-only
+    kind: problem
+    since: "1.2"
+    source: "SPEC 2.8 item 7"
+    sutra: |
+      rachana: 1
+      sutra: change-demo
+      match: { kind: order }
+      version: 1
+      title: { id: "'T'" }
+      state: { x: { type: text, default: a } }
+      controls:
+        - { id: region, kind: dropdown, options: [ A, B ], on: { row-click: [ { clear: x } ] } }
+      panels:
+        - { id: n, kind: markdown, text: "n" }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2023, message: "a control fires change, not row-click (control 'region')" } ]
+
+  - id: a-change-event-has-no-fields
+    kind: problem
+    since: "1.2"
+    source: "SPEC 2.8 item 7"
+    sutra: |
+      rachana: 1
+      sutra: change-demo
+      match: { kind: order }
+      version: 1
+      title: { id: "'T'" }
+      state: { x: { type: text, default: a } }
+      controls:
+        - { id: region, kind: dropdown, options: [ A, B ], on: { change: [ { set: { state: x, to: event.code } } ] } }
+      panels:
+        - { id: n, kind: markdown, text: "n" }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2012, message: "a control's change event is its new value, read whole as event (it has no fields)" } ]
+
+  - id: a-change-never-sets-another-control
+    kind: problem
+    since: "1.2"
+    source: "SPEC 2.8 item 7"
+    sutra: |
+      rachana: 1
+      sutra: change-demo
+      match: { kind: order }
+      version: 1
+      title: { id: "'T'" }
+      controls:
+        - { id: region, kind: dropdown, options: [ A, B ], on: { change: [ { set: book } ] } }
+        - { id: book, kind: dropdown, options: [ B1 ] }
+      panels:
+        - { id: n, kind: markdown, text: "n" }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2012, message: "a control's change writes state, never another control: set: { state: <id>, to: event }" } ]
+
+  - id: a-change-names-a-state-the-sutra-holds
+    kind: problem
+    since: "1.2"
+    source: "SPEC 2.8 items 4 and 7"
+    sutra: |
+      rachana: 1
+      sutra: change-demo
+      match: { kind: order }
+      version: 1
+      title: { id: "'T'" }
+      state: { x: { type: boolean, default: false } }
+      controls:
+        - { id: region, kind: dropdown, options: [ A, B ], on: { change: [ { set: { state: y, to: event } }, { toggle: x } ] } }
+      panels:
+        - { id: n, kind: markdown, text: "n" }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2020, message: "control 'region' sets state 'y', which the Sutra does not hold (it holds x)" } ]
+
+  - id: a-change-guard-must-compile
+    kind: problem
+    since: "1.2"
+    source: "SPEC 2.8 items 4 and 7; SPEC 3"
+    sutra: |
+      rachana: 1
+      sutra: change-demo
+      match: { kind: order }
+      version: 1
+      title: { id: "'T'" }
+      state: { x: { type: text, default: a } }
+      controls:
+        - { id: region, kind: dropdown, options: [ A, B ], on: { change: [ { clear: x, when: "1 +" } ] } }
+      panels:
+        - { id: n, kind: markdown, text: "n" }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2101 } ]
+
+  - id: on-in-a-control-is-unknown-below-1-2
+    kind: problem
+    source: "SPEC 2.8 item 7"
+    until: "1.1"
+    sutra: |
+      rachana: 1
+      sutra: change-demo
+      match: { kind: order }
+      version: 1
+      title: { id: "'T'" }
+      controls:
+        - { id: region, kind: dropdown, options: [ A, B ], on: { change: [ { notify: hi } ] } }
+      panels:
+        - { id: n, kind: markdown, text: "n" }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2011, message: "unknown key 'on' in control" } ]

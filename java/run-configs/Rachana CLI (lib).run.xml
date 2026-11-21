@@ -1,0 +1,20 @@
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see LICENSE.
+
+  Rachana CLI (lib): the Java command line (rachana lib build, sign, pack, verify, lock, contracts, check-host). Edit Program arguments for the command you want; with none it prints its usage.
+  Use it when: you work on the library tooling. Run Rachana build all once first so the modules compile.
+  Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
+-->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Rachana CLI (lib)" type="Application" factoryName="Application" folderName="Rachana">
+    <option name="MAIN_CLASS_NAME" value="com.ash.rachana.cli.Main" />
+    <module name="rachana-cli" />
+    <option name="VM_PARAMETERS" value="" />
+    <option name="PROGRAM_PARAMETERS" value="lib contracts" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

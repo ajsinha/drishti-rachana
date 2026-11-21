@@ -42,6 +42,36 @@ public final class Effects {
     public static final List<String> AT_FIRE = List.of("submit", "cancel");
 
     /**
+     * The triggers a control fires (level 1.2, on the control: {@code controls: [ { id, kind, ..., on: { change: [ effects ] } } ]}):
+     * {@code change}, when the reader picks a new value. Its effects run with that value in hand, read as {@code event} (the whole value:
+     * a text, a list of a multi-select's choices, a range as {@code from..to}); the control itself takes the value as any change does.
+     */
+    public static final List<String> CONTROL_TRIGGERS = List.of("change");
+
+    /** The compile result's key of the controls' effect lists ({@link #control}). */
+    public static final String CONTROLS_KEY = "$controlEffects";
+
+    /**
+     * The effects of control {@code control} of {@code s} on {@code trigger} as the Sutra keeps them, in order ({@code {do: <word>, ...}}
+     * or a plain state write {@code {state, to}}); empty when it has none.
+     */
+    @SuppressWarnings("unchecked")
+    public static List<Map<String, Object>> control(com.ash.rachana.model.Sutra s, String control, String trigger) {
+        if (s.extension(CONTROLS_KEY) instanceof Map<?, ?> all && all.get(control) instanceof Map<?, ?> on && on.get(trigger) instanceof List<?> l) {
+            List<Map<String, Object>> out = new ArrayList<>();
+            l.forEach(o -> out.add((Map<String, Object>) o));
+            return out;
+        }
+        return List.of();
+    }
+
+    /** The controls of {@code s} that hold an effect list, by id: trigger to effects (empty when none does). */
+    @SuppressWarnings("unchecked")
+    public static Map<String, Map<String, List<Map<String, Object>>>> controls(com.ash.rachana.model.Sutra s) {
+        return s.extension(CONTROLS_KEY) instanceof Map<?, ?> all ? (Map<String, Map<String, List<Map<String, Object>>>>) all : Map.of();
+    }
+
+    /**
      * A value filled in when the trigger fires: {@code event} (every value) or {@code event.<field>} (one, dotted for a value inside a
      * value), parentheses and spaces aside (a fragment's event put in as its payload's expression: {@code (event).qty}).
      */

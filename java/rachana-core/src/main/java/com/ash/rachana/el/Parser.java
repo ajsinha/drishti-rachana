@@ -20,8 +20,9 @@ import java.util.Set;
  *
  * <pre>
  * expr     = or [ "?" expr ":" expr ] ;
- * or       = and { "||" and } ;
- * and      = equality { "&amp;&amp;" equality } ;
+ * or       = and { ("||" | "or") and } ;
+ * and      = not { ("&amp;&amp;" | "and") not } ;
+ * not      = "not" not | equality ;          (Python's precedence: not a == b is !(a == b))
  * equality = compare { ("==" | "!=") compare } ;
  * compare  = sum { ("&lt;" | "&lt;=" | "&gt;" | "&gt;=") sum | ["not"] "in" sum } ;
  * sum      = product { ("+" | "-") product } ;
@@ -203,7 +204,7 @@ final class Parser {
     private Expr or() {
         int s = peek().pos();
         Expr l = and();
-        while (accept(Type.OP, "||")) {
+        while (accept(Type.OP, "||") || accept(Type.IDENT, "or")) {        // PY1: or is first-class
             Expr r = and();
             l = at(node(new Expr.Or(l, r), l, r), s);
         }
@@ -212,12 +213,28 @@ final class Parser {
 
     private Expr and() {
         int s = peek().pos();
-        Expr l = equality();
-        while (accept(Type.OP, "&&")) {
-            Expr r = equality();
+        Expr l = notWord();
+        while (accept(Type.OP, "&&") || accept(Type.IDENT, "and")) {       // PY1: and is first-class
+            Expr r = notWord();
             l = at(node(new Expr.And(l, r), l, r), s);
         }
         return l;
+    }
+
+    /** PY1: {@code not x} as Python reads it, below the comparisons ({@code not a == b} is {@code !(a == b)}). */
+    private Expr notWord() {
+        int s = peek().pos();
+        if (peek().is(Type.IDENT, "not") && !tokens.get(p + 1).is(Type.IDENT, "in")) {
+            next();
+            descend();
+            try {
+                Expr e = notWord();
+                return at(node(new Expr.Not(e), e), s);
+            } finally {
+                nesting--;
+            }
+        }
+        return equality();
     }
 
     private Expr equality() {

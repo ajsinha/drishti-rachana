@@ -49,6 +49,7 @@ class public final class com.ash.rachana.el.Calendars
 class public final class com.ash.rachana.el.CheckedMode
 class public final class com.ash.rachana.el.DatePartFunctions
 class public final class com.ash.rachana.el.ElCompiler
+class public final class com.ash.rachana.el.FormRules
 class public final class com.ash.rachana.el.FunctionTable
 class public final class com.ash.rachana.el.Functions
 class public final class com.ash.rachana.el.MeasureFunctions
@@ -143,6 +144,7 @@ class public final record com.ash.rachana.view.Frame
 class public final record com.ash.rachana.view.Patch
 class public final record com.ash.rachana.view.ViewModel
 class public static final class com.ash.rachana.design.ops.Ops$FormatException
+class public static final class com.ash.rachana.el.FormRules$Compiled
 class public static final class com.ash.rachana.parse.Json$JsonException
 class public static final class com.ash.rachana.profile.Profile$Builder
 class public static final class com.ash.rachana.wire.TableRows$Refused
@@ -1138,6 +1140,13 @@ com.ash.rachana.el.Expr$Ternary :: public final int com.ash.rachana.el.Expr$Tern
 com.ash.rachana.el.Expr$Ternary :: public final java.lang.String com.ash.rachana.el.Expr$Ternary.toString()
 com.ash.rachana.el.Expr$Ternary :: public java.lang.Object com.ash.rachana.el.Expr$Ternary.eval(com.ash.rachana.el.EvalContext)
 com.ash.rachana.el.Expr$Ternary :: public void com.ash.rachana.el.Expr$Ternary.paths(java.util.function.Consumer<java.lang.String>)
+com.ash.rachana.el.FormRules :: public static boolean com.ash.rachana.el.FormRules.holds(java.lang.Object)
+com.ash.rachana.el.FormRules :: public static com.ash.rachana.el.FormRules$Compiled com.ash.rachana.el.FormRules.compile(java.lang.String)
+com.ash.rachana.el.FormRules :: public static final int com.ash.rachana.el.FormRules.MAX_LENGTH
+com.ash.rachana.el.FormRules :: public static java.math.BigDecimal com.ash.rachana.el.FormRules.number(java.lang.Object)
+com.ash.rachana.el.FormRules$Compiled :: public java.lang.Object com.ash.rachana.el.FormRules$Compiled.eval(java.util.Map<java.lang.String, java.lang.Object>,java.time.LocalDate)
+com.ash.rachana.el.FormRules$Compiled :: public java.lang.String com.ash.rachana.el.FormRules$Compiled.text()
+com.ash.rachana.el.FormRules$Compiled :: public void com.ash.rachana.el.FormRules$Compiled.names(java.util.Set<java.lang.String>)
 com.ash.rachana.el.FunctionProvider :: public abstract java.lang.String com.ash.rachana.el.FunctionProvider.source()
 com.ash.rachana.el.FunctionProvider :: public abstract java.util.List<com.ash.rachana.el.FunctionProvider$Provided> com.ash.rachana.el.FunctionProvider.functions()
 com.ash.rachana.el.FunctionProvider :: public default com.ash.rachana.el.FunctionProvider$Grouping com.ash.rachana.el.FunctionProvider.grouping()

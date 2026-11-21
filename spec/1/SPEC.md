@@ -318,6 +318,9 @@ A chain `0 < x < 10` parses as `(0 < x) < 10` (a boolean against 10, numerically
 - `a && b`: masked `a` → mask; falsy `a` → `false` without evaluating `b`; else masked `b` → mask, else `truthy(b)`.
 - `a || b`: truthy `a` → `true` without evaluating `b`; truthy `b` → `true`; else mask if either is masked, else `false`.
   Results are booleans, never operands: `$.strategy || 'n/a'` → `true`; use `nonblank($.strategy, 'n/a')`.
+- `and`, `or`, `not` are the same operators written as Python writes them (DECISIONS PY1): `a and b` is `a && b`, `a or b` is
+  `a || b`; `not x` is `!x` read below the comparisons, as Python reads it (`not a == b` is `!(a == b)`; `!a == b` is `(!a) == b`).
+  `and` binds tighter than `or`; `x not in list` stays membership.
 - `c ? a : b`: masked `c` → mask (either branch would reveal it); else only the chosen branch is evaluated.
   `if(c, a, b?)` and `ifs(c1, a1, …, else?)` are the same conditional in call form; `if` without `b` gives empty.
 - `x in list`: true when an element (not masked) equals `x` by 4.6. **Strict**: an empty list, empty, `''` or an

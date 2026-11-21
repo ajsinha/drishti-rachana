@@ -5,6 +5,11 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Events on pivot cells and surface points** (level 1.2, contract 1.2 appended): `pivot` and `surface` fire `point-click`. A pivot
+  cell with a figure is a mark, `@` the cell `{row, path?, column, value}`; a surface point is `{x, y, z}`; `#index` the place row by
+  row. `Cell.ev`, `set`, `on` (a pivot's cells) and `Surface.ev`, `set`, `on` (lists beside `z`); `ev` only on a panel that emits on
+  point-click. A click fires the panel's event with the payload read over the rebound mark (`ScreenWire`), `Fire` finds the mark by its
+  place, the painter draws the cells and points as clickable marks. Cases `fire/surface-points`, `PointCellsTest` (a host's pivot engine).
 - **Tree formats, promoted formats, hyphenated column names** (level 1.2): a `tree` takes `fmt`, the format of every measure whose
   column names none (a column's own `fmt` still wins; `fmt` at 1.1 is `RCH-2008`). Core bundles `pct4`, `bp1`, `df4` and `price4`
   from level 1.2: reserved Drishti names promoted in `compat/promotions.yaml` with Drishti's definitions unchanged

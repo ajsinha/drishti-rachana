@@ -222,7 +222,8 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   option form that names an entity kind (`options: { kind: … }`) is a profile form.
 - **Events** [today]: a panel `emits: [{name, on}]` (`row-click`, `bar-click`, …; from level 1.2 `point-click` on a `line`, `area`,
   `scatter`, `waterfall`, `timeline` or `candlestick` mark, each a row of its `rows`, and on a `metric`, `gauge`, `kv` or `status`
-  as one mark whose payload reads the panel's context; another kind is `RCH-2057`); another reads them as
+  as one mark whose payload reads the panel's context, and on a `pivot` cell or a `surface` point, `@` the mark: a cell's
+  `{row, path?, column, value}`, a point's `{x, y, z}`, `#index` its place row by row; another kind is `RCH-2057`); another reads them as
   `@<panel>.<event>.<field>`; `waits` says what a panel shows until an event fires; `children` nests panels shown
   `always` or on selection (depth limit `RCH-2056`). `on-select: {by, field?, filter?}` sets a control from a click.
 - **Forms** [today, D2]: `form:` with fields, rules, hints, steps and drafts is Core; it raises a `submit` action.
@@ -352,7 +353,8 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
 4. **`on:`** (I1) on a panel maps a trigger to a list of effects, run in order. Built at this level: the triggers
    `row-click` (table, ladder; on a tree, `children:`, and a drill table, `levels:`, every node at every level, `@`
    that node), `bar-click` (hbar) and `point-click` (`line`, `area`, `scatter`, `waterfall`, `timeline`,
-   `candlestick`: the mark's row; `metric`, `gauge`, `kv`, `status`: one mark, read in the panel's context), and the effect
+   `candlestick`: the mark's row; `metric`, `gauge`, `kv`, `status`: one mark, read in the panel's context; `pivot` cells and
+   `surface` points: the cell or point as `@`), and the effect
    `set` in two forms: `set: { state: <id>, to: <expression> }` writes a state value, the expression read with `@` the
    clicked row and evaluated per row when the panel binds (the mark's `set` in the ViewModel; a value that fails or does
    not fit the state's type stops the list there);

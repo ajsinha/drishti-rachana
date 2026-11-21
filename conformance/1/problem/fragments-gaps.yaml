@@ -247,11 +247,11 @@ cases:
       problems:
       - code: RCH-2057
         severity: error
-        message: "event pick: a hbar panel cannot fire on point-click (point-click: area, candlestick, gauge, kv, line, metric, scatter, status, timeline, treemap, waterfall; row-click: table, ladder; bar-click: hbar)"
+        message: "event pick: a hbar panel cannot fire on point-click (point-click: area, candlestick, gauge, kv, line, metric, pivot, scatter, status, surface, timeline, treemap, waterfall; row-click: table, ladder; bar-click: hbar)"
         range: { start: { line: 7, column: 90 } }
       - code: RCH-2057
         severity: error
-        message: "event pick: a markdown panel cannot fire on point-click (point-click: area, candlestick, gauge, kv, line, metric, scatter, status, timeline, treemap, waterfall; row-click: table, ladder; bar-click: hbar)"
+        message: "event pick: a markdown panel cannot fire on point-click (point-click: area, candlestick, gauge, kv, line, metric, pivot, scatter, status, surface, timeline, treemap, waterfall; row-click: table, ladder; bar-click: hbar)"
         range: { start: { line: 8, column: 70 } }
       - code: RCH-2057
         severity: error

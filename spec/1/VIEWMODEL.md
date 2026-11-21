@@ -72,7 +72,7 @@ Drishti's screens, at level 1.0, stay byte-identical.
 ## Contract 1.2
 
 Appended to 1.1 by the same rules (optional, after the fields of its record, left out when unused; new definitions carry
-`x-since: "1.2"`). `contract` is `"1.2"` only when the document has `state`, a mark's `ev`, a `live`, `treemap` or `bullet` panel, a column `bar` or a series' `mark`, `axis` or `ev` of the table below; otherwise as for 1.1. A painter that knows only
+`x-since: "1.2"`). `contract` is `"1.2"` only when the document has `state`, a mark's `ev` (a pivot cell's and a surface point's too), a `live`, `treemap` or `bullet` panel, a column `bar` or a series' `mark`, `axis` or `ev` of the table below; otherwise as for 1.1. A painter that knows only
 1.0 or 1.1 ignores what 1.2 adds (decision S1-OPEN b): the screen still draws, and a click simply writes no state.
 
 | Addition | Where | What |
@@ -81,6 +81,8 @@ Appended to 1.1 by the same rules (optional, after the fields of its record, lef
 | `StateView` | new | `id`; `value` (text, a number, `true`/`false`, an ISO date text, a list of text, or `null`: always written); `url` (the host keeps it in the address; `false` until the view-state document, S4); `reads` (the panels, `strip` or `title` whose expressions read it, directly or through a `let`: only those are rebuilt when it changes) |
 | `ev` | `Point`, `Step`, `Event`, `Candle` (after their fields); `Chart.ev` (a list beside `x`); `Metric`, `Gauge`, `Fields` | on a panel that emits on `point-click` (I1): a mark's row in the panel's data (before `where`), sent back by a click as a row's `ev` is; `"0"` on a figure or a record, the panel one mark (its payload reads the panel's context, no row); absent otherwise |
 | `Series.mark`, `axis`, `ev` | line and area series, after `tone` | a line panel's `layers` or `by` (level 1.2): `mark` `bar`, `area` or `point` (absent: a line), `axis` `right` (absent: the left), `ev` beside `x` each point's row in the data (null where the series has no point) on a split line that emits on point-click |
+| `Cell.ev`, `set`, `on` | a pivot's cells, after `path` | on a pivot that emits on `point-click`: a cell with a figure is a mark, `ev` its place among the cells row by row (`row * columns + column`; an empty cell keeps its place and carries nothing), `set` and `on` as a point's, `@` the cell `{row, path?, column, value}` |
+| `Surface.ev`, `set`, `on` | after `view`, lists of lists beside `z` | on a surface that emits on `point-click`: each point's place row by row (`row * x + column`, `null` where there is no number), what a click writes, its whole effect list; `@` the point `{x, y, z}` |
 | kinds `treemap`, `bullet` | PanelView | data `Treemap` (`cells`: `TreemapCell` `label`, `group`, `value`, `text`, `tone`, `ev`, `set`; `total`) and `Bullet` (`value`, `text`, `label`, `min`, `max`, `bands`: `Band` `from`, `to`, `tone`; `lower`, `lowerText`, `upper`, `upperText`, `tone`, `caption`) |
 | kind `live` | PanelView | data `Grid` (as `grid`) over a dataset whose source is `live`; drawn by reading and following the table, never from `values` |
 | `Dataset.live` | Dataset, after `server` | `LiveRef`: `table`, `window` (rows read and followed at a time), `top` (new rows of a newest-first order inserted on top), `filter` (a filter tree, PROTOCOL 7): the painter asks the page's data client for the first window in the panel's `sort`, subscribes with its keys and applies the patches; a gap reads the page again |

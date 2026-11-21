@@ -417,6 +417,19 @@ public final class ScreenWire {
             });
             return new Selection(panelId, event, Node.of(seen), Node.of(raw));
         }
+        if (com.ash.rachana.model.Wiring.POINT_CLICK.equals(emit.on()) && p.kind() != null
+                && (p.kind() == com.ash.rachana.model.PanelKind.PIVOT || p.kind() == com.ash.rachana.model.PanelKind.SURFACE)) {
+            Node mark = cellMark(binder.bind(p, c.seen).data(), row);     // level 1.2: a cell or a point is the mark, rebound as the viewer sees it
+            if (mark == null) {
+                throw new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " shows no mark " + row);
+            }
+            Map<String, Object> seen = new LinkedHashMap<>();
+            emit.payload().forEach((field, f) -> {
+                Object sv = soft(() -> Values.simplify(el.compile(f.bind()).eval(c.seen.eval().withRow(mark, row))));
+                seen.put(field, sv instanceof Node d && d.isMissing() ? null : sv);
+            });
+            return new Selection(panelId, event, Node.of(seen), Node.of(new LinkedHashMap<>(seen)));   // followed as seen: a figure, never a stored row
+        }
         String rowsExpr = p.option("rows").orElseThrow(() -> new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " has no rows"));
         Node seenAll = node(el.compile(rowsExpr).eval(c.seen.eval()));
         Node rawAll = node(el.compile(rowsExpr).eval(c.raw));
@@ -436,6 +449,27 @@ public final class ScreenWire {
             raw.put(field, rv instanceof Node d && d.isMissing() ? null : rv);
         });
         return new Selection(panelId, event, Node.of(seen), Node.of(raw));
+    }
+
+    /** The mark at place {@code at} of a pivot's cells or a surface's points (row by row), as its {@code @}; null when there is none there. */
+    static Node cellMark(com.ash.rachana.view.PanelData data, int at) {
+        if (data instanceof com.ash.rachana.view.PanelData.Pivot pv && pv.columns() != null && !pv.columns().isEmpty() && at >= 0) {
+            int r = at / pv.columns().size(), k = at % pv.columns().size();
+            if (pv.rows() == null || r >= pv.rows().size()) {
+                return null;
+            }
+            com.ash.rachana.view.PanelData.PivotRow row = pv.rows().get(r);
+            Double v = row.values() != null && k < row.values().size() ? row.values().get(k) : null;
+            return v == null ? null : com.ash.rachana.bind.Binder.pivotMark(row.label(), row.path(), pv.columns().get(k), v);
+        }
+        if (data instanceof com.ash.rachana.view.PanelData.Surface sf && sf.x() != null && !sf.x().isEmpty() && at >= 0) {
+            int j = at / sf.x().size(), i = at % sf.x().size();
+            if (sf.z() == null || j >= sf.z().size() || sf.z().get(j).get(i) == null) {
+                return null;
+            }
+            return com.ash.rachana.bind.Binder.surfaceMark(sf.x().get(i), sf.y().get(j), sf.z().get(j).get(i));
+        }
+        return null;
     }
 
     // ---- contexts and sources -------------------------------------------------------------------------------------------------

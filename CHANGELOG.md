@@ -3,7 +3,13 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
-## Unreleased (toward v0.10.0, the untangling)
+## v0.10.0 ready (untagged): the untangling
+
+Steps A1 to A8b, A13, A14 and A7b are in (the binder moved and behind hooks, its API, Core's canonical writer, form expressions in
+Rachana-EL). Not tagged: the tag waits for the owner (G1 gate). Proof: `./mvnw clean verify` green on JDK 21; conformance
+`--jvm` 2,095 of 2,123 identical to the reference, the 28 differences each listed in `tools/split/known-differences.txt`, 0 verified
+failing. API baseline changes since v0.9.0 to note: the binder packages (`bind`, `view`, `control`, `wire`), `Rachana.binder`/`views`,
+`ViewBuilder`, `el.FormRules`, `RCH-5001`/`RCH-5002`, and the planned removals listed in the entries below.
 
 - **A7b, form expressions in Rachana-EL**: `and`, `or` and `not` are Rachana-EL operators (DECISIONS PY1; `not` reads below the
   comparisons, as in Python); a form's rules, hints and `=` defaults are read by Rachana-EL's parser and evaluated by the `form`

@@ -847,13 +847,15 @@ public final class TypedFragment {
             } else {
                 foreignWrites(p, sutraFile, out);
             }
-            if (p.map().get(com.ash.rachana.model.Effects.KEY) != null) {   // LIBRARIES 6.2: a fragment hands nothing to the host itself
-                walk(p.map().get(com.ash.rachana.model.Effects.KEY), n -> {
-                    if (n.isMap() && n.map().get("host") != null && !n.map().get("host").isMap() && !n.map().get("host").isList()) {
-                        out.add(problem(SCOPE, "fragment " + name + " runs the host action '" + n.map().get("host").text() + "': a fragment never "
-                                + "calls the host; it returns an event and the Sutra that uses it decides", sutraFile, n.map().get("host")));
-                    }
-                });
+            for (String hands : List.of(com.ash.rachana.model.Effects.KEY, com.ash.rachana.model.Effects.ACTIONS)) {   // LIBRARIES 6.2: a fragment hands nothing to the host itself
+                if (p.map().get(hands) != null) {
+                    walk(p.map().get(hands), n -> {
+                        if (n.isMap() && n.map().get("host") != null && !n.map().get("host").isMap() && !n.map().get("host").isList()) {
+                            out.add(problem(SCOPE, "fragment " + name + " runs the host action '" + n.map().get("host").text() + "': a fragment never "
+                                    + "calls the host; it returns an event and the Sutra that uses it decides", sutraFile, n.map().get("host")));
+                        }
+                    });
+                }
             }
             Columns cols = new Columns(locals, renames, read);
             PNode rowsOf = p.map().get("rows");             // the rows the panel reads: a table's own (renamed), fixed fields, or refused
@@ -921,7 +923,8 @@ public final class TypedFragment {
                         if (wired == null) {
                             break;
                         }
-                        wired = one.isMap() && one.map().get("set") != null && one.map().get("set").isMap()
+                        wired = one.isMap() && (one.map().get("set") != null && one.map().get("set").isMap()
+                                || one.map().get("set") == null && one.map().keySet().stream().anyMatch(com.ash.rachana.model.Effects.BUILT_EFFECTS::contains))
                                 ? stateEffect(wired, e.getKey(), one, sutraFile, out)
                                 : effect(wired, e.getKey(), one, sutraFile, out, locals, renames);
                     }
@@ -1282,15 +1285,16 @@ public final class TypedFragment {
     private static final Pattern EVENT_READ = Pattern.compile("(?<![A-Za-z0-9_.$@])event\\.([A-Za-z_][A-Za-z0-9_-]*)");
 
     /**
-     * An event wired at the use to {@code set: { state: <id>, to: <expression> }} (I1; LIBRARIES.md 6.1): the expression reads the event's
+     * An event wired at the use to an effect of the list ({@code set: { state: <id>, to: <expression> }}, {@code toggle}, {@code clear},
+     * {@code notify}, {@code host}: the Sutra decides what the fragment's event does, LIBRARIES.md 6.1, 6.2): its expressions read the event's
      * payload as {@code event.<name>}, put in as the payload's own expression over the clicked row; the effect joins the {@code on:} of the
      * panel that raises the event, under the trigger it emits on. The state is the screen's (a fragment's private state is never written
      * from outside, {@code RCH-2117}, checked with the Sutra).
      */
     private PNode stateEffect(PNode panel, String ev, PNode effect, String sutraFile, List<SutraProblem> out) {
         PNode set = effect.map().get("set");
-        if (effect.map().size() != 1 || set.map().get("state") == null || set.map().get("state").text() == null || set.map().get("to") == null
-                || EffectsReader.expression(set.map().get("to")) == null) {
+        if (set != null && (set.map().get("state") == null || set.map().get("state").text() == null || set.map().get("to") == null
+                || EffectsReader.expression(set.map().get("to")) == null)) {
             out.add(problem(WRONG_TYPE, "on." + ev + " of fragment " + name + ": a state effect is { set: { state: <id>, to: <expression> } }", sutraFile, effect));
             return null;
         }
@@ -1301,7 +1305,39 @@ public final class TypedFragment {
                 trigger = text(x.map().get("on"));
             }
         }
-        String to = EffectsReader.expression(set.map().get("to"));
+        int before = out.size();
+        PNode one = eventReads(effect, panel, ev, sutraFile, out);     // event.<name> put in as the payload's own expression
+        if (out.size() > before) {
+            return null;
+        }
+        Map<String, PNode> on = new LinkedHashMap<>();
+        PNode had = panel.map().get(com.ash.rachana.model.Effects.KEY);
+        if (had != null && had.isMap()) {
+            on.putAll(had.map());
+        }
+        List<PNode> list = new ArrayList<>(on.get(trigger) != null && on.get(trigger).isList() ? on.get(trigger).list() : List.of());
+        list.add(one);
+        on.put(trigger, new PNode(list, effect.line(), effect.column()));
+        Map<String, PNode> m2 = new LinkedHashMap<>(panel.map());
+        m2.put(com.ash.rachana.model.Effects.KEY, new PNode(on, effect.line(), effect.column()));
+        return new PNode(m2, panel.line(), panel.column());
+    }
+
+    /** {@code n} with every {@code event.<name>} of its text put in as the payload's expression of event {@code ev} ({@code (expr)}). */
+    private PNode eventReads(PNode n, PNode panel, String ev, String sutraFile, List<SutraProblem> out) {
+        if (n.isMap()) {
+            Map<String, PNode> m = new LinkedHashMap<>();
+            n.map().forEach((k, v) -> m.put(k, eventReads(v, panel, ev, sutraFile, out)));
+            return new PNode(m, n.line(), n.column());
+        }
+        if (n.isList()) {
+            List<PNode> l = new ArrayList<>();
+            n.list().forEach(v -> l.add(eventReads(v, panel, ev, sutraFile, out)));
+            return new PNode(l, n.line(), n.column());
+        }
+        if (!(n.value() instanceof String to) || !to.contains("event.")) {
+            return n;
+        }
         Matcher m = EVENT_READ.matcher(to);
         StringBuilder sb = new StringBuilder();
         int copied = 0;
@@ -1309,29 +1345,14 @@ public final class TypedFragment {
             String expr = payloadExpr(panel, ev, m.group(1));
             if (expr == null) {
                 out.add(problem(UNKNOWN, "event " + ev + " of fragment " + name + " carries no '" + m.group(1) + "' (it carries "
-                        + String.join(", ", payload(ev)) + ")", sutraFile, set.map().get("to")));
-                return null;
+                        + String.join(", ", payload(ev)) + ")", sutraFile, n));
+                return n;
             }
             sb.append(to, copied, m.start()).append('(').append(expr).append(')');
             copied = m.end();
         }
         sb.append(to, copied, to.length());
-        Map<String, PNode> st = new LinkedHashMap<>();
-        st.put("state", set.map().get("state"));
-        st.put("to", new PNode(sb.toString(), set.map().get("to").line(), set.map().get("to").column()));
-        Map<String, PNode> one = new LinkedHashMap<>();
-        one.put("set", new PNode(st, set.line(), set.column()));
-        Map<String, PNode> on = new LinkedHashMap<>();
-        PNode had = panel.map().get(com.ash.rachana.model.Effects.KEY);
-        if (had != null && had.isMap()) {
-            on.putAll(had.map());
-        }
-        List<PNode> list = new ArrayList<>(on.get(trigger) != null && on.get(trigger).isList() ? on.get(trigger).list() : List.of());
-        list.add(new PNode(one, effect.line(), effect.column()));
-        on.put(trigger, new PNode(list, effect.line(), effect.column()));
-        Map<String, PNode> m2 = new LinkedHashMap<>(panel.map());
-        m2.put(com.ash.rachana.model.Effects.KEY, new PNode(on, effect.line(), effect.column()));
-        return new PNode(m2, panel.line(), panel.column());
+        return new PNode(sb.toString(), n.line(), n.column());
     }
 
     /** The payload names the panel's event {@code ev} carries. */

@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: entry-form
+version: 1
+doc:
+  summary: A form of the fields you list, checked by their types and your rules, that raises submit with the values or cancel.
+  description: >-
+    List the fields (id, label, type, required, choices) and, if you like, rules over them. Nothing is sent until every
+    check passes; then the form raises submit carrying values (field id to value). Wire it with the use's on: - for
+    example { submit: [ { host: order.place, with: { order: event.values } } ] } or set a state from event.values.qty.
+  category: forms
+  tags: [form, entry, input, submit]
+params:
+  fields:
+    type: "list<record{id: text, label: text, type: text?, required: boolean?, options: list<text>?}>"
+    required: true
+    min: 1
+    max: 40
+    doc: "The fields, in order: { id, label, type (text, number, date, enum, bool, textarea, money, datetime), required, options (an enum's choices) }"
+  rules:
+    type: "list<record{rule: text, message: text}>"
+    default: []
+    max: 20
+    doc: "Checks over the fields' ids that must hold before the form is sent: { rule: \"qty <= 1000\", message: \"At most 1,000\" }"
+  title:        { type: text, default: Enter, doc: The panel's title }
+  submit-label: { type: text, default: Submit, doc: The Submit button's text }
+  cancel-label: { type: text, default: Cancel, doc: The Cancel button's text }
+emits:
+  - { name: submit, payload: { values: record }, doc: "The form passed its checks and was sent: values, field id to value" }
+  - { name: cancel, doc: The form was put away }
+panels:
+  - id: form
+    kind: form
+    title: arg.title
+    submitLabel: arg.submit-label
+    cancelLabel: arg.cancel-label
+    form:
+      fields: arg.fields
+      rules: arg.rules
+    emits:
+      - { name: submit, on: submit, payload: { values: event } }
+      - { name: cancel, on: cancel }

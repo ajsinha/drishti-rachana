@@ -43,17 +43,29 @@ public final class Effects {
 
     /**
      * A value filled in when the trigger fires: {@code event} (every value) or {@code event.<field>} (one, dotted for a value inside a
-     * value), parentheses allowed around it (a fragment's event put in as its payload's expression).
+     * value), parentheses and spaces aside (a fragment's event put in as its payload's expression: {@code (event).qty}).
      */
-    public static final java.util.regex.Pattern EVENT_REF = java.util.regex.Pattern.compile("^\\(*\\s*event((?:\\.[A-Za-z_][A-Za-z0-9_-]*)*)\\s*\\)*$");
+    public static final java.util.regex.Pattern EVENT_REF = java.util.regex.Pattern.compile("^event((?:\\.[A-Za-z_][A-Za-z0-9_-]*)*)$");
 
     /** The path {@code text} reads from the event ({@code ""} for the whole event, {@code "qty"}, {@code "values.qty"}), or null. */
     public static String eventPath(Object text) {
         if (!(text instanceof String s)) {
             return null;
         }
-        java.util.regex.Matcher m = EVENT_REF.matcher(s.trim());
-        if (!m.matches() || s.chars().filter(c -> c == '(').count() != s.chars().filter(c -> c == ')').count()) {
+        StringBuilder bare = new StringBuilder();                          // (event).qty, as a fragment's payload put in, reads event.qty
+        int depth = 0;
+        for (char c : s.toCharArray()) {
+            if (c == '(' || c == ')') {
+                depth += c == '(' ? 1 : -1;
+                if (depth < 0) {
+                    return null;
+                }
+            } else if (!Character.isWhitespace(c)) {
+                bare.append(c);
+            }
+        }
+        java.util.regex.Matcher m = EVENT_REF.matcher(bare.toString());
+        if (depth != 0 || !m.matches()) {
             return null;
         }
         return m.group(1).isEmpty() ? "" : m.group(1).substring(1);

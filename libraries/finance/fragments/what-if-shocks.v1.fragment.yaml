@@ -1,0 +1,55 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: what-if-shocks
+version: 1
+doc:
+  summary: Market shocks entered beside the sensitivities they apply to; sent to the screen, whose host gives the estimate.
+  description: >-
+    Give the sensitivities (one row per factor) and the shocks to ask for (one number field per factor). Sending the
+    form raises change with the shocks; the screen that uses it hands them to its host, which works out the estimate
+    (Rachana never prices) and gives it back as estimate. Labelled as an estimate.
+  category: market-risk
+  tags: [what-if, shocks, sensitivities, estimate]
+params:
+  sensitivities:
+    type: table
+    required: true
+    doc: One row per factor
+    key: required
+    columns:
+      factor: { type: text, doc: The factor's name }
+      value:  { type: number, doc: The P&L for one unit of the factor's shock }
+  shocks:
+    type: "list<record{id: text, label: text, type: text, min: number?, max: number?}>"
+    required: true
+    min: 1
+    max: 6
+    doc: "The shocks asked for, one field each: { id (the factor), label, type: number, min, max }"
+  estimate:  { type: number, optional: true, doc: The host's estimate for the shocks last sent }
+  title:     { type: text, default: What if, doc: The panel's title }
+  fmt:       { type: format, default: signed0, doc: How the sensitivities and the estimate are written }
+emits:
+  - { name: change, payload: { shocks: record }, doc: "Shocks were sent: shocks, factor to shock" }
+panels:
+  - id: shocks
+    kind: form
+    title: arg.title
+    submitLabel: Estimate
+    form:
+      fields: arg.shocks
+    emits:
+      - { name: change, on: submit, payload: { shocks: event } }
+  - id: sensitivities
+    kind: table
+    title: Sensitivities
+    rows: arg.sensitivities
+    columns:
+      - { label: Factor, bind: "@.factor" }
+      - { label: Per unit, bind: "@.value", fmt: "%{fmt}" }
+  - id: estimate
+    kind: metric
+    label: Estimate (linear)
+    value: arg.estimate
+    fmt: "%{fmt}"
+    caption: An estimate from the sensitivities, not a revaluation

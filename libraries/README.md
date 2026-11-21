@@ -6,8 +6,8 @@ Typed fragments, grouped by domain, built and released with Rachana. Each librar
 
 | Library | Status | What it holds |
 |---|---|---|
-| [core](core/README.md) | built, 1.0.0 (29 fragments) | generic screens for any domain: figures, records, tables, basic charts, states, history |
-| [finance](finance/README.md) | built, 1.0.0 (48 fragments, two examples each) | trading, P&L, market risk, limits, counterparty and collateral, market data, funds; generic terms, every figure arrives as data |
+| [core](core/README.md) | built, 1.0.0 (31 fragments) | generic screens for any domain: figures, records, tables, basic charts, forms, states, history |
+| [finance](finance/README.md) | built, 1.0.0 (50 fragments, two examples each) | trading, P&L, market risk, limits, counterparty and collateral, market data, funds; generic terms, every figure arrives as data |
 | genomics | planned | |
 | economy | planned | |
 | geo | planned | |
@@ -24,3 +24,15 @@ The libraries here are one source among others, never the only one. Drop a libra
 `rachana lint|build|studio --libs <path>[,<path>]` (Python `rachana lint --libs` too), or `RACHANA_LIBS=<path>[:<path>]`, or
 `<project>/rachana_libs`. Nothing in Rachana is modified or rebuilt. A name found twice with different contents is refused with a
 problem, never silently shadowed (rename or remove one).
+
+## Differences from the catalogue
+
+Where a built fragment differs from its entry in `docs/design/LIBRARY_CATALOGUE.md` (until the compiler feature it waits for):
+
+- `core/entry-form`, `core/stepped-form`: no `initial` (a form panel's `initial:` names fields, which a list parameter cannot
+  know) and no draft kept between visits; `stepped-form` takes `steps: list<record{id, label}>` and fields that each name their
+  `step` (a record inside a record is not a parameter type). Both take `rules` and name both buttons.
+- `finance/order-ticket`: no `max-qty` (a form rule cannot read a parameter) and no slots; `side` is an expression
+  (`"'BUY'"`); the ticket raises `submit {order}` with every field, `instrument` included.
+- `finance/what-if-shocks`: a form of number fields (`shocks`, each `{id, label, type: number, min, max}`) in place of sliders;
+  `change {shocks}` hands the shocks to the screen, and the estimate is the host's (`estimate`), never computed by Rachana.

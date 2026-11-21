@@ -222,7 +222,9 @@ public final class SutraExpressions {
         if (w.source() != null) {
             w.source().expressions().forEach(e -> expr(e, at, out));
         }
-        w.emits().forEach(e -> e.payload().values().forEach(f -> expr(f.bind(), at, out)));
+        w.emits().forEach(e -> e.payload().values().stream()             // a form's sent values (event): filled in when it is sent
+                .filter(f -> !com.ash.rachana.model.Effects.AT_FIRE.contains(e.on()) || com.ash.rachana.model.Effects.eventPath(f.bind()) == null)
+                .forEach(f -> expr(f.bind(), at, out)));
         if (w.waits() != null) {
             template(w.waits(), at, out);
         }

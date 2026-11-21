@@ -1,0 +1,49 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: stepped-form
+version: 1
+doc:
+  summary: A longer form in named steps, checked as a whole before it is sent, that raises submit with the values or cancel.
+  description: >-
+    List the steps (id, label) in order and the fields, each naming its step. The painter walks the steps; nothing is sent
+    until every field's checks and your rules pass. Wire submit at the use (event.values is field id to value).
+  category: forms
+  tags: [form, steps, wizard, submit]
+params:
+  steps:
+    type: "list<record{id: text, label: text}>"
+    required: true
+    min: 2
+    max: 8
+    doc: "The steps, in order: { id, label }"
+  fields:
+    type: "list<record{id: text, label: text, step: text, type: text?, required: boolean?, options: list<text>?}>"
+    required: true
+    min: 1
+    max: 40
+    doc: "The fields, in order, each naming its step: { id, label, step, type, required, options }"
+  rules:
+    type: "list<record{rule: text, message: text}>"
+    default: []
+    max: 20
+    doc: "Checks over the fields' ids that must hold before the form is sent"
+  title:        { type: text, default: Enter, doc: The panel's title }
+  submit-label: { type: text, default: Submit, doc: The Submit button's text }
+  cancel-label: { type: text, default: Cancel, doc: The Cancel button's text }
+emits:
+  - { name: submit, payload: { values: record }, doc: "The form passed its checks and was sent: values, field id to value" }
+  - { name: cancel, doc: The form was put away }
+panels:
+  - id: form
+    kind: form
+    title: arg.title
+    submitLabel: arg.submit-label
+    cancelLabel: arg.cancel-label
+    form:
+      steps: arg.steps
+      fields: arg.fields
+      rules: arg.rules
+    emits:
+      - { name: submit, on: submit, payload: { values: event } }
+      - { name: cancel, on: cancel }

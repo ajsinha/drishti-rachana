@@ -120,3 +120,44 @@ cases:
     expect:
       ok: false
       problems: [ { code: RCH-2020, message: "panel 'm' toggles state 'order', which is not a boolean" } ]
+
+  - id: a-fragment-never-calls-the-host-from-a-button
+    kind: problem
+    source: "LIBRARIES 6.2"
+    files:
+      bar.v1.fragment.yaml: |
+        rachana: 1
+        fragment: bar
+        version: 1
+        doc:
+          summary: A figure with a button.
+        params:
+          title: { type: text, default: Ticket, doc: The title }
+        panels:
+          - { id: fig, kind: metric, value: "1", actions: [ { label: Go, do: [ { host: order.place } ] } ] }
+    sutra: |
+      rachana: 1
+      sutra: form-demo
+      version: 1
+      match: { kind: order }
+      title: { id: "'T'" }
+      panels:
+        - { use: bar@1, as: b }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2117, messageStart: "fragment bar runs the host action 'order.place'" } ]
+
+  - id: a-form-sends-on-submit-only
+    kind: problem
+    source: "SUTRA_EXPANSION I1 (submit, cancel: form)"
+    sutra: |
+      rachana: 1
+      sutra: form-demo
+      version: 1
+      match: { kind: order }
+      title: { id: "'T'" }
+      panels:
+        - { id: m, kind: metric, value: "1", emits: [ { name: sent, on: submit } ] }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2057, message: "event sent: a metric panel cannot fire on submit (submit, cancel: form)" } ]

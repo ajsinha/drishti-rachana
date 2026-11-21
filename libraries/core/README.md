@@ -3,7 +3,7 @@
 library: core
 version: 1.0.0
 summary: Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
-fragments: 29
+fragments: 31
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
 
-29 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+31 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Figures
 
@@ -348,6 +348,41 @@ From a starting total to an ending total through signed steps.
 | `sum-label` | text | default 'Total'. What the closing figure is called |
 
 Example: `examples/steps-waterfall.sutra.yaml`.
+
+## Forms
+
+### `core/entry-form@1`
+
+A form of the fields you list, checked by their types and your rules, that raises submit with the values or cancel.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `fields` | list<record{id: text, label: text, type: text?, required: boolean?, options: list<text>?}> | required. The fields, in order: { id, label, type (text, number, date, enum, bool, textarea, money, datetime), required, options (an enum's choices) } |
+| `rules` | list<record{rule: text, message: text}> | default []. Checks over the fields' ids that must hold before the form is sent: { rule: "qty <= 1000", message: "At most 1,000" } |
+| `title` | text | default 'Enter'. The panel's title |
+| `submit-label` | text | default 'Submit'. The Submit button's text |
+| `cancel-label` | text | default 'Cancel'. The Cancel button's text |
+
+Events: `submit`, `cancel`
+
+Example: `examples/entry-form.sutra.yaml`.
+
+### `core/stepped-form@1`
+
+A longer form in named steps, checked as a whole before it is sent, that raises submit with the values or cancel.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `steps` | list<record{id: text, label: text}> | required. The steps, in order: { id, label } |
+| `fields` | list<record{id: text, label: text, step: text, type: text?, required: boolean?, options: list<text>?}> | required. The fields, in order, each naming its step: { id, label, step, type, required, options } |
+| `rules` | list<record{rule: text, message: text}> | default []. Checks over the fields' ids that must hold before the form is sent |
+| `title` | text | default 'Enter'. The panel's title |
+| `submit-label` | text | default 'Submit'. The Submit button's text |
+| `cancel-label` | text | default 'Cancel'. The Cancel button's text |
+
+Events: `submit`, `cancel`
+
+Example: `examples/stepped-form.sutra.yaml`.
 
 ## States and feedback
 

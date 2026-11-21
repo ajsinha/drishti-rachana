@@ -225,3 +225,13 @@ waits for level 1.1), so the decimals are the profile's. Changed answers:
 | G1-2 | **For the owner**: level 1.0 (unreleased) re-recorded for two results, and the two case files edited before release: `problem/forms#pattern-not-a-regex` now says SafeRegex's words (`a '[' is not closed`, was Java's `Unclosed character class`; G1-1), and `el/determinism#d-m01-a` expects Core's `exp(1)`, `2.7182818284590455` (F9: D15-4 had re-recorded the result but not the probe). Only these two lines of `compat/levels/1.0/results.jsonl` changed; `FROZEN.sha384` (pre-release) rewritten, now also listing `el/python-words.yaml` and `sutra/binder/panels.yaml` and the earlier `sutra/examples/sutra.yaml` edit |
 | G1-3 | The block library is per instance (`BlockLibrary`, F4): Core alone has no block; a host's library reaches the parser through its profile. The customer corpus is compiled on Core by default with the conformance suite's `drishti` profile (F1); the corpus's ViewModels (`binds/`) are recorded later, before G4 (F13) |
 | G1-4 | TeaVM 0.16.0's precise dependency analysis merges type-set domains in an order that varies between runs, and some orders lose types (the runtime bundle at `52e112f`: no `Boolean` reached `Plain.asBoolean`, named formats failed; gate re-check R1). The build carries a second patched TeaVM file, `PreciseDependencyAnalyzer` (Apache-2.0, `java/rachana-js/src/build/java`): no domain merging; the bundles are the same on every build. `tools/js/build_js.py` runs the conformance suite on both bundles at every level after each build and fails on any error, verified failing case, or runtime answer that differs from the tools bundle's |
+
+### G2 mock-up choices (lead, under the owner's delegation, 2026-11-21)
+
+The owner delegated mock-up choices to the lead's recommendation; the alternatives stay in docs/mockups/g2/ so the owner can override.
+
+| # | Screen | Chosen | Alternatives kept |
+|---|---|---|---|
+| MK-1 | Rachana Studio | **A, the three-pane editor** (fragment palette · live `<rachana-view>` preview · Sutra/properties) **with B's command bar** for the AI "describe a screen" prompt on top; C's prose cell later as a documentation mode | B canvas-first, C notebook |
+| MK-2 | Workspace document (L4) | **A, docked tiles**, extended with tabs of docks; channels link tiles | B tabs, C floating windows (later, in the desktop hosts only) |
+| MK-3 | Docs site front page | **A, task-first**, with B's search box and contents tree on the inner pages | B reference-first |

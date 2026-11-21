@@ -39,7 +39,7 @@ public final class Cases {
     /** The runtime's greeting line (RUNNER 5) for a runtime name ({@code jvm}, {@code node}, {@code chromium}...). */
     public static String hello(String runtime) {
         return "{\"runtime\":" + str(runtime) + ",\"runtimeVersion\":\"rachana-" + VERSION + "\",\"language\":\"1.0\",\"profiles\":" + jsonList(profiles)
-                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"lib\"]}";
+                + ",\"kinds\":[\"expr\",\"expr-error\",\"format\",\"problem\",\"edit\",\"sutra\",\"patch\",\"plan\",\"lib\"]}";
     }
 
     /** One case line answered: its results line (RUNNER 4), without the line end. */
@@ -56,6 +56,8 @@ public final class Cases {
                 case "problem" -> problem(c, sb);
                 case "edit" -> edit(c, sb);
                 case "sutra" -> sutra(c, sb);
+                case "patch" -> patch(c, sb);
+                case "plan" -> plan(c, sb);
                 case "lib" -> lib(c, sb);
                 default -> throw new IllegalStateException("kind not implemented: " + kind);
             }
@@ -325,28 +327,80 @@ public final class Cases {
      * timings) are not set, so not written.
      */
     public static void sutra(Map<String, Object> c, StringBuilder sb) {
+        sb.append("{\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(screen(c).view())).append('}');
+    }
+
+    /**
+     * FORMAT 5.9 {@code patch}: the view built as for {@code sutra}; then each step's Data Protocol patch applied to its table of
+     * {@code given.tables} (by key, PROTOCOL 8.1), the view built again, and the ViewModel patch frames between the two written with the
+     * new view ({@code frames: null} when the screen's shape changed and the whole ViewModel is sent again).
+     */
+    public static void patch(Map<String, Object> c, StringBuilder sb) {
+        var s = screen(c);
+        sb.append("{\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(s.view())).append(",\"steps\":[");
+        boolean first = true;
+        for (Object o : items(c.get("steps"))) {
+            Map<String, Object> step = obj(o);
+            if (s.rows(text(step.get("table"))) == null) {
+                throw new IllegalArgumentException("no table '" + text(step.get("table")) + "' in given.tables");
+            }
+            List<com.ash.rachana.view.Frame> frames = s.patch(text(step.get("table")), obj(step.get("patch")));
+            sb.append(first ? "" : ",").append("{\"frames\":").append(frames == null ? "null" : com.ash.rachana.view.ViewJson.write(frames))
+                    .append(",\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(s.last())).append('}');
+            first = false;
+        }
+        sb.append("]}");
+    }
+
+    /** FORMAT 5.10 {@code plan}: what the runtime asks of each table ({@code given.schemas} by table name), the plan document of B1. */
+    public static void plan(Map<String, Object> c, StringBuilder sb) {
         Map<String, Object> g = obj(c.get("given"));
+        var sutra = parse(c);
+        Map<String, com.ash.rachana.table.TableSchema> schemas = null;
+        if (g.containsKey("schemas")) {
+            schemas = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> e : obj(g.get("schemas")).entrySet()) {
+                schemas.put(e.getKey(), com.ash.rachana.table.TableSchema.of(e.getValue()));
+            }
+        }
+        sb.append("{\"plan\":").append(Json.write(com.ash.rachana.table.DataPlan.plan(sutra, schemas, at(c).compiler(), context(g)))).append('}');
+    }
+
+    static com.ash.rachana.model.Sutra parse(Map<String, Object> c) {
         String file = c.get("file") == null ? "case.sutra.yaml" : text(c.get("file"));
         boolean coreOnly = "core".equals(text(c.get("profile")));          // a Core case is read with Core's grammar alone
         List<com.ash.rachana.SutraProblem> unread = new ArrayList<>();
         var base = coreOnly ? com.ash.rachana.profile.Grammar.core().atLevel(level(c)) : at(c).grammar();
-        var gr = grammar(base, c, unread);
+        var gr = grammar(base, c, unread);                                 // FORMAT 5.7: files in place of the host's fragments and libraries
         if (!unread.isEmpty()) {
             throw new com.ash.rachana.SutraException(unread);
         }
-        var sutra = (coreOnly || gr != base ? new com.ash.rachana.parse.SutraParser(gr) : at(c).parser()).parse(text(c.get("sutra")), file, "conformance");
-        LocalDate today = g.containsKey("today") ? LocalDate.parse(text(g.get("today"))) : LocalDate.of(2026, 1, 15);
-        Map<String, String> ctl = new LinkedHashMap<>();
-        obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(Cases::text).toList()) : text(v)));
-        var views = rachana.views(com.ash.rachana.bind.BindHooks.core(), com.ash.rachana.bind.PivotEngine.NONE,
-                com.ash.rachana.bind.TableProvider.NONE,
-                com.ash.rachana.control.BusinessDays.of(today, com.ash.rachana.el.BusinessCalendar.of("WEEKENDS")), java.time.Duration.ofSeconds(2));
-        var doc = new com.ash.rachana.bind.Entity(com.ash.rachana.bind.EntityRef.of("record", "case"),
-                node(g.containsKey("record") ? g.get("record") : new LinkedHashMap<String, Object>()));
-        var view = views.build(new com.ash.rachana.bind.ViewBuilder.Request(doc, sutra, null, com.ash.rachana.bind.AsOf.of(today), null,
-                new com.ash.rachana.control.ControlValues(ctl, java.util.Set.of()), null));
-        sb.append("{\"viewModel\":").append(com.ash.rachana.view.ViewJson.write(view)).append('}');
+        return (coreOnly || gr != base ? new com.ash.rachana.parse.SutraParser(gr) : at(c).parser()).parse(text(c.get("sutra")), file, "conformance");
     }
+
+    /**
+     * One screen of a {@code sutra} or {@code patch} case (Core's {@code LiveScreen}): the Sutra over {@code given.record} (the entity's
+     * data; {@code given.today} the business date, {@code given.ctl} the control values as a request carries them) and the tables of
+     * {@code given.tables} (by table name: a list of rows, or {@code {schema, rows}}), held as keyed rows so that a patch can change
+     * them. A host's fields (reference, mnemonic, provenance, timings) are not set, so not written.
+     */
+    @SuppressWarnings("unchecked")
+    public static com.ash.rachana.table.LiveScreen screen(Map<String, Object> c) {
+        Map<String, Object> g = obj(c.get("given"));
+        LocalDate today = g.containsKey("today") ? LocalDate.parse(text(g.get("today"))) : LocalDate.of(2026, 1, 15);
+        Map<String, Object> ctl = new LinkedHashMap<>();
+        obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? l.stream().map(Cases::text).toList() : text(v)));
+        var s = new com.ash.rachana.table.LiveScreen(rachana, parse(c), today, g.containsKey("record") ? node(g.get("record")) : null, ctl);
+        for (Map.Entry<String, Object> e : obj(g.get("tables")).entrySet()) {
+            Object t = e.getValue();
+            var schema = t instanceof Map<?, ?> m && m.containsKey("schema") ? com.ash.rachana.table.TableSchema.of(m.get("schema")) : null;
+            List<Map<String, Object>> rows = new ArrayList<>();
+            items(t instanceof Map<?, ?> m ? m.get("rows") : t).forEach(r -> rows.add((Map<String, Object>) r));
+            s.table(e.getKey(), schema, rows);
+        }
+        return s;
+    }
+
 
     static String words(com.ash.rachana.RachanaException e) {
         String m = e.getMessage(), c = e.code() == null ? "" : e.code().code();
@@ -403,7 +457,7 @@ public final class Cases {
     // ---- reading a case (plain JSON values) ----------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    static Map<String, Object> obj(Object v) { return v instanceof Map<?, ?> m ? (Map<String, Object>) m : Map.of(); }
+    public static Map<String, Object> obj(Object v) { return v instanceof Map<?, ?> m ? (Map<String, Object>) m : Map.of(); }
 
     static List<?> items(Object v) { return v instanceof List<?> l ? l : v instanceof Map<?, ?> m ? new ArrayList<>(m.values()) : List.of(); }
 

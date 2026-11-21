@@ -1,0 +1,181 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/data
+since: "1.1"
+profile: core
+verified: false
+description: data entries become fields of $ (SPEC 2.4, decision D10); tables from given.tables (FORMAT 4), decoded by their schema (PROTOCOL 3).
+given:
+  today: "2026-01-15"
+cases:
+  - id: rows-entry-is-a-field-of-the-record
+    kind: sutra
+    source: SPEC 2.4
+    sutra: |
+      rachana: 1
+      sutra: data-rows
+      version: 1
+      data:
+        regions: { rows: [ { code: N, n: 3 }, { code: S, n: 4 } ] }
+      panels:
+        - { id: total, kind: metric, label: Count, value: "sum($.regions, 'n')" }
+    expect:
+      at:
+        /panels/0/data/value/text: "7"
+
+  - id: record-entry-is-an-object
+    kind: sutra
+    source: SPEC 2.4
+    sutra: |
+      rachana: 1
+      sutra: data-record
+      version: 1
+      data:
+        summary: { record: { total: 42, label: Book } }
+      panels:
+        - { id: total, kind: metric, label: "{$.summary.label}", value: "$.summary.total" }
+    expect:
+      at:
+        /panels/0/data/value/text: "42"
+
+  - id: table-entry-from-the-host
+    kind: sutra
+    source: SPEC 2.4; FORMAT 4 tables
+    given:
+      tables:
+        sales:
+          - { region: North, revenue: 700 }
+          - { region: South, revenue: 400 }
+    sutra: |
+      rachana: 1
+      sutra: data-table
+      version: 1
+      data:
+        sales: { table: sales, key: region }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')", fmt: amount0 }
+        - { id: list, kind: table, rows: "$.sales", columns: [ { label: Region, bind: region } ] }
+    expect:
+      at:
+        /panels/0/data/value/text: "1,100"
+        /panels/1/data/rows/1/cells/0/text: South
+
+  - id: decimal-cells-are-exact
+    kind: sutra
+    source: PROTOCOL 3.1 (decimal as text)
+    note: The cell keeps its scale (0.10, not 0.1). Exact decimal arithmetic is the decimals item (X2), not data.
+    given:
+      tables:
+        fees:
+          schema:
+            name: fees
+            columns: [ { name: id, type: string }, { name: fee, type: decimal, scale: 2 } ]
+          rows:
+            - { id: a, fee: "0.10" }
+            - { id: b, fee: "0.20" }
+    sutra: |
+      rachana: 1
+      sutra: data-decimal
+      version: 1
+      data:
+        fees: { table: fees }
+      panels:
+        - { id: first, kind: metric, label: Fee, value: "$.fees[0].fee" }
+    expect:
+      at:
+        /panels/0/data/value/text: "0.10"
+
+  - id: entry-where-reads-a-control
+    kind: sutra
+    source: SPEC 2.4 (where may read controls)
+    given:
+      ctl: { region: South }
+      tables:
+        sales:
+          - { region: North, revenue: 700 }
+          - { region: South, revenue: 400 }
+          - { region: South, revenue: 50 }
+    sutra: |
+      rachana: 1
+      sutra: data-where
+      version: 1
+      controls:
+        - { id: region, kind: dropdown, options: [North, South] }
+      data:
+        sales: { table: sales, where: "@.region == ctl.region" }
+      panels:
+        - { id: total, kind: metric, label: Revenue, value: "sum($.sales, 'revenue')" }
+    expect:
+      at:
+        /panels/0/data/value/text: "450"
+
+  - id: entry-limit-keeps-the-first-rows
+    kind: sutra
+    source: SPEC 2.4 (limit)
+    given:
+      tables:
+        t: [ { v: 1 }, { v: 2 }, { v: 4 } ]
+    sutra: |
+      rachana: 1
+      sutra: data-limit
+      version: 1
+      data:
+        t: { table: t, limit: 2 }
+      panels:
+        - { id: n, kind: metric, label: N, value: "sum($.t, 'v')" }
+    expect:
+      at:
+        /panels/0/data/value/text: "3"
+
+  - id: table-as-record-is-its-first-row
+    kind: sutra
+    source: SPEC 2.4 (as)
+    given:
+      tables:
+        latest: [ { price: 101 }, { price: 99 } ]
+    sutra: |
+      rachana: 1
+      sutra: data-as-record
+      version: 1
+      data:
+        last: { table: latest, as: record }
+      panels:
+        - { id: p, kind: metric, label: Price, value: "$.last.price" }
+    expect:
+      at:
+        /panels/0/data/value/text: "101"
+
+  - id: host-record-and-data-together
+    kind: sutra
+    source: SPEC 2.4 (each entry a field of $ beside the host's)
+    given:
+      record: { owner: Desk A }
+      tables:
+        t: [ { v: 5 } ]
+    sutra: |
+      rachana: 1
+      sutra: data-host
+      version: 1
+      data:
+        t: { table: t }
+      panels:
+        - { id: n, kind: metric, label: Rows, value: "count($.t)" }
+        - { id: owner, kind: metric, label: Owner, value: "$.owner" }
+    expect:
+      at:
+        /panels/0/data/value/text: "1"
+        /panels/1/data/value/text: Desk A
+
+  - id: missing-table-reads-as-no-rows
+    kind: sutra
+    source: SPEC 2.4
+    sutra: |
+      rachana: 1
+      sutra: data-missing
+      version: 1
+      data:
+        t: { table: nothing-here }
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.t)" }
+    expect:
+      at:
+        /panels/0/data/value/text: "0"

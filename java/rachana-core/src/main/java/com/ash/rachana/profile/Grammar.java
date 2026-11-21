@@ -26,6 +26,13 @@ public final class Grammar {
     public static final Set<String> CORE_KEYS = Collections.unmodifiableSet(new LinkedHashSet<>(List.of("rachana", "sutra", "version", "title",
             "strip", "panels", "keys", "description", "notes", "controls", "doc", "refresh", "layout", "phone")));
 
+    /**
+     * The top-level keys a later language level brings, with that level: below it they are not offered and using one is
+     * {@code RCH-2008}. {@code data} (SPEC 2.4, decision D10, level 1.1); {@code libraries} (the libraries a Sutra uses, each with its
+     * major, {@code libraries: [finance@1]}, LIBRARIES.md 7.1, level 1.2).
+     */
+    public static final Map<String, String> LEVEL_KEYS = Map.of(com.ash.rachana.model.DataEntry.KEY, "1.1", "libraries", "1.2");
+
     /** The panel kinds of the grammar that a profile brings (the rest are Core's). */
     public static final Set<PanelKind> PROFILE_KINDS = Collections.unmodifiableSet(EnumSet.of(PanelKind.LINKS, PanelKind.PROVENANCE));
 
@@ -35,11 +42,6 @@ public final class Grammar {
     /** The language levels this runtime implements, oldest first. */
     public static final List<String> LEVELS = List.of("1.0", "1.1", "1.2");
 
-    /**
-     * Core keys a later language level brings, with that level: below it they are not offered and using one is {@code RCH-2008}.
-     * {@code libraries} (level 1.2): the libraries a Sutra uses, each with its major ({@code libraries: [finance@1]}, LIBRARIES.md 7.1).
-     */
-    public static final Map<String, String> LATER_KEYS = Map.of("libraries", "1.2");
 
     /** The source forms a profile may bring: {@code kind} ({@code source: { kind, id | where | search, pack, params }}). */
     public static final Set<String> SOURCE_FORMS = Set.of("kind");
@@ -86,7 +88,7 @@ public final class Grammar {
         String fragmentsFrom = null;
         for (Profile p : profiles) {
             for (SutraKey k : p.keys()) {
-                if (CORE_KEYS.contains(k.name()) || LATER_KEYS.containsKey(k.name())) {
+                if (CORE_KEYS.contains(k.name()) || LEVEL_KEYS.containsKey(k.name())) {
                     throw new IllegalArgumentException("the profile '" + p.name() + "' cannot add the key '" + k.name() + "': Core reads it");
                 }
                 if (keys.putIfAbsent(k.name(), k) != null) {
@@ -144,7 +146,7 @@ public final class Grammar {
 
     /** The level a later Core key needs, or null for a key of every level (or none). */
     public static String keySince(String name) {
-        return LATER_KEYS.get(name);
+        return LEVEL_KEYS.get(name);
     }
 
     /** The language level this grammar reads ({@code 1.0} unless raised). */
@@ -165,7 +167,7 @@ public final class Grammar {
     /** Whether a Sutra may write this top-level key (Core's or a profile's). */
     public boolean hasKey(String name) {
         return CORE_KEYS.contains(name) || keys.containsKey(name)
-                || LATER_KEYS.containsKey(name) && com.ash.rachana.parse.SutraBlocks.atLeast(level, LATER_KEYS.get(name));
+                || LEVEL_KEYS.containsKey(name) && com.ash.rachana.parse.SutraBlocks.atLeast(level, LEVEL_KEYS.get(name));
     }
 
     /** Whether a panel may be of this kind: every Core kind, and a profile's kind when a profile brings it. */

@@ -1,0 +1,122 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: patch/patch
+since: "1.1"
+profile: core
+verified: false
+description: Keyed table patches (PROTOCOL 8.1) -> ViewModel patch frames (FORMAT 5.9; ViewDiff).
+cases:
+  - id: compound-key-remove-and-a-panel-frame
+    given: &pnl
+      today: "2026-01-15"
+      tables:
+        pnl:
+          schema:
+            name: pnl
+            key: [desk, day]
+            columns: [ { name: desk, type: string }, { name: day, type: date }, { name: pnl, type: integer } ]
+          rows:
+            - { desk: A, day: "2026-01-14", pnl: 10 }
+            - { desk: A, day: "2026-01-15", pnl: 20 }
+            - { desk: B, day: "2026-01-15", pnl: 5 }
+    kind: patch
+    source: PROTOCOL 8.1 (a key is the list of key values)
+    sutra: |
+      rachana: 1
+      sutra: pnl-live
+      version: 1
+      data:
+        pnl: { table: pnl, key: [desk, day], live: true }
+      panels:
+        - { id: total, kind: metric, label: PnL, value: "sum($.pnl, 'pnl')" }
+        - { id: note, kind: markdown, text: Fixed }
+    steps:
+      - { table: pnl, patch: { remove: [ [A, "2026-01-14"] ] } }
+    expect:
+      steps:
+        - frames:
+            - seq: 1
+              generation: 0
+              patches:
+                - op: panel
+                  panel: { id: total, kind: metric, area: main, inferred: false, data: { value: { label: PnL, text: "25", emphasis: true, path: "$.pnl" }, delta: null, unit: null, caption: null }, empty: false }
+              latencyMs: 0
+              p99Ms: 0
+
+  - id: update-merges-fields-add-of-an-existing-key-updates
+    given: *pnl
+    kind: patch
+    source: PROTOCOL 8.1 (update merges; add of an existing key updates)
+    sutra: |
+      rachana: 1
+      sutra: pnl-merge
+      version: 1
+      data:
+        pnl: { table: pnl, key: [desk, day] }
+      panels:
+        - { id: total, kind: metric, label: PnL, value: "sum($.pnl, 'pnl')" }
+        - { id: rows, kind: metric, label: Rows, value: "count($.pnl)" }
+    steps:
+      - { table: pnl, patch: { update: [ { desk: B, day: "2026-01-15", pnl: 7 } ] } }
+      - { table: pnl, patch: { add: [ { desk: B, day: "2026-01-15", pnl: 9 } ] } }
+      - { table: pnl, patch: { update: [ { desk: C, day: "2026-01-15", pnl: 1 } ] } }
+    expect:
+      steps:
+        - at: { /panels/0/data/value/text: "37", /panels/1/data/value/text: "3" }
+        - at: { /panels/0/data/value/text: "39", /panels/1/data/value/text: "3" }
+        - at: { /panels/0/data/value/text: "40", /panels/1/data/value/text: "4" }
+
+  - id: reset-replaces-every-row
+    given: *pnl
+    kind: patch
+    source: PROTOCOL 8.1 (reset first)
+    sutra: |
+      rachana: 1
+      sutra: pnl-reset
+      version: 1
+      data:
+        pnl: { table: pnl, key: [desk, day] }
+      panels:
+        - { id: rows, kind: metric, label: Rows, value: "count($.pnl)" }
+    steps:
+      - { table: pnl, patch: { reset: [ { desk: Z, day: "2026-01-15", pnl: 1 } ], add: [ { desk: Y, day: "2026-01-15", pnl: 2 } ] } }
+    expect:
+      steps:
+        - at: { /panels/0/data/value/text: "2" }
+
+  - id: a-strip-figure-is-a-strip-patch
+    given: *pnl
+    kind: patch
+    source: VIEWMODEL (op strip)
+    sutra: |
+      rachana: 1
+      sutra: pnl-strip
+      version: 1
+      data:
+        pnl: { table: pnl, key: [desk, day] }
+      strip:
+        - { label: PnL, bind: "sum($.pnl, 'pnl')" }
+    steps:
+      - { table: pnl, patch: { update: [ { desk: A, day: "2026-01-15", pnl: 21 } ] } }
+    expect:
+      steps:
+        - at: { /strip/0/text: "36" }
+          frames:
+            - { seq: 1, generation: 0, patches: [ { op: strip, index: 0, cell: { label: PnL, text: "36", path: "$.pnl" } } ], latencyMs: 0, p99Ms: 0 }
+
+  - id: a-change-no-panel-reads-sends-nothing
+    given: *pnl
+    kind: patch
+    source: FORMAT 5.9 (frames [])
+    sutra: |
+      rachana: 1
+      sutra: pnl-quiet
+      version: 1
+      data:
+        pnl: { table: pnl, key: [desk, day] }
+      panels:
+        - { id: desks, kind: metric, label: Desks, value: "count(distinct($.pnl[*].desk))" }
+    steps:
+      - { table: pnl, patch: { update: [ { desk: A, day: "2026-01-15", pnl: 99 } ] } }
+    expect:
+      steps:
+        - frames: []

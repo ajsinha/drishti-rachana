@@ -215,6 +215,18 @@ def pointer(doc, ptr):
     return True, cur
 
 
+def match_at(exp, doc, why, where):
+    for ptr, want in exp.items():
+        found, got = pointer(doc, ptr)
+        if not found:
+            why.append(f"{where}at {ptr}: nothing there")
+            return False
+        if canon(want) != canon(got):
+            why.append(f"{where}at {ptr}: expected {canon(want)}, actual {canon(got)}")
+            return False
+    return True
+
+
 def compare(kind, expect, actual, tolerance, why):
     for field, exp in expect.items():
         if field == "tolerance":
@@ -232,13 +244,18 @@ def compare(kind, expect, actual, tolerance, why):
                 return False
         elif field == "at":
             doc = actual.get("viewModel", actual.get("plan", actual)) if isinstance(actual, dict) else actual
-            for ptr, want in exp.items():
-                found, got = pointer(doc, ptr)
-                if not found:
-                    why.append(f"at {ptr}: nothing there")
+            if not match_at(exp, doc, why, ""):
+                return False
+        elif field == "steps" and kind == "patch":         # FORMAT 5.9: per step, `frames` exactly and/or `at` into that step's ViewModel
+            got = act if isinstance(act, list) else []
+            if len(exp) != len(got):
+                why.append(f"steps: expected {len(exp)}, actual {len(got)}")
+                return False
+            for i, (e, g) in enumerate(zip(exp, got)):
+                if "frames" in e and canon(e["frames"]) != canon(g.get("frames")):
+                    why.append(f"steps[{i}].frames: expected {canon(e['frames'])}, actual {canon(g.get('frames'))}")
                     return False
-                if canon(want) != canon(got):
-                    why.append(f"at {ptr}: expected {canon(want)}, actual {canon(got)}")
+                if "at" in e and not match_at(e["at"], g.get("viewModel"), why, f"steps[{i}] "):
                     return False
         elif field == "value" and tolerance and isinstance(exp, (int, float)) and isinstance(act, (int, float)):
             d = abs(float(exp) - float(act))

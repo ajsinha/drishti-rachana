@@ -23,6 +23,7 @@ module com.ash.rachana.core {
     exports com.ash.rachana.model;
     exports com.ash.rachana.parse;
     exports com.ash.rachana.profile;
+    exports com.ash.rachana.table;
     exports com.ash.rachana.view;
     exports com.ash.rachana.wire;
 

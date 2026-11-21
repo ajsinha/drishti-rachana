@@ -30,7 +30,7 @@ class CoreDeterminismGuardTest {
             "internal/CoreDecimal.java", "internal/DateText.java");
     /** Matches that are not the JDK call: {@code Sutra.strip()} is the Sutra's strip of panels, {@code ViewModel.strip()} the view's strip. */
     private static final Set<String> NOT_THE_JDK = Set.of("control/ControlReads.java .strip()", "bind/ViewBuilder.java .strip()",
-            "view/ViewRecords.java .strip()");
+            "view/ViewRecords.java .strip()", "view/ViewDiff.java .strip()");
 
     /** Forbidden everywhere in Core. */
     private static final Pattern EVERYWHERE = Pattern.compile("\\b(?:Math\\.(?:exp|log|log10|log1p|expm1|pow|tanh|sinh|cosh|sin|cos"

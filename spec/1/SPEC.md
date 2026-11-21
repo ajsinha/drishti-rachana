@@ -260,9 +260,15 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   2.8) is private to each use and held as `<as>.<name>`; a fragment that has state is used with `as:` (`RCH-2115`); its own
   panels read it as `state.<name>` and write it with `set` (any other state is `RCH-2117`). `outputs: {name: type}` names
   private state (of that type; `RCH-2048` otherwise) the screen reads as `state.<as>.<name>`; reading any other private state,
-  or writing one, outputs included, is `RCH-2117`. A compile result lists the libraries it was built from with their exact
-  version and SHA-384 (`Sutra.libraries()`). Not yet at this level: a fragment's `let`, overlays, host actions in `on:`, a
-  `state` name parameter (LIBRARIES 6.3).
+  or writing one, outputs included, is `RCH-2117`. **Nested uses**: a use named `x` inside a fragment used as `a` is the
+  instance `a-x`: its ids are `a-x-<id>`, its private state `a-x.<name>`, its events `@a-x.<event>`, so two uses of the outer
+  fragment, or two inner uses of one fragment, never collide. The outer fragment reads the inner use as written
+  (`state.x.<output>`, `@x.<event>`) and reads only its outputs (`RCH-2117`); the screen reads no nested instance
+  (`RCH-2117`), only the outputs of its own uses. **A state parameter** (LIBRARIES 6.3) `{type: state, of?: <state type>}`
+  is handed one name of the screen's state at the use (`into: desk`); the fragment writes it, and only it, as
+  `set: { state: "%{into}", to: ... }` (written anywhere else, `RCH-2048`). The name must be a state the Sutra holds, of
+  type `of` when given (`RCH-2116`). A `selection` parameter waits for selections (I2, `RCH-2023`). A compile result lists the libraries it was built from with their exact
+  version and SHA-384 (`Sutra.libraries()`). Not yet at this level: a fragment's `let`, overlays, host actions in `on:`.
 - **Libraries** [since 1.2, X42; LIBRARIES 3, 7, 9 to 12]: `libraries: [demo@1]` names each library and its major;
   `use: demo/figure@1` uses a library's fragment (the major is required); `use: demo@1/figure@1` (the long form) is
   accepted without a `libraries:` key. Unqualified names and `<pack>/<name>@N` of the host's resolver keep their meaning.

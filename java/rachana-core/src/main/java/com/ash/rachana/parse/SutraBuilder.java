@@ -209,10 +209,12 @@ final class SutraBuilder {
         }
         effects.check(panels, state);
         if (!calls.stateful().isEmpty()) {
-            privateState(root, calls.stateful());
+            privateState(root, calls.stateful(), calls.nested());
         }
         Map<String, String> stateTypes = new LinkedHashMap<>();
         state.forEach(e -> stateTypes.put(e.id(), e.type()));
+        calls.states = stateTypes;
+        calls.checkNested(problems);
         if (!fns.isEmpty() || !lets.isEmpty() || !stateTypes.isEmpty()) {
             extensions.put(Sutra.DECLARATIONS, new com.ash.rachana.el.Declarations(fns, lets, stateTypes));
         }
@@ -241,26 +243,32 @@ final class SutraBuilder {
      * it may read an output, {@code state.<as>.<output>}; reading any other private state, or writing one (an output too), is
      * {@code RCH-2117}.
      */
-    private void privateState(PNode n, Map<String, com.ash.rachana.parse.TypedFragment.Stateful> uses) {
+    private void privateState(PNode n, Map<String, com.ash.rachana.parse.TypedFragment.Stateful> uses, Set<String> nested) {
         if (n.isMap()) {
             n.map().forEach((k, v) -> {
                 if ("set".equals(k) && v.isMap() && v.map().get("state") != null && v.map().get("state").text() != null) {
                     String target = v.map().get("state").text();
                     int dot = target.indexOf('.');
-                    if (dot > 0 && uses.containsKey(target.substring(0, dot))) {
+                    if (dot > 0 && nested.contains(target.substring(0, dot))) {
+                        problem("RCH-2117", "state '" + target + "' belongs to a fragment used inside another (" + uses.get(target.substring(0, dot)).fragment()
+                                + "): the screen reads only the outputs of its own uses", v.map().get("state"));
+                    } else if (dot > 0 && uses.containsKey(target.substring(0, dot))) {
                         problem("RCH-2117", "state '" + target + "' belongs to the use " + target.substring(0, dot) + " of fragment "
                                 + uses.get(target.substring(0, dot)).fragment() + ": the screen reads its outputs, never writes them", v.map().get("state"));
                     }
                 }
-                privateState(v, uses);
+                privateState(v, uses, nested);
             });
         } else if (n.isList()) {
-            n.list().forEach(v -> privateState(v, uses));
+            n.list().forEach(v -> privateState(v, uses, nested));
         } else if (n.value() instanceof String s && s.contains("state.")) {
             Matcher m = PRIVATE_READ.matcher(s);
             while (m.find()) {
                 var use = uses.get(m.group(1));
-                if (use != null && !use.outputs().contains(m.group(2))) {
+                if (use != null && nested.contains(m.group(1))) {
+                    problem("RCH-2117", "state." + m.group(1) + "." + m.group(2) + " belongs to a use of fragment " + use.fragment() + " made inside "
+                            + "another fragment: the screen reads only the outputs of its own uses", n);
+                } else if (use != null && !use.outputs().contains(m.group(2))) {
                     problem("RCH-2117", "state." + m.group(1) + "." + m.group(2) + " is private to the use " + m.group(1) + " of fragment " + use.fragment()
                             + (use.outputs().isEmpty() ? ", which publishes no outputs" : "; the screen reads its outputs: " + String.join(", ", use.outputs())), n);
                 }

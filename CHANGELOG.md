@@ -30,6 +30,10 @@ Entries are written per release; the regime's unreleased work is listed after th
   screen's state; the fragment writes only it, as `set: { state: "%{into}" }` (`RCH-2048` elsewhere); the name must be held
   and of type `of` (`RCH-2116`); `selection` parameters wait for I2 (`RCH-2023`). Cases `sutra/fragments-state-params` (1),
   `problem/fragments-state-params` (4).
+- **`submit` and `cancel` join I1's closed trigger list** (for the standalone form panel; its effects run only once the
+  form's rules pass); refused (`RCH-2023`) until that panel is built. At 1.2 an emits trigger message no longer calls
+  `point-click` later (`problem/wiring#emits-on-tick` now `until: "1.1"`, its 1.2 answer a new case); case files take
+  `until:` (FORMAT 4, the runner skips a case above it).
 
 ### Typed fragments, the gaps the core library found (G2 lane A6)
 

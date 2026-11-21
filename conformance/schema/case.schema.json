@@ -256,6 +256,7 @@
           "enum": ["expr", "expr-error", "check", "grammar", "format", "sutra", "problem", "patch", "plan", "edit", "protocol", "lib", "live"]
         },
         "since": { "$ref": "#/$defs/minor" },
+        "until": { "$ref": "#/$defs/minor" },
         "profile": { "$ref": "#/$defs/profile" },
         "verified": { "type": "boolean" },
         "source": { "type": "string" },

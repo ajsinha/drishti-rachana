@@ -23,9 +23,12 @@ public final class Effects {
     /** The panel key, and the option the state effects are kept under. */
     public static final String KEY = "on";
 
-    /** The triggers of the closed list (I1); the ones not in {@link #BUILT} are refused until their step. */
+    /**
+     * The triggers of the closed list (I1); the ones not in {@link #BUILT} are refused until their step. {@code submit} and {@code cancel}
+     * are the standalone form panel's: its effects run only after the form's own rules pass (a refused form runs none).
+     */
     public static final List<String> TRIGGERS = List.of("row-click", "row-dblclick", "bar-click", "point-click", "cell-click", "change", "open",
-            "close");
+            "close", "submit", "cancel");
 
     /** The triggers built at this level, each with the panel kinds that fire it. */
     public static final Map<String, List<String>> BUILT = Map.of("row-click", List.of("table", "ladder"), "bar-click", List.of("hbar"));

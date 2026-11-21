@@ -334,7 +334,8 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    binds (a row's or bar's `set` in the ViewModel; a value that fails or does not fit the state's type stops the list there);
    `set: <control>` with an optional `field:` sets a control from the clicked row and is the panel's `on-select` (one
    control per click, `RCH-2038`). A `set` naming a state the Sutra does not hold is `RCH-2020`. The other triggers of the
-   closed list (`row-dblclick`, `point-click`, `cell-click`, `change`, `open`, `close`), a trigger the panel's kind does not
+   closed list (`row-dblclick`, `point-click`, `cell-click`, `change`, `open`, `close`, and the standalone form's `submit`
+   and `cancel`, whose effects run only once the form's own rules pass), a trigger the panel's kind does not
    fire, and the other effects (`toggle`, `clear`, `open`, `close`, `go`, `fire`, `submit`, `refresh`, `export`, `copy`,
    `notify`, `host`) and `when` are `RCH-2023` until their step. `on:` is not offered inside a tab.
 

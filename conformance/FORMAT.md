@@ -88,6 +88,7 @@ cases:
 | `id` | yes | `[a-z0-9][a-z0-9-]{0,79}`, unique in the file |
 | `kind` | yes | one of the kinds of section 5 |
 | `since` | no | a later minor than the file's, when this case pins something added in it |
+| `until` | no | the last minor the case applies to, when a later minor answers it differently (the later answer is its own case with that `since`); a runtime of a later minor does not run it |
 | `profile` | no | overrides the file's `profile` |
 | `verified` | no | `true` once the reference runner (JVM) has produced exactly `expect` and a person has reviewed it; `false` for a case written by hand or by reading, not yet confirmed. Only the reference's record mode (RUNNER section 6) helps turn `false` into `true`; a person flips it |
 | `source` | no | where the case came from: a test method of the reference (`ElTest#nullArithmetic`), a SPEC section (`SPEC 4.5`), a function example (`functions.yaml#round`), a defect number |

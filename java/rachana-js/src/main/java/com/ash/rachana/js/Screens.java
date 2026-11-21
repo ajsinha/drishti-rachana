@@ -23,9 +23,9 @@ import java.util.Map;
  * <ul>
  *   <li>{@code open}: a request of the shape of a {@code sutra} case ({@code sutra}, {@code since}, {@code profile}, {@code given: {today,
  *       record, ctl, tables}}) → {@code {id, tables: [names], problems?}}</li>
- *   <li>{@code plan}: {@code {id, schemas: {name: schema}, ctl?}} → the plan document</li>
+ *   <li>{@code plan}: {@code {id, schemas: {name: schema}, ctl?, state?}} → the plan document</li>
  *   <li>{@code table}: {@code {id, name, schema?, rows}} → {@code {}}</li>
- *   <li>{@code view}: {@code {id, ctl?}} → {@code {viewModel}}</li>
+ *   <li>{@code view}: {@code {id, ctl?, state?}} (state: text per state id, null for a cleared one; level 1.2) → {@code {viewModel}}</li>
  *   <li>{@code patch}: {@code {id, table, patch}} → {@code {frames}} or, when the screen's shape changed, {@code {viewModel}}</li>
  *   <li>{@code close}: {@code {id}} → {@code {}}</li>
  * </ul>
@@ -48,6 +48,9 @@ final class Screens {
                     if (r.get("ctl") instanceof Map<?, ?>) {
                         s.controls(Cases.obj(r.get("ctl")));
                     }
+                    if (r.get("state") instanceof Map<?, ?>) {
+                        s.state(Cases.obj(r.get("state")));
+                    }
                     yield Json.write(s.plan(schemas(r.get("schemas"))));
                 }
                 case "table" -> {
@@ -59,6 +62,9 @@ final class Screens {
                     LiveScreen s = get(r);
                     if (r.get("ctl") instanceof Map<?, ?>) {
                         s.controls(Cases.obj(r.get("ctl")));
+                    }
+                    if (r.get("state") instanceof Map<?, ?>) {
+                        s.state(Cases.obj(r.get("state")));
                     }
                     yield "{\"viewModel\":" + ViewJson.write(s.view()) + "}";
                 }

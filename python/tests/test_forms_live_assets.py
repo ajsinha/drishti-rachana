@@ -142,9 +142,9 @@ def test_assets_resolve_and_refuse_traversal():
     from drishti_rachana import assets
     js = assets.find("rachana/src/rachana_view.js")
     assert js and js[1].startswith("text/javascript") and b"defineRachanaView" in js[0]
-    css = assets.find("vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.css")
+    css = assets.find("vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.css")
     assert css and css[1].startswith("text/css")
-    assert assets.find("vendor/drishti-elements/3.2.0-dev+475232e/css/drishti_views.css")[0].startswith(b"/*")      # a stub: the pack carries it inside
+    assert assets.find("vendor/drishti-elements/3.2.0-dev+824d83b/css/drishti_views.css")[0].startswith(b"/*")      # a stub: the pack carries it inside
     for bad in ("../../README.md", "rachana/src/../../../README.md", "rachana/src/nope.js", "vendor/other/x.js", "", "rachana/src"):
         assert assets.find(bad) is None
     rt = assets.find("rachana/rachana.runtime.js")
@@ -161,11 +161,11 @@ def test_the_adapters_serve_the_assets_and_the_page_uses_them(tmp_path):
     app.register_blueprint(bp, url_prefix="/dash")
     c = app.test_client()
     page = c.get("/dash/page/hello").data.decode()
-    assert "/dash/static/vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.js" in page and "/dash/static/rachana/src/rachana_view.js" in page
+    assert "/dash/static/vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.js" in page and "/dash/static/rachana/src/rachana_view.js" in page
     assert "localhost/rachana-view" not in page
     r = c.get("/dash/static/rachana/src/rachana_view.js")
     assert r.status_code == 200 and r.headers["Content-Type"].startswith("text/javascript")
-    assert c.get("/dash/static/vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.css").headers["Content-Type"].startswith("text/css")
+    assert c.get("/dash/static/vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.css").headers["Content-Type"].startswith("text/css")
     assert c.get("/dash/static/rachana/src/missing.js").status_code == 404
     assert c.get("/dash/static/..%2f..%2fREADME.md").status_code == 404
 

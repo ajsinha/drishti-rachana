@@ -5,6 +5,21 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Server, second step**: live tables answer Arrow pages (`can` gains `arrow`; the one `ArrowRows` of rachana-data); `*.live.yaml` declarations in the project
+  folder (or its `live/` folder) are served, each `snapshot` naming a configured table (a declaration that does not is listed with the pending tables);
+  a JDBC table pushes the table's condition into its query (`FilterSql`: bound values only, column names from the table's own columns, anything that is
+  not exactly the same meaning left to the engine, which filters again). The frozen case `protocol/examples/bridge#bridge-rows-request-answered-once` is
+  withdrawn (it sorted a table that does not declare `sort`; `protocol/host#bridge-rows-of-a-sortable-table` is the corrected case), so `protocol_check`
+  passes in every mode. The ViewModel schema's `x-contract` is the highest minor it defines (now `1.2`; a document's own `contract` stays the smallest
+  that describes it), checked by `ContractAppendOnlyTest`.
+
+- **Elements pack re-packed from drishti-elements 824d83b** (folder `3.2.0-dev+824d83b`, SHA-384 manifest): the hbar donut fires `bar-click` like the bar form,
+  and the panel charts' tooltips are DOM elements, so no chart needs `'unsafe-inline'` for styles; `runners/state_browser.py` still passes.
+- **The painter's state and effects in `<rachana-view>`** (Elements 3.2.0-dev+824d83b, contract 1.2): a click on a mark that writes state sends the state
+  back (`Screen.setState`, the bundle's `plan` and `view` operations now take `state`), the view is built again and the painter draws only the panels
+  the changed states' `reads` name; `notify` and `host` effects go to the page's `host` property of `<rachana-view>` (`{notify, run}`), never run by
+  Elements. The vendored pack is re-packed from drishti-elements 282ee8a (folder `3.2.0-dev+824d83b`, SHA-384 manifest); `runners/state_browser.py` clicks
+  a bar in Chromium and checks the dependent panels.
 - **The standalone server, step 1** (`java/rachana-server`; COMPILER_AND_RUNTIMES 10, MODES 4): one JVM process (the JDK's HTTP
   server on virtual threads, no framework) serving a project folder: its Sutras as pages (`/v/<sutra>`, `<rachana-view>` live over the
   Data Protocol; checked at load and on change, `/problems`), the libraries of `rachana_libs/`, `libraries:` and the jar, the page assets

@@ -1,0 +1,19 @@
+rachana: 1
+sutra: state-demo
+version: 1
+title: { id: "'Desks'" }
+data:
+  desks: { rows: [ { desk: FX, pnl: 3 }, { desk: Rates, pnl: 7 }, { desk: Credit, pnl: 5 } ] }
+state:
+  desk: { type: text, default: FX }
+panels:
+  - id: by-desk
+    kind: hbar
+    title: "'P&L by desk'"
+    rows: $.desks
+    label: desk
+    value: pnl
+    on:
+      bar-click: [ { set: { state: desk, to: "@.desk" } } ]
+  - { id: chosen, kind: metric, label: Desk, value: "state.desk" }
+  - { id: pnl, kind: metric, label: "P&L of the chosen desk", value: "$.desks[?@.desk == state.desk][0].pnl ?? 0" }

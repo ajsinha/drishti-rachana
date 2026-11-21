@@ -51,9 +51,22 @@ abstract class TableSource implements SnapshotSource {
         return types;
     }
 
+    /**
+     * The rows that may hold {@code filter} (a superset is fine: the engine applies the table's condition to every row it reads). The
+     * default is every row; a source that can ask its store for fewer overrides this.
+     */
+    List<Map<String, Object>> load(Object filter) throws Exception {
+        return load();
+    }
+
     /** One read, checked against {@code max-rows}. */
     List<Map<String, Object>> rows() throws Exception {
-        List<Map<String, Object>> rows = load();
+        return rows(null);
+    }
+
+    /** One read for a filter tree (or null), checked against {@code max-rows}. */
+    List<Map<String, Object>> rows(Object filter) throws Exception {
+        List<Map<String, Object>> rows = filter == null ? load() : load(filter);
         if (rows.size() > table.maxRows()) {
             throw new ReadFailed(table.name() + ": " + rows.size() + " rows is more than max-rows " + table.maxRows());
         }
@@ -71,7 +84,7 @@ abstract class TableSource implements SnapshotSource {
         if (t == null) {
             throw new IllegalStateException(table.name() + ": read before its columns were known");
         }
-        Rows.shape(rows(), t).forEach(sink);
+        Rows.shape(rows(filter), t).forEach(sink);
     }
 
     /** The source a table's configuration names. */

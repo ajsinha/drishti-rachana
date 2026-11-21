@@ -97,7 +97,7 @@ test("preview handler serves pages, Sutra text and data; refuses path escape", {
   assert.equal(JSON.parse(h("/data/index.json")[2]).tables[0].rows, 1);
   assert.equal(h("/data/..%2Fsecret.txt")[0], 404);
   assert.equal(h("/page/zzz")[0], 404);
-  for (const u of ["/rachana/src/rachana_view.js", "/rachana/rachana.runtime.js", "/vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.js", "/vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.css"]) assert.equal(h(u)[0], 200, u);
+  for (const u of ["/rachana/src/rachana_view.js", "/rachana/rachana.runtime.js", "/vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.js", "/vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.css"]) assert.equal(h(u)[0], 200, u);
   rmSync(d, { recursive: true });
 });
 
@@ -145,7 +145,7 @@ test("build static-sales: the real <rachana-view>, Elements pack and runtime are
   assert.equal(await main(["build", "--src", join(examples, "static-sales"), "--out", out], x), 0);
   assert.ok(!o.err.length, o.err.join("\n"));
   for (const f of ["rachana/src/rachana_view.js", "rachana/src/screen.js", "rachana/src/data_client.js", "rachana/rachana.runtime.js",
-    "vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.js", "vendor/drishti-elements/3.2.0-dev+475232e/drishti-elements.css", "overview.html", "data/index.json"]) assert.ok(existsSync(join(out, f)), f);
+    "vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.js", "vendor/drishti-elements/3.2.0-dev+824d83b/drishti-elements.css", "overview.html", "data/index.json"]) assert.ok(existsSync(join(out, f)), f);
   const page = readFileSync(join(out, "overview.html"), "utf8");
   assert.ok(page.includes('./rachana/src/rachana_view.js') && page.includes("<rachana-view") && page.includes('runtime="rachana/rachana.runtime.js"'));
   rmSync(d, { recursive: true });

@@ -174,6 +174,28 @@ final class JdbcSource extends TableSource {
 
     @Override
     List<Map<String, Object>> load() throws Exception {
+        return query(prepared.sql(), List.of());
+    }
+
+    /**
+     * The table's condition pushed into the query ({@link FilterSql}: bound values, column names from the table's own allow-list). A
+     * condition that does not translate, or a database that refuses the wrapped query, reads every row, as before.
+     */
+    @Override
+    List<Map<String, Object>> load(Object filter) throws Exception {
+        Map<String, String> t = types();
+        FilterSql.Where w = t == null ? null : FilterSql.of(filter, t);
+        if (w == null) {
+            return load();
+        }
+        try {
+            return query("select * from (" + prepared.sql() + ") rachana_t where " + w.sql(), w.params());
+        } catch (ReadFailed e) {
+            return load();
+        }
+    }
+
+    private List<Map<String, Object>> query(String sql, List<Object> extra) throws Exception {
         ServerConfig.Jdbc j = table.jdbc();
         Properties props = new Properties();
         if (j.user() != null) {
@@ -189,11 +211,14 @@ final class JdbcSource extends TableSource {
             }
             c.setReadOnly(j.readOnly());
             c.setAutoCommit(false);
-            try (PreparedStatement st = c.prepareStatement(prepared.sql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+            try (PreparedStatement st = c.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
                 st.setQueryTimeout((int) Math.max(1, table.timeoutMs() / 1000));
                 st.setMaxRows(table.maxRows() + 1);
                 for (int i = 0; i < prepared.names().size(); i++) {
                     st.setObject(i + 1, table.params().get(prepared.names().get(i)));
+                }
+                for (int i = 0; i < extra.size(); i++) {
+                    st.setObject(prepared.names().size() + i + 1, extra.get(i));
                 }
                 List<Map<String, Object>> out = new ArrayList<>();
                 try (ResultSet rs = st.executeQuery()) {

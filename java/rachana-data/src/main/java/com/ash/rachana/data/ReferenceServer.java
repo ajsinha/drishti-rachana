@@ -8,22 +8,18 @@ import com.ash.rachana.parse.Json;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 /**
- * The reference Data Protocol server (small, for conformance and for trying a view): a {@link ProtocolHost} over the JDK's HTTP server,
+ * The reference Data Protocol server (small, for conformance and for trying a view): a {@link ProtocolHost} over the JDK's HTTP server
+ * ({@link ProtocolHttp}, the one HTTP binding),
  * serving a {@link MemoryHost} and any providers added to {@code host().protocol()}.
  * Under {@code base}: the resources of section 4, the minimal SSE change stream of section 8.2 (backlog, then live frames, a {@code : hb}
  * heartbeat), and the test adapter of section 15 ({@code POST /_test/fixture} loads a case's table, {@code POST /_test/patch} publishes a
@@ -42,7 +38,7 @@ public final class ReferenceServer implements AutoCloseable {
     private final Path statics;
     private volatile boolean closed;
     private final Map<Object, Channel> channels = new java.util.HashMap<>();          // the test bridge's channels, one per caller
-    private final Map<String, Open> streams = new java.util.concurrent.ConcurrentHashMap<>();
+    private final ProtocolHttp http;
     private final Map<String, java.util.function.Function<Object, ProtocolHost.Answer>> testPaths = new java.util.concurrent.ConcurrentHashMap<>();
     private volatile Object caller;
     private final List<Runnable> resets = new java.util.concurrent.CopyOnWriteArrayList<>();
@@ -50,13 +46,11 @@ public final class ReferenceServer implements AutoCloseable {
     /** One bridge channel of the test adapter and the messages it pushed. */
     private record Channel(ProtocolHost.Bridge bridge, List<Map<String, Object>> out) {}
 
-    /** A windowed minimal SSE stream (PROTOCOL 16): its subscription and the caller that opened it. */
-    private record Open(Subscription sub, Object caller) {}
-
     public ReferenceServer(int port, String base, Path statics) throws IOException {
         this.base = base == null || base.equals("/") ? "" : base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
         this.statics = statics;
         this.host = new MemoryHost(this.base);
+        this.http = new ProtocolHttp(host.protocol(), () -> closed);
         this.server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.createContext("/", this::serve);
@@ -117,8 +111,7 @@ public final class ReferenceServer implements AutoCloseable {
             channels.values().forEach(c -> c.bridge().close());
             channels.clear();
         }
-        streams.values().forEach(o -> o.sub().close());
-        streams.clear();
+        http.closeStreams();
         caller = null;
         host.clear();
     }
@@ -131,7 +124,7 @@ public final class ReferenceServer implements AutoCloseable {
                 return;
             }
             String rel = path.substring(base.length());
-            Map<String, String> q = query(x.getRequestURI().getRawQuery());
+            Map<String, String> q = ProtocolHttp.query(x.getRequestURI().getRawQuery());
             Object body = null;
             byte[] in = x.getRequestBody().readAllBytes();
             if (in.length > 0) {
@@ -142,19 +135,10 @@ public final class ReferenceServer implements AutoCloseable {
                     return;
                 }
             }
-            String m = x.getRequestMethod();
             if (rel.startsWith("/_test/")) {
                 test(x, rel, body);
-            } else if (rel.equals("/changes") && (m.equals("GET") || m.equals("POST"))) {
-                stream(x, q, body);
-            } else if (rel.startsWith("/changes/") && rel.endsWith("/window") && m.equals("POST")) {
-                window(x, rel.substring("/changes/".length(), rel.length() - "/window".length()), body);
-            } else if (rel.startsWith("/tables/") && (rel.endsWith("/rows") || rel.endsWith("/query"))
-                    && binaryAccept(x.getRequestHeaders().getFirst("Accept"))) {
-                binary(x, m, rel, q, body, x.getRequestHeaders().getFirst("Accept").contains("arrow") ? "arrow" : "ndjson");
             } else {
-                ProtocolHost.Answer a = host.protocol().handle(caller, m, rel, q, body);
-                json(x, a.status(), a.body());
+                http.serve(x, rel, q, body, caller);
             }
         } catch (IOException e) {
             // the client went away
@@ -213,149 +197,6 @@ public final class ReferenceServer implements AutoCloseable {
         }
     }
 
-    /**
-     * {@code POST {base}/changes/{sub}/window} (PROTOCOL 16): changes the window of a windowed minimal SSE stream to {@code {keys, top?}};
-     * {@code 204}. Only the caller that opened the stream may: anyone else, or a stream that is gone, is {@code rdp.table.unknown}.
-     */
-    private void window(HttpExchange x, String sub, Object body) throws IOException {
-        Open o = streams.get(URLDecoder.decode(sub, StandardCharsets.UTF_8));
-        if (o == null || !java.util.Objects.equals(o.caller(), caller) || o.sub().closed() || !o.sub().windowed()) {
-            json(x, 404, ProtocolError.of("rdp.table.unknown", 404, "no windowed stream '" + sub + "' of yours", "operation", "window").body());
-            return;
-        }
-        Map<?, ?> b = body instanceof Map<?, ?> m ? m : Map.of();
-        o.sub().window(ProtocolHost.keys(b.get("keys")), Boolean.TRUE.equals(b.get("top")));
-        json(x, 204, null);
-    }
-
-    /**
-     * The minimal SSE form (section 8.2): the frames after {@code after} (or {@code Last-Event-ID}), then live ones until the client leaves.
-     * {@code POST} takes {@code {table, after, filter?, conflate?: {everyMs}}} (a filtered or conflated stream, sections 8.2 and 8.4);
-     * {@code GET} also takes {@code everyMs}. A position that cannot be resumed is one {@code gap} frame ({@code recoverable: false}).
-     */
-    private void stream(HttpExchange x, Map<String, String> q, Object body) throws IOException {
-        long idle = 0;
-        Map<?, ?> b = body instanceof Map<?, ?> m ? m : Map.of();
-        String table = b.get("table") instanceof String t ? t : q.get("table");
-        String after = b.get("after") instanceof String a ? a : q.get("after") != null ? q.get("after") : x.getRequestHeaders().getFirst("Last-Event-ID");
-        long every = b.get("conflate") instanceof Map<?, ?> c && c.get("everyMs") instanceof Number n ? n.longValue()
-                : q.get("everyMs") != null ? Long.parseLong(q.get("everyMs")) : 0;
-        List<List<Object>> window = null;
-        boolean top = false;
-        if (b.get("window") instanceof Map<?, ?> w) {                 // PROTOCOL 16: a windowed stream; its first frame is subd
-            window = ProtocolHost.keys(w.get("keys"));
-            top = Boolean.TRUE.equals(w.get("top"));
-        }
-        Object who = caller;
-        BlockingQueue<Map<String, Object>> live = new LinkedBlockingQueue<>();
-        Subscription sub;
-        try {
-            sub = host.protocol().subscribe(table, new TableProvider.Subscribe(after, b.get("filter"), every, window, top), live::add, who);
-        } catch (ProtocolError e) {
-            json(x, e.status(), e.body());
-            return;
-        }
-        String id = window == null ? null : java.util.UUID.randomUUID().toString();
-        if (id != null && sub.recovered()) {
-            streams.put(id, new Open(sub, who));
-        }
-        try (sub) {
-            x.getResponseHeaders().set("Content-Type", "text/event-stream; charset=utf-8");
-            x.getResponseHeaders().set("Cache-Control", "no-store");
-            x.sendResponseHeaders(200, 0);
-            OutputStream out = x.getResponseBody();
-            if (!sub.recovered()) {
-                event(out, host.protocol().changes(table, "-:0", who).get(0));      // the gap frame at the table's position
-                out.flush();
-                return;
-            }
-            if (id != null) {
-                Map<String, Object> subd = new LinkedHashMap<>();
-                subd.put("t", "subd");
-                subd.put("sub", id);
-                subd.put("table", table);
-                event(out, subd);
-            }
-            for (Map<String, Object> f = live.poll(); f != null; f = live.poll()) {
-                event(out, f);                                       // the backlog, then a heartbeat, then live frames
-            }
-            out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
-            out.flush();
-            while (!closed && !sub.closed()) {
-                Map<String, Object> f = live.poll(id == null ? 15_000 : 200, TimeUnit.MILLISECONDS);
-                if (f == null) {
-                    if (id == null || ++idle % 75 == 0) {
-                        out.write(": hb\n\n".getBytes(StandardCharsets.UTF_8));
-                    }
-                } else {
-                    event(out, f);
-                }
-                out.flush();
-            }
-            for (Map<String, Object> f = live.poll(); f != null; f = live.poll()) {
-                event(out, f);                                       // what ended it (a gap)
-            }
-            out.flush();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } finally {
-            if (id != null) {
-                streams.remove(id);
-            }
-        }
-    }
-
-    /**
-     * Rows as Arrow IPC (section 5.2: only for a table whose {@code can} has {@code arrow}, else {@code 406}) or NDJSON (section 5.3: one
-     * header object, then one array of cells per line, written as they are produced). The answer is the JSON page's, in the other form.
-     */
-    @SuppressWarnings("unchecked")
-    private void binary(HttpExchange x, String m, String rel, Map<String, String> q, Object body, String form) throws IOException {
-        String name = rel.substring("/tables/".length(), rel.lastIndexOf('/'));
-        com.ash.rachana.table.TableSchema schema;
-        try {
-            schema = host.protocol().schemaOf(name, caller);
-        } catch (ProtocolError e) {
-            json(x, e.status(), e.body());
-            return;
-        }
-        if (form.equals("arrow") && !schema.can("arrow")) {
-            json(x, 406, ProtocolError.of("rdp.query.unsupported", 406, name + " is not offered as Arrow", "table", name, "operation", "arrow").body());
-            return;
-        }
-        ProtocolHost.Answer a = host.protocol().handle(caller, m, rel, q, body);
-        if (a.status() != 200) {
-            json(x, a.status(), a.body());
-            return;
-        }
-        Map<String, Object> page = (Map<String, Object>) a.body();
-        x.getResponseHeaders().set("Cache-Control", "no-store");
-        if (form.equals("arrow")) {
-            byte[] bytes = ArrowRows.write(page, schema, ArrowRows.BATCH_ROWS);
-            x.getResponseHeaders().set("Content-Type", ArrowRows.MEDIA);
-            x.sendResponseHeaders(200, bytes.length);
-            x.getResponseBody().write(bytes);
-            return;
-        }
-        x.getResponseHeaders().set("Content-Type", NdjsonRows.MEDIA);
-        x.sendResponseHeaders(200, 0);
-        OutputStream out = x.getResponseBody();
-        NdjsonRows.write(page, out);
-        out.flush();
-    }
-
-    /** Whether the reader asks only for Arrow or NDJSON (sections 5.2, 5.3). */
-    private static boolean binaryAccept(String accept) {
-        return accept != null && (accept.contains("application/vnd.apache.arrow.stream") || accept.contains("application/x-ndjson"))
-                && !accept.contains("application/json") && !accept.contains("*/*");
-    }
-
-    private static void event(OutputStream out, Map<String, Object> f) throws IOException {
-        String id = f.get("epoch") == null ? "" : "id: " + f.get("epoch") + ":" + f.get("seq") + "\n";
-        String text = id + "event: " + f.get("t") + "\ndata: " + Json.write(f) + "\n\n";
-        out.write(text.getBytes(StandardCharsets.UTF_8));
-    }
-
     private static final Map<String, String> TYPES = Map.of(".html", "text/html; charset=utf-8", ".js", "text/javascript; charset=utf-8",
             ".mjs", "text/javascript; charset=utf-8", ".css", "text/css; charset=utf-8", ".json", "application/json", ".yaml",
             "text/plain; charset=utf-8", ".svg", "image/svg+xml");
@@ -376,29 +217,7 @@ public final class ReferenceServer implements AutoCloseable {
     }
 
     private static void json(HttpExchange x, int status, Object body) throws IOException {
-        x.getResponseHeaders().set("Cache-Control", "no-store");
-        if (body == null) {
-            x.sendResponseHeaders(status, -1);
-            return;
-        }
-        byte[] b = Json.write(body).getBytes(StandardCharsets.UTF_8);
-        x.getResponseHeaders().set("Content-Type", "application/json");
-        x.sendResponseHeaders(status, b.length);
-        x.getResponseBody().write(b);
-    }
-
-    private static Map<String, String> query(String raw) {
-        Map<String, String> q = new LinkedHashMap<>();
-        if (raw != null) {
-            for (String part : raw.split("&")) {
-                if (!part.isEmpty()) {
-                    int eq = part.indexOf('=');
-                    String k = URLDecoder.decode(eq < 0 ? part : part.substring(0, eq), StandardCharsets.UTF_8);
-                    q.put(k, eq < 0 ? "" : URLDecoder.decode(part.substring(eq + 1), StandardCharsets.UTF_8));
-                }
-            }
-        }
-        return q;
+        ProtocolHttp.json(x, status, body);
     }
 
     @SuppressWarnings("unchecked")

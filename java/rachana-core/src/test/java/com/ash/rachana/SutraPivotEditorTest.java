@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 /** Promoting a user's pivot: the panel's {@code pivot:} is rewritten, everything else of the file stays as written. */
 class SutraPivotEditorTest {
 
-    private final SutraPivotEditor editor = new SutraPivotEditor();
-    private final SutraParser parser = new SutraParser();
+    private final SutraPivotEditor editor = new SutraPivotEditor(com.ash.rachana.TestGrammar.parser());
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     static final String SRC = """
             # the desk's book view

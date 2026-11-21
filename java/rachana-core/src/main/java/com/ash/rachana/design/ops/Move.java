@@ -83,7 +83,7 @@ public record Move(String panel, String area, String before, String after, Integ
                 height != null ? (height == 0 ? null : height) : moved.height().orElse(null), false);
         placements.add(Math.min(at, placements.size()), now);
         try {
-            doc.replaceAll(new SutraLayoutEditor().apply(doc.text(), placements, false, false).text());
+            doc.replaceAll(new SutraLayoutEditor(doc.parser()).apply(doc.text(), placements, false, false).text());
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new OpException(OpException.UNEDITABLE, e.getMessage());
         }

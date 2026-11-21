@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 /** The {@code panels} of a {@code tabs} panel: what a tab may hold, the problems, and the Sutra written back. */
 class NestedTabsTest {
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     private static String sutra(String panels) {
         return """
@@ -126,14 +126,14 @@ class NestedTabsTest {
 
     @Test
     void theWorkbenchSchemaOffersPanelsOnEveryPanel() {
-        var schema = RachanaSchema.build(List.of("date"), List.of("trade"));
+        var schema = RachanaSchema.build(List.of("date"), com.ash.rachana.TestGrammar.grammar(java.util.List.of("trade")));
         assertThat(schema.toString()).contains("panels=").contains("tabs only: panels shown inside each tab");
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void theEditorsOptionListForTabsNamesBodyAndPanelsSoItDoesNotCallThemUnknown() {
-        var schema = RachanaSchema.build(List.of("date"), List.of("trade"));
+        var schema = RachanaSchema.build(List.of("date"), com.ash.rachana.TestGrammar.grammar(java.util.List.of("trade")));
         var panel = (java.util.Map<String, Object>) ((java.util.Map<String, Object>) schema.get("$defs")).get("panel");
         var tabs = ((List<java.util.Map<String, Object>>) panel.get("allOf")).stream()
                 .map(m -> (java.util.Map<String, Object>) m.get("then"))

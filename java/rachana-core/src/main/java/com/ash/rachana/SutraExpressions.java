@@ -92,7 +92,9 @@ public final class SutraExpressions {
             expr(c.min(), c.location(), out);
             expr(c.max(), c.location(), out);
         });
-        expr(s.match().where(), s.location(), out);
+        if (s.match() != null) {
+            expr(s.match().where(), s.location(), out);
+        }
         if (s.title() != null) {
             expr(s.title().id(), s.location(), out);
             expr(s.title().with(), s.location(), out);

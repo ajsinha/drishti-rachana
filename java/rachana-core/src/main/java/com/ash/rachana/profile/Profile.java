@@ -6,9 +6,14 @@ package com.ash.rachana.profile;
 
 import com.ash.rachana.el.Calendars;
 import com.ash.rachana.el.FunctionProvider;
+import com.ash.rachana.model.PanelKind;
+import com.ash.rachana.parse.FragmentResolver;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -16,8 +21,9 @@ import java.util.regex.Pattern;
  * scanning and nothing is global (docs/design/CORE_AND_PROFILES.md section 3). A profile adds; it never changes what Core means: a
  * function whose name Core holds is refused when the instance is built.
  *
- * <p>Split step A6 gives a profile its function providers, its format files and a business-day calendar resolver. Keys, panel kinds,
- * source forms and binders follow with the model split (A7) and the binder (A13).
+ * <p>Split step A6 gives a profile its function providers, its format files and a business-day calendar resolver; the model split (A7)
+ * its top-level keys ({@link SutraKey}), the panel kinds and source forms it brings, {@code form.save} and a fragment resolver (they
+ * make the instance's {@link Grammar}). Binders follow with the binder (A13).
  *
  * <pre>{@code
  * Profile drishti = Profile.named("drishti").functions(engineFunctions).formats(packFormatsFile).build();
@@ -27,18 +33,29 @@ import java.util.regex.Pattern;
 public final class Profile {
 
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]*");
-    private static final Profile CORE = new Profile("core", List.of(), List.of(), null);
+    private static final Profile CORE = new Profile("core", List.of(), List.of(), null, List.of(), Set.of(), Set.of(), false, null);
 
     private final String name;
     private final List<FunctionProvider> functions;
     private final List<String> formatFiles;
     private final Calendars.Resolver calendars;
+    private final List<SutraKey> keys;
+    private final Set<PanelKind> panelKinds;
+    private final Set<String> sourceForms;
+    private final boolean formSave;
+    private final FragmentResolver fragments;
 
-    private Profile(String name, List<FunctionProvider> functions, List<String> formatFiles, Calendars.Resolver calendars) {
+    private Profile(String name, List<FunctionProvider> functions, List<String> formatFiles, Calendars.Resolver calendars, List<SutraKey> keys,
+            Set<PanelKind> panelKinds, Set<String> sourceForms, boolean formSave, FragmentResolver fragments) {
         this.name = name;
         this.functions = List.copyOf(functions);
         this.formatFiles = List.copyOf(formatFiles);
         this.calendars = calendars;
+        this.keys = List.copyOf(keys);
+        this.panelKinds = Set.copyOf(panelKinds);
+        this.sourceForms = Set.copyOf(sourceForms);
+        this.formSave = formSave;
+        this.fragments = fragments;
     }
 
     /** The Core profile: what is built in, nothing added. Every instance has it, named or not. */
@@ -83,6 +100,31 @@ public final class Profile {
         return calendars;
     }
 
+    /** The top-level keys it adds, in order. */
+    public List<SutraKey> keys() {
+        return keys;
+    }
+
+    /** The panel kinds of the grammar it brings (of {@link Grammar#PROFILE_KINDS}). */
+    public Set<PanelKind> panelKinds() {
+        return panelKinds;
+    }
+
+    /** The source forms it brings (of {@link Grammar#SOURCE_FORMS}). */
+    public Set<String> sourceForms() {
+        return sourceForms;
+    }
+
+    /** Whether it brings {@code form.save} (where a submitted form goes). */
+    public boolean formSave() {
+        return formSave;
+    }
+
+    /** Its fragment resolver, or null when it brings none. */
+    public FragmentResolver fragments() {
+        return fragments;
+    }
+
     @Override
     public String toString() {
         return "Profile[" + name + "]";
@@ -94,6 +136,11 @@ public final class Profile {
         private final List<FunctionProvider> functions = new ArrayList<>();
         private final List<String> formatFiles = new ArrayList<>();
         private Calendars.Resolver calendars;
+        private final List<SutraKey> keys = new ArrayList<>();
+        private final Set<PanelKind> panelKinds = EnumSet.noneOf(PanelKind.class);
+        private final Set<String> sourceForms = new LinkedHashSet<>();
+        private boolean formSave;
+        private FragmentResolver fragments;
 
         private Builder(String name) {
             this.name = name;
@@ -121,8 +168,50 @@ public final class Profile {
             return this;
         }
 
+        /** Adds top-level keys (none of Core's: checked when the instance is built). */
+        public Builder keys(SutraKey... add) {
+            for (SutraKey k : add) {
+                keys.add(Objects.requireNonNull(k, "a key"));
+            }
+            return this;
+        }
+
+        /** Brings panel kinds of the grammar that belong to a profile ({@link Grammar#PROFILE_KINDS}: {@code links}, {@code provenance}). */
+        public Builder panelKinds(PanelKind... kinds) {
+            for (PanelKind k : kinds) {
+                if (!Grammar.PROFILE_KINDS.contains(k)) {
+                    throw new IllegalArgumentException("'" + k.id() + "' is a Core panel kind");
+                }
+                panelKinds.add(k);
+            }
+            return this;
+        }
+
+        /** Brings source forms ({@link Grammar#SOURCE_FORMS}: {@code kind}). */
+        public Builder sourceForms(String... forms) {
+            for (String f : forms) {
+                if (!Grammar.SOURCE_FORMS.contains(f)) {
+                    throw new IllegalArgumentException("'" + f + "' is not a source form a profile brings (" + Grammar.SOURCE_FORMS + ")");
+                }
+                sourceForms.add(f);
+            }
+            return this;
+        }
+
+        /** Brings {@code form.save}: where a submitted form goes. */
+        public Builder formSave() {
+            this.formSave = true;
+            return this;
+        }
+
+        /** Where {@code use:} finds fragments (one profile of an instance may give it; Core's default is the folder library). */
+        public Builder fragments(FragmentResolver resolver) {
+            this.fragments = Objects.requireNonNull(resolver, "a fragment resolver");
+            return this;
+        }
+
         public Profile build() {
-            return new Profile(name, functions, formatFiles, calendars);
+            return new Profile(name, functions, formatFiles, calendars, keys, panelKinds, sourceForms, formSave, fragments);
         }
     }
 }

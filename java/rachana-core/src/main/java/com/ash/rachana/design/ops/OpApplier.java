@@ -17,6 +17,18 @@ import java.util.List;
  */
 public final class OpApplier {
 
+    private final com.ash.rachana.parse.SutraParser parser;
+
+    /** An applier of Core's grammar alone: {@code setMatch} is refused (the {@code match} key is a profile's). */
+    public OpApplier() {
+        this(new com.ash.rachana.parse.SutraParser());
+    }
+
+    /** An applier whose results must be valid Sutras of this parser's grammar ({@link com.ash.rachana.Rachana#parser()}). */
+    public OpApplier(com.ash.rachana.parse.SutraParser parser) {
+        this.parser = java.util.Objects.requireNonNull(parser, "a parser");
+    }
+
     /**
      * @param yaml the Sutra text; it may be invalid only when the first operation is a {@link Text} that replaces it
      * @param ops the operations, in order
@@ -28,7 +40,10 @@ public final class OpApplier {
         for (int i = 0; i < ops.size(); i++) {
             Op op = ops.get(i);
             try {
-                SutraDoc doc = new SutraDoc(text);
+                SutraDoc doc = new SutraDoc(text, parser);
+                if (op instanceof SetMatch && !parser.grammar().hasKey("match")) {
+                    throw new OpException(OpException.NOT_ACCEPTED, "setMatch sets the 'match' key, which comes with a profile; this grammar has none");
+                }
                 op.applyTo(doc);
                 String next = doc.text();
                 doc.sutra();                                     // the result must be a valid Sutra

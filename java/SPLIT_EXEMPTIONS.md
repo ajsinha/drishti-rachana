@@ -21,4 +21,4 @@ None left: the last host types left the temporary `hostcompat` package at A3 (`N
 Files of `rachana-core` (the moved compiler) that still carry a host word (a `DRS-` or `DEL-` code, a `drishti.` setting name, the product name outside
 "Drishti Rachana" and "Drishti Elements"). The count may only go down; A1 removes the codes, A4 the settings, A7 the rest.
 
-- host-word files: 6
+- host-word files: 2

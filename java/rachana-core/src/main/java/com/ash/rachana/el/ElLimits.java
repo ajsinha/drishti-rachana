@@ -15,7 +15,7 @@ package com.ash.rachana.el;
  */
 public record ElLimits(int maxDepth, int maxLength) {
 
-    /** {@code drishti.rachana.max-expression-depth} and {@code max-expression-length} defaults. */
+    /** {@code rachana.max-expression-depth} and {@code rachana.max-expression-length} defaults ({@link com.ash.rachana.RachanaOptions}). */
     public static final ElLimits DEFAULTS = new ElLimits(200, 10_000);
 
     public ElLimits {

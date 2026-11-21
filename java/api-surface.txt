@@ -5,9 +5,12 @@ class public abstract interface com.ash.rachana.el.ElFunction
 class public abstract interface com.ash.rachana.el.Expr
 class public abstract interface com.ash.rachana.el.FunctionProvider
 class public abstract interface com.ash.rachana.el.check.Fields
+class public abstract interface com.ash.rachana.parse.FragmentResolver
+class public abstract interface com.ash.rachana.profile.SutraKey
 class public abstract static interface com.ash.rachana.el.Calendars$Calendar
 class public abstract static interface com.ash.rachana.el.Calendars$Resolver
 class public abstract static interface com.ash.rachana.el.FunctionProvider$Grouping
+class public abstract static interface com.ash.rachana.profile.SutraKey$Context
 class public class com.ash.rachana.RachanaException
 class public class com.ash.rachana.SutraException
 class public class com.ash.rachana.el.ElException
@@ -16,6 +19,7 @@ class public final class com.ash.rachana.RachanaSchema
 class public final class com.ash.rachana.SutraExpressions
 class public final class com.ash.rachana.SutraLayoutEditor
 class public final class com.ash.rachana.SutraPivotEditor
+class public final class com.ash.rachana.SutraStore
 class public final class com.ash.rachana.SutraText
 class public final class com.ash.rachana.SutraWiring
 class public final class com.ash.rachana.SutraWriter
@@ -52,6 +56,8 @@ class public final class com.ash.rachana.parse.SutraBlocks
 class public final class com.ash.rachana.parse.SutraDocstring
 class public final class com.ash.rachana.parse.SutraParser
 class public final class com.ash.rachana.parse.YamlSyntaxException
+class public final class com.ash.rachana.profile.Entities
+class public final class com.ash.rachana.profile.Grammar
 class public final class com.ash.rachana.profile.Profile
 class public final enum com.ash.rachana.RachanaCode
 class public final enum com.ash.rachana.el.check.ElType
@@ -99,11 +105,13 @@ class public final record com.ash.rachana.parse.PNode
 class public static final class com.ash.rachana.design.ops.Ops$FormatException
 class public static final class com.ash.rachana.parse.Json$JsonException
 class public static final class com.ash.rachana.profile.Profile$Builder
+class public static final enum com.ash.rachana.SutraStore$Change$Kind
 class public static final enum com.ash.rachana.api.Node$Kind
 class public static final enum com.ash.rachana.model.Control$Placement
 class public static final enum com.ash.rachana.model.PivotSpec$Mode
 class public static final record com.ash.rachana.SutraLayoutEditor$Edit
 class public static final record com.ash.rachana.SutraLayoutEditor$Placement
+class public static final record com.ash.rachana.SutraStore$Change
 class public static final record com.ash.rachana.SutraText$Blocks
 class public static final record com.ash.rachana.SutraWiring$Node
 class public static final record com.ash.rachana.design.ops.AddPanel$At
@@ -178,7 +186,10 @@ com.ash.rachana.Rachana :: public com.ash.rachana.RachanaOptions com.ash.rachana
 com.ash.rachana.Rachana :: public com.ash.rachana.el.ElCompiler com.ash.rachana.Rachana.compiler()
 com.ash.rachana.Rachana :: public com.ash.rachana.el.FunctionTable com.ash.rachana.Rachana.functions()
 com.ash.rachana.Rachana :: public com.ash.rachana.format.Formats com.ash.rachana.Rachana.formats()
+com.ash.rachana.Rachana :: public com.ash.rachana.parse.SutraParser com.ash.rachana.Rachana.parser()
+com.ash.rachana.Rachana :: public com.ash.rachana.profile.Grammar com.ash.rachana.Rachana.grammar()
 com.ash.rachana.Rachana :: public java.util.List<com.ash.rachana.profile.Profile> com.ash.rachana.Rachana.profiles()
+com.ash.rachana.Rachana :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.Rachana.schema(java.util.Collection<java.lang.String>)
 com.ash.rachana.Rachana :: public java.util.Optional<com.ash.rachana.profile.Profile> com.ash.rachana.Rachana.profile(java.lang.String)
 com.ash.rachana.Rachana :: public static com.ash.rachana.Rachana com.ash.rachana.Rachana.core()
 com.ash.rachana.Rachana :: public static com.ash.rachana.Rachana com.ash.rachana.Rachana.with(com.ash.rachana.RachanaOptions,com.ash.rachana.profile.Profile...)
@@ -216,7 +227,7 @@ com.ash.rachana.RachanaOptions :: public java.lang.String com.ash.rachana.Rachan
 com.ash.rachana.RachanaOptions :: public java.util.List<java.lang.String> com.ash.rachana.RachanaOptions.formatFiles()
 com.ash.rachana.RachanaOptions :: public long com.ash.rachana.RachanaOptions.expressionCacheSize()
 com.ash.rachana.RachanaOptions :: public static final com.ash.rachana.RachanaOptions com.ash.rachana.RachanaOptions.DEFAULTS
-com.ash.rachana.RachanaSchema :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.RachanaSchema.build(java.util.Collection<java.lang.String>,java.util.Collection<java.lang.String>)
+com.ash.rachana.RachanaSchema :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.RachanaSchema.build(java.util.Collection<java.lang.String>,com.ash.rachana.profile.Grammar)
 com.ash.rachana.SutraException :: public com.ash.rachana.SutraException(java.util.List<com.ash.rachana.SutraProblem>)
 com.ash.rachana.SutraException :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.SutraException.problems()
 com.ash.rachana.SutraExpressions :: public com.ash.rachana.SutraExpressions(com.ash.rachana.el.ElCompiler)
@@ -224,6 +235,7 @@ com.ash.rachana.SutraExpressions :: public java.util.List<com.ash.rachana.SutraP
 com.ash.rachana.SutraLayoutEditor :: public com.ash.rachana.SutraLayoutEditor$Edit com.ash.rachana.SutraLayoutEditor.apply(java.lang.String,java.util.List<com.ash.rachana.SutraLayoutEditor$Placement>,boolean)
 com.ash.rachana.SutraLayoutEditor :: public com.ash.rachana.SutraLayoutEditor$Edit com.ash.rachana.SutraLayoutEditor.apply(java.lang.String,java.util.List<com.ash.rachana.SutraLayoutEditor$Placement>,boolean,boolean)
 com.ash.rachana.SutraLayoutEditor :: public com.ash.rachana.SutraLayoutEditor()
+com.ash.rachana.SutraLayoutEditor :: public com.ash.rachana.SutraLayoutEditor(com.ash.rachana.parse.SutraParser)
 com.ash.rachana.SutraLayoutEditor$Edit :: public com.ash.rachana.SutraLayoutEditor$Edit(java.lang.String,int,int,java.util.List<java.lang.String>)
 com.ash.rachana.SutraLayoutEditor$Edit :: public final boolean com.ash.rachana.SutraLayoutEditor$Edit.equals(java.lang.Object)
 com.ash.rachana.SutraLayoutEditor$Edit :: public final int com.ash.rachana.SutraLayoutEditor$Edit.hashCode()
@@ -243,6 +255,7 @@ com.ash.rachana.SutraLayoutEditor$Placement :: public java.lang.Integer com.ash.
 com.ash.rachana.SutraLayoutEditor$Placement :: public java.lang.String com.ash.rachana.SutraLayoutEditor$Placement.id()
 com.ash.rachana.SutraPivotEditor :: public com.ash.rachana.SutraLayoutEditor$Edit com.ash.rachana.SutraPivotEditor.apply(java.lang.String,java.lang.String,com.ash.rachana.model.PivotSpec)
 com.ash.rachana.SutraPivotEditor :: public com.ash.rachana.SutraPivotEditor()
+com.ash.rachana.SutraPivotEditor :: public com.ash.rachana.SutraPivotEditor(com.ash.rachana.parse.SutraParser)
 com.ash.rachana.SutraProblem :: public com.ash.rachana.SutraProblem(java.lang.String,java.lang.String,com.ash.rachana.model.SourceLocation)
 com.ash.rachana.SutraProblem :: public com.ash.rachana.model.SourceLocation com.ash.rachana.SutraProblem.location()
 com.ash.rachana.SutraProblem :: public final boolean com.ash.rachana.SutraProblem.equals(java.lang.Object)
@@ -250,6 +263,23 @@ com.ash.rachana.SutraProblem :: public final int com.ash.rachana.SutraProblem.ha
 com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.code()
 com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.message()
 com.ash.rachana.SutraProblem :: public java.lang.String com.ash.rachana.SutraProblem.toString()
+com.ash.rachana.SutraStore :: public boolean com.ash.rachana.SutraStore.remove(java.lang.String,int)
+com.ash.rachana.SutraStore :: public com.ash.rachana.SutraStore()
+com.ash.rachana.SutraStore :: public java.lang.Runnable com.ash.rachana.SutraStore.listen(java.util.function.Consumer<com.ash.rachana.SutraStore$Change>)
+com.ash.rachana.SutraStore :: public java.util.List<com.ash.rachana.model.Sutra> com.ash.rachana.SutraStore.latest()
+com.ash.rachana.SutraStore :: public java.util.List<com.ash.rachana.model.Sutra> com.ash.rachana.SutraStore.versions(java.lang.String)
+com.ash.rachana.SutraStore :: public java.util.Optional<com.ash.rachana.model.Sutra> com.ash.rachana.SutraStore.get(java.lang.String)
+com.ash.rachana.SutraStore :: public void com.ash.rachana.SutraStore.put(com.ash.rachana.model.Sutra)
+com.ash.rachana.SutraStore$Change :: public com.ash.rachana.SutraStore$Change$Kind com.ash.rachana.SutraStore$Change.kind()
+com.ash.rachana.SutraStore$Change :: public com.ash.rachana.SutraStore$Change(com.ash.rachana.SutraStore$Change$Kind,com.ash.rachana.model.Sutra)
+com.ash.rachana.SutraStore$Change :: public com.ash.rachana.model.Sutra com.ash.rachana.SutraStore$Change.sutra()
+com.ash.rachana.SutraStore$Change :: public final boolean com.ash.rachana.SutraStore$Change.equals(java.lang.Object)
+com.ash.rachana.SutraStore$Change :: public final int com.ash.rachana.SutraStore$Change.hashCode()
+com.ash.rachana.SutraStore$Change :: public final java.lang.String com.ash.rachana.SutraStore$Change.toString()
+com.ash.rachana.SutraStore$Change$Kind :: public static com.ash.rachana.SutraStore$Change$Kind com.ash.rachana.SutraStore$Change$Kind.valueOf(java.lang.String)
+com.ash.rachana.SutraStore$Change$Kind :: public static com.ash.rachana.SutraStore$Change$Kind[] com.ash.rachana.SutraStore$Change$Kind.values()
+com.ash.rachana.SutraStore$Change$Kind :: public static final com.ash.rachana.SutraStore$Change$Kind com.ash.rachana.SutraStore$Change$Kind.PUT
+com.ash.rachana.SutraStore$Change$Kind :: public static final com.ash.rachana.SutraStore$Change$Kind com.ash.rachana.SutraStore$Change$Kind.REMOVED
 com.ash.rachana.SutraText :: public static com.ash.rachana.SutraText$Blocks com.ash.rachana.SutraText.blocks(java.util.List<java.lang.String>,com.ash.rachana.parse.PNode)
 com.ash.rachana.SutraText :: public static int com.ash.rachana.SutraText.bumpVersion(java.util.List<java.lang.String>,com.ash.rachana.parse.PNode)
 com.ash.rachana.SutraText :: public static int com.ash.rachana.SutraText.indent(java.lang.String)
@@ -354,6 +384,7 @@ com.ash.rachana.design.ops.Move :: public void com.ash.rachana.design.ops.Move.a
 com.ash.rachana.design.ops.Op :: public abstract java.lang.String com.ash.rachana.design.ops.Op.name()
 com.ash.rachana.design.ops.Op :: public abstract void com.ash.rachana.design.ops.Op.applyTo(com.ash.rachana.design.ops.SutraDoc)
 com.ash.rachana.design.ops.OpApplier :: public com.ash.rachana.design.ops.OpApplier()
+com.ash.rachana.design.ops.OpApplier :: public com.ash.rachana.design.ops.OpApplier(com.ash.rachana.parse.SutraParser)
 com.ash.rachana.design.ops.OpApplier :: public com.ash.rachana.design.ops.OpResult com.ash.rachana.design.ops.OpApplier.apply(java.lang.String,java.util.List<? extends com.ash.rachana.design.ops.Op>)
 com.ash.rachana.design.ops.OpException :: public com.ash.rachana.design.ops.OpException(java.lang.String,java.lang.String)
 com.ash.rachana.design.ops.OpException :: public com.ash.rachana.design.ops.OpException(java.lang.String,java.lang.String,int)
@@ -1466,6 +1497,7 @@ com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Match com.ash.rachan
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.ScreenLayout com.ash.rachana.model.Sutra.layout()
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.ScreenPhone com.ash.rachana.model.Sutra.phone()
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.SourceLocation com.ash.rachana.model.Sutra.location()
+com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation,java.lang.String,java.util.List<com.ash.rachana.model.Control>,com.ash.rachana.model.ScreenLayout,com.ash.rachana.model.ScreenPhone,java.util.Map<java.lang.String, java.lang.Object>)
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,java.lang.String,com.ash.rachana.model.Match,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation)
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,java.lang.String,com.ash.rachana.model.Match,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation,java.lang.String)
 com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,java.lang.String,com.ash.rachana.model.Match,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation,java.lang.String,java.util.List<com.ash.rachana.model.Control>)
@@ -1476,6 +1508,7 @@ com.ash.rachana.model.Sutra :: public final boolean com.ash.rachana.model.Sutra.
 com.ash.rachana.model.Sutra :: public final int com.ash.rachana.model.Sutra.hashCode()
 com.ash.rachana.model.Sutra :: public final java.lang.String com.ash.rachana.model.Sutra.toString()
 com.ash.rachana.model.Sutra :: public int com.ash.rachana.model.Sutra.version()
+com.ash.rachana.model.Sutra :: public java.lang.Object com.ash.rachana.model.Sutra.extension(java.lang.String)
 com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.description()
 com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.domain()
 com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sutra.id()
@@ -1483,6 +1516,7 @@ com.ash.rachana.model.Sutra :: public java.lang.String com.ash.rachana.model.Sut
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.Control> com.ash.rachana.model.Sutra.controls()
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.Panel> com.ash.rachana.model.Sutra.panels()
 com.ash.rachana.model.Sutra :: public java.util.List<com.ash.rachana.model.StripItem> com.ash.rachana.model.Sutra.strip()
+com.ash.rachana.model.Sutra :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.model.Sutra.extensions()
 com.ash.rachana.model.Sutra :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.model.Sutra.keys()
 com.ash.rachana.model.Sutra :: public java.util.Optional<com.ash.rachana.model.Control> com.ash.rachana.model.Sutra.control(java.lang.String)
 com.ash.rachana.model.Sutra :: public static final int com.ash.rachana.model.Sutra.MAX_STRIP
@@ -1590,6 +1624,10 @@ com.ash.rachana.parse.BlockUses$Use :: public java.util.List<com.ash.rachana.Sut
 com.ash.rachana.parse.BlockUses$Use :: public java.util.List<com.ash.rachana.parse.BlockUses$Brought> com.ash.rachana.parse.BlockUses$Use.panels()
 com.ash.rachana.parse.BlockUses$Use :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.BlockUses$Use.params()
 com.ash.rachana.parse.BlockUses$Use :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.parse.BlockUses$Use.with()
+com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Collection<java.lang.String> com.ash.rachana.parse.FragmentResolver.names()
+com.ash.rachana.parse.FragmentResolver :: public abstract java.util.Optional<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.FragmentResolver.find(java.lang.String)
+com.ash.rachana.parse.FragmentResolver :: public static com.ash.rachana.parse.FragmentResolver com.ash.rachana.parse.FragmentResolver.folders()
+com.ash.rachana.parse.FragmentResolver :: public static com.ash.rachana.parse.FragmentResolver com.ash.rachana.parse.FragmentResolver.of(java.util.Collection<com.ash.rachana.parse.SutraBlocks$Block>)
 com.ash.rachana.parse.Json :: public static java.lang.Object com.ash.rachana.parse.Json.read(java.lang.String)
 com.ash.rachana.parse.Json :: public static java.lang.String com.ash.rachana.parse.Json.quote(java.lang.String)
 com.ash.rachana.parse.Json :: public static java.lang.String com.ash.rachana.parse.Json.write(java.lang.Object)
@@ -1637,6 +1675,7 @@ com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachan
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.SutraBlocks.warnings()
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.contributedUses(java.lang.String)
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.expand(java.util.List<com.ash.rachana.parse.PNode>,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>)
+com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.parse.SutraBlocks.expand(java.util.List<com.ash.rachana.parse.PNode>,java.lang.String,java.util.List<com.ash.rachana.SutraProblem>,com.ash.rachana.parse.FragmentResolver)
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<com.ash.rachana.parse.SutraBlocks$Block> com.ash.rachana.parse.SutraBlocks.blocks()
 com.ash.rachana.parse.SutraBlocks :: public static java.util.List<java.lang.Integer> com.ash.rachana.parse.SutraBlocks.sizes(java.util.List<com.ash.rachana.parse.PNode>)
 com.ash.rachana.parse.SutraBlocks :: public static java.util.Map<java.lang.String, java.util.TreeMap<java.lang.Integer, com.ash.rachana.parse.SutraBlocks$Block>> com.ash.rachana.parse.SutraBlocks.library()
@@ -1676,21 +1715,61 @@ com.ash.rachana.parse.SutraDocstring :: public static java.util.List<com.ash.rac
 com.ash.rachana.parse.SutraDocstring :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.parse.SutraDocstring.plain(com.ash.rachana.parse.PNode)
 com.ash.rachana.parse.SutraParser :: public com.ash.rachana.model.Sutra com.ash.rachana.parse.SutraParser.parse(java.lang.String,java.lang.String,java.lang.String)
 com.ash.rachana.parse.SutraParser :: public com.ash.rachana.parse.SutraParser()
+com.ash.rachana.parse.SutraParser :: public com.ash.rachana.parse.SutraParser(com.ash.rachana.profile.Grammar)
+com.ash.rachana.parse.SutraParser :: public com.ash.rachana.profile.Grammar com.ash.rachana.parse.SutraParser.grammar()
 com.ash.rachana.parse.SutraParser :: public static final int com.ash.rachana.parse.SutraParser.LANGUAGE
 com.ash.rachana.parse.SutraParser :: public static final java.lang.String com.ash.rachana.parse.SutraParser.AMBIGUOUS_YAML
 com.ash.rachana.parse.SutraParser :: public static final java.lang.String com.ash.rachana.parse.SutraParser.STUDIO
 com.ash.rachana.parse.YamlSyntaxException :: public com.ash.rachana.parse.YamlSyntaxException(java.lang.String,int,int)
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.column()
 com.ash.rachana.parse.YamlSyntaxException :: public int com.ash.rachana.parse.YamlSyntaxException.line()
+com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Entities.addTo(com.ash.rachana.profile.Profile$Builder)
+com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Entities.addTo(com.ash.rachana.profile.Profile$Builder,java.util.function.Supplier<? extends java.util.Collection<java.lang.String>>)
+com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.SutraKey com.ash.rachana.profile.Entities.domain()
+com.ash.rachana.profile.Entities :: public static com.ash.rachana.profile.SutraKey com.ash.rachana.profile.Entities.match(java.util.function.Supplier<? extends java.util.Collection<java.lang.String>>)
+com.ash.rachana.profile.Entities :: public static final java.lang.String com.ash.rachana.profile.Entities.DOMAIN
+com.ash.rachana.profile.Entities :: public static final java.lang.String com.ash.rachana.profile.Entities.MATCH
+com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.accepts(com.ash.rachana.model.PanelKind)
+com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.formSave()
+com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.hasKey(java.lang.String)
+com.ash.rachana.profile.Grammar :: public boolean com.ash.rachana.profile.Grammar.sourceForm(java.lang.String)
+com.ash.rachana.profile.Grammar :: public com.ash.rachana.parse.FragmentResolver com.ash.rachana.profile.Grammar.fragments()
+com.ash.rachana.profile.Grammar :: public java.util.List<com.ash.rachana.model.PanelKind> com.ash.rachana.profile.Grammar.panelKinds()
+com.ash.rachana.profile.Grammar :: public java.util.Map<java.lang.String, com.ash.rachana.profile.SutraKey> com.ash.rachana.profile.Grammar.keys()
+com.ash.rachana.profile.Grammar :: public static com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.core()
+com.ash.rachana.profile.Grammar :: public static com.ash.rachana.profile.Grammar com.ash.rachana.profile.Grammar.of(java.util.List<com.ash.rachana.profile.Profile>)
+com.ash.rachana.profile.Grammar :: public static final java.util.Set<com.ash.rachana.model.PanelKind> com.ash.rachana.profile.Grammar.PROFILE_KINDS
+com.ash.rachana.profile.Grammar :: public static final java.util.Set<java.lang.String> com.ash.rachana.profile.Grammar.CORE_KEYS
+com.ash.rachana.profile.Grammar :: public static final java.util.Set<java.lang.String> com.ash.rachana.profile.Grammar.SOURCE_FORMS
+com.ash.rachana.profile.Profile :: public boolean com.ash.rachana.profile.Profile.formSave()
 com.ash.rachana.profile.Profile :: public boolean com.ash.rachana.profile.Profile.isCore()
 com.ash.rachana.profile.Profile :: public com.ash.rachana.el.Calendars$Resolver com.ash.rachana.profile.Profile.calendars()
+com.ash.rachana.profile.Profile :: public com.ash.rachana.parse.FragmentResolver com.ash.rachana.profile.Profile.fragments()
 com.ash.rachana.profile.Profile :: public java.lang.String com.ash.rachana.profile.Profile.name()
 com.ash.rachana.profile.Profile :: public java.lang.String com.ash.rachana.profile.Profile.toString()
 com.ash.rachana.profile.Profile :: public java.util.List<com.ash.rachana.el.FunctionProvider> com.ash.rachana.profile.Profile.functions()
+com.ash.rachana.profile.Profile :: public java.util.List<com.ash.rachana.profile.SutraKey> com.ash.rachana.profile.Profile.keys()
 com.ash.rachana.profile.Profile :: public java.util.List<java.lang.String> com.ash.rachana.profile.Profile.formatFiles()
+com.ash.rachana.profile.Profile :: public java.util.Set<com.ash.rachana.model.PanelKind> com.ash.rachana.profile.Profile.panelKinds()
+com.ash.rachana.profile.Profile :: public java.util.Set<java.lang.String> com.ash.rachana.profile.Profile.sourceForms()
 com.ash.rachana.profile.Profile :: public static com.ash.rachana.profile.Profile com.ash.rachana.profile.Profile.core()
 com.ash.rachana.profile.Profile :: public static com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile.named(java.lang.String)
 com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile com.ash.rachana.profile.Profile$Builder.build()
 com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.calendars(com.ash.rachana.el.Calendars$Resolver)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.formSave()
 com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.formats(java.lang.String...)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.fragments(com.ash.rachana.parse.FragmentResolver)
 com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.functions(com.ash.rachana.el.FunctionProvider...)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.keys(com.ash.rachana.profile.SutraKey...)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.panelKinds(com.ash.rachana.model.PanelKind...)
+com.ash.rachana.profile.Profile$Builder :: public com.ash.rachana.profile.Profile$Builder com.ash.rachana.profile.Profile$Builder.sourceForms(java.lang.String...)
+com.ash.rachana.profile.SutraKey :: public abstract java.lang.Object com.ash.rachana.profile.SutraKey.read(com.ash.rachana.parse.PNode,com.ash.rachana.profile.SutraKey$Context)
+com.ash.rachana.profile.SutraKey :: public abstract java.lang.String com.ash.rachana.profile.SutraKey.name()
+com.ash.rachana.profile.SutraKey :: public abstract java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.profile.SutraKey.schema()
+com.ash.rachana.profile.SutraKey :: public default boolean com.ash.rachana.profile.SutraKey.required()
+com.ash.rachana.profile.SutraKey :: public default java.lang.String com.ash.rachana.profile.SutraKey.after()
+com.ash.rachana.profile.SutraKey :: public default java.util.List<com.ash.rachana.parse.PNode> com.ash.rachana.profile.SutraKey.panels(java.lang.Object)
+com.ash.rachana.profile.SutraKey$Context :: public abstract com.ash.rachana.parse.PNode com.ash.rachana.profile.SutraKey$Context.root()
+com.ash.rachana.profile.SutraKey$Context :: public abstract java.lang.String com.ash.rachana.profile.SutraKey$Context.file()
+com.ash.rachana.profile.SutraKey$Context :: public abstract java.lang.String com.ash.rachana.profile.SutraKey$Context.folder()
+com.ash.rachana.profile.SutraKey$Context :: public abstract void com.ash.rachana.profile.SutraKey$Context.problem(java.lang.String,java.lang.String,com.ash.rachana.parse.PNode)

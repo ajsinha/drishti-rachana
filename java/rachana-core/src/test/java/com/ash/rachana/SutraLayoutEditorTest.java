@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 
 class SutraLayoutEditorTest {
 
-    private final SutraLayoutEditor editor = new SutraLayoutEditor();
-    private final SutraParser parser = new SutraParser();
+    private final SutraLayoutEditor editor = new SutraLayoutEditor(com.ash.rachana.TestGrammar.parser());
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     private Sutra parse(String text) {
         return parser.parse(text, "t.sutra.yaml", "rates");

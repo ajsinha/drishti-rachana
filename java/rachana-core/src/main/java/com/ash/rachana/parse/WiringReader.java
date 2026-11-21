@@ -42,12 +42,15 @@ final class WiringReader {
     private final List<SutraProblem> problems;
     private final Function<PNode, List<PNode>> panelList;
     private final Function<PNode, Panel> panel;
+    private final com.ash.rachana.profile.Grammar grammar;
 
     /**
      * @param panelList a {@code panels:} node as its items, every {@code use:} expanded
      * @param panel one child panel as a panel (null when it cannot be read)
      */
-    WiringReader(String file, List<SutraProblem> problems, Function<PNode, List<PNode>> panelList, Function<PNode, Panel> panel) {
+    WiringReader(String file, List<SutraProblem> problems, Function<PNode, List<PNode>> panelList, Function<PNode, Panel> panel,
+            com.ash.rachana.profile.Grammar grammar) {
+        this.grammar = grammar;
         this.file = file;
         this.problems = problems;
         this.panelList = panelList;
@@ -122,6 +125,10 @@ final class WiringReader {
         }
         if (m.containsKey("table")) {
             return tableSource(n, m);
+        }
+        if (!grammar.sourceForm("kind")) {                                   // the kind form is a profile's (split step A7)
+            problem("RCH-2010", "a source names the table it reads: table: <domain>.<name> (a kind's source comes with a profile that brings it)", n);
+            return null;
         }
         String kind = text(m.get("kind"));
         if (kind == null || !NAME.matcher(kind).matches()) {

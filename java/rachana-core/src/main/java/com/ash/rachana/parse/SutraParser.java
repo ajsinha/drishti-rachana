@@ -30,11 +30,27 @@ public final class SutraParser {
     public static final String AMBIGUOUS_YAML = "RCH-2033";
 
     private final PositionalYamlReader reader = new PositionalYamlReader();
+    private final com.ash.rachana.profile.Grammar grammar;
+
+    /** A parser of Core's grammar alone ({@link com.ash.rachana.profile.Grammar#core()}). */
+    public SutraParser() {
+        this(com.ash.rachana.profile.Grammar.core());
+    }
+
+    /** A parser of this grammar: Core's and its profiles' ({@link com.ash.rachana.Rachana#parser()}). */
+    public SutraParser(com.ash.rachana.profile.Grammar grammar) {
+        this.grammar = java.util.Objects.requireNonNull(grammar, "a grammar");
+    }
+
+    /** The grammar it reads. */
+    public com.ash.rachana.profile.Grammar grammar() {
+        return grammar;
+    }
 
     /**
      * @param yaml the file content: the Sutra YAML
      * @param file the file name used in problem locations
-     * @param domain the default domain (the parent folder name)
+     * @param domain the folder it was read from (the default of a profile's {@code domain} key)
      * @throws SutraException listing every problem found
      */
     public Sutra parse(String yaml, String file, String domain) {
@@ -46,7 +62,7 @@ public final class SutraParser {
             throw new SutraException(List.of(new SutraProblem("RCH-2001", "YAML syntax: " + e.getMessage(),
                     new SourceLocation(file, e.line(), e.column()))));
         }
-        SutraBuilder b = new SutraBuilder(file);
+        SutraBuilder b = new SutraBuilder(file, grammar);
         Sutra s = b.build(root, domain);
         if (!issues.isEmpty() || !b.problems().isEmpty()) {
             List<SutraProblem> all = new ArrayList<>();

@@ -28,11 +28,12 @@ final class SutraDoc {
     private static final List<String> TOP_ORDER = List.of("rachana", "sutra", "version", "domain", "description", "match", "title", "strip", "controls",
             "panels", "keys", "notes");
 
-    private final SutraParser parser = new SutraParser();
+    private final SutraParser parser;
     private final PositionalYamlReader reader = new PositionalYamlReader();
     private List<String> lines;
 
-    SutraDoc(String text) {
+    SutraDoc(String text, SutraParser parser) {
+        this.parser = parser;
         this.lines = new ArrayList<>(List.of(text.split("\n", -1)));
     }
 
@@ -43,6 +44,11 @@ final class SutraDoc {
     /** The parsed Sutra (throws {@link com.ash.rachana.SutraException} when the text is not valid). */
     Sutra sutra() {
         return parser.parse(text(), SutraParser.STUDIO, "studio");
+    }
+
+    /** The parser it reads with (the applier's grammar). */
+    SutraParser parser() {
+        return parser;
     }
 
     Panel panel(String id) {

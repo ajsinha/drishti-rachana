@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test;
 /** Every operation on every panel kind, over the all-panels showcase and the ten other examples. */
 class OpApplierTest {
 
-    private final OpApplier applier = new OpApplier();
-    private final SutraParser parser = new SutraParser();
+    private final OpApplier applier = new com.ash.rachana.design.ops.OpApplier(com.ash.rachana.TestGrammar.parser());
+    private final SutraParser parser = com.ash.rachana.TestGrammar.parser();
 
     /** The example with a comment above every panel and one inside it, so loss of comments shows. */
     private static String annotated(String text) {

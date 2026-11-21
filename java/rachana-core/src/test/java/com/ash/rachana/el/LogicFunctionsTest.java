@@ -101,7 +101,7 @@ class LogicFunctionsTest {
     void theEditorSchemaOffersTheOneNamesAndChecksTheOld() {
         @SuppressWarnings("unchecked")
         java.util.Map<String, java.util.Map<String, Object>> fns = (java.util.Map<String, java.util.Map<String, Object>>)
-                com.ash.rachana.RachanaSchema.build(java.util.List.of("date"), java.util.List.of("trade")).get("x-rachana-functions");
+                com.ash.rachana.RachanaSchema.build(java.util.List.of("date"), com.ash.rachana.TestGrammar.grammar(java.util.List.of("trade"))).get("x-rachana-functions");
         assertThat(fns.get("starts_with")).containsEntry("min", 2).doesNotContainKey("oldSpellingOf");
         assertThat(fns.get("startsWith")).containsEntry("oldSpellingOf", "starts_with");
         assertThat(fns.get("let")).containsEntry("min", 2).containsEntry("max", 64);

@@ -20,7 +20,8 @@ import java.util.Map;
 public final class SutraWriter {
 
     public String write(Sutra s, String name, int version) {
-        return write(s, name, version, "Started from inference for " + s.match().kind() + ". Edit freely.");
+        return write(s, name, version, s.match() == null ? "Started from inference. Edit freely."
+                : "Started from inference for " + s.match().kind() + ". Edit freely.");
     }
 
     /** As {@link #write(Sutra, String, int)} with the given description (a one-line, plain sentence). */
@@ -30,11 +31,13 @@ public final class SutraWriter {
         y.append("sutra: ").append(name).append('\n');
         y.append("version: ").append(version).append('\n');
         y.append("description: ").append(description.matches("[A-Za-z0-9 .,()/-]*") ? description : q(description)).append('\n');
-        y.append("match: { kind: ").append(s.match().kind());
-        if (s.match().where() != null) {
-            y.append(", where: ").append(q(s.match().where()));
+        if (s.match() != null) {                                 // the entity additions' key (split step A7)
+            y.append("match: { kind: ").append(s.match().kind());
+            if (s.match().where() != null) {
+                y.append(", where: ").append(q(s.match().where()));
+            }
+            y.append(", priority: ").append(Math.max(1, s.match().priority())).append(" }\n");
         }
-        y.append(", priority: ").append(Math.max(1, s.match().priority())).append(" }\n");
         if (s.title() != null) {
             y.append("title: { ");
             if (s.title().pill() != null) {

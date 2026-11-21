@@ -30,32 +30,31 @@ public final class RachanaSchema {
     private RachanaSchema() {}
 
     /**
+     * The schema of a grammar's Sutras (split step A7): Core's keys and kinds, each profile key's fragment after the key it follows,
+     * a profile's panel kinds only when a profile brings them. {@link Rachana#schema} gives an instance's.
+     *
      * @param formats format names this server knows (core and packs)
-     * @param kinds entity kinds this server serves
+     * @param grammar Core's and its profiles' grammar
      */
-    public static Map<String, Object> build(Collection<String> formats, Collection<String> kinds) {
+    public static Map<String, Object> build(Collection<String> formats, com.ash.rachana.profile.Grammar grammar) {
         Map<String, Object> s = new LinkedHashMap<>();
         s.put("$schema", "https://json-schema.org/draft/2020-12/schema");
-        s.put("$id", "https://drishti.local/schema/rachana-" + SutraParser.LANGUAGE + ".json");
+        s.put("$id", "urn:rachana:schema:sutra:" + SutraParser.LANGUAGE);
         s.put("title", "Rachana Sutra, language " + SutraParser.LANGUAGE);
         s.put("description", "A Sutra: how entities of a kind are laid out. One YAML document per file (<name>.v<N>.sutra.yaml).");
         s.put("type", "object");
-        s.put("required", List.of("rachana", "sutra", "version", "match"));
+        List<String> required = new ArrayList<>(List.of("rachana", "sutra", "version"));
+        grammar.keys().values().stream().filter(com.ash.rachana.profile.SutraKey::required).forEach(k -> required.add(k.name()));
+        s.put("required", List.copyOf(required));
         s.put("additionalProperties", false);
         Map<String, Object> p = new LinkedHashMap<>();
         p.put("rachana", Map.of("const", SutraParser.LANGUAGE, "description", "The Rachana language version; always " + SutraParser.LANGUAGE));
         p.put("sutra", Map.of("type", "string", "pattern", "^[a-z][a-z0-9-]{1,63}$", "description", "The Sutra's name: lower-case kebab"));
         p.put("version", Map.of("type", "integer", "minimum", 1, "description", "The newest version of a name is the one used"));
-        p.put("domain", text("The folder it belongs to (defaults to its parent folder)"));
         p.put("description", text("One paragraph: what this layout shows and for which entities"));
         p.put("notes", text("Longer notes for authors and reviewers (plain text)"));
         p.put("doc", Map.of("type", "object", "description", "The docstring a component browser and an AI agent read: summary, description, params, emits, "
-                + "expects, examples, since (RACHANA_REFERENCE.md); lint warns when it is missing or incomplete (DRS-2055)"));
-        p.put("match", object(Map.of(
-                "kind", kinds.isEmpty() ? text("The entity kind") : Map.of("type", "string", "enum", List.copyOf(new TreeSet<>(kinds)),
-                        "description", "The entity kind"),
-                "where", text(EL + " that must be true for the Sutra to apply"),
-                "priority", Map.of("type", "integer", "description", "Higher wins when several Sutras match")), List.of("kind")));
+                + "expects, examples, since (RACHANA_REFERENCE.md); lint warns when it is missing or incomplete (RCH-2055)"));
         p.put("title", object(Map.of("pill", text("The pill before the id (may hold ${…})"), "id", text(EL + " for the id shown"),
                 "with", text(EL + ": the counterparty or other entity named after the id")), List.of("id")));
         p.put("strip", Map.of("type", "array", "maxItems", 8, "description", "Up to eight fields in the header strip",
@@ -88,8 +87,8 @@ public final class RachanaSchema {
         KEYS.forEach(k -> keys.put(k, text(EL + ", or impact or raw")));
         p.put("keys", Map.of("type", "object", "properties", keys, "additionalProperties", false,
                 "description", "Function keys: link(…) to open an entity, impact (F8), raw (F9)"));
-        s.put("properties", p);
-        Map<String, Object> panel = panel(formats);
+        s.put("properties", withKeys(p, grammar));
+        Map<String, Object> panel = panel(formats, grammar);
         panel.put("x-rachana-use", Map.of("$ref", "#/$defs/use"));    // an item with `use:` is a shared block's use, not a panel
         s.put("$defs", Map.of("panel", panel, "column", column(formats), "use", use()));
         Map<String, Object> fns = new LinkedHashMap<>();
@@ -218,10 +217,10 @@ public final class RachanaSchema {
         return object(c, List.of("id", "kind"));
     }
 
-    private static Map<String, Object> panel(Collection<String> formats) {
+    private static Map<String, Object> panel(Collection<String> formats, com.ash.rachana.profile.Grammar grammar) {
         Map<String, Object> common = new LinkedHashMap<>();
         common.put("id", Map.of("type", "string", "description", "Unique within the Sutra"));
-        common.put("kind", Map.of("type", "string", "enum", java.util.Arrays.stream(PanelKind.values()).map(PanelKind::id).toList()));
+        common.put("kind", Map.of("type", "string", "enum", grammar.panelKinds().stream().map(PanelKind::id).toList()));
         common.put("title", text("The panel's heading (may hold ${…})"));
         common.put("description", text("What the panel answers, for authors and reviewers"));
         common.put("key", Map.of("type", "string", "enum", KEYS));
@@ -278,7 +277,7 @@ public final class RachanaSchema {
                 "description", "tabs only: panels shown inside each tab (kv, status, table, ladder, hbar, markdown, metric), read with @ as the tab's element"));
         List<Object> perKind = new ArrayList<>();
         Map<String, Object> allOptions = new LinkedHashMap<>(common);
-        for (PanelKind k : PanelKind.values()) {
+        for (PanelKind k : grammar.panelKinds()) {
             Map<String, Object> props = new LinkedHashMap<>();
             java.util.Set<String> expr = SutraExpressions.expressionOptions(k);
             TreeSet<String> opts = new TreeSet<>(k.required());
@@ -483,6 +482,19 @@ public final class RachanaSchema {
                 "tone", tone(), "total", Map.of("type", "boolean", "description", "Sum it in the total row"),
                 "link", Map.of("type", "boolean", "description", "Open the entity the value names"),
                 "description", text("What the column shows")), List.of("bind"));
+    }
+
+    /** Core's properties with each profile key's fragment placed after the key it follows (or last). */
+    private static Map<String, Object> withKeys(Map<String, Object> core, com.ash.rachana.profile.Grammar grammar) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        List<com.ash.rachana.profile.SutraKey> last = new ArrayList<>();
+        core.forEach((name, value) -> {
+            out.put(name, value);
+            grammar.keys().values().stream().filter(k -> name.equals(k.after())).forEach(k -> out.put(k.name(), k.schema()));
+        });
+        grammar.keys().values().stream().filter(k -> !out.containsKey(k.name())).forEach(last::add);
+        last.forEach(k -> out.put(k.name(), k.schema()));
+        return out;
     }
 
     private static Map<String, Object> object(Map<String, Object> props, List<String> required) {

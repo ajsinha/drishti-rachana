@@ -1,0 +1,66 @@
+# Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
+# Moved cases (DECISIONS EL1-4): every case recorded in compat/levels/<L>/results.jsonl that the suite no longer runs at level L,
+# because it moved to a later level (since: the level it now pins; the suite holds it with that since) or was withdrawn (withdrawn:
+# the reason). tools/regime/levels.py check skips ONLY the cases listed here and fails on any other difference, and on an entry that
+# is not (or no longer) a moved case: the list stays exact. Each entry is recorded with the change that moves the case.
+#   <level>:
+#     - { case: "<suite#id>", since: "<later level>" }
+#     - { case: "<suite#id>", withdrawn: "<why>" }
+moved_cases_version: 1
+levels:
+  "1.0":
+  - {case: "el/numbers-exact#literal-decimals-add-exactly", since: "1.1"}
+  - {case: "el/numbers-exact#exact-sum-equals-its-literal", since: "1.1"}
+  - {case: "el/numbers-exact#trailing-zeros-are-not-printed", since: "1.1"}
+  - {case: "el/numbers-exact#one-third", since: "1.1"}
+  - {case: "el/numbers-exact#two-thirds-rounds-the-last-digit", since: "1.1"}
+  - {case: "el/numbers-exact#an-exact-quotient", since: "1.1"}
+  - {case: "el/numbers-exact#a-third-times-three-is-not-one", since: "1.1"}
+  - {case: "el/numbers-exact#two-rounded-thirds", since: "1.1"}
+  - {case: "el/numbers-exact#a-tie-rounds-to-even-down", since: "1.1"}
+  - {case: "el/numbers-exact#a-tie-rounds-to-even-up", since: "1.1"}
+  - {case: "el/numbers-exact#a-64-bit-identifier-survives", since: "1.1"}
+  - {case: "el/numbers-exact#long-identifiers-compare-exactly", since: "1.1"}
+  - {case: "el/numbers-exact#thirty-four-digits-are-allowed", since: "1.1"}
+  - {case: "el/numbers-exact#remainder-of-decimals", since: "1.1"}
+  - {case: "el/numbers-exact#number-like-text-reads-as-a-literal", since: "1.1"}
+  - {case: "el/numbers-exact#a-small-decimal-prints-without-an-exponent", since: "1.1"}
+  - {case: "el/numbers-exact#a-large-decimal-prints-without-an-exponent", since: "1.1"}
+  - {case: "el/numbers-exact#negative-zero-prints-zero", since: "1.1"}
+  - {case: "el/numbers-exact#a-literals-trailing-zero-is-not-printed", since: "1.1"}
+  - {case: "el/numbers-exact#exact-ordering", since: "1.1"}
+  - {case: "el/numbers-exact#sum-of-decimals-is-exact", since: "1.1"}
+  - {case: "el/numbers-exact#a-whole-overflow-is-an-error", since: "1.1"}
+  - {case: "el/numbers-exact#a-product-overflow-is-an-error", since: "1.1"}
+  - {case: "el/numbers-exact#iferror-catches-the-overflow", since: "1.1"}
+  - {case: "el/numbers-exact#a-literal-of-35-digits-does-not-compile", since: "1.1"}
+  - {case: "el/numbers-exact#a-fraction-of-35-digits-does-not-compile", since: "1.1"}
+  - {case: "el/reserved#pipe-is-reserved", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#empty-default-is-reserved", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#arrow-is-reserved", since: "1.1"}
+  - {case: "el/reserved#spread-is-reserved", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#range-in-an-index-is-reserved", since: "1.1"}
+  - {case: "el/reserved#range-between-numbers-is-reserved", since: "1.1"}
+  - {case: "el/reserved#record-literal-is-reserved", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#closing-brace-is-reserved", since: "1.1"}
+  - {case: "el/reserved#comment-opener-is-reserved", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#comment-closer-is-reserved", since: "1.1"}
+  - {case: "el/reserved#digit-separator-is-reserved", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#digit-separator-after-an-operator", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#first-reserved-token-is-the-problem", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#reserved-token-inside-a-template-part", withdrawn: "the token is defined at level 1.1 (SPEC 4.17); the case pinned the reserved wording, which never held at 1.0; the 1.0 refusal in the reference's words is pinned by el/syntax-at-1-0"}
+  - {case: "el/reserved#reserved-name-group-by", since: "1.1"}
+  - {case: "el/reserved#reserved-name-filter", since: "1.1"}
+  - {case: "el/reserved#reserved-name-zip", since: "1.1"}
+  - {case: "el/reserved#reserved-name-money", since: "1.1"}
+  - {case: "el/reserved#reserved-name-between", since: "1.1"}
+  - {case: "el/reserved#reserved-name-of-a-core-library", since: "1.1"}
+  - {case: "el/text-code-points#mid-takes-whole-code-points", since: "1.1"}
+  - {case: "el/text-code-points#left-takes-a-whole-code-point", since: "1.1"}
+  - {case: "el/text-code-points#right-takes-a-whole-code-point", since: "1.1"}
+  - {case: "el/text-code-points#find-counts-code-points", since: "1.1"}
+  - {case: "el/text-code-points#pad-counts-code-points", since: "1.1"}
+  - {case: "el/text-code-points#ordering-by-code-point", since: "1.1"}
+  - {case: "el/text-code-points#sort-by-code-point", since: "1.1"}
+  - {case: "el/text-code-points#least-of-texts-by-code-point", since: "1.1"}
+  - {case: "el/text-code-points#source-offsets-stay-in-utf-16-units", since: "1.1"}

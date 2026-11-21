@@ -689,6 +689,10 @@ final class Parser {
             throw new ElException(name + " takes " + arity[0] + (arity[0] == arity[1] ? "" : "-" + arity[1])
                     + " argument(s), got " + args.size(), t.pos());
         }
+        String level11 = v11 ? Level11.check(name, args) : null;
+        if (level11 != null) {
+            throw new ElException(name + ": " + level11, t.pos(), t.pos() + name.length());
+        }
         String problem = table.check(name, args);
         if (problem != null) {
             throw new ElException(name + ": " + problem, t.pos());

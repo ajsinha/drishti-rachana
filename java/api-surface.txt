@@ -1797,6 +1797,7 @@ com.ash.rachana.el.check.Problem :: public static final java.lang.String com.ash
 com.ash.rachana.el.check.Problem :: public static final java.lang.String com.ash.rachana.el.check.Problem.LATER
 com.ash.rachana.el.check.Problem :: public static final java.lang.String com.ash.rachana.el.check.Problem.MASKED
 com.ash.rachana.el.check.Problem :: public static final java.lang.String com.ash.rachana.el.check.Problem.NAME
+com.ash.rachana.el.check.Problem :: public static final java.lang.String com.ash.rachana.el.check.Problem.SIGN_POWER
 com.ash.rachana.el.check.Problem :: public static final java.lang.String com.ash.rachana.el.check.Problem.WARNING
 com.ash.rachana.el.check.Scope :: public java.lang.String com.ash.rachana.el.check.Scope.word()
 com.ash.rachana.el.check.Scope :: public static com.ash.rachana.el.check.Scope com.ash.rachana.el.check.Scope.of(java.lang.String)

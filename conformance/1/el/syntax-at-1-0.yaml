@@ -32,6 +32,26 @@ cases:
     expr: "range(3)"
     expect: {"value": null, "type": "empty"}
 
+  - id: "range-of-a-list-is-the-aggregate-at-1-0"
+    kind: "expr"
+    source: "DECISIONS EL1-1"
+    note: "Level 1.0 keeps Core's aggregate range (max - min, split step A9); level 1.1 spells it span."
+    expr: "range([3, 9, 4])"
+    expect: {"value": 6, "type": "number"}
+
+  - id: "range-of-a-field-is-the-aggregate-at-1-0"
+    kind: "expr"
+    source: "DECISIONS EL1-1"
+    expr: "range($.legs, 'n')"
+    expect: {"value": 10, "type": "number"}
+
+  - id: "span-at-1-0"
+    kind: "expr-error"
+    source: "DECISIONS EL1-1"
+    note: "span is a name from level 1.1."
+    expr: "span([3, 9, 4])"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "unknown function 'span'"}]}
+
   - id: "pipe-at-1-0"
     kind: "expr-error"
     source: "EL_EXPANSION / DECISIONS level 1.0"

@@ -109,6 +109,38 @@ class Level11Test {
         assertThat(Printer.print(v10.compile("1e-3"))).isEqualTo("0.001");
     }
 
+    /** EL1-1: at 1.1 range is only the sequence and the aggregate is span; at 1.0 range is the aggregate and span is not a name. */
+    @Test
+    void rangeIsTheSequenceAndSpanTheAggregateAtLevel11() {
+        ElCompiler v10 = new ElCompiler();
+        EvalContext none = EvalContext.of(com.ash.rachana.api.Node.missing(), null);
+        assertThat(Values.text(v10.compile("range([3, 9, 4])").eval(none))).isEqualTo("6");
+        assertThat(Values.text(V11.compile("span([3, 9, 4])").eval(none))).isEqualTo("6");
+        assertThat(Values.text(V11.compile("range(3)[2] + size(range(3))").eval(none))).isEqualTo("5");
+        assertThatThrownBy(() -> v10.compile("span([1])")).hasMessageContaining("unknown function 'span'");
+        assertThatThrownBy(() -> V11.compile("range([3, 9, 4])")).hasMessageContaining("write span(list, field?)");
+        assertThatThrownBy(() -> V11.compile("range($.t, 'PRICE')")).hasMessageContaining("write span(list, field?)");
+        com.ash.rachana.api.Node rec = com.ash.rachana.api.Node.of(java.util.Map.of("l", java.util.List.of(1, 2)));
+        assertThatThrownBy(() -> V11.compile("range($.l)").eval(EvalContext.of(rec, null))).hasMessageContaining("write span(list, field?)");
+    }
+
+    /** EL1-2: {@code -x ** n} and {@code -x ^ n} without parentheses are a warning at 1.1; parentheses on either side silence it. */
+    @Test
+    void aSignBeforeAPowerIsAHint() {
+        var p = CheckedMode.check("-2 ** 2", null, Fields.NONE, "1.1").problems();
+        assertThat(p).hasSize(1);
+        assertThat(p.get(0).code()).isEqualTo("RCH-2091");
+        assertThat(p.get(0).error()).isFalse();
+        assertThat(p.get(0).message()).isEqualTo("'-2 ** 2' is -(2 ** 2): a power binds tighter than the sign before it (Python's rule; "
+                + "Excel reads (-x) ^ n)");
+        assertThat(p.get(0).fix()).isEqualTo("write -(2 ** 2) to keep this meaning, or (-2) ** 2 for the power of the negative");
+        assertThat(CheckedMode.check("1 + -$.x ^ 2", null, Fields.NONE, "1.1").problems())
+                .extracting(com.ash.rachana.el.check.Problem::code).containsExactly("RCH-2091");
+        assertThat(CheckedMode.check("-(2 ** 2)", null, Fields.NONE, "1.1").problems()).isEmpty();
+        assertThat(CheckedMode.check("(-2) ** 2", null, Fields.NONE, "1.1").problems()).isEmpty();
+        assertThat(CheckedMode.check("-2 * 2", null, Fields.NONE, "1.1").problems()).isEmpty();
+    }
+
     @Test
     void theReservedNamesAreTheFilesLessRange() throws Exception {
         String yaml = Files.readString(Path.of("../../spec/1/reserved.yaml"));

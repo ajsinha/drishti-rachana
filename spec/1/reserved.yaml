@@ -20,8 +20,8 @@ status: draft
 
 # Level 1.1 (2026-11-21, the syntax batch, SPEC 4.17) defines |>, ??, ..., {, }, /* */ and the digit separator: they are listed
 # under `defined` below with the construct, and refused only at level 1.0. =>, .. and a stray */ stay reserved; at 1.1 their
-# reasons name the Python spelling (DECISIONS PY3, PY4). `range` (X18) is Core's aggregate since split step A9 and, over numbers,
-# Python's range at 1.1 (PY4).
+# reasons name the Python spelling (DECISIONS PY3, PY4). `range` (X18) is Core's aggregate since split step A9 at 1.0, and only
+# Python's range at 1.1 (PY4), where the aggregate is `span` (EL1-1).
 
 defined:
   - { token: "|>", since: "1.1", as: "the pipe (X11)" }

@@ -9,7 +9,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 - **Syntax at language level 1.1** (SPEC 4.17, EBNF part D; EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY1 to PY8): record literals
   `{a: 1, 'k-2': x, ...r}` and list spread `[...a, b]`; Python slices `t[a:b:c]` and `range(start, stop, step)` (end-exclusive; `..` stays
-  reserved; over a list `range` is still Core's aggregate); the pipe `x |> f(a)`; `a ?? b`; `a if c else b`; lambdas `lambda x: …`,
+  reserved; `range` is only the sequence at 1.1, the aggregate max − min is `span`, EL1-1); the pipe `x |> f(a)`; `a ?? b`; `a if c else b`; lambdas `lambda x: …`,
   second class (map, sort, reduce, group, `let`; no recursion; `=>` stays reserved); `**` and infix `^` (right-associative, `-2 ** 2` is
   `-4`); comments `/* … */`; digit separators `1_000_000`. Reserved names are refused by name at 1.1.
 - **Numbers built at 1.1** (SPEC 4.16, X2, XD3): literals without an exponent are exact integers and decimals (34 digits), `+ - * %`
@@ -23,9 +23,21 @@ Entries are written per release; the regime's unreleased work is listed after th
   `ElException.end()`). The checker types `??`, `**` and the exact operators (X8, first part). `FilterTree` reads level 1.1 trees.
 - **Conformance**: `el/syntax-1-1` (114 cases) and `el/syntax-at-1-0` (13), verified; `el/numbers-exact`, `el/text-code-points`,
   `el/reserved` and `el/messages-level-1-1` verified, their cases that failed at 1.0 moved to `since: "1.1"` (9 reserved-token
-  cases withdrawn: 1.1 defines the tokens; two `**` message cases withdrawn: PY6). `tools/regime/levels.py check` reports a case
-  recorded failing that moved to a later level or was withdrawn, and does not count it as a difference. JVM, both JavaScript bundles
+  cases withdrawn: 1.1 defines the tokens; two `**` message cases withdrawn: PY6). `tools/regime/levels.py check` skips a recorded
+  case that moved to a later level or was withdrawn only when `compat/levels/moved-cases.yaml` lists it (EL1-4, below). JVM, both JavaScript bundles
   and the Python V8 engine agree.
+
+### The EL1 decisions built (DECISIONS "EL1 decisions taken")
+
+- **EL1-1**: at level 1.1 `range(...)` is only Python's sequence (the dispatch on the first argument is gone); the aggregate max − min is
+  `span(list, field?)` (functions.yaml, `since: "1.1"`; Core's `range` kernel); a list or a text written as `range`'s argument does not
+  compile (`RCH-2101`), one met at evaluation is `RCH-2102`, both naming `span`; a masked argument masks. Level 1.0 keeps the `range`
+  aggregate and has no `span`. Cases in `el/syntax-1-1` and `el/syntax-at-1-0`.
+- **EL1-4**: `compat/levels/moved-cases.yaml` lists every recorded 1.0 case that moved to a later level (46, with `since`) or was withdrawn
+  (9, with the reason); `tools/regime/levels.py check` skips only those and fails on any other difference and on a wrong entry
+  (`levels.py compare`, tested by `LevelReplayTest`). A level's `functions.yaml` is spec/1's less the entries of a later `since`.
+- **EL1-2**: checked mode at 1.1 warns `RCH-2091` on `-x ** n` or `-x ^ n` without parentheses (`-(x ** n)` by Python's rule, `(-x) ^ n`
+  in Excel), with both spellings as the fix (SPEC 4.17, 6.2).
 
 ### `data:` and the Data Protocol; `<rachana-view>` (lane C: SPLIT_PLAN steps 15 and 16, B1 to B3)
 

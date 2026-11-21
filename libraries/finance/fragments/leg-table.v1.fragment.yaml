@@ -26,7 +26,7 @@ params:
       day_count: { type: text,   optional: true, doc: The day_count convention }
       frequency: { type: text,   optional: true, doc: The payment frequency }
   title:        { type: text, default: Legs, doc: The panel's title }
-  rate-fmt:     { type: format, default: pct2, doc: How rates and spreads are written }
+  rate-fmt:     { type: format, default: pct4, doc: How rates and spreads are written }
   notional-fmt: { type: format, default: amount0, doc: How notionals are written }
 panels:
   - id: legs

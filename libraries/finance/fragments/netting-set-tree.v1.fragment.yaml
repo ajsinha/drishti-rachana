@@ -24,6 +24,7 @@ params:
       net:        { type: number, optional: true, doc: The net value }
       collateral: { type: number, optional: true, doc: The collateral held against the node }
   title: { type: text, default: Netting sets, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How the figures are written }
   open:  { type: integer, default: 2, min: 0, max: 8, doc: How many levels start open }
 panels:
   - id: tree
@@ -34,4 +35,5 @@ panels:
     parent: parent
     label: name
     mode: grid
+    fmt: "%{fmt}"
     open: arg.open

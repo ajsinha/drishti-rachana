@@ -23,7 +23,7 @@ params:
       ask_size: { type: number, optional: true, doc: The size asked at this price }
   levels:    { type: integer, default: 10, min: 1, max: 50, doc: The levels shown on each side }
   title:     { type: text, default: Depth, doc: The panel's title }
-  price-fmt: { type: format, default: price2, doc: How a price is written }
+  price-fmt: { type: format, default: price4, doc: How a price is written }
   size-fmt:  { type: format, default: amount0, doc: How a size is written }
 panels:
   - id: touch

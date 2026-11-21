@@ -26,6 +26,8 @@ Correlations between named factors as a shaded square.
 | `title` | text | default 'Correlations'. The panel's title |
 | `fmt` | format | default 'signed2'. How the correlations are written |
 
+Events: `cell`
+
 Example: `examples/correlation-matrix.sutra.yaml`.
 
 ### `finance/curve-compare@1`
@@ -37,7 +39,8 @@ Several curves on one tenor axis - today against yesterday, one currency against
 | `rows` | table(curve, tenor, years, value) | required. One row per curve and tenor |
 | `base` | text | default ''. The curve the spreads are taken against (none - no spreads) |
 | `title` | text | default 'Curves'. The panel's title |
-| `fmt` | format | default 'pct2'. How the rates are written |
+| `fmt` | format | default 'pct4'. How the rates are written |
+| `spread-fmt` | format | default 'bp1'. How the spreads are written in basis points |
 
 Events: `point`
 
@@ -51,7 +54,7 @@ A curve as a line and, under it, its pillars as a table.
 |---|---|---|
 | `rows` | table(tenor, zero, instrument, quote, df) | required. One row per pillar |
 | `title` | text | default 'Curve'. The panel's title |
-| `zero-fmt` | format | default 'pct2'. How rates are written |
+| `zero-fmt` | format | default 'pct4'. How rates are written |
 
 Events: `select`
 
@@ -65,8 +68,8 @@ A curve's pillars - tenor, instrument, quote, zero rate and discount factor.
 |---|---|---|
 | `rows` | table(tenor, zero, instrument, quote, df) | required. One row per pillar |
 | `title` | text | default 'Pillars'. The panel's title |
-| `zero-fmt` | format | default 'pct2'. How rates are written |
-| `df-fmt` | format | default 'text'. How discount factors are written |
+| `zero-fmt` | format | default 'pct4'. How rates are written |
+| `df-fmt` | format | default 'df4'. How discount factors are written |
 
 Events: `select`
 
@@ -80,8 +83,8 @@ An index's fixings by date, newest first, with the day's change.
 |---|---|---|
 | `rows` | table(date, value) | required. One row per fixing |
 | `title` | text | default 'Fixings'. The panel's title |
-| `fmt` | format | default 'pct2'. How the rates are written |
-| `change-fmt` | format | default 'signed2'. How the change is written in basis points |
+| `fmt` | format | default 'pct4'. How the rates are written |
+| `change-fmt` | format | default 'bp1'. How the change is written in basis points |
 
 Example: `examples/fixing-ladder.sutra.yaml`.
 
@@ -93,7 +96,7 @@ The path of an exchange rate over scenario dates, with the shock per scenario, a
 |---|---|---|
 | `rows` | table(date, rate, shock) | required. One row per scenario date |
 | `pair` | text | required. The currency pair, such as EURUSD |
-| `fmt` | format | default 'text'. How rates are written |
+| `fmt` | format | default 'price4'. How rates are written |
 | `shock-fmt` | format | default 'pct2'. How shocks are written |
 
 Events: `point`
@@ -170,7 +173,7 @@ One term structure - zero rates, forwards or volatilities by expiry - drawn agai
 |---|---|---|
 | `rows` | table(tenor, value) | required. One row per tenor, in tenor order |
 | `title` | text | default 'Term structure'. The panel's title |
-| `fmt` | format | default 'pct2'. How the values are written |
+| `fmt` | format | default 'pct4'. How the values are written |
 | `step` | boolean | default False. Whether the line steps between tenors instead of joining them |
 | `mark` | text | optional. A tenor to mark |
 
@@ -189,6 +192,8 @@ A volatility surface by expiry and strike, drawn as a heat map or in three dimen
 | `title` | text | default 'Volatility surface'. The panel's title |
 | `fmt` | format | default 'pct2'. How the values are written |
 | `view` | enum | default 'heatmap'. How the surface is drawn |
+
+Events: `cell`
 
 Example: `examples/vol-surface.sutra.yaml`.
 
@@ -215,7 +220,7 @@ An order book as a price ladder - bid sizes on one side, ask sizes on the other,
 | `rows` | table(price, bid_size, ask_size) | required. One row per price level |
 | `levels` | integer | default 10. The levels shown on each side |
 | `title` | text | default 'Depth'. The panel's title |
-| `price-fmt` | format | default 'price2'. How a price is written |
+| `price-fmt` | format | default 'price4'. How a price is written |
 | `size-fmt` | format | default 'amount0'. How a size is written |
 
 Example: `examples/depth-ladder.sutra.yaml`.
@@ -230,7 +235,7 @@ The executions of an order - filled against ordered, average price, slippage, an
 | `ordered` | number | required. The quantity ordered |
 | `reference` | number | optional. A price to measure slippage against |
 | `title` | text | default 'Fills'. The panel's title |
-| `price-fmt` | format | default 'text'. How prices are written |
+| `price-fmt` | format | default 'price4'. How prices are written |
 
 Example: `examples/fills-summary.sutra.yaml`.
 
@@ -242,7 +247,7 @@ A trade's legs side by side - pay or receive, notional, currency, rate or index,
 |---|---|---|
 | `rows` | table(leg, direction, notional, currency, rate, index, spread, day_count, frequency) | required. One row per leg |
 | `title` | text | default 'Legs'. The panel's title |
-| `rate-fmt` | format | default 'pct2'. How rates and spreads are written |
+| `rate-fmt` | format | default 'pct4'. How rates and spreads are written |
 | `notional-fmt` | format | default 'amount0'. How notionals are written |
 
 Example: `examples/leg-table.sutra.yaml`.
@@ -355,7 +360,7 @@ The economic summary of one trade, read-only - product, direction, parties, date
 |---|---|---|
 | `trade` | record{id: text, product: text, direction: text, counterparty: text, book: text, trade_date: date, maturity: date, notional: number, currency: text, price: number, status: text} | required. The trade: id, product, and optionally direction, counterparty, book, trade_date, maturity, notional, currency, price, status |
 | `notional-fmt` | format | default 'amount0'. How the notional is written |
-| `price-fmt` | format | default 'text'. How the price is written |
+| `price-fmt` | format | default 'price4'. How the price is written |
 
 Slots: `extra`
 
@@ -488,6 +493,7 @@ A risk measure down a hierarchy - firm, division, desk, book - each node with it
 |---|---|---|
 | `rows` | table(id, parent, name, value, limit) | required. One row per node |
 | `title` | text | default 'Risk by hierarchy'. The panel's title |
+| `fmt` | format | default 'amount0'. How the figures are written |
 | `open` | integer | default 2. How many levels start open |
 
 Example: `examples/risk-hierarchy-tree.sutra.yaml`.
@@ -503,6 +509,8 @@ Scenarios down the side, books or factors across, P&L in the cells, shaded by si
 | `fmt` | format | default 'signed0'. How the P&L is written |
 | `heat` | boolean | default True. Whether cells are shaded by size |
 
+Events: `cell`
+
 Example: `examples/scenario-matrix.sutra.yaml`.
 
 ### `finance/sensitivity-heatmap@1`
@@ -514,6 +522,8 @@ One sensitivity across two axes - risk factor by tenor, currency by tenor - as a
 | `rows` | table(factor, bucket, value) | required. One row per factor and bucket |
 | `title` | text | default 'Sensitivity grid'. The panel's title |
 | `fmt` | format | default 'signed0'. How the figures are written |
+
+Events: `cell`
 
 Example: `examples/sensitivity-heatmap.sutra.yaml`.
 
@@ -752,6 +762,7 @@ Group, counterparty, netting set and trade as a tree, with gross value, net valu
 |---|---|---|
 | `rows` | table(id, parent, name, level, gross, net, collateral) | required. One row per node |
 | `title` | text | default 'Netting sets'. The panel's title |
+| `fmt` | format | default 'amount0'. How the figures are written |
 | `open` | integer | default 2. How many levels start open |
 
 Example: `examples/netting-set-tree.sutra.yaml`.

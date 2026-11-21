@@ -271,11 +271,18 @@ public sealed interface PanelData {
 
     /**
      * {@code surface}: {@code z[row][column]} over {@code x} (the columns' labels) and {@code y} (one per row);
-     * null where the document has no number. {@code view} is {@code heatmap} (default) or {@code 3d}.
+     * null where the document has no number. {@code view} is {@code heatmap} (default) or {@code 3d}. On a panel that emits on point-click
+     * (contract 1.2) {@code ev}, {@code set} and {@code on} lie beside {@code z}: each point's place among the marks (row by row:
+     * {@code row * x.size() + column}; null where there is no number), what a click writes into the state, and its whole effect list.
      */
     @Include(Include.Rule.NON_NULL)
-    record Surface(List<String> x, List<String> y, List<List<Double>> z, Double min, Double max, String fmt, String unit, String view)
-            implements PanelData {}
+    record Surface(List<String> x, List<String> y, List<List<Double>> z, Double min, Double max, String fmt, String unit, String view,
+            List<List<String>> ev, List<List<Map<String, Object>>> set, List<List<Map<String, Object>>> on) implements PanelData {
+
+        public Surface(List<String> x, List<String> y, List<List<Double>> z, Double min, Double max, String fmt, String unit, String view) {
+            this(x, y, z, min, max, fmt, unit, view, null, null, null);
+        }
+    }
 
     /**
      * {@code metric}: one headline figure.

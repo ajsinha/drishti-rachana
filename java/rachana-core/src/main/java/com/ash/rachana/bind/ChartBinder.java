@@ -593,8 +593,39 @@ final class ChartBinder {
         if (masked) {
             return maskedPivot(by, cols, out, foot, agg, more, levels, expand, nested ? shown(across) : null);
         }
-        return new PanelData.Pivot(by, cols, out, foot, agg, heat, Double.isFinite(range[0]) ? range[0] : null,
+        return new PanelData.Pivot(by, cols, marked(p, c, cols, out), foot, agg, heat, Double.isFinite(range[0]) ? range[0] : null,
                 Double.isFinite(range[1]) ? range[1] : null, more, levels, expand, nested ? shown(across) : null);
+    }
+
+    /**
+     * A pivot's cells as marks (level 1.2) on a panel with point-click: each cell with a figure carries what a click writes or runs and,
+     * on a panel that emits on point-click, {@code ev} (its place among the cells, row by row: {@code row * columns + column}), {@code @} the cell
+     * ({@link Binder#pivotMark}); an empty cell keeps its place and carries nothing.
+     */
+    private List<PanelData.PivotRow> marked(Panel p, BindContext c, List<String> cols, List<PanelData.PivotRow> rows) {
+        boolean emits = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK);
+        if (!emits && com.ash.rachana.model.Effects.list(p, com.ash.rachana.model.Wiring.POINT_CLICK).isEmpty()) {
+            return rows;
+        }
+        List<PanelData.PivotRow> out = new ArrayList<>(rows.size());
+        for (int r = 0; r < rows.size(); r++) {
+            PanelData.PivotRow row = rows.get(r);
+            List<Cell> cells = new ArrayList<>(row.cells().size());
+            for (int k = 0; k < row.cells().size(); k++) {
+                Double v = k < row.values().size() ? row.values().get(k) : null;
+                int at = r * cols.size() + k;
+                if (v == null) {
+                    cells.add(row.cells().get(k));
+                    continue;
+                }
+                Object[] m = binder.point(p, Binder.pivotMark(row.label(), row.path(), cols.get(k), v), at, c.eval());
+                @SuppressWarnings("unchecked")
+                Map<String, Object> set = (Map<String, Object>) m[0], on = (Map<String, Object>) m[1];
+                cells.add(row.cells().get(k).withMark(emits ? String.valueOf(at) : null, set, on));
+            }
+            out.add(new PanelData.PivotRow(row.label(), cells, row.values(), row.total(), row.path(), row.group()));
+        }
+        return out;
     }
 
     /** The column of the rows past the drawn columns (never a value a row has: the key text never starts with a NUL). */

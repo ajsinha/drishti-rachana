@@ -1147,6 +1147,7 @@ public final class Binder {
         return new PanelData.Gauge(v, max, formats.format(fmt, v / (max == 0 ? 1 : max)), p.option("label").orElse(null), oneMark(p), oneSet(p, c), oneOn(p, c));
     }
 
+    @SuppressWarnings("unchecked")
     private PanelData surface(Panel p, BindContext c) {
         Node rows = where(p, node(eval(p.option("rows").orElseThrow(), c.eval())), c.eval());
         String y = p.option("y").orElseThrow();
@@ -1170,8 +1171,75 @@ public final class Binder {
             }
             z.add(row);
         }
-        return new PanelData.Surface(cols.stream().map(Column::label).toList(), ys, z, Double.isFinite(lo) ? lo : null,
-                Double.isFinite(hi) ? hi : null, p.option("fmt").orElse(null), p.option("unit").orElse(null), p.option("view").orElse("heatmap"));
+        List<String> xs = cols.stream().map(Column::label).toList();
+        List<List<String>> evs = null;
+        List<List<Map<String, Object>>> setz = null;
+        List<List<Map<String, Object>>> onz = null;
+        boolean emits = p.wiring().fires(com.ash.rachana.model.Wiring.POINT_CLICK);
+        if (emits || !com.ash.rachana.model.Effects.list(p, com.ash.rachana.model.Wiring.POINT_CLICK).isEmpty()) {   // level 1.2: each point a mark, @ {x, y, z}
+            evs = new ArrayList<>();
+            setz = new ArrayList<>();
+            onz = new ArrayList<>();
+            for (int i = 0; i < z.size(); i++) {
+                List<String> er = new ArrayList<>();
+                List<Map<String, Object>> sr = new ArrayList<>();
+                List<Map<String, Object>> or = new ArrayList<>();
+                for (int k = 0; k < xs.size(); k++) {
+                    Double v = z.get(i).get(k);
+                    int at = i * xs.size() + k;
+                    Object[] m = v == null ? new Object[2] : point(p, surfaceMark(xs.get(k), ys.get(i), v), at, c.eval());
+                    er.add(v == null ? null : String.valueOf(at));
+                    sr.add((Map<String, Object>) m[0]);
+                    or.add((Map<String, Object>) m[1]);
+                }
+                evs.add(er);
+                setz.add(sr);
+                onz.add(or);
+            }
+            if (!emits) {
+                evs = null;                                                // ev only on a panel that emits on point-click
+            }
+            if (setz.stream().allMatch(r -> r.stream().allMatch(java.util.Objects::isNull))) {
+                setz = null;
+            }
+            if (onz.stream().allMatch(r -> r.stream().allMatch(java.util.Objects::isNull))) {
+                onz = null;
+            }
+        }
+        return new PanelData.Surface(xs, ys, z, Double.isFinite(lo) ? lo : null,
+                Double.isFinite(hi) ? hi : null, p.option("fmt").orElse(null), p.option("unit").orElse(null), p.option("view").orElse("heatmap"),
+                evs, setz, onz);
+    }
+
+    /** A surface point as a mark's {@code @} (level 1.2): its column's label {@code x}, its row's {@code y} and its value {@code z}. */
+    public static Node surfaceMark(String x, String y, Double z) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("x", x);
+        m.put("y", y);
+        m.put("z", z);
+        return Node.of(m);
+    }
+
+    /**
+     * A pivot cell as a mark's {@code @} (level 1.2): its row's key {@code row} (its {@code path} from the outermost level in a nested
+     * pivot), its column's key {@code column} and its figure {@code value}.
+     */
+    public static Node pivotMark(String row, List<String> path, String column, Double value) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("row", row);
+        if (path != null) {
+            m.put("path", path);
+        }
+        m.put("column", column);
+        m.put("value", value);
+        return Node.of(m);
+    }
+
+    /** What a point-click on a mark writes and runs (level 1.2): {set, on}, {@code @} the mark and {@code #index} its place. */
+    Object[] point(Panel p, Node mark, int index, EvalContext base) {
+        EvalContext rc = base.withRow(mark, index);
+        String t = com.ash.rachana.model.Wiring.POINT_CLICK;
+        return new Object[] {sets(com.ash.rachana.model.Effects.sets(p, t), rc), on(p, t, rc)};
     }
 
     /** True for panel kinds that consume linked documents while binding. */

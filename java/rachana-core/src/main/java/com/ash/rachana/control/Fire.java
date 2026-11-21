@@ -263,6 +263,30 @@ public final class Fire {
                 bars.forEach(b -> out.add(map(b)));
             }
             case "point-click" -> {
+                if (data.get("rows") instanceof List<?> prow && data.containsKey("columns") && !data.containsKey("dataset")) {   // a pivot: its cells row by row
+                    for (Object r : prow) {
+                        if (map(r).get("cells") instanceof List<?> cs) {
+                            cs.forEach(x -> out.add(map(x)));
+                        }
+                    }
+                    return out;
+                }
+                if (data.get("z") instanceof List<?> z && data.get("x") instanceof List<?> xs) {         // a surface: its points row by row
+                    for (int j = 0; j < z.size(); j++) {
+                        for (int i = 0; i < xs.size(); i++) {
+                            Map<String, Object> m = new LinkedHashMap<>();
+                            Object set = cell(data.get("set"), j, i), on = cell(data.get("on"), j, i);
+                            if (set != null) {
+                                m.put("set", set);
+                            }
+                            if (on != null) {
+                                m.put("on", on);
+                            }
+                            out.add(m);
+                        }
+                    }
+                    return out;
+                }
                 for (String k : List.of("points", "steps", "events", "candles", "cells")) {
                     if (data.get(k) instanceof List<?> l) {
                         l.forEach(x -> out.add(map(x)));
@@ -295,6 +319,11 @@ public final class Fire {
             }
         }
         return out;
+    }
+
+    /** {@code m[j][i]} of a list of lists, or null. */
+    private static Object cell(Object m, int j, int i) {
+        return m instanceof List<?> l && j < l.size() && l.get(j) instanceof List<?> r && i < r.size() ? r.get(i) : null;
     }
 
     private static void rows(List<?> rows, List<Map<String, Object>> out) {

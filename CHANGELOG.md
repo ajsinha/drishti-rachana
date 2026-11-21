@@ -15,6 +15,16 @@ Entries are written per release; the regime's unreleased work is listed after th
   `TableClient.write`, `DataClient.write`, the `<rachana-view>` edit hook. `rachana-server`: the CSRF token on writes (beside its Host and Origin checks),
   `access.tables.<name>.edit`, `edits:`, `tables.<name>.write` (JDBC, change id journal table). Suite `protocol/write` (20, unverified).
 
+- **Fragment column rename knows the scope of `@`** (decision L-21, bug fix): in the `emits` payloads and the `on:` effects of a
+  `pivot` or `surface` panel, `@` is the clicked cell `{row, path, column, value}` or point `{x, y, z}`, so its fields are never
+  renamed (before, a fragment's local column named `row`, `column`, `value`, `x`, `y` or `z` mapped by the caller renamed the payload
+  field, a silent wrong read); a local column read there is `RCH-2121`. `FragmentColumns.markRow`. Cases `fire/fragment-marks`,
+  `problem/fragment-marks`.
+- **The conformance runner binds pivots**: `CasePivots`, a small pivot engine (sum, count, avg, min, max with subtotals and totals) in
+  the runner every runtime shares (JVM, both bundles, Python on V8), handed to `LiveScreen.pivots`; pivot-cell clicks run as `fire`
+  cases (`fire/pivot-cells`), not only in JUnit.
+- **Elements pack re-vendored `3.2.0-dev+b466b87`** (Elements g2/integration 6972989 with g3/surface-click): the surface heatmap's tooltip no longer asks for ECharts' arrow, whose inline
+  style a strict CSP refused (found by Elements' new Chromium test that clicks a surface point, heatmap and 3D); references moved.
 - **Elements pack 3.2.0-dev+6972989** vendored (the painter's `requires` fails closed: a button naming a permission is enabled only when the host's `allowed` answers `true`; G2 gate F10, O8); the server refuses `auth: users` on a non-loopback bind unless `server.behind-tls-proxy: true` (F17); a test run leaves no temporary folder (`tools/gate/tmp_leaks.py`, F16).
 - **G2 gate fixes (B)**: `./mvnw verify` runs what G2 built (`tools/gate/verify_lanes.py`, four executions of `rachana-guards`, nothing skipped):
   conformance at every language level on the JVM and on the Node bundle with identical bytes, the protocol cases on the JVM reference, the

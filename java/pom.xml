@@ -35,7 +35,7 @@
     <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
     <junit.version>5.11.4</junit.version>
     <!-- The pinned Drishti Elements release whose data files (formats, world regions) Core bundles: js/vendor/drishti-elements/<this>/ -->
-    <drishti.elements.version>3.2.0-dev+6972989</drishti.elements.version>
+    <drishti.elements.version>3.2.0-dev+b466b87</drishti.elements.version>
     <!-- SPLIT EXEMPTIONS (SPLIT_EXEMPTIONS.md): versions of the libraries the moved code still uses; each leaves at its step. -->
     <assertj.version>3.27.7</assertj.version>
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->

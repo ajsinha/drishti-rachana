@@ -1,0 +1,179 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/fragment-marks
+since: "1.2"
+profile: core
+verified: true
+description: >-
+  A fragment's column names are renamed to the caller's only where @ is a row of the table (decision L-21, rule 3): in the
+  payload and the point-click effects of a pivot or a surface, @ is the clicked cell {row, path, column, value} or point
+  {x, y, z}, whose fields are never renamed, even when a local column has the same name and the caller maps it. Over a
+  table's rows the same names are renamed. The pivot's cells come from the runner's small pivot engine (FORMAT 5.7). Level 1.2.
+cases:
+
+  - id: a-pivot-cells-payload-keeps-row-column-and-value
+    kind: fire
+    source: "L-21 (3); SPEC 2.8 (pivot cell as @); SUTRA_EXPANSION I1"
+    note: "The local columns row, column and value are mapped to SCEN, DESK and PNL: the pivot reads the caller's columns, the payload reads the cell."
+    files:
+      scenario-square.v1.fragment.yaml: |
+        rachana: 1
+        fragment: scenario-square
+        version: 1
+        doc:
+          summary: Figures by row and column, a click names the cell.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per figure
+            columns:
+              row:    { type: text,   doc: The row it belongs to }
+              column: { type: text,   doc: The column it belongs to }
+              value:  { type: number, doc: The figure }
+        emits:
+          - { name: cell, payload: { scenario: text, desk: text, pnl: number }, doc: A cell was chosen }
+        panels:
+          - id: square
+            kind: pivot
+            rows: arg.rows
+            by: row
+            across: column
+            value: value
+            emits: [ { name: cell, on: point-click, payload: { scenario: "@.row", desk: "@.column", pnl: "@.value" } } ]
+    sutra: |
+      rachana: 1
+      sutra: marks-demo
+      version: 1
+      title: { id: "'Scenarios'" }
+      data:
+        pnl: { rows: [ { SCEN: UP, DESK: FX, PNL: 10 }, { SCEN: UP, DESK: RATES, PNL: -4 }, { SCEN: DOWN, DESK: FX, PNL: -7 } ] }
+      state:
+        picked: { type: text }
+      panels:
+        - use: scenario-square@1
+          as: sq
+          with: { rows: { from: $.pnl, columns: { row: SCEN, column: DESK, value: PNL } } }
+          on:
+            cell: { set: { state: picked, to: "event.scenario + '/' + event.desk + '/' + event.pnl" } }
+        - { id: shown, kind: metric, label: Picked, value: "state.picked ?? 'none'" }
+    steps:
+      - { panel: sq-square, trigger: point-click, mark: 1 }
+    expect:
+      at:
+        /panels/0/data/columns: [ FX, RATES ]
+        /panels/0/data/rows/0/label: UP
+        /panels/0/data/rows/0/cells/1/set: { picked: "UP/RATES/-4" }
+      steps:
+        - state: { picked: "UP/RATES/-4" }
+          effects: [ { do: set, state: picked, value: "UP/RATES/-4" } ]
+          at:
+            /panels/1/data/value/text: "UP/RATES/-4"
+
+  - id: a-surface-points-payload-keeps-x-y-and-z
+    kind: fire
+    source: "L-21 (3); SPEC 2.8 (surface point as @); SUTRA_EXPANSION I1"
+    note: "The local columns y, x and z are mapped to EXPIRY, K90 and K110: the binds read the caller's columns, the payload reads the point."
+    files:
+      smile.v1.fragment.yaml: |
+        rachana: 1
+        fragment: smile
+        version: 1
+        doc:
+          summary: Two strikes by expiry, a click names the point.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per expiry
+            columns:
+              y: { type: text,   doc: The expiry }
+              x: { type: number, doc: The value at strike 90 }
+              z: { type: number, doc: The value at strike 110 }
+        emits:
+          - { name: point, payload: { expiry: text, strike: any, vol: number }, doc: A point was chosen }
+        panels:
+          - id: surface
+            kind: surface
+            rows: arg.rows
+            y: y
+            columns: [ { label: "90", bind: "@.x" }, { label: "110", bind: "@.z" } ]
+            emits: [ { name: point, on: point-click, payload: { expiry: "@.y", strike: "@.x", vol: "@.z" } } ]
+    sutra: |
+      rachana: 1
+      sutra: marks-demo
+      version: 1
+      title: { id: "'Vols'" }
+      data:
+        smile: { rows: [ { EXPIRY: 1M, K90: 0.25, K110: 0.2 }, { EXPIRY: 1Y, K110: 0.22 } ] }
+      state:
+        at: { type: text }
+      panels:
+        - use: smile@1
+          as: sm
+          with: { rows: { from: $.smile, columns: { y: EXPIRY, x: K90, z: K110 } } }
+          on:
+            point: { set: { state: at, to: "event.expiry + ' ' + event.strike + ' ' + event.vol" } }
+        - { id: shown, kind: metric, label: At, value: "state.at ?? 'none'" }
+    steps:
+      - { panel: sm-surface, trigger: point-click, mark: 3 }
+    expect:
+      at:
+        /panels/0/data/set/0/0: { at: "1M 90 0.25" }
+        /panels/0/data/set/1/1: { at: "1Y 110 0.22" }
+      steps:
+        - state: { at: "1Y 110 0.22" }
+          effects: [ { do: set, state: at, value: "1Y 110 0.22" } ]
+          at:
+            /panels/1/data/value/text: "1Y 110 0.22"
+
+  - id: over-a-tables-rows-the-same-names-are-renamed
+    kind: fire
+    source: "L-21 (3); SPEC 2.8 (row-click: @ the row)"
+    note: "Regression: on a table, @ in the payload is the clicked row, so row and value are the caller's NAME and AMT."
+    files:
+      named-list.v1.fragment.yaml: |
+        rachana: 1
+        fragment: named-list
+        version: 1
+        doc:
+          summary: Named amounts, a click names the row.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per name
+            columns:
+              row:   { type: text,   doc: The name }
+              value: { type: number, doc: The amount }
+        emits:
+          - { name: pick, payload: { name: text, amount: number }, doc: A row was chosen }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Name, bind: row }, { label: Amount, bind: "@.value" } ]
+            emits: [ { name: pick, on: row-click, payload: { name: "@.row", amount: "@.value" } } ]
+    sutra: |
+      rachana: 1
+      sutra: marks-demo
+      version: 1
+      title: { id: "'Names'" }
+      data:
+        names: { rows: [ { NAME: A, AMT: 1 }, { NAME: B, AMT: 2 } ] }
+      state:
+        picked: { type: text }
+      panels:
+        - use: named-list@1
+          as: nl
+          with: { rows: { from: $.names, columns: { row: NAME, value: AMT } } }
+          on:
+            pick: { set: { state: picked, to: "event.name + '/' + event.amount" } }
+        - { id: shown, kind: metric, label: Picked, value: "state.picked ?? 'none'" }
+    steps:
+      - { panel: nl-list, trigger: row-click, mark: 1 }
+    expect:
+      at:
+        /panels/0/data/rows/1/cells/0/text: B
+      steps:
+        - state: { picked: "B/2" }
+          effects: [ { do: set, state: picked, value: "B/2" } ]

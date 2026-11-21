@@ -17476,7 +17476,7 @@ var yo={},mo={};var xo,_o=function(){function t(t,e,n){var i=this;this._sleepAft
           grid3D: { viewControl: { alpha: 28, beta: 38, distance: 190 }, axisLine: { lineStyle: { color: t.border } }, splitLine: { lineStyle: { color: t.border, opacity: 0.4 } } },
           series: [{ type: 'surface', wireframe: { show: true, lineStyle: { color: t.border, opacity: 0.6 } }, shading: 'color', data: cells }] };
       }
-      return { tooltip: { position: 'top', formatter: (p) => esc(y[p.value[1]]) + ' · ' + esc(x[p.value[0]]) + ': ' + p.value[2] },
+      return { tooltip: { formatter: (p) => esc(y[p.value[1]]) + ' · ' + esc(x[p.value[0]]) + ': ' + p.value[2] },
         grid: { left: 56, right: 12, top: 8, bottom: 70 },
         xAxis: { type: 'category', data: x, splitArea: { show: true }, axisLabel: { color: t.muted, fontFamily: t.mono, fontSize: 10 } },
         yAxis: { type: 'category', data: y, splitArea: { show: true }, axisLabel: { color: t.muted, fontFamily: t.mono, fontSize: 10 } },

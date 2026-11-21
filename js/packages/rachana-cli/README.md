@@ -15,9 +15,9 @@ or set `RACHANA_DIST`).
 and starts nothing). `lib` is the Java `LibraryTool` behind `com.ash.rachana.cli.Main` (one implementation): set `RACHANA_JAR` (a runnable jar) or
 `RACHANA_CLASSPATH` (the module classes or jars). Tests: `npm test` (the lib test needs `./mvnw -pl rachana-cli -am compile` in `java/`).
 
-**`build` and `preview` use the real `<rachana-view>`** (`js/packages/rachana/src`, with the Drishti Elements 3.2.0-dev+6972989 pack under
-`js/vendor/drishti-elements/3.2.0-dev+6972989` and the runtime bundle from `dist`). A built site holds `rachana/src/*.js` (the element, the data
-client, `static_files_host.js`), `rachana/rachana.runtime.js`, `vendor/drishti-elements/3.2.0-dev+6972989/`, one page per Sutra, the Sutras and
+**`build` and `preview` use the real `<rachana-view>`** (`js/packages/rachana/src`, with the Drishti Elements 3.2.0-dev+b466b87 pack under
+`js/vendor/drishti-elements/3.2.0-dev+b466b87` and the runtime bundle from `dist`). A built site holds `rachana/src/*.js` (the element, the data
+client, `static_files_host.js`), `rachana/rachana.runtime.js`, `vendor/drishti-elements/3.2.0-dev+b466b87/`, one page per Sutra, the Sutras and
 `data/`. With no server beside it, the page answers the Data Protocol itself from `data/index.json` and the table files
 (`static_files_host.js`: schema, filter tree, sort, columns, cursor paging; no change stream); serve the folder with any static web
 server (a browser does not fetch from `file://`). `test/paint_check.py`

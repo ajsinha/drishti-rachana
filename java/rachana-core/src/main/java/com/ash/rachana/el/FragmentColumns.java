@@ -151,6 +151,43 @@ public final class FragmentColumns {
         }
     }
 
+    /**
+     * Marks the scope where {@code @} is a clicked mark, not a row of the table (level 1.2, SPEC 2.8): a {@code pivot} cell
+     * {@code {row, path, column, value}} or a {@code surface} point {@code {x, y, z}}, in the {@code emits} payloads and the
+     * {@code point-click} effects of such a panel. Its fields are never renamed; a local column read there is refused, never silent.
+     */
+    private static final String MARK = "!";
+
+    /** The fields of {@code @} as each mark kind gives it. */
+    private static final List<List<String>> MARKS = List.of(List.of("pivot", "row", "path", "column", "value"), List.of("surface", "x", "y", "z"));
+
+    /**
+     * The row {@link #rename} reads {@code @} as where {@code @} is a mark of panel kind {@code kind} (a pivot's cell, a surface's point),
+     * or null when the kind's {@code @} is a row of its rows.
+     */
+    public static String markRow(String kind) {
+        for (List<String> m : MARKS) {
+            if (m.get(0).equals(kind)) {
+                return MARK + kind;
+            }
+        }
+        return null;
+    }
+
+    /** The fields of the mark a {@link #markRow} names. */
+    private static List<String> markFields(String row) {
+        for (List<String> m : MARKS) {
+            if (m.get(0).equals(row.substring(MARK.length()))) {
+                return m.subList(1, m.size());
+            }
+        }
+        return List.of();
+    }
+
+    private static boolean isMark(String row) {
+        return row != null && row.startsWith(MARK);
+    }
+
     /** Whether a row given to {@link #rename} is the mark of rows the mapping cannot follow ({@link Rows#row}). */
     public static boolean unfollowed(String row) {
         return row != null && row.startsWith(UNKNOWN_ROWS);
@@ -339,7 +376,7 @@ public final class FragmentColumns {
                 return a[0] != null && postfix((int) a[1], e) ? (String) a[0] : null;
             }
             if (tok(s).type() == Type.AT && postfix(s + 1, e)) {
-                return row;
+                return isMark(row) ? null : row;              // a clicked mark is no table's rows
             }
             if (tok(s).type() == Type.LPAREN && match[s] > s && postfix(match[s] + 1, e)) {
                 return rows(s + 1, match[s], row);
@@ -696,6 +733,10 @@ public final class FragmentColumns {
             if (table == null) {
                 return;
             }
+            if (isMark(table)) {                                     // @ is the clicked mark: its fields are its own, never renamed
+                markField(table, name.text(), "@." + name.text());
+                return;
+            }
             if (table.startsWith(UNKNOWN_ROWS)) {                   // never silent: a local column over rows the mapping cannot follow
                 int end = table.indexOf(UNKNOWN_ROWS, 1);
                 for (String t : table.substring(1, end).split(",")) {
@@ -726,6 +767,10 @@ public final class FragmentColumns {
 
         /** {@code @['<name>']} over {@code table}: renamed when it is a local column, the quotes kept. */
         private void quoted(String table, Token name) {
+            if (isMark(table)) {
+                markField(table, name.text(), "@[" + src.substring(name.pos(), end(toks.indexOf(name))) + "]");
+                return;
+            }
             if (table == null || table.startsWith(UNKNOWN_ROWS)) {
                 if (table != null) {
                     column(table, name);                         // refused there as @.<name> is
@@ -740,6 +785,17 @@ public final class FragmentColumns {
                     char q = src.charAt(name.pos());
                     edit(name.pos(), end(toks.indexOf(name)), q + theirs + q);
                 }
+            }
+        }
+
+        /** A field of a clicked mark ({@link #markRow}): kept; a local column that is no field of the mark is refused (the row is not {@code @} here). */
+        private void markField(String mark, String name, String written) {
+            List<String> fields = markFields(mark);
+            String owner = fields.contains(name) ? null : owner(name);
+            if (owner != null) {
+                problems.add("reads " + written + " where @ is the clicked " + ((MARK + "pivot").equals(mark) ? "cell" : "point") + " of the "
+                        + mark.substring(MARK.length()) + " panel (" + String.join(", ", fields) + "), not a row of table " + owner
+                        + ": the caller's mapping cannot rename it; read the mark's own fields");
             }
         }
 

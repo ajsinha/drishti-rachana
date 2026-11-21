@@ -1111,9 +1111,12 @@ public final class TypedFragment {
     private PNode columns(PNode n, String table, Set<String> exprKeys, boolean top, boolean expr, Columns cols, List<SutraProblem> out) {
         if (n.isMap()) {
             Map<String, PNode> m = new LinkedHashMap<>();
+            String mark = top ? com.ash.rachana.el.FragmentColumns.markRow(text(n.map().get("kind"))) : null;
             n.map().forEach((k, v) -> {
                 boolean isExpr = top && exprKeys.contains(k) || "bind".equals(k) || "when".equals(k);
-                if (table != null && (top && FIELD_OPTIONS.contains(k) && (v.isScalar() || v.isList()) || "bind".equals(k) && v.isScalar())) {
+                if (mark != null && ("emits".equals(k) || com.ash.rachana.model.Effects.KEY.equals(k))) {
+                    m.put(k, columns(v, mark, exprKeys, false, isExpr, cols, out));   // @ is the clicked cell or point here, never a row
+                } else if (table != null && (top && FIELD_OPTIONS.contains(k) && (v.isScalar() || v.isList()) || "bind".equals(k) && v.isScalar())) {
                     m.put(k, field(v, table, isExpr, "bind".equals(k), cols, out));
                 } else {
                     m.put(k, columns(v, table, exprKeys, false, isExpr, cols, out));

@@ -2107,6 +2107,7 @@
 [experimental] com.ash.rachana.el.FragmentColumns :: public static com.ash.rachana.el.FragmentColumns$Rows com.ash.rachana.el.FragmentColumns.rowsOf(java.lang.String,com.ash.rachana.el.FragmentColumns$Tables)
 [experimental] com.ash.rachana.el.FragmentColumns :: public static final java.lang.String com.ash.rachana.el.FragmentColumns.CODE
 [experimental] com.ash.rachana.el.FragmentColumns :: public static final java.util.List<com.ash.rachana.el.FragmentColumns$ColumnParam> com.ash.rachana.el.FragmentColumns.COLUMN_PARAMS
+[experimental] com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.markRow(java.lang.String)
 [experimental] com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.parts(java.lang.String,java.util.function.UnaryOperator<java.lang.String>)
 [experimental] com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.rename(java.lang.String,java.lang.String,boolean,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
 [experimental] com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.template(java.lang.String,java.lang.String,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
@@ -3724,6 +3725,7 @@
 [experimental] com.ash.rachana.table.KeyedRows :: public void com.ash.rachana.table.KeyedRows.reset(java.util.List<java.util.Map<java.lang.String, java.lang.Object>>)
 [experimental] com.ash.rachana.table.LiveScreen :: public com.ash.rachana.model.Sutra com.ash.rachana.table.LiveScreen.sutra()
 [experimental] com.ash.rachana.table.LiveScreen :: public com.ash.rachana.table.KeyedRows com.ash.rachana.table.LiveScreen.rows(java.lang.String)
+[experimental] com.ash.rachana.table.LiveScreen :: public com.ash.rachana.table.LiveScreen com.ash.rachana.table.LiveScreen.pivots(com.ash.rachana.bind.PivotEngine)
 [experimental] com.ash.rachana.table.LiveScreen :: public com.ash.rachana.table.LiveScreen(com.ash.rachana.Rachana,com.ash.rachana.model.Sutra,java.time.LocalDate,java.lang.Object,java.util.Map<java.lang.String, ?>)
 [experimental] com.ash.rachana.table.LiveScreen :: public com.ash.rachana.view.ViewModel com.ash.rachana.table.LiveScreen.last()
 [experimental] com.ash.rachana.table.LiveScreen :: public com.ash.rachana.view.ViewModel com.ash.rachana.table.LiveScreen.view()

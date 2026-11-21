@@ -28,7 +28,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-DRISHTI_FORMATS = "/home/ashutosh/IdeaProjects/drishti/config/packs/core/core/config/formats.yaml"   # the Drishti profile's format names (bootstrap)
+DRISHTI_FORMATS = str(ROOT / "tools" / "conformance" / "profile" / "drishti-formats.yaml")   # the Drishti profile's format names, kept in this repository; RACHANA_DRISHTI_FORMATS names another file
 SCHEMA = ROOT / "conformance" / "schema" / "case.schema.json"
 
 

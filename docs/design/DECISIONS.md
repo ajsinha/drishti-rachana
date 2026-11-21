@@ -201,3 +201,15 @@ waits for level 1.1), so the decimals are the profile's. Changed answers:
 | P1-2 | If evaluation speed misses the threshold by a wide margin, the owner chooses between a hand-written JavaScript evaluator for Core and moving the threshold (see D15-6) |
 | P1-3 | Reproducible builds: two clean builds of the same source give the same bundle SHA-256; every release records both hashes (D15-7) |
 | P2-1 | The same bytes on every runtime: Core's maths is its own fdlibm port on every runtime, the JVM included (D5-1) |
+
+### G1 gate decisions (owner, 2026-11-21)
+
+| # | Decision |
+|---|---|
+| O1 | The bundle sizes are accepted: runtime 361 KB, tools 381 KB Brotli. The P10 budgets are restated to 365 KB and 385 KB; about 10% is planned to be trimmed in G3 packaging |
+| O2 | No second evaluator: fallback 3 (a hand-written JavaScript evaluator for Core) is rejected. T4 (14x the hand-written interpreter) is judged by the end-to-end screen budget P4; real screens are measured in G2 |
+| O5 | The level 1.0 re-recordings D5-1, D9-4 and D15-4 are confirmed. Level 1.0 is frozen at the `v1.0.0` tag (`FROZEN.sha384` out of `pre-release` in the same commit) and never rewritten after it |
+| O6 | The five API removals (`RachanaSchema.build`, `Calendars.use`, `Functions.register`, `Functions.liveSource`, `SafeRegex.Limits.timeoutNanos`) are confirmed. The new packages (`view`, `agg`, `bind`, `wire`, `profile`, `control`, the `parse` additions) are **EXPERIMENTAL until v1.0.0**; the API-surface baseline and the README say so |
+| O7 | The pushes made before the G1 rule are confirmed as the approved state: Rachana `main` `d90176e` with `v0.9.0`, Elements `v3.0.0-rc.1`, Drishti `a816aa7c0` |
+| O8 | PY1 to PY8 as built are confirmed |
+| O10 | A form field's `pattern` moves onto `SafeRegex` (no look-around, no back-references); the F3 work first checks Drishti's forms for those constructs |

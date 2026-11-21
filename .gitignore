@@ -2,3 +2,6 @@ results/
 dist/
 python/src/drishti_rachana/bundle/*.js
 java/rachana-js/target/
+__pycache__/
+*.pyc
+python/src/drishti_rachana/bundle/SHA256SUMS

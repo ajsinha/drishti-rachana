@@ -26,6 +26,13 @@ Findings of the i7b gate 1 review (Drishti `docs/plans/I7B_GATE_1_REVIEW.md`).
   so a pattern that rescans the value for each match cost the value's length times the budget: 0.6 to 1.7 s for one call on 8 KB).
   The review's three 8 KB cases now stop at `RCH-4011` within one budget (`SafeRegexBudgetTest`). `find` and `extract` were already
   one scan. A `regex_replace` over many matches can now reach the budget where it did not.
+- **F3, a form field's `pattern` on `SafeRegex`** (one regex engine, DECISIONS G1-1): matched against the whole value by the new
+  `SafeRegex.matches` (linear time; a value over the input cap is refused, never cut); look-around, back-references and the rest
+  of what `SafeRegex` does not offer are refused at lint (`RCH-2058`, SafeRegex's words in brackets). No shipped Drishti Sutra
+  (repository and the i7a corpus) has a form pattern. `internal.RegexText` deleted (Core and the JavaScript build).
+- **F9**: `el/determinism#d-m01-a` expects Core's `exp(1)` (`2.7182818284590455`); its known-differences reason corrected.
+  Level 1.0 re-recorded for this case and `problem/forms#pattern-not-a-regex` only (DECISIONS G1-2, for the owner); conformance
+  `--jvm`: 2,123 cases, pass 1,938, fail 58 (all unverified, F8), 0 verified failing.
 
 ## v0.11.0 ready (untagged): the JavaScript build
 

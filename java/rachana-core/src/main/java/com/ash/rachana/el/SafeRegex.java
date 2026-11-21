@@ -149,6 +149,56 @@ public final class SafeRegex {
         return false;
     }
 
+    /**
+     * True when the pattern matches the whole text (as {@code java.util.regex.Matcher.matches}): a form field's {@code pattern}. Linear
+     * time like {@link #find}, one thread started at the first position only.
+     *
+     * @throws RachanaException {@link RachanaCode#REGEX_REFUSED} for a text over {@link Limits#maxInput()} characters (it is never cut
+     *     here: a whole-text answer on a cut text would be wrong), {@link RachanaCode#REGEX_TIMEOUT} past the step budget
+     */
+    public boolean matches(CharSequence text) {
+        int n = text.length();
+        if (n > limits.maxInput()) {
+            throw refused("the value is " + n + " characters; the limit is " + limits.maxInput());
+        }
+        int m = op.length;
+        int[] cur = new int[m];
+        int[] next = new int[m];
+        int[] mark = new int[m];
+        Arrays.fill(mark, -1);
+        int[] stack = new int[m * 2 + 2];
+        int curN = add(cur, 0, 0, 0, n, mark, stack);                  // anchored: the only thread starts at the first position
+        long steps = 0;
+        for (int i = 0; ; i++) {
+            steps += curN;
+            if (steps > limits.maxSteps()) {
+                throw overBudget();
+            }
+            if (i == n) {
+                for (int k = 0; k < curN; k++) {
+                    if (op[cur[k]] == MATCH) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            if (curN == 0) {
+                return false;
+            }
+            char c = text.charAt(i);
+            int nextN = 0;
+            for (int k = 0; k < curN; k++) {
+                if (step(cur[k], c)) {
+                    nextN = add(next, nextN, cur[k] + 1, i + 1, n, mark, stack);
+                }
+            }
+            int[] t = cur;
+            cur = next;
+            next = t;
+            curN = nextN;
+        }
+    }
+
     private boolean step(int pc, char c) {
         return switch (op[pc]) {
             case CHAR -> c == x[pc] || (fold && (char) CoreText.lower(c) == x[pc]);

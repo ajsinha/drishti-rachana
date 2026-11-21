@@ -1544,6 +1544,7 @@ com.ash.rachana.el.MeasureFunctions$Def :: public java.lang.String com.ash.racha
 com.ash.rachana.el.MeasureFunctions$Def :: public java.util.List<java.lang.String> com.ash.rachana.el.MeasureFunctions$Def.params()
 com.ash.rachana.el.Printer :: public static java.lang.String com.ash.rachana.el.Printer.print(com.ash.rachana.el.Expr)
 com.ash.rachana.el.SafeRegex :: public boolean com.ash.rachana.el.SafeRegex.find(java.lang.CharSequence)
+com.ash.rachana.el.SafeRegex :: public boolean com.ash.rachana.el.SafeRegex.matches(java.lang.CharSequence)
 com.ash.rachana.el.SafeRegex :: public int com.ash.rachana.el.SafeRegex.groups()
 com.ash.rachana.el.SafeRegex :: public java.lang.String com.ash.rachana.el.SafeRegex.extract(java.lang.CharSequence,int)
 com.ash.rachana.el.SafeRegex :: public java.lang.String com.ash.rachana.el.SafeRegex.pattern()

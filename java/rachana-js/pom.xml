@@ -47,7 +47,7 @@
             <configuration>
               <includeGroupIds>com.ash.rachana</includeGroupIds>
               <includeScope>test</includeScope>
-              <excludes>**/module-info.class,META-INF/**,com/ash/rachana/internal/NumberText.class,com/ash/rachana/internal/RegexText.class,com/ash/rachana/internal/Bits.class</excludes>
+              <excludes>**/module-info.class,META-INF/**,com/ash/rachana/internal/NumberText.class,com/ash/rachana/internal/Bits.class</excludes>
               <outputDirectory>${project.build.outputDirectory}</outputDirectory>
               <overWriteReleases>true</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>

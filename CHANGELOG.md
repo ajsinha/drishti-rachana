@@ -5,6 +5,13 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Live tables, the screen and four eyes (L9, L10 file writers; experimental)**: the live panel takes `edit: none | cells | beside`
+  (language 1.2; contract 1.2 `LiveRef.edit`); core library fragments `core/live-table@1` and `core/held-changes@1`;
+  `LiveTables.screen(name)` gives the Sutra a declaration needs. The approvers' tray: `Authoriser.approves`/`mayDecide`,
+  `ChangeSink.holds`; an approver's `<name>.changes` lists others' held changes in scope and decides one by writing `state`
+  (`released`/`rejected`); suite `protocol/approve` (10, unverified). `rachana-server`: file-table writers (CSV, JSON, JSON lines:
+  atomic replace, visible journal, each change id applied once), `edits.hold` and `access.tables.<name>.approve`.
+
 - **Live tables, the edit path (L7, L8 client, L10 writes; experimental)**: writes are Data Protocol v1 additions under `can: write`
   (`POST {base}/tables/{name}/write`, bridge `write`): a change `{id, op, key, basedOn, set, from?, reason?}` is answered `{change,
   state: applied | queued | held | refused, message, version?}`; refusals `405 rdp.write.unsupported`, `403 rdp.write.forbidden`

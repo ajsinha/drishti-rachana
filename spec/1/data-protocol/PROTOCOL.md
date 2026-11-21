@@ -389,7 +389,8 @@ rows; the table's epoch is the host's own), `POST /_test/as` `{ reader, view? }`
 channel per reader), `POST /_test/stream` (change the source, push the stream's upserts, deletes, gap or state), `POST /_test/upkeep`
 `{ waitMs?, advanceMs? }` (move the host's clock, run retention and idle close), `POST /_test/audit` (the audit events since the
 last read) and, for writes, `POST /_test/outbox` `{ flush?, release?, reject?, by?, reason? }` (send the queued changes, or decide a
-held one as the host; answers `{ sent, entries }`); a fixture's `edit` names the sink and a reader's view its `editable` columns.
+held one as the host; answers `{ sent, entries }`); a fixture's `edit` names the sink and a reader's view its `editable` columns,
+`approve` (the approve right) and `mayDecide` (the host's refusal of a decision).
 
 The adapter's paths exist only under test and are not part of the protocol.
 
@@ -428,8 +429,15 @@ set: { col: value }, from?: { col: value }, reason? }`; answered `{ change, stat
 version? }`. The same `id` again answers the first answer again. A write is accepted only when the table's declaration edits the
 column, the host's switch is on, the host has a write path and the reader may edit that row and column; a row outside the
 reader's scope is `404` as if absent. The reader's own pending changes are the table `<name>.changes` (key `change`; columns
-`state`, `key`, `set`, `by`, `at`, `message`), live like any table. Errors: `rdp.write.unsupported`, `rdp.write.forbidden`,
-`rdp.write.conflict`, `rdp.write.invalid` (section 10.1).
+`state`, `key`, `set`, `by`, `at`, `message`, `op`, `summary`), live like any table. Errors: `rdp.write.unsupported`,
+`rdp.write.forbidden`, `rdp.write.conflict`, `rdp.write.invalid` (section 10.1).
+
+**Four eyes.** When the host holds changes for a decision, `<name>.changes` takes writes (`can: write`) from an approver (the
+host's right): their tray also lists the `held` changes of others whose rows are in their scope (values masked for them masked in
+`set` and `summary`), and they decide one with `{ id, key: [<change>], basedOn: held, set: { state: released | rejected }, reason? }`
+(a rejection gives its reason, else `422`), answered `{ change: <the decision's id>, state: applied, message }`. Without the right,
+or when the host refuses (an approver never decides their own change), `403`; a change not listed for them `404`; a change no
+longer held `409` with `current: { version: <its state>, by, at }`. Otherwise the tray is read only (`405`).
 
 **Readers.** Every page, total, patch and change is the reader's: rows outside their scope are never counted, shown or sent;
 masked values are `{ "$masked": true }` and never pick, order or filter a row. The rights are the host's alone.

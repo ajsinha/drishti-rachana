@@ -3,7 +3,13 @@
 
 Status: **design, 2026-11-21; owner-approved to design and build ("design and do it").** Build in i7b G2 (read side) and G3 (edit
 path); Drishti switches over in i8. Decisions LT-1 to LT-19 (section 13) are recommendations for the lead, who decides them under
-the owner's delegation. Nothing here is built yet.
+the owner's delegation; the lead accepted them (DECISIONS, "Live tables").
+
+**Build status** (lane g2/live, read side L1 to L6):
+
+| Step | State |
+|---|---|
+| L2 | **built**: `ProtocolHost` (routes, bridge, query checks) over `TableProvider`s; `RowQuery` (a query document over rows in memory); `MemoryHost` is a provider; no behaviour change (protocol cases as before) |
 
 A **live table** is a named table of the [Data Protocol](DATA_PROTOCOL.md) that the server keeps current: a snapshot from a durable
 source, merged by key and version with the changes of a live stream, read a page at a time, and, when its declaration, the site and

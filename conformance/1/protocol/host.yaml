@@ -1,0 +1,169 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: protocol/host
+since: "1.0"
+profile: core
+verified: false
+description: More of a host's answers (PROTOCOL 4 to 12), run by tools/conformance/protocol_check.py against the reference server.
+cases:
+  - id: bridge-rows-of-a-sortable-table
+    kind: protocol
+    source: PROTOCOL 12, 4 (sort needs can sort)
+    note: bridge-rows-request-answered-once in examples/bridge sorts a table without sort, which PROTOCOL 4 refuses; this is that case with sort declared.
+    fixture: &pair
+      name: rdp-pair2
+      schema:
+        name: rdp-pair2
+        key: [k]
+        columns: [ { name: k, type: string }, { name: v, type: integer } ]
+        can: [page, sort]
+      rows: [ { k: b, v: 2 }, { k: a, v: 1 } ]
+    steps:
+      - request: { method: POST, path: /_test/bridge, body: { rdp: 1, t: rows, id: r1, table: rdp-pair2, body: { sort: k } } }
+        expect:
+          status: 200
+          body: { rdp: 1, t: res, re: r1, body: { table: rdp-pair2, columns: [k, v], values: [ [a, 1], [b, 2] ] } }
+
+  - id: key-is-the-last-tie-breaker
+    kind: protocol
+    source: PROTOCOL 6.1 (stable pages)
+    fixture: &ties
+      name: rdp-ties
+      schema:
+        name: rdp-ties
+        key: [id]
+        columns: [ { name: id, type: integer }, { name: grp, type: string } ]
+        can: [page, sort]
+      rows: [ { id: 3, grp: x }, { id: 1, grp: x }, { id: 2, grp: y }, { id: 10, grp: x } ]
+    steps:
+      - request: { method: GET, path: /tables/rdp-ties/rows, query: { sort: grp } }
+        expect:
+          status: 200
+          body: { values: [ [1, x], [3, x], [10, x], [2, y] ] }
+
+  - id: descending-with-nulls-last
+    kind: protocol
+    source: PROTOCOL 6.1 (nulls last by default, independent of dir)
+    fixture: &nulls
+      name: rdp-nulls
+      schema:
+        name: rdp-nulls
+        key: [id]
+        columns: [ { name: id, type: string }, { name: amt, type: decimal } ]
+        can: [page, sort, filter]
+      rows: [ { id: a, amt: "9.5" }, { id: b, amt: null }, { id: c, amt: "10.25" } ]
+    steps:
+      - request: { method: POST, path: /tables/rdp-nulls/query, body: { sort: [ { col: amt, dir: desc } ] } }
+        expect:
+          status: 200
+          body: { values: [ [c, "10.25"], [a, "9.5"], [b, null] ] }
+      - request: { method: POST, path: /tables/rdp-nulls/query, body: { sort: [ { col: amt, nulls: first } ] } }
+        expect:
+          status: 200
+          body: { values: [ [b, null], [a, "9.5"], [c, "10.25"] ] }
+
+  - id: ordering-against-empty-is-false
+    kind: protocol
+    source: PROTOCOL 7 (an ordering comparison against empty is false)
+    fixture: *nulls
+    steps:
+      - request: { method: POST, path: /tables/rdp-nulls/query, body: { filter: { op: "<", args: [ { col: amt }, { lit: "100", type: decimal } ] }, sort: [ { col: id } ] } }
+        expect:
+          status: 200
+          body: { values: [ [a, "9.5"], [c, "10.25"] ] }
+
+  - id: a-cursor-of-another-query-is-410
+    kind: protocol
+    source: PROTOCOL 6.2
+    fixture: *ties
+    steps:
+      - request: { method: GET, path: /tables/rdp-ties/rows, query: { limit: 1, sort: grp } }
+        expect: { status: 200 }
+        capture: { next: /next }
+      - request: { method: GET, path: /tables/rdp-ties/rows, query: { limit: 1, sort: id, cursor: "${next}" } }
+        expect:
+          status: 410
+          body: { error: { code: rdp.cursor.invalid } }
+
+  - id: offset-needs-can-offset
+    kind: protocol
+    source: PROTOCOL 6.2 (offset declared as can offset)
+    fixture: *ties
+    steps:
+      - request: { method: GET, path: /tables/rdp-ties/rows, query: { offset: 1 } }
+        expect:
+          status: 422
+          body: { error: { code: rdp.query.unsupported, operation: offset } }
+
+  - id: filtering-a-masked-column-is-forbidden
+    kind: protocol
+    source: PROTOCOL 11
+    fixture:
+      name: rdp-masked
+      schema:
+        name: rdp-masked
+        key: [id]
+        columns: [ { name: id, type: string }, { name: salary, type: decimal, masked: true } ]
+        can: [page, filter]
+      rows: [ { id: a, salary: { $masked: true } } ]
+    steps:
+      - request: { method: POST, path: /tables/rdp-masked/query, body: { filter: { op: ">", args: [ { col: salary }, { lit: 1 } ] } } }
+        expect:
+          status: 403
+          body: { error: { code: rdp.forbidden, column: salary } }
+
+  - id: no-replay-is-a-gap
+    kind: protocol
+    source: PROTOCOL 8.3 (6), 8.2 (gap with recoverable false)
+    fixture:
+      name: rdp-live
+      schema:
+        name: rdp-live
+        key: [id]
+        columns: [ { name: id, type: string }, { name: n, type: integer } ]
+        can: [page, changes]
+      rows: [ { id: a, n: 1 } ]
+    steps:
+      - request: { method: POST, path: /_test/patch, body: { table: rdp-live, update: [ { id: a, n: 2 } ] } }
+        expect: { status: 204 }
+      - request: { method: GET, path: /changes, query: { table: rdp-live, after: "t1:0" } }
+        expect:
+          status: 200
+          body: [ { t: gap, recoverable: false } ]
+      - request: { method: GET, path: /changes, query: { table: rdp-live, after: "other:3" } }
+        expect:
+          status: 200
+          body: [ { t: gap, recoverable: false } ]
+
+  - id: arrow-not-offered-is-406
+    kind: protocol
+    source: PROTOCOL 5.2 (a host without arrow answers 406)
+    fixture: *ties
+    steps:
+      - request: { method: GET, path: /tables/rdp-ties/rows, headers: { Accept: application/vnd.apache.arrow.stream } }
+        expect:
+          status: 406
+          body: { error: { code: rdp.query.unsupported } }
+
+  - id: group-count-distinct-min-max
+    kind: protocol
+    source: PROTOCOL 6.3
+    fixture:
+      name: rdp-grp
+      schema:
+        name: rdp-grp
+        columns: [ { name: d, type: string }, { name: q, type: integer }, { name: px, type: decimal } ]
+        can: [page, sort, group]
+      rows: [ { d: A, q: 1, px: "1.10" }, { d: A, q: 1, px: "2.20" }, { d: B, q: 5, px: "0.05" } ]
+    steps:
+      - request:
+          method: POST
+          path: /tables/rdp-grp/query
+          body:
+            group: { by: [d], values: [ { name: n, agg: count }, { name: dq, agg: distinct, col: q }, { name: lo, agg: min, col: px }, { name: hi, agg: max, col: px }, { name: s, agg: sum, col: px } ], totals: true }
+            sort: [ { col: d } ]
+        expect:
+          status: 200
+          body:
+            columns: [d, n, dq, lo, hi, s]
+            values: [ [A, 2, 1, "1.10", "2.20", "3.30"], [B, 1, 1, "0.05", "0.05", "0.05"] ]
+            totals: { n: 3, dq: 2, lo: "0.05", hi: "2.20", s: "3.35" }

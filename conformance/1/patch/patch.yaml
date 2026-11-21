@@ -2,10 +2,11 @@
 suite: patch/patch
 since: "1.1"
 profile: core
-verified: false
+verified: true
 description: Keyed table patches (PROTOCOL 8.1) -> ViewModel patch frames (FORMAT 5.9; ViewDiff).
 cases:
   - id: compound-key-remove-and-a-panel-frame
+    verified: false
     given: &pnl
       today: "2026-01-15"
       tables:
@@ -84,6 +85,7 @@ cases:
         - at: { /panels/0/data/value/text: "2" }
 
   - id: a-strip-figure-is-a-strip-patch
+    verified: false
     given: *pnl
     kind: patch
     source: VIEWMODEL (op strip)

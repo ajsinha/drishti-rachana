@@ -146,4 +146,21 @@ public final class Rachana {
     public java.util.Map<String, Object> schema(java.util.Collection<String> formats) {
         return RachanaSchema.build(formats, grammar);
     }
+
+    /**
+     * A binder over this instance's compiler and formats with a host's hooks (split step A14); {@code BindHooks.core()} and
+     * {@code PivotEngine.NONE} for Core alone.
+     */
+    public com.ash.rachana.bind.Binder binder(com.ash.rachana.bind.BindHooks hooks, com.ash.rachana.bind.PivotEngine pivots) {
+        return new com.ash.rachana.bind.Binder(compiler, formats, hooks, pivots);
+    }
+
+    /**
+     * Core's view pipeline over this instance (split step A14): a Sutra over an entity's data into a ViewModel, the panels' sources
+     * read through {@code tables} within {@code budget}, dates from {@code dates}.
+     */
+    public com.ash.rachana.bind.ViewBuilder views(com.ash.rachana.bind.BindHooks hooks, com.ash.rachana.bind.PivotEngine pivots,
+            com.ash.rachana.bind.TableProvider tables, com.ash.rachana.control.BusinessDays dates, java.time.Duration budget) {
+        return new com.ash.rachana.bind.ViewBuilder(compiler, formats, binder(hooks, pivots), tables, dates, budget);
+    }
 }

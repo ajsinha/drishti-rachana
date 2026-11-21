@@ -19,7 +19,12 @@ python3 tools/split/rename_packages.py java/rachana-core/src
 | File | What |
 |---|---|
 | `a10-paths.txt` | the reviewed path allow-list (main code, the signatures catalogue, the unit tests that need only the compiler) |
+| `a13-paths.txt` | the binder's allow-list (step A13) |
 | `rename_packages.py` | headers and the package rename of the rename commit |
 | `compare_results.py` | the proof of each step: results over this code against the reference bridge's, byte for byte but for `known-differences.txt` |
 
-The binder (step A14) moves the same way with its own allow-list.
+The binder moved the same way at step A13 with its own allow-list (`a13-paths.txt`: engine `bind`, `view`, `control`, `wire` and the
+live `Frame` and `Patch`, over the two paths the engine had; 84 commits), the rename commit with `rename_packages.py --map`.
+
+From A14 the reference results file of a step is the compiler-only bridge run for every kind but `sutra`, plus the engine class path
+run of `--kinds sutra` (reference-bridge README).

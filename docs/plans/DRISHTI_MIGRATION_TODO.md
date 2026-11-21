@@ -222,6 +222,14 @@ here. What Drishti must do when the migration starts, in this order:
       (`norm_s_dist`, `f_dist`, `binom_dist`, `hypgeom_dist`, `gamma_dist`, `npv`, `irr`, `mirr`, `rate`, `log`, `fisher`), which
       the pin move's golden run lists. The `date` format's `MMM` is English whatever the JVM's locale.
 
+- [ ] 8.3f **The binder's API and writer (A14)**: Drishti's `ViewPipeline` stays (sources, links, provenance, augmenters, caches,
+      timings) and builds its `Binder` with `rachana.binder(hooks, pivotEngine)`; Core's `ViewBuilder` (`rachana.views(...)`) is the
+      same steps without them, for Core alone and other hosts — keep the two step lists equal (the bridge's `sutra` kind is the
+      reference copy). The API answers ViewModels with `ViewJson.write(view)` as a raw JSON body (C10), not Spring's `ObjectMapper`:
+      the byte test is the conformance `sutra/binder` suite (5 harvested views identical to the reference's Jackson bytes) plus the
+      goldens before the switch. `ViewModelSchemaController` serves `ViewModelSchema` (its `$id` changed, 8.3e). Tests: the goldens,
+      `ViewModelSchemaTest`, the conformance run with the `drishti` profile.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

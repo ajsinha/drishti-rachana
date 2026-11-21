@@ -2,8 +2,9 @@
 # Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
 """Language levels (CG2, SUTRA_EXPANSION 6.5): compat/levels/<L>/{results.jsonl, rachana.lang.json, sutra.schema.json, functions.yaml}.
 `write L` is run by the release that creates level L: it writes the folder once and refuses an existing one (no re-record flag).
-`check [L]` replays the conformance suite of Rachana's JVM runtime at --language L and compares results.jsonl byte for byte;
-it exits 1 on a difference. Build first: cd java && ./mvnw clean package -DskipTests."""
+`check [L]` replays the conformance suite of Rachana's JVM runtime at --language L and compares each case recorded in results.jsonl
+byte for byte; it exits 1 on a difference. Cases added after the level was written are not part of it, and a case recorded as
+`unsupported` (a kind the runtime did not run yet) may be answered now: both are reported, neither is a difference. Build first: cd java && ./mvnw clean package -DskipTests."""
 import argparse, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -41,7 +42,15 @@ with tempfile.TemporaryDirectory(prefix="rachana-levels-") as tmp:
         bad = 0
         for lv in levels:
             replay(lv, Path(tmp) / f"{lv}.jsonl")
-            same = (Path(tmp) / f"{lv}.jsonl").read_bytes() == (LEVELS / lv / "results.jsonl").read_bytes()
-            print(f"level {lv}: {'identical' if same else 'DIFFERENT'}")
-            bad += not same
+            import json
+            now = {json.loads(x)["case"]: x for x in (Path(tmp) / f"{lv}.jsonl").read_text(encoding="utf-8").splitlines() if x}
+            then = {json.loads(x)["case"]: x for x in (LEVELS / lv / "results.jsonl").read_text(encoding="utf-8").splitlines() if x}
+            changed = [c for c, x in then.items() if now.get(c) != x and json.loads(x)["status"] != "unsupported"]
+            answered = [c for c, x in then.items() if now.get(c) != x and json.loads(x)["status"] == "unsupported"]
+            added = len(set(now) - set(then))
+            for c in changed:
+                print(f"  changed: {c}")
+            print(f"level {lv}: {'DIFFERENT' if changed else 'identical'} ({len(then) - len(changed) - len(answered)} identical, "
+                  f"{len(answered)} newly answered, {added} cases added since)")
+            bad += bool(changed)
         sys.exit(1 if bad else 0)

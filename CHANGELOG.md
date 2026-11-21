@@ -33,6 +33,11 @@ Entries are written per release; the regime's unreleased work is listed after th
   - **`treemap`** (cells sized by a figure, nested by `group`, toned by the sign of `color`; `point-click` cells with `ev` and `set`) and
     **`bullet`** (one figure on a band against a `limit` or between `lower` and `upper`, warning zones within `warnAt`). Case
     `sutra/binder/treemap-bullet`; problems in `problem/series`. `control.Fire` reads a treemap's `cells`.
+  - **`finance` library: seven more fragments** the batch unblocks, each with a minimal and a full example, a golden ViewModel and a
+    gallery page (`rachana lib gate finance` green): `live-blotter` (a live panel: the table read a window at a time, new rows on top),
+    `depth-ladder` (a grid with cell bars and the touch), `curve-compare` (curves split by name, the spreads to a base), `backtest-chart`
+    (P&L bars against the VaR on the loss side, exceptions marked), `performance-chart` (rebased portfolio and benchmark, the drawdown),
+    `concentration-treemap`, `limit-band` (a two-sided bullet). `order-ticket` and `what-if-shocks` are lane A8's (forms and effects).
   - The vendored Elements pack is re-packed from drishti-elements f8b8619 (folder `3.2.0-dev+f8b8619`, replacing `3.2.0-dev+824d83b`):
     the live kind through `options.tables`, cell bars, series marks with a right axis and a legend, treemap and bullet panels, the
     `point` event with a mark's row.

@@ -1,0 +1,38 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: concentration-treemap
+version: 1
+doc:
+  summary: Where the risk or the exposure sits - rectangles sized by exposure, nested by group, toned by P&L.
+  description: >-
+    One row per name (an issuer, a counterparty, a position) with its group (a sector, a country) and its exposure. Each name is a
+    rectangle sized by its exposure inside its group's; a P&L, when given, tones it green or red by its sign. Names without a
+    positive exposure are left out. A click on a rectangle names it.
+  category: market-risk
+  tags: [concentration, exposure, treemap]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per name
+    columns:
+      group:    { type: text,   doc: The outer level (a sector, a country) }
+      name:     { type: text,   doc: The name the rectangle shows }
+      exposure: { type: number, doc: The figure that sizes it }
+      pnl:      { type: number, optional: true, doc: The figure whose sign tones it }
+  title: { type: text, default: Concentration, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How the exposure is written }
+emits:
+  - { name: cell, payload: { group: text, name: text }, doc: A rectangle was chosen }
+panels:
+  - id: map
+    kind: treemap
+    title: arg.title
+    rows: "map(arg.rows, {group: @.group, name: @.name, exposure: @.exposure, pnl: @.pnl})"
+    group: group
+    label: name
+    value: exposure
+    color: pnl
+    fmt: "%{fmt}"
+    emits: [ { name: cell, on: point-click, payload: { group: "@.group", name: "@.name" } } ]

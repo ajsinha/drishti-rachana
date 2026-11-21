@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: concentration-treemap-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Concentration treemap (full)'" }
+data:
+  positions:
+    rows:
+      - { SECTOR: Banks, ISSUER: Alpha Bank, EXPOSURE_USD: 4200000, PNL_USD: 12000 }
+      - { SECTOR: Banks, ISSUER: Beta Bank, EXPOSURE_USD: 2100000, PNL_USD: -8000 }
+      - { SECTOR: Energy, ISSUER: Gamma Oil, EXPOSURE_USD: 3300000, PNL_USD: 4500 }
+      - { SECTOR: Energy, ISSUER: Delta Gas, EXPOSURE_USD: 1200000, PNL_USD: -2500 }
+      - { SECTOR: Telecom, ISSUER: Epsilon Tel, EXPOSURE_USD: 2600000, PNL_USD: 700 }
+panels:
+  - use: finance/concentration-treemap@1
+    as: conc
+    with:
+      title: Exposure by issuer
+      fmt: compact
+      rows: { from: $.positions, columns: { group: SECTOR, name: ISSUER, exposure: EXPOSURE_USD, pnl: PNL_USD } }

@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: backtest-chart
+version: 1
+doc:
+  summary: Daily P&L as bars against the VaR on the loss side as a line, the exceptions marked.
+  description: >-
+    One row per day with its P&L and the VaR for that day (a positive amount). The VaR is drawn below zero, where the losses are;
+    a day whose loss is larger than its VaR is an exception and is marked. A click on a day names it. Pair it with
+    finance/backtest-traffic-light for the count and the zone.
+  category: market-risk
+  tags: [backtest, var, exceptions]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per day
+    columns:
+      date: { type: date,   doc: The day }
+      pnl:  { type: number, doc: The day's P&L }
+      var:  { type: number, doc: The VaR for the day, a positive amount }
+  title: { type: text, default: P&L against VaR, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How the amounts are written }
+emits:
+  - { name: point, payload: { date: date }, doc: A day was chosen }
+panels:
+  - id: chart
+    kind: line
+    title: arg.title
+    rows: "map(sort(arg.rows, @.date), {date: @.date, pnl: @.pnl, loss_var: 0 - @.var, exception: if(@.pnl < 0 - @.var, @.pnl, null)})"
+    x: date
+    fmt: "%{fmt}"
+    layers:
+      - { y: pnl, label: P&L, mark: bar, tone: accent }
+      - { y: loss_var, label: VaR (loss side), tone: warn }
+      - { y: exception, label: Exception, mark: point, tone: bad }
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]
+  - id: count
+    kind: status
+    fields:
+      - { label: Days, bind: "size(arg.rows)", fmt: amount0 }
+      - { label: Exceptions, bind: "size(arg.rows[?@.pnl < 0 - @.var])", fmt: amount0 }

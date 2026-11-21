@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: live-blotter-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Live blotter (full)'" }
+data:
+  orders: { table: orders, key: ORDER_ID, live: true, where: "@.DESK == 'RATES'" }
+panels:
+  - use: finance/live-blotter@1
+    with:
+      title: Rates orders
+      rows: $.orders
+      order: CHANGED_AT
+      columns:
+        - { label: Order, bind: "@.ORDER_ID" }
+        - { label: Side, bind: "@.SIDE" }
+        - { label: Quantity, bind: "@.QTY", fmt: amount0 }
+        - { label: Limit, bind: "@.LIMIT_PRICE", fmt: number }
+        - { label: Status, bind: "@.STATUS", tone: status }

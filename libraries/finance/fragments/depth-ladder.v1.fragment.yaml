@@ -1,0 +1,45 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: depth-ladder
+version: 1
+doc:
+  summary: An order book as a price ladder - bid sizes on one side, ask sizes on the other, bars for depth, the spread above.
+  description: >-
+    One row per price level with the size bid and the size asked there (either may be empty). The levels nearest the touch are
+    shown, the highest price first, each size with a bar against the largest; the best bid, the best ask and the spread are the
+    figures above.
+  category: trading
+  tags: [order-book, depth, ladder]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per price level
+    columns:
+      price:    { type: number, doc: The price }
+      bid_size: { type: number, optional: true, doc: The size bid at this price }
+      ask_size: { type: number, optional: true, doc: The size asked at this price }
+  levels:    { type: integer, default: 10, min: 1, max: 50, doc: The levels shown on each side }
+  title:     { type: text, default: Depth, doc: The panel's title }
+  price-fmt: { type: format, default: price2, doc: How a price is written }
+  size-fmt:  { type: format, default: amount0, doc: How a size is written }
+panels:
+  - id: touch
+    kind: status
+    fields:
+      - { label: Best bid, bind: "max(map(arg.rows[?@.bid_size > 0], @.price))", fmt: "%{price-fmt}" }
+      - { label: Best ask, bind: "min(map(arg.rows[?@.ask_size > 0], @.price))", fmt: "%{price-fmt}" }
+      - { label: Spread, bind: "min(map(arg.rows[?@.ask_size > 0], @.price)) - max(map(arg.rows[?@.bid_size > 0], @.price))", fmt: "%{price-fmt}" }
+  - id: ladder
+    kind: grid
+    title: arg.title
+    rows: "map(flatten([take(sort(map(arg.rows[?@.ask_size > 0], {price: @.price, bid_size: @.bid_size, ask_size: @.ask_size}), @.price), arg.levels), take(sort(map(arg.rows[?@.bid_size > 0 && !(@.ask_size > 0)], {price: @.price, bid_size: @.bid_size, ask_size: @.ask_size}), 0 - @.price), arg.levels)]), {price: @.price, bid_size: @.bid_size, ask_size: @.ask_size})"
+    sort: price desc
+    search: false
+    bars: [bid_size, ask_size]
+    columns:
+      - { label: Bid size, bind: "@.bid_size", fmt: "%{size-fmt}" }
+      - { label: Price, bind: "@.price", fmt: "%{price-fmt}" }
+      - { label: Ask size, bind: "@.ask_size", fmt: "%{size-fmt}" }

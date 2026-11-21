@@ -1,0 +1,56 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: performance-chart
+version: 1
+doc:
+  summary: A portfolio against its benchmark rebased to 100, the drawdown underneath and the period's return and worst drawdown.
+  description: >-
+    One row per date with the portfolio's value and, when given, its benchmark's. Both are rebased to 100 at the first date; the
+    drawdown is the fall from the highest value so far. The figures are read from the rows you give. A click on a date names it.
+  category: funds
+  tags: [performance, benchmark, drawdown]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per date, in any order
+    columns:
+      date:      { type: date,   doc: The date }
+      value:     { type: number, doc: The portfolio's value }
+      benchmark: { type: number, optional: true, doc: The benchmark's value }
+  title: { type: text, default: Performance, doc: The panel's title }
+  fmt:   { type: format, default: amount2, doc: How the rebased values are written }
+emits:
+  - { name: point, payload: { date: date }, doc: A date was chosen }
+panels:
+  - id: return
+    kind: metric
+    label: Return
+    value: "last(sort(arg.rows, @.date)).value / first(sort(arg.rows, @.date)).value - 1"
+    fmt: pct2
+    tone: sign
+  - id: drawdown-worst
+    kind: metric
+    label: Worst drawdown
+    value: "min(map(sort(arg.rows, @.date), @.value / max(map(take(sort(arg.rows, @.date), #index + 1), @.value)) - 1))"
+    fmt: pct2
+    tone: sign
+  - id: rebased
+    kind: line
+    title: arg.title
+    rows: "map(sort(arg.rows, @.date), {date: @.date, portfolio: 100 * @.value / first(sort(arg.rows, @.date)).value, benchmark: if(@.benchmark == null, null, 100 * @.benchmark / first(sort(arg.rows, @.date)).benchmark)})"
+    x: date
+    fmt: "%{fmt}"
+    layers:
+      - { y: portfolio, label: Portfolio, tone: link }
+      - { y: benchmark, label: Benchmark, tone: muted }
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]
+  - id: drawdown
+    kind: line
+    title: Drawdown
+    rows: "map(sort(arg.rows, @.date), {date: @.date, drawdown: @.value / max(map(take(sort(arg.rows, @.date), #index + 1), @.value)) - 1})"
+    x: date
+    fmt: pct2
+    layers:
+      - { y: drawdown, label: Drawdown, mark: area, tone: bad }

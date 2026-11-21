@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: curve-compare-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Curve compare'" }
+data:
+  curves:
+    rows:
+      - { CURVE: Today, TENOR: 1Y, YEARS: 1, RATE: 0.0412 }
+      - { CURVE: Today, TENOR: 5Y, YEARS: 5, RATE: 0.0388 }
+      - { CURVE: Yesterday, TENOR: 1Y, YEARS: 1, RATE: 0.0409 }
+      - { CURVE: Yesterday, TENOR: 5Y, YEARS: 5, RATE: 0.0391 }
+panels:
+  - use: finance/curve-compare@1
+    with: { rows: { from: $.curves, columns: { curve: CURVE, tenor: TENOR, years: YEARS, value: RATE } } }

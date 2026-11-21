@@ -1,0 +1,25 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: backtest-chart-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Backtest chart (full)'" }
+data:
+  backtest:
+    rows:
+      - { BIZ_DATE: "2026-01-05", PNL_USD: 80000, VAR_USD: 300000 }
+      - { BIZ_DATE: "2026-01-06", PNL_USD: -150000, VAR_USD: 302000 }
+      - { BIZ_DATE: "2026-01-07", PNL_USD: 210000, VAR_USD: 299000 }
+      - { BIZ_DATE: "2026-01-08", PNL_USD: -320000, VAR_USD: 301000 }
+      - { BIZ_DATE: "2026-01-09", PNL_USD: 45000, VAR_USD: 297000 }
+      - { BIZ_DATE: "2026-01-12", PNL_USD: -90000, VAR_USD: 296000 }
+panels:
+  - use: finance/backtest-chart@1
+    as: bt
+    with:
+      title: Desk P&L against 99% VaR
+      fmt: compact
+      rows: { from: $.backtest, columns: { date: BIZ_DATE, pnl: PNL_USD, var: VAR_USD } }
+  - { id: picked, kind: markdown, text: "Day ${@bt.point.date}", waits: bt-chart }

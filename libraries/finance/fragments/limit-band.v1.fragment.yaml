@@ -1,0 +1,40 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: limit-band
+version: 1
+doc:
+  summary: A two-sided limit - the figure on a band between its lower and upper bounds, with the warning zones.
+  description: >-
+    For a position that may be long or short (a net delta, a net open position). Give the figure and both bounds; the band shows
+    the zone it is in - within, near a bound (from the warning share of it) or past one - and a word says which.
+  category: limits
+  tags: [limit, band, two-sided]
+params:
+  value:   { type: number, required: true, doc: The figure }
+  lower:   { type: number, required: true, doc: The lower bound (usually negative) }
+  upper:   { type: number, required: true, doc: The upper bound }
+  warn-at: { type: number, default: 0.8, min: 0.05, max: 1, doc: The share of a bound from which the figure is near it }
+  label:   { type: text, default: Position, doc: What the figure is }
+  fmt:     { type: format, default: signed0, doc: How the figure and the bounds are written }
+panels:
+  - id: band
+    kind: bullet
+    label: arg.label
+    value: arg.value
+    lower: arg.lower
+    upper: arg.upper
+    warnAt: arg.warn-at
+    fmt: "%{fmt}"
+  - id: past
+    kind: status
+    when: "arg.value > arg.upper || arg.value < arg.lower"
+    fields: [ { label: Zone, bind: "'Past a bound'", tone: bad } ]
+  - id: near
+    kind: status
+    when: "arg.value <= arg.upper && arg.value >= arg.lower && (arg.value > arg.warn-at * arg.upper || arg.value < arg.warn-at * arg.lower)"
+    fields: [ { label: Zone, bind: "'Near a bound'", tone: warn } ]
+  - id: within
+    kind: status
+    when: "arg.value <= arg.warn-at * arg.upper && arg.value >= arg.warn-at * arg.lower"
+    fields: [ { label: Zone, bind: "'Within the band'", tone: ok } ]

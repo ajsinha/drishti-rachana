@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: concentration-treemap-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Concentration treemap'" }
+data:
+  positions:
+    rows:
+      - { SECTOR: Banks, ISSUER: Alpha Bank, EXPOSURE_USD: 4200000 }
+      - { SECTOR: Banks, ISSUER: Beta Bank, EXPOSURE_USD: 2100000 }
+      - { SECTOR: Energy, ISSUER: Gamma Oil, EXPOSURE_USD: 3300000 }
+panels:
+  - use: finance/concentration-treemap@1
+    with: { rows: { from: $.positions, columns: { group: SECTOR, name: ISSUER, exposure: EXPOSURE_USD } } }

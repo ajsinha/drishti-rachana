@@ -156,6 +156,8 @@ def build(lib: Path, out_root: Path):
         if not ex.is_file():
             sys.exit(f"{lib.name}/{f['name']}: no example (examples/{f['name']}.sutra.yaml)")
         dump(work / "sutras" / f"{f['name']}.sutra.yaml", page(lib.name, manifest, f, ex.read_text()))
+    if (lib / "examples" / "data").is_dir():                       # host tables the examples read (a live table's rows), served as static files
+        shutil.copytree(lib / "examples" / "data", work / "data")
     site = out_root / "site" / lib.name
     shutil.rmtree(site, ignore_errors=True)
     r = subprocess.run(["node", str(CLI), "build", "--src", str(work), "--out", str(site), "--level", "1.2", "--libs", str(lib.parent)],

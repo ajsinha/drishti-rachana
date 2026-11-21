@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.DayOfWeek;
@@ -91,7 +92,7 @@ final class DateFunctions {
         if (spec == null) {
             return null;
         }
-        String key = spec.trim().toUpperCase(Locale.ROOT);
+        String key = CoreText.upper(spec.trim());
         try {
             return cals.held(key);
         } catch (IllegalArgumentException e) {

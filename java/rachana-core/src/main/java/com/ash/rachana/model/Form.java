@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.model;
 
+import com.ash.rachana.internal.NumberText;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -740,6 +741,6 @@ public record Form(String title, String key, String edit, String create, String 
     }
 
     private static String plain(BigDecimal d) {
-        return String.format(java.util.Locale.ROOT, "%,f", d).replaceAll("\\.?0+$", "");
+        return NumberText.group(d.setScale(6, java.math.RoundingMode.HALF_UP).toPlainString()).replaceAll("\\.?0+$", "");
     }
 }

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreDecimal;
 import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
@@ -149,7 +150,7 @@ final class MathFunctions {
         if (x.signum() < 0) {
             throw Args.error("sqrt", Args.describe(v) + " is negative");
         }
-        return Args.out(x.sqrt(MathContext.DECIMAL64));
+        return Args.out(CoreDecimal.sqrt(x, MathContext.DECIMAL64));
     }
 
     private static Object real(String fn, Object v, java.util.function.DoubleUnaryOperator f, boolean positive) {

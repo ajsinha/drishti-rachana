@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.format;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import java.util.regex.Pattern;
 
@@ -35,6 +36,6 @@ public final class IdText {
         if (d == CoreMath.rint(d) && !Double.isInfinite(d) && Math.abs(d) < 1e18) {
             return Long.toString(CoreMath.toLong(d));
         }
-        return java.math.BigDecimal.valueOf(d).stripTrailingZeros().toPlainString();
+        return NumberText.decimal(d).stripTrailingZeros().toPlainString();
     }
 }

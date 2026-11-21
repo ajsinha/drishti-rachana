@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.parse;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.SutraProblem;
 import com.ash.rachana.model.Control;
 import com.ash.rachana.model.Control.Choice;
@@ -195,7 +196,7 @@ final class ControlsReader {
         if (kind == ControlKind.SLIDER && (min == null || max == null)) {
             problem("RCH-2034", "a slider needs both 'min' and 'max': a number or an expression over the record ($.limits.max)", n);
         }
-        if (step != null && step.matches("-?\\d+(\\.\\d+)?") && Double.parseDouble(step) <= 0) {
+        if (step != null && step.matches("-?\\d+(\\.\\d+)?") && NumberText.parse(step) <= 0) {
             problem("RCH-2034", "step is a number above zero, not '" + step + "'", m.get("step"));
         }
         String def = defaultOf(m.get("default"));

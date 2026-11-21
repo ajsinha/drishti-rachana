@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el.check;
 
+import com.ash.rachana.internal.CoreText;
 import java.util.Locale;
 
 /**
@@ -25,7 +26,7 @@ public enum Scope {
     ROW, RULE, AGGREGATE, CONTEXT;
 
     public String word() {
-        return name().toLowerCase(Locale.ROOT);
+        return CoreText.lower(name());
     }
 
     /** The scope a word names ({@code row}, {@code rule}, {@code aggregate}, {@code measure} for aggregate, {@code context}); null when none. */
@@ -33,7 +34,7 @@ public enum Scope {
         if (word == null) {
             return null;
         }
-        return switch (word.toLowerCase(Locale.ROOT)) {
+        return switch (CoreText.lower(word)) {
             case "row", "derive", "column", "filter", "where" -> ROW;
             case "rule", "security" -> RULE;
             case "aggregate", "measure", "having", "define" -> AGGREGATE;

@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el.check;
 
+import com.ash.rachana.internal.CoreText;
 import java.util.Locale;
 
 /**
@@ -16,7 +17,7 @@ public enum ElType {
     INTEGER, DECIMAL, NUMBER, STRING, BOOLEAN, DATE, TIMESTAMP, NONE, LIST, TABLE, ANY;
 
     public String word() {
-        return name().toLowerCase(Locale.ROOT);
+        return CoreText.lower(name());
     }
 
     public boolean numeric() {
@@ -65,7 +66,7 @@ public enum ElType {
         if (type == null) {
             return ANY;
         }
-        return switch (type.toLowerCase(Locale.ROOT)) {
+        return switch (CoreText.lower(type)) {
             case "string", "text" -> STRING;
             case "integer", "int", "long" -> INTEGER;
             case "decimal", "double", "number", "float" -> DECIMAL;

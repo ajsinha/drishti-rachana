@@ -142,3 +142,16 @@ The owner's rule: **keep Rachana-EL's syntax as similar to Python as possible**,
 | PY8 | Function names stay Excel's; Python built-ins that already overlap (`len`, `round`, `min`, `max`, `sum`, `abs`) keep their meaning |
 
 A7b (FormExpr into Rachana-EL), owner 2026-11-21: form rules keep `and`/`or`/`not` (now normal syntax); A7b runs after A5's exact decimals, with a small `form` profile for FormExpr's 16-digit division, `+` joining text and undecided-rule-passes at level 1.0, and every changed answer recorded for review.
+
+### A5: the same bytes on every runtime (2026-11-21)
+
+| # | Decision |
+|---|---|
+| D5-1 | P2-1 accepted as recommended: Core's maths is its own fdlibm port (`CoreMath`, equal to `StrictMath` on Java 21) on every runtime, the JVM included. 17 conformance results move in the last place (all in P2-1's function list); they are listed in `tools/split/known-differences.txt`; the two determinism probes among them (`d-m04-c`, `d-m05-a`) expect Core's value. Language level 1.0, not yet released, was written again (`levels.py write 1.0`); **for the owner**: 18 results and the `fisher(0.5)` example changed (the 17, and `fisher_inv`, first recorded on Java 25) |
+| D5-2 | Language level 1.0 keeps Java's number grammar (hexadecimal significands, `d`/`f` suffixes, `Infinity`, `NaN` read as numbers) for byte identity with the reference; P2-2's decimal-only grammar waits for level 1.1 and the owner. `NumberText` is Core's one door between doubles and text; on the JVM it is Java's own (shortest round trip, correctly rounded); the JavaScript build replaces the class |
+| D5-3 | Case mapping, white space and reversal are Core's (`CoreText`: Java 21's Unicode 15.0 tables carried in Core, with Java's expansions and final sigma); the final sigma follows Java's word boundaries as far as `CoreTextTest` draws (letters, digits, spaces, hyphen, apostrophe, full stop, double quote, combining marks); other punctuation beside a sigma may differ from the JVM |
+| D5-4 | Month and day names and the `date` format's pattern are Core's (`DateText`, English); a pattern letter beyond `y M d E` shows the date as it came. `java.time` itself stays (every D-T probe agreed); `java.text` and `java.time.format` leave Core |
+| D5-5 | `text(v, code)` prints Excel number codes with Core's printer; a code outside its written grammar is refused with the message it always had. Two quoted texts side by side print as written (the reference printed a stray quote; no case had it) |
+| D5-6 | The regular-expression budget is a count of steps (`SafeRegex.Limits.maxSteps`, default 20 million), not a clock: the same value stops at the same place on every runtime. API: `timeoutNanos` removed (planned; baseline rewritten) |
+| D5-7 | `CoreDeterminismGuardTest` refuses, outside `CoreMath`, `NumberText`, `CoreText`, `CoreDecimal` and `DateText`: the transcendental `Math` calls and `rint`, `StrictMath`, `String.format`, `java.text`, `java.time.format`, locale names, the clock, `Double`/`Float` text and reading, `BigDecimal.sqrt`, the T1 gaps; and in the value code (`el/`, `format/`) the JDK's case mapping, strip, white space and `reverse`. Left for the JavaScript conformance run at A15 (JS_PROOF rows not in P2's closed list): `java.util.regex` for Core's fixed patterns (J12), hash iteration order (J17), implicit `"" + double` in messages |
+

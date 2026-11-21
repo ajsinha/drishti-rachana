@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public final class DatePartFunctions {
      * (DEL's and the design's), so either spelling moves the same dates.
      */
     public static String unit(String u) {
-        String x = u.strip().toLowerCase(Locale.ROOT);
+        String x = CoreText.lower(CoreText.strip(u));
         return "business_day".equals(x) ? "business-day" : x;
     }
 

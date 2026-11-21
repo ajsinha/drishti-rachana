@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.internal.CoreMath;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -212,7 +213,7 @@ final class NumberFunctions {
         if (len < 0 || len > 255) {
             throw Args.error("base", "the length " + len + " is not from 0 to 255");
         }
-        String s = n.setScale(0, RoundingMode.DOWN).toBigIntegerExact().toString(r).toUpperCase(Locale.ROOT);
+        String s = CoreText.upper(n.setScale(0, RoundingMode.DOWN).toBigIntegerExact().toString(r));
         return s.length() >= len ? s : "0".repeat(len - s.length()) + s;
     }
 
@@ -224,7 +225,7 @@ final class NumberFunctions {
             return null;
         }
         radix("decimal", r);
-        String t = s.strip();
+        String t = CoreText.strip(s);
         if (t.isEmpty() || t.length() > 255) {
             throw Args.error("decimal", "'" + s + "' is not a number of 1 to 255 digits");
         }

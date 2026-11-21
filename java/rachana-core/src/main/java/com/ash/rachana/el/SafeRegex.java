@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.RachanaCode;
 import com.ash.rachana.RachanaException;
 import java.util.ArrayList;
@@ -19,20 +20,21 @@ import java.util.List;
  * care), the anchors {@code ^} and {@code $}, and a leading {@code (?i)} or {@code (?-i)}. Back-references, look-around,
  * atomic groups, possessive quantifiers and word boundaries are refused with {@link RachanaCode#REGEX_REFUSED}, as are
  * patterns over {@link Limits#maxPattern()} characters or whose expanded program passes {@link Limits#maxProgram()}.
- * A match that runs past {@link Limits#timeoutNanos()} raises {@link RachanaCode#REGEX_TIMEOUT}; a value is cut to
+ * A match that takes more than {@link Limits#maxSteps()} steps (a step is one thread of the simulation at one position of
+ * the value: a count, not a clock, so every runtime stops at the same place) raises {@link RachanaCode#REGEX_TIMEOUT}; a value is cut to
  * {@link Limits#maxInput()} characters. A compiled pattern is immutable and may be shared between threads.
  */
 public final class SafeRegex {
 
-    /** The caps: the longest pattern, the largest expanded program, the longest value read and the time budget of one match. */
-    public record Limits(int maxPattern, int maxProgram, int maxInput, long timeoutNanos) {
-        /** The caps Core uses unless a host's {@code RachanaOptions} say otherwise: 200, 4000, 8192 characters and 50 ms. */
-        public static final Limits DEFAULTS = new Limits(200, 4000, 8192, 50 * 1_000_000L);
+    /** The caps: the longest pattern, the largest expanded program, the longest value read and the step budget of one match. */
+    public record Limits(int maxPattern, int maxProgram, int maxInput, long maxSteps) {
+        /** The caps Core uses unless a host's {@code RachanaOptions} say otherwise: 200, 4000, 8192 characters and 20 million steps. */
+        public static final Limits DEFAULTS = new Limits(200, 4000, 8192, 20_000_000L);
 
         public Limits {
-            if (maxPattern < 1 || maxProgram < 1 || maxInput < 1 || timeoutNanos < 1) {
+            if (maxPattern < 1 || maxProgram < 1 || maxInput < 1 || maxSteps < 1) {
                 throw new IllegalArgumentException("regular-expression caps must be positive: " + maxPattern + ", " + maxProgram + ", "
-                        + maxInput + ", " + timeoutNanos + " ns");
+                        + maxInput + ", " + maxSteps + " steps");
             }
         }
 
@@ -101,6 +103,11 @@ public final class SafeRegex {
     }
 
     /** True when the pattern matches anywhere in the text (use {@code ^} and {@code $} to anchor). */
+    private RachanaException overBudget() {
+        return new RachanaException(RachanaCode.REGEX_TIMEOUT, "the pattern '" + source + "' took more than " + limits.maxSteps()
+                + " steps on a value");
+    }
+
     public boolean find(CharSequence text) {
         int n = Math.min(text.length(), limits.maxInput());
         int m = op.length;
@@ -110,13 +117,13 @@ public final class SafeRegex {
         Arrays.fill(mark, -1);
         int[] stack = new int[m * 2 + 2];
         int curN = 0;
-        long deadline = System.nanoTime() + limits.timeoutNanos();
+        long steps = 0;
         for (int i = 0; i <= n; i++) {
-            if ((i & 255) == 0 && System.nanoTime() > deadline) {
-                throw new RachanaException(RachanaCode.REGEX_TIMEOUT, "the pattern '" + source + "' took longer than "
-                        + limits.timeoutNanos() / 1_000_000 + " ms on a value");
-            }
             curN = add(cur, curN, 0, i, n, mark, stack);                 // an unanchored search: a new thread at every position
+            steps += curN;
+            if (steps > limits.maxSteps()) {
+                throw overBudget();
+            }
             for (int k = 0; k < curN; k++) {
                 if (op[cur[k]] == MATCH) {
                     return true;
@@ -143,7 +150,7 @@ public final class SafeRegex {
 
     private boolean step(int pc, char c) {
         return switch (op[pc]) {
-            case CHAR -> c == x[pc] || (fold && Character.toLowerCase(c) == x[pc]);
+            case CHAR -> c == x[pc] || (fold && (char) CoreText.lower(c) == x[pc]);
             case ANY -> c != '\n';
             case CLASS -> inClass(classes[x[pc]], c, y[pc] == 1);
             default -> false;
@@ -151,7 +158,7 @@ public final class SafeRegex {
     }
 
     private boolean inClass(int[][] ranges, char c, boolean negated) {
-        boolean in = has(ranges, c) || (fold && (has(ranges, Character.toLowerCase(c)) || has(ranges, Character.toUpperCase(c))));
+        boolean in = has(ranges, c) || (fold && (has(ranges, (char) CoreText.lower(c)) || has(ranges, (char) CoreText.upper(c))));
         return in != negated;
     }
 
@@ -285,11 +292,11 @@ public final class SafeRegex {
         int[][] stackCaps = new int[m * 2 + 2][];
         int curN = 0;
         int[] matched = null;
-        long deadline = System.nanoTime() + limits.timeoutNanos();
+        long steps = 0;
         for (int i = from; i <= n; i++) {
-            if ((i & 255) == 0 && System.nanoTime() > deadline) {
-                throw new RachanaException(RachanaCode.REGEX_TIMEOUT, "the pattern '" + source + "' took longer than "
-                        + limits.timeoutNanos() / 1_000_000 + " ms on a value");
+            steps += curN + 1;
+            if (steps > limits.maxSteps()) {
+                throw overBudget();
             }
             if (matched == null) {                                     // a later start has the lowest priority, so it comes last
                 int[] fresh = new int[slots];
@@ -533,7 +540,7 @@ public final class SafeRegex {
         }
 
         Node literal(int c) {
-            return new Atom(CHAR, fold ? Character.toLowerCase(c) : c, 0);
+            return new Atom(CHAR, fold ? CoreText.lower(c) : c, 0);
         }
 
         Node escape() {
@@ -571,7 +578,7 @@ public final class SafeRegex {
         }
 
         static int[][] shorthand(char c) {
-            return switch (Character.toLowerCase(c)) {
+            return switch (CoreText.lower(c)) {
                 case 'd' -> new int[][] {{'0', '9'}};
                 case 'w' -> new int[][] {{'0', '9'}, {'A', 'Z'}, {'_', '_'}, {'a', 'z'}};
                 case 's' -> new int[][] {{' ', ' '}, {'\t', '\r'}};

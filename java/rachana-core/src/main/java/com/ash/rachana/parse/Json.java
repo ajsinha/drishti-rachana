@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.parse;
 
+import com.ash.rachana.internal.NumberText;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -71,9 +72,9 @@ public final class Json {
         } else if (value instanceof Double || value instanceof Float) {
             double d = ((Number) value).doubleValue();
             if (Double.isNaN(d) || Double.isInfinite(d)) {
-                quote(value instanceof Float f ? Float.toString(f) : Double.toString(d), out);
+                quote(value instanceof Float f ? NumberText.text(f) : NumberText.text(d), out);
             } else {
-                out.append(value instanceof Float f ? Float.toString(f) : Double.toString(d));
+                out.append(value instanceof Float f ? NumberText.text(f) : NumberText.text(d));
             }
         } else if (value instanceof Long || value instanceof Integer || value instanceof Short || value instanceof Byte
                 || value instanceof BigInteger) {
@@ -395,7 +396,7 @@ public final class Json {
             }
             String text = s.substring(start, pos);
             if (decimal) {
-                return Double.parseDouble(text);
+                return NumberText.parse(text);
             }
             int digits = pos - intStart;
             if (digits <= 18) {

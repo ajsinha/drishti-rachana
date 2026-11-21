@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.CoreText;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -49,7 +50,7 @@ final class DateParts {
             return european ? DateFunctions.days360European(x, y) : days360Us(x, y);
         });
         t.fn("datedif", 3, 3, (a, c) -> datedif(a)).check("datedif", args -> Functions.literal(args, 2) instanceof String u
-                && !DATEDIF_UNITS.contains(u.toUpperCase(Locale.ROOT)) ? unitProblem(u) : null);
+                && !DATEDIF_UNITS.contains(CoreText.upper(u)) ? unitProblem(u) : null);
     }
 
     private static void part(Functions.Table t, String name, java.util.function.ToIntFunction<LocalDate> f) {
@@ -66,7 +67,7 @@ final class DateParts {
             if (s == null) {
                 return null;
             }
-            String x = s.strip();
+            String x = CoreText.strip(s);
             String clock;
             if (x.length() >= 10 && Args.parseDate(x) != null) {
                 if (x.length() == 10) {
@@ -175,7 +176,7 @@ final class DateParts {
         if (x == null || y == null || u == null) {
             return null;
         }
-        String unit = u.toUpperCase(Locale.ROOT);
+        String unit = CoreText.upper(u);
         if (!DATEDIF_UNITS.contains(unit)) {
             throw Args.error("datedif", unitProblem(u));
         }

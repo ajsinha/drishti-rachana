@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import com.ash.rachana.api.Node;
 import java.math.BigDecimal;
@@ -473,7 +474,7 @@ final class FinanceFunctions {
         BigDecimal whole = x.setScale(0, RoundingMode.DOWN);
         BigDecimal rest = x.subtract(whole);
         BigDecimal scale = BigDecimal.TEN.pow(CoreMath.toInt(Math.ceil(CoreMath.log10(f))));
-        BigDecimal fraction = BigDecimal.valueOf(f);
+        BigDecimal fraction = NumberText.decimal(f);
         BigDecimal part = toDecimal ? rest.multiply(scale).divide(fraction, MathContext.DECIMAL128)
                 : rest.multiply(fraction).divide(scale, MathContext.DECIMAL128);
         return Args.out(whole.add(part).round(MathContext.DECIMAL64));

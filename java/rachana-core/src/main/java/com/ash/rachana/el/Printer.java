@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el;
 
+import com.ash.rachana.internal.NumberText;
 import com.ash.rachana.internal.CoreMath;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +99,7 @@ public final class Printer {
             return Long.toString(d.longValue());
         }
         if (v instanceof Double d) {
-            String s = new java.math.BigDecimal(Double.toString(d)).toPlainString();
+            String s = NumberText.decimal(d).toPlainString();
             return s;
         }
         return v.toString();

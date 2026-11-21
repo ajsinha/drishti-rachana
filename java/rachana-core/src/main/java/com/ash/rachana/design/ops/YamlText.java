@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.design.ops;
 
+import com.ash.rachana.internal.NumberText;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -64,7 +65,7 @@ final class YamlText {
                 case '\t' -> sb.append("\\t");
                 default -> {
                     if (c < 0x20) {
-                        sb.append(String.format("\\u%04x", (int) c));
+                        sb.append("\\u" + NumberText.hex(c, 4));
                     } else {
                         sb.append(c);
                     }

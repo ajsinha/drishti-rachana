@@ -73,6 +73,9 @@ refusals and line ends, UTF-16 code-unit ordering (D-U01, D-U02), `len`/`left`/`
 | 6 | the four T1 gaps (`BigDecimal.sqrt`, `unmodifiableSortedMap`, `Matcher.append*`) as proven in the cut | JDK members TeaVM lacks | none | 0.25 |
 | | **A5 total** | | | **5.5** (plan: 3) |
 
+Done in A5 (2026-11-21), every row: `CoreMath`, `NumberText`, `CoreText`, `DateText`, `CoreDecimal`, the step budget, Core's
+number-code printer, the T1 gaps; decisions in [DECISIONS](../design/DECISIONS.md) D5-1 to D5-7 (row 3: Java's grammar stays at level 1.0).
+
 `java.time` can stay as far as determinism goes (every D-T probe agreed); T2's weight argues for replacing
 `java.time.format` regardless ([P1_RESULTS](P1_RESULTS.md) T2).
 

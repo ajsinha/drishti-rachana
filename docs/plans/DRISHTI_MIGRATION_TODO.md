@@ -186,6 +186,14 @@ here. What Drishti must do when the migration starts, in this order:
       version, and holds what it reads in Core's `SutraStore`. Tests: `PackSutrasTest`, `SutraRegistryTest`, `SutraBlocksTest`,
       `UiKitBlocksTest`, the schema snapshot with the `drishti` profile loaded, the goldens.
 
+- [ ] 8.3e **The same bytes on every runtime (A5)**: `drishti.search.regex.timeout-ms` (50) cannot reach Core any more: the
+      fourth component of `SafeRegex.Limits` is now `maxSteps` (Core's default 20 million steps). Drishti either keeps its own
+      setting for its own `drishti-common` `SafeRegex` and passes Core's default, or adds `drishti.search.regex.max-steps`; the
+      `DRS-4011` row of the API reference then says "more than N steps". Drishti's goldens and VaR numbers are untouched; the 17
+      last-place moves (P2-1, `tools/split/known-differences.txt`) reach Drishti only where a Sutra calls those functions
+      (`norm_s_dist`, `f_dist`, `binom_dist`, `hypgeom_dist`, `gamma_dist`, `npv`, `irr`, `mirr`, `rate`, `log`, `fisher`), which
+      the pin move's golden run lists. The `date` format's `MMM` is English whatever the JVM's locale.
+
 ### 8.x A8b API changes the host adapts to at A11 (no Drishti change now)
 
 | Rachana API | Was | Is | Drishti callers |

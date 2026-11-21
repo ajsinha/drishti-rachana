@@ -4,6 +4,7 @@
  */
 package com.ash.rachana.el.check;
 
+import com.ash.rachana.internal.CoreText;
 import com.ash.rachana.el.Expr;
 import com.ash.rachana.el.Functions;
 import java.util.ArrayList;
@@ -332,9 +333,9 @@ public final class Checker {
         if (names.isEmpty()) {
             return "";
         }
-        String low = name.toLowerCase(java.util.Locale.ROOT);
-        String best = names.stream().min(Comparator.comparingInt(x -> distance(x.toLowerCase(java.util.Locale.ROOT), low))).orElse(null);
-        return best != null && distance(best.toLowerCase(java.util.Locale.ROOT), low) <= Math.max(2, name.length() / 3)
+        String low = CoreText.lower(name);
+        String best = names.stream().min(Comparator.comparingInt(x -> distance(CoreText.lower(x), low))).orElse(null);
+        return best != null && distance(CoreText.lower(best), low) <= Math.max(2, name.length() / 3)
                 ? "; did you mean " + best + "?" : "";
     }
 
@@ -612,8 +613,8 @@ public final class Checker {
             int idx = indexOf(f, k.getKey());
             if (idx < 0) {
                 List<String> kws = f.params().stream().filter(Signatures.Param::keywordOnly).map(Signatures.Param::name).toList();
-                err(Problem.LANGUAGE, shown + "() has no named argument " + spelling.named(k.getKey()).strip() + (kws.isEmpty() ? ""
-                        : "; its named arguments: " + String.join(", ", kws.stream().map(x -> spelling.named(x).strip()).toList())), null, k.getValue());
+                err(Problem.LANGUAGE, shown + "() has no named argument " + CoreText.strip(spelling.named(k.getKey())) + (kws.isEmpty() ? ""
+                        : "; its named arguments: " + String.join(", ", kws.stream().map(x -> CoreText.strip(spelling.named(x))).toList())), null, k.getValue());
                 ok = false;
             } else if (!values.get(idx).isEmpty()) {
                 err(Problem.LANGUAGE, shown + "() gets " + k.getKey() + " twice", null, k.getValue());
@@ -625,7 +626,7 @@ public final class Checker {
         for (int i = 0; i < f.params().size(); i++) {
             Signatures.Param p = f.params().get(i);
             if (!p.optional() && values.get(i).isEmpty()) {
-                err(Problem.LANGUAGE, shown + "() needs " + (p.keywordOnly() ? spelling.named(p.name()).strip() : p.name()) + ": " + f.signature(), null, at);
+                err(Problem.LANGUAGE, shown + "() needs " + (p.keywordOnly() ? CoreText.strip(spelling.named(p.name())) : p.name()) + ": " + f.signature(), null, at);
                 ok = false;
             }
         }
@@ -704,8 +705,8 @@ public final class Checker {
                 }
                 if (all != null && all.equals(List.of("ALL"))) {
                     return "fields-or-all".equals(p.type()) ? ElType.LIST
-                            : err(Problem.LANGUAGE, what + " is a list of fields; ALL is only for " + spelling.named("ignore").strip() + " and "
-                                    + spelling.named("over").strip(), null, a);
+                            : err(Problem.LANGUAGE, what + " is a list of fields; ALL is only for " + CoreText.strip(spelling.named("ignore")) + " and "
+                                    + CoreText.strip(spelling.named("over")), null, a);
                 }
                 if (!(a instanceof Expr.ListLit l)) {
                     return err(Problem.LANGUAGE, what + " is a list of fields: " + spelling.named(p.name()) + "[alias.COLUMN, ...]"

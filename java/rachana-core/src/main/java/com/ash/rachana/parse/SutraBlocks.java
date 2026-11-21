@@ -520,15 +520,17 @@ public final class SutraBlocks {
             }
             Matcher pm = PARAM.matcher(b.text());
             StringBuilder filled = new StringBuilder();
+            int copied = 0;
             while (pm.find()) {
                 String v = values.get(pm.group(1));
                 if (v == null) {
                     problems.add(problem("block " + b.name() + " reads %{" + pm.group(1) + "}, which it does not declare under params", b.file(), 1, 1));
                     v = "";
                 }
-                pm.appendReplacement(filled, Matcher.quoteReplacement(v));
+                filled.append(b.text(), copied, pm.start()).append(v);
+                copied = pm.end();
             }
-            pm.appendTail(filled);
+            filled.append(b.text(), copied, b.text().length());
             try {
                 PNode root = parse(filled.toString(), b.file());
                 List<PNode> brought = phoned(root.map().get("panels").list(), root);

@@ -5,6 +5,24 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (toward v0.10.0, the untangling)
 
+- **A5, the same bytes on every runtime**: Core no longer asks the JDK for anything whose answer differs between runtimes. Its
+  own classes do it: `CoreMath` (an fdlibm port of `exp`, `log`, `log10`, `log1p`, `expm1`, `pow`, `tanh`, `atan2`, `sin`, `rint`
+  and the saturating casts; equal to `StrictMath` on Java 21 bit for bit), `NumberText` (Core's one door between doubles and text;
+  on the JVM Java's shortest round-trip printing and correctly rounded reading; the JavaScript build swaps in a same-named class),
+  `CoreText` (upper and lower case, with the expansions and the final sigma, white space, strip and reversal by code point, from
+  Java 21's Unicode 15.0 tables carried in Core), `CoreDecimal.sqrt` (whole-number arithmetic; equal to `BigDecimal.sqrt`), and
+  `DateText` (English month and day names, and the `date` format's pattern printed by Core). `text(v, code)` prints Excel number
+  codes with Core's own printer (`java.text` left Core; equal to the `DecimalFormat` it replaces for every code in its grammar,
+  and two quoted texts side by side no longer print a stray quote). `String.format` is gone. The regular-expression budget is a
+  count of steps, not a clock: `SafeRegex.Limits(maxPattern, maxProgram, maxInput, maxSteps)` (default 20 million steps) replaces
+  `timeoutNanos` (planned; API baseline rewritten). The `date` format's `MMM` no longer follows the JVM's default locale, and
+  `WorldRegions` no longer upper-cases with it. A guard (`CoreDeterminismGuardTest`) refuses these JDK calls anywhere else in Core.
+  Results: 17 conformance results move in the last place, all in the P2-1 list (`norm_s_dist`, `f_dist`, `binom_dist`,
+  `hypgeom_dist`, `gamma_dist`, `npv`, `irr`, `mirr`, `rate`, `log`, `fisher`), listed in `tools/split/known-differences.txt`;
+  the two determinism probes among them now expect Core's value; every other result is byte-identical (2,093 of 2,112 identical to
+  the reference, the 19 known; 0 verified failing). Language level 1.0 (`compat/levels/1.0`, not yet released) was written again
+  by `levels.py write 1.0`: 18 results (the 17, and `fisher_inv`, which had been recorded on Java 25) and the `fisher(0.5)` example.
+  New tests: `CoreTextTest`, `CoreDecimalTest`, `DateTextTest`, `NumberCodeTest`, `SafeRegexBudgetTest`, the guard; 822 unit tests.
 - **A7, the model and parser split along the Core/profile line**: each instance has a `Grammar` (`rachana.grammar()`, its parser
   `rachana.parser()`, its schema `rachana.schema(formats)`): Core's keys and kinds plus what its profiles add. A profile adds top-level
   keys (`SutraKey`: reader, the panels it brings, schema fragment), brings the profile panel kinds (`links`, `provenance`), the `kind`

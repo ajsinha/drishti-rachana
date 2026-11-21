@@ -9,7 +9,7 @@ data**: fictional customers and items. The CSV has no header comment; it is cove
 | `orders_seed.csv` | 40 starting orders: `order_id, ts, customer, region, item, qty, price, amount, status`; key `order_id` |
 | `gen_orders.py` | standard library only; reads the seed, then writes one keyed patch per line to stdout in Data Protocol v1 patch format (`spec/1/data-protocol/patch.json`): `add` new orders, `update` a status, `remove` a finished order (a key is a list) |
 | `orders.sutra.yaml` | the board: four KPI tiles, a bar chart of value by status, a grid of the whole book (`data:` entry `orders`, `key: [order_id]`, `live: true`) |
-| `flask_app.py`, `fastapi_app.py` | the adapters in use (`drishti_rachana.adapters`), about thirty lines each; the data endpoints run today, the page needs the painter (`<rachana-view>`, branch g2/data) |
+| `flask_app.py`, `fastapi_app.py` | the adapters in use (`drishti_rachana.adapters`), about thirty lines each; the data endpoints run today; the page loads `<rachana-view>` from the address given as `view_script=` |
 
 ```bash
 python3 gen_orders.py --duration 5 --rate 4 --seed 7     # works today: patches on stdout

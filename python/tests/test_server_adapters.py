@@ -36,7 +36,7 @@ def test_discovery_schema_and_rows():
     assert [v[2] for v in body["values"]] == [135, 120] and body["total"] == 3 and "next" in body
     st, page2 = get(h, "/tables/sales/rows", sort="-revenue", limit=2, cursor=body["next"])
     assert [v[2] for v in page2["values"]] == [75] and "next" not in page2
-    assert get(h, "/tables/sales/rows", shape="objects", columns="region")[1]["rows"][0] == {"region": "North"}
+    assert get(h, "/tables/sales/rows", shape="objects", columns="region")[1]["rows"][0] == {"region": "East"}   # unsorted pages come in key order (PROTOCOL 6.1)
 
 
 def test_errors_use_the_protocol_codes():
@@ -59,9 +59,9 @@ def test_query_filter_tree():
     r = h.handle("POST", "/tables/sales/query", {}, json.dumps(q).encode())
     assert json.loads(r.body)["values"] == [["North", "2026-02", 135]]
     bad = h.handle("POST", "/tables/sales/query", {}, json.dumps({"filter": {"op": "matches", "args": []}}).encode())
-    assert json.loads(bad.body)["error"]["code"] == "rdp.query.unsupported"
-    grp = h.handle("POST", "/tables/sales/query", {}, json.dumps({"group": {"by": ["region"]}}).encode())
-    assert grp.status == 422
+    assert json.loads(bad.body)["error"]["code"] == "rdp.query.invalid"   # PROTOCOL 7, 10.1
+    grp = h.handle("POST", "/tables/sales/query", {}, json.dumps({"group": {"by": ["region"], "values": [{"name": "n", "agg": "count"}]}}).encode())
+    assert grp.status == 200 and json.loads(grp.body)["columns"] == ["region", "n"] and json.loads(grp.body)["total"] == 2
 
 
 def test_keyed_patches_and_the_change_stream():

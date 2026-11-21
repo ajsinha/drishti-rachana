@@ -9,9 +9,9 @@ description: One region in detail. Pick a region; every panel reads it as ctl.re
 data:
   sales:   { table: sales, key: [region, product, month] }
   targets: { table: targets, key: [region, month] }
-  regions: /data/regions.csv                       # text form: shorthand for { url: /data/regions.csv }
+  regions: { table: regions }                       # data/regions.csv: a lookup
 controls:
-  - { id: region, kind: dropdown, label: Region, from: "$.regions[*].name", default: first }
+  - { id: region, kind: dropdown, label: Region, options: "$.regions[*].name", default: first }
 panels:
   - { id: revenue, kind: metric, label: Revenue, value: "sum($.sales[?@.region == ctl.region], 'revenue')", fmt: amount0, span: 4 }
   - { id: target, kind: metric, label: Target, value: "sum($.targets[?@.region == ctl.region], 'target')", fmt: amount0, span: 4 }

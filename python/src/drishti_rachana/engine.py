@@ -22,6 +22,7 @@ from typing import Any, Iterable
 BUNDLE_DIR = Path(__file__).resolve().parent / "bundle"
 # Limits of the V8 isolate (defence in depth: Core's own budgets already bound an expression). A host may pass its own.
 DEFAULT_MAX_MEMORY = 1024 * 1024 * 1024   # bytes of V8 heap; the isolate stops (MemoryError) beyond it
+DEFAULT_LEVEL = "1.1"                     # language level of check() when none is given
 DEFAULT_TIMEOUT = 30.0                    # seconds per call into the bundle; a longer call is cancelled (JSTimeoutException)
 
 
@@ -95,9 +96,10 @@ class Rachana:
     def template(self, template: str, record: Any = None, **given: Any) -> dict[str, Any]:
         return self._call("evaluate", {"template": template, "given": {"record": record or {}, **given}})
 
-    def check(self, sutra: str, file: str = "case.sutra.yaml") -> dict[str, Any]:
-        """Compile and lint a Sutra: parsed, then its expressions checked; ``{"ok": bool, "problems": [...]}``."""
-        return self._call("check", {"sutra": sutra, "file": file})
+    def check(self, sutra: str, file: str = "case.sutra.yaml", level: str = DEFAULT_LEVEL) -> dict[str, Any]:
+        """Compile and lint a Sutra at a language level (``"1.1"`` by default, the newest built; ``"1.2"`` for typed fragments and
+        libraries): parsed, then its expressions checked; ``{"ok": bool, "problems": [...]}``."""
+        return self._call("check", {"sutra": sutra, "file": file, "since": level})
 
     def format(self, value: Any, format: str | None = None) -> dict[str, Any]:
         request: dict[str, Any] = {"value": value}

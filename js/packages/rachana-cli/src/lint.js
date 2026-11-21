@@ -7,6 +7,8 @@ import { join, relative } from "node:path";
 import { tools } from "./bundle.js";
 import { UsageError } from "./errors.js";
 
+export const DEFAULT_LEVEL = "1.1";   // the newest built language level; --level 1.2 for typed fragments and libraries
+export const LEVELS = ["1.0", "1.1", "1.2"];
 export const SUFFIX = ".sutra.yaml";
 
 /** Every *.sutra.yaml under the paths (files as given; folders searched, dot folders and node_modules skipped). */
@@ -27,10 +29,10 @@ export function findSutras(paths) {
 }
 
 /** Per file: { file, ok, problems } from the bundle's check (the problem objects of SPEC section 7, identical to the JVM and Python). */
-export async function lintFiles(files, profiles = "core") {
+export async function lintFiles(files, profiles = "core", level = DEFAULT_LEVEL) {
   const r = await tools(profiles);
   return files.map((file) => {
-    const res = JSON.parse(r.check(JSON.stringify({ sutra: readFileSync(file, "utf8"), file })));
+    const res = JSON.parse(r.check(JSON.stringify({ sutra: readFileSync(file, "utf8"), file, since: level })));
     return { file, ok: res.ok, problems: res.problems };
   });
 }
@@ -50,7 +52,9 @@ export function sarif(results) {
 export async function lint(paths, flags, io) {
   const fmt = flags.format ?? "text";
   if (!["text", "json", "sarif"].includes(fmt)) throw new UsageError("--format is text, json or sarif");
-  const results = await lintFiles(findSutras(paths), flags.profiles ?? "core");
+  const level = flags.level ?? DEFAULT_LEVEL;
+  if (!LEVELS.includes(level)) throw new UsageError("--level is 1.0, 1.1 or 1.2");
+  const results = await lintFiles(findSutras(paths), flags.profiles ?? "core", level);
   const failing = results.flatMap((r) => r.problems).filter((p) => p.severity === "error" || (flags.strict && p.severity === "warning")).length;
   if (fmt === "json") io.out(JSON.stringify(results, null, 2));
   else if (fmt === "sarif") io.out(JSON.stringify(sarif(results), null, 2));

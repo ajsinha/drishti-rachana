@@ -51,7 +51,7 @@ rachana new my-dashboard
 cd my-dashboard
 rachana preview sutras/sales.sutra.yaml   # one screen in the browser (dev: a folder)
 rachana lint         # check every Sutra: exit 1 on errors
-rachana build        # writes ./site: pages, Sutras, data (the painter is added when <rachana-view> lands from g2/data)
+rachana build        # writes ./site: pages, Sutras, data, <rachana-view> with the Elements pack and the runtime; serve it with any static server
 ```
 
 ## 2. Embedded
@@ -101,7 +101,7 @@ panels:
 
 ## 3. Python app
 
-`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol's JSON resources; the page that paints needs `<rachana-view>` (g2/data). Mount Sutras, expose tables, stream changes, and lint in CI.
+`pip install 'drishti-rachana[flask]'` (or `[fastapi]`, `[v8]` for lint). Built: the adapters below, serving the Data Protocol's JSON resources; the page that paints loads `<rachana-view>` (`js/packages/rachana/src`; pass its address as `view_script=`). `rachana lint` takes `--level` (default 1.1). Mount Sutras, expose tables, stream changes, and lint in CI.
 
 **Flask** (`examples/live-orders/flask_app.py`):
 

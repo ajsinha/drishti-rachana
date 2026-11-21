@@ -69,7 +69,7 @@ test("build writes the site and stops on a lint error", { skip: !hasBundle && "b
   rmSync(d, { recursive: true });
 });
 
-test("preview handler serves pages, Sutra text and data; refuses path escape", () => {
+test("preview handler serves pages, Sutra text and data; refuses path escape", { skip: !hasBundle && "bundle not built" }, () => {
   const d = tmp(); mkdirSync(join(d, "data"));
   writeFileSync(join(d, "a.sutra.yaml"), GOOD); writeFileSync(join(d, "data", "t.csv"), "a\n1\n"); writeFileSync(join(d, "secret.txt"), "x");
   const h = handler(new Map([["a", join(d, "a.sutra.yaml")]]), join(d, "data"));
@@ -80,6 +80,7 @@ test("preview handler serves pages, Sutra text and data; refuses path escape", (
   assert.equal(JSON.parse(h("/data/index.json")[2]).tables[0].rows, 1);
   assert.equal(h("/data/..%2Fsecret.txt")[0], 404);
   assert.equal(h("/page/zzz")[0], 404);
+  for (const u of ["/rachana/src/rachana_view.js", "/rachana/rachana.runtime.js", "/vendor/drishti-elements/3.1.0/drishti-elements.js", "/vendor/drishti-elements/3.1.0/drishti-elements.css"]) assert.equal(h(u)[0], 200, u);
   rmSync(d, { recursive: true });
 });
 
@@ -101,4 +102,21 @@ test("lib verify runs the jar's LibraryTool (needs the Java classes built)", { s
   const d = tmp();
   try { assert.equal(await main(["lib", "verify", join(d, "missing")], io().io), 1); }
   finally { delete process.env.RACHANA_CLASSPATH; rmSync(d, { recursive: true }); }
+});
+
+const examples = resolve(import.meta.dirname, "../../../../examples");
+test("lint takes --level; the examples lint clean at 1.1 and 1.2", { skip: !hasBundle && "bundle not built" }, async () => {
+  for (const lv of ["1.1", "1.2"]) assert.equal(await main(["lint", "--level", lv, join(examples, "static-sales"), join(examples, "live-orders")], io().io), 0, lv);
+  assert.equal(await main(["lint", "--level", "9.9", examples], io().io), 2);
+});
+
+test("build static-sales: the real <rachana-view>, Elements pack and runtime are in the site", { skip: !hasBundle && "bundle not built" }, async () => {
+  const d = tmp(), out = join(d, "site"), { o, io: x } = io();
+  assert.equal(await main(["build", "--src", join(examples, "static-sales"), "--out", out], x), 0);
+  assert.ok(!o.err.length, o.err.join("\n"));
+  for (const f of ["rachana/src/rachana_view.js", "rachana/src/screen.js", "rachana/src/data_client.js", "rachana/rachana.runtime.js",
+    "vendor/drishti-elements/3.1.0/drishti-elements.js", "vendor/drishti-elements/3.1.0/drishti-elements.css", "overview.html", "data/index.json"]) assert.ok(existsSync(join(out, f)), f);
+  const page = readFileSync(join(out, "overview.html"), "utf8");
+  assert.ok(page.includes('./rachana/src/rachana_view.js') && page.includes("<rachana-view") && page.includes('runtime="rachana/rachana.runtime.js"'));
+  rmSync(d, { recursive: true });
 });

@@ -5,6 +5,26 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### CLI and Python SDK, second pass (G2)
+
+- **Language level for `lint` / `check`**: the bundle's `check` already read `since` (as `open` does), so no facade change; `rachana lint`,
+  `python -m drishti_rachana lint` and `Rachana.check(level=)` take `--level` / `level` (default **1.1**; `1.2` for typed fragments and
+  libraries). `examples/static-sales` and `live-orders` lint clean at 1.1 and 1.2 (controls read `options:`, not `from:`; `regions` is
+  a `table:`).
+- **`rachana build` / `preview` use the real `<rachana-view>`**: the element, its modules, the vendored Elements pack and the runtime
+  bundle are copied into the site; `static_files_host.js` answers the Data Protocol in the page from `data/` (static-files mode); the
+  warning and the TODO are gone. Tests: node (`build` of static-sales), `test/paint_check.py` (Chromium: every page
+  paints, no console error). 
+- **Python `DataHost` and the JVM reference answer the same `protocol` cases**: `drishti_rachana.testhost` (the PROTOCOL 15 test
+  adapter over the standard library) and `protocol_check.py --python`; the host skips `protocol/forms` (Arrow, NDJSON) and `protocol/live`
+  (bridge subscriptions, filtered and conflated streams), which it does not offer, and passes 39 of the other 40 (the one case is the
+  frozen example that sorts a table without `can: sort`, which the JVM reference fails the same way). The host now enforces `can` (`rdp.query.unsupported` with `operation`), checks filter columns
+  (`rdp.column.unknown`) and operations (`rdp.query.invalid`), refuses masked columns (`rdp.forbidden`), orders by the key last with
+  empty values last, compares decimals exactly, answers `group` (count, sum, min, max, avg, distinct, totals) and sends `t: msg` frames
+  and `gap` with `recoverable: false` when there is no replay. `python/tests/test_protocol_cases.py` runs the cases.
+- The three `test_conformance.py` failures could not be reproduced on `g2/integration` (6 pass, 26 in the package); two stale
+  expectations in `test_server_adapters.py` were corrected to the spec.
+
 ### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
 
 - **Binding like a call** (SPEC 2.5, LIBRARIES 5 to 7, DECISIONS L-21): a table parameter names its local columns or a

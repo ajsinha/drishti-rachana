@@ -5,6 +5,23 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G2)
 
+### Fragments are functions (decision L-21, owner 2026-11-21), level 1.2 (G2 lane A2)
+
+- **Binding like a call** (SPEC 2.5, LIBRARIES 5 to 7, DECISIONS L-21): a table parameter names its local columns or a
+  published contract (`contract: <name>`; `contracts/<name>.json` in a library, `Library.contract`, or served by the host,
+  `FragmentResolver.contract`); the use binds it as `rows: $.t` (identity) or `{ from, columns: { <local>: <caller> } }`,
+  renamed at compile time in the panels that read it (field options, `bind`, `@.<column>`). With the caller's columns known
+  (`data:` `fields` or written rows) problems name both sides: `RCH-2114` unknown local column, `RCH-2115` required column
+  missing, `RCH-2116` unknown caller column or type misfit; `RCH-2120` advisory for a mapping never read (severity warning,
+  `Sutra.advisories()`). Every typed fragment is hermetic (`RCH-2117`).
+- **Instances and return values**: `as:` scopes ids (`<as>-<id>`); `emits: [{name, payload, doc}]` declared and checked
+  against the inner panel that raises it; the screen reads `@<as>.<event>.<field>`; `on: {<event>: {set, field}}` sets a
+  control from the event's row (`on-select`). `TypedFragment.bind`, `TypedFragment.Caller`, `SutraBlocks.Calls`.
+- **Compile result records library hashes**: `Sutra.libraries()` (`UsedLibrary`: name, exact version, SHA-384), from
+  `LibrarySet.fragments(..., Consumer<Library>)`; the `problem` case output carries `libraries` (FORMAT 5.8, schema).
+- **Conformance**: `sutra/fragments-calls` (6), `problem/fragments-calls` (11), verified; JVM and both JavaScript bundles
+  agree at 1.0, 1.1, 1.2; level-1.0 replay and the customer corpus unchanged. API additions only (`api-surface.txt`).
+
 ### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
 
 - **Typed fragments** (SPEC 2.5, LIBRARIES 4): `TypedFragment`; a fragment whose `params:` are declarations with a `type` is

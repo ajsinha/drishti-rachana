@@ -215,7 +215,8 @@ These are R-FMT and R-TONE of TRANSLATION 1.1 on their own.
 `sutra` is the Sutra text (a YAML block scalar), `file` its file name (default `case.sutra.yaml`), `files` other
 files by name for `use:` fragments: a `<name>.v<N>.fragment.yaml` (or `.block.yaml`) file is a fragment the host's
 resolver serves in place of the profile's; `rachana_libs/<library>/<path>` files are the libraries a `LibraryResolver`
-finds (one folder per library); `rachana.lock` is their lock (`problem` and `patch` cases read `files` the same way). With `given`, the ViewModel is built (TRANSLATION). `expect.viewModel` is the
+finds (one folder per library); `rachana.lock` is their lock; `contracts/<name>.json` is a published table contract the
+host serves for its fragments (LIBRARIES 5.2) (`problem` and `patch` cases read `files` the same way). With `given`, the ViewModel is built (TRANSLATION). `expect.viewModel` is the
 whole ViewModel; `expect.at` checks parts of it by JSON Pointer (section 7). Always dropped from the actual before
 writing or comparing: `timings`, `provenance.fetchedAt`, `provenance.updatedAt` (TRANSLATION 0). The ViewModel's
 schema is `spec/1/viewmodel.schema.json`; its key order is the order of output (section 8).
@@ -223,7 +224,10 @@ schema is `spec/1/viewmodel.schema.json`; its key order is the order of output (
 ### 5.8 `problem`
 
 The Sutra is compiled. `expect.ok` is `true` exactly when no problem has severity `error`. `expect.problems` is the
-**complete, ordered** list (section 6); `[]` when there are none. For every `problem` case whose actual problems carry
+**complete, ordered** list (section 6); `[]` when there are none: the errors, then the advisories (severity `warning`,
+such as `RCH-2120`). When the Sutra uses libraries (level 1.2), the actual also has `libraries`, each
+`{name, version, sha384}` sorted by name: the compile result's record of the library bytes it stands on; `expect.libraries`
+compares it whole. For every `problem` case whose actual problems carry
 a `fix`, the runner also applies every fix, compiles again and fails the case if the number of problems grew
 (SPEC 6.1); a case need not ask for this.
 

@@ -162,6 +162,18 @@ public final class TypedFragment {
         if (slots.size() > MAX_SLOTS) {
             out.add(problem(SutraBlocks.BLOCK, "fragment " + name + " has more than " + MAX_SLOTS + " slots", file, ss));
         }
+        PNode em = root.map().get("emits");
+        if (em != null && !em.isList()) {
+            out.add(problem(SutraBlocks.BLOCK, "fragment " + name + ": emits is a list of { name, payload?, doc }", file, em));
+        }
+        for (PNode e : em == null || !em.isList() ? List.<PNode>of() : em.list()) {
+            String en = e.isMap() ? text(e.map().get("name")) : null;
+            if (en == null || !NAME.matcher(en).matches() || e.map().keySet().stream().anyMatch(k -> !EVENT_KEYS.contains(k))) {
+                out.add(problem(SutraBlocks.BLOCK, "fragment " + name + ": an event is { name, payload?, doc } with a lower-case kebab name", file, e));
+            } else if (blank(text(e.map().get("doc")))) {
+                out.add(problem("RCH-2055", "fragment " + name + ": event " + en + " has a doc of one line", file, e));
+            }
+        }
         PNode doc = root.map().get("doc");
         if (doc == null || blank(text(doc.map().get("summary")))) {
             out.add(problem("RCH-2055", "fragment " + name + " has doc.summary: one line saying what it shows", file, doc == null ? root : doc));
@@ -211,9 +223,14 @@ public final class TypedFragment {
         if ("enum".equals(type) && options.isEmpty()) {
             out.add(problem(SutraBlocks.BLOCK, "parameter " + name + " of fragment " + fragment + " is an enum: it lists its options", file, d));
         }
-        List<String> columns = new ArrayList<>(m.get("columns") == null ? List.of() : m.get("columns").map().keySet());
-        if ("table".equals(kind) && columns.isEmpty()) {
-            out.add(problem(SutraBlocks.BLOCK, "table parameter " + name + " of fragment " + fragment + " names its columns (columns: { name: { type } })", file, d));
+        List<String> columns = new ArrayList<>(m.get("columns") == null || !m.get("columns").isMap() ? List.of() : m.get("columns").map().keySet());
+        String contract = text(m.get("contract"));
+        if ("table".equals(kind) && columns.isEmpty() && contract == null) {
+            out.add(problem(SutraBlocks.BLOCK, "table parameter " + name + " of fragment " + fragment + " names its columns (columns: { name: { type } }) "
+                    + "or a contract (contract: <name>)", file, d));
+        }
+        if ("table".equals(kind) && !columns.isEmpty() && contract != null) {
+            out.add(problem(SutraBlocks.BLOCK, "table parameter " + name + " of fragment " + fragment + " names its columns or a contract, not both", file, d));
         }
         Param p = new Param(name, kind, type, required, dflt, text(m.get("doc")), number(m.get("min")), number(m.get("max")), List.copyOf(options),
                 List.copyOf(columns), d);
@@ -322,13 +339,65 @@ public final class TypedFragment {
     }
 
     /**
-     * The panels one use brings: {@code with:} checked against the declarations ({@code RCH-2114}, {@code 2115}, {@code 2116}), name
-     * parameters put in as tokens, {@code arg.x} replaced by the use's expression (in parentheses inside a longer text) or by the literal,
-     * slots filled, panels whose {@code when-bound} table was not given left out. Problems go to {@code problems}; null when the use
-     * cannot be expanded.
+     * What a caller knows about its own tables (decision L-21, "fragments are functions"): the columns, each with its type, of the table an
+     * expression gives ({@code $.positions}: the {@code data:} entry's declared {@code fields} or its written rows), or null when they are
+     * not known at compile time; and the published contracts (LIBRARIES.md 5.2) a fragment's table parameter may name.
      */
+    public interface Caller {
+
+        /** The columns (name to type: {@code text}, {@code number}, {@code integer}, {@code decimal}, {@code boolean}, {@code date}, ...) of the
+         * table {@code expression} gives, or null when unknown. */
+        Map<String, String> columns(String expression);
+
+        /** The contract file (Data Protocol schema form) named {@code name} for {@code fragment}, or null. */
+        default PNode contract(SutraBlocks.Block fragment, String name) {
+            return null;
+        }
+
+        /** A caller that knows nothing: no columns, no contracts. */
+        static Caller none() {
+            return e -> null;
+        }
+    }
+
+    /**
+     * One use bound (decision L-21): the panels it brings, its public events ({@code <as>.<event>} to the panel that raises it, read by the
+     * screen as {@code @<as>.<event>}) and advisories ({@code RCH-2120}: a column mapping the fragment never reads).
+     */
+    public record Bound(List<PNode> panels, Map<String, String> events, List<SutraProblem> advisories) { }
+
+    /** A column of a table parameter: its local name, its type (EL words), whether a caller may leave it out. */
+    record Col(String name, String type, boolean optional) { }
+
+    /** Advisory: a use maps a column the fragment never reads (a warning, never refused). */
+    public static final String UNUSED_MAPPING = "RCH-2120";
+    /** The keys of a declared event. */
+    static final Set<String> EVENT_KEYS = Set.of("name", "payload", "doc");
+    /** The keys of one effect in a use's {@code on:} at this level: set a control from the event's payload. */
+    static final Set<String> EFFECT_KEYS = Set.of("set", "field");
+    /** Panel options that hold a field name of the panel's rows (renamed by a column mapping). */
+    static final Set<String> FIELD_OPTIONS = Set.of("x", "y", "label", "value", "size", "group", "open", "high", "low", "close", "volume", "date",
+            "detail", "status", "by", "across", "node", "parent", "path", "rowKey", "series", "dataset-key");
+    private static final Pattern FIELD = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+
+    /** As {@link #bind} with a caller that knows nothing; the panels alone. */
     public List<PNode> expand(PNode use, String sutraFile, List<SutraProblem> out) {
+        Bound b = bind(null, use, sutraFile, out, Caller.none());
+        return b == null ? null : b.panels();
+    }
+
+    /**
+     * The panels one use brings, bound like a call (decision L-21): {@code with:} checked against the declarations ({@code RCH-2114},
+     * {@code 2115}, {@code 2116}); value parameters' expressions and literals put in for {@code arg.x}; name parameters as tokens; a table
+     * parameter's local columns renamed to the caller's ({@code { from, columns }}, identity when not mapped) in the panels that read it;
+     * slots filled; {@code as:} scoping every id the fragment brings ({@code <as>-<id>}); {@code on:} wiring a declared event to an effect.
+     * Problems go to {@code out}; null when the use cannot be expanded.
+     *
+     * @param block the fragment's block (for its library's contracts), or null
+     */
+    public Bound bind(SutraBlocks.Block block, PNode use, String sutraFile, List<SutraProblem> out, Caller caller) {
         int before = out.size();
+        List<SutraProblem> advisories = new ArrayList<>();
         Map<String, PNode> with = use.map().get("with") == null ? Map.of() : use.map().get("with").map();
         for (Map.Entry<String, PNode> e : with.entrySet()) {
             if (!params.containsKey(e.getKey())) {
@@ -336,9 +405,26 @@ public final class TypedFragment {
                         sutraFile, e.getValue()));
             }
         }
+        PNode asNode = use.map().get("as");
+        String as = asNode == null ? null : asNode.text();
+        if (asNode != null && (as == null || !NAME.matcher(as).matches())) {
+            out.add(problem(WRONG_TYPE, "as: names this use of fragment " + name + " with a lower-case kebab word, not " + shown(asNode), sutraFile, asNode));
+            as = null;
+        }
+        Map<String, Map<String, Col>> locals = new LinkedHashMap<>();
+        for (Param p : params.values()) {
+            if ("table".equals(p.kind())) {
+                Map<String, Col> cols = tableColumns(p, block, caller, sutraFile, out);
+                if (cols != null) {
+                    locals.put(p.name(), cols);
+                }
+            }
+        }
         Map<String, String> exprs = new LinkedHashMap<>();
         Map<String, PNode> literals = new LinkedHashMap<>();
         Map<String, PNode> tokens = new LinkedHashMap<>();
+        Map<String, Map<String, String>> renames = new LinkedHashMap<>();
+        Map<String, PNode> mappedAt = new LinkedHashMap<>();
         Set<String> unbound = new LinkedHashSet<>();
         for (Param p : params.values()) {
             PNode v = with.get(p.name());
@@ -353,6 +439,14 @@ public final class TypedFragment {
                 unbound.add(p.name());
                 continue;
             }
+            if ("table".equals(p.kind()) && v.isMap()) {
+                String from = mapped(p, v, locals.get(p.name()), caller, sutraFile, out, renames);
+                if (from != null) {
+                    exprs.put(p.name(), from);
+                    mappedAt.put(p.name(), v);
+                }
+                continue;
+            }
             String wrong = literal(p, v, fromDefault);
             if (wrong != null) {
                 out.add(problem(WRONG_TYPE, "parameter " + p.name() + " of fragment " + name + " " + wrong, sutraFile, v));
@@ -363,6 +457,10 @@ public final class TypedFragment {
                 default -> {
                     if (v.value() instanceof String s && !fromDefault && !isText(p)) {
                         exprs.put(p.name(), s);
+                        if ("table".equals(p.kind())) {
+                            fit(p, s, locals.get(p.name()), Map.of(), caller, sutraFile, v, out);
+                            renames.put(p.name(), Map.of());
+                        }
                     } else {
                         literals.put(p.name(), v);
                     }
@@ -386,11 +484,16 @@ public final class TypedFragment {
             return null;
         }
         List<PNode> panels = new ArrayList<>();
+        List<Boolean> own = new ArrayList<>();
+        Map<String, Set<String>> read = new LinkedHashMap<>();
         for (PNode p : root.map().get("panels").list()) {
             if (p.isMap() && p.map().containsKey("slot") && p.map().size() == 1) {
                 PNode filled = slotted.get(p.map().get("slot").text());
                 if (filled != null) {
-                    panels.addAll(filled.list());                // the user's own panels: their context, untouched
+                    for (PNode f : filled.list()) {               // the user's own panels: their context, untouched
+                        panels.add(f);
+                        own.add(false);
+                    }
                 }
                 continue;
             }
@@ -403,9 +506,370 @@ public final class TypedFragment {
                 m.remove("when-bound");
                 p = new PNode(m, p.line(), p.column());
             }
-            panels.add(fill(p, exprs, literals, tokens, sutraFile, out));
+            PNode rowsOf = p.map().get("rows");
+            String table = rowsOf != null && rowsOf.text() != null && rowsOf.text().startsWith("arg.") ? longest(rowsOf.text().substring(4)) : null;
+            PNode filled = fill(p, exprs, literals, tokens, sutraFile, out);
+            if (table != null && rowsOf.text().length() == 4 + table.length() && renames.containsKey(table)) {
+                Set<String> r = read.computeIfAbsent(table, k -> new LinkedHashSet<>());
+                filled = rename(filled, locals.getOrDefault(table, Map.of()), renames.get(table), r, true);
+            }
+            panels.add(filled);
+            own.add(true);
         }
-        return panels;
+        renames.forEach((t, m) -> m.forEach((local, theirs) -> {
+            if (!read.getOrDefault(t, Set.of()).contains(local)) {
+                advisories.add(problem(UNUSED_MAPPING, "the use maps column " + local + " of " + t + " to " + theirs + ", and fragment " + name
+                        + " never reads " + local, sutraFile, mappedAt.get(t)));
+            }
+        }));
+        if (as != null) {
+            panels = scoped(panels, own, as);
+        }
+        String scope = as;
+        Map<String, String> events = new LinkedHashMap<>();
+        Map<String, Integer> raisedBy = new LinkedHashMap<>();
+        PNode em = root.map().get("emits");
+        for (PNode e : em == null ? List.<PNode>of() : em.list()) {
+            String ev = text(e.map().get("name"));
+            int at = -1;
+            for (int i = 0; i < panels.size(); i++) {
+                if (own.get(i) && emits(panels.get(i), ev)) {
+                    at = at == -1 ? i : -2;
+                }
+            }
+            if (at < 0) {
+                out.add(problem(SutraBlocks.BLOCK, "fragment " + name + " declares event " + ev + ", which " + (at == -1 ? "none" : "more than one")
+                        + " of its panels emits (emits: [{ name: " + ev + ", on: ... }] on one panel)", file, e));
+                continue;
+            }
+            raisedBy.put(ev, at);
+            List<String> carried = carried(panels.get(at), ev);
+            List<String> missing = payload(ev).stream().filter(x -> !carried.contains(x)).toList();
+            if (!missing.isEmpty()) {
+                out.add(problem(SutraBlocks.BLOCK, "fragment " + name + " declares event " + ev + " carrying " + String.join(", ", missing)
+                        + ", which the panel that emits it does not put in its payload", file, e));
+                continue;
+            }
+            if (scope != null) {                                // the caller reads @<as>.<event>.<payload name>: the fragment's return value
+                events.put(scope + "." + ev, panels.get(at).map().get("id").text() + "." + ev);
+            }
+        }
+        PNode on = use.map().get("on");
+        if (on != null) {
+            if (!on.isMap()) {
+                out.add(problem(WRONG_TYPE, "on: maps an event of fragment " + name + " to an effect ({ select: { set: <control>, field: <name> } })", sutraFile, on));
+            } else {
+                for (Map.Entry<String, PNode> e : on.map().entrySet()) {
+                    Integer at = raisedBy.get(e.getKey());
+                    if (at == null) {
+                        out.add(problem(UNKNOWN, "fragment " + name + " has no event '" + e.getKey() + "' (it has " + String.join(", ", declaredEvents())
+                                + ")", sutraFile, e.getValue()));
+                        continue;
+                    }
+                    PNode wired = effect(panels.get(at), e.getKey(), e.getValue(), sutraFile, out, locals, renames);
+                    if (wired != null) {
+                        panels.set(at, wired);
+                    }
+                }
+            }
+        }
+        return out.size() > before ? null : new Bound(panels, events, advisories);
+    }
+
+    /** The events it declares, in order. */
+    public List<String> declaredEvents() {
+        List<String> out = new ArrayList<>();
+        PNode em = root.map().get("emits");
+        for (PNode e : em == null || !em.isList() ? List.<PNode>of() : em.list()) {
+            if (e.isMap() && text(e.map().get("name")) != null) {
+                out.add(text(e.map().get("name")));
+            }
+        }
+        return out;
+    }
+
+    /** The local columns of table parameter {@code p}: written in the fragment, or read from its named contract. Null when not found. */
+    private Map<String, Col> tableColumns(Param p, SutraBlocks.Block block, Caller caller, String sutraFile, List<SutraProblem> out) {
+        Map<String, Col> cols = new LinkedHashMap<>();
+        PNode written = p.at().map().get("columns");
+        if (written != null && written.isMap()) {
+            written.map().forEach((c, d) -> cols.put(c, new Col(c, d.isMap() ? nz(text(d.map().get("type"))) : "", d.isMap()
+                    && Boolean.TRUE.equals(d.map().get("optional") == null ? null : d.map().get("optional").value()))));
+            return cols;
+        }
+        String contract = text(p.at().map().get("contract"));
+        PNode c = contract == null || block == null ? null : caller.contract(block, contract);
+        if (c == null || !c.isMap() || c.map().get("columns") == null || !c.map().get("columns").isList()) {
+            out.add(problem(SutraBlocks.BLOCK, "table parameter " + p.name() + " of fragment " + name + " names contract " + contract
+                    + ", which its library does not hold (contracts/" + contract + ".json)", file, p.at()));
+            return null;
+        }
+        for (PNode col : c.map().get("columns").list()) {
+            String n = text(col.map().get("name"));
+            boolean optional = col.map().get("optional") != null && Boolean.TRUE.equals(col.map().get("optional").value());
+            cols.put(n, new Col(n, elType(text(col.map().get("type"))), optional));
+        }
+        return cols;
+    }
+
+    /** A Data Protocol type word as the EL type word ({@code string} is {@code text}). */
+    static String elType(String t) {
+        return t == null ? "" : "string".equals(t) ? "text" : t;
+    }
+
+    /** A table given as {@code { from, columns }}: checked; the rename recorded; the expression giving the caller's rows returned. */
+    private String mapped(Param p, PNode v, Map<String, Col> locals, Caller caller, String sutraFile, List<SutraProblem> out,
+            Map<String, Map<String, String>> renames) {
+        int before = out.size();
+        Map<String, PNode> m = v.map();
+        for (String k : m.keySet()) {
+            if (!"from".equals(k) && !"columns".equals(k)) {
+                out.add(problem(UNKNOWN, "table parameter " + p.name() + " of fragment " + name + " is given as { from, columns }, not '" + k + "'", sutraFile, m.get(k)));
+            }
+        }
+        String from = m.get("from") == null ? null : m.get("from").text();
+        if (from == null || from.isBlank()) {
+            out.add(problem(MISSING, "table parameter " + p.name() + " of fragment " + name + " given as a mapping needs from: (the caller's table)", sutraFile, v));
+        }
+        Map<String, String> rename = new LinkedHashMap<>();
+        PNode cs = m.get("columns");
+        if (cs != null && !cs.isMap()) {
+            out.add(problem(WRONG_TYPE, "columns of " + p.name() + " maps the fragment's column names to the caller's ({ pnl: PNL_USD })", sutraFile, cs));
+        }
+        for (Map.Entry<String, PNode> e : cs == null || !cs.isMap() ? List.<Map.Entry<String, PNode>>of() : cs.map().entrySet()) {
+            String theirs = e.getValue().text();
+            if (locals != null && !locals.containsKey(e.getKey())) {
+                out.add(problem(UNKNOWN, "fragment " + name + ": table " + p.name() + " has no column '" + e.getKey() + "' (it has "
+                        + String.join(", ", locals.keySet()) + "); the use maps it to " + theirs, sutraFile, e.getValue()));
+            } else if (theirs == null || !FIELD.matcher(theirs).matches()) {
+                out.add(problem(WRONG_TYPE, "column " + e.getKey() + " of " + p.name() + " is mapped to a column name of the caller's table, not "
+                        + shown(e.getValue()), sutraFile, e.getValue()));
+            } else {
+                rename.put(e.getKey(), theirs);
+            }
+        }
+        if (out.size() > before || locals == null) {
+            return null;
+        }
+        fit(p, from, locals, rename, caller, sutraFile, v, out);
+        renames.put(p.name(), rename);
+        return out.size() > before ? null : from;
+    }
+
+    /**
+     * The caller's table against the fragment's local columns, when the caller's columns are known: each required local column present
+     * under its mapped (or its own) name, of a fitting type; a mapped caller column that the table does not have. Messages name both sides.
+     */
+    private void fit(Param p, String from, Map<String, Col> locals, Map<String, String> rename, Caller caller, String sutraFile, PNode at,
+            List<SutraProblem> out) {
+        Map<String, String> theirs = locals == null ? null : caller.columns(from.trim());
+        if (theirs == null) {
+            return;
+        }
+        for (Col c : locals.values()) {
+            String n = rename.getOrDefault(c.name(), c.name());
+            String t = theirs.get(n);
+            if (t == null && rename.containsKey(c.name())) {
+                out.add(problem(WRONG_TYPE, "column " + c.name() + " of " + p.name() + " (fragment " + name + ") is mapped to " + n + ", which "
+                        + from.trim() + " does not have (it has " + String.join(", ", theirs.keySet()) + ")", sutraFile, at));
+            } else if (t == null && !c.optional()) {
+                out.add(problem(MISSING, "fragment " + name + ": table " + p.name() + " needs column " + c.name() + (c.type().isEmpty() ? "" : " (" + c.type() + ")")
+                        + "; " + from.trim() + " has " + String.join(", ", theirs.keySet()) + " (map it: { from: " + from.trim() + ", columns: { "
+                        + c.name() + ": <column> } })", sutraFile, at));
+            } else if (t != null && !fits(c.type(), t)) {
+                out.add(problem(WRONG_TYPE, "column " + c.name() + " of " + p.name() + " (fragment " + name + ") is " + c.type() + "; " + from.trim()
+                        + "'s " + n + " is " + t, sutraFile, at));
+            }
+        }
+    }
+
+    /** Whether a caller's column type serves a local column type (the numbers serve each other; an undeclared type serves anything). */
+    static boolean fits(String local, String theirs) {
+        String l = elType(local).replace("?", "");
+        String t = elType(theirs).replace("?", "");
+        Set<String> numbers = Set.of("number", "integer", "decimal", "money");
+        return l.isEmpty() || t.isEmpty() || l.equals(t) || numbers.contains(l) && numbers.contains(t) || "datetime".equals(l) && "date".equals(t);
+    }
+
+    /** A panel with its local column names renamed to the caller's: field-name options and {@code @.<column>} in its texts. */
+    private static PNode rename(PNode n, Map<String, Col> locals, Map<String, String> rename, Set<String> read, boolean top) {
+        if (n.isMap()) {
+            Map<String, PNode> m = new LinkedHashMap<>();
+            n.map().forEach((k, v) -> {
+                if (top && FIELD_OPTIONS.contains(k) && (v.isScalar() || v.isList()) || "bind".equals(k) && v.isScalar()) {
+                    m.put(k, field(v, locals, rename, read));
+                } else {
+                    m.put(k, rename(v, locals, rename, read, false));
+                }
+            });
+            return new PNode(m, n.line(), n.column());
+        }
+        if (n.isList()) {
+            List<PNode> l = new ArrayList<>();
+            n.list().forEach(v -> l.add(rename(v, locals, rename, read, false)));
+            return new PNode(l, n.line(), n.column());
+        }
+        if (!(n.value() instanceof String s) || !s.contains("@.")) {
+            return n;
+        }
+        Matcher m = Pattern.compile("(?<![A-Za-z0-9_$@])@\\.([A-Za-z_][A-Za-z0-9_]*)").matcher(s);
+        StringBuilder sb = new StringBuilder();
+        int copied = 0;
+        while (m.find()) {
+            String c = m.group(1);
+            if (locals.containsKey(c)) {
+                read.add(c);
+            }
+            sb.append(s, copied, m.start()).append(("@." + rename.getOrDefault(c, c)));
+            copied = m.end();
+        }
+        sb.append(s, copied, s.length());
+        return new PNode(sb.toString(), n.line(), n.column());
+    }
+
+    private static PNode field(PNode v, Map<String, Col> locals, Map<String, String> rename, Set<String> read) {
+        if (v.isList()) {
+            List<PNode> l = new ArrayList<>();
+            v.list().forEach(x -> l.add(field(x, locals, rename, read)));
+            return new PNode(l, v.line(), v.column());
+        }
+        if (v.value() instanceof String s && locals.containsKey(s)) {
+            read.add(s);
+            return new PNode(rename.getOrDefault(s, s), v.line(), v.column());
+        }
+        return rename(v, locals, rename, read, false);
+    }
+
+    /** The fragment's own panels with ids scoped to the use ({@code <as>-<id>}) and their reads of each other ({@code @id}) moved with them. */
+    private static List<PNode> scoped(List<PNode> panels, List<Boolean> own, String as) {
+        Map<String, String> ids = new LinkedHashMap<>();
+        for (int i = 0; i < panels.size(); i++) {
+            PNode id = own.get(i) && panels.get(i).isMap() ? panels.get(i).map().get("id") : null;
+            if (id != null && id.text() != null) {
+                ids.put(id.text(), as + "-" + id.text());
+            }
+        }
+        List<PNode> out = new ArrayList<>();
+        for (int i = 0; i < panels.size(); i++) {
+            PNode p = panels.get(i);
+            if (!own.get(i) || !p.isMap()) {
+                out.add(p);
+                continue;
+            }
+            PNode r = refs(p, ids);
+            Map<String, PNode> m = new LinkedHashMap<>(r.map());
+            if (m.get("id") != null && ids.containsKey(m.get("id").text())) {
+                m.put("id", new PNode(ids.get(m.get("id").text()), m.get("id").line(), m.get("id").column()));
+            }
+            out.add(new PNode(m, p.line(), p.column()));
+        }
+        return out;
+    }
+
+    private static PNode refs(PNode n, Map<String, String> ids) {
+        if (n.isMap()) {
+            Map<String, PNode> m = new LinkedHashMap<>();
+            n.map().forEach((k, v) -> m.put(k, refs(v, ids)));
+            return new PNode(m, n.line(), n.column());
+        }
+        if (n.isList()) {
+            List<PNode> l = new ArrayList<>();
+            n.list().forEach(v -> l.add(refs(v, ids)));
+            return new PNode(l, n.line(), n.column());
+        }
+        if (!(n.value() instanceof String s) || s.indexOf('@') < 0) {
+            return n;
+        }
+        Matcher m = Pattern.compile("(?<![A-Za-z0-9_$@.-])@([a-z][a-z0-9-]*)(?![a-z0-9-])").matcher(s);
+        StringBuilder sb = new StringBuilder();
+        int copied = 0;
+        while (m.find()) {
+            String to = ids.get(m.group(1));
+            sb.append(s, copied, m.start()).append((to == null ? m.group() : "@" + to));
+            copied = m.end();
+        }
+        sb.append(s, copied, s.length());
+        return new PNode(sb.toString(), n.line(), n.column());
+    }
+
+    /** Whether a panel emits event {@code ev} ({@code emits: [{ name: ev, on: ... }]}). */
+    private static boolean emits(PNode panel, String ev) {
+        PNode e = panel.isMap() ? panel.map().get("emits") : null;
+        if (e == null || !e.isList()) {
+            return false;
+        }
+        return e.list().stream().anyMatch(x -> x.isMap() && ev.equals(text(x.map().get("name"))));
+    }
+
+    /**
+     * An event wired at the use to an effect: at this level the one effect Core has, setting a control from the event's row
+     * ({@code { set: <control>, field: <column> }}, the panel's {@code on-select}); the field is the fragment's local name, renamed with the
+     * table's mapping. Host actions wait for the effect list (I1).
+     */
+    private PNode effect(PNode panel, String ev, PNode v, String sutraFile, List<SutraProblem> out, Map<String, Map<String, Col>> locals,
+            Map<String, Map<String, String>> renames) {
+        if (!v.isMap() || v.map().get("set") == null || v.map().keySet().stream().anyMatch(k -> !EFFECT_KEYS.contains(k))) {
+            out.add(problem(WRONG_TYPE, "on." + ev + " of fragment " + name + " is { set: <control>, field: <name> } at this level (host actions come "
+                    + "with the effect list)", sutraFile, v));
+            return null;
+        }
+        Map<String, PNode> sel = new LinkedHashMap<>();
+        sel.put("by", v.map().get("set"));
+        PNode f = v.map().get("field");
+        if (f != null) {
+            String local = f.text();
+            List<String> payload = payload(ev);
+            if (!payload.isEmpty() && !payload.contains(local)) {
+                out.add(problem(UNKNOWN, "event " + ev + " of fragment " + name + " carries no '" + local + "' (it carries " + String.join(", ", payload) + ")",
+                        sutraFile, f));
+                return null;
+            }
+            String expr = payloadExpr(panel, ev, local);           // the row field the payload value reads (already in the caller's names)
+            Matcher plain = expr == null ? null : Pattern.compile("@\\.([A-Za-z_][A-Za-z0-9_]*)").matcher(expr.trim());
+            if (expr != null && !plain.matches()) {
+                out.add(problem(WRONG_TYPE, "on." + ev + ".field of fragment " + name + " names " + local + ", which is computed ('" + expr
+                        + "'), not a column of the row: a control is set from a column", sutraFile, f));
+                return null;
+            }
+            sel.put("field", new PNode(plain != null ? plain.group(1) : local, f.line(), f.column()));
+        }
+        Map<String, PNode> m = new LinkedHashMap<>(panel.map());
+        m.put("on-select", new PNode(sel, v.line(), v.column()));
+        return new PNode(m, panel.line(), panel.column());
+    }
+
+    /** The payload names the panel's event {@code ev} carries. */
+    private static List<String> carried(PNode panel, String ev) {
+        PNode e = panel.map().get("emits");
+        for (PNode x : e == null ? List.<PNode>of() : e.list()) {
+            if (x.isMap() && ev.equals(text(x.map().get("name"))) && x.map().get("payload") != null && x.map().get("payload").isMap()) {
+                return new ArrayList<>(x.map().get("payload").map().keySet());
+            }
+        }
+        return List.of();
+    }
+
+    /** The expression the panel's event {@code ev} puts in payload field {@code field}, or null. */
+    private static String payloadExpr(PNode panel, String ev, String field) {
+        PNode e = panel.map().get("emits");
+        for (PNode x : e == null ? List.<PNode>of() : e.list()) {
+            if (x.isMap() && ev.equals(text(x.map().get("name"))) && x.map().get("payload") != null && x.map().get("payload").isMap()) {
+                PNode v = x.map().get("payload").map().get(field);
+                return v == null ? null : v.text();
+            }
+        }
+        return null;
+    }
+
+    /** The payload names event {@code ev} declares (empty when it declares none). */
+    private List<String> payload(String ev) {
+        PNode em = root.map().get("emits");
+        for (PNode e : em == null ? List.<PNode>of() : em.list()) {
+            if (ev.equals(text(e.map().get("name"))) && e.map().get("payload") != null && e.map().get("payload").isMap()) {
+                return new ArrayList<>(e.map().get("payload").map().keySet());
+            }
+        }
+        return List.of();
     }
 
     private PNode fill(PNode n, Map<String, String> exprs, Map<String, PNode> literals, Map<String, PNode> tokens, String sutraFile, List<SutraProblem> out) {
@@ -508,7 +972,7 @@ public final class TypedFragment {
             }
             case "table" -> {
                 if (v.isMap()) {
-                    return "is an expression giving rows; a column mapping ({ from, columns }) is not in this level: shape the table upstream";
+                    return isDefault ? "is a default: a table parameter's default is an expression giving rows" : null;
                 }
                 return x instanceof String || x == null && !isDefault ? null : "is an expression giving rows, not " + shown(v);
             }

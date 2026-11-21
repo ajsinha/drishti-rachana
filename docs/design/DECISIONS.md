@@ -226,6 +226,20 @@ waits for level 1.1), so the decimals are the profile's. Changed answers:
 | G1-3 | The block library is per instance (`BlockLibrary`, F4): Core alone has no block; a host's library reaches the parser through its profile. The customer corpus is compiled on Core by default with the conformance suite's `drishti` profile (F1); the corpus's ViewModels (`binds/`) are recorded later, before G4 (F13) |
 | G1-4 | TeaVM 0.16.0's precise dependency analysis merges type-set domains in an order that varies between runs, and some orders lose types (the runtime bundle at `52e112f`: no `Boolean` reached `Plain.asBoolean`, named formats failed; gate re-check R1). The build carries a second patched TeaVM file, `PreciseDependencyAnalyzer` (Apache-2.0, `java/rachana-js/src/build/java`): no domain merging; the bundles are the same on every build. `tools/js/build_js.py` runs the conformance suite on both bundles at every level after each build and fails on any error, verified failing case, or runtime answer that differs from the tools bundle's |
 
+### L-21: fragments are functions (owner, 2026-11-21)
+
+"Fragments should behave like functions. Outside callers supply data and attribute names, which map to whatever local names
+the fragment has." The governing rule of the typed form (LIBRARIES 4 to 7; SPEC 2.5, level 1.2):
+
+| # | Rule | As built |
+|---|---|---|
+| 1 | A fragment declares its **local names**: parameters, table parameters and each table's local columns (written, or a published contract); its body uses only those | `columns:` or `contract:` (`contracts/<name>.json`, Data Protocol schema form) on a table parameter |
+| 2 | The caller **binds** them at the use like named arguments: value ← expression or literal; table ← the caller's table; each local column ← the caller's column, identity when the names already match | `with: { rows: { from: $.positions, columns: { amount: MTM_USD, desk: BOOK_DESK } } }`, or `rows: $.t` |
+| 3 | The mapping is resolved at **compile time**: a rename in the expanded Sutra, so no run-time cost and the plan pushes down the caller's real names | field-name options, `bind:` and `@.<column>` of the panels that read the table are renamed; a bare name or a column named as text (`sum(t, 'amount')`) is not, so a fragment reads columns as `@.<name>` or by a field option |
+| 4 | **Hermetic**: no reading of the caller's screen except through parameters; events are the fragment's return values, which the caller names (`as:`) and wires (`on:`) | `RCH-2117` for every typed fragment; `emits: [{ name, payload, doc }]` declared, raised by one inner panel; the caller reads `@<as>.<event>.<payload name>`; `on: { <event>: { set: <control>, field: <name> } }` (Core's one effect; host actions wait for I1) |
+| 5 | Problems at the call site name **both sides** | unknown local column `RCH-2114`; required column missing `RCH-2115`; unknown caller column or type mismatch `RCH-2116`; a mapping the fragment never reads: advisory `RCH-2120` (severity warning) |
+| 6 | Two uses with different mappings are **two instances** | `as: <name>` scopes every id the fragment brings (`<as>-<id>`, a dot is not an id character); without `as:` a second use collides (`RCH-2024`) |
+
 ### G2 mock-up choices (lead, under the owner's delegation, 2026-11-21)
 
 The owner delegated mock-up choices to the lead's recommendation; the alternatives stay in docs/mockups/g2/ so the owner can override.

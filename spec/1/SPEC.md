@@ -205,7 +205,11 @@ function, REST paging or a topic: a host exposes those as named tables.
   `record{…}`, `T?`): written at the use as an expression in the user's context, read inside as `arg.<name>`; a YAML
   number or `true`/`false` at the use is a literal checked against the type, `min` and `max`; a `text` parameter takes its
   text as written; `arg.x` as a whole value becomes the expression or literal itself, inside a longer expression or
-  template the expression in parentheses or the literal as EL text. **table** (`type: table`, `columns:`, `optional`):
+  template the expression in parentheses or the literal as EL text. A **function** value `fn(T, …) -> U` (one name or
+  more; X13) is written at the use as a lambda in the user's context, `lambda x: x / 1000`, with the type's count of names
+  and a body that reads its names and the user's screen but not `@`, `^` or `#index` (`RCH-2116`); inside, `arg.f(x)`
+  calls it (the expression is wrapped in `let(fn_f = <lambda>, …)`) and `arg.f` as a whole argument of `map`, `sort`,
+  `reduce` or `group` is the lambda itself. **table** (`type: table`, `columns:`, `optional`):
   an expression giving rows; a panel with `when-bound: <param>` is left out when an optional table is not given.
   **name** (`id`, `format`, `tone`, `icon`, `variant`, `area`, `palette`, `key`, `enum` with `options`, `columns`):
   fixed at compile time and put in as a checked token where the fragment writes `%{name}` (only name parameters may be
@@ -230,8 +234,8 @@ function, REST paging or a topic: a host exposes those as named tables.
   `emits: [{name, payload, doc}]` declares the events the fragment returns, each raised by one inner panel's `emits`
   with that payload; the screen reads them as `@<as>.<event>.<field>`; `on: {<event>: {set: <control>, field: <name>}}`
   sets a control from the event's row. A compile result lists the libraries it was built from with their exact version
-  and SHA-384 (`Sutra.libraries()`). Not yet at this level: private `state`, `let`, `outputs`, overlays, `fn` parameters,
-  host actions in `on:` (they arrive with S1, S2, I1, L2 and X13).
+  and SHA-384 (`Sutra.libraries()`). Not yet at this level: private `state`, `let`, `outputs`, overlays,
+  host actions in `on:` (they arrive with S1, S2, I1 and L2).
 - **Libraries** [since 1.2, X42; LIBRARIES 3, 7, 9 to 12]: `libraries: [demo@1]` names each library and its major;
   `use: demo/figure@1` uses a library's fragment (the major is required); `use: demo@1/figure@1` (the long form) is
   accepted without a `libraries:` key. Unqualified names and `<pack>/<name>@N` of the host's resolver keep their meaning.

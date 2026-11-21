@@ -19,6 +19,14 @@ Entries are written per release; the regime's unreleased work is listed after th
   unsaved changes) under a command bar; the form inserts a `use:` block with a column mapping; local save. The AI prompt is a disabled
   placeholder. Built from Drishti Elements 3.1.0 widgets only; `<rachana-view>` takes a `files` property (the libraries). Vendored js-yaml 4.1.0.
 
+### Typed fragments, the gaps the core library found (G2 lane A6)
+
+- **Renames over derived rows** (L-21, never silent): a panel whose `rows` is the table parameter filtered, sorted, limited or piped
+  (`take(sort(arg.rows, lambda r: -r.amount), arg.top)`, `arg.rows[?@.amount > 0] |> sort(...)`) has its field-name options and
+  `bind`s renamed to the caller's columns (they were left as written, with the advisory `RCH-2120`); over `map(arg.rows, {k: ...})`
+  the panel reads the fixed names; a local column named over rows derived any other way is `RCH-2121`. `FragmentColumns.rowsOf`
+  (API addition). Suites `sutra/fragments-gaps`, `problem/fragments-gaps`.
+
 ### Named arguments by the catalogue; stable wire keys; Sutra let and functions, library functions (G2 lane A4)
 
 - **X41 + S2 + X42, level 1.2** (SPEC 2.7): a Sutra's `let:` (named values, each reading the ones before it, no current

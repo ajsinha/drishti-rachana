@@ -278,6 +278,7 @@ class public static final record com.ash.rachana.el.Expr$SutraLet
 class public static final record com.ash.rachana.el.Expr$Ternary
 class public static final record com.ash.rachana.el.Expr$UserCall
 class public static final record com.ash.rachana.el.FragmentColumns$ColumnParam
+class public static final record com.ash.rachana.el.FragmentColumns$Rows
 class public static final record com.ash.rachana.el.FunctionProvider$Group
 class public static final record com.ash.rachana.el.FunctionProvider$Provided
 class public static final record com.ash.rachana.el.Functions$AggregateCall
@@ -1670,11 +1671,14 @@ com.ash.rachana.el.FormRules :: public static java.math.BigDecimal com.ash.racha
 com.ash.rachana.el.FormRules$Compiled :: public java.lang.Object com.ash.rachana.el.FormRules$Compiled.eval(java.util.Map<java.lang.String, java.lang.Object>,java.time.LocalDate)
 com.ash.rachana.el.FormRules$Compiled :: public java.lang.String com.ash.rachana.el.FormRules$Compiled.text()
 com.ash.rachana.el.FormRules$Compiled :: public void com.ash.rachana.el.FormRules$Compiled.names(java.util.Set<java.lang.String>)
+com.ash.rachana.el.FragmentColumns :: public static boolean com.ash.rachana.el.FragmentColumns.unfollowed(java.lang.String)
+com.ash.rachana.el.FragmentColumns :: public static com.ash.rachana.el.FragmentColumns$Rows com.ash.rachana.el.FragmentColumns.rowsOf(java.lang.String,com.ash.rachana.el.FragmentColumns$Tables)
 com.ash.rachana.el.FragmentColumns :: public static final java.lang.String com.ash.rachana.el.FragmentColumns.CODE
 com.ash.rachana.el.FragmentColumns :: public static final java.util.List<com.ash.rachana.el.FragmentColumns$ColumnParam> com.ash.rachana.el.FragmentColumns.COLUMN_PARAMS
 com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.parts(java.lang.String,java.util.function.UnaryOperator<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.rename(java.lang.String,java.lang.String,boolean,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
 com.ash.rachana.el.FragmentColumns :: public static java.lang.String com.ash.rachana.el.FragmentColumns.template(java.lang.String,java.lang.String,com.ash.rachana.el.FragmentColumns$Tables,java.util.List<java.lang.String>)
+com.ash.rachana.el.FragmentColumns :: public static java.util.List<java.lang.String> com.ash.rachana.el.FragmentColumns.unfollowedTables(java.lang.String)
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public boolean com.ash.rachana.el.FragmentColumns$ColumnParam.textOnly()
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public com.ash.rachana.el.FragmentColumns$ColumnParam(java.lang.String,int,java.lang.String,boolean)
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public final boolean com.ash.rachana.el.FragmentColumns$ColumnParam.equals(java.lang.Object)
@@ -1683,6 +1687,14 @@ com.ash.rachana.el.FragmentColumns$ColumnParam :: public final java.lang.String 
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public int com.ash.rachana.el.FragmentColumns$ColumnParam.place()
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public java.lang.String com.ash.rachana.el.FragmentColumns$ColumnParam.function()
 com.ash.rachana.el.FragmentColumns$ColumnParam :: public java.lang.String com.ash.rachana.el.FragmentColumns$ColumnParam.name()
+com.ash.rachana.el.FragmentColumns$Rows :: public com.ash.rachana.el.FragmentColumns$Rows(java.lang.String,java.util.List<java.lang.String>,java.util.List<java.lang.String>)
+com.ash.rachana.el.FragmentColumns$Rows :: public final boolean com.ash.rachana.el.FragmentColumns$Rows.equals(java.lang.Object)
+com.ash.rachana.el.FragmentColumns$Rows :: public final int com.ash.rachana.el.FragmentColumns$Rows.hashCode()
+com.ash.rachana.el.FragmentColumns$Rows :: public final java.lang.String com.ash.rachana.el.FragmentColumns$Rows.toString()
+com.ash.rachana.el.FragmentColumns$Rows :: public java.lang.String com.ash.rachana.el.FragmentColumns$Rows.row(java.lang.String)
+com.ash.rachana.el.FragmentColumns$Rows :: public java.lang.String com.ash.rachana.el.FragmentColumns$Rows.table()
+com.ash.rachana.el.FragmentColumns$Rows :: public java.util.List<java.lang.String> com.ash.rachana.el.FragmentColumns$Rows.derived()
+com.ash.rachana.el.FragmentColumns$Rows :: public java.util.List<java.lang.String> com.ash.rachana.el.FragmentColumns$Rows.fields()
 com.ash.rachana.el.FragmentColumns$Tables :: public abstract java.lang.String com.ash.rachana.el.FragmentColumns$Tables.rename(java.lang.String,java.lang.String)
 com.ash.rachana.el.FragmentColumns$Tables :: public abstract java.lang.String com.ash.rachana.el.FragmentColumns$Tables.table(java.lang.String)
 com.ash.rachana.el.FragmentColumns$Tables :: public abstract java.util.List<java.lang.String> com.ash.rachana.el.FragmentColumns$Tables.tableNames()

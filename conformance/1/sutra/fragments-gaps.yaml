@@ -1,0 +1,62 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/fragments-gaps
+since: "1.2"
+profile: core
+verified: true
+description: "Typed fragments, the gaps the core library found (G2 lane A6): renames over derived rows, list<record> and record parameters, dynamic text parameters, events beyond rows and bars; level 1.2."
+cases:
+
+  - id: rename-reaches-sorted-and-limited-rows
+    kind: sutra
+    source: L-21 (3), never silent; core library finding (ranked-bars)
+    files: &ranked
+      top-desks.v1.fragment.yaml: |
+        rachana: 1
+        fragment: top-desks
+        version: 1
+        doc:
+          summary: The largest desks as bars, and the ones over a floor as a table.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+          top: { type: integer, default: 2, doc: How many bars }
+        panels:
+          - id: bars
+            kind: hbar
+            rows: "take(sort(arg.rows, lambda r: -r.amount), arg.top)"
+            label: desk
+            value: amount
+            fmt: amount0
+          - id: over
+            kind: table
+            rows: "arg.rows[?@.amount > 900] |> sort(lambda r: r.desk)"
+            columns: [ { label: Desk, bind: desk }, { label: Amount, bind: "@.amount", fmt: amount0 } ]
+          - id: fixed
+            kind: hbar
+            rows: "map(arg.rows, {label: @.desk + '!', value: @.amount / 100})"
+            label: label
+            value: value
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 }, { BOOK_DESK: Rates, MTM_USD: 800 }, { BOOK_DESK: Credit, MTM_USD: 2000 } ] }
+      panels:
+        - use: top-desks@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      at:
+        /panels/0/data/bars/0/label: Credit
+        /panels/0/data/bars/1/label: FX
+        /panels/0/data/bars/1/text: "1,200"
+        /panels/1/data/rows/0/cells/0/text: Credit
+        /panels/1/data/rows/1/cells/1/text: "1,200"
+        /panels/2/data/bars/2/label: Credit!
+        /panels/2/data/bars/2/value: 20

@@ -526,12 +526,11 @@ public final class TypedFragment {
                 m.remove("when-bound");
                 p = new PNode(m, p.line(), p.column());
             }
-            PNode rowsOf = p.map().get("rows");
-            String table = rowsOf != null && rowsOf.text() != null && rowsOf.text().startsWith("arg.") ? longest(rowsOf.text().substring(4)) : null;
-            if (table != null && (rowsOf.text().length() != 4 + table.length() || !locals.containsKey(table))) {
-                table = null;
-            }
             Columns cols = new Columns(locals, renames, read);
+            PNode rowsOf = p.map().get("rows");             // the rows the panel reads: a table's own (renamed), fixed fields, or refused
+            com.ash.rachana.el.FragmentColumns.Rows over = rowsOf == null || rowsOf.text() == null ? null
+                    : com.ash.rachana.el.FragmentColumns.rowsOf(rowsOf.text(), cols);
+            String table = over == null ? null : over.row(rowsOf.text().trim());
             p = columns(p, table, SutraExpressions.expressionOptions(text(p.map().get("kind"))), true, false, cols, out);
             PNode filled = fill(p, exprs, literals, tokens, sutraFile, out);
             panels.add(filled);
@@ -793,7 +792,7 @@ public final class TypedFragment {
 
     /** {@code @.<column>} renamed in a text that is no expression (read as text, the rule as written before the pass). */
     private static String atColumns(String s, String table, Columns cols) {
-        if (!s.contains("@.")) {
+        if (!s.contains("@.") || cols.columns(table) == null) {
             return s;
         }
         Matcher m = Pattern.compile("(?<![A-Za-z0-9_$@])@\\.([A-Za-z_][A-Za-z0-9_]*)").matcher(s);
@@ -818,7 +817,17 @@ public final class TypedFragment {
             v.list().forEach(x -> l.add(field(x, table, expr, cols, out)));
             return new PNode(l, v.line(), v.column());
         }
-        if (v.value() instanceof String s && cols.columns(table).contains(s)) {
+        if (com.ash.rachana.el.FragmentColumns.unfollowed(table)) {       // rows derived where the mapping cannot follow: never silent
+            for (String t : com.ash.rachana.el.FragmentColumns.unfollowedTables(table)) {
+                if (v.value() instanceof String s && cols.columns(t) != null && cols.columns(t).contains(s)) {
+                    out.add(problem(COLUMN_TEXT, "fragment " + name + " names column " + s + " of table " + t + " over rows derived from it that the "
+                            + "caller's mapping cannot follow ('" + table.substring(table.indexOf('?', 1) + 1) + "'): read the table's own rows"
+                            + " (arg." + t + ", filtered or through sort, take, drop, unique), or reshape them to fixed names (map(arg." + t
+                            + ", {label: @." + s + "}))", file, v));
+                    return v;
+                }
+            }
+        } else if (v.value() instanceof String s && cols.columns(table).contains(s)) {
             cols.read(table, s);
             return new PNode(cols.rename(table, s), v.line(), v.column());
         }

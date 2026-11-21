@@ -1,0 +1,50 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/fragments-gaps
+since: "1.2"
+profile: core
+verified: true
+description: "Typed fragments, the gaps the core library found (G2 lane A6): problems of renames over derived rows, list<record> and record parameters, dynamic text parameters and events beyond rows and bars; level 1.2."
+cases:
+
+  - id: field-option-over-rows-the-mapping-cannot-follow
+    kind: problem
+    source: L-21 (3), never silent (RCH-2121)
+    files:
+      grouped.v1.fragment.yaml: |
+        rachana: 1
+        fragment: grouped
+        version: 1
+        doc:
+          summary: Desks as bars over rows the fragment reshapes.
+        params:
+          rows:
+            type: table
+            required: true
+            doc: One row per desk
+            columns:
+              desk: { type: text, doc: The desk }
+              amount: { type: number, doc: The amount }
+        panels:
+          - { id: bars, kind: hbar, rows: "map(arg.rows, @)", label: desk, value: amount }
+    sutra: |
+      rachana: 1
+      sutra: gaps-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        positions: { rows: [ { BOOK_DESK: FX, MTM_USD: 1200 } ] }
+      panels:
+        - use: grouped@1
+          with: { rows: { from: $.positions, columns: { desk: BOOK_DESK, amount: MTM_USD } } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2121
+        severity: error
+        message: "fragment grouped names column desk of table rows over rows derived from it that the caller's mapping cannot follow ('map(arg.rows, @)'): read the table's own rows (arg.rows, filtered or through sort, take, drop, unique), or reshape them to fixed names (map(arg.rows, {label: @.desk}))"
+        range: { start: { line: 15, column: 62 } }
+      - code: RCH-2121
+        severity: error
+        message: "fragment grouped names column amount of table rows over rows derived from it that the caller's mapping cannot follow ('map(arg.rows, @)'): read the table's own rows (arg.rows, filtered or through sort, take, drop, unique), or reshape them to fixed names (map(arg.rows, {label: @.amount}))"
+        range: { start: { line: 15, column: 75 } }

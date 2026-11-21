@@ -60,6 +60,9 @@ Entries are written per release; the regime's unreleased work is listed after th
   conflated message's `first`. Specification additions: PROTOCOL 8.2 (the POST form), 8.4 (`first`), 12 (`sub.conflate`, `msg.sub`,
   `msg.first`, the `sub` answer), 15; `bridge.json`, `patch.json`. Cases `protocol/live` (8); tests `SubscriptionTest`, the Node bridge
   test.
+- **Chart panels in `<rachana-view>`**: the vendored Elements 3.1.0 pack now has `drishti-chart` (with `drishti-inputs`, Apache
+  ECharts in the script, and its run-time files under `vendor/`), packed from the `v3.1.0` tag with its SHA-384 manifest. The browser
+  test's Sutra has a line panel; `runners/view_browser.py` passes in Chromium 156, Firefox 157 and WebKit 27.2 (Playwright 1.64.0).
 
 ### Language level 1.2: typed fragments (C1) and libraries (X42), pulled forward by decision L-19
 

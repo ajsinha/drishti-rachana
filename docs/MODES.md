@@ -59,7 +59,7 @@ rachana build        # writes ./site: HTML, the painter, the data
 A web app you already have draws a Sutra with one element and reads its tables from its own Data Protocol host
 ([spec/1/data-protocol](../spec/1/data-protocol/PROTOCOL.md)). The element compiles and binds the Sutra in the page with the
 runtime bundle (`rachana.runtime.js`) and paints it with Drishti Elements' painter (`<elements-view>`, Elements 3.1.0, vendored under
-`js/vendor/drishti-elements/3.1.0`, never from a CDN):
+`js/vendor/drishti-elements/3.1.0`, never from a CDN; the pack has `drishti-chart` and its engine, so chart panels draw):
 
 ```html
 <link rel="stylesheet" href="/vendor/drishti-elements/3.1.0/drishti-elements.css">

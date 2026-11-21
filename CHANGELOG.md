@@ -5,6 +5,8 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Elements 3.2.0 vendored** (drishti-elements commit 787f97d, label `3.2.0`): `js/vendor/drishti-elements/3.2.0/` replaces the `3.2.0-dev+a40ca7e` folder (SHA-384 manifest; `ELEMENTS_VERSION`, the server pom, the Python assets, Studio and the docs name it); the pack's `data/formats.yaml` and `world-regions.yaml` are the bundled ones.
+
 - **The expression language's aggregates follow the host's on decimals** (lead decision L-3; SPEC 4.16 rule 7, PROTOCOL 3.1;
   conformance/1/VERIFIED.md). From level 1.1 `avg` over integers and decimals is the exact sum divided as `/` divides (decimal128, 34
   digits half to even, no trailing zeros: `avg([1, 2, 2])` → `1.666666666666666666666666666666667`), the digits a host gives for a

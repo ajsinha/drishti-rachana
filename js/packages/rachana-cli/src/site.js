@@ -11,11 +11,11 @@ import { distDir } from "./bundle.js";
 export const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-export const ELEMENTS_VERSION = "3.2.0-dev+a40ca7e";
+export const ELEMENTS_VERSION = "3.2.0";
 const ELEMENTS_URL = `vendor/drishti-elements/${ELEMENTS_VERSION}`;
 
 /** The real <rachana-view> and what it loads, as [site path, source file]: the element and its modules (js/packages/rachana/src),
- * the vendored Elements pack (js/vendor/drishti-elements/3.2.0-dev+a40ca7e) and the runtime bundle (dist, built by tools/js/build_js.py). */
+ * the vendored Elements pack (js/vendor/drishti-elements/3.2.0) and the runtime bundle (dist, built by tools/js/build_js.py). */
 export function siteAssets() {
   const src = join(HERE, "..", "..", "rachana", "src"), vendor = join(HERE, "..", "..", "..", "vendor", "drishti-elements", ELEMENTS_VERSION);
   const list = [];

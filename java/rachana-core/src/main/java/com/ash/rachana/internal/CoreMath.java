@@ -27,11 +27,11 @@ public final class CoreMath {
     // ------------------------------------------------------------------ bit views
 
     private static int hi(double x) {
-        return (int) (Double.doubleToRawLongBits(x) >>> 32);
+        return Bits.hi(x);
     }
 
     private static int lo(double x) {
-        return (int) Double.doubleToRawLongBits(x);
+        return Bits.lo(x);
     }
 
     private static double withHi(double x, int hi) {
@@ -43,11 +43,11 @@ public final class CoreMath {
     }
 
     private static double fromWords(int hi, int lo) {
-        return Double.longBitsToDouble(((long) hi << 32) | (lo & 0xffffffffL));
+        return Bits.fromWords(hi, lo);
     }
 
     private static double copySign(double magnitude, double sign) {
-        return (Double.doubleToRawLongBits(sign) < 0) == (Double.doubleToRawLongBits(magnitude) < 0) ? magnitude : -magnitude;
+        return (hi(sign) < 0) == (hi(magnitude) < 0) ? magnitude : -magnitude;
     }
 
     private static final double ONE = 1.0;
@@ -106,8 +106,16 @@ public final class CoreMath {
 
     /** Java's {@code (int) x}: truncates toward zero, saturates, NaN gives 0. */
     public static int toInt(double x) {
-        long v = toLong(x);
-        return v > Integer.MAX_VALUE ? Integer.MAX_VALUE : v < Integer.MIN_VALUE ? Integer.MIN_VALUE : (int) v;
+        if (x != x) {
+            return 0;
+        }
+        if (x >= 2147483647.0) {
+            return Integer.MAX_VALUE;
+        }
+        if (x <= -2147483648.0) {
+            return Integer.MIN_VALUE;
+        }
+        return (int) x;                                  // in range: truncation toward zero on every runtime, no long
     }
 
     // ------------------------------------------------------------------ scalbn

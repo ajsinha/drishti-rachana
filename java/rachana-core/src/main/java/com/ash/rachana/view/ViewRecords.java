@@ -147,6 +147,14 @@ final class ViewRecords {
                 ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
                 yield m;
             }
+            case PanelData.FormPanel r -> {
+                Map<String, Object> m = new LinkedHashMap<>();
+                ViewJson.put(m, "values", r.values(), Rule.ALWAYS);
+                ViewJson.put(m, "submitLabel", r.submitLabel(), Rule.NON_NULL);
+                ViewJson.put(m, "cancelLabel", r.cancelLabel(), Rule.NON_NULL);
+                ViewJson.put(m, "on", r.on(), Rule.NON_EMPTY);
+                yield m;
+            }
             case PanelData.Gauge r -> {
                 Map<String, Object> m = new LinkedHashMap<>();
                 ViewJson.put(m, "value", r.value(), Rule.ALWAYS);
@@ -635,6 +643,7 @@ final class ViewRecords {
                 ViewJson.put(m, "form", r.form(), Rule.NON_NULL);
                 ViewJson.put(m, "provenance", r.provenance(), Rule.NON_NULL);
                 ViewJson.put(m, "compute", r.compute(), Rule.NON_NULL);
+                ViewJson.put(m, "actions", r.actions(), Rule.NON_NULL);
                 yield m;
             }
             case ViewModel.Provenance r -> {

@@ -1,0 +1,122 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/actions-forms
+since: "1.2"
+profile: core
+verified: true
+description: "What the standalone form panel (kind form) and a panel's actions: refuse (level 1.2)."
+cases:
+
+  - id: a-form-panel-needs-its-form
+    kind: problem
+    source: "SUTRA_EXPANSION 3.6 (form panel)"
+    sutra: |
+      rachana: 1
+      sutra: form-demo
+      version: 1
+      match: { kind: order }
+      title: { id: "'T'" }
+      panels:
+        - { id: ticket, kind: form, submitLabel: Send }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2022, message: "'form' panel 'ticket' needs option 'form' (its fields)" } ]
+
+  - id: a-form-panel-edits-no-table
+    kind: problem
+    source: "SUTRA_EXPANSION 3.6 (form panel)"
+    sutra: |
+      rachana: 1
+      sutra: form-demo
+      version: 1
+      match: { kind: order }
+      title: { id: "'T'" }
+      panels:
+        - id: ticket
+          kind: form
+          initial: { qty: 1, size: 2 }
+          form:
+            key: qty
+            edit: beside
+            fields: [ { id: qty, label: Qty, type: number } ]
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2058, message: "a form panel's form is the panel itself: it takes no 'key' (that edits a table's rows)" }
+        - { code: RCH-2058, message: "a form panel's form is the panel itself: it takes no 'edit' (that edits a table's rows)" }
+        - { code: RCH-2029, message: "initial names 'size', which is not a field of the form (qty)" }
+
+  - id: submit-is-a-form-panels-trigger
+    kind: problem
+    source: "SUTRA_EXPANSION I1"
+    sutra: |
+      rachana: 1
+      sutra: form-demo
+      version: 1
+      match: { kind: order }
+      title: { id: "'T'" }
+      data:
+        orders: { rows: [ { id: A } ] }
+      state:
+        order: { type: text, default: A }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            submit: [ { clear: order } ]
+            row-click: [ { set: { state: order, to: event.id } } ]
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2023, message: "'table' panels do not fire submit (submit: form)" }
+        - { code: RCH-2012, messageStart: "event values are read by the effects of submit and cancel" }
+
+  - id: an-actions-wrong-shapes
+    kind: problem
+    source: "SUTRA_EXPANSION I1 (actions)"
+    sutra: |
+      rachana: 1
+      sutra: form-demo
+      version: 1
+      match: { kind: order }
+      title: { id: "'T'" }
+      state:
+        order: { type: text, default: A }
+      controls:
+        - { id: region, kind: dropdown, options: [North, South] }
+      panels:
+        - id: m
+          kind: metric
+          value: "1"
+          actions:
+            - { label: One, do: [ { set: region } ] }
+            - { label: Two, color: red, do: [ { clear: order } ] }
+            - { id: x, label: Three, do: [] }
+            - { id: x, do: [ { clear: order } ] }
+            - { label: Five, tone: loud, do: [ { clear: order } ] }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2012, message: "an action's set writes a state: set: { state: <id>, to: <expression> }" }
+        - { code: RCH-2011, messageStart: "unknown key 'color' in an action" }
+        - { code: RCH-2012, message: "an action's do is a list of effects, run in order" }
+        - { code: RCH-2012, messageStart: "an action needs a label" }
+        - { code: RCH-2020, message: "an action's tone is one of ok, warn, bad, accent" }
+
+  - id: an-action-toggles-a-boolean
+    kind: problem
+    source: "SUTRA_EXPANSION I1 (toggle)"
+    sutra: |
+      rachana: 1
+      sutra: form-demo
+      version: 1
+      match: { kind: order }
+      title: { id: "'T'" }
+      state:
+        order: { type: text, default: A }
+      panels:
+        - { id: m, kind: metric, value: "1", actions: [ { label: Six, do: [ { toggle: order } ] } ] }
+    expect:
+      ok: false
+      problems: [ { code: RCH-2020, message: "panel 'm' toggles state 'order', which is not a boolean" } ]

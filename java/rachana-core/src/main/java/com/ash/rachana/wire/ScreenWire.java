@@ -318,6 +318,60 @@ public final class ScreenWire {
         return new Result(sel, panels, children(after, panelId), cleared);
     }
 
+    /**
+     * What a sent form did (level 1.2, a {@code form} panel): its problems (each check of the form's fields and rules that fails, and a value
+     * for no field of it; an error refuses the form and nothing runs) and the effects run, in order, the submitted values filled in where
+     * an effect reads them ({@code event}): the state writes go into the next bind request; {@code notify} and {@code host} are the host's.
+     */
+    public record Submitted(List<com.ash.rachana.model.Form.Issue> problems, List<Map<String, Object>> effects) {
+        /** Whether the form was refused (an error among the problems): then no effect ran. */
+        public boolean refused() {
+            return problems.stream().anyMatch(com.ash.rachana.model.Form.Issue::error);
+        }
+    }
+
+    /**
+     * A form panel's {@code submit} or {@code cancel} with the values the viewer entered (field id to value, as JSON reads them): a submit
+     * is checked first (the form's fields and rules, as {@code Form.check}); a refused one runs nothing; else the trigger's effects (the
+     * panel's {@code on:}, bound as the viewer) run with {@code event} the values.
+     *
+     * @throws RachanaException {@code RCH-5001} for a panel that is not a form or a trigger other than submit and cancel, {@code RCH-5002}
+     *     for a panel the viewer may not read
+     */
+    public Submitted submit(Screen s, String panelId, String trigger, Map<String, Object> values) {
+        return com.ash.rachana.el.Declarations.within(s.sutra().declarations(), () -> submitDeclared(s, panelId, trigger, values));
+    }
+
+    private Submitted submitDeclared(Screen s, String panelId, String trigger, Map<String, Object> values) {
+        Panel p = node(s, panelId).panel();
+        if (p.kind() != PanelKind.FORM || p.form().isEmpty()) {
+            throw new RachanaException(RachanaCode.BAD_REQUEST, "panel " + panelId + " is not a form");
+        }
+        if (!com.ash.rachana.model.Effects.AT_FIRE.contains(trigger)) {
+            throw new RachanaException(RachanaCode.BAD_REQUEST, "a form is sent with submit or cancel, not '" + trigger + "'");
+        }
+        PanelView v = bind(s, p);
+        if (v.denied() != null) {
+            throw new RachanaException(RachanaCode.FORBIDDEN, "panel " + panelId + ": " + v.denied());
+        }
+        Map<String, Object> given = values == null ? Map.of() : values;
+        com.ash.rachana.model.Form f = p.form().get();
+        List<com.ash.rachana.model.Form.Issue> problems = new ArrayList<>();
+        if ("submit".equals(trigger)) {
+            given.keySet().stream().filter(k -> f.field(k).isEmpty())
+                    .forEach(k -> problems.add(new com.ash.rachana.model.Form.Issue(k, "the form has no field '" + k + "'", "error")));
+            Set<String> all = new LinkedHashSet<>();
+            f.fields().forEach(x -> all.add(x.id()));
+            problems.addAll(f.check(given, all, s.asOf() == null ? java.time.LocalDate.now(java.time.ZoneOffset.UTC)
+                    : s.asOf().dateOr(java.time.LocalDate.now(java.time.ZoneOffset.UTC))));
+            if (problems.stream().anyMatch(com.ash.rachana.model.Form.Issue::error)) {
+                return new Submitted(problems, List.of());
+            }
+        }
+        Object list = v.data() instanceof com.ash.rachana.view.PanelData.FormPanel fp && fp.on() != null ? fp.on().get(trigger) : null;
+        return new Submitted(problems, com.ash.rachana.control.Fire.run(list, new LinkedHashMap<>(), given));
+    }
+
     /** The selection a click makes, evaluated as the viewer (seen) and as stored (raw, for following it). */
     Selection click(Screen s, String panelId, String event, int row) {
         SutraWiring.Node n = node(s, panelId);

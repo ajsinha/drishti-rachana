@@ -88,6 +88,7 @@ codes:
 - {code: "RCH-2118", profile: core, since: "1.2", raisedBy: [parse.TypedFragment]}
 - {code: "RCH-2120", profile: core, since: "1.2", raisedBy: [model.Sutra, parse.SutraBlocks, parse.TypedFragment]}
 - {code: "RCH-2121", profile: core, since: "1.2", raisedBy: [el.FragmentColumns, parse.TypedFragment]}
+- {code: "RCH-5003", profile: core, since: "1.2", raisedBy: [control.Fire]}
 - {code: "RCH-5020", profile: core, since: "1.0", raisedBy: [design.ops.AddPanel, design.ops.Bind, design.ops.Move, design.ops.OpChecks, design.ops.OpException, design.ops.SetControls, design.ops.SetKeys, design.ops.SetMatch, design.ops.SetStrip, design.ops.SetTitle, design.ops.Text]}
 - {code: "RCH-5021", profile: core, since: "1.0", raisedBy: [design.ops.AddPanel, design.ops.OpException, design.ops.SutraDoc]}
 - {code: "RCH-5022", profile: core, since: "1.0", raisedBy: [design.ops.Bind, design.ops.OpChecks, design.ops.OpException]}

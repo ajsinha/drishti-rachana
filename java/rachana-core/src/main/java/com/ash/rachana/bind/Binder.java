@@ -113,10 +113,12 @@ public final class Binder {
                 case METRIC -> metric(p, c);
                 case MAP -> maps.map(p, c);
                 case GRID, TREE, CHART -> datasets.bind(p, c);                // language 1.1: the rows go into the view's datasets
+                case FORM -> form(p, c);                                       // language 1.2: a standalone form
             };
             boolean empty = DatasetBinder.reads(p.kind()) ? DatasetBinder.empty(data, c) : com.ash.rachana.view.Emptiness.of(data);
-            return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer() || explanation != null,
+            PanelView v = new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer() || explanation != null,
                     explanation, data, null, empty, p.span().orElse(null), p.height().orElse(null));
+            return p.options().containsKey(com.ash.rachana.model.Effects.ACTIONS) ? v.withActions(actions(p, c.eval())) : v;
         } catch (SourceDeniedException e) {
             return new PanelView(p.id(), p.kind().id(), title, p.code(), p.key(), area(p), p.infer(), explanation, null, null, true,
                     p.span().orElse(null), p.height().orElse(null), "no access to " + e.kind());
@@ -298,9 +300,52 @@ public final class Binder {
         if (!com.ash.rachana.model.Effects.full(p, trigger)) {
             return null;
         }
+        List<Map<String, Object>> out = effects(com.ash.rachana.model.Effects.list(p, trigger), rc);
+        return out.isEmpty() ? null : Map.of(trigger, out);
+    }
+
+    /**
+     * The buttons of a panel's {@code actions:} (level 1.2, I1) for the view: {@code {id, label, tone?, confirm?, requires?, effects}}, the
+     * label and question rendered and the effects evaluated over the panel's context (no row); null when it has none.
+     */
+    public List<Map<String, Object>> actions(Panel p, EvalContext rc) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (Map<String, Object> a : com.ash.rachana.model.Effects.actions(p)) {
+            Map<String, Object> v = new java.util.LinkedHashMap<>();
+            v.put("id", a.get("id"));
+            v.put("label", rendered(String.valueOf(a.get("label")), rc));
+            if (a.get("tone") != null) {
+                v.put("tone", a.get("tone"));
+            }
+            if (a.get("confirm") != null) {
+                v.put("confirm", a.get("confirm") instanceof String q ? rendered(q, rc) : a.get("confirm"));
+            }
+            if (a.get("requires") != null) {
+                v.put("requires", a.get("requires"));
+            }
+            v.put("effects", effects(com.ash.rachana.model.Effects.effectsOf(a), rc));
+            out.add(v);
+        }
+        return out.isEmpty() ? null : out;
+    }
+
+    private String rendered(String template, EvalContext rc) {
+        try {
+            return Values.text(el.template(template).render(rc));
+        } catch (RuntimeException ex) {
+            return template;
+        }
+    }
+
+    /**
+     * One effect list evaluated for a mark ({@code rc}): see {@link #on}. A {@code to:} or {@code with:} value written {@code event.<field>}
+     * (submit, cancel) is not evaluated: the effect says where the value comes from ({@code event}, {@code withEvent}), filled in when the
+     * trigger fires.
+     */
+    List<Map<String, Object>> effects(List<Map<String, Object>> list, EvalContext rc) {
         Map<String, String> types = com.ash.rachana.el.Declarations.inForce().states();
         List<Map<String, Object>> out = new ArrayList<>();
-        for (Map<String, Object> e : com.ash.rachana.model.Effects.list(p, trigger)) {
+        for (Map<String, Object> e : list) {
             if (e.get("when") instanceof String w) {
                 Object ok;
                 try {
@@ -321,11 +366,17 @@ public final class Binder {
                     if (type == null) {
                         continue;
                     }
+                    String path = com.ash.rachana.model.Effects.eventPath(e.get("to"));
+                    if (path != null) {
+                        v.put("state", e.get("state"));
+                        v.put("event", path);                              // filled in when the trigger fires, in the state's type
+                        break;
+                    }
                     try {
                         v.put("state", e.get("state"));
                         v.put("value", com.ash.rachana.el.StateTypes.json(com.ash.rachana.el.StateTypes.of(type, el.compile(String.valueOf(e.get("to"))).eval(rc))));
                     } catch (RuntimeException ex) {
-                        return out.isEmpty() ? null : Map.of(trigger, out);      // effects stop at the first that fails (SUTRA_EXPANSION 3.4)
+                        return out;                                         // effects stop at the first that fails (SUTRA_EXPANSION 3.4)
                     }
                 }
                 case "toggle", "clear" -> v.put("state", e.get("state"));
@@ -345,7 +396,12 @@ public final class Binder {
                     v.put("action", e.get("action"));
                     if (e.get("with") instanceof Map<?, ?> with) {
                         Map<String, Object> w = new java.util.LinkedHashMap<>();
+                        Map<String, Object> we = new java.util.LinkedHashMap<>();
                         with.forEach((k, x) -> {
+                            if (com.ash.rachana.model.Effects.eventPath(x) != null) {
+                                we.put(String.valueOf(k), com.ash.rachana.model.Effects.eventPath(x));
+                                return;
+                            }
                             Object r;
                             try {
                                 r = Values.simplify(el.compile(String.valueOf(x)).eval(rc));
@@ -354,13 +410,18 @@ public final class Binder {
                             }
                             w.put(String.valueOf(k), r instanceof com.ash.rachana.api.Node n ? (n.isMissing() ? null : n.unwrap()) : r);
                         });
-                        v.put("with", w);
+                        if (!w.isEmpty() || we.isEmpty()) {
+                            v.put("with", w);
+                        }
+                        if (!we.isEmpty()) {
+                            v.put("withEvent", we);                         // name to the event's field, filled in when it fires
+                        }
                     }
                 }
             }
             out.add(v);
         }
-        return out.isEmpty() ? null : Map.of(trigger, out);
+        return out;
     }
 
     private static String pick(Node row, String field) {
@@ -894,6 +955,43 @@ public final class Binder {
             throw new IllegalStateException("panel kind '" + p.kind().id() + "' needs the profile that adds it");
         }
         return b.bind(p, c, this);
+    }
+
+    /**
+     * A standalone form (level 1.2): the starting values ({@code initial:} evaluated over the screen's state and controls, then each field's
+     * default) and the effect lists of {@code submit} and {@code cancel}, evaluated for the panel (a value read from the submitted form,
+     * {@code event}, is filled in when it is sent).
+     */
+    private PanelData form(Panel p, BindContext c) {
+        com.ash.rachana.model.Form f = p.form().orElseThrow();
+        Map<String, Object> values = new java.util.LinkedHashMap<>();
+        if (p.options().get("initial") instanceof Map<?, ?> initial) {
+            initial.forEach((k, x) -> {
+                Object v;
+                try {
+                    v = Values.simplify(el.compile(String.valueOf(x)).eval(c.eval()));
+                } catch (RuntimeException ex) {
+                    v = null;
+                }
+                v = v instanceof Node n ? (n.isMissing() ? null : n.unwrap()) : v;
+                if (v != null) {
+                    values.put(String.valueOf(k), v);
+                }
+            });
+        }
+        java.util.Set<String> fill = new java.util.LinkedHashSet<>();
+        f.fields().forEach(x -> fill.add(x.id()));
+        Map<String, Object> start = f.withDefaults(values, fill, c.eval().today() == null ? java.time.LocalDate.now(java.time.ZoneOffset.UTC) : c.eval().today());
+        Map<String, Object> ordered = new java.util.LinkedHashMap<>();
+        f.fields().forEach(x -> ordered.put(x.id(), start.get(x.id())));
+        Map<String, Object> on = new java.util.LinkedHashMap<>();
+        for (String t : com.ash.rachana.model.Effects.AT_FIRE) {
+            Map<String, Object> one = on(p, t, c.eval());
+            if (one != null) {
+                on.putAll(one);
+            }
+        }
+        return new PanelData.FormPanel(ordered, p.option("submitLabel").orElse(null), p.option("cancelLabel").orElse(null), on);
     }
 
     private PanelData metric(Panel p, BindContext c) {

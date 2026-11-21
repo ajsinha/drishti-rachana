@@ -1700,6 +1700,9 @@
         },
         {
           "$ref": "#/$defs/DataChart"
+        },
+        {
+          "$ref": "#/$defs/FormPanel"
         }
       ]
     },
@@ -1770,7 +1773,8 @@
             "map",
             "grid",
             "tree",
-            "chart"
+            "chart",
+            "form"
           ],
           "description": "panel kind: one of the grammar's kinds; decides which record data carries"
         },
@@ -1861,6 +1865,14 @@
             }
           ],
           "description": "state of a computed source"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ActionView"
+          },
+          "description": "the buttons of the panel's header (I1 actions:), in order; absent when it has none (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -2512,6 +2524,32 @@
                 "anyOf": [
                   {
                     "$ref": "#/$defs/DataChart"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "form"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/FormPanel"
                   },
                   {
                     "type": "null"
@@ -4544,7 +4582,7 @@
           "description": "set, toggle, clear: the state's id"
         },
         "value": {
-          "description": "set: the value, in the state's type"
+          "description": "set: the value, in the state's type (absent when it is read from the event, event)"
         },
         "text": {
           "type": "string",
@@ -4565,10 +4603,107 @@
         "with": {
           "type": "object",
           "description": "host: the arguments, evaluated for the mark"
+        },
+        "event": {
+          "type": "string",
+          "description": "set (submit, cancel): the submitted value the state takes, filled in when the trigger fires: a field of the form (dotted for a value inside one); empty for every value (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "withEvent": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "host (submit, cancel): arguments filled in when the trigger fires, name to the submitted field (as event) (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
         "do"
+      ],
+      "additionalProperties": false,
+      "x-since": "1.2"
+    },
+    "FormPanel": {
+      "description": "data of form (contract 1.2): a standalone form, its fields in PanelView.form, drawn with Submit and Cancel",
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "object",
+          "description": "each field's starting value, field id to value (initial: over state and controls, then the field's default; null when none)"
+        },
+        "submitLabel": {
+          "type": "string",
+          "description": "the Submit button's text (the painter's word when absent)"
+        },
+        "cancelLabel": {
+          "type": "string",
+          "description": "the Cancel button's text (the painter's word when absent)"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the effect lists of submit and cancel (EffectView), run only after the form's own rules pass; the painter hands the values to the host, which submits them (ScreenWire.submit)"
+        }
+      },
+      "required": [
+        "values"
+      ],
+      "additionalProperties": false,
+      "x-since": "1.2"
+    },
+    "ActionView": {
+      "description": "One button of a panel's header (I1 actions:, contract 1.2): pressing it runs its effects in order (after asking, with confirm); requires names a permission the host answers (the painter leaves the button out, or disables it, when the host says no)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "the action's id, unique in the panel"
+        },
+        "label": {
+          "type": "string",
+          "description": "the button's text, rendered"
+        },
+        "tone": {
+          "enum": [
+            "ok",
+            "warn",
+            "bad",
+            "accent"
+          ]
+        },
+        "confirm": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "true: ask before running; a text: the question, rendered"
+        },
+        "requires": {
+          "type": "string",
+          "description": "a permission name the host answers"
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EffectView"
+          },
+          "description": "the effects, evaluated over the panel's context"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "effects"
       ],
       "additionalProperties": false,
       "x-since": "1.2"

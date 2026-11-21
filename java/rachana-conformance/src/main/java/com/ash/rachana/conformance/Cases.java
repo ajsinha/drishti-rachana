@@ -409,8 +409,9 @@ public final class Cases {
         boolean first = true;
         for (Object o : items(c.get("steps"))) {
             Map<String, Object> step = obj(o);
-            var r = com.ash.rachana.control.Fire.fire(vm, text(step.get("panel")), text(step.get("trigger")),
-                    step.get("mark") == null ? 0 : Integer.parseInt(text(step.get("mark"))));
+            var r = com.ash.rachana.control.Fire.fire(vm, s.sutra(), text(step.get("panel")), text(step.get("trigger")),
+                    step.get("mark") == null ? 0 : Integer.parseInt(text(step.get("mark"))), step.get("values") == null ? null : obj(step.get("values")),
+                    today(c));
             Map<String, Object> writes = new LinkedHashMap<>();
             r.effects().stream().filter(e -> List.of("set", "toggle", "clear").contains(text(e.get("do"))))
                     .forEach(e -> writes.put(text(e.get("state")), e.get("value")));          // clear: empty, so the default stands
@@ -462,10 +463,16 @@ public final class Cases {
      * {@code given.tables} (by table name: a list of rows, or {@code {schema, rows}}), held as keyed rows so that a patch can change
      * them. A host's fields (reference, mnemonic, provenance, timings) are not set, so not written.
      */
+    /** A case's business date: {@code given.today}, else 2026-01-15. */
+    static LocalDate today(Map<String, Object> c) {
+        Map<String, Object> g = obj(c.get("given"));
+        return g.containsKey("today") ? LocalDate.parse(text(g.get("today"))) : LocalDate.of(2026, 1, 15);
+    }
+
     @SuppressWarnings("unchecked")
     public static com.ash.rachana.table.LiveScreen screen(Map<String, Object> c) {
         Map<String, Object> g = obj(c.get("given"));
-        LocalDate today = g.containsKey("today") ? LocalDate.parse(text(g.get("today"))) : LocalDate.of(2026, 1, 15);
+        LocalDate today = today(c);
         Map<String, Object> ctl = new LinkedHashMap<>();
         obj(g.get("ctl")).forEach((k, v) -> ctl.put(k, v instanceof List<?> l ? l.stream().map(Cases::text).toList() : text(v)));
         var s = new com.ash.rachana.table.LiveScreen(at(c), parse(c), today, g.containsKey("record") ? node(g.get("record")) : null, ctl);

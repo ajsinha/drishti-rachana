@@ -305,7 +305,10 @@ Level 1.2 (SPEC 2.8). The view is built as for `sutra`; then each entry of `step
 `{ panel, trigger, mark?, values? }`. `mark` (default 0) counts the marks the trigger lands on in the order the
 ViewModel lists them: a table's rows, depth first through a tree's or a drill table's children (`row-click`); an
 `hbar`'s bars (`bar-click`); a chart's points, steps, events or candles, a line or area chart's x positions, the one
-mark of a metric, gauge or record (`point-click`). `values` are a form's field values (`submit`). The effects the mark
+mark of a metric, gauge or record (`point-click`); a panel's buttons in order (`action`); the one form of a `form` panel
+(`submit`, `cancel`, with `values` its field values: a `submit` is checked first against the form's fields and rules, each
+failing check a problem `RCH-5003` and nothing runs, a value for no field `RCH-5001`; the effects read `values` where they
+say `event`). The effects the mark
 carries run in order; the state they write goes into the next bind request and the view is built again. The actual,
 per step: `state` (every state value of the screen after the step, id to value), `effects` (the effects run, in order:
 `{do: set, state, value}`, and the ones handed to the host), `problems` (the refusals: a panel, trigger or mark the

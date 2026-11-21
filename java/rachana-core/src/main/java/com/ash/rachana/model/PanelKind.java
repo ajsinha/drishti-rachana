@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The twenty-two panel kinds of the grammar. Each declares which options it requires and which it accepts,
+ * The panel kinds of the grammar. Each declares which options it requires and which it accepts,
  * so the validator can reject a Sutra before it ever meets data.
  */
 public enum PanelKind {
@@ -68,10 +68,16 @@ public enum PanelKind {
     TREE(Set.of("rows", "node"), Set.of("parent", "path", "label", "mode", "open", "dataset", "rowKey", "limit")),
     /** Language 1.1: a chart of the rows: {@code x}, the figures {@code y} (a field or a list), {@code by}, {@code agg}, {@code type}. */
     CHART(Set.of("rows", "x", "y"), Set.of("type", "by", "agg", "stack", "horizontal", "xLabel", "yLabel", "bins", "top", "fmt", "dataset",
-            "rowKey", "limit"));
+            "rowKey", "limit")),
+    /**
+     * Language 1.2: a standalone form (its {@code form:}, required, with no {@code edit} or {@code new}): the fields drawn with Submit and
+     * Cancel; {@code initial} maps a field to the expression of its starting value (over state and controls), {@code submitLabel} and
+     * {@code cancelLabel} name the buttons; {@code on: { submit, cancel }} run only after the form's rules pass.
+     */
+    FORM(Set.of(), Set.of("initial", "submitLabel", "cancelLabel"));
 
     /** The language level that brought each kind not of level 1.0 (SUTRA_EXPANSION 6.2). */
-    private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1");
+    private static final java.util.Map<PanelKind, String> SINCE = java.util.Map.of(GRID, "1.1", TREE, "1.1", CHART, "1.1", FORM, "1.2");
 
     /** The language level that brought this kind: {@code 1.0}, or {@code 1.1} for {@code grid}, {@code tree} and {@code chart}. */
     public String since() {

@@ -115,7 +115,7 @@ public record Panel(
 
     /** {@code form} when the panel says how people edit its records or start new ones (RACHANA_REFERENCE.md 10). */
     public Optional<Form> form() {
-        return Form.fromOption(options.get(Form.KEY));
+        return Form.fromOption(options.get(Form.KEY), kind == PanelKind.FORM);
     }
 
     public Optional<String> option(String name) {

@@ -436,7 +436,7 @@ final class SutraBuilder {
             List<String> why = nested ? List.of("a form edits a whole panel's records: put it on the tabs panel")
                     : !grammar.formSave() && raw instanceof Map<?, ?> fm && fm.containsKey("save")
                     ? List.of("'form.save' (where a submitted form goes) comes with a profile that brings it; this grammar has none")
-                    : com.ash.rachana.model.Form.problems(raw);
+                    : com.ash.rachana.model.Form.problems(raw, kind == PanelKind.FORM);
             why.forEach(w -> problem("RCH-2058", w, form));
             if (why.isEmpty()) {
                 options.put(com.ash.rachana.model.Form.KEY, raw);
@@ -460,9 +460,21 @@ final class SutraBuilder {
                 }
             }
         }
+        boolean actions = m.containsKey(com.ash.rachana.model.Effects.ACTIONS) && SutraBlocks.atLeast(grammar.level(), "1.2");   // I1: buttons
+        if (actions && kind != null) {
+            if (nested) {
+                problem("RCH-2012", "a panel inside a tab cannot have actions: of its own; put them on the tabs panel", m.get(com.ash.rachana.model.Effects.ACTIONS));
+            } else {
+                List<Map<String, Object>> a = new EffectsReader(file, problems).actions(m.get(com.ash.rachana.model.Effects.ACTIONS));
+                if (a != null) {
+                    options.put(com.ash.rachana.model.Effects.ACTIONS, a);
+                }
+            }
+        }
         if (kind != null) {
             m.forEach((opt, val) -> {
-                if (PANEL.contains(opt) || WiringReader.isWiring(opt, val) || on && com.ash.rachana.model.Effects.KEY.equals(opt)) {
+                if (PANEL.contains(opt) || WiringReader.isWiring(opt, val) || on && com.ash.rachana.model.Effects.KEY.equals(opt)
+                        || actions && com.ash.rachana.model.Effects.ACTIONS.equals(opt)) {
                     return;
                 }
                 if (!kind.accepts(opt)) {
@@ -480,6 +492,9 @@ final class SutraBuilder {
                     options.put(opt, v);
                 }
             });
+            if (kind == PanelKind.FORM) {
+                formPanel(id, n, m, options);
+            }
             if (options.containsKey("levels") && (options.containsKey("children") || options.containsKey(Panel.PIVOT))) {
                 problem("RCH-2029", "a table with 'levels' drills into its rows level by level; it cannot also have "
                         + (options.containsKey("children") ? "'children' (a tree)" : "Pivot (the pivot screen)"), m.get("levels"));
@@ -500,6 +515,59 @@ final class SutraBuilder {
         }
         return new Panel(id, kind, text(m.get("title"), null), key, text(m.get("code"), null), area, bool(m.get("infer")),
                 columns, body, options, loc(n), parts, wiring);
+    }
+
+    /**
+     * A standalone form panel (level 1.2): its {@code form:} is required and is the panel itself (no {@code edit}, no {@code new});
+     * {@code initial} maps a field of the form to an expression (its starting value); the button labels are text.
+     */
+    private void formPanel(String id, PNode n, Map<String, PNode> m, Map<String, Object> options) {
+        PNode form = m.get(com.ash.rachana.model.Form.KEY);
+        if (form == null) {
+            problem("RCH-2022", "'form' panel '" + id + "' needs option 'form' (its fields)", n);
+            return;
+        }
+        if (!(options.get(com.ash.rachana.model.Form.KEY) instanceof Map<?, ?> f)) {
+            return;                                                      // reported with the form
+        }
+        for (Map.Entry<String, PNode> e : form.isMap() ? form.map().entrySet() : Map.<String, PNode>of().entrySet()) {
+            if (List.of("edit", "new", "new-label", "key").contains(e.getKey())) {
+                problem("RCH-2058", "a form panel's form is the panel itself: it takes no '" + e.getKey() + "' (that edits a table's rows)", e.getValue());
+            }
+        }
+        Set<String> fields = new HashSet<>();
+        if (f.get("fields") instanceof List<?> l) {
+            l.forEach(x -> {
+                if (x instanceof Map<?, ?> fm && fm.get("id") != null) {
+                    fields.add(String.valueOf(fm.get("id")));
+                }
+            });
+        }
+        PNode initial = m.get("initial");
+        if (initial != null) {
+            if (!initial.isMap()) {
+                problem("RCH-2029", "initial maps a field of the form to the expression of its starting value ({ qty: state.qty })", initial);
+                options.remove("initial");
+                return;
+            }
+            Map<String, Object> exprs = new LinkedHashMap<>();
+            for (Map.Entry<String, PNode> e : initial.map().entrySet()) {
+                String x = EffectsReader.expression(e.getValue());
+                if (!fields.contains(e.getKey())) {
+                    problem("RCH-2029", "initial names '" + e.getKey() + "', which is not a field of the form (" + String.join(", ", new java.util.TreeSet<>(fields)) + ")", e.getValue());
+                } else if (x == null) {
+                    problem("RCH-2029", "initial." + e.getKey() + " is an expression or a literal", e.getValue());
+                } else {
+                    exprs.put(e.getKey(), x);
+                }
+            }
+            options.put("initial", exprs);
+        }
+        for (String label : List.of("submitLabel", "cancelLabel")) {
+            if (m.get(label) != null && (m.get(label).isMap() || m.get(label).isList())) {
+                problem("RCH-2029", label + " is the button's text", m.get(label));
+            }
+        }
     }
 
     private WiringReader wiringReader;

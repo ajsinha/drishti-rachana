@@ -175,6 +175,14 @@ public record EvalContext(Node root, Object row, int index, Formats formats, jav
         return new EvalContext(root, row, index, formats, ctl, today, next, locals);
     }
 
+    /**
+     * The factory of the document's tree ({@link com.ash.rachana.api.Node#nodes()}): the lists and records an expression builds come out
+     * in the document's type (Rachana's own for {@link com.ash.rachana.api.Node#of(Object)}, the host's for a host's node).
+     */
+    public com.ash.rachana.api.NodeFactory nodes() {
+        return root == null ? com.ash.rachana.api.NodeFactory.core() : root.nodes();
+    }
+
     /** The same context over another document, keeping the controls, the date and the events. */
     public EvalContext withRoot(Node next) {
         return new EvalContext(next, null, -1, formats, ctl, today, scope, locals);

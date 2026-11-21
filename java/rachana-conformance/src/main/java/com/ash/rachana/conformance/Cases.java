@@ -646,7 +646,10 @@ public final class Cases {
         return c;
     }
 
-    static Node node(Object n) { return Node.of(plain(n)); }
+    /** How a case's documents become nodes: Rachana's own, or a host's ({@code JvmRuntime --host-nodes}, {@link HostNodes}). */
+    static java.util.function.Function<Object, Node> documents = Node::of;
+
+    static Node node(Object n) { return documents.apply(plain(n)); }
 
     /** JSON to Java values; the tags of FORMAT 4 become the reference's own values. */
     static Object plain(Object n) {

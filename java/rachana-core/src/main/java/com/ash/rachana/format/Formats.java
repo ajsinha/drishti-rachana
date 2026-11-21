@@ -12,56 +12,141 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * The named formats used by {@code fmt:} and {@code fmt(...)}: the bundled {@code formats.yaml}, optionally
- * overridden by a site file. A host that reloads its formats builds a new table with {@link #load(String, java.util.List)}
- * and swaps it whole, so a reader sees the old table or the new one.
+ * The named formats used by {@code fmt:} and {@code fmt(...)}: the bundled {@code formats.yaml}, then each pack's file, then the site's
+ * override file. A table from {@link #load(String, java.util.List)} never changes. A <b>live</b> table ({@link #live(String,
+ * java.util.List)}) is one a host reloads while readers hold it ({@link #reload()}, {@link #reload(java.util.List)}):
+ *
+ * <ul>
+ *   <li>a reload reads the bundled table, the pack files and the site file again and swaps the whole table in one step: a reader sees
+ *       the old table or the new one, never a mix, and a value being formatted finishes with the table it started with;</li>
+ *   <li>every holder of the table sees the new one at its next read: the same instance, each of its {@link #atLevel(String)} views, the
+ *       contexts, binders and Rachana instances built over it; compiled expressions hold no format, so nothing else is rebuilt;</li>
+ *   <li>a reload that fails (a file that cannot be read, a table that does not parse) changes nothing and throws: the old table stays.</li>
+ * </ul>
  */
 public final class Formats {
 
-    private volatile Map<String, FormatSpec> specs;
-    private final String overrideFile;
-    /** Every name read, at every level. */
-    private final Map<String, FormatSpec> all;
-    /** The bundled names a later language level brought ({@code since} in the table), with that level; a pack's or site's name is never here. */
-    private final Map<String, String> since;
-    private final String level;
+    /** One read of the files: every name at every level, and the bundled names a later level brought. */
+    private record Table(Map<String, FormatSpec> all, Map<String, String> since) {
 
-    private Formats(Map<String, FormatSpec> all, Map<String, String> since, String level, String overrideFile) {
-        this.all = Map.copyOf(all);
-        this.since = Map.copyOf(since);
+        /** The names a reader at {@code level} sees. */
+        Map<String, FormatSpec> at(String level) {
+            Map<String, FormatSpec> at = new HashMap<>(all);
+            since.forEach((name, l) -> {
+                if (com.ash.rachana.model.PanelKind.compareLevels(l, level) > 0) {
+                    at.remove(name);
+                }
+            });
+            return Map.copyOf(at);
+        }
+    }
+
+    /** Where a table comes from, and the table now; shared by a table and its level views. */
+    private static final class Source {
+        final String overrideFile;
+        final boolean live;
+        volatile java.util.List<String> packFiles;
+        volatile Table table;
+
+        Source(String overrideFile, java.util.List<String> packFiles, boolean live) {
+            this.overrideFile = overrideFile;
+            this.packFiles = java.util.List.copyOf(packFiles);
+            this.live = live;
+            this.table = read(overrideFile, this.packFiles);
+        }
+    }
+
+    /** The names at this view's level, of one table. */
+    private record View(Table table, Map<String, FormatSpec> specs) {}
+
+    private final Source source;
+    private final String level;
+    private volatile View view;
+
+    private Formats(Source source, String level) {
+        this.source = source;
         this.level = level;
-        Map<String, FormatSpec> at = new HashMap<>(all);
-        since.forEach((name, l) -> {
-            if (com.ash.rachana.model.PanelKind.compareLevels(l, level) > 0) {
-                at.remove(name);
-            }
-        });
-        this.specs = Map.copyOf(at);
-        this.overrideFile = overrideFile;
+        this.view = new View(source.table, source.table.at(level));
+    }
+
+    /** The names this reader sees now: the table's current read, at this view's level. */
+    private Map<String, FormatSpec> specs() {
+        View v = view;
+        Table t = source.table;
+        if (v.table() != t) {
+            v = new View(t, t.at(level));
+            view = v;
+        }
+        return v.specs();
     }
 
     /**
      * This table at another language level (SUTRA_EXPANSION 6.2): a bundled name of a later level ({@code since}, such as the 1.2
      * promotions {@code pct4}, {@code bp1}, {@code df4}, {@code price4}) is unknown below it and prints as text, as any unknown name. A
-     * name a pack or the site file defines stays at every level. A table starts at level 1.0.
+     * name a pack or the site file defines stays at every level. A table starts at level 1.0. The view of a live table is live too.
      */
     public Formats atLevel(String next) {
-        return next.equals(level) ? this : new Formats(all, since, next, overrideFile);
+        return next.equals(level) ? this : new Formats(source, next);
     }
-
 
     /** The bundled formats, plus overrides from {@code overrideFile} when it exists. */
     public static Formats load(String overrideFile) {
         return load(overrideFile, java.util.List.of());
     }
 
-    /** The bundled formats, then each pack's formats, then the site override file. */
+    /** The bundled formats, then each pack's formats, then the site override file; the table never changes. */
     public static Formats load(String overrideFile, java.util.List<String> packFiles) {
+        return new Formats(new Source(overrideFile, packFiles, false), "1.0");
+    }
+
+    /**
+     * As {@link #load(String, java.util.List)}, a table its host reloads while readers hold it ({@link #reload()},
+     * {@link #reload(java.util.List)}).
+     */
+    public static Formats live(String overrideFile, java.util.List<String> packFiles) {
+        return new Formats(new Source(overrideFile, packFiles, true), "1.0");
+    }
+
+    /** True for a table its host may reload ({@link #live(String, java.util.List)}). */
+    public boolean isLive() {
+        return source.live;
+    }
+
+    /**
+     * Reads the same files again (a pack changed its {@code formats.yaml}, the site file changed) and swaps the whole table.
+     *
+     * @throws IllegalStateException for a table that is not live
+     * @throws UncheckedIOException when a file cannot be read (nothing changes)
+     */
+    public Formats reload() {
+        return reload(source.packFiles);
+    }
+
+    /**
+     * Reads the bundled table, these pack files (a pack started or stopped) and the site file, and swaps the whole table: every holder
+     * sees the new names at its next read.
+     *
+     * @throws IllegalStateException for a table that is not live
+     * @throws UncheckedIOException when a file cannot be read (nothing changes)
+     */
+    public Formats reload(java.util.List<String> packFiles) {
+        if (!source.live) {
+            throw new IllegalStateException("a loaded format table never changes: build it with Formats.live(...) to reload it");
+        }
+        java.util.List<String> files = java.util.List.copyOf(packFiles);
+        Table next = read(source.overrideFile, files);           // throws before anything changes
+        synchronized (source) {
+            source.packFiles = files;
+            source.table = next;
+        }
+        return this;
+    }
+
+    private static Table read(String overrideFile, java.util.List<String> packFiles) {
         Map<String, FormatSpec> m = new HashMap<>();
         Map<String, String> since = new HashMap<>();
         try (InputStream in = Formats.class.getClassLoader().getResourceAsStream("formats.yaml")) {
@@ -79,12 +164,13 @@ public final class Formats {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return new Formats(m, since, "1.0", overrideFile);
+        return new Table(Map.copyOf(m), Map.copyOf(since));
     }
 
     /** The language level that brought a name: a bundled name's {@code since} ({@code 1.0} when it has none, and for a pack's or the site's name), or null for a name the table does not hold. */
     public String since(String name) {
-        return since.containsKey(name) ? since.get(name) : all.containsKey(name) ? "1.0" : null;
+        Table t = source.table;
+        return t.since().containsKey(name) ? t.since().get(name) : t.all().containsKey(name) ? "1.0" : null;
     }
 
     public static Formats defaults() {
@@ -112,11 +198,11 @@ public final class Formats {
     }
 
     public boolean has(String name) {
-        return specs.containsKey(name);
+        return specs().containsKey(name);
     }
 
     public Set<String> names() {
-        return specs.keySet();
+        return specs().keySet();
     }
 
     /** The list format: a list attribute's values as JSON text ({@code ["fx","rates"]}), which every renderer draws as chips. */
@@ -147,7 +233,7 @@ public final class Formats {
         if (LIST.equals(name)) {
             return list(value);
         }
-        FormatSpec s = name == null ? null : specs.get(name);
+        FormatSpec s = name == null ? null : specs().get(name);
         return s == null ? Values.text(value) : s.format(value);
     }
 }

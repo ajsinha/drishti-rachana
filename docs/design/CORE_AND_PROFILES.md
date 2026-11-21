@@ -157,7 +157,10 @@ the affected panels `unsupported here`, never failing the screen.
 ### 3.3 Rules
 
 1. A profile **cannot** redefine a Core key, kind, option, function, format or code. Registration fails at start-up
-   (as `Functions.register` refuses a duplicate name today).
+   (as `Functions.register` refuses a duplicate name today). One way per job: a host that kept its own copy of a Core
+   function (an engine's `sum`, a grouping behind `group(...)`) drops it from its `FunctionProvider`; `Rachana.with`
+   refuses the instance with `Rachana-EL function sum is Core's: a profile cannot redefine it (<provider> provides it
+   too; ...)`, and Core's is the one every Sutra reads.
 2. A profile's names are plain (`match`, `links`), as they are today. Third-party profiles outside the owner's
    products use an `x-<name>-` prefix for keys and kinds so they can never collide with a future Core name.
 3. A Sutra states `profiles: [core, drishti]` when it uses a profile's name. Inside a host that has one default
@@ -190,6 +193,22 @@ The expression evaluator reads data through one small interface, `Node` (type, f
 scalar value, masked, missing), in a module with no dependencies (`rachana-api`). Core ships implementations over
 maps and lists, JSON, and Arrow columns (row cursor, no boxing per cell). The product's `DataNode` implements `Node`,
 so Drishti keeps its own record type and nothing is copied at the boundary.
+
+- **Node factory** (one SPI, `NodeFactory` in `rachana-api`): a host's node type returns its factory from
+  `Node.nodes()`; every list and record an expression builds over a document of that type (a filter, a function's
+  result, a list or record literal) comes back through it, in the host's type, with the host's own elements kept as
+  they are. A node that names no factory gets Rachana's own (`NodeFactory.core()`).
+- **Reading a host's values**: a scalar node that does not give `value()` is read through `asText`, `asDouble` or
+  `asBoolean`; a number that gives no number, and a value of a type Core cannot read handed to an aggregate, are
+  `RCH-2102` at every level, never a silent 0 or empty. The conformance runtime proves the corpus answers alike over a
+  host's own node type (`JvmRuntime --host-nodes`, `HostNodeConformanceTest`).
+- **Formats a host adds at run time**: `Rachana.formats()` is a live table (`Formats.live`): `reload(packFiles)` reads
+  the bundled table, the packs' files and the site file again and swaps the whole table; every reader (contexts,
+  binders, level views) sees it at its next read; a failed reload changes nothing. `Formats.load` stays immutable.
+- **Level**: `Rachana.at(level, options, profiles...)` builds an instance pinned at a language level in one call.
+- **Sutra JSON**: the record's components are its JSON in order (`name`, `version`, `domain`, `match`, `title`, ...,
+  `extensions`); `extensions` lists only other profiles' keys, so a writer of record components (Jackson) needs no
+  mix-in, and the canonical constructor reads it back.
 
 ## 4. Plain tables as first-class data sources
 

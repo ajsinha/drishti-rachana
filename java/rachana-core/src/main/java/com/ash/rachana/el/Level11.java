@@ -20,7 +20,7 @@ final class Level11 {
 
     private record Fn(int min, int max, ElFunction fn) {}
 
-    private static final Map<String, Fn> FUNCTIONS = Map.ofEntries(
+    private static final Map<String, Fn> FUNCTIONS = strictLists(Map.ofEntries(
             Map.entry("range", new Fn(1, 3, (a, c) -> Ranges.range(a))),
             Map.entry("span", new Fn(1, 2, (a, c) -> FunctionTable.core().get("range").apply(a, c))),
             Map.entry("left", new Fn(2, 2, (a, c) -> part("left", a, true))),
@@ -36,7 +36,25 @@ final class Level11 {
             Map.entry("regex_extract", regexAsValueError("regex_extract", 2, 3)),
             Map.entry("regex_replace", regexAsValueError("regex_replace", 3, 3)),
             Map.entry("matches", regexAsValueError("matches", 2, 2)),
-            Map.entry("matches_case", regexAsValueError("matches_case", 2, 2)));
+            Map.entry("matches_case", regexAsValueError("matches_case", 2, 2))));
+
+    /**
+     * Level 1.1 (SPEC 5.1): an aggregate over a list refuses a first argument that is not a list ({@code RCH-2102}); level 1.0 recorded
+     * an empty answer (0 for a sum). The aggregate itself is Core's, or this level's own ({@code sum}, {@code span}).
+     */
+    private static Map<String, Fn> strictLists(Map<String, Fn> own) {
+        Map<String, Fn> out = new java.util.HashMap<>(own);
+        for (String name : com.ash.rachana.agg.CoreAggregates.LIST_FIRST) {
+            Fn f = own.get(name);
+            int[] arity = f != null ? new int[] {f.min(), f.max()} : FunctionTable.core().arityOf(name);
+            ElFunction inner = f != null ? f.fn() : null;
+            out.put(name, new Fn(arity[0], arity[1], (a, c) -> {
+                com.ash.rachana.agg.CoreAggregates.requireList(name, a);
+                return (inner != null ? inner : FunctionTable.core().get(name)).apply(a, c);
+            }));
+        }
+        return Map.copyOf(out);
+    }
 
     /** A refused pattern met at evaluation is the function's value error {@code RCH-2102} at level 1.1 (decision N5), not {@code RCH-4010}. */
     private static Fn regexAsValueError(String name, int min, int max) {

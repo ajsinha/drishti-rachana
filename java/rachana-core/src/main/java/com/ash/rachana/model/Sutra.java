@@ -22,12 +22,22 @@ import java.util.Map;
  * @param layout the screen's grid, areas, split, tabs and sections (RACHANA_REFERENCE.md 13), or null: the panels flow
  * @param phone the screen's {@code phone:} block (docs/guides/BUILD_GUIDE.md section 5.2: the phone order, the default tier, the summary line), or
  *     null
- * @param extensions what the instance's profiles' top-level keys read, by key (split step A7: {@code domain} and {@code match} are the
- *     entity additions' keys, {@link com.ash.rachana.profile.Entities}); empty for Core alone
+ * @param domain the folder it belongs to ({@code domain}, a key of the entity additions, {@link com.ash.rachana.profile.Entities}), or null
+ *     when no profile reads it
+ * @param match which entities it applies to ({@code match}, an entity addition), or null when no profile reads it
+ * @param extensions what the instance's other profiles' top-level keys read, by key; and what the compile keeps for itself under
+ *     {@code $} keys ({@link #PLACES}, {@link #DECLARATIONS}, ...) and Core's {@code data} entries, which {@link #extension(String)} reads
+ *     but which the map does not list: they are not data, and a JSON writer of the record never meets them
+ *
+ * <p>The record's JSON (any writer that writes a record's components, such as Jackson's) is the Sutra's: {@code name}, {@code version},
+ * {@code domain}, {@code match}, {@code title} and the rest in this order, and {@code extensions} with the other profiles' keys; read back
+ * through the canonical constructor it is the same Sutra (no mix-in or adapter needed).
  */
 public record Sutra(
         String name,
         int version,
+        String domain,
+        Match match,
         Title title,
         List<StripItem> strip,
         List<Panel> panels,
@@ -41,21 +51,33 @@ public record Sutra(
 
     public static final int MAX_STRIP = 8;
 
+    /**
+     * A Sutra whose profile keys are all in {@code extensions} ({@code domain} and {@code match} among them, when a profile reads them),
+     * as the parser builds one.
+     */
+    public Sutra(String name, int version, Title title, List<StripItem> strip, List<Panel> panels, Map<String, String> keys,
+            SourceLocation location, String description, List<Control> controls, ScreenLayout layout, ScreenPhone phone,
+            Map<String, Object> extensions) {
+        this(name, version, extensions == null || !(extensions.get("domain") instanceof String d) ? null : d,
+                extensions == null || !(extensions.get("match") instanceof Match m) ? null : m, title, strip, panels, keys, location,
+                description, controls, layout, phone, without(extensions, "domain", "match"));
+    }
+
     /** A Sutra of a host whose profile reads {@code domain} and {@code match} (either may be null: not kept). */
     public Sutra(String name, int version, String domain, Match match, Title title, List<StripItem> strip, List<Panel> panels,
             Map<String, String> keys, SourceLocation location, String description, List<Control> controls, ScreenLayout layout, ScreenPhone phone) {
-        this(name, version, title, strip, panels, keys, location, description, controls, layout, phone, entity(domain, match));
+        this(name, version, domain, match, title, strip, panels, keys, location, description, controls, layout, phone, Map.of());
     }
 
-    private static Map<String, Object> entity(String domain, Match match) {
-        Map<String, Object> m = new java.util.LinkedHashMap<>();
-        if (domain != null) {
-            m.put("domain", domain);
+    private static Map<String, Object> without(Map<String, Object> m, String... keys) {
+        if (m == null) {
+            return Map.of();
         }
-        if (match != null) {
-            m.put("match", match);
+        Map<String, Object> out = new java.util.LinkedHashMap<>(m);
+        for (String k : keys) {
+            out.remove(k);
         }
-        return m;
+        return out;
     }
 
     /** A Sutra without a phone block (docs/guides/BUILD_GUIDE.md section 5.2). */
@@ -87,22 +109,16 @@ public record Sutra(
         panels = List.copyOf(panels);
         keys = Map.copyOf(keys);
         controls = controls == null ? List.of() : List.copyOf(controls);
-        extensions = extensions == null ? Map.of() : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(extensions));
+        extensions = Extensions.of(extensions);
     }
 
-    /** What the profile key {@code key} read, or null. */
+    /** What the profile key {@code key} read ({@code domain} and {@code match} included), or what the compile kept under it; null when none. */
     public Object extension(String key) {
-        return extensions.get(key);
-    }
-
-    /** The folder it belongs to ({@code domain}, an entity addition), or null when no profile reads it. */
-    public String domain() {
-        return extension("domain") instanceof String d ? d : null;
-    }
-
-    /** Which entities it applies to ({@code match}, an entity addition), or null when no profile reads it. */
-    public Match match() {
-        return extension("match") instanceof Match m ? m : null;
+        return switch (key) {
+            case "domain" -> domain;
+            case "match" -> match;
+            default -> extensions.get(key);
+        };
     }
 
     /** The compile result's key for {@link #libraries()}. */

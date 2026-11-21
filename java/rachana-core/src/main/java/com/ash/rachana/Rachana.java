@@ -94,7 +94,24 @@ public final class Rachana {
             }
         }
         FunctionTable table = FunctionTable.of(providers, Calendars.of(calendars), opts.regexLimits());
-        return new Rachana(opts, List.copyOf(all), table, Formats.load(opts.formatsFile(), formatFiles));
+        return new Rachana(opts, List.copyOf(all), table, Formats.live(opts.formatsFile(), formatFiles));
+    }
+
+    /**
+     * An instance pinned at a language level in one call: {@link #with(RachanaOptions, Profile...)} at {@code level} (SUTRA_EXPANSION
+     * 6.2). A host names its level here once, so nothing it builds is ever read at a level it did not choose; {@code Rachana.at("1.0",
+     * options, drishti)} is the same instance as {@code Rachana.with(options, drishti).language("1.0")}.
+     *
+     * @throws IllegalArgumentException for a level this runtime does not implement ({@link com.ash.rachana.profile.Grammar#LEVELS}), and as
+     *     {@link #with(RachanaOptions, Profile...)}
+     * @throws IllegalStateException as {@link #with(RachanaOptions, Profile...)}
+     */
+    public static Rachana at(String level, RachanaOptions options, Profile... profiles) {
+        if (level == null || !com.ash.rachana.profile.Grammar.LEVELS.contains(level)) {
+            throw new IllegalArgumentException("language level '" + level + "' is not one of "
+                    + String.join(", ", com.ash.rachana.profile.Grammar.LEVELS));
+        }
+        return with(options, profiles).language(level);
     }
 
     /** Core alone, with Core's settings. */
@@ -127,7 +144,11 @@ public final class Rachana {
         return compiler;
     }
 
-    /** Its format table: the bundled names, the options' and the profiles' files, then the site file. */
+    /**
+     * Its format table: the bundled names, the options' and the profiles' files, then the site file. The table is live
+     * ({@link Formats#reload(List)}): formats a host's pack adds at run time reach every reader of this instance (its binders, views and
+     * contexts) without a new instance.
+     */
     public Formats formats() {
         return formats;
     }

@@ -44,6 +44,7 @@
 [stable] com.ash.rachana.Rachana :: public java.util.List<com.ash.rachana.profile.Profile> com.ash.rachana.Rachana.profiles()
 [stable] com.ash.rachana.Rachana :: public java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.Rachana.schema(java.util.Collection<java.lang.String>)
 [stable] com.ash.rachana.Rachana :: public java.util.Optional<com.ash.rachana.profile.Profile> com.ash.rachana.Rachana.profile(java.lang.String)
+[stable] com.ash.rachana.Rachana :: public static com.ash.rachana.Rachana com.ash.rachana.Rachana.at(java.lang.String,com.ash.rachana.RachanaOptions,com.ash.rachana.profile.Profile...)
 [stable] com.ash.rachana.Rachana :: public static com.ash.rachana.Rachana com.ash.rachana.Rachana.core()
 [stable] com.ash.rachana.Rachana :: public static com.ash.rachana.Rachana com.ash.rachana.Rachana.with(com.ash.rachana.RachanaOptions,com.ash.rachana.profile.Profile...)
 [stable] com.ash.rachana.Rachana :: public static java.lang.String com.ash.rachana.Rachana.name()
@@ -121,6 +122,7 @@
 [stable] com.ash.rachana.api.Node :: public default com.ash.rachana.api.Node com.ash.rachana.api.Node.at(java.lang.String)
 [stable] com.ash.rachana.api.Node :: public default com.ash.rachana.api.Node com.ash.rachana.api.Node.get(int)
 [stable] com.ash.rachana.api.Node :: public default com.ash.rachana.api.Node com.ash.rachana.api.Node.get(java.lang.String)
+[stable] com.ash.rachana.api.Node :: public default com.ash.rachana.api.NodeFactory com.ash.rachana.api.Node.nodes()
 [stable] com.ash.rachana.api.Node :: public default double com.ash.rachana.api.Node.asDouble()
 [stable] com.ash.rachana.api.Node :: public default int com.ash.rachana.api.Node.size()
 [stable] com.ash.rachana.api.Node :: public default java.lang.Object com.ash.rachana.api.Node.value()
@@ -158,6 +160,7 @@
 [stable] com.ash.rachana.el.ElLimits :: public static final com.ash.rachana.el.ElLimits com.ash.rachana.el.ElLimits.DEFAULTS
 [stable] com.ash.rachana.el.EvalContext :: public com.ash.rachana.api.Node com.ash.rachana.el.EvalContext.event(java.lang.String)
 [stable] com.ash.rachana.el.EvalContext :: public com.ash.rachana.api.Node com.ash.rachana.el.EvalContext.root()
+[stable] com.ash.rachana.el.EvalContext :: public com.ash.rachana.api.NodeFactory com.ash.rachana.el.EvalContext.nodes()
 [stable] com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withControls(java.util.Map<java.lang.String, java.lang.Object>)
 [stable] com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withLocal(java.lang.String,java.lang.Object)
 [stable] com.ash.rachana.el.EvalContext :: public com.ash.rachana.el.EvalContext com.ash.rachana.el.EvalContext.withRoot(com.ash.rachana.api.Node)
@@ -215,11 +218,15 @@
 [stable] com.ash.rachana.el.Template :: public java.lang.String com.ash.rachana.el.Template.render(com.ash.rachana.el.EvalContext)
 [stable] com.ash.rachana.el.Template :: public void com.ash.rachana.el.Template.paths(java.util.function.Consumer<java.lang.String>)
 [stable] com.ash.rachana.format.Formats :: public boolean com.ash.rachana.format.Formats.has(java.lang.String)
+[stable] com.ash.rachana.format.Formats :: public boolean com.ash.rachana.format.Formats.isLive()
 [stable] com.ash.rachana.format.Formats :: public com.ash.rachana.format.Formats com.ash.rachana.format.Formats.atLevel(java.lang.String)
+[stable] com.ash.rachana.format.Formats :: public com.ash.rachana.format.Formats com.ash.rachana.format.Formats.reload()
+[stable] com.ash.rachana.format.Formats :: public com.ash.rachana.format.Formats com.ash.rachana.format.Formats.reload(java.util.List<java.lang.String>)
 [stable] com.ash.rachana.format.Formats :: public java.lang.String com.ash.rachana.format.Formats.format(java.lang.String,java.lang.Object)
 [stable] com.ash.rachana.format.Formats :: public java.lang.String com.ash.rachana.format.Formats.since(java.lang.String)
 [stable] com.ash.rachana.format.Formats :: public java.util.Set<java.lang.String> com.ash.rachana.format.Formats.names()
 [stable] com.ash.rachana.format.Formats :: public static com.ash.rachana.format.Formats com.ash.rachana.format.Formats.defaults()
+[stable] com.ash.rachana.format.Formats :: public static com.ash.rachana.format.Formats com.ash.rachana.format.Formats.live(java.lang.String,java.util.List<java.lang.String>)
 [stable] com.ash.rachana.format.Formats :: public static com.ash.rachana.format.Formats com.ash.rachana.format.Formats.load(java.lang.String)
 [stable] com.ash.rachana.format.Formats :: public static com.ash.rachana.format.Formats com.ash.rachana.format.Formats.load(java.lang.String,java.util.List<java.lang.String>)
 [stable] com.ash.rachana.format.Formats :: public static final java.lang.String com.ash.rachana.format.Formats.LIST
@@ -289,6 +296,7 @@
 [stable] com.ash.rachana.model.SourceLocation :: public static final com.ash.rachana.model.SourceLocation com.ash.rachana.model.SourceLocation.UNKNOWN
 [experimental] class public abstract @interface com.ash.rachana.view.Include
 [experimental] class public abstract interface com.ash.rachana.agg.Aggregate<S>
+[experimental] class public abstract interface com.ash.rachana.api.NodeFactory
 [experimental] class public abstract interface com.ash.rachana.bind.LinkResolver
 [experimental] class public abstract interface com.ash.rachana.bind.Masker
 [experimental] class public abstract interface com.ash.rachana.bind.PanelBinder
@@ -974,6 +982,8 @@
 [experimental] com.ash.rachana.agg.CoreAggregates :: public java.util.List<com.ash.rachana.el.FunctionProvider$Provided> com.ash.rachana.agg.CoreAggregates.functions()
 [experimental] com.ash.rachana.agg.CoreAggregates :: public static final com.ash.rachana.agg.CoreAggregates com.ash.rachana.agg.CoreAggregates.INSTANCE
 [experimental] com.ash.rachana.agg.CoreAggregates :: public static final java.lang.String com.ash.rachana.agg.CoreAggregates.SOURCE
+[experimental] com.ash.rachana.agg.CoreAggregates :: public static final java.util.Set<java.lang.String> com.ash.rachana.agg.CoreAggregates.LIST_FIRST
+[experimental] com.ash.rachana.agg.CoreAggregates :: public static void com.ash.rachana.agg.CoreAggregates.requireList(java.lang.String,java.util.List<java.lang.Object>)
 [experimental] com.ash.rachana.agg.Final :: public com.ash.rachana.agg.Final(java.lang.Double)
 [experimental] com.ash.rachana.agg.Final :: public final boolean com.ash.rachana.agg.Final.equals(java.lang.Object)
 [experimental] com.ash.rachana.agg.Final :: public final int com.ash.rachana.agg.Final.hashCode()
@@ -1123,6 +1133,9 @@
 [experimental] com.ash.rachana.api.Node$Kind :: public static final com.ash.rachana.api.Node$Kind com.ash.rachana.api.Node$Kind.NUMBER
 [experimental] com.ash.rachana.api.Node$Kind :: public static final com.ash.rachana.api.Node$Kind com.ash.rachana.api.Node$Kind.OBJECT
 [experimental] com.ash.rachana.api.Node$Kind :: public static final com.ash.rachana.api.Node$Kind com.ash.rachana.api.Node$Kind.STRING
+[experimental] com.ash.rachana.api.NodeFactory :: public abstract com.ash.rachana.api.Node com.ash.rachana.api.NodeFactory.list(java.util.List<? extends com.ash.rachana.api.Node>)
+[experimental] com.ash.rachana.api.NodeFactory :: public abstract com.ash.rachana.api.Node com.ash.rachana.api.NodeFactory.of(java.lang.Object)
+[experimental] com.ash.rachana.api.NodeFactory :: public static com.ash.rachana.api.NodeFactory com.ash.rachana.api.NodeFactory.core()
 [experimental] com.ash.rachana.bind.AsOf :: public boolean com.ash.rachana.bind.AsOf.isLatest()
 [experimental] com.ash.rachana.bind.AsOf :: public boolean com.ash.rachana.bind.AsOf.live()
 [experimental] com.ash.rachana.bind.AsOf :: public com.ash.rachana.bind.AsOf(java.time.LocalDate,java.time.Instant)
@@ -2199,6 +2212,7 @@
 [experimental] com.ash.rachana.el.MeasureFunctions$Def :: public java.util.List<java.lang.String> com.ash.rachana.el.MeasureFunctions$Def.params()
 [experimental] com.ash.rachana.el.Printer :: public static java.lang.String com.ash.rachana.el.Printer.print(com.ash.rachana.el.Expr)
 [experimental] com.ash.rachana.el.Printer :: public static java.lang.String com.ash.rachana.el.Printer.print(com.ash.rachana.el.Expr,boolean)
+[experimental] com.ash.rachana.el.Printer :: public static java.lang.String com.ash.rachana.el.Printer.print(com.ash.rachana.el.Expr,java.lang.String)
 [experimental] com.ash.rachana.el.SafeRegex :: public boolean com.ash.rachana.el.SafeRegex.find(java.lang.CharSequence)
 [experimental] com.ash.rachana.el.SafeRegex :: public boolean com.ash.rachana.el.SafeRegex.matches(java.lang.CharSequence)
 [experimental] com.ash.rachana.el.SafeRegex :: public int com.ash.rachana.el.SafeRegex.groups()
@@ -3148,6 +3162,7 @@
 [experimental] com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,java.lang.String,com.ash.rachana.model.Match,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation,java.lang.String,java.util.List<com.ash.rachana.model.Control>)
 [experimental] com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,java.lang.String,com.ash.rachana.model.Match,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation,java.lang.String,java.util.List<com.ash.rachana.model.Control>,com.ash.rachana.model.ScreenLayout)
 [experimental] com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,java.lang.String,com.ash.rachana.model.Match,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation,java.lang.String,java.util.List<com.ash.rachana.model.Control>,com.ash.rachana.model.ScreenLayout,com.ash.rachana.model.ScreenPhone)
+[experimental] com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Sutra(java.lang.String,int,java.lang.String,com.ash.rachana.model.Match,com.ash.rachana.model.Title,java.util.List<com.ash.rachana.model.StripItem>,java.util.List<com.ash.rachana.model.Panel>,java.util.Map<java.lang.String, java.lang.String>,com.ash.rachana.model.SourceLocation,java.lang.String,java.util.List<com.ash.rachana.model.Control>,com.ash.rachana.model.ScreenLayout,com.ash.rachana.model.ScreenPhone,java.util.Map<java.lang.String, java.lang.Object>)
 [experimental] com.ash.rachana.model.Sutra :: public com.ash.rachana.model.Title com.ash.rachana.model.Sutra.title()
 [experimental] com.ash.rachana.model.Sutra :: public final boolean com.ash.rachana.model.Sutra.equals(java.lang.Object)
 [experimental] com.ash.rachana.model.Sutra :: public final int com.ash.rachana.model.Sutra.hashCode()

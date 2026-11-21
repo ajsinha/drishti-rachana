@@ -5,6 +5,16 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **Ready for a host's move onto Core (G4 rehearsal, pass 2)**: aggregates over a host's nodes give the figure (the rehearsal's P4: the
+  0 came from the host test's own oracle, which read only its node type) and are never a silent 0: a value Core cannot read is
+  `RCH-2102` at every level, a first argument that is not a list from level 1.1 (level 1.0 as recorded); a host scalar without
+  `value()` is read through its accessors. `NodeFactory` (`Node.nodes()`): lists and records an expression builds come out in the
+  host's node type. `Rachana.formats()` is live (`Formats.live`, `reload`). `Printer.print(e, level)`: 1.0 writes `&&`, `where = `
+  (unchanged); 1.1 and later Python's `and`, `or`, `not`, `a if c else b`, `where=`. A Sutra's record components are its JSON
+  (`domain`, `match` in their places; `extensions` lists only profile data). `Rachana.at(level, options, profiles...)`. A profile
+  function (or grouping) with a Core name is refused with the reason. Conformance: `el/aggregates-host-values`, the host-node fixture
+  (`JvmRuntime --host-nodes`, `HostNodeConformanceTest`).
+
 - **G2 golden fixes**: a problem inside a fragment file carries `file` and `path` (SPEC 6.1); one program is named `rachana` (the Node
   CLI; Python runs as `python -m drishti_rachana`, no console script); a size guard on both bundles (`tools/js/bundle-size-guard.json`,
   Brotli 11, measured + 5%, changed deliberately with a reason); the vendored Elements pack says the version of its folder; the

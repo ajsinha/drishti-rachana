@@ -35,9 +35,51 @@ public final class Effects {
     public static final Map<String, List<String>> BUILT = Map.of("row-click", List.of("table", "ladder"), "bar-click", List.of("hbar"),
             "point-click", Wiring.POINT_KINDS.stream().sorted().toList());
 
-    /** The effects of the closed list (SUTRA_EXPANSION 3.4); only {@code set} is built. */
+    /** The effects of the closed list (SUTRA_EXPANSION 3.4); the ones not in {@link #BUILT_EFFECTS} are refused until their step. */
     public static final List<String> EFFECTS = List.of("set", "toggle", "clear", "open", "close", "go", "fire", "submit", "refresh", "export",
             "copy", "notify", "host");
+
+    /**
+     * The effects built at this level: {@code set}, {@code toggle: <boolean state>}, {@code clear: <state>} (back to its default),
+     * {@code notify: <template>} (with {@code tone:}) and {@code host: <action>} (with {@code with:}), the host's own action, which Rachana
+     * hands over and never runs: the host decides.
+     */
+    public static final List<String> BUILT_EFFECTS = List.of("set", "toggle", "clear", "notify", "host");
+
+    /** The keys an effect takes beside its word and {@code when}, by word. */
+    public static final Map<String, java.util.Set<String>> EXTRAS_OF = Map.of("set", java.util.Set.of("field"), "host", java.util.Set.of("with"),
+            "notify", java.util.Set.of("tone"));
+
+    /** Every key of {@link #EXTRAS_OF}. */
+    public static final java.util.Set<String> EXTRAS = java.util.Set.of("field", "with", "tone");
+
+    /** The tones of a {@code notify}. */
+    public static final List<String> TONES = List.of("ok", "warn", "bad", "accent");
+
+    /**
+     * The effects of {@code p} on {@code trigger} as the panel keeps them, in order: a plain state write {@code {state, to}}, or
+     * {@code {do: <word>, ..., when?}} (empty when it has none).
+     */
+    @SuppressWarnings("unchecked")
+    public static List<Map<String, Object>> list(Panel p, String trigger) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        if (p.options().get(KEY) instanceof Map<?, ?> on && on.get(trigger) instanceof List<?> l) {
+            for (Object o : l) {
+                if (o instanceof Map<?, ?> m) {
+                    out.add((Map<String, Object>) m);
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Whether the list of {@code trigger} holds more than plain state writes (a {@code when}, or another effect): its marks then carry the
+     * whole list ({@code on}) and no {@code set}.
+     */
+    public static boolean full(Panel p, String trigger) {
+        return list(p, trigger).stream().anyMatch(m -> m.containsKey("do"));
+    }
 
     /**
      * One effect that writes a state value.
@@ -47,9 +89,12 @@ public final class Effects {
      */
     public record SetState(String state, String to) {}
 
-    /** The state effects of {@code p} on {@code trigger}, in order (empty when it has none). */
+    /** The state effects of {@code p} on {@code trigger}, in order (empty when it has none, or when its list is {@link #full}). */
     public static List<SetState> sets(Panel p, String trigger) {
         List<SetState> out = new ArrayList<>();
+        if (full(p, trigger)) {
+            return out;                                                    // the whole list is carried instead (on)
+        }
         if (p.options().get(KEY) instanceof Map<?, ?> on && on.get(trigger) instanceof List<?> l) {
             for (Object o : l) {
                 if (o instanceof Map<?, ?> m && m.get("state") instanceof String s && m.get("to") instanceof String to) {

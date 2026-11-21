@@ -182,7 +182,7 @@ cases:
           columns: [ { label: Id, bind: "@.id" } ]
           on:
             row-dblclick: [ { set: { state: order, to: "@.id" } } ]
-            row-click: [ { host: order.cancel } ]
+            row-click: [ { go: order.cancel } ]
             bar-click: [ { set: { state: order, to: "@.id" } } ]
     expect:
       ok: false
@@ -191,7 +191,7 @@ cases:
         messageStart: "the trigger 'row-dblclick' comes with a later step of the effect list"
         range: { start: { line: 16, column: 21 } }
       - code: RCH-2023
-        message: "the effect 'host' comes with a later step of the effect list; this level has set"
+        message: "the effect 'go' comes with a later step of the effect list; this level has set, toggle, clear, notify, host"
         range: { start: { line: 17, column: 20 } }
       - code: RCH-2023
         message: "'table' panels do not fire bar-click (bar-click: hbar)"
@@ -237,3 +237,39 @@ cases:
       problems:
       - code: RCH-2023
         message: "'hbar' panels do not fire point-click (point-click: area, candlestick, gauge, kv, line, metric, scatter, status, timeline, waterfall)"
+
+  - id: the-general-effects-checked
+    kind: problem
+    source: "SUTRA_EXPANSION I1 (toggle a boolean; notify tones; host action names; the keys of each effect)"
+    sutra: |
+      rachana: 1
+      sutra: state-demo
+      version: 1
+      match: { kind: demo }
+      title: { id: "'Demo'" }
+      data:
+        orders: { rows: [ { id: A } ] }
+      state:
+        order: { type: text }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-click:
+              - { notify: "Hi", tone: loud }
+              - { host: "order cancel" }
+              - { clear: order, with: { a: "1" } }
+        - { id: other, kind: table, rows: $.orders, columns: [ { label: Id, bind: "@.id" } ], on: { row-click: [ { toggle: order } ] } }
+    expect:
+      ok: false
+      problems:
+      - code: RCH-2020
+        message: "notify tone is one of ok, warn, bad, accent"
+      - code: RCH-2020
+        message: "host action 'order cancel' is a dotted name of letters, digits, _ and -"
+      - code: RCH-2011
+        message: "unknown key 'with' in the effect clear"
+      - code: RCH-2020
+        message: "panel 'other' toggles state 'order', which is not a boolean"

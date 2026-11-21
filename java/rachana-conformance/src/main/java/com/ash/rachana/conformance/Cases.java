@@ -411,7 +411,8 @@ public final class Cases {
             var r = com.ash.rachana.control.Fire.fire(vm, text(step.get("panel")), text(step.get("trigger")),
                     step.get("mark") == null ? 0 : Integer.parseInt(text(step.get("mark"))));
             Map<String, Object> writes = new LinkedHashMap<>();
-            r.effects().stream().filter(e -> "set".equals(e.get("do"))).forEach(e -> writes.put(text(e.get("state")), e.get("value")));
+            r.effects().stream().filter(e -> List.of("set", "toggle", "clear").contains(text(e.get("do"))))
+                    .forEach(e -> writes.put(text(e.get("state")), e.get("value")));          // clear: empty, so the default stands
             if (!writes.isEmpty()) {
                 s.state(writes);
                 vm = s.view();

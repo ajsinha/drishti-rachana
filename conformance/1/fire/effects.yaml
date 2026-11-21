@@ -1,0 +1,109 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: fire/effects
+since: "1.2"
+profile: core
+verified: true
+description: "The general effect list (SUTRA_EXPANSION I1, level 1.2): toggle, clear, notify and host beside set, when guards evaluated per mark, the whole list carried as the mark's on (contract 1.2, EffectView); Rachana runs the state effects and hands notify and host to the host."
+cases:
+
+  - id: when-guards-and-every-built-effect
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (effects, when); LIBRARIES 6.2 (host actions are the host's)"
+    note: "Row A is open, so its cancel action is offered; row B is closed, so its when leaves the host effect out. A list with more than plain writes is carried as on, not set."
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Orders'" }
+      data:
+        orders: { rows: [ { id: A, open: true }, { id: B, open: false } ] }
+      state:
+        order:  { type: text, default: none }
+        detail: { type: boolean, default: false }
+      panels:
+        - id: orders
+          kind: table
+          rows: $.orders
+          columns: [ { label: Id, bind: "@.id" } ]
+          on:
+            row-click:
+              - { set: { state: order, to: "@.id" } }
+              - { toggle: detail }
+              - { host: order.cancel, with: { id: "@.id", n: "#index + 1" }, when: "@.open" }
+              - { notify: "Order ${@.id}", tone: ok }
+        - { id: chosen, kind: metric, label: Order, value: "state.order" }
+    steps:
+      - { panel: orders, trigger: row-click }
+      - { panel: orders, trigger: row-click, mark: 1 }
+    expect:
+      at:
+        /panels/0/data/rows/0/on: { row-click: [ { do: set, state: order, value: A }, { do: toggle, state: detail }, { do: host, action: order.cancel, with: { id: A, n: 1 } }, { do: notify, text: "Order A", tone: ok } ] }
+        /panels/0/data/rows/1/on: { row-click: [ { do: set, state: order, value: B }, { do: toggle, state: detail }, { do: notify, text: "Order B", tone: ok } ] }
+      steps:
+        - state: { order: A, detail: true }
+          effects:
+            - { do: set, state: order, value: A }
+            - { do: toggle, state: detail, value: true }
+            - { do: host, action: order.cancel, with: { id: A, n: 1 } }
+            - { do: notify, text: "Order A", tone: ok }
+          at:
+            /panels/1/data/value/text: "A"
+        - state: { order: B, detail: false }
+          effects:
+            - { do: set, state: order, value: B }
+            - { do: toggle, state: detail, value: false }
+            - { do: notify, text: "Order B", tone: ok }
+
+  - id: clear-goes-back-to-the-default
+    kind: fire
+    source: SUTRA_EXPANSION I1 (clear)
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Desks'" }
+      data:
+        desks: { rows: [ { desk: FX, pnl: 3 }, { desk: Rates, pnl: -1 } ] }
+      state:
+        desk: { type: text, default: All }
+      panels:
+        - id: by-desk
+          kind: hbar
+          rows: $.desks
+          label: desk
+          value: pnl
+          on:
+            bar-click: [ { set: { state: desk, to: "@.desk" }, when: "@.pnl > 0" }, { clear: desk, when: "@.pnl <= 0" } ]
+    given:
+      state: { desk: FX }
+    steps:
+      - { panel: by-desk, trigger: bar-click, mark: 1 }
+      - { panel: by-desk, trigger: bar-click }
+    expect:
+      steps:
+        - { state: { desk: All }, effects: [ { do: clear, state: desk, value: null } ] }
+        - { state: { desk: FX }, effects: [ { do: set, state: desk, value: FX } ] }
+
+  - id: a-figure-hands-an-action-to-the-host
+    kind: fire
+    source: "SUTRA_EXPANSION I1 (point-click on one mark, host)"
+    sutra: |
+      rachana: 1
+      sutra: fire-demo
+      version: 1
+      title: { id: "'Limits'" }
+      state:
+        seen: { type: boolean, default: false }
+      panels:
+        - id: usage
+          kind: metric
+          label: Usage
+          value: "0.8"
+          on:
+            point-click: [ { host: limits.open, with: { level: "'desk'" } }, { set: { state: seen, to: "true" } } ]
+    steps:
+      - { panel: usage, trigger: point-click }
+    expect:
+      steps:
+        - state: { seen: true }
+          effects: [ { do: host, action: limits.open, with: { level: desk } }, { do: set, state: seen, value: true } ]

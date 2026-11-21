@@ -457,6 +457,18 @@ public final class TypedFragment {
                     Map<String, PNode> set = new LinkedHashMap<>();
                     v.map().forEach((sk, sv) -> set.put(sk, "state".equals(sk) ? new PNode(as + "." + target, sv.line(), sv.column()) : ownState(sv, as, sutraFile, out)));
                     m.put(k, new PNode(set, v.line(), v.column()));
+                } else if (("toggle".equals(k) || "clear".equals(k)) && n.map().keySet().stream().allMatch(x -> x.equals(k) || "when".equals(x))
+                        && v.text() != null && !v.isMap() && !v.isList()) {                         // level 1.2: toggle/clear: <name> of its own state
+                    String target = v.text();
+                    if (handed(target)) {
+                        m.put(k, v);
+                    } else if (!privateState.containsKey(target)) {
+                        out.add(problem(SCOPE, "fragment " + name + " " + k + "s state '" + target + "', which is not its own: a fragment writes only its "
+                                + "own state (" + String.join(", ", privateState.keySet()) + ")", sutraFile, v));
+                        m.put(k, v);
+                    } else {
+                        m.put(k, new PNode(as + "." + target, v.line(), v.column()));
+                    }
                 } else {
                     m.put(k, ownState(v, as, sutraFile, out));
                 }
@@ -499,6 +511,13 @@ public final class TypedFragment {
     /** A fragment with no private state sets none: any {@code set: { state }} in its panels reaches the screen ({@code RCH-2117}). */
     private void foreignWrites(PNode panel, String sutraFile, List<SutraProblem> out) {
         walk(panel, n -> {
+            for (String w : List.of("toggle", "clear")) {
+                if (n.isMap() && n.map().get(w) != null && n.map().get(w).text() != null && !n.map().get(w).isMap()
+                        && n.map().keySet().stream().allMatch(k -> k.equals(w) || "when".equals(k)) && !handed(n.map().get(w).text())) {
+                    out.add(problem(SCOPE, "fragment " + name + " " + w + "s state '" + n.map().get(w).text() + "', which is not its own: a fragment "
+                            + "writes only its own state (declare it under state:)", sutraFile, n.map().get(w)));
+                }
+            }
             if (n.isMap() && n.map().get("set") != null && n.map().get("set").isMap() && n.map().get("set").map().get("state") != null
                     && !handed(n.map().get("set").map().get("state").text())) {
                 out.add(problem(SCOPE, "fragment " + name + " sets state '" + n.map().get("set").map().get("state").text() + "', which is not its "
@@ -827,6 +846,14 @@ public final class TypedFragment {
                 p = ownState(p, as, sutraFile, out);                    // S1: state.<name> and set: { state: <name> } become <as>.<name>
             } else {
                 foreignWrites(p, sutraFile, out);
+            }
+            if (p.map().get(com.ash.rachana.model.Effects.KEY) != null) {   // LIBRARIES 6.2: a fragment hands nothing to the host itself
+                walk(p.map().get(com.ash.rachana.model.Effects.KEY), n -> {
+                    if (n.isMap() && n.map().get("host") != null && !n.map().get("host").isMap() && !n.map().get("host").isList()) {
+                        out.add(problem(SCOPE, "fragment " + name + " runs the host action '" + n.map().get("host").text() + "': a fragment never "
+                                + "calls the host; it returns an event and the Sutra that uses it decides", sutraFile, n.map().get("host")));
+                    }
+                });
             }
             Columns cols = new Columns(locals, renames, read);
             PNode rowsOf = p.map().get("rows");             // the rows the panel reads: a table's own (renamed), fixed fields, or refused

@@ -248,6 +248,17 @@
           "type": "object",
           "description": "what a click on the bar writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for this bar's row; absent when the panel's on: bar-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "required": [
@@ -428,6 +439,17 @@
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -598,6 +620,27 @@
           },
           "description": "on a line or area over rows whose on: point-click writes state: beside x, what a click on each point writes into the screen's state (state id to value; null when its effects failed for that row) (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/EffectView"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "beside x, each point's whole effect list (as a mark's on), null for a point whose list ran nothing (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -748,6 +791,17 @@
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -780,6 +834,17 @@
         "set": {
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -846,6 +911,17 @@
         "set": {
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -1424,6 +1500,17 @@
         "set": {
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -2751,6 +2838,17 @@
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
           "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
+          "x-since": "1.2"
         }
       },
       "additionalProperties": false,
@@ -3029,6 +3127,17 @@
         "set": {
           "type": "object",
           "description": "what a click on the row writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for this row; absent when the panel's on: row-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -3364,6 +3473,17 @@
         "set": {
           "type": "object",
           "description": "what a point-click on the mark writes into the screen's state (I1 set: { state, to }): state id to the value, evaluated for the mark's row (a figure or a record: in the panel's context); absent when the panel's on: point-click writes no state (contract 1.2)",
+          "x-since": "1.2"
+        },
+        "on": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EffectView"
+            }
+          },
+          "description": "the whole effect list a click on the mark runs, when it holds more than plain state writes (a when, toggle, clear, notify, host): trigger to its effects (EffectView), evaluated for the mark; the mark then has no set (contract 1.2)",
           "x-since": "1.2"
         }
       },
@@ -4405,6 +4525,53 @@
       "x-java": "java/rachana-core/src/main/java/com/ash/rachana/view/PanelData.java#GeoPoint",
       "x-include": "NON_DEFAULT (lat and lon ALWAYS)",
       "x-since": "1.1"
+    },
+    "EffectView": {
+      "description": "One effect of a mark's effect list, evaluated for the mark (SUTRA_EXPANSION I1, contract 1.2). set, toggle and clear write the screen's state (the painter applies them and sends the values back with the next bind); notify and host are handed to the host, which decides (Rachana never runs a host action)",
+      "type": "object",
+      "properties": {
+        "do": {
+          "enum": [
+            "set",
+            "toggle",
+            "clear",
+            "notify",
+            "host"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "description": "set, toggle, clear: the state's id"
+        },
+        "value": {
+          "description": "set: the value, in the state's type"
+        },
+        "text": {
+          "type": "string",
+          "description": "notify: the message"
+        },
+        "tone": {
+          "enum": [
+            "ok",
+            "warn",
+            "bad",
+            "accent"
+          ]
+        },
+        "action": {
+          "type": "string",
+          "description": "host: the host's action (a dotted name)"
+        },
+        "with": {
+          "type": "object",
+          "description": "host: the arguments, evaluated for the mark"
+        }
+      },
+      "required": [
+        "do"
+      ],
+      "additionalProperties": false,
+      "x-since": "1.2"
     }
   }
 }

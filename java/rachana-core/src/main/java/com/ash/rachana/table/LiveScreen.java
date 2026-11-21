@@ -90,12 +90,17 @@ public final class LiveScreen {
     private final Map<String, String> state = new LinkedHashMap<>();
 
     /**
-     * Changes state values (level 1.2, S1), as a bind request carries them: text per state id (a list's items joined by commas); the next
+     * Changes state values (level 1.2, S1), as a bind request carries them: text per state id (a list's items joined by commas; null: the value is no longer carried and its default stands); the next
      * {@link #view} or {@link #patch} reads them.
      */
     public void state(Map<String, ?> next) {
-        next.forEach((k, v) -> state.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(String::valueOf).toList())
-                : v == null ? "" : String.valueOf(v)));
+        next.forEach((k, v) -> {
+            if (v == null) {
+                state.remove(k);                                           // not carried: its default stands (a clear effect)
+            } else {
+                state.put(k, v instanceof List<?> l ? String.join(",", l.stream().map(String::valueOf).toList()) : String.valueOf(v));
+            }
+        });
     }
 
     /** Changes control values (the next {@link #view} or {@link #patch} reads them). */

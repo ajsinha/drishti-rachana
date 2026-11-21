@@ -335,11 +335,16 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    clicked row and evaluated per row when the panel binds (the mark's `set` in the ViewModel; a value that fails or does
    not fit the state's type stops the list there);
    `set: <control>` with an optional `field:` sets a control from the clicked row and is the panel's `on-select` (one
-   control per click, `RCH-2038`). A `set` naming a state the Sutra does not hold is `RCH-2020`. The other triggers of the
-   closed list (`row-dblclick`, `cell-click`, `change`, `open`, `close`, and the standalone form's `submit`
-   and `cancel`, whose effects run only once the form's own rules pass), a trigger the panel's kind does not
-   fire, and the other effects (`toggle`, `clear`, `open`, `close`, `go`, `fire`, `submit`, `refresh`, `export`, `copy`,
-   `notify`, `host`) and `when` are `RCH-2023` until their step. `on:` is not offered inside a tab.
+   control per click, `RCH-2038`). A `set` naming a state the Sutra does not hold is `RCH-2020`. Also built: `toggle:
+   <state>` (a boolean state, `RCH-2020` otherwise), `clear: <state>` (back to its default), `notify: <template>` (with
+   `tone:` one of `ok`, `warn`, `bad`, `accent`) and `host: <action>` (a dotted name, with `with: { name: <expression> }`):
+   the host's own action, handed over and never run by Rachana (the host decides; a typed fragment never names one,
+   `RCH-2117`). Any effect but `set: <control>` takes `when: <expression>`, evaluated per mark: false leaves the effect
+   out for that mark. A list that holds only plain state writes is carried as the mark's `set`; any other list as the
+   mark's `on` (VIEWMODEL contract 1.2, `EffectView`). The other triggers of the closed list (`row-dblclick`,
+   `cell-click`, `change`, `open`, `close`, and the standalone form's `submit` and `cancel`, whose effects run only once
+   the form's own rules pass), a trigger the panel's kind does not fire, and the other effects (`open`, `close`, `go`,
+   `fire`, `submit`, `refresh`, `export`, `copy`) are `RCH-2023` until their step. `on:` is not offered inside a tab.
 
 ## 3. Where expressions appear
 

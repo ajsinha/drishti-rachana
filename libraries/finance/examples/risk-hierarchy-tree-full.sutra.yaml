@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: risk-hierarchy-tree-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Risk hierarchy tree (full)'" }
+data:
+  nodes:
+    rows:
+      - { NODE: FIRM, PARENT_NODE: "", NODE_NAME: Firm, MEASURE: 3200000, LIM: 4000000 }
+      - { NODE: MKT, PARENT_NODE: FIRM, NODE_NAME: Markets, MEASURE: 2400000, LIM: 3000000 }
+      - { NODE: RATES, PARENT_NODE: MKT, NODE_NAME: Rates desk, MEASURE: 1500000, LIM: 1800000 }
+      - { NODE: CREDIT, PARENT_NODE: MKT, NODE_NAME: Credit desk, MEASURE: 1100000, LIM: 1200000 }
+      - { NODE: TREAS, PARENT_NODE: FIRM, NODE_NAME: Treasury, MEASURE: 600000, LIM: 900000 }
+panels:
+  - use: finance/risk-hierarchy-tree@1
+    with:
+      title: VaR by desk
+      open: 3
+      rows: { from: $.nodes, columns: { id: NODE, parent: PARENT_NODE, name: NODE_NAME, value: MEASURE, limit: LIM } }

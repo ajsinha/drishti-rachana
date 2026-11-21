@@ -1,0 +1,38 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: pnl-waterfall
+version: 1
+doc:
+  summary: P&L explained - from the opening value through each effect to the close.
+  description: >-
+    One row per effect in the order you want them drawn (rates, spreads, FX, carry, new trades, unexplained). A row
+    flagged as a total restarts the running figure, so the opening value is one; the close is added at the end. Use it
+    on a P&L explain screen.
+  category: pnl
+  tags: [pnl, explain, waterfall]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per effect, in order
+    columns:
+      effect: { type: text,    doc: The effect's name }
+      amount: { type: number,  doc: The effect's amount; gains positive }
+      total:  { type: boolean, optional: true, doc: True where the amount is a total such as the opening value }
+  title:     { type: text, default: P&L explain, doc: The panel's title }
+  fmt:       { type: format, default: signed0, doc: How the amounts are written }
+  sum-label: { type: text, default: Close, doc: What the closing figure is called }
+emits:
+  - { name: step, payload: { effect: text }, doc: A step was chosen }
+panels:
+  - id: explain
+    kind: waterfall
+    title: arg.title
+    rows: "map(arg.rows, {label: @.effect, value: @.amount, total: @.total})"
+    label: label
+    value: value
+    total: total
+    sum: arg.sum-label
+    fmt: "%{fmt}"
+    emits: [ { name: step, on: point-click, payload: { effect: "@.label" } } ]

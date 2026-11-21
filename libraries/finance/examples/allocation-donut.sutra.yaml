@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: allocation-donut-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Allocation donut'" }
+data:
+  alloc:
+    rows:
+      - { CLASS: Equities, MV: 6200000 }
+      - { CLASS: Bonds, MV: 3100000 }
+      - { CLASS: Cash, MV: 700000 }
+panels:
+  - use: finance/allocation-donut@1
+    with:
+      rows: { from: $.alloc, columns: { label: CLASS, value: MV } }

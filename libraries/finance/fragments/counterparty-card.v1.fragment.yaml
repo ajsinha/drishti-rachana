@@ -1,0 +1,39 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: counterparty-card
+version: 1
+doc:
+  summary: A counterparty at a glance - name, rating, country, sector, current exposure, limit and the share used.
+  description: >-
+    Build the counterparty record from your own fields with a record literal; only the name is needed. The share used is
+    shown when both an exposure and a limit are given. Panels of your own can go under the card.
+  category: counterparty
+  tags: [counterparty, credit, card]
+params:
+  counterparty:
+    type: "record{name: text, rating: text, country: text, sector: text, exposure: number, limit: number}"
+    required: true
+    doc: "The counterparty: name, and optionally rating, country, sector, exposure, limit"
+  fmt: { type: format, default: amount0, doc: How exposure and limit are written }
+slots:
+  footer: { accepts: panels, max: 2, doc: Panels under the card }
+panels:
+  - id: card
+    kind: kv
+    title: "${arg.counterparty.name}"
+    description: "${coalesce(arg.counterparty.sector, '')}"
+    rows: arg.counterparty
+    columns:
+      - { label: Rating, bind: "@.rating" }
+      - { label: Country, bind: "@.country" }
+      - { label: Exposure, bind: "@.exposure", fmt: "%{fmt}" }
+      - { label: Limit, bind: "@.limit", fmt: "%{fmt}" }
+  - id: used
+    kind: gauge
+    when: "!is_blank(arg.counterparty.exposure) && !is_blank(arg.counterparty.limit) && arg.counterparty.limit > 0"
+    value: arg.counterparty.exposure
+    max: arg.counterparty.limit
+    label: Share of limit used
+    fmt: pct0
+  - { slot: footer }

@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: leg-table-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Leg table'" }
+data:
+  legs:
+    rows:
+      - { LEG_NO: "1", SIDE: Pay, NOTL: 25000000, CCY: USD }
+      - { LEG_NO: "2", SIDE: Receive, NOTL: 25000000, CCY: USD }
+panels:
+  - use: finance/leg-table@1
+    with:
+      rows: { from: $.legs, columns: { leg: LEG_NO, direction: SIDE, notional: NOTL, currency: CCY } }

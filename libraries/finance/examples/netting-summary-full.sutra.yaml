@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: netting-summary-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Netting summary (full)'" }
+data:
+  ns: { record: { GROSS_POS: 6500000, GROSS_NEG: -2100000, NET_VAL: 4400000, COLL: 2200000 } }
+  tv:
+    rows:
+      - { TRADE: T-1001, TV: 3100000 }
+      - { TRADE: T-1002, TV: -1200000 }
+      - { TRADE: T-1003, TV: 2500000 }
+      - { TRADE: T-1004, TV: -900000 }
+panels:
+  - use: finance/netting-summary@1
+    as: ns
+    with:
+      gross-positive: "$.ns.GROSS_POS"
+      gross-negative: "$.ns.GROSS_NEG"
+      net: "$.ns.NET_VAL"
+      collateral: "$.ns.COLL"
+      trades: { from: $.tv, columns: { id: TRADE, value: TV } }
+  - { id: picked, kind: markdown, text: "Trade ${@ns.bar.id}", waits: ns-bars }

@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: var-path-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Var path'" }
+data:
+  scen:
+    rows:
+      - { HIST_DATE: "2023-03-10", SCEN_PNL: -210000 }
+      - { HIST_DATE: "2023-03-13", SCEN_PNL: -80000 }
+      - { HIST_DATE: "2023-03-14", SCEN_PNL: 40000 }
+panels:
+  - use: finance/var-path@1
+    with:
+      rows: { from: $.scen, columns: { date: HIST_DATE, pnl: SCEN_PNL } }

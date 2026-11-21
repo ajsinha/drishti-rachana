@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: settlement-figures-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Settlement figures (full)'" }
+data:
+  pay:
+    rows:
+      - { PAYDT: "2026-01-15", AMT: 120000, STATE: Due }
+      - { PAYDT: "2026-01-15", AMT: 30000, STATE: Paid }
+      - { PAYDT: "2026-01-20", AMT: 80000, STATE: Due }
+      - { PAYDT: "2026-01-10", AMT: 45000, STATE: Late }
+      - { PAYDT: "2026-02-20", AMT: 99000, STATE: Due }
+panels:
+  - use: finance/settlement-figures@1
+    with:
+      today: "'2026-01-15'"
+      fmt: amount0
+      rows: { from: $.pay, columns: { pay_date: PAYDT, amount: AMT, status: STATE } }

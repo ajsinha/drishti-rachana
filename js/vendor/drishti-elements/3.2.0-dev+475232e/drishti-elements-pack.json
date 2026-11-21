@@ -5,13 +5,19 @@
     "drishti-views": "3.1.0",
     "drishti-events": "3.1.0",
     "drishti-inputs": "3.1.0",
-    "drishti-chart": "3.1.0"
+    "drishti-chart": "3.1.0",
+    "drishti-grid": "3.1.0",
+    "drishti-graph": "3.1.0",
+    "drishti-tree": "3.1.0"
   },
   "requested": [
     "core",
     "views",
     "events",
-    "chart"
+    "chart",
+    "grid",
+    "graph",
+    "tree"
   ],
   "theme": "all",
   "engines": [
@@ -19,12 +25,12 @@
   ],
   "files": {
     "drishti-elements.css": {
-      "bytes": 105504,
-      "integrity": "sha384-z0Cr7oQX4S5srJ045iiPh2JCJOe0FQd6MF4L6OEQGXJ9vBPfMKgL1nn1Jm8xCTzD"
+      "bytes": 169542,
+      "integrity": "sha384-CMBZ97G21onhnTG4ZYU4K4EPBXz995XqmhLSaoY1NaRX/SzOUsL6KFh+8octBDm9"
     },
     "drishti-elements.js": {
-      "bytes": 2258629,
-      "integrity": "sha384-bKaNF50Q6tfNvhPgmhdaknwmyDEkSCf4rAKWhARR3gwSLfNmmXVb2wTCjayROPVa"
+      "bytes": 3063630,
+      "integrity": "sha384-odNl5UiCkh+roORvTdykraTKwzVzk+t+2wMHzcNkQPodsX1RCPdXMq7Z2z2Pvsow"
     },
     "vendor/codemirror/LICENSE": {
       "bytes": 1113,

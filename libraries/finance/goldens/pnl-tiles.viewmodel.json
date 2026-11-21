@@ -1,0 +1,1 @@
+{"contract":"1.0","keys":[],"panels":[{"area":"main","data":{"caption":"","delta":null,"unit":null,"value":{"emphasis":true,"label":"Day","path":"$.pnl.DAY_PNL","text":"+125,000","tone":"pos"}},"empty":false,"id":"day","inferred":false,"kind":"metric"}],"strip":[],"title":{"id":"Pnl tiles","pill":null,"with":null}}

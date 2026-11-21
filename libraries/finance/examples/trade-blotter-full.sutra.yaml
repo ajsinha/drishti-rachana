@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: trade-blotter-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Trade blotter (full)'" }
+data:
+  trades:
+    rows:
+      - { TRADE_ID: T-1001, PRODUCT: Swap, CPTY: Birch Bank, BOOK: RATES-A, NOTL: 25000000, CCY: USD, MAT: "2030-11-05", STATE: Live }
+      - { TRADE_ID: T-1002, PRODUCT: Forward, CPTY: Cedar Fund, BOOK: FX-B, NOTL: 8000000, CCY: EUR, MAT: "2026-06-17", STATE: Pending }
+panels:
+  - use: finance/trade-blotter@1
+    with:
+      title: Open trades
+      rows: { from: $.trades, columns: { id: TRADE_ID, book: BOOK, notional: NOTL, status: STATE } }
+      columns:
+        - { label: Trade, bind: "@.id" }
+        - { label: Book, bind: "@.book" }
+        - { label: Notional, bind: "@.notional", fmt: compact, total: true }
+        - { label: Status, bind: "@.status", tone: status }

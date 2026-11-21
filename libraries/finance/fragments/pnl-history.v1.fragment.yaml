@@ -1,0 +1,46 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: pnl-history
+version: 1
+doc:
+  summary: Daily P&L as a line of the cumulative total, with the best and worst day as figures.
+  description: >-
+    One row per day. The line is the running total in date order, or the daily values when cumulative is off. The best
+    and worst day are read from the rows you give.
+  category: pnl
+  tags: [pnl, history, cumulative]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per day
+    columns:
+      date: { type: date,   doc: The day }
+      pnl:  { type: number, doc: The day's P&L }
+  title:      { type: text, default: P&L history, doc: The panel's title }
+  fmt:        { type: format, default: signed0, doc: How the P&L is written }
+  cumulative: { type: boolean, default: true, doc: Whether the line is the running total }
+emits:
+  - { name: point, payload: { date: date }, doc: A point of the line was chosen }
+panels:
+  - id: best
+    kind: metric
+    label: Best day
+    value: "max(map(arg.rows, @.pnl))"
+    fmt: "%{fmt}"
+    tone: sign
+  - id: worst
+    kind: metric
+    label: Worst day
+    value: "min(map(arg.rows, @.pnl))"
+    fmt: "%{fmt}"
+    tone: sign
+  - id: line
+    kind: line
+    title: arg.title
+    rows: "map(sort(arg.rows, @.date), {date: @.date, value: if(arg.cumulative, sum(take(sort(arg.rows, @.date), #index + 1), 'pnl'), @.pnl)})"
+    x: date
+    y: value
+    fmt: "%{fmt}"
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]

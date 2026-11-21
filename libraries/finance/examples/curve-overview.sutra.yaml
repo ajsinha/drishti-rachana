@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: curve-overview-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Curve overview'" }
+data:
+  pts:
+    rows:
+      - { PILLAR: 3M, ZERO_RATE: 0.0412 }
+      - { PILLAR: 1Y, ZERO_RATE: 0.0398 }
+      - { PILLAR: 5Y, ZERO_RATE: 0.0385 }
+panels:
+  - use: finance/curve-overview@1
+    with:
+      rows: { from: $.pts, columns: { tenor: PILLAR, zero: ZERO_RATE } }

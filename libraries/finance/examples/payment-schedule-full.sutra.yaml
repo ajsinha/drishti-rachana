@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: payment-schedule-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Payment schedule (full)'" }
+data:
+  pay:
+    rows:
+      - { PAYDT: "2026-08-05", PSTART: "2026-02-05", PEND: "2026-08-05", RT: 0.0385, AMT: -482500, CCY: USD, STATE: Due }
+      - { PAYDT: "2025-11-05", PSTART: "2025-05-05", PEND: "2025-11-05", RT: 0.0381, AMT: -476000, CCY: USD, STATE: Paid }
+      - { PAYDT: "2026-02-05", PSTART: "2025-11-05", PEND: "2026-02-05", RT: 0.0383, AMT: -480000, CCY: USD, STATE: Late }
+panels:
+  - use: finance/payment-schedule@1
+    with:
+      rows: { from: $.pay, columns: { pay_date: PAYDT, start: PSTART, end: PEND, rate: RT, amount: AMT, currency: CCY, status: STATE } }

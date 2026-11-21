@@ -1,0 +1,42 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: payment-schedule
+version: 1
+doc:
+  summary: A trade's scheduled payments - period, payment date, rate, amount, currency, paid or due.
+  description: >-
+    One row per payment, listed by payment date. The period start and end, the rate and a status word are optional; the
+    status tones the row (paid is quiet, due and late are not).
+  category: trading
+  tags: [payments, schedule, cashflows]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per payment
+    columns:
+      pay_date: { type: date,   doc: The payment date }
+      amount:   { type: number, doc: The amount paid or received }
+      currency: { type: text,   doc: The currency }
+      start:    { type: date,   optional: true, doc: The period start }
+      end:      { type: date,   optional: true, doc: The period end }
+      rate:     { type: number, optional: true, doc: The rate for the period }
+      status:   { type: text,   optional: true, doc: Paid, due or late }
+  title:    { type: text, default: Payments, doc: The panel's title }
+  fmt:      { type: format, default: amount2, doc: How amounts are written }
+  rate-fmt: { type: format, default: pct2, doc: How the rate is written }
+panels:
+  - id: payments
+    kind: table
+    title: arg.title
+    rows: "map(sort(arg.rows, @.pay_date), {pay_date: @.pay_date, start: @.start, end: @.end, rate: @.rate, amount: @.amount, currency: @.currency, status: @.status})"
+    search: false
+    columns:
+      - { label: Pay date, bind: "@.pay_date", fmt: date }
+      - { label: Start, bind: "@.start", fmt: date }
+      - { label: End, bind: "@.end", fmt: date }
+      - { label: Rate, bind: "@.rate", fmt: "%{rate-fmt}" }
+      - { label: Amount, bind: "@.amount", fmt: "%{fmt}", tone: sign }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Status, bind: "@.status", tone: status }

@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: holdings-table-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Holdings table'" }
+data:
+  hold:
+    rows:
+      - { ISSUER: Alder Ltd, MV: 4200000 }
+      - { ISSUER: Birch Corp, MV: 2600000 }
+panels:
+  - use: finance/holdings-table@1
+    as: hold
+    with:
+      rows: { from: $.hold, columns: { name: ISSUER, value: MV } }
+  - { id: picked, kind: markdown, text: "Holding ${@hold.open.name}", waits: hold-holdings }

@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: var-histogram-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Var histogram'" }
+data:
+  scen:
+    rows: [ { SCEN_PNL: -210000 }, { SCEN_PNL: -80000 }, { SCEN_PNL: -20000 }, { SCEN_PNL: 5000 }, { SCEN_PNL: 40000 }, { SCEN_PNL: 90000 }, { SCEN_PNL: 120000 }, { SCEN_PNL: 15000 } ]
+panels:
+  - use: finance/var-histogram@1
+    with:
+      var: 180000
+      bins: 6
+      rows: { from: $.scen, columns: { pnl: SCEN_PNL } }

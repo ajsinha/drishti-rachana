@@ -1,0 +1,61 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: limit-gauge
+version: 1
+doc:
+  summary: One limit - the amount used against it, with a warning band and, when given, the recent history.
+  description: >-
+    Give the amount used and the limit. The gauge shows the share used and a word says within the limit, near it (from
+    the warning share) or over it. A history of the amount used is drawn when you give it. Panels of your own can go under it.
+  category: limits
+  tags: [limit, utilisation, gauge]
+params:
+  used:    { type: number, required: true, doc: The amount used }
+  limit:   { type: number, required: true, doc: The limit }
+  warn-at: { type: number, default: 0.8, min: 0, max: 1, doc: The share of the limit from which the figure is near it }
+  label:   { type: text, default: Limit used, doc: What the gauge measures }
+  fmt:     { type: format, default: amount0, doc: How the used amount and the limit are written }
+  history:
+    type: table
+    optional: true
+    doc: The amount used over recent days
+    columns:
+      date: { type: date,   doc: The day }
+      used: { type: number, doc: The amount used that day }
+slots:
+  footer: { accepts: panels, max: 2, doc: Panels under the gauge }
+panels:
+  - id: gauge
+    kind: gauge
+    value: arg.used
+    max: arg.limit
+    label: arg.label
+    fmt: pct0
+  - id: figures
+    kind: status
+    fields:
+      - { label: Used, bind: "arg.used", fmt: "%{fmt}" }
+      - { label: Limit, bind: "arg.limit", fmt: "%{fmt}" }
+      - { label: Headroom, bind: "arg.limit - arg.used", fmt: "%{fmt}" }
+  - id: over
+    kind: status
+    when: "arg.used > arg.limit"
+    fields: [ { label: Position, bind: "'Over the limit'", tone: bad } ]
+  - id: near
+    kind: status
+    when: "arg.used <= arg.limit && arg.used >= arg.warn-at * arg.limit"
+    fields: [ { label: Position, bind: "'Near the limit'", tone: warn } ]
+  - id: within
+    kind: status
+    when: "arg.used < arg.warn-at * arg.limit"
+    fields: [ { label: Position, bind: "'Within the limit'", tone: ok } ]
+  - id: trend
+    kind: line
+    when: "size(arg.history) > 0"
+    title: Recent use
+    rows: "map(sort(arg.history, @.date), {date: @.date, used: @.used})"
+    x: date
+    y: used
+    fmt: "%{fmt}"
+  - { slot: footer }

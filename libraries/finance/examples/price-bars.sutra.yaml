@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: price-bars-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Price bars'" }
+data:
+  px:
+    rows:
+      - { DAY: "2026-01-12", OPEN_PX: 99.0, HIGH_PX: 100.5, LOW_PX: 98.2, CLOSE_PX: 100.1 }
+      - { DAY: "2026-01-13", OPEN_PX: 100.1, HIGH_PX: 101.0, LOW_PX: 99.4, CLOSE_PX: 99.9 }
+      - { DAY: "2026-01-14", OPEN_PX: 99.9, HIGH_PX: 102.2, LOW_PX: 99.7, CLOSE_PX: 101.8 }
+panels:
+  - use: finance/price-bars@1
+    with:
+      rows: { from: $.px, columns: { date: DAY, open: OPEN_PX, high: HIGH_PX, low: LOW_PX, close: CLOSE_PX } }

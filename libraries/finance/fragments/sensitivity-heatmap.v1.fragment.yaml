@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: sensitivity-heatmap
+version: 1
+doc:
+  summary: One sensitivity across two axes - risk factor by tenor, currency by tenor - as a shaded grid with totals.
+  description: >-
+    One row per factor and bucket. Rows with the same pair are added. Cells are shaded by size, with row and column
+    totals. Use it for DV01, vega or any additive sensitivity.
+  category: market-risk
+  tags: [sensitivities, heatmap, grid]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per factor and bucket
+    columns:
+      factor: { type: text,   doc: The risk factor, such as a currency }
+      bucket: { type: text,   doc: The tenor or strike bucket }
+      value:  { type: number, doc: The sensitivity }
+  title: { type: text, default: Sensitivity grid, doc: The panel's title }
+  fmt:   { type: format, default: signed0, doc: How the figures are written }
+panels:
+  - id: grid
+    kind: pivot
+    title: arg.title
+    rows: arg.rows
+    by: factor
+    across: bucket
+    value: value
+    agg: sum
+    fmt: "%{fmt}"
+    heat: true
+    totals: true

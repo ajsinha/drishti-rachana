@@ -1,0 +1,21 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: quote-card-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Quote card (full)'" }
+data:
+  q: { record: { LAST_PX: 101.4, PREV_CLOSE: 100.1, LOW_PX: 99.8, HIGH_PX: 102.3, WK52_LOW: 78.5, WK52_HIGH: 112.0, ASOF: "2026-01-15 16:00" } }
+panels:
+  - use: finance/quote-card@1
+    with:
+      title: Alder Ltd
+      last: "$.q.LAST_PX"
+      previous: "$.q.PREV_CLOSE"
+      day-low: "$.q.LOW_PX"
+      day-high: "$.q.HIGH_PX"
+      year-low: "$.q.WK52_LOW"
+      year-high: "$.q.WK52_HIGH"
+      as-of: "15 Jan 2026, 16:00"

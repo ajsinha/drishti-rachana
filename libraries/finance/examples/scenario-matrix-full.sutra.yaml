@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: scenario-matrix-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Scenario matrix (full)'" }
+data:
+  stress:
+    rows:
+      - { SCEN: Rates up 100bp, DESK: Rates, RES_PNL: -420000 }
+      - { SCEN: Rates up 100bp, DESK: Credit, RES_PNL: -90000 }
+      - { SCEN: Rates up 100bp, DESK: FX, RES_PNL: 12000 }
+      - { SCEN: Equity down 10%, DESK: Rates, RES_PNL: 15000 }
+      - { SCEN: Equity down 10%, DESK: Credit, RES_PNL: -210000 }
+      - { SCEN: Equity down 10%, DESK: FX, RES_PNL: -30000 }
+panels:
+  - use: finance/scenario-matrix@1
+    with:
+      title: Stress by desk
+      heat: true
+      rows: { from: $.stress, columns: { scenario: SCEN, group: DESK, pnl: RES_PNL } }

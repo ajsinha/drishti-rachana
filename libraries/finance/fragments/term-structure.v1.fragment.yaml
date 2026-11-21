@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: term-structure
+version: 1
+doc:
+  summary: One term structure - zero rates, forwards or volatilities by expiry - drawn against tenor.
+  description: >-
+    One row per tenor in the order you want them drawn. Sort them first when they are not in tenor order. Use it for any
+    one measure over tenors; for the pillars as a table use finance/curve-table.
+  category: market-data
+  tags: [curve, term-structure, tenor]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per tenor, in tenor order
+    columns:
+      tenor: { type: text,   doc: The tenor, such as 3M or 5Y }
+      value: { type: number, doc: The measure at the tenor }
+  title: { type: text, default: Term structure, doc: The panel's title }
+  fmt:   { type: format, default: pct2, doc: How the values are written }
+  step:  { type: boolean, default: false, doc: Whether the line steps between tenors instead of joining them }
+  mark:  { type: text, optional: true, doc: A tenor to mark }
+emits:
+  - { name: point, payload: { tenor: text, value: number }, doc: A point of the line was chosen }
+panels:
+  - id: line
+    kind: line
+    title: arg.title
+    rows: arg.rows
+    x: tenor
+    y: value
+    fmt: "%{fmt}"
+    step: arg.step
+    mark: "coalesce(arg.mark, '')"
+    emits: [ { name: point, on: point-click, payload: { tenor: "@.tenor", value: "@.value" } } ]

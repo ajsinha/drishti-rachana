@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: greeks-ladder-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Greeks ladder'" }
+data:
+  greeks:
+    rows:
+      - { TENOR: 1Y, DELTA_USD: 12000, VEGA_USD: 3400 }
+      - { TENOR: 5Y, DELTA_USD: -8500, VEGA_USD: 5100 }
+panels:
+  - use: finance/greeks-ladder@1
+    as: greeks
+    with:
+      rows: { from: $.greeks, columns: { bucket: TENOR, delta: DELTA_USD, vega: VEGA_USD } }
+  - { id: picked, kind: markdown, text: "Bucket ${@greeks.select.bucket}", waits: greeks-greeks }

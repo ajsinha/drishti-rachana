@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: payment-schedule-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Payment schedule'" }
+data:
+  pay:
+    rows:
+      - { PAYDT: "2026-02-05", AMT: -480000, CCY: USD }
+      - { PAYDT: "2026-08-05", AMT: -482500, CCY: USD }
+panels:
+  - use: finance/payment-schedule@1
+    with:
+      rows: { from: $.pay, columns: { pay_date: PAYDT, amount: AMT, currency: CCY } }

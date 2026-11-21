@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: position-table-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Position table'" }
+data:
+  pos:
+    rows:
+      - { SYM: ALDR, QTY: 1000, MKT_VAL: 101400 }
+      - { SYM: BIRC, QTY: 500, MKT_VAL: 48200 }
+panels:
+  - use: finance/position-table@1
+    as: positions
+    with:
+      rows: { from: $.pos, columns: { instrument: SYM, quantity: QTY, value: MKT_VAL } }
+  - { id: picked, kind: markdown, text: "Instrument ${@positions.open.instrument}", waits: positions-positions }

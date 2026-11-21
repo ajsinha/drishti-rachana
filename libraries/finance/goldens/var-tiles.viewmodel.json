@@ -1,0 +1,1 @@
+{"contract":"1.0","keys":[],"panels":[{"area":"main","data":{"caption":"1d horizon","delta":null,"unit":null,"value":{"emphasis":true,"label":"VaR 99%","path":"$.risk.VAR_99","text":"1,850,000"}},"empty":false,"id":"var","inferred":false,"kind":"metric"}],"strip":[],"title":{"id":"Var tiles","pill":null,"with":null}}

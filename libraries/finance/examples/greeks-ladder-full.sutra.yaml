@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: greeks-ladder-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Greeks ladder (full)'" }
+data:
+  greeks:
+    rows:
+      - { TENOR: 1Y, D: 12000, G: 310, V: 3400, T: -90, R: 560 }
+      - { TENOR: 5Y, D: -8500, G: 120, V: 5100, T: -140, R: -410 }
+      - { TENOR: 10Y, D: 4200, G: 40, V: 2300, T: -60, R: 180 }
+panels:
+  - use: finance/greeks-ladder@1
+    with:
+      title: Greeks by tenor
+      rows: { from: $.greeks, columns: { bucket: TENOR, delta: D, gamma: G, vega: V, theta: T, rho: R } }

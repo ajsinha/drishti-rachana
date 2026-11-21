@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: vol-surface-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Vol surface (full)'" }
+data:
+  vols:
+    rows:
+      - { EXP: 1M, K90: 0.231, K95: 0.216, K100: 0.205, K105: 0.209, K110: 0.219 }
+      - { EXP: 3M, K90: 0.226, K95: 0.212, K100: 0.201, K105: 0.205, K110: 0.214 }
+      - { EXP: 6M, K90: 0.222, K95: 0.208, K100: 0.199, K105: 0.202, K110: 0.211 }
+      - { EXP: 1Y, K90: 0.219, K95: 0.205, K100: 0.197, K105: 0.200, K110: 0.208 }
+panels:
+  - use: finance/vol-surface@1
+    with:
+      title: Implied volatility
+      view: 3d
+      rows: { from: $.vols, columns: { expiry: EXP } }
+      strikes:
+        - { label: "90%", bind: "@.K90", fmt: pct2 }
+        - { label: "95%", bind: "@.K95", fmt: pct2 }
+        - { label: "100%", bind: "@.K100", fmt: pct2 }
+        - { label: "105%", bind: "@.K105", fmt: pct2 }
+        - { label: "110%", bind: "@.K110", fmt: pct2 }

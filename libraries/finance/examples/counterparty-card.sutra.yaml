@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: counterparty-card-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Counterparty card'" }
+data:
+  cp: { record: { CP_NAME: Birch Bank } }
+panels:
+  - use: finance/counterparty-card@1
+    with: { counterparty: "{name: $.cp.CP_NAME}" }

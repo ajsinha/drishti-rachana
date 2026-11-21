@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: pnl-tiles-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Pnl tiles'" }
+data:
+  pnl: { record: { DAY_PNL: 125000 } }
+panels:
+  - use: finance/pnl-tiles@1
+    with: { day: "$.pnl.DAY_PNL" }

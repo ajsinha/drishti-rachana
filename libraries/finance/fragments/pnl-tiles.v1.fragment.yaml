@@ -1,0 +1,42 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: pnl-tiles
+version: 1
+doc:
+  summary: Day, month-to-date and year-to-date P&L as three figures toned by sign.
+  description: >-
+    Give the day's P&L and, when you have them, the month-to-date and year-to-date. A figure you leave out is not shown.
+    Use it at the head of a desk or book screen.
+  category: pnl
+  tags: [pnl, figures, desk]
+params:
+  day:      { type: number, required: true, doc: The day's P&L }
+  mtd:      { type: number, optional: true, doc: The month-to-date P&L }
+  ytd:      { type: number, optional: true, doc: The year-to-date P&L }
+  fmt:      { type: format, default: signed0, doc: How the figures are written }
+  currency: { type: text, optional: true, doc: The currency, written under each figure }
+panels:
+  - id: day
+    kind: metric
+    label: Day
+    value: arg.day
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${coalesce(arg.currency, '')}"
+  - id: mtd
+    kind: metric
+    when: "!is_blank(arg.mtd)"
+    label: Month to date
+    value: arg.mtd
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${coalesce(arg.currency, '')}"
+  - id: ytd
+    kind: metric
+    when: "!is_blank(arg.ytd)"
+    label: Year to date
+    value: arg.ytd
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${coalesce(arg.currency, '')}"

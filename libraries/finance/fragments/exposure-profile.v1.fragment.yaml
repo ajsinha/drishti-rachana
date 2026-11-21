@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: exposure-profile
+version: 1
+doc:
+  summary: Exposure through time - expected and potential future exposure by date, against a limit, with the peak called out.
+  description: >-
+    One row per future date with the expected exposure and, optionally, the potential future exposure. The peak is the
+    largest potential figure (or expected, when there is none). The figures arrive as data; nothing is simulated here.
+  category: counterparty
+  tags: [exposure, profile, limit]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per date
+    columns:
+      date:      { type: date,   doc: The future date }
+      expected:  { type: number, doc: The expected exposure }
+      potential: { type: number, optional: true, doc: The potential future exposure }
+  limit: { type: number, optional: true, doc: A horizontal limit drawn across the profile }
+  title: { type: text, default: Exposure profile, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How the peak is written }
+emits:
+  - { name: point, payload: { date: date }, doc: A date of the profile was chosen }
+panels:
+  - id: peak
+    kind: metric
+    label: Peak exposure
+    value: "max(map(arg.rows, coalesce(@.potential, @.expected)))"
+    fmt: "%{fmt}"
+  - id: profile
+    kind: area
+    title: arg.title
+    rows: "map(sort(arg.rows, @.date), {date: @.date, expected: @.expected, potential: @.potential})"
+    x: date
+    series:
+      - { label: Expected, value: expected }
+      - { label: Potential, value: potential }
+    limit: arg.limit
+    limitLabel: Limit
+    emits: [ { name: point, on: point-click, payload: { date: "@.date" } } ]

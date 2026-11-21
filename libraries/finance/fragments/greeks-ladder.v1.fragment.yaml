@@ -1,0 +1,42 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: greeks-ladder
+version: 1
+doc:
+  summary: Sensitivities by bucket - tenor or strike - one row a bucket, a column per greek, totals at the foot.
+  description: >-
+    One row per bucket in the order given. Map only the greeks you have; the others stay blank. Totals add the
+    buckets, which is right for sensitivities but not for every risk measure. A click on a row names the bucket.
+  category: market-risk
+  tags: [greeks, sensitivities, ladder]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per bucket
+    columns:
+      bucket: { type: text,   doc: The tenor or strike bucket }
+      delta:  { type: number, optional: true, doc: The delta }
+      gamma:  { type: number, optional: true, doc: The gamma }
+      vega:   { type: number, optional: true, doc: The vega }
+      theta:  { type: number, optional: true, doc: The theta }
+      rho:    { type: number, optional: true, doc: The rho }
+  title: { type: text, default: Sensitivities, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How the figures are written }
+emits:
+  - { name: select, payload: { bucket: text }, doc: A bucket was chosen }
+panels:
+  - id: greeks
+    kind: table
+    title: arg.title
+    rows: "map(arg.rows, {bucket: @.bucket, delta: @.delta, gamma: @.gamma, vega: @.vega, theta: @.theta, rho: @.rho})"
+    search: false
+    columns:
+      - { label: Bucket, bind: "@.bucket" }
+      - { label: Delta, bind: "@.delta", fmt: "%{fmt}", total: true }
+      - { label: Gamma, bind: "@.gamma", fmt: "%{fmt}", total: true }
+      - { label: Vega, bind: "@.vega", fmt: "%{fmt}", total: true }
+      - { label: Theta, bind: "@.theta", fmt: "%{fmt}", total: true }
+      - { label: Rho, bind: "@.rho", fmt: "%{fmt}", total: true }
+    emits: [ { name: select, on: row-click, payload: { bucket: "@.bucket" } } ]

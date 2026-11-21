@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: agreement-terms-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Agreement terms'" }
+data:
+  ag: { record: { AG_TYPE: Bilateral, AG_CCY: USD } }
+panels:
+  - use: finance/agreement-terms@1
+    with: { terms: "{type: $.ag.AG_TYPE, currency: $.ag.AG_CCY}" }

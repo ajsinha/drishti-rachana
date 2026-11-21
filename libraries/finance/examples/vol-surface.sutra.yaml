@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1
+sutra: vol-surface-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Vol surface'" }
+data:
+  vols:
+    rows:
+      - { EXP: 1M, K90: 0.231, K100: 0.205, K110: 0.219 }
+      - { EXP: 3M, K90: 0.226, K100: 0.201, K110: 0.214 }
+      - { EXP: 1Y, K90: 0.219, K100: 0.197, K110: 0.208 }
+panels:
+  - use: finance/vol-surface@1
+    with:
+      rows: { from: $.vols, columns: { expiry: EXP } }
+      strikes: [ { label: "90%", bind: "@.K90" }, { label: "100%", bind: "@.K100" }, { label: "110%", bind: "@.K110" } ]

@@ -1,0 +1,36 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: lifecycle-events
+version: 1
+doc:
+  summary: A trade's life as a timeline - booked, amended, fixed, paid, matured.
+  description: >-
+    One row per event with its date and a name; a detail line and a status word are optional and tone the event. The
+    latest events are kept when there are very many.
+  category: trading
+  tags: [lifecycle, events, timeline]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per event
+    columns:
+      date:   { type: date, doc: When it happened }
+      event:  { type: text, doc: What happened }
+      detail: { type: text, optional: true, doc: A line of detail }
+      status: { type: text, optional: true, doc: A status word that tones the event }
+  title: { type: text, default: Lifecycle, doc: The panel's title }
+emits:
+  - { name: select, payload: { date: date, event: text }, doc: An event was chosen }
+panels:
+  - id: timeline
+    kind: timeline
+    title: arg.title
+    rows: arg.rows
+    date: date
+    label: event
+    detail: detail
+    status: status
+    tone: status
+    emits: [ { name: select, on: point-click, payload: { date: "@.date", event: "@.event" } } ]

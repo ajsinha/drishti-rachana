@@ -1,0 +1,33 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: agreement-terms
+version: 1
+doc:
+  summary: The terms of a collateral agreement - thresholds, minimum transfer amounts, independent amounts, currency, frequency.
+  description: >-
+    Build the terms record from your own fields with a record literal; every field is optional and a missing one is
+    left blank. The thresholds and minimum transfer amounts are given per side.
+  category: counterparty
+  tags: [agreement, collateral, terms]
+params:
+  terms:
+    type: "record{type: text, threshold_us: number, threshold_them: number, mta_us: number, mta_them: number, independent_amount: number, currency: text, frequency: text}"
+    required: true
+    doc: "The terms: type, threshold_us, threshold_them, mta_us, mta_them, independent_amount, currency, frequency"
+  title: { type: text, default: Agreement terms, doc: The panel's title }
+  fmt:   { type: format, default: amount0, doc: How amounts are written }
+panels:
+  - id: terms
+    kind: kv
+    title: arg.title
+    rows: arg.terms
+    columns:
+      - { label: Type, bind: "@.type" }
+      - { label: Threshold (ours), bind: "@.threshold_us", fmt: "%{fmt}" }
+      - { label: Threshold (theirs), bind: "@.threshold_them", fmt: "%{fmt}" }
+      - { label: Minimum transfer (ours), bind: "@.mta_us", fmt: "%{fmt}" }
+      - { label: Minimum transfer (theirs), bind: "@.mta_them", fmt: "%{fmt}" }
+      - { label: Independent amount, bind: "@.independent_amount", fmt: "%{fmt}" }
+      - { label: Currency, bind: "@.currency" }
+      - { label: Frequency, bind: "@.frequency" }

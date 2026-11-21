@@ -1,0 +1,53 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: fills-summary
+version: 1
+doc:
+  summary: The executions of an order - filled against ordered, average price, slippage, and the fills as a table.
+  description: >-
+    One row per execution. The average price weights each fill by its quantity; the slippage is the average price less a
+    reference price (such as the arrival price) when you give one, shown signed. Use it on an order screen.
+  category: trading
+  tags: [orders, fills, executions]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per execution
+    columns:
+      time:  { type: datetime, doc: When it was executed }
+      qty:   { type: number,   doc: The quantity executed }
+      price: { type: number,   doc: The execution price }
+      venue: { type: text,     optional: true, doc: Where it was executed }
+  ordered:   { type: number, required: true, doc: The quantity ordered }
+  reference: { type: number, optional: true, doc: A price to measure slippage against }
+  title:     { type: text, default: Fills, doc: The panel's title }
+  price-fmt: { type: format, default: text, doc: How prices are written }
+panels:
+  - id: filled
+    kind: metric
+    label: Filled
+    value: "sum(arg.rows, 'qty')"
+    fmt: amount0
+    caption: "${fmt(sum(arg.rows, 'qty') / arg.ordered, 'pct0')} of the order"
+  - id: average
+    kind: metric
+    label: Average price
+    value: "wavg(arg.rows, 'price', 'qty')"
+    fmt: "%{price-fmt}"
+    delta: "if(is_blank(arg.reference), null, wavg(arg.rows, 'price', 'qty') - arg.reference)"
+    deltaFmt: signed2
+    deltaTone: accent
+    caption: "${if(is_blank(arg.reference), '', 'Slippage against the reference')}"
+  - id: fills
+    kind: table
+    title: arg.title
+    rows: arg.rows
+    search: false
+    columns:
+      - { label: Time, bind: "@.time" }
+      - { label: Quantity, bind: "@.qty", fmt: amount0, total: true }
+      - { label: Price, bind: "@.price", fmt: "%{price-fmt}" }
+      - { label: Venue, bind: "@.venue" }

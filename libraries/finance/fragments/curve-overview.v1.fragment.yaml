@@ -1,0 +1,47 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: curve-overview
+version: 1
+doc:
+  summary: A curve as a line and, under it, its pillars as a table.
+  description: >-
+    The term-structure line and the curve-table over the same rows, in one fragment. Use the two fragments on their
+    own when you want to place them apart.
+  category: market-data
+  tags: [curve, overview, rates]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per pillar
+    columns:
+      tenor:      { type: text,   doc: The pillar's tenor }
+      zero:       { type: number, doc: The zero rate }
+      instrument: { type: text,   optional: true, doc: The instrument that fixes the pillar }
+      quote:      { type: number, optional: true, doc: The market quote }
+      df:         { type: number, optional: true, doc: The discount factor }
+  title:    { type: text, default: Curve, doc: The panel's title }
+  zero-fmt: { type: format, default: pct2, doc: How rates are written }
+emits:
+  - { name: select, payload: { tenor: text }, doc: A pillar was chosen }
+panels:
+  - id: line
+    kind: line
+    title: arg.title
+    rows: arg.rows
+    x: tenor
+    y: zero
+    fmt: "%{zero-fmt}"
+  - id: pillars
+    kind: table
+    title: Pillars
+    rows: arg.rows
+    search: false
+    columns:
+      - { label: Tenor, bind: "@.tenor" }
+      - { label: Instrument, bind: "@.instrument" }
+      - { label: Quote, bind: "@.quote", fmt: "%{zero-fmt}" }
+      - { label: Zero, bind: "@.zero", fmt: "%{zero-fmt}" }
+      - { label: Discount factor, bind: "@.df", fmt: text }
+    emits: [ { name: select, on: row-click, payload: { tenor: "@.tenor" } } ]

@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1
+fragment: correlation-matrix
+version: 1
+doc:
+  summary: Correlations between named factors as a shaded square.
+  description: >-
+    One row per ordered pair of factors, with its correlation. The square is shaded by size so the strong pairs stand
+    out. Use it for any symmetric pair measure; give both orders of each pair, or the square will be half empty.
+  category: market-data
+  tags: [correlation, matrix, heat]
+params:
+  rows:
+    type: table
+    required: true
+    doc: One row per ordered pair
+    columns:
+      a:     { type: text,   doc: The first factor }
+      b:     { type: text,   doc: The second factor }
+      value: { type: number, doc: The correlation }
+  title: { type: text, default: Correlations, doc: The panel's title }
+  fmt:   { type: format, default: signed2, doc: How the correlations are written }
+panels:
+  - id: square
+    kind: pivot
+    title: arg.title
+    rows: arg.rows
+    by: a
+    across: b
+    value: value
+    agg: avg
+    fmt: "%{fmt}"
+    heat: true
+    totals: false

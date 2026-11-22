@@ -1,6 +1,6 @@
 {
   "name": "drishti-rachana-cli",
-  "version": "0.12.0",
+  "version": "1.0.0",
   "private": true,
   "description": "The command line: rachana new / dev / build / lint / preview / lib",
   "license": "SEE LICENSE IN ../../../LICENSE",

@@ -38,7 +38,7 @@ the `rachana:` level, an id, a `title`, optional `data:` entries, optional `cont
 The `rachana:` key is the one place a file's level is written: `rachana: 1` (or `1.0`) is level 1.0, `rachana: 1.2` is 1.2. Every
 tool (lint, build, preview, Studio, `<rachana-view>`, the server) reads each file at the level it declares, never above the tool's own:
 a level above the tool's is `RCH-2008`, an unknown minor `RCH-2009`. No command takes a level flag. `rachana new` writes the newest
-level; [rachana upgrade](UPGRADE.md) moves a 1.0 file to 1.2 without changing its meaning. Within major 1 a later level only adds
+level; a Sutra written at 1.0 or 1.1 is moved with `rachana upgrade` of Rachana 0.12.0. Within major 1 a later level only adds
 (SPEC 7.2), so a 1.0 file reads the same on a 1.2 host.
 
 ## 2. Panels

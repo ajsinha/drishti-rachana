@@ -34,7 +34,6 @@ The CLI is `js/packages/rachana-cli/bin/rachana.js` (no npm dependencies). It ne
 | `rachana build [--src <dir>] [--out site] [--libs <path>,...]` | lints, then writes a static site: one page per Sutra, the data, the runtime and the painter |
 | `rachana studio [folder] ...` | [Rachana Studio](STUDIO.md) |
 | `rachana lib <command> ...` | [library commands](LIBRARIES.md#4-rachana-lib) (needs a JVM) |
-| `rachana upgrade [paths] ...` | [move files to a later level](UPGRADE.md) (needs a JVM) |
 | `rachana serve --config <file> [--port n] [--jar file] [--check]` | [the server](SERVER.md) (needs a JVM) |
 
 A built site needs no server of its own: the page answers the Data Protocol from `data/index.json` and the table files (schema,
@@ -95,7 +94,7 @@ python -m drishti_rachana lint examples/static-sales        # 3 file(s), 0 faili
 | `drishti_rachana.adapters.flask`, `.fastapi` | `RachanaBlueprint` / `RachanaRouter`: mount a folder of Sutras, `@table(name, key=...)`, `@live(name)`; routes `/`, `/page/<name>`, `/sutras/...`, `/static/...`, `/data/...` |
 | `drishti_rachana.server` | `DataHost`: a framework-neutral Data Protocol host (JSON, Arrow IPC, NDJSON, filtered and conflated SSE change streams, `can` enforced, masked columns) |
 | `drishti_rachana.protocol` | the protocol's messages as dataclasses |
-| `python -m drishti_rachana lint \| upgrade \| conformance run` | lint (`--format text\|json\|sarif`, `--strict`, `--libs`), [upgrade](UPGRADE.md), the conformance runner |
+| `python -m drishti_rachana lint \| conformance run` | lint (`--format text\|json\|sarif`, `--strict`, `--libs`), the conformance runner |
 
 ```python
 from drishti_rachana.engine import Rachana

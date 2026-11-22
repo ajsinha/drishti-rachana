@@ -53,7 +53,6 @@ panels:
 | **Studio** | a visual editor: fragment palette, live preview, checked source, parameter forms, diff and save | [guide](docs/guides/STUDIO.md) |
 | **Libraries** | typed fragments to assemble screens from: `core` (33 fragments) and `finance` (50); your own with `rachana lib` | [guide](docs/guides/LIBRARIES.md), [libraries](libraries/README.md) |
 | **Python SDK** | lint on V8, a Data Protocol host, Flask and FastAPI adapters | [guide](docs/guides/CLI_AND_SDKS.md#python) |
-| **Upgrade tool** | rewrites level-1.0 Sutras and fragments for a later level with the same meaning | [guide](docs/guides/UPGRADE.md) |
 
 ## Ways to use it
 

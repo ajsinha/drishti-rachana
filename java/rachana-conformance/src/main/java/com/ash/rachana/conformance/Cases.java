@@ -22,7 +22,7 @@ import java.util.*;
 public final class Cases {
     private Cases() { }
 
-    static final String VERSION = "0.12.0";
+    static final String VERSION = "1.0.0";
     static Formats formats;
     static ElCompiler EL;
     static com.ash.rachana.Rachana rachana;
@@ -260,7 +260,7 @@ public final class Cases {
 
     /** The language level a case runs at: the minor it was written for ({@code since}; SUTRA_EXPANSION 6.1 rule 2: a case pins its level). */
     static String level(Map<String, Object> c) {
-        return c.get("since") == null ? "1.0" : text(c.get("since"));
+        return com.ash.rachana.profile.Grammar.LEVEL;        // Rachana 1.x reads one level; a case's since is its history only
     }
 
     private static final Map<String, com.ash.rachana.Rachana> AT = new LinkedHashMap<>();
@@ -268,7 +268,7 @@ public final class Cases {
     /** The instance at the case's language level. */
     static com.ash.rachana.Rachana at(Map<String, Object> c) {
         String l = level(c);
-        return "1.0".equals(l) ? rachana : AT.computeIfAbsent(l, rachana::language);
+        return rachana;
     }
 
     /**

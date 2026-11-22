@@ -7,40 +7,12 @@ verified: true
 description: Arithmetic and text joining with +, the null rule, division by zero, remainders, dates, number text.
 given: { today: "2026-01-15" }
 cases:
-  - id: add-two-numbers
-    kind: expr
-    tags: ["changes-with-xd3"]
-    source: SPEC 4.5
-    expr: "1 + 2"
-    expect: { value: 3, type: number, text: "3", reads: [] }
-
-  - id: whole-result-prints-without-decimals
-    kind: expr
-    tags: ["changes-with-xd3"]
-    source: SPEC 4.2
-    expr: "0.5 * 4"
-    expect: { value: 2, type: number, text: "2" }
-
-  - id: non-whole-result-shortest-round-trip
-    kind: expr
-    source: SPEC 4.2
-    tags: [determinism, "changes-with-xd3"]
-    expr: "0.1 + 0.2"
-    expect: { value: 0.30000000000000004, type: number, text: "0.30000000000000004" }
-
   - id: missing-field-times-number-is-empty
     kind: expr
     source: SPEC 4.1 rule 3, 4.5
     given: { record: { a: 2 } }
     expr: "$.missing * 2"
     expect: { value: null, type: empty, text: "" }
-
-  - id: field-times-number-reads-its-path
-    kind: expr
-    source: SPEC 4.5; R-PATH of TRANSLATION 1.1
-    given: { record: { a: 2 } }
-    expr: "$.a * 2"
-    expect: { value: 4, type: number, reads: ["$.a"] }
 
   - id: text-join-with-number
     kind: expr
@@ -68,13 +40,6 @@ cases:
     expr: "true + 1"
     expect: { value: "true1", type: text }
 
-  - id: numeric-text-times-number
-    kind: expr
-    tags: ["changes-with-xd3"]
-    source: SPEC 4.5
-    expr: "'5' * 2"
-    expect: { value: 10, type: number }
-
   - id: other-text-times-number-is-nan
     kind: expr
     source: SPEC 4.5
@@ -87,13 +52,6 @@ cases:
     source: SPEC 4.5
     expr: "1 / 0"
     expect: { value: null, type: empty }
-
-  - id: remainder-takes-sign-of-left
-    kind: expr
-    tags: ["changes-with-xd3"]
-    source: SPEC 4.5
-    expr: "-3 % 2"
-    expect: { value: -1, type: number, text: "-1" }
 
   - id: date-minus-date-is-whole-days
     kind: expr

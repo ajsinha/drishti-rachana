@@ -11,7 +11,7 @@ cases:
     kind: sutra
     source: SPEC 2.4
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-rows
       version: 1
       data:
@@ -26,7 +26,7 @@ cases:
     kind: sutra
     source: SPEC 2.4
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-record
       version: 1
       data:
@@ -46,7 +46,7 @@ cases:
           - { region: North, revenue: 700 }
           - { region: South, revenue: 400 }
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-table
       version: 1
       data:
@@ -74,7 +74,7 @@ cases:
             - { id: a, fee: "0.10" }
             - { id: b, fee: "0.20" }
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-decimal
       version: 1
       data:
@@ -96,7 +96,7 @@ cases:
           - { region: South, revenue: 400 }
           - { region: South, revenue: 50 }
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-where
       version: 1
       controls:
@@ -116,7 +116,7 @@ cases:
       tables:
         t: [ { v: 1 }, { v: 2 }, { v: 4 } ]
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-limit
       version: 1
       data:
@@ -135,7 +135,7 @@ cases:
       tables:
         latest: [ { price: 101 }, { price: 99 } ]
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-as-record
       version: 1
       data:
@@ -154,7 +154,7 @@ cases:
       tables:
         t: [ { v: 5 } ]
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-host
       version: 1
       data:
@@ -172,7 +172,7 @@ cases:
     source: SPEC 2.4 (a table the host does not have); TRANSLATION 10; PROTOCOL 10.1
     note: SG-16 and code fix CF-1 (VERIFIED.md); replaces missing-table-reads-as-no-rows, whose expectation (0) read a failed entry as no rows.
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-missing
       version: 1
       data:
@@ -193,7 +193,7 @@ cases:
       tables:
         t: [ { id: a } ]
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-missing-one
       version: 1
       data:

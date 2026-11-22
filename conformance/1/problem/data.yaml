@@ -5,28 +5,11 @@ profile: [core, drishti]
 verified: true
 description: The data block's problems (SPEC 2.4, 6.2 codes RCH-2070 to 2079).
 cases:
-  - id: data-is-not-a-key-of-level-1-0
-    verified: true
-    kind: problem
-    since: "1.0"
-    source: SPEC 2.4, 7.2 rule 6 (data is a 1.1 key; a later level's name below it is RCH-2008, one rule with libraries at 1.2)
-    sutra: |
-      rachana: 1
-      sutra: data-at-1-0
-      version: 1
-      match: { kind: case }
-      data:
-        t: { rows: [] }
-    expect:
-      ok: false
-      problems:
-        - { code: RCH-2008 }
-
   - id: two-sources-in-one-entry
     kind: problem
     source: SPEC 2.4 (exactly one)
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-two
       version: 1
       match: { kind: case }
@@ -41,7 +24,7 @@ cases:
     kind: problem
     source: SPEC 2.4 (exactly one)
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-none
       version: 1
       match: { kind: case }
@@ -56,7 +39,7 @@ cases:
     kind: problem
     source: SPEC 2.4; PROTOCOL 8.1
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-live
       version: 1
       match: { kind: case }
@@ -71,7 +54,7 @@ cases:
     kind: problem
     source: SPEC 2.4
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-unknown
       version: 1
       match: { kind: case }
@@ -87,7 +70,7 @@ cases:
     kind: problem
     source: SPEC 2.4 (each entry is a field of $)
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-name
       version: 1
       match: { kind: case }
@@ -102,7 +85,7 @@ cases:
     kind: problem
     source: SPEC 2.4
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-rows-shape
       version: 1
       match: { kind: case }
@@ -117,7 +100,7 @@ cases:
     kind: problem
     source: SPEC 2.4 (text is shorthand for url)
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: data-url
       version: 1
       match: { kind: case }

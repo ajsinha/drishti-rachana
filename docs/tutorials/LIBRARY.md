@@ -177,4 +177,3 @@ its form offers your `sales` table and maps `name` and `value` onto its columns.
 ## Next
 
 - The libraries shipped with Rachana: [core](../../libraries/core/README.md), [finance](../../libraries/finance/README.md).
-- Move older Sutras onto level 1.2 to use typed fragments: [rachana upgrade](../guides/UPGRADE.md).

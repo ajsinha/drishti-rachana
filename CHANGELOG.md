@@ -11,6 +11,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **Fixed**: from level 1.1 the regular-expression functions ran on the default table, so an instance's own caps (`RachanaOptions.withRegexLimits`) did not hold; they run on the instance's.
 - **Function catalogue examples** write a condition on an aggregate as `calc(sum(x), where = ...)`, the only form the language reads at 1.2.
 - **Elements 3.3.0** (tag v3.3.0, commit 3363c9f) vendored: `js/vendor/drishti-elements/3.3.0/` (SHA-384 manifest), the server pom, Python assets, Studio and docs name it.
+- **Cases pinned to levels 1.0 and 1.1 are removed** (the level-declaration suites are rewritten for the one level; `until:` cases and the 1.0-only syntax and number cases are gone; `FROZEN.sha384` rewritten).
 - **API removals** (logged in `java/api-removals.txt`): `tools.Upgrade*`, `Grammar.LEVEL_1_0` (now `Grammar.LEVEL`), `Printer.print(Expr, boolean)`.
 
 ## v0.12.0 (2026-11-21)

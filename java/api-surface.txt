@@ -377,7 +377,6 @@
 [experimental] class public final class com.ash.rachana.el.CheckedMode
 [experimental] class public final class com.ash.rachana.el.DatePartFunctions
 [experimental] class public final class com.ash.rachana.el.Declarations
-[experimental] class public final class com.ash.rachana.el.ElSource
 [experimental] class public final class com.ash.rachana.el.FormRules
 [experimental] class public final class com.ash.rachana.el.FragmentColumns
 [experimental] class public final class com.ash.rachana.el.Functions
@@ -577,8 +576,6 @@
 [experimental] class public static final record com.ash.rachana.design.ops.AddPanel$At
 [experimental] class public static final record com.ash.rachana.el.CheckedMode$Parsed
 [experimental] class public static final record com.ash.rachana.el.Declarations$Function
-[experimental] class public static final record com.ash.rachana.el.ElSource$Parsed
-[experimental] class public static final record com.ash.rachana.el.ElSource$Tok
 [experimental] class public static final record com.ash.rachana.el.EvalContext$Locals
 [experimental] class public static final record com.ash.rachana.el.EvalContext$Scope
 [experimental] class public static final record com.ash.rachana.el.Expr$Absent
@@ -1770,27 +1767,6 @@
 [experimental] com.ash.rachana.el.Declarations$Function :: public java.lang.String com.ash.rachana.el.Declarations$Function.returns()
 [experimental] com.ash.rachana.el.Declarations$Function :: public java.util.List<java.lang.String> com.ash.rachana.el.Declarations$Function.paramNames()
 [experimental] com.ash.rachana.el.Declarations$Function :: public java.util.Map<java.lang.String, java.lang.String> com.ash.rachana.el.Declarations$Function.params()
-[experimental] com.ash.rachana.el.ElSource :: public static boolean com.ash.rachana.el.ElSource.known(com.ash.rachana.el.FunctionTable,java.lang.String)
-[experimental] com.ash.rachana.el.ElSource :: public static boolean com.ash.rachana.el.ElSource.readsAsNumber(java.lang.String,boolean)
-[experimental] com.ash.rachana.el.ElSource :: public static boolean com.ash.rachana.el.ElSource.reserved(java.lang.String)
-[experimental] com.ash.rachana.el.ElSource :: public static com.ash.rachana.el.ElSource$Parsed com.ash.rachana.el.ElSource.parse(java.lang.String,com.ash.rachana.el.FunctionTable,boolean)
-[experimental] com.ash.rachana.el.ElSource :: public static java.lang.String com.ash.rachana.el.ElSource.namedArgumentAtLevel11(java.lang.String,java.lang.String)
-[experimental] com.ash.rachana.el.ElSource :: public static java.util.List<com.ash.rachana.el.ElSource$Tok> com.ash.rachana.el.ElSource.tokens(java.lang.String,boolean)
-[experimental] com.ash.rachana.el.ElSource :: public static java.util.Set<java.lang.String> com.ash.rachana.el.ElSource.changedAtLevel11()
-[experimental] com.ash.rachana.el.ElSource$Parsed :: public com.ash.rachana.el.ElSource$Parsed(com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>)
-[experimental] com.ash.rachana.el.ElSource$Parsed :: public com.ash.rachana.el.Expr com.ash.rachana.el.ElSource$Parsed.expr()
-[experimental] com.ash.rachana.el.ElSource$Parsed :: public final boolean com.ash.rachana.el.ElSource$Parsed.equals(java.lang.Object)
-[experimental] com.ash.rachana.el.ElSource$Parsed :: public final int com.ash.rachana.el.ElSource$Parsed.hashCode()
-[experimental] com.ash.rachana.el.ElSource$Parsed :: public final java.lang.String com.ash.rachana.el.ElSource$Parsed.toString()
-[experimental] com.ash.rachana.el.ElSource$Parsed :: public java.util.Map<com.ash.rachana.el.Expr, int[]> com.ash.rachana.el.ElSource$Parsed.spans()
-[experimental] com.ash.rachana.el.ElSource$Tok :: public com.ash.rachana.el.ElSource$Tok(java.lang.String,java.lang.String,int,int)
-[experimental] com.ash.rachana.el.ElSource$Tok :: public final boolean com.ash.rachana.el.ElSource$Tok.equals(java.lang.Object)
-[experimental] com.ash.rachana.el.ElSource$Tok :: public final int com.ash.rachana.el.ElSource$Tok.hashCode()
-[experimental] com.ash.rachana.el.ElSource$Tok :: public final java.lang.String com.ash.rachana.el.ElSource$Tok.toString()
-[experimental] com.ash.rachana.el.ElSource$Tok :: public int com.ash.rachana.el.ElSource$Tok.end()
-[experimental] com.ash.rachana.el.ElSource$Tok :: public int com.ash.rachana.el.ElSource$Tok.start()
-[experimental] com.ash.rachana.el.ElSource$Tok :: public java.lang.String com.ash.rachana.el.ElSource$Tok.text()
-[experimental] com.ash.rachana.el.ElSource$Tok :: public java.lang.String com.ash.rachana.el.ElSource$Tok.type()
 [experimental] com.ash.rachana.el.EvalContext$Locals :: public com.ash.rachana.el.EvalContext$Locals com.ash.rachana.el.EvalContext$Locals.outer()
 [experimental] com.ash.rachana.el.EvalContext$Locals :: public com.ash.rachana.el.EvalContext$Locals(java.lang.String,java.lang.Object,com.ash.rachana.el.EvalContext$Locals)
 [experimental] com.ash.rachana.el.EvalContext$Locals :: public final boolean com.ash.rachana.el.EvalContext$Locals.equals(java.lang.Object)
@@ -2247,7 +2223,6 @@
 [experimental] com.ash.rachana.el.check.Checker :: public static boolean com.ash.rachana.el.check.Checker.isoDate(java.lang.String)
 [experimental] com.ash.rachana.el.check.Checker :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.check.Checker.check(com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>,java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields,com.ash.rachana.el.check.Spelling)
 [experimental] com.ash.rachana.el.check.Checker :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.check.Checker.check(com.ash.rachana.el.check.Signatures,com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>,java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields,com.ash.rachana.el.check.Spelling)
-[experimental] com.ash.rachana.el.check.Checker :: public static com.ash.rachana.el.check.Checker$Checked com.ash.rachana.el.check.Checker.check(com.ash.rachana.el.check.Signatures,com.ash.rachana.el.Expr,java.util.Map<com.ash.rachana.el.Expr, int[]>,java.lang.String,com.ash.rachana.el.check.Scope,com.ash.rachana.el.check.Fields,com.ash.rachana.el.check.Spelling,boolean)
 [experimental] com.ash.rachana.el.check.Checker :: public static int com.ash.rachana.el.check.Checker.distance(java.lang.String,java.lang.String)
 [experimental] com.ash.rachana.el.check.Checker :: public static java.util.List<java.lang.String> com.ash.rachana.el.check.Checker.parts(com.ash.rachana.el.Expr)
 [experimental] com.ash.rachana.el.check.Checker$Checked :: public boolean com.ash.rachana.el.check.Checker$Checked.ok()

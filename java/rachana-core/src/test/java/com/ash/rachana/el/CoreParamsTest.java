@@ -52,14 +52,14 @@ class CoreParamsTest {
     }
 
     @Test
-    void namedArgumentsBindByTheCataloguesNamesFromLevel11() {
-        ElCompiler v11 = new ElCompiler(16, ElLimits.DEFAULTS, FunctionTable.core(), "1.1");
+    void namedArgumentsBindByTheCataloguesNames() {
+        ElCompiler v11 = new ElCompiler(16, ElLimits.DEFAULTS, FunctionTable.core());
         assertThat(v11.compile("avg([1, 2, 3], field = null)").eval(null)).isEqualTo(java.math.BigDecimal.valueOf(2));   // exact (SPEC 4.16 rule 7)
         assertThat(v11.compile("avg(list = [{'x': 1}, {'x': 3}], field = 'x')").eval(null)).isEqualTo(java.math.BigDecimal.valueOf(2));
         assertThat(v11.compile("round(x = 2.45, n = 1)").eval(null).toString()).isEqualTo("2.5");
         assertThatThrownBy(() -> v11.compile("avg([1], where = true)")).hasMessageContaining("its arguments: [list, field]");
         assertThatThrownBy(() -> v11.compile("coalesce(values = 1)")).hasMessageContaining("repeatable");
-        ElCompiler v10 = new ElCompiler(16, ElLimits.DEFAULTS, FunctionTable.core(), "1.0");
-        assertThatThrownBy(() -> v10.compile("avg([1, 2], field = 'x')")).hasMessageContaining("its arguments: [x, where]");
+        // Rachana 1.x reads one level: a compiler at a retired one is refused (G4 gate F25)
+        assertThatThrownBy(() -> new ElCompiler(16, ElLimits.DEFAULTS, FunctionTable.core(), "1.0")).isInstanceOf(IllegalArgumentException.class);
     }
 }

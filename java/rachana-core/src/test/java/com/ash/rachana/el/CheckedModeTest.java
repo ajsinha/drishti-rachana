@@ -161,7 +161,10 @@ class CheckedModeTest {
                 e -> assertThat(e.code()).isEqualTo(RachanaCode.MASKED_FIELD));
         assertThatThrownBy(() -> CheckedMode.require("concat('a', 'b')", Scope.ROW, MODEL)).isInstanceOfSatisfying(RachanaException.class,
                 e -> assertThat(e.code()).isEqualTo(RachanaCode.LATER_WAVE));
-        assertThat(CheckedMode.require("trades.N + 1", Scope.ROW, MODEL)).isInstanceOf(Expr.Binary.class);
+        assertThat(CheckedMode.require("trades.N + 1", Scope.ROW, MODEL)).isInstanceOf(Expr.Op.class);    // the tree of the one level (F25)
+        // the tree it returns is the one it checked: the whole text at the one level, a conditional never cut to its first operand
+        assertThat(CheckedMode.require("trades.N if trades.N > 0 else 0", Scope.ROW, MODEL)).isInstanceOf(Expr.Ternary.class);
+        assertThatThrownBy(() -> CheckedMode.parse("trades.N trades.N")).isInstanceOf(ElException.class).hasMessageContaining("unexpected 'trades'");
     }
 
     /** Without a model (Fields.NONE) only the language and the catalogue are checked: every example of every signature reads. */

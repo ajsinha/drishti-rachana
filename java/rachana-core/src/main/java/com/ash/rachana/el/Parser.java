@@ -19,7 +19,10 @@ import com.ash.rachana.model.Ordered;
 import java.util.LinkedHashSet;
 
 /**
- * Recursive-descent parser for Rachana-EL. Grammar (EBNF):
+ * Recursive-descent parser for Rachana-EL, at the one language level of Rachana 1 (1.2; the grammar is {@code spec/1/rachana-el.ebnf}).
+ * Every parse goes through {@link #parseWithSpans(String, ElLimits, FunctionTable, Set)}, which reads the whole text: a token after a
+ * complete expression is refused at its place, never ignored. The core of the grammar (EBNF; the level's syntax batch, the pipe,
+ * {@code a if c else b}, {@code ??}, {@code **}, records, slices and lambdas, sits around it):
  *
  * <pre>
  * expr     = or [ "?" expr ":" expr ] ;
@@ -67,18 +70,10 @@ final class Parser {
     private int accDepth;
 
     private Parser(String src, List<Token> tokens, ElLimits limits) {
-        this(src, tokens, limits, false);
-    }
-
-    private Parser(String src, List<Token> tokens, ElLimits limits, boolean v11) {
         this.src = src;
         this.tokens = tokens;
         this.limits = limits;
-        this.v11 = v11;
     }
-
-    /** Language level 1.1 or later: the syntax batch (EL_EXPANSION X6, X7, X11 to X14; DECISIONS PY2 to PY6) and exact numbers (X2). */
-    private final boolean v11;
 
     /** The {@code let} names bound to a lambda around the part being parsed, with the lambda's count of parameters. */
     private final Map<String, Integer> letFns = new LinkedHashMap<>();
@@ -118,22 +113,13 @@ final class Parser {
         return parseWithSpans(src, limits, table).expr();
     }
 
-    /** Parses with extra function names (measure functions) that are later expanded: arguments are parsed, nothing else is checked. */
-    static Expr parse(String src, Set<String> macros) {
-        return parse(src, macros, FunctionTable.core());
-    }
-
-    /** {@link #parse(String, Set)} against one instance's function table. */
+    /**
+     * Parses with extra function names (a model's measure functions) that are expanded afterwards: a call of one is kept as it is written
+     * (its arguments parsed, nothing else checked). The one entry, at the one level, with the end check: text after a whole expression is
+     * refused, never dropped (G4 gate F25).
+     */
     static Expr parse(String src, Set<String> macros, FunctionTable table) {
-        List<Token> tokens = Lexer.tokens(src);
-        Parser[] last = new Parser[1];
-        return guarded(() -> {
-            Parser parser = new Parser(src, tokens, ElLimits.DEFAULTS);
-            last[0] = parser;
-            parser.macros = macros;
-            parser.table = table;
-            return parser.expr();
-        }, last);
+        return parseWithSpans(src, ElLimits.DEFAULTS, table, macros).expr();
     }
 
     /**
@@ -163,27 +149,29 @@ final class Parser {
     }
 
     static Parsed parseWithSpans(String src, ElLimits limits, FunctionTable table) {
-        return parseWithSpans(src, limits, table, false);
+        return parseWithSpans(src, limits, table, Set.of());
     }
 
-    /** {@link #parseWithSpans(String, ElLimits, FunctionTable)} at language level 1.1 when {@code v11}. */
-    static Parsed parseWithSpans(String src, ElLimits limits, FunctionTable table, boolean v11) {
+    /**
+     * THE parse of Rachana-EL: every entry point above comes here. It reads at the one language level ({@code Grammar.LEVEL}, 1.2) and
+     * reads the whole text: a token left after a complete expression is refused at its place ({@code RCH-2101}), never ignored, so
+     * {@code A if C else B} is never read as {@code A} (G4 gate F25).
+     */
+    static Parsed parseWithSpans(String src, ElLimits limits, FunctionTable table, Set<String> macros) {
         if (src.length() > limits.maxLength()) {
             throw new ElException("expression is longer than " + limits.maxLength()
                     + " characters (drishti.rachana.max-expression-length)", limits.maxLength());
         }
-        List<Token> tokens = Lexer.tokens(src, v11);
+        List<Token> tokens = Lexer.tokens(src);
         Declarations decls = Declarations.inForce();
         Parser[] last = new Parser[1];
         return guarded(() -> {
-            Parser parser = new Parser(src, tokens, limits, v11);
+            Parser parser = new Parser(src, tokens, limits);
             last[0] = parser;
             parser.table = table;
             parser.decls = decls;
-            Expr e = parser.expr();
-            if (parser.peek().type() != Type.EOF) {
-                throw new ElException("unexpected '" + parser.peek().text() + "'", parser.peek().pos());
-            }
+            parser.macros = macros;
+            Expr e = parser.whole();
             return new Parsed(e, parser.spans);
         }, last);
     }
@@ -254,24 +242,7 @@ final class Parser {
     }
 
     private Expr expr() {
-        if (v11) {
-            return pipe();
-        }
-        descend();
-        int s = peek().pos();
-        try {
-            Expr c = or();
-            if (peek().type() == Type.QUESTION) {
-                next();
-                Expr a = expr();
-                expect(Type.COLON, "':'");
-                Expr b = expr();
-                return at(node(new Expr.Ternary(c, a, b), c, a, b), s);
-            }
-            return c;
-        } finally {
-            nesting--;
-        }
+        return pipe();
     }
 
     /** Level 1.1: {@code x |> f(a)} is {@code f(x, a)} (X11), the lowest precedence; the right side is a call. */
@@ -337,9 +308,9 @@ final class Parser {
         return l;
     }
 
-    /** A binary operator: level 1.0's {@link Expr.Binary}, level 1.1's {@link Expr.Op} (exact numbers, code point order). */
+    /** A binary operator: {@link Expr.Op} (exact numbers, code point order). */
     private Expr binary(String op, Expr l, Expr r) {
-        return v11 ? new Expr.Op(op, l, r) : new Expr.Binary(op, l, r);
+        return new Expr.Op(op, l, r);
     }
 
     private Expr or() {
@@ -439,13 +410,13 @@ final class Parser {
         signBefore = false;
         boolean not = accept(Type.OP, "!");
         if (!not && !accept(Type.OP, "-")) {
-            return v11 ? power(signed) : postfix();
+            return power(signed);
         }
         descend();
         try {
             signBefore = !not;
             Expr e = unary();
-            return at(node(not ? new Expr.Not(e) : v11 ? new Expr.Minus(e) : new Expr.Neg(e), e), s);
+            return at(node(not ? new Expr.Not(e) : new Expr.Minus(e), e), s);
         } finally {
             nesting--;
         }
@@ -494,7 +465,7 @@ final class Parser {
                 p += 3;                                          // [*]: every element; a field after it is that field of each
                 e = node(new Expr.Each(e), e);
                 path = null;
-            } else if (v11 && t.type() == Type.LBRACKET && (tokens.get(p + 1).type() == Type.COLON || sliceAhead())) {
+            } else if (t.type() == Type.LBRACKET && (tokens.get(p + 1).type() == Type.COLON || sliceAhead())) {
                 next();                                          // level 1.1: t[a:b], t[a:b:c], parts optional (PY4)
                 Expr a = peek().type() == Type.COLON ? null : expr();
                 expect(Type.COLON, "':'");
@@ -536,23 +507,15 @@ final class Parser {
         int s = t.pos();
         switch (t.type()) {
             case NUMBER:
-                if (v11) {
-                    if (t.text().indexOf('e') < 0 && t.text().indexOf('E') < 0) {
-                        try {
-                            return at(new Expr.Lit(Exact.literal(t.text(), t.pos(), t.pos() + t.length())), s);    // X2: exact, as written
-                        } catch (NumberFormatException e) {
-                            throw new ElException("bad number '" + t.text() + "'", t.pos());
-                        }
-                    }
+                if (t.text().indexOf('e') < 0 && t.text().indexOf('E') < 0) {
                     try {
-                        return at(new Expr.Lit(NumberText.parse(t.text())), s);             // an exponent: a double
+                        return at(new Expr.Lit(Exact.literal(t.text(), t.pos(), t.pos() + t.length())), s);    // X2: exact, as written
                     } catch (NumberFormatException e) {
                         throw new ElException("bad number '" + t.text() + "'", t.pos());
                     }
                 }
                 try {
-                    double d = NumberText.parse(t.text());
-                    return at(new Expr.Lit(Values.normalise(d)), s);
+                    return at(new Expr.Lit(NumberText.parse(t.text())), s);             // an exponent: a double
                 } catch (NumberFormatException e) {
                     throw new ElException("bad number '" + t.text() + "'", t.pos());
                 }
@@ -640,7 +603,7 @@ final class Parser {
         if ("state".equals(t.text()) && !decls.states().isEmpty() && peek().type() == Type.DOT && !letNames.contains(t.text())) {
             return at(state(t), s);                              // level 1.2, S1: state.<id> when the Sutra holds state, never a field
         }
-        if (v11 && "lambda".equals(t.text())) {
+        if ("lambda".equals(t.text())) {
             throw new ElException("a lambda is passed to map, sort, reduce or group, or bound by let(...); it is not a value", t.pos());
         }
         if (peek().type() != Type.LPAREN && letFns.containsKey(t.text()) && letNames.contains(t.text())) {
@@ -730,8 +693,8 @@ final class Parser {
         if (!decls.isEmpty() && decls.functions().containsKey(name)) {
             return userCall(name, t, piped);
         }
-        int[] arity = macros.contains(name) ? new int[] {0, 64} : v11 && Level11.has(name) ? Level11.arity(name) : table.arityOf(name);
-        if (arity == null && v11 && ReservedNames.contains(name)) {
+        int[] arity = macros.contains(name) ? new int[] {0, 64} : Level11.has(name) ? Level11.arity(name) : table.arityOf(name);
+        if (arity == null && ReservedNames.contains(name)) {
             throw new ElException("'" + name + "' is reserved for a later version of Rachana", t.pos(), t.pos() + name.length());
         }
         if (arity == null) {
@@ -768,8 +731,8 @@ final class Parser {
                 if (!named.isEmpty()) {
                     throw new ElException(name + ": a value without a name follows a named one; write the named arguments last", peek().pos());
                 }
-                int fnParams = v11 ? lambdaParams(name, args.size()) : -1;
-                if (v11 && peek().is(Type.IDENT, "lambda")) {
+                int fnParams = lambdaParams(name, args.size());
+                if (peek().is(Type.IDENT, "lambda")) {
                     if (fnParams < 0) {
                         throw new ElException("a lambda is passed to map, sort, reduce or group, or bound by let(...); " + name
                                 + " takes none here", peek().pos());
@@ -801,7 +764,7 @@ final class Parser {
             return at(new Expr.Call(name, null, args, named), s);
         }
         if (!named.isEmpty()) {
-            if (v11 && CoreParams.of(name) != null) {
+            if (CoreParams.of(name) != null) {
                 bindCore(name, args, named, names);
             } else {
                 bind(name, args, named, names);
@@ -811,7 +774,7 @@ final class Parser {
             throw new ElException(name + " takes " + arity[0] + (arity[0] == arity[1] ? "" : "-" + arity[1])
                     + " argument(s), got " + args.size(), t.pos());
         }
-        String level11 = v11 ? Level11.check(name, args) : null;
+        String level11 = Level11.check(name, args);
         if (level11 != null) {
             throw new ElException(name + ": " + level11, t.pos(), t.pos() + name.length());
         }
@@ -819,7 +782,7 @@ final class Parser {
         if (problem != null) {
             throw new ElException(name + ": " + problem, t.pos());
         }
-        if (v11 && !table.checksItself(name)) {
+        if (!table.checksItself(name)) {
             // level 1.1 and later: the literal arguments against the function catalogue, the one place (enums, literal types, keyword-only)
             CatalogueArgs.Refusal refused = CatalogueArgs.check(name, args, named, this::written);
             if (refused != null) {
@@ -844,14 +807,14 @@ final class Parser {
             default:
                 break;
         }
-        ElForm form = v11 && Level11.form(name) != null && table.form(name) != null ? Level11.form(name) : table.form(name);
+        ElForm form = Level11.form(name) != null && table.form(name) != null ? Level11.form(name) : table.form(name);
         if (form != null) {
             if (!named.isEmpty()) {
                 throw new ElException(name + " takes no named arguments", t.pos());
             }
             return at(node(new Expr.Form(name, form, List.copyOf(args)), parts), s);
         }
-        ElFunction fn = v11 && Level11.has(name) ? Level11.function(name, table) : table.get(name);
+        ElFunction fn = Level11.has(name) ? Level11.function(name, table) : table.get(name);
         return at(node(new Expr.Call(name, fn, List.copyOf(args), named), parts), s);
     }
 
@@ -1149,7 +1112,7 @@ final class Parser {
 
     /** A parser of a declared text (a body or a let value) with this one's table, level and declarations. */
     private Parser nested(String src) {
-        Parser inner = new Parser(src, Lexer.tokens(src, v11), limits, v11);
+        Parser inner = new Parser(src, Lexer.tokens(src), limits);
         inner.table = table;
         inner.decls = decls;
         inner.inlining = inlining;
@@ -1159,8 +1122,9 @@ final class Parser {
     /** The whole text as one expression. */
     private Expr whole() {
         Expr e = expr();
-        if (peek().type() != Type.EOF) {
-            throw new ElException("unexpected '" + peek().text() + "'", peek().pos());
+        Token t = peek();
+        if (t.type() != Type.EOF) {                               // a token after a complete expression: refused at it, never ignored
+            throw new ElException("unexpected '" + t.text() + "'", t.pos(), t.pos() + t.length());
         }
         return e;
     }
@@ -1220,7 +1184,7 @@ final class Parser {
                 if (names.size() + 1 >= arity[1]) {
                     throw new ElException("let takes at most " + (arity[1] - 1) + " names", n.pos());
                 }
-                if (v11 && peek().is(Type.IDENT, "lambda")) {
+                if (peek().is(Type.IDENT, "lambda")) {
                     Expr.Lambda f = (Expr.Lambda) lambda(-1, null);
                     values.add(f);
                     shadowed.add(letFns.put(n.text(), f.params().size()));

@@ -153,7 +153,7 @@ public final class Json {
      * Reads one JSON value.
      *
      * @return the value, or null when the text holds only white space (as well as for {@code null})
-     * @throws JsonException when the text is not JSON
+     * @throws JsonException when the text is not JSON, or holds more than one value
      */
     public static Object read(String text) {
         Reader r = new Reader(text);
@@ -161,7 +161,12 @@ public final class Json {
         if (r.pos >= text.length()) {
             return null;
         }
-        return r.value(0);
+        Object v = r.value(0);
+        r.space();
+        if (r.pos < text.length()) {                              // the whole text is one value: what follows it is refused, never dropped
+            throw r.fail("unexpected " + r.shown(text.charAt(r.pos)) + " after the JSON value");
+        }
+        return v;
     }
 
     private static final class Reader {

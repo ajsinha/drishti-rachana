@@ -23,7 +23,7 @@ class JsonTest {
         m.put("a", 2L);
         m.put("b", List.of(1L, 2.5, true, "xé\n"));
         m.put("c", null);
-        assertEquals(m, Json.read(" {\"a\":1,\"b\":[1,2.5,true,\"x\\u00e9\\n\"],\"c\":null,\"a\":2} trailing"));
+        assertEquals(m, Json.read(" {\"a\":1,\"b\":[1,2.5,true,\"x\\u00e9\\n\"],\"c\":null,\"a\":2} \n"));
         assertNull(Json.read("  "));
         assertEquals(Long.MIN_VALUE, Json.read("-9223372036854775808"));
         assertEquals(new BigInteger("9223372036854775808"), Json.read("9223372036854775808"));
@@ -36,6 +36,11 @@ class JsonTest {
         assertThrows(Json.JsonException.class, () -> Json.read("01"));
         Json.JsonException e = assertThrows(Json.JsonException.class, () -> Json.read("{\n  \"a\" 1}"));
         assertEquals(2, e.line());
+        // the whole text is one value: what follows it is refused at its place, never dropped (G4 gate F25)
+        Json.JsonException after = assertThrows(Json.JsonException.class, () -> Json.read("{\"a\":1} trailing"));
+        assertEquals(1, after.line());
+        assertThrows(Json.JsonException.class, () -> Json.read("[1] [2]"));
+        assertThrows(Json.JsonException.class, () -> Json.read("1 2"));
     }
 
     @Test

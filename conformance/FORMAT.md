@@ -137,8 +137,8 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 
 | Kind | Area | Input fields | Actual document (all fields always written) | Typical `expect` |
 |---|---|---|---|---|
-| `expr` | `el/` | `expr` or `template`, `given` | `{value, type, text, reads}`, or `{error: {code, message}}` when evaluation raised | `value`, `type`, `text`, `reads`, or `error` |
-| `expr-error` | `el/` | `expr` or `template`, `given.limits` | `{problems: [problem…]}` from compiling the expression alone | `problems` |
+| `expr` | `el/` | `expr` or `template`, `functions`, `given` | `{value, type, text, reads}`, or `{error: {code, message}}` when evaluation raised | `value`, `type`, `text`, `reads`, or `error` |
+| `expr-error` | `el/` | `expr` or `template`, `functions`, `given.limits` | `{problems: [problem…]}` from compiling the expression alone | `problems` |
 | `check` | `el/` | `expr`, `scope`, `types`, `given.limits` | `{type, problems}` from checked mode (SPEC 4.14) | `type`, or `problems` |
 | `grammar` | `grammar/` | `text`, `rule` | `{accepted}` | `accepted` |
 | `format` | `format/` | `value`, `format`, `tone` | `{text, tone}` (`tone` null when none) | `text`, `tone` |
@@ -177,6 +177,11 @@ A masked input is a `{ $masked: true }` in `record`, `row`, `tables` or `src`, s
 Exactly one of `expr` (an expression) or `template` (a template, SPEC 4.11). The expression is compiled, then
 evaluated once with `given`.
 
+`functions` (optional, with `expr`): a host's measure functions, `{ net: { params: [x], expr: "x - 1" } }` (SPEC 4.10 rule 9).
+Each call of one is expanded in the expression's text first; the expanded text is what is compiled. A problem is `RCH-2101` at its
+place in the expression's text: the offending token, or, for a problem in a function (its expression, a count of arguments, a call by
+name, a cycle), the call written in the expression.
+
 - `value`: the result as a value (section 4).
 - `type`: `empty`, `boolean`, `number`, `decimal`, `text`, `list`, `object`, `link` or `masked`. `number` is a
   double; `decimal` an exact decimal (SPEC 4.10 rule 7).
@@ -193,7 +198,7 @@ evaluated once with `given`.
 
 ### 5.3 `expr-error`
 
-The expression (or template) alone does not compile. `expect.problems` lists the problems in order (section 6). For an
+The expression (or template) alone does not compile (with `functions`, as 5.2: expanded first). `expect.problems` lists the problems in order (section 6). For an
 expression compiled alone there is no file: `path` and `range` are absent, and the position is `expr.start` /
 `expr.end`, 0-based offsets into the expression text (SPEC 6.1).
 

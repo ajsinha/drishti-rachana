@@ -85,13 +85,13 @@ public final class FormRules {
                     Object x = ev(n.e(), v, today);
                     yield x == null ? null : !truthy(x);
                 }
-                case Expr.Neg n -> {
+                case Expr.Minus n -> {
                     BigDecimal x = number(ev(n.e(), v, today));
                     yield x == null ? null : x.negate();
                 }
                 case Expr.And a -> logic(true, ev(a.l(), v, today), ev(a.r(), v, today));
                 case Expr.Or o -> logic(false, ev(o.l(), v, today), ev(o.r(), v, today));
-                case Expr.Binary b -> binary(b.op(), ev(b.l(), v, today), ev(b.r(), v, today));
+                case Expr.Op b -> binary(b.op(), ev(b.l(), v, today), ev(b.r(), v, today));
                 case Expr.Call c -> call(c.name(), c.args().stream().map(a -> ev(a, v, today)).toList());
                 default -> throw new IllegalStateException("not a form expression: " + e);
             };
@@ -121,10 +121,10 @@ public final class FormRules {
         if (text.length() > MAX_LENGTH) {
             throw new IllegalArgumentException("an expression is at most " + MAX_LENGTH + " characters");
         }
-        String src = separatorsOut(text);
+        String src = text;
         Parser.Parsed p;
         try {
-            p = Parser.parseWithSpans(src, ElLimits.DEFAULTS, TABLE);
+            p = Parser.parseWithSpans(src, ElLimits.DEFAULTS, TABLE);     // the one parse, at the one level, the whole text
         } catch (RachanaException e) {
             String words = e.words();
             if (words.startsWith("unknown function '")) {
@@ -135,41 +135,6 @@ public final class FormRules {
         }
         check(p.expr(), text);
         return new Compiled(text, src, p.expr(), p.spans());
-    }
-
-    /**
-     * Form rules write long numbers with {@code _} between digits ({@code 30_000_000}), as they always could; Rachana-EL 1.0 reads
-     * them without (X14 brings the separator to the language): taken out here, outside texts.
-     */
-    private static String separatorsOut(String s) {
-        StringBuilder out = new StringBuilder(s.length());
-        char quote = 0;
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (quote != 0) {
-                quote = c == quote ? 0 : quote;
-            } else if (c == '\'' || c == '"') {
-                quote = c;
-            } else if (c == '_' && i > 0 && i + 1 < s.length() && isDigit(s.charAt(i - 1)) && isDigit(s.charAt(i + 1))
-                    && !inName(s, i)) {
-                continue;
-            }
-            out.append(c);
-        }
-        return out.toString();
-    }
-
-    private static boolean isDigit(char c) {
-        return c >= '0' && c <= '9';
-    }
-
-    /** Whether the {@code _} at {@code i} is inside a name ({@code leg_1_2}): the run of letters, digits and {@code _} it is in starts with a letter. */
-    private static boolean inName(String s, int i) {
-        int j = i;
-        while (j > 0 && (isDigit(s.charAt(j - 1)) || s.charAt(j - 1) == '_' || Character.isLetter(s.charAt(j - 1)))) {
-            j--;
-        }
-        return !isDigit(s.charAt(j));
     }
 
     /** Whether a rule's value holds: true, or empty (it cannot be told yet). */
@@ -189,10 +154,10 @@ public final class FormRules {
                 }
             }
             case Expr.Not n -> check(n.e(), text);
-            case Expr.Neg n -> check(n.e(), text);
+            case Expr.Minus n -> check(n.e(), text);
             case Expr.And a -> { check(a.l(), text); check(a.r(), text); }
             case Expr.Or o -> { check(o.l(), text); check(o.r(), text); }
-            case Expr.Binary b -> {
+            case Expr.Op b -> {
                 if (b.op().equals("%")) {
                     throw new IllegalArgumentException("'%' is not part of the form expressions (in '" + text + "')");
                 }
@@ -230,10 +195,10 @@ public final class FormRules {
                 }
             }
             case Expr.Not n -> names(n.e(), out);
-            case Expr.Neg n -> names(n.e(), out);
+            case Expr.Minus n -> names(n.e(), out);
             case Expr.And a -> { names(a.l(), out); names(a.r(), out); }
             case Expr.Or o -> { names(o.l(), out); names(o.r(), out); }
-            case Expr.Binary b -> { names(b.l(), out); names(b.r(), out); }
+            case Expr.Op b -> { names(b.l(), out); names(b.r(), out); }
             case Expr.Call c -> c.args().forEach(a -> names(a, out));
             default -> { }
         }

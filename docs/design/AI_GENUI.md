@@ -4,6 +4,12 @@
 Status: **design; built in phase R2** (with Drishti i9). Nothing here is implemented.
 Tool names and schemas are the planned contract and may still change before they ship.
 
+The first host is written: the **GenUI kit lite for SAJHA** (`tools/sajha/`, design [GENUI_KIT](GENUI_KIT.md)). It ships four of
+these contracts under the names `search_fragments` (in place of `sutra_examples`: a catalogue generated from the fragments' doc
+blocks, searched by text and by data shape), `get_fragment`, `check_sutra` (`validate_sutra`) and `publish_ui` (`render_dashboard`
+with `output: link`); `data_to_table` and its handles are replaced by table **sources** given to `publish_ui` (a SAJHA data tool
+called as the user, or a Data Protocol host), so rows never pass through the model.
+
 ## 1. The idea, and the boundary
 
 A model answers with a **Sutra**. A Sutra is data: it cannot run code, fetch an address it invents, or reach data the

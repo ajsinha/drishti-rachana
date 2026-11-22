@@ -11,6 +11,17 @@ doc:
     stays current. The table is never read whole. Number columns can carry a bar in the cell.
   category: trading
   tags: [blotter, live, orders]
+  use-when:
+    - A large live table of trades or orders ticks while the reader watches.
+  avoid-when:
+    - "The trades are a fixed snapshot: use finance/trade-blotter."
+  data:
+    table: rows
+    in-words: "A live host table with an id key and optionally a status; you name the columns."
+    sample-row: { id: T-100245, status: Open }
+  example: { use: finance/live-blotter@1, with: { rows: "$.orders", order: CHANGED_AT, columns: [{ label: Order, bind: "@.ORDER_ID" }, { label: Status, bind: "@.STATUS", tone: status }] } }
+  see-also: [core/live-table, finance/trade-blotter]
+  keywords: [blotter, live, trades, orders, ticking]
 params:
   rows:
     type: table

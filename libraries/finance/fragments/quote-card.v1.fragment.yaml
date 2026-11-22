@@ -11,6 +11,16 @@ doc:
     head of a market screen; for a history use finance/price-history.
   category: market-data
   tags: [quote, price, range]
+  use-when:
+    - "A quote heads a market screen: last, change, day range and 52-week range."
+  avoid-when:
+    - "The price history matters: use finance/price-history."
+  data:
+    in-words: "No table: the last price and optionally the previous close and the day and year ranges."
+    sample-row: { last: 1000 }
+  example: { use: finance/quote-card@1, with: { last: "$.q.LAST_PX", title: Alder Ltd } }
+  see-also: [finance/instrument-header, finance/price-history]
+  keywords: [quote, last price, range, "52 week", market]
 params:
   last:      { type: number, required: true, doc: The last price }
   previous:  { type: number, optional: true, doc: "The previous close, to give the change" }

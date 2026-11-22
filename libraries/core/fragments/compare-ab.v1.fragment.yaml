@@ -10,6 +10,18 @@ doc:
     numbers, the second less the first. A row whose two values differ is highlighted; only-different leaves the equal ones out.
   category: history
   tags: [compare, difference, record]
+  use-when:
+    - "Two records of the same kind are compared field by field (today and yesterday, two counterparties, two versions)."
+  avoid-when:
+    - "Many rows are compared: use core/version-diff."
+    - "Only one measure is compared over time: use core/period-compare."
+  data:
+    table: a
+    in-words: "Two records with the same fields, and the list of fields to compare."
+    sample-row: { NAME: Northwind Bank, RATING: A, COUNTRY: GB, LIMIT_USD: 25000000 }
+  example: { use: core/compare-ab@1, with: { a: "$.days.YESTERDAY", b: "$.days.TODAY", a-label: Yesterday, b-label: Today, fields: [{ field: TOTAL, label: Total, fmt: amount2 }, { field: TRADES, label: Trades, fmt: amount0 }, { field: DESK, label: Desk }] } }
+  see-also: [core/version-diff, core/period-compare]
+  keywords: [compare, difference, side by side, what changed, a/b]
 params:
   a:              { type: "record{}", required: true, doc: The first record }
   b:              { type: "record{}", required: true, doc: The second record }

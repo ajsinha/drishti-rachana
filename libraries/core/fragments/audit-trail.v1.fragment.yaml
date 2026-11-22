@@ -8,6 +8,18 @@ doc:
   description: One row per change, newest first as given.
   category: history
   tags: [audit, changes, history]
+  use-when:
+    - "A reader must see who changed a record, when and from what to what."
+  avoid-when:
+    - "The events are business milestones, not edits: use core/event-timeline."
+    - "Two whole versions are compared: use core/version-diff."
+  data:
+    table: rows
+    in-words: "One row per change: when, who, what action, and optionally the field with its value before and after."
+    sample-row: { at: "2026-11-20T09:30:00Z", actor: a.smith, action: Update, field: limit, before: A, after: A }
+  example: { use: core/audit-trail@1, with: { rows: { from: "$.audit", columns: { at: CHANGED_AT, actor: CHANGED_BY, action: CHANGE, field: COLUMN_NAME, before: OLD_VALUE, after: NEW_VALUE } } } }
+  see-also: [core/event-timeline, core/version-diff]
+  keywords: [audit, history, changes, who, provenance]
 params:
   rows:
     type: table

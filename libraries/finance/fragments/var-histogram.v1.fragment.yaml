@@ -10,6 +10,17 @@ doc:
     their negatives. Use it beside the figures of finance/var-tiles.
   category: market-risk
   tags: [var, distribution, scenarios]
+  use-when:
+    - "The distribution of scenario P&L is shown with VaR and ES marked on the loss side."
+  avoid-when:
+    - "When in history the losses come from: use finance/var-path."
+  data:
+    table: rows
+    in-words: "One row per scenario with its P&L; plus VaR and ES as positive losses."
+    sample-row: { pnl: -125000 }
+  example: { use: finance/var-histogram@1, with: { var: 180000, bins: 6, rows: { from: "$.scen", columns: { pnl: SCEN_PNL } } } }
+  see-also: [finance/var-tiles, finance/var-path, core/distribution]
+  keywords: [var, es, histogram, scenarios, tail]
 params:
   rows:
     type: table

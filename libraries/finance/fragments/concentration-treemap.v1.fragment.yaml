@@ -11,6 +11,18 @@ doc:
     positive exposure are left out. A click on a rectangle names it.
   category: market-risk
   tags: [concentration, exposure, treemap]
+  use-when:
+    - Where risk or exposure concentrates by group and name is shown at a glance.
+  avoid-when:
+    - "Exact figures matter more than the picture: use core/drill-table."
+    - "The names are few: use core/ranked-bars."
+  data:
+    table: rows
+    in-words: "One row per name: group, name, exposure and optionally P&L."
+    sample-row: { group: Financials, name: Rates Desk, exposure: 18500000, pnl: -125000 }
+  example: { use: finance/concentration-treemap@1, with: { rows: { from: "$.positions", columns: { group: SECTOR, name: ISSUER, exposure: EXPOSURE_USD } } } }
+  see-also: [core/drill-table, core/ranked-bars]
+  keywords: [concentration, treemap, exposure, sector, issuer]
 params:
   rows:
     type: table

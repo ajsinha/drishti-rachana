@@ -9,6 +9,17 @@ doc:
     One row per scenario. The rows are listed worst first. A click on a row raises an event with the scenario's name.
   category: market-risk
   tags: [stress, scenarios, table]
+  use-when:
+    - "Stress scenarios are listed worst first with their P&L and description."
+  avoid-when:
+    - "P&L per scenario and group: use finance/scenario-matrix."
+  data:
+    table: rows
+    in-words: "One row per scenario: scenario, P&L and optionally description."
+    sample-row: { scenario: "Rates +100bp", pnl: -125000, description: Parallel shift up of 100bp }
+  example: { use: finance/stress-table@1, with: { rows: { from: "$.stress", columns: { scenario: SCEN, pnl: TOTAL_PNL } } } }
+  see-also: [finance/scenario-matrix, finance/var-tiles]
+  keywords: [stress, scenarios, worst case, "p&l", shock]
 params:
   rows:
     type: table

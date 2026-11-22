@@ -10,6 +10,18 @@ doc:
     one measure over tenors; for the pillars as a table use finance/curve-table.
   category: market-data
   tags: [curve, term-structure, tenor]
+  use-when:
+    - "One measure over tenors (zero rates, forwards, volatilities) is drawn as a curve."
+  avoid-when:
+    - "Several curves: use finance/curve-compare."
+    - "The pillars as a table: use finance/curve-table."
+  data:
+    table: rows
+    in-words: "One row per tenor in order: tenor and value."
+    sample-row: { tenor: "2Y", value: 1250000 }
+  example: { use: finance/term-structure@1, with: { rows: { from: "$.fwd", columns: { tenor: TENOR, value: FWD } } } }
+  see-also: [finance/curve-compare, finance/curve-table, core/series-line]
+  keywords: [term structure, curve, tenor, yield, vol]
 params:
   rows:
     type: table

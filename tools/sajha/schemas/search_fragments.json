@@ -1,0 +1,242 @@
+{
+  "name": "search_fragments",
+  "implementation": "search_fragments.SearchFragmentsTool",
+  "description": "Find Rachana UI fragments (ready panels: KPI tiles, ranked bars, limit tables, trees, charts) for a dashboard, by what the user asked AND by the shape of the data you have (column names and types; never send rows).\nReturns {results: [{id, doc, shape, fit, use, score}], categories}: doc is the fragment's documented contract (summary, use-when, avoid-when, data in words with a sample row, example, see-also); use is a ready use: with your column mapping when you gave tables.\nInputs: query (words of the request), tables ({name: {columns: [{name, type}], as}}), category, library, limit.\nNext: get_fragment for the whole interface, then compose a Sutra and call check_sutra.\nExample: {\"query\": \"limit utilisation\", \"tables\": {\"limits\": {\"columns\": [{\"name\": \"LIMIT_NAME\", \"type\": \"text\"}, {\"name\": \"LIMIT_USD\", \"type\": \"number\"}, {\"name\": \"USED_USD\", \"type\": \"number\"}]}}}",
+  "annotations": {
+    "readOnlyHint": true,
+    "idempotentHint": true,
+    "openWorldHint": false
+  },
+  "version": "0.1.0",
+  "enabled": true,
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "query": {
+        "type": "string",
+        "maxLength": 500,
+        "description": "What the user wants to see, in words"
+      },
+      "tables": {
+        "type": "object",
+        "maxProperties": 12,
+        "description": "The tables in hand, by the name the Sutra will read them as ($.<name>): column names and types only, never rows",
+        "propertyNames": {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "columns"
+          ],
+          "properties": {
+            "columns": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "text, number, integer, decimal, date, datetime, boolean"
+                  }
+                }
+              }
+            },
+            "as": {
+              "enum": [
+                "rows",
+                "record"
+              ],
+              "description": "record: one row (its fields fill value parameters such as var, used, limit)"
+            }
+          }
+        }
+      },
+      "category": {
+        "type": "string",
+        "description": "Only this category (see categories in a result)"
+      },
+      "library": {
+        "type": "string",
+        "description": "Only this library (core, finance, ...)"
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 25,
+        "default": 10
+      }
+    },
+    "examples": [
+      {
+        "query": "limit utilisation",
+        "tables": {
+          "limits": {
+            "columns": [
+              {
+                "name": "LIMIT_NAME",
+                "type": "text"
+              },
+              {
+                "name": "LIMIT_USD",
+                "type": "number"
+              },
+              {
+                "name": "USED_USD",
+                "type": "number"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "$defs": {
+      "doc": {
+        "$ref": "doc.schema.json#/$defs/doc"
+      },
+      "docLine": {
+        "$ref": "doc.schema.json#/$defs/docLine"
+      },
+      "docOf": {
+        "$ref": "doc.schema.json#/$defs/docOf"
+      },
+      "fragment": {
+        "$ref": "doc.schema.json#/$defs/fragment"
+      },
+      "fragmentColumn": {
+        "$ref": "doc.schema.json#/$defs/fragmentColumn"
+      },
+      "fragmentParam": {
+        "$ref": "doc.schema.json#/$defs/fragmentParam"
+      },
+      "fragmentSlot": {
+        "$ref": "doc.schema.json#/$defs/fragmentSlot"
+      }
+    },
+    "required": [
+      "results"
+    ],
+    "properties": {
+      "results": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "doc"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "library/name@major"
+            },
+            "library": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "major": {
+              "type": "integer"
+            },
+            "doc": {
+              "$ref": "#/$defs/doc"
+            },
+            "shape": {
+              "type": "object",
+              "description": "The fragment's data parameters: tables with their columns, and value parameters",
+              "properties": {
+                "tables": {
+                  "type": "object"
+                },
+                "values": {
+                  "type": "object"
+                }
+              }
+            },
+            "fit": {
+              "type": "object",
+              "description": "How the given tables fill it: per table parameter the table, coverage (0..1), column mapping (fragment column to your column) and missing columns; the value parameters a record fills",
+              "properties": {
+                "tables": {
+                  "type": "object"
+                },
+                "values": {
+                  "type": "object"
+                },
+                "coverage": {
+                  "type": "number"
+                }
+              }
+            },
+            "use": {
+              "type": "object",
+              "required": [
+                "use"
+              ],
+              "description": "A ready use: put it under panels: (and its library under libraries:)",
+              "properties": {
+                "use": {
+                  "type": "string"
+                },
+                "with": {
+                  "type": "object"
+                }
+              }
+            },
+            "score": {
+              "type": "number"
+            },
+            "matched": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "caution": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "count": {
+        "type": "integer"
+      },
+      "categories": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "hint": {
+        "type": "string"
+      }
+    }
+  },
+  "metadata": {
+    "author": "Ashutosh Sinha",
+    "email": "ajsinha@gmail.com",
+    "copyright": "Copyright (c) 2026 Ashutosh Sinha. Drishti Rachana; proprietary",
+    "category": "Generative UI",
+    "tags": [
+      "rachana",
+      "genui",
+      "dashboard",
+      "sutra"
+    ],
+    "pack": "rachana-genui"
+  }
+}

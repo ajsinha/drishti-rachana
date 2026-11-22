@@ -266,6 +266,11 @@
     "raisedBy" : [ "parse.DeclarationsReader" ],
     "since" : "1.2"
   }, {
+    "code" : "RCH-2093",
+    "profile" : "core",
+    "raisedBy" : [ "parse.DocBlockLint" ],
+    "since" : "1.2"
+  }, {
     "code" : "RCH-2101",
     "profile" : "core",
     "raisedBy" : [ "SutraExpressions" ],
@@ -3012,6 +3017,10 @@
       "since" : "1.0"
     }, {
       "name" : "description",
+      "profile" : "core",
+      "since" : "1.0"
+    }, {
+      "name" : "doc",
       "profile" : "core",
       "since" : "1.0"
     }, {

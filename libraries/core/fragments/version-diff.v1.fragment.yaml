@@ -11,6 +11,18 @@ doc:
     new values are shown).
   category: history
   tags: [diff, versions, compare]
+  use-when:
+    - "Two versions of a keyed table are compared: rows added, removed and changed."
+  avoid-when:
+    - "Two single records are compared: use core/compare-ab."
+    - "The edit history is wanted: use core/audit-trail."
+  data:
+    table: before
+    in-words: "Two tables with the same key column: the old version and the new one."
+    sample-row: { key: K-001, LIMIT_USD: 25000000, OWNER: Market Risk }
+  example: { use: core/version-diff@1, with: { title: Limits, before: { from: "$.limits_yesterday", columns: { key: LIMIT_ID } }, after: { from: "$.limits_today", columns: { key: LIMIT_ID } }, columns: [{ label: Limit, bind: "@.LIMIT_ID" }, { label: Desk, bind: "@.DESK" }, { label: Amount, bind: "@.LIMIT_USD", fmt: amount0 }] } }
+  see-also: [core/compare-ab, core/audit-trail]
+  keywords: [diff, what changed, versions, added, removed]
 params:
   before:
     type: table

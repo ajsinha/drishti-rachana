@@ -199,6 +199,10 @@ public final class LibraryGates {
             if (description == null || String.valueOf(description.value()).isBlank()) {
                 fail.add(f + ": doc.description (when to use it and when not) is required");
             }
+            for (SutraProblem p : com.ash.rachana.parse.DocBlockLint.check(text, "fragments/" + f + ".v" + latest(e) + ".fragment.yaml",
+                    SutraProblem.ERROR)) {                                // the doc block an agent and a browser read (RCH-2093, SPEC 2.9)
+                fail.add(f + ": " + p.code() + " line " + p.location().line() + " " + p.path() + ": " + p.message());
+            }
             documented(f, "parameter", root.map().get("params"), fail);
             documented(f, "slot", root.map().get("slots"), fail);
             PNode emits = root.map().get("emits");

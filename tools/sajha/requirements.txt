@@ -1,0 +1,4 @@
+# Installed by SAJHA's plugin loader (pip install -r) when the plugin loads. drishti-rachana is not on a public index:
+# install its wheel into SAJHA's environment first (README.md, "Deploy"); it brings mini-racer with the [v8] extra.
+pyyaml>=6
+jsonschema>=4

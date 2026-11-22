@@ -10,6 +10,18 @@ doc:
     rows is a measure, added up by a node no row names; shape the rows first (select the columns you want) to choose them.
   category: tables
   tags: [tree, hierarchy, table]
+  use-when:
+    - A hierarchy given as parent links is shown as an expanding table with measures per node.
+  avoid-when:
+    - "The hierarchy comes from level columns: use core/drill-table."
+    - "The hierarchy carries a risk measure and its limits: use finance/risk-hierarchy-tree."
+  data:
+    table: rows
+    in-words: "One row per node: id, parent id (empty at the root), name and number columns as measures."
+    sample-row: { id: T-100245, parent: DESK-RATES, name: Rates Desk }
+  example: { use: core/tree-table@1, with: { title: Organisation, rows: { from: "$.units", columns: { id: UNIT, parent: PARENT_UNIT, name: UNIT_NAME } } } }
+  see-also: [core/drill-table, finance/risk-hierarchy-tree, finance/netting-set-tree]
+  keywords: [tree, hierarchy, parent, nested, expand]
 params:
   rows:
     type: table

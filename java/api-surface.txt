@@ -329,6 +329,7 @@
 [experimental] class public abstract static interface com.ash.rachana.live.spi.LiveStream$Listener
 [experimental] class public abstract static interface com.ash.rachana.parse.TypedFragment$Caller
 [experimental] class public abstract static interface com.ash.rachana.profile.SutraKey$Context
+[experimental] class public final class com.ash.rachana.DocSchema
 [experimental] class public final class com.ash.rachana.RachanaSchema
 [experimental] class public final class com.ash.rachana.SutraExpressions
 [experimental] class public final class com.ash.rachana.SutraLayoutEditor
@@ -409,6 +410,7 @@
 [experimental] class public final class com.ash.rachana.parse.BlockLibrary
 [experimental] class public final class com.ash.rachana.parse.BlockUses
 [experimental] class public final class com.ash.rachana.parse.DeclarationsReader
+[experimental] class public final class com.ash.rachana.parse.DocBlockLint
 [experimental] class public final class com.ash.rachana.parse.EffectsReader
 [experimental] class public final class com.ash.rachana.parse.Json
 [experimental] class public final class com.ash.rachana.parse.KeyTables
@@ -553,6 +555,7 @@
 [experimental] class public static final enum com.ash.rachana.model.Control$Placement
 [experimental] class public static final enum com.ash.rachana.model.DataEntry$Form
 [experimental] class public static final enum com.ash.rachana.model.PivotSpec$Mode
+[experimental] class public static final enum com.ash.rachana.parse.DocBlockLint$Kind
 [experimental] class public static final enum com.ash.rachana.server.ServerConfig$AuthMode
 [experimental] class public static final enum com.ash.rachana.view.Include$Rule
 [experimental] class public static final record com.ash.rachana.SutraLayoutEditor$Edit
@@ -769,6 +772,7 @@
 [experimental] class public static final record com.ash.rachana.wire.ScreenWire$Screen
 [experimental] class public static final record com.ash.rachana.wire.ScreenWire$Selection
 [experimental] class public static final record com.ash.rachana.wire.ScreenWire$Submitted
+[experimental] com.ash.rachana.DocSchema :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.DocSchema.defs()
 [experimental] com.ash.rachana.RachanaSchema :: public static java.util.Map<java.lang.String, java.lang.Object> com.ash.rachana.RachanaSchema.build(java.util.Collection<java.lang.String>,com.ash.rachana.profile.Grammar)
 [experimental] com.ash.rachana.SutraExpressions :: public com.ash.rachana.SutraExpressions(com.ash.rachana.el.ElCompiler)
 [experimental] com.ash.rachana.SutraExpressions :: public java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.SutraExpressions.check(com.ash.rachana.model.Sutra)
@@ -3331,6 +3335,19 @@
 [experimental] com.ash.rachana.parse.DeclarationsReader :: public static final java.lang.String com.ash.rachana.parse.DeclarationsReader.RESERVED
 [experimental] com.ash.rachana.parse.DeclarationsReader :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.DeclarationsReader.FUNCTION_KEYS
 [experimental] com.ash.rachana.parse.DeclarationsReader :: public static final java.util.regex.Pattern com.ash.rachana.parse.DeclarationsReader.NAME
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static final int com.ash.rachana.parse.DocBlockLint.MIN_DESCRIPTION
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static final int com.ash.rachana.parse.DocBlockLint.MIN_KEYWORDS
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static final int com.ash.rachana.parse.DocBlockLint.MIN_WORDS
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static final int com.ash.rachana.parse.DocBlockLint.SUMMARY_MAX
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static final java.lang.String com.ash.rachana.parse.DocBlockLint.CODE
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.DocBlockLint.DATA_KEYS
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static final java.util.Set<java.lang.String> com.ash.rachana.parse.DocBlockLint.KEYS
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.DocBlockLint.check(com.ash.rachana.parse.PNode,com.ash.rachana.parse.DocBlockLint$Kind,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.parse.DocBlockLint :: public static java.util.List<com.ash.rachana.SutraProblem> com.ash.rachana.parse.DocBlockLint.check(java.lang.String,java.lang.String,java.lang.String)
+[experimental] com.ash.rachana.parse.DocBlockLint$Kind :: public static com.ash.rachana.parse.DocBlockLint$Kind com.ash.rachana.parse.DocBlockLint$Kind.valueOf(java.lang.String)
+[experimental] com.ash.rachana.parse.DocBlockLint$Kind :: public static com.ash.rachana.parse.DocBlockLint$Kind[] com.ash.rachana.parse.DocBlockLint$Kind.values()
+[experimental] com.ash.rachana.parse.DocBlockLint$Kind :: public static final com.ash.rachana.parse.DocBlockLint$Kind com.ash.rachana.parse.DocBlockLint$Kind.FRAGMENT
+[experimental] com.ash.rachana.parse.DocBlockLint$Kind :: public static final com.ash.rachana.parse.DocBlockLint$Kind com.ash.rachana.parse.DocBlockLint$Kind.SUTRA
 [experimental] com.ash.rachana.parse.EffectsReader :: public com.ash.rachana.parse.EffectsReader$Read com.ash.rachana.parse.EffectsReader.panel(java.lang.String,com.ash.rachana.parse.PNode)
 [experimental] com.ash.rachana.parse.EffectsReader :: public com.ash.rachana.parse.EffectsReader(java.lang.String,java.util.List<com.ash.rachana.SutraProblem>)
 [experimental] com.ash.rachana.parse.EffectsReader :: public java.util.List<com.ash.rachana.model.StateEntry> com.ash.rachana.parse.EffectsReader.state(com.ash.rachana.parse.PNode,java.util.Set<java.lang.String>)

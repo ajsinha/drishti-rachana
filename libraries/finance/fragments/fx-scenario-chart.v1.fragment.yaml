@@ -10,6 +10,17 @@ doc:
     Use it beside a value-at-risk screen to show which market moves a scenario set contains.
   category: market-data
   tags: [fx, scenarios, shocks]
+  use-when:
+    - The path of an exchange rate across scenario dates is shown with the shock per scenario.
+  avoid-when:
+    - "The scenarios' P&L is wanted: use finance/var-path."
+  data:
+    table: rows
+    in-words: "One row per scenario date: the rate and optionally the shock."
+    sample-row: { date: "2026-11-20", rate: 0.0425, shock: -0.035 }
+  example: { use: finance/fx-scenario-chart@1, with: { pair: EURUSD, rows: { from: "$.scen", columns: { date: SCEN_DATE, rate: FX_RATE } } } }
+  see-also: [finance/var-path, finance/what-if-shocks]
+  keywords: [fx, scenario, shock, exchange rate, var]
 params:
   rows:
     type: table

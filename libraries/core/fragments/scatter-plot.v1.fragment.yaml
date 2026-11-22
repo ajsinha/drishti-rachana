@@ -8,6 +8,18 @@ doc:
   description: One row per point with an x and a y. A label names the point, a group colours it and a size scales it.
   category: charts
   tags: [scatter, correlation, bubble]
+  use-when:
+    - Two measures are compared across many items to see relationships or outliers.
+  avoid-when:
+    - "One measure over time: use core/series-line."
+    - "Factor pairs with a correlation: use finance/correlation-matrix."
+  data:
+    table: rows
+    in-words: "One row per point: x and y numbers, optionally a label, a group and a size."
+    sample-row: { x: 1.25, "y": 0.84, label: Rates, group: Financials, size: 30 }
+  example: { use: core/scatter-plot@1, with: { title: Price against units, rows: { from: "$.products", columns: { x: PRICE, "y": UNITS_SOLD, label: NAME, group: RANGE } }, x-label: Price, y-label: Units sold, x-fmt: amount0, fmt: amount0 } }
+  see-also: [core/series-line, finance/correlation-matrix]
+  keywords: [scatter, points, relationship, outliers, bubble]
 params:
   rows:
     type: table

@@ -10,6 +10,16 @@ doc:
     until every field's checks and your rules pass. Wire submit at the use (event.values is field id to value).
   category: forms
   tags: [form, steps, wizard, submit]
+  use-when:
+    - A long form is filled in named steps and checked as a whole before it is sent.
+  avoid-when:
+    - "A few fields fit on one page: use core/entry-form."
+  data:
+    in-words: "No table: the steps (id, label) and the fields, each naming its step."
+    sample-row: { steps: A, fields: A }
+  example: { use: core/stepped-form@1, with: { title: Open an account, steps: [{ id: party, label: Party }, { id: terms, label: Terms }], fields: [{ id: name, label: Name, step: party, required: true }, { id: country, label: Country, step: party, type: enum, options: [CA, GB, US] }, { id: limit, label: Credit limit, step: terms, type: number, required: true }, { id: review, label: Review date, step: terms, type: date }], rules: [{ rule: "limit > 0", message: The limit is a positive amount }] } }
+  see-also: [core/entry-form, finance/order-ticket]
+  keywords: [wizard, steps, form, multi step, submit]
 params:
   steps:
     type: "list<record{id: text, label: text}>"

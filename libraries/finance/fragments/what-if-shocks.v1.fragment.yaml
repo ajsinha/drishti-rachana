@@ -11,6 +11,17 @@ doc:
     (Rachana never prices) and gives it back as estimate. Labelled as an estimate.
   category: market-risk
   tags: [what-if, shocks, sensitivities, estimate]
+  use-when:
+    - The reader enters market shocks beside the sensitivities and the host returns an estimate.
+  avoid-when:
+    - "Precomputed stress results: use finance/stress-table."
+  data:
+    table: sensitivities
+    in-words: "One row per factor with its sensitivity; plus the shock fields to ask for."
+    sample-row: { factor: USD-SOFR, value: 1250000 }
+  example: { use: finance/what-if-shocks@1, with: { sensitivities: { from: "$.delta", columns: { factor: RISK_FACTOR, value: PNL_PER_UNIT } }, shocks: [{ id: rates, label: "Rates, bp", type: number, min: -100, max: 100 }, { id: fx, label: "FX, %", type: number, min: -20, max: 20 }] } }
+  see-also: [finance/greeks-ladder, finance/stress-table]
+  keywords: [what if, shock, scenario, sensitivity, estimate]
 params:
   sensitivities:
     type: table

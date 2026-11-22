@@ -1,0 +1,208 @@
+{
+  "name": "get_fragment",
+  "implementation": "get_fragment.GetFragmentTool",
+  "description": "The whole interface of one Rachana fragment: its doc block, every parameter (type, required, default, columns of a table parameter, doc), slots, events, its source and an example Sutra on synthetic data.\nReturns {found, id, doc, params, slots, emits, shape, use, libraries_line, source, example_sutra}; found false gives the nearest names.\nInputs: id* (library/name@major, library/name or name), tables (as in search_fragments: the use comes back mapped to your columns), include_source, include_example.\nExample: {\"id\": \"finance/limit-table@1\"}",
+  "annotations": {
+    "readOnlyHint": true,
+    "idempotentHint": true,
+    "openWorldHint": false
+  },
+  "version": "0.1.0",
+  "enabled": true,
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "maxLength": 140
+      },
+      "tables": {
+        "type": "object",
+        "maxProperties": 12,
+        "description": "The tables in hand, by the name the Sutra will read them as ($.<name>): column names and types only, never rows",
+        "propertyNames": {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "columns"
+          ],
+          "properties": {
+            "columns": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "text, number, integer, decimal, date, datetime, boolean"
+                  }
+                }
+              }
+            },
+            "as": {
+              "enum": [
+                "rows",
+                "record"
+              ],
+              "description": "record: one row (its fields fill value parameters such as var, used, limit)"
+            }
+          }
+        }
+      },
+      "include_source": {
+        "type": "boolean",
+        "default": true
+      },
+      "include_example": {
+        "type": "boolean",
+        "default": true
+      }
+    },
+    "examples": [
+      {
+        "id": "finance/limit-table@1"
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "$defs": {
+      "doc": {
+        "$ref": "doc.schema.json#/$defs/doc"
+      },
+      "docLine": {
+        "$ref": "doc.schema.json#/$defs/docLine"
+      },
+      "docOf": {
+        "$ref": "doc.schema.json#/$defs/docOf"
+      },
+      "fragment": {
+        "$ref": "doc.schema.json#/$defs/fragment"
+      },
+      "fragmentColumn": {
+        "$ref": "doc.schema.json#/$defs/fragmentColumn"
+      },
+      "fragmentParam": {
+        "$ref": "doc.schema.json#/$defs/fragmentParam"
+      },
+      "fragmentSlot": {
+        "$ref": "doc.schema.json#/$defs/fragmentSlot"
+      }
+    },
+    "required": [
+      "found"
+    ],
+    "properties": {
+      "found": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "library": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "major": {
+        "type": "integer"
+      },
+      "library_version": {
+        "type": "string"
+      },
+      "doc": {
+        "$ref": "#/$defs/doc"
+      },
+      "params": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/fragmentParam"
+        }
+      },
+      "slots": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/fragmentSlot"
+        }
+      },
+      "emits": {
+        "type": "array"
+      },
+      "shape": {
+        "type": "object",
+        "description": "The fragment's data parameters: tables with their columns, and value parameters",
+        "properties": {
+          "tables": {
+            "type": "object"
+          },
+          "values": {
+            "type": "object"
+          }
+        }
+      },
+      "use": {
+        "type": "object",
+        "required": [
+          "use"
+        ],
+        "description": "A ready use: put it under panels: (and its library under libraries:)",
+        "properties": {
+          "use": {
+            "type": "string"
+          },
+          "with": {
+            "type": "object"
+          }
+        }
+      },
+      "libraries_line": {
+        "type": "string",
+        "description": "What to write under libraries:"
+      },
+      "source": {
+        "type": "string"
+      },
+      "example_sutra": {
+        "type": "string"
+      },
+      "file": {
+        "type": "string"
+      },
+      "nearest": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "metadata": {
+    "author": "Ashutosh Sinha",
+    "email": "ajsinha@gmail.com",
+    "copyright": "Copyright (c) 2026 Ashutosh Sinha. Drishti Rachana; proprietary",
+    "category": "Generative UI",
+    "tags": [
+      "rachana",
+      "genui",
+      "dashboard",
+      "sutra"
+    ],
+    "pack": "rachana-genui"
+  }
+}

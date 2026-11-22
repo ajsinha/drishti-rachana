@@ -10,6 +10,17 @@ doc:
     open amounts as they are, so give one currency.
   category: counterparty
   tags: [margin, calls, ladder]
+  use-when:
+    - Margin calls are tracked by date and status with the open total.
+  avoid-when:
+    - "Collateral balances: use finance/collateral-ledger."
+  data:
+    table: rows
+    in-words: "One row per call: date, direction, amount, currency and status."
+    sample-row: { date: "2026-11-20", direction: Received, amount: 250000, currency: USD, status: Open }
+  example: { use: finance/margin-call-ladder@1, with: { rows: { from: "$.calls", columns: { date: CALL_DT, direction: SIDE, amount: AMT, currency: CCY, status: STATE } } } }
+  see-also: [finance/collateral-ledger, finance/agreement-terms]
+  keywords: [margin call, collateral, dispute, settlement, open]
 params:
   rows:
     type: table

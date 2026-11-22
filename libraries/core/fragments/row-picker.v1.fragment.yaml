@@ -10,6 +10,17 @@ doc:
     your screen as @<as>.select.id (the use's as: names the instance).
   category: tables
   tags: [table, picker, master, select]
+  use-when:
+    - "A master list drives a detail panel: the reader clicks a row and the screen shows that item."
+  avoid-when:
+    - "The rows are just read: use core/data-table."
+  data:
+    table: rows
+    in-words: "One row per item with an id and a name, optionally a type, an amount and a date."
+    sample-row: { id: T-100245, name: Rates Desk, type: Coupon, amount: 250000, date: "2026-11-20" }
+  example: { use: core/row-picker@1, with: { title: Customers, rows: { from: "$.customers", columns: { id: CUSTOMER_ID, name: CUSTOMER_NAME, type: SEGMENT, amount: BALANCE, date: SINCE } }, type-label: Segment, amount-label: Balance, date-label: Customer since } }
+  see-also: [core/data-table, core/field-list]
+  keywords: [master detail, picker, select, list, navigation]
 params:
   rows:
     type: table

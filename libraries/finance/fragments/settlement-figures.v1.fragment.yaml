@@ -11,6 +11,17 @@ doc:
     one currency.
   category: trading
   tags: [settlement, payments, due]
+  use-when:
+    - "Payments due today, in the coming week and overdue head an operations screen."
+  avoid-when:
+    - "The payments themselves: use finance/payment-schedule."
+  data:
+    table: rows
+    in-words: "One row per payment: payment date, amount and optionally status; plus the business day."
+    sample-row: { pay_date: "2026-11-20", amount: 250000, status: Open }
+  example: { use: finance/settlement-figures@1, with: { today: "'2026-01-15'", rows: { from: "$.pay", columns: { pay_date: PAYDT, amount: AMT } } } }
+  see-also: [finance/payment-schedule, finance/cashflow-ladder]
+  keywords: [settlement, due, overdue, payments, operations]
 params:
   rows:
     type: table

@@ -10,6 +10,18 @@ doc:
     horizontal line across the stack.
   category: charts
   tags: [area, stack, limit, usage]
+  use-when:
+    - "Several series add up to a whole and their mix over time matters (usage by component, exposure by asset class)."
+  avoid-when:
+    - "The series do not add up: use core/series-line per series."
+    - "Only the latest split matters: use core/donut-breakdown."
+  data:
+    table: rows
+    in-words: One row per x (a date or ordered label) with one numeric column per series (wide form).
+    sample-row: { x: "2026-11-20", COMPUTE: 40, STORAGE: 20, NETWORK: 10 }
+  example: { use: core/area-stack@1, with: { rows: { from: "$.usage", columns: { x: DAY } }, series: [{ label: Compute, value: COMPUTE }, { label: Storage, value: STORAGE }] } }
+  see-also: [core/series-line, core/donut-breakdown]
+  keywords: [stacked, area, composition, over time, trend]
 params:
   rows:
     type: table

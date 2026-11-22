@@ -10,6 +10,17 @@ doc:
     it can be negative; it is only drawn when a collateral figure is given. The trades are drawn largest by size first.
   category: counterparty
   tags: [netting, exposure, summary]
+  use-when:
+    - A netting set is summarised in four figures with its largest trades.
+  avoid-when:
+    - "The whole tree of sets: use finance/netting-set-tree."
+  data:
+    table: trades
+    in-words: "Four numbers (gross positive, gross negative, net, collateral) and optionally one row per trade: id and value."
+    sample-row: { id: T-100245, value: 1250000 }
+  example: { use: finance/netting-summary@1, with: { gross-positive: "$.ns.GROSS_POS", gross-negative: "$.ns.GROSS_NEG", net: "$.ns.NET_VAL" } }
+  see-also: [finance/netting-set-tree, finance/exposure-profile]
+  keywords: [netting, gross, net, collateral, exposure]
 params:
   gross-positive: { type: number, required: true, doc: The sum of positive trade values }
   gross-negative: { type: number, required: true, doc: The sum of negative trade values }

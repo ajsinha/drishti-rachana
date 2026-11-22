@@ -10,6 +10,17 @@ doc:
     values, so give one currency. A click on a row names the asset.
   category: counterparty
   tags: [collateral, ledger, haircut]
+  use-when:
+    - Collateral held and posted is listed by asset with haircuts and totals by direction.
+  avoid-when:
+    - "The agreement's terms are wanted: use finance/agreement-terms."
+  data:
+    table: rows
+    in-words: "One row per asset and direction: asset, direction, nominal, currency, haircut and value after haircut."
+    sample-row: { asset: "UST 4.25% 2034", direction: Received, nominal: 10000000, currency: USD, haircut: 0.02, value: 1250000 }
+  example: { use: finance/collateral-ledger@1, with: { rows: { from: "$.coll", columns: { asset: ASSET, direction: SIDE, nominal: NOMINAL, currency: CCY, value: VAL } } } }
+  see-also: [finance/agreement-terms, finance/margin-call-ladder]
+  keywords: [collateral, haircut, held, posted, ledger]
 params:
   rows:
     type: table

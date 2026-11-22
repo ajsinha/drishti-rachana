@@ -8,6 +8,16 @@ doc:
   description: One line of provenance. Leave out what you do not have; the line closes up.
   category: records
   tags: [source, provenance, footer]
+  use-when:
+    - "A screen shows published data and must credit its publisher, dataset, date and licence."
+  avoid-when:
+    - "Only the age of the data matters: use core/freshness-badge."
+  data:
+    in-words: "Four short texts: publisher, dataset, retrieval date and licence."
+    sample-row: { publisher: Publisher }
+  example: { use: core/source-note@1, with: { publisher: Example Statistics Office, dataset: Retail sales, retrieved: "2026-01-10", licence: Open data } }
+  see-also: [core/freshness-badge, core/note]
+  keywords: [source, provenance, licence, attribution, footer]
 params:
   publisher: { type: text, required: true, doc: Who published the data }
   dataset:   { type: text, optional: true, doc: The dataset or table }

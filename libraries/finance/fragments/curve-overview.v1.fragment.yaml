@@ -10,6 +10,17 @@ doc:
     own when you want to place them apart.
   category: market-data
   tags: [curve, overview, rates]
+  use-when:
+    - One curve is shown as a line with its pillars as a table underneath.
+  avoid-when:
+    - "The line and the table are placed apart: use finance/term-structure and finance/curve-table."
+  data:
+    table: rows
+    in-words: "One row per pillar: tenor and zero rate, optionally instrument, quote and discount factor."
+    sample-row: { tenor: "2Y", zero: 0.0412, instrument: SOFR swap, quote: 0.0415, df: 0.9598 }
+  example: { use: finance/curve-overview@1, with: { rows: { from: "$.pts", columns: { tenor: PILLAR, zero: ZERO_RATE } } } }
+  see-also: [finance/term-structure, finance/curve-table]
+  keywords: [curve, zero rate, pillars, yield curve, discount]
 params:
   rows:
     type: table

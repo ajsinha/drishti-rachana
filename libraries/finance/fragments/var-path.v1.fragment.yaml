@@ -11,6 +11,17 @@ doc:
     is shown as a figure.
   category: market-risk
   tags: [var, scenarios, history]
+  use-when:
+    - "Scenario P&L is read against the historical day each scenario replays, with the worst days."
+  avoid-when:
+    - "The shape of the distribution: use finance/var-histogram."
+  data:
+    table: rows
+    in-words: "One row per scenario: date and P&L."
+    sample-row: { date: "2026-11-20", pnl: -125000 }
+  example: { use: finance/var-path@1, with: { rows: { from: "$.scen", columns: { date: HIST_DATE, pnl: SCEN_PNL } } } }
+  see-also: [finance/var-histogram, finance/backtest-chart]
+  keywords: [var, scenarios, history, worst days, path]
 params:
   rows:
     type: table

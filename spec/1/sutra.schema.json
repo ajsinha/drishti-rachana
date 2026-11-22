@@ -38,6 +38,304 @@
       "required" : [ "bind" ],
       "type" : "object"
     },
+    "doc" : {
+      "additionalProperties" : false,
+      "description" : "The doc block (SPEC 2.9) of a Sutra, fragment, block, parameter, slot or panel: what it is, when to use it and what data it takes, as data the compiler checks. People, component browsers, the GenUI catalogue and AI agents read it; nothing else describes a fragment. Missing: RCH-2055; thin: RCH-2093",
+      "properties" : {
+        "avoid-when" : {
+          "description" : "Sentences: when not to use it, each naming what to use instead",
+          "items" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "category" : {
+          "description" : "The group it is listed under (a category id of its library)",
+          "type" : "string"
+        },
+        "data" : {
+          "additionalProperties" : false,
+          "description" : "The data it takes: the rows in words and one synthetic sample row",
+          "properties" : {
+            "in-words" : {
+              "description" : "One row per what, and the columns, in plain words",
+              "minLength" : 1,
+              "type" : "string"
+            },
+            "sample-row" : {
+              "description" : "One synthetic row, in the fragment's own column names",
+              "minProperties" : 1,
+              "type" : "object"
+            },
+            "table" : {
+              "description" : "The table or record parameter the sample row is of",
+              "type" : "string"
+            }
+          },
+          "type" : "object"
+        },
+        "description" : {
+          "description" : "What it shows and how, in a short paragraph",
+          "minLength" : 1,
+          "type" : "string"
+        },
+        "emits" : {
+          "description" : "Older docstring form: the events it fires",
+          "type" : "array"
+        },
+        "example" : {
+          "description" : "A minimal use: { use: library/name@major, with: {...} }",
+          "properties" : {
+            "use" : {
+              "pattern" : "^([a-z][a-z0-9-]{0,63}/)?[a-z][a-z0-9-]{1,63}(@[0-9]+)?$",
+              "type" : "string"
+            },
+            "with" : {
+              "type" : "object"
+            }
+          },
+          "required" : [ "use" ],
+          "type" : "object"
+        },
+        "examples" : {
+          "description" : "Older docstring form: uses of it",
+          "type" : "array"
+        },
+        "expects" : {
+          "description" : "Older docstring form: what it reads from a parent",
+          "type" : "array"
+        },
+        "intents" : {
+          "description" : "The AI kit's intents it answers (AI_GENUI 2.1)",
+          "items" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "keywords" : {
+          "description" : "Search words: what a user would type to find it",
+          "items" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "params" : {
+          "description" : "Older docstring form (RCH-2055): each parameter's type, default and meaning",
+          "type" : "object"
+        },
+        "see-also" : {
+          "description" : "Related fragments: library/name or library/name@major",
+          "items" : {
+            "pattern" : "^([a-z][a-z0-9-]{0,63}/)?[a-z][a-z0-9-]{1,63}(@[0-9]+)?$",
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "since" : {
+          "description" : "The release it arrived in",
+          "type" : "string"
+        },
+        "summary" : {
+          "description" : "One line of at most 120 characters: what it shows",
+          "maxLength" : 120,
+          "minLength" : 1,
+          "pattern" : "^[^\\n]+$",
+          "type" : "string"
+        },
+        "tags" : {
+          "description" : "Short words the library's index shows",
+          "items" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "use-when" : {
+          "description" : "Sentences: the situations it is the right choice for",
+          "items" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "uses" : {
+          "description" : "A composite fragment's inner fragments, pinned (RCH-2055)",
+          "items" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "type" : "array"
+        }
+      },
+      "required" : [ "summary" ],
+      "type" : "object"
+    },
+    "docLine" : {
+      "description" : "A one-line doc: of a parameter, slot, column, event or panel",
+      "minLength" : 1,
+      "pattern" : "^[^\\n]+$",
+      "type" : "string"
+    },
+    "docOf" : {
+      "description" : "A part's doc: one line, or a whole doc block",
+      "oneOf" : [ {
+        "$ref" : "#/$defs/docLine"
+      }, {
+        "$ref" : "#/$defs/doc"
+      } ]
+    },
+    "fragment" : {
+      "description" : "A typed fragment file, <name>.v<N>.fragment.yaml (LIBRARIES 4); a text-form block carries the same doc",
+      "properties" : {
+        "doc" : {
+          "$ref" : "#/$defs/doc"
+        },
+        "emits" : {
+          "items" : {
+            "properties" : {
+              "doc" : {
+                "$ref" : "#/$defs/docOf"
+              },
+              "name" : {
+                "type" : "string"
+              },
+              "payload" : { }
+            },
+            "required" : [ "name" ],
+            "type" : "object"
+          },
+          "type" : "array"
+        },
+        "fragment" : {
+          "pattern" : "^[a-z][a-z0-9-]{1,63}$",
+          "type" : "string"
+        },
+        "panels" : {
+          "type" : "array"
+        },
+        "params" : {
+          "additionalProperties" : {
+            "$ref" : "#/$defs/fragmentParam"
+          },
+          "maxProperties" : 40,
+          "type" : "object"
+        },
+        "rachana" : { },
+        "slots" : {
+          "additionalProperties" : {
+            "$ref" : "#/$defs/fragmentSlot"
+          },
+          "maxProperties" : 8,
+          "type" : "object"
+        },
+        "version" : {
+          "minimum" : 1,
+          "type" : "integer"
+        }
+      },
+      "required" : [ "doc", "fragment", "panels", "rachana", "version" ],
+      "type" : "object"
+    },
+    "fragmentColumn" : {
+      "additionalProperties" : false,
+      "description" : "A column of a table parameter (LIBRARIES 5.1)",
+      "properties" : {
+        "doc" : {
+          "$ref" : "#/$defs/docOf"
+        },
+        "optional" : {
+          "type" : "boolean"
+        },
+        "type" : {
+          "type" : "string"
+        }
+      },
+      "type" : "object"
+    },
+    "fragmentParam" : {
+      "additionalProperties" : false,
+      "description" : "A fragment's parameter (LIBRARIES 4.2)",
+      "properties" : {
+        "columns" : {
+          "additionalProperties" : {
+            "$ref" : "#/$defs/fragmentColumn"
+          },
+          "type" : "object"
+        },
+        "contract" : {
+          "type" : "string"
+        },
+        "default" : { },
+        "doc" : {
+          "$ref" : "#/$defs/docOf"
+        },
+        "dynamic" : {
+          "type" : "boolean"
+        },
+        "key" : { },
+        "live" : {
+          "description" : "ok | no: whether the fragment redraws correctly from keyed patches (LIBRARIES 5)",
+          "enum" : [ "ok", "no" ]
+        },
+        "max" : {
+          "type" : "number"
+        },
+        "max-rows" : {
+          "type" : "integer"
+        },
+        "min" : {
+          "type" : "number"
+        },
+        "of" : {
+          "type" : "string"
+        },
+        "optional" : {
+          "type" : "boolean"
+        },
+        "options" : {
+          "type" : "array"
+        },
+        "pattern" : {
+          "type" : "string"
+        },
+        "required" : {
+          "type" : "boolean"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "window" : {
+          "description" : "ok | no: whether every read is push-down-able (LIBRARIES 5)",
+          "enum" : [ "ok", "no" ]
+        }
+      },
+      "required" : [ "doc", "type" ],
+      "type" : "object"
+    },
+    "fragmentSlot" : {
+      "description" : "A fragment's slot (LIBRARIES 4.3)",
+      "properties" : {
+        "accepts" : {
+          "enum" : [ "panels", "columns", "controls", "fields", "actions", "menu", "layers" ]
+        },
+        "default" : { },
+        "doc" : {
+          "$ref" : "#/$defs/docOf"
+        },
+        "exposes" : {
+          "type" : "object"
+        },
+        "max" : {
+          "minimum" : 1,
+          "type" : "integer"
+        }
+      },
+      "required" : [ "accepts", "doc" ],
+      "type" : "object"
+    },
     "panel" : {
       "allOf" : [ {
         "if" : {
@@ -3736,6 +4034,9 @@
         "detail" : {
           "description" : "option of timeline panels"
         },
+        "doc" : {
+          "$ref" : "#/$defs/docOf"
+        },
         "each" : {
           "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
           "type" : "string"
@@ -4986,8 +5287,7 @@
       "type" : "string"
     },
     "doc" : {
-      "description" : "The docstring a component browser and an AI agent read: summary, description, params, emits, expects, examples, since (RACHANA_REFERENCE.md); lint warns when it is missing or incomplete (RCH-2055)",
-      "type" : "object"
+      "$ref" : "#/$defs/doc"
     },
     "functions" : {
       "additionalProperties" : {

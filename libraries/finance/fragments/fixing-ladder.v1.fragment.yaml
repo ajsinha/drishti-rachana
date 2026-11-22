@@ -10,6 +10,17 @@ doc:
     points. Use it for any dated series read as a list rather than a chart.
   category: market-data
   tags: [fixings, index, ladder]
+  use-when:
+    - "An index's fixings are read as a dated list, newest first, with the day's change."
+  avoid-when:
+    - "The shape over time matters: use core/series-line."
+  data:
+    table: rows
+    in-words: "One row per fixing: date and value."
+    sample-row: { date: "2026-11-20", value: 1250000 }
+  example: { use: finance/fixing-ladder@1, with: { rows: { from: "$.fix", columns: { date: FIX_DATE, value: RATE } } } }
+  see-also: [core/series-line, finance/price-history]
+  keywords: [fixings, index, rates, sofr, ladder]
 params:
   rows:
     type: table

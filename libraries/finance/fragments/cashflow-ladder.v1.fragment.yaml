@@ -10,6 +10,17 @@ doc:
     ladder; the currency is shown but not converted.
   category: trading
   tags: [cashflows, ladder, net]
+  use-when:
+    - Cash flows of one currency are listed by date with the running net.
+  avoid-when:
+    - "The payments of one trade with periods and rates: use finance/payment-schedule."
+  data:
+    table: rows
+    in-words: "One row per cash flow: date, signed amount, currency and optionally a type."
+    sample-row: { date: "2026-11-20", amount: 250000, currency: USD, type: Coupon }
+  example: { use: finance/cashflow-ladder@1, with: { rows: { from: "$.flows", columns: { date: CF_DATE, amount: CF_AMT, currency: CCY } } } }
+  see-also: [finance/payment-schedule, finance/settlement-figures]
+  keywords: [cash flow, ladder, liquidity, net, dates]
 params:
   rows:
     type: table

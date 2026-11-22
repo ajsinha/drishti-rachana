@@ -10,6 +10,17 @@ doc:
     its label.
   category: charts
   tags: [histogram, distribution, spread]
+  use-when:
+    - "The shape of many values matters: spread, skew, outliers, where a threshold falls."
+  avoid-when:
+    - "The values are a few named items: use core/ranked-bars."
+    - "The values are P&L scenarios with a VaR: use finance/var-histogram."
+  data:
+    in-words: "A list of numbers (pluck one numeric column), optionally a marked value."
+    sample-row: { values: A, title: Title }
+  example: { use: core/distribution@1, with: { values: "$.orders[*].AMT", bins: 4 } }
+  see-also: [finance/var-histogram, core/scatter-plot]
+  keywords: [histogram, distribution, spread, bins, frequency]
 params:
   values:       { type: "list<number>", required: true, doc: The values to count into bins }
   title:        { type: text, default: Distribution, doc: The panel's title }

@@ -10,6 +10,18 @@ doc:
     are shown when present. Use it at the head of a trade screen; it never edits. Panels of your own can go under it.
   category: trading
   tags: [trade, ticket, deal]
+  use-when:
+    - "One trade's economics head a trade screen, read-only."
+  avoid-when:
+    - "Several trades: use finance/trade-blotter."
+    - "Entering an order: use finance/order-ticket."
+  data:
+    table: trade
+    in-words: "One trade record; only id and product are needed."
+    sample-row: { id: T-100245, product: IRS, direction: Received, counterparty: Northwind Bank, book: RATES-LDN-01, trade_date: "2026-11-20", maturity: "2026-11-20", notional: 50000000, currency: USD, price: 101.25, status: Open }
+  example: { use: finance/trade-ticket@1, with: { trade: "{id: $.t.TRADE_ID, product: $.t.PRODUCT}" } }
+  see-also: [finance/leg-table, finance/trade-blotter]
+  keywords: [trade, ticket, deal, economics, summary]
 params:
   trade:
     type: "record{id: text, product: text, direction: text, counterparty: text, book: text, trade_date: date, maturity: date, notional: number, currency: text, price: number, status: text}"

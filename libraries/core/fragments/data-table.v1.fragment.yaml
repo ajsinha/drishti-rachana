@@ -9,6 +9,19 @@ doc:
     Use it to show any list of records with the columns you choose: it sorts, searches and can total a column, and a click on a
     row raises an event. For a grid grouped by a hierarchy use tree-table; for a ranking of one measure use ranked-bars.
   category: tables
+  use-when:
+    - "A list of records is shown with chosen columns, sorting, search and totals."
+    - No more specific fragment fits the rows.
+  avoid-when:
+    - "The rows form a hierarchy: use core/tree-table or core/drill-table."
+    - "One measure is ranked: use core/ranked-bars."
+  data:
+    table: rows
+    in-words: "Any rows; you name the columns to show, each a label and an expression over the row."
+    sample-row: { ORDER_ID: A1, AMT_USD: 120 }
+  example: { use: core/data-table@1, with: { rows: "$.orders", columns: [{ label: Order, bind: "@.ORDER_ID" }, { label: Amount, bind: "@.AMT_USD", fmt: amount0, total: true }] } }
+  see-also: [core/drill-table, core/tree-table, core/ranked-bars, core/live-table]
+  keywords: [table, grid, list, records, rows]
 params:
   rows:
     type: table

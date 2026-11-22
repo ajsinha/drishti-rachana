@@ -8,6 +8,18 @@ doc:
   description: One row per event, drawn in the order given. The status, when there is one, tones the event.
   category: history
   tags: [timeline, events, history]
+  use-when:
+    - "Dated events of one subject are read in order with a status (milestones, incidents, filings)."
+  avoid-when:
+    - "The events are record edits: use core/audit-trail."
+    - "The events are a trade's lifecycle: use finance/lifecycle-events."
+  data:
+    table: rows
+    in-words: "One row per event: a date, a label, optionally a detail line and a status word."
+    sample-row: { date: "2026-11-20", label: Rates, detail: Booked by the desk, status: Open }
+  example: { use: core/event-timeline@1, with: { title: Trade history, rows: { from: "$.life", columns: { date: EVENT_DATE, label: WHAT, detail: NOTE, status: OUTCOME } } } }
+  see-also: [core/audit-trail, finance/lifecycle-events]
+  keywords: [timeline, events, milestones, dated, history]
 params:
   rows:
     type: table

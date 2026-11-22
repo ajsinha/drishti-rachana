@@ -10,6 +10,18 @@ doc:
     label and value.
   category: charts
   tags: [bars, ranking, breakdown]
+  use-when:
+    - "Named items are ranked by one measure (top desks, top counterparties)."
+  avoid-when:
+    - "The parts make up a whole and shares matter: use core/donut-breakdown."
+    - "The values are P&L with signs: use finance/pnl-attribution-bars."
+  data:
+    table: rows
+    in-words: "One row per bar: a label and a value, sorted the way they should be drawn."
+    sample-row: { label: Rates, value: 1250000 }
+  example: { use: core/ranked-bars@1, with: { title: Revenue by region, rows: { from: "$.sales", columns: { label: REGION, value: REVENUE } } } }
+  see-also: [finance/pnl-attribution-bars, core/donut-breakdown, core/data-table]
+  keywords: [bars, ranking, top n, by, compare]
 params:
   rows:
     type: table

@@ -74,7 +74,7 @@ export function libraryFiles(root, flags, onProblem = () => {}) {
 export function sarif(results) {
   return {
     version: "2.1.0", $schema: "https://json.schemastore.org/sarif-2.1.0.json",
-    runs: [{ tool: { driver: { name: "rachana", informationUri: "https://github.com/ajsinha/drishti-rachana" } },
+    runs: [{ tool: { driver: { name: "rachana", informationUri: "https://github.com/drishti-platform/drishti-rachana" } },
       results: results.flatMap((r) => r.problems.map((p) => ({
         ruleId: p.code, level: p.severity === "error" ? "error" : p.severity === "warning" ? "warning" : "note",
         message: { text: p.message },

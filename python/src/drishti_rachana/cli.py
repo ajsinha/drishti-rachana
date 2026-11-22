@@ -81,7 +81,7 @@ def lint_files(files: Sequence[Path], profiles: str = "core", level: Optional[st
 def sarif(results: list[dict]) -> dict:
     level = {"error": "error", "warning": "warning"}
     return {"version": "2.1.0", "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
-            "runs": [{"tool": {"driver": {"name": "rachana", "informationUri": "https://github.com/ajsinha/drishti-rachana"}},
+            "runs": [{"tool": {"driver": {"name": "rachana", "informationUri": "https://github.com/drishti-platform/drishti-rachana"}},
                       "results": [{"ruleId": p["code"], "level": level.get(p["severity"], "note"), "message": {"text": p["message"]},
                                    "locations": [{"physicalLocation": {"artifactLocation": {"uri": r["file"]},
                                                   "region": {"startLine": p.get("range", {}).get("start", {}).get("line", 1),

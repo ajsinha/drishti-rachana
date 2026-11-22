@@ -5,7 +5,7 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>0.11.0-SNAPSHOT</version></parent>
+  <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>0.12.0</version></parent>
   <artifactId>rachana-compat</artifactId>
   <name>rachana-compat</name>
   <description>The compatibility regime's gates CG1 to CG6 (SUTRA_EXPANSION 6.5): tests and their tooling only, no product code.</description>

@@ -100,7 +100,7 @@ wheels = [
 
 [[package]]
 name = "drishti-rachana"
-version = "0.11.0.dev0"
+version = "0.12.0"
 source = { editable = "." }
 
 [package.optional-dependencies]

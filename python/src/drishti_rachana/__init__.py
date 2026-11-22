@@ -5,4 +5,4 @@
 Skeleton (plan F7). This package holds no language semantics: no parser, operator table or formatter. Compiling is
 done by the JVM reference or the Node CLI until the WebAssembly build (R2).
 """
-__version__ = "0.11.0.dev0"
+__version__ = "0.12.0"

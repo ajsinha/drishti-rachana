@@ -3,7 +3,7 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
-## Unreleased (G3, front-loaded)
+## v0.12.0 (2026-11-21)
 
 - **IDE launchers follow the platform standard**: one `run-configs/` at the repository root, every launcher named `Rachana: <verb> <what>` (IntelliJ folder `Rachana`), the same names as the VS Code tasks and launches; missing launchers added; the check `python/tests/test_launchers.py` (a test) keeps names, files and workspace in step.
 

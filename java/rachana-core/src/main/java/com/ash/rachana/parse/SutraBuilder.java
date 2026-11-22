@@ -41,7 +41,7 @@ final class SutraBuilder {
     private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9-]{1,63}");
     private static final Pattern FKEY = Pattern.compile("F([1-9]|1[0-2])");
     private static final int LANGUAGE = SutraParser.LANGUAGE;
-    private static final Set<String> PANEL = Ordered.set("id", "kind", "title", "key", "code", "area", "infer", "columns", "body", "panels", "description",
+    private static final Set<String> PANEL = Ordered.set("id", "kind", "title", "key", "code", "area", "infer", "columns", "body", "panels", "description", "doc",
             Panel.SPAN, Panel.HEIGHT, com.ash.rachana.model.Refresh.KEY, Panel.ORDER, Panel.SECTION, Panel.COLLAPSIBLE, com.ash.rachana.model.Form.KEY,
             ScreenPhone.KEY);
     private static final Set<String> STRIP = Ordered.set("label", "bind", "fmt", "tone", "emphasis");

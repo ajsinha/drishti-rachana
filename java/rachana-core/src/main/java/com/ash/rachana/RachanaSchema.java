@@ -67,8 +67,7 @@ public final class RachanaSchema {
         p.put("version", Ordered.map("type", "integer", "minimum", 1, "description", "The newest version of a name is the one used"));
         p.put("description", text("One paragraph: what this layout shows and for which entities"));
         p.put("notes", text("Longer notes for authors and reviewers (plain text)"));
-        p.put("doc", Ordered.map("type", "object", "description", "The docstring a component browser and an AI agent read: summary, description, params, emits, "
-                + "expects, examples, since (RACHANA_REFERENCE.md); lint warns when it is missing or incomplete (RCH-2055)"));
+        p.put("doc", Map.of("$ref", "#/$defs/doc"));            // SPEC 2.9: one definition for every doc (DocSchema)
         p.put("title", object(Ordered.map("pill", text("The pill before the id (may hold ${…})"), "id", text(EL + " for the id shown"),
                 "with", text(EL + ": the counterparty or other entity named after the id")), List.of("id")));
         p.put("strip", Ordered.map("type", "array", "maxItems", 8, "description", "Up to eight fields in the header strip",
@@ -104,7 +103,9 @@ public final class RachanaSchema {
         s.put("properties", withKeys(p, grammar));
         Map<String, Object> panel = panel(formats, grammar);
         panel.put("x-rachana-use", Map.of("$ref", "#/$defs/use"));    // an item with `use:` is a shared block's use, not a panel
-        s.put("$defs", Ordered.map("panel", panel, "column", column(formats), "use", use()));
+        Map<String, Object> defs = new LinkedHashMap<>(Ordered.map("panel", panel, "column", column(formats), "use", use()));
+        defs.putAll(DocSchema.defs());
+        s.put("$defs", defs);
         Map<String, Object> fns = new LinkedHashMap<>();
         Functions.arity().entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> {
             String now = Functions.oldSpellings().get(e.getKey());          // an old spelling is checked but never offered
@@ -237,6 +238,7 @@ public final class RachanaSchema {
         common.put("kind", Ordered.map("type", "string", "enum", grammar.panelKinds().stream().map(PanelKind::id).toList()));
         common.put("title", text("The panel's heading (may hold ${…})"));
         common.put("description", text("What the panel answers, for authors and reviewers"));
+        common.put("doc", Map.of("$ref", "#/$defs/docOf"));          // a panel's doc: one line or a doc block (SPEC 2.9)
         common.put("key", Ordered.map("type", "string", "enum", KEYS));
         common.put("code", text("A short code at the heading's right (CRV, REFS)"));
         common.put("area", Ordered.map("type", "string", "description", "main or right (the flow), or an area named in layout.areas"));

@@ -10,7 +10,7 @@ Entries are written per release; the regime's unreleased work is listed after th
 - **Corpus re-recorded at 1.2** (`compat/customers/drishti/2.9.11.i7b`, 481 Sutras, none with a problem): the Sutras are Drishti's own, upgraded to 1.2; the documents are compiled by Core (`tools/regime/CorpusCompileCore.java`, `corpus_export.py`). The reference's recorded binds ended with level 1.0 and are not recorded again (Core is the one implementation; the conformance suite holds the binder).
 - **Fixed**: from level 1.1 the regular-expression functions ran on the default table, so an instance's own caps (`RachanaOptions.withRegexLimits`) did not hold; they run on the instance's.
 - **Function catalogue examples** write a condition on an aggregate as `calc(sum(x), where = ...)`, the only form the language reads at 1.2.
-- **Elements 3.3.0** (tag v3.3.0, commit 3363c9f) vendored: `js/vendor/drishti-elements/3.3.0/` (SHA-384 manifest), the server pom, Python assets, Studio and docs name it.
+- **Elements 3.3.1** (release commit 20661f0) vendored: `js/vendor/drishti-elements/3.3.1/` (SHA-384 manifest), the server pom, Python assets, Studio and docs name it.
 - **Cases pinned to levels 1.0 and 1.1 are removed** (the level-declaration suites are rewritten for the one level; `until:` cases and the 1.0-only syntax and number cases are gone; `FROZEN.sha384` rewritten).
 - **API removals** (logged in `java/api-removals.txt`): `tools.Upgrade*`, `Grammar.LEVEL_1_0` (now `Grammar.LEVEL`), `Printer.print(Expr, boolean)`.
 

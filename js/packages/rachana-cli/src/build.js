@@ -11,7 +11,7 @@ import { esc, nameOf, neededLibraryPaths, siteAssets, elementsStubs, STUB_CSS, t
 /**
  * rachana build: a static site (static mode, docs/guides/CLI_AND_SDKS.md). Lints first (exit 1 on errors, nothing written), then writes
  *   out/index.html, out/<sutra>.html, out/sutras/<sutra>.sutra.yaml, out/data/<table files> + out/data/index.json,
- *   out/rachana/rachana.runtime.js, out/rachana/src/ (<rachana-view> and its modules), out/vendor/drishti-elements/3.3.0/, out/site.json; for a page that uses libraries (`use:`): out/rachana_libs/<library>/ (the files it needs, from the project, --libs, RACHANA_LIBS and the bundled libraries) and out/libraries/<page>.libraries.json.
+ *   out/rachana/rachana.runtime.js, out/rachana/src/ (<rachana-view> and its modules), out/vendor/drishti-elements/3.3.1/, out/site.json; for a page that uses libraries (`use:`): out/rachana_libs/<library>/ (the files it needs, from the project, --libs, RACHANA_LIBS and the bundled libraries) and out/libraries/<page>.libraries.json.
  */
 export async function build(src, out, io, flags = {}) {
   if (flags.level !== undefined) throw new UsageError(LEVEL_FLAG);

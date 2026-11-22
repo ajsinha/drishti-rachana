@@ -144,6 +144,12 @@ public final class Outbox implements ChangeSink, AutoCloseable {
     }
 
     @Override
+    public synchronized String priorDigest(String changeId) {
+        Held h = byId.get(changeId);
+        return h == null ? null : h.change.digest();                 // the change itself is journalled: its digest is read back with it
+    }
+
+    @Override
     public synchronized String madeBy(String changeId) {
         Held h = byId.get(changeId);
         return h == null ? null : h.change.by();

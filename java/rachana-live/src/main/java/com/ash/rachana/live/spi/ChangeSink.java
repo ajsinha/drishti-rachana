@@ -61,6 +61,17 @@ public interface ChangeSink {
         return null;
     }
 
+    /**
+     * The {@link Change#digest()} of the change first taken under that id, kept with its first answer ({@link #prior}), or null when
+     * unknown. The engine compares it with a repeat's digest (PROTOCOL 16): the same content is answered as {@link #prior} says; other
+     * content under the same id is refused {@code 409 rdp.write.conflict} and audited {@code write-reused}, and never reaches
+     * {@link #accept}. A sink that keeps its answers durably keeps the digest with them; one that answers null here leaves the engine
+     * only its own memory of the ids it answered since it started.
+     */
+    default String priorDigest(String changeId) {
+        return null;
+    }
+
     /** Who made the change of that id (so a repeat by someone else is refused), or null when unknown. */
     default String madeBy(String changeId) {
         return null;

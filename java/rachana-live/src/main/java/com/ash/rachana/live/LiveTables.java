@@ -108,6 +108,15 @@ public final class LiveTables implements TableProvider, AutoCloseable {
     private final ScheduledExecutorService upkeep;
     private final WriteGuard guard = new WriteGuard(this);
     private final Map<String, String> trays = new ConcurrentHashMap<>();          // a tray's name -> its table's
+    /** Names the host took away ({@link #undeclare}), most recent last, so a read answers "expired" rather than a plain unknown. */
+    private final Set<String> gone = java.util.Collections.newSetFromMap(java.util.Collections.synchronizedMap(
+            new LinkedHashMap<String, Boolean>(16, 0.75f, false) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Boolean> e) {
+                    return size() > GONE;
+                }
+            }));
+    private static final int GONE = 10_000;
 
     public LiveTables(Resolver resolver, Options options, Clock clock) {
         this.resolver = resolver;
@@ -178,23 +187,75 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         if (spec.edit() != null && authoriser == null) {
             throw new IllegalStateException(spec.name() + " has 'edit:' and no authoriser is installed: a table with edits needs one (LT-19)");
         }
-        specs.put(spec.name(), spec);
-        problems.remove(spec.name());
-        LiveTable t = open.remove(spec.name());
+        String tray = spec.name() + WriteGuard.TRAY;
+        LiveTable t;
+        LiveTable tt;
+        synchronized (this) {                                         // with table(): no reader opens the old declaration meanwhile
+            specs.put(spec.name(), spec);
+            problems.remove(spec.name());
+            gone.remove(spec.name());
+            gone.remove(tray);
+            guard.forget(spec.name(), false);
+            t = open.remove(spec.name());
+            if (spec.edit() != null && spec.tray()) {
+                specs.put(tray, WriteGuard.traySpec(spec));
+                trays.put(tray, spec.name());
+            } else if (trays.remove(tray) != null) {
+                specs.remove(tray);
+            }
+            tt = open.remove(tray);
+        }
         if (t != null) {
             t.close();
         }
-        String tray = spec.name() + WriteGuard.TRAY;
-        if (spec.edit() != null && spec.tray()) {
-            specs.put(tray, WriteGuard.traySpec(spec));
-            trays.put(tray, spec.name());
-        } else if (trays.remove(tray) != null) {
-            specs.remove(tray);
-        }
-        LiveTable tt = open.remove(tray);
         if (tt != null) {
             tt.close();
         }
+    }
+
+    /**
+     * Takes a declaration out (a host releasing a table it made, such as a search's result): its spec, its tray, its edit switch and its
+     * open table go, and every open subscription of the table (and of its tray) ends with one {@code gap} frame ({@code recoverable: false,
+     * expired: true}). From then on a read, write or subscription of the name answers {@code 404 rdp.table.unknown} with {@code expired:
+     * true} (PROTOCOL 16), never a row held before, until the name is declared again. Idempotent: a name not declared changes nothing.
+     *
+     * @return whether the name was declared
+     * @throws IllegalArgumentException for a tray's name ({@code <name>.changes} goes with its table)
+     */
+    public boolean undeclare(String name) {
+        if (trays.containsKey(name)) {
+            throw new IllegalArgumentException(name + " is a tray: it goes with its table " + trays.get(name));
+        }
+        String tray = name + WriteGuard.TRAY;
+        LiveTable t;
+        LiveTable tt;
+        synchronized (this) {
+            if (specs.remove(name) == null) {
+                return false;
+            }
+            gone.add(name);
+            if (trays.remove(tray) != null) {
+                specs.remove(tray);
+                gone.add(tray);
+            }
+            guard.forget(name, true);
+            t = open.remove(name);
+            tt = open.remove(tray);
+        }
+        if (t != null) {
+            t.expire();
+        }
+        if (tt != null) {
+            tt.expire();
+        }
+        return true;
+    }
+
+    /** The answer for a name not declared: {@code 404 rdp.table.unknown}, with {@code expired: true} when the host took it away. */
+    ProtocolError unknown(String name) {
+        return gone.contains(name)
+                ? ProtocolError.of("rdp.table.unknown", 404, "the table '" + name + "' has expired", "table", name, "expired", true)
+                : ProtocolError.of("rdp.table.unknown", 404, "no table '" + name + "'", "table", name);
     }
 
     boolean isTray(String name) {
@@ -204,7 +265,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
     LiveTableSpec spec(String name) {
         LiveTableSpec spec = specs.get(name);
         if (spec == null) {
-            throw ProtocolError.of("rdp.table.unknown", 404, "no table '" + name + "'", "table", name);
+            throw unknown(name);
         }
         return spec;
     }
@@ -268,13 +329,17 @@ public final class LiveTables implements TableProvider, AutoCloseable {
     private LiveTable table(String name) {
         LiveTableSpec spec = specs.get(name);
         if (spec == null) {
-            throw ProtocolError.of("rdp.table.unknown", 404, "no table '" + name + "'", "table", name);
+            throw unknown(name);
         }
         LiveTable t = open.get(name);
         if (t == null) {
             synchronized (this) {
                 t = open.get(name);
                 if (t == null) {
+                    spec = specs.get(name);                           // undeclared or declared again meanwhile: the current one
+                    if (spec == null) {
+                        throw unknown(name);
+                    }
                     String base = trays.get(name);
                     LiveTable made = base != null
                             ? new LiveTable(spec, guard.traySource(base), guard.trayStream(name), options, clock, queries)
@@ -335,7 +400,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
     Reader reader(Object caller, String name) {
         LiveTableSpec spec = specs.get(name);
         if (spec == null) {
-            throw ProtocolError.of("rdp.table.unknown", 404, "no table '" + name + "'", "table", name);
+            throw unknown(name);
         }
         ReaderView v;
         Authoriser a = authoriser;
@@ -480,7 +545,7 @@ public final class LiveTables implements TableProvider, AutoCloseable {
 
     @Override
     public boolean has(String name) {
-        return specs.containsKey(name);
+        return specs.containsKey(name) || gone.contains(name);       // an undeclared name is answered here: expired
     }
 
     @Override
@@ -699,6 +764,9 @@ public final class LiveTables implements TableProvider, AutoCloseable {
         boolean restated = match != null || request.window() != null || !r.unrestricted();
         Subscription sub;
         synchronized (t) {
+            if (t.gone) {                                             // undeclared since it was looked up
+                throw unknown(name);
+            }
             List<Map<String, Object>> backlog = t.changes(request.after());
             boolean gap = !backlog.isEmpty() && "gap".equals(backlog.get(0).get("t"));
             boolean recovered = !gap && (!restated || backlog.isEmpty());

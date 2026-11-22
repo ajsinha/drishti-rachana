@@ -310,6 +310,9 @@ public final class ProtocolHost {
                     msg.put("epoch", f.get("epoch"));
                     msg.put("seq", f.get("seq"));
                     msg.put("recoverable", false);
+                    if (Boolean.TRUE.equals(f.get("expired"))) {  // the host took the table away (PROTOCOL 16): reading again answers expired
+                        msg.put("expired", true);
+                    }
                     subs.remove(id);
                     push.accept(msg);
                     return;

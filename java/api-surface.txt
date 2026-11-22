@@ -2478,6 +2478,7 @@
 [experimental] com.ash.rachana.live.LiveReferenceServer :: public static void com.ash.rachana.live.LiveReferenceServer.main(java.lang.String[]) throws java.lang.Exception
 [experimental] com.ash.rachana.live.LiveReferenceServer :: public void com.ash.rachana.live.LiveReferenceServer.close()
 [experimental] com.ash.rachana.live.LiveTables :: public boolean com.ash.rachana.live.LiveTables.has(java.lang.String)
+[experimental] com.ash.rachana.live.LiveTables :: public boolean com.ash.rachana.live.LiveTables.undeclare(java.lang.String)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.data.Subscription com.ash.rachana.live.LiveTables.subscribe(java.lang.String,com.ash.rachana.data.TableProvider$Subscribe,java.util.function.Consumer<java.util.Map<java.lang.String, java.lang.Object>>,java.lang.Object)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables com.ash.rachana.live.LiveTables.audit(com.ash.rachana.live.spi.AuditSink)
 [experimental] com.ash.rachana.live.LiveTables :: public com.ash.rachana.live.LiveTables com.ash.rachana.live.LiveTables.authoriser(com.ash.rachana.live.spi.Authoriser)
@@ -2531,6 +2532,7 @@
 [experimental] com.ash.rachana.live.Outbox :: public synchronized com.ash.rachana.live.Outbox com.ash.rachana.live.Outbox.start(long)
 [experimental] com.ash.rachana.live.Outbox :: public synchronized com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.Outbox.prior(java.lang.String)
 [experimental] com.ash.rachana.live.Outbox :: public synchronized java.lang.String com.ash.rachana.live.Outbox.madeBy(java.lang.String)
+[experimental] com.ash.rachana.live.Outbox :: public synchronized java.lang.String com.ash.rachana.live.Outbox.priorDigest(java.lang.String)
 [experimental] com.ash.rachana.live.Outbox :: public synchronized java.util.List<com.ash.rachana.live.spi.ChangeSink$Entry> com.ash.rachana.live.Outbox.pending(java.lang.String)
 [experimental] com.ash.rachana.live.Outbox :: public void com.ash.rachana.live.Outbox.close() throws java.io.IOException
 [experimental] com.ash.rachana.live.Outbox :: public void com.ash.rachana.live.Outbox.watch(com.ash.rachana.live.spi.ChangeSink$Listener)
@@ -2561,6 +2563,7 @@
 [experimental] com.ash.rachana.live.spi.Change :: public final java.lang.String com.ash.rachana.live.spi.Change.toString()
 [experimental] com.ash.rachana.live.spi.Change :: public java.lang.Object com.ash.rachana.live.spi.Change.basedOn()
 [experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.by()
+[experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.digest()
 [experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.id()
 [experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.op()
 [experimental] com.ash.rachana.live.spi.Change :: public java.lang.String com.ash.rachana.live.spi.Change.reason()
@@ -2577,6 +2580,7 @@
 [experimental] com.ash.rachana.live.spi.ChangeSink :: public default com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.spi.ChangeSink.reject(java.lang.String,java.lang.String,java.lang.String)
 [experimental] com.ash.rachana.live.spi.ChangeSink :: public default com.ash.rachana.live.spi.ChangeSink$Outcome com.ash.rachana.live.spi.ChangeSink.release(java.lang.String,java.lang.String)
 [experimental] com.ash.rachana.live.spi.ChangeSink :: public default java.lang.String com.ash.rachana.live.spi.ChangeSink.madeBy(java.lang.String)
+[experimental] com.ash.rachana.live.spi.ChangeSink :: public default java.lang.String com.ash.rachana.live.spi.ChangeSink.priorDigest(java.lang.String)
 [experimental] com.ash.rachana.live.spi.ChangeSink :: public default java.util.List<com.ash.rachana.live.spi.ChangeSink$Entry> com.ash.rachana.live.spi.ChangeSink.pending(java.lang.String)
 [experimental] com.ash.rachana.live.spi.ChangeSink :: public default void com.ash.rachana.live.spi.ChangeSink.watch(com.ash.rachana.live.spi.ChangeSink$Listener)
 [experimental] com.ash.rachana.live.spi.ChangeSink$Entry :: public com.ash.rachana.live.spi.Change com.ash.rachana.live.spi.ChangeSink$Entry.change()

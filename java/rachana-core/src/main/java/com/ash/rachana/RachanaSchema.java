@@ -401,6 +401,7 @@ public final class RachanaSchema {
                 Object schema = List.of("source", "children", "emits", "waits", "on", "actions", "form").contains(o) ? common.get(o)
                         : o.equals("fmt") ? fmt(formats) : o.equals("tone") ? tone()
                         : o.equals("search") ? Ordered.map("type", "boolean", "description", "false hides the table's filter")
+                        : expr.contains(o) && TEXT_ONLY_EXPRESSIONS.contains(o) ? text(EL + ", written as text (such as $.cashflows)")
                         : expr.contains(o) ? Ordered.map("type", List.of("string", "number", "boolean"), "description", EL + "; a number or true/false is its own literal") : kindOption(k, o);
                 props.put(o, forKind(k, o, schema));
                 allOptions.putIfAbsent(o, schema);
@@ -516,7 +517,8 @@ public final class RachanaSchema {
     /** The option as {@code k} takes it: its fixed set when it has one, a whole {@code limit} on a table, else the shared definition. */
     private static Object forKind(PanelKind k, String o, Object shared) {
         if (k == PanelKind.TABLE && o.equals("limit")) {
-            return Ordered.map("type", List.of("integer", "string"), "description", TABLE_LIMIT + " Or an expression (ctl.top).");
+            return Ordered.map("anyOf", List.of(Ordered.map("type", "integer", "minimum", 1),
+                    Ordered.map("type", "string", "pattern", "ctl\\.")), "description", TABLE_LIMIT + " Or an expression over a top-n control (ctl.top).");
         }
         List<String> choices = com.ash.rachana.model.PanelOptions.choices(k, o);
         if (choices.isEmpty()) {
@@ -528,6 +530,8 @@ public final class RachanaSchema {
         return shared;
     }
 
+    /** The options the compiler reads only as text (PanelOptions.LIST_EXPRESSIONS): a number or true/false is refused (RCH-2029). */
+    private static final java.util.Set<String> TEXT_ONLY_EXPRESSIONS = Ordered.set("rows", "each", "nodes", "edges", "source", "children");
     private static final String TABLE_LIMIT = "Table: rows shown (a whole number from 1; the rest are counted in the more line).";
     /** Options with a fixed set the parser does not police (a different value draws the default): the designer still offers the set. */
     private static final Map<PanelKind, Map<String, List<String>>> SCHEMA_CHOICES = Ordered.map(

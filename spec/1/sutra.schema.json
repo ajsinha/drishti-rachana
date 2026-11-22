@@ -98,8 +98,8 @@
               "type" : "array"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -262,8 +262,14 @@
               "type" : "array"
             },
             "limit" : {
-              "description" : "Table: rows shown (a whole number from 1; the rest are counted in the more line). Or an expression (ctl.top).",
-              "type" : [ "integer", "string" ]
+              "anyOf" : [ {
+                "minimum" : 1,
+                "type" : "integer"
+              }, {
+                "pattern" : "ctl\\.",
+                "type" : "string"
+              } ],
+              "description" : "Table: rows shown (a whole number from 1; the rest are counted in the more line). Or an expression over a top-n control (ctl.top)."
             },
             "link" : {
               "description" : "option of table panels"
@@ -392,8 +398,8 @@
               "type" : [ "string", "number", "boolean" ]
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "search" : {
               "description" : "false hides the table's filter",
@@ -497,8 +503,8 @@
               } ]
             },
             "each" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "layout" : {
               "description" : "One of tabs, columns (option of tabs panels)",
@@ -633,8 +639,8 @@
               "type" : [ "string", "number", "boolean" ]
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -750,8 +756,8 @@
               "description" : "option of area panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "series" : {
               "description" : "The series: { label, value, tone }",
@@ -888,8 +894,8 @@
               "description" : "option of hbar panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "shape" : {
               "description" : "One of bars, donut (option of hbar panels)",
@@ -1188,8 +1194,8 @@
               "type" : [ "string", "number", "boolean" ]
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "search" : {
               "description" : "false hides the table's filter",
@@ -1579,8 +1585,8 @@
               "type" : "string"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -1698,8 +1704,8 @@
               "description" : "option of waterfall panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -1820,8 +1826,8 @@
               "type" : "array"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -1932,8 +1938,8 @@
               "description" : "option of scatter panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "size" : {
               "description" : "option of scatter panels"
@@ -2062,8 +2068,8 @@
               "description" : "option of candlestick panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -2166,8 +2172,8 @@
               } ]
             },
             "edges" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "group" : {
               "description" : "option of graph panels"
@@ -2181,8 +2187,8 @@
               "type" : "string"
             },
             "nodes" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -2281,8 +2287,8 @@
               "description" : "option of timeline panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -2424,8 +2430,8 @@
               "type" : "boolean"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -2786,8 +2792,8 @@
               "description" : "option of grid panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "search" : {
               "description" : "false hides the table's filter",
@@ -2922,8 +2928,8 @@
               "description" : "option of tree panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -3045,8 +3051,8 @@
               "description" : "option of chart panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-              "type" : [ "string", "number", "boolean" ]
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+              "type" : "string"
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -3731,12 +3737,12 @@
           "description" : "option of timeline panels"
         },
         "each" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-          "type" : [ "string", "number", "boolean" ]
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+          "type" : "string"
         },
         "edges" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-          "type" : [ "string", "number", "boolean" ]
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+          "type" : "string"
         },
         "edit" : {
           "description" : "option of live panels"
@@ -4107,8 +4113,8 @@
           "description" : "option of tree panels"
         },
         "nodes" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-          "type" : [ "string", "number", "boolean" ]
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+          "type" : "string"
         },
         "on" : {
           "additionalProperties" : false,
@@ -4374,8 +4380,8 @@
           "description" : "option of grid panels"
         },
         "rows" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
-          "type" : [ "string", "number", "boolean" ]
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
+          "type" : "string"
         },
         "search" : {
           "description" : "false hides the table's filter",

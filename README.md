@@ -1,11 +1,11 @@
-<!-- Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see LICENSE. -->
 ---
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see LICENSE.
 product: Drishti Rachana
 summary: A declarative UI platform - describe a screen in a short YAML Sutra, supply data over the Rachana Data Protocol, get a fast, dense, professional screen painted by Drishti Elements.
 language: "rachana: 1 (levels 1.0 to 1.2)"
 parts: [specification, conformance suite, Java compiler, JavaScript build, Python package, Data Protocol, live tables, server, CLI, Studio, libraries, upgrade tool]
 runtimes: [JVM (Java 21), Node 20+, browsers, Python 3.10+ on V8]
-install-order: [Rachana, tools, Lake, Drishti]
+install-order: [tools, Rachana, Lake, Drishti]
 licence: proprietary (LICENSE); specification and conformance suite under LICENSE-SPEC.md (draft)
 author: Ashutosh Sinha
 ---

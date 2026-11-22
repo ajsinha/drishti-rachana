@@ -80,20 +80,9 @@ public final class Checker {
 
     public static Checked check(Signatures catalog, Expr tree, Map<Expr, int[]> spans, String text, Scope scope, Fields fields,
             Spelling spelling) {
-        return check(catalog, tree, spans, text, scope, fields, spelling, false);
-    }
-
-    /**
-     * {@link #check(Signatures, Expr, Map, String, Scope, Fields, Spelling)} for a tree parsed at language level 1.1 when {@code v11}
-     * (EL_EXPANSION X8, first part): a literal with an exponent is a {@code number}; {@code ??}, {@code **} and the exact operators are
-     * typed; records, spreads, slices and lambdas are not yet in a table or a model.
-     */
-    public static Checked check(Signatures catalog, Expr tree, Map<Expr, int[]> spans, String text, Scope scope, Fields fields,
-            Spelling spelling, boolean v11) {
         // the stack guard: a starved host thread checks again on one with the stack the depth bound needs (each attempt a fresh checker)
         return com.ash.rachana.internal.Deep.call(() -> {
             Checker c = new Checker(catalog, scope, fields, spans, text, spelling);
-            c.v11 = v11;
             ElType t = c.visit(tree);
             c.top(tree, t);
             return new Checked(t, List.copyOf(c.problems), Ordered.copySet(c.functions), Ordered.copySet(c.usedFields), Ordered.copySet(c.usedMeasures));
@@ -175,7 +164,6 @@ public final class Checker {
     // ---- visiting ----------------------------------------------------------------------------------------------------
 
     /** Checking a tree of language level 1.1. */
-    private boolean v11;
 
     ElType visit(Expr n) {
         return switch (n) {
@@ -274,13 +262,10 @@ public final class Checker {
             return ElType.STRING;
         }
         if (v instanceof Double) {
-            return v11 ? ElType.NUMBER : ElType.DECIMAL;                        // level 1.1: only a literal with an exponent is a double
+            return ElType.NUMBER;                                               // only a literal with an exponent is a double (X2)
         }
         String w = written(l);
-        if (v11) {
-            return w.contains(".") ? ElType.DECIMAL : ElType.INTEGER;
-        }
-        return w.contains(".") || w.contains("e") || w.contains("E") ? ElType.DECIMAL : ElType.INTEGER;
+        return w.contains(".") ? ElType.DECIMAL : ElType.INTEGER;
     }
 
     private ElType logic(String op, Expr at, Expr l, Expr r) {

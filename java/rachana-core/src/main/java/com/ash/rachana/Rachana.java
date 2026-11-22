@@ -99,8 +99,9 @@ public final class Rachana {
 
     /**
      * An instance pinned at a language level in one call: {@link #with(RachanaOptions, Profile...)} at {@code level} (SUTRA_EXPANSION
-     * 6.2). A host names its level here once, so nothing it builds is ever read at a level it did not choose; {@code Rachana.at("1.0",
-     * options, drishti)} is the same instance as {@code Rachana.with(options, drishti).language("1.0")}.
+     * 6.2). A host names its level here once, so nothing it builds is ever read at a level it did not choose; {@code Rachana.at("1.2",
+     * options, drishti)} is the same instance as {@code Rachana.with(options, drishti).language("1.2")}. Rachana 1.x implements one
+     * level, {@link com.ash.rachana.profile.Grammar#LEVEL}.
      *
      * @throws IllegalArgumentException for a level this runtime does not implement ({@link com.ash.rachana.profile.Grammar#LEVELS}), and as
      *     {@link #with(RachanaOptions, Profile...)}
@@ -159,9 +160,9 @@ public final class Rachana {
     }
 
     /**
-     * The same instance at another language level (SUTRA_EXPANSION 6.2): its grammar, parser and schema read that level. Every instance
-     * starts at {@code 1.0}; a host raises the level in its own release. Level {@code 1.1} adds the panel kinds {@code grid}, {@code tree}
-     * and {@code chart}, whose views carry datasets (ViewModel contract 1.1).
+     * The same instance at another language level (SUTRA_EXPANSION 6.2): its grammar, parser and schema read that level. Rachana 1.x
+     * implements one level, {@link com.ash.rachana.profile.Grammar#LEVEL} (1.2), and every instance starts at it; a later minor that adds
+     * a level is raised to here.
      *
      * @throws IllegalArgumentException for a level this runtime does not implement
      */
@@ -177,7 +178,7 @@ public final class Rachana {
         return new Rachana(options, profiles, functions, formats, grammar.withLibraries(set));
     }
 
-    /** The language level its grammar reads ({@code 1.0} unless raised with {@link #language(String)}). */
+    /** The language level its grammar reads: the one level, {@link com.ash.rachana.profile.Grammar#LEVEL}. */
     public String language() {
         return grammar.level();
     }

@@ -80,7 +80,7 @@ cases:
         expect: { status: 200, body: { values: [ [a, 2, 7] ] } }
 
   - id: a-reused-change-id-with-other-content-is-refused
-    verified: false
+    verified: true
     kind: protocol
     source: "PROTOCOL 16 (a repeat is the same change only with the same content), 10.1 rdp.write.conflict reused; LIVE_TABLES 5 (audited write-reused)"
     fixture: *outbox

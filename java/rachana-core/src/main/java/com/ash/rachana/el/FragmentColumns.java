@@ -97,7 +97,7 @@ public final class FragmentColumns {
     public static String rename(String text, String row, boolean bare, Tables tables, List<String> problems) {
         List<Token> toks;
         try {
-            toks = Lexer.tokens(text, true);
+            toks = Lexer.tokens(text);
         } catch (ElException e) {
             return null;
         }
@@ -116,7 +116,7 @@ public final class FragmentColumns {
     public static Rows rowsOf(String text, Tables tables) {
         List<Token> toks;
         try {
-            toks = Lexer.tokens(text, true);
+            toks = Lexer.tokens(text);
         } catch (ElException e) {
             return null;
         }

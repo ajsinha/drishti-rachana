@@ -446,6 +446,10 @@ The syntax is [rachana-el.ebnf](rachana-el.ebnf). This section gives the meaning
    exact arithmetic that would lose a whole unit (4.16).
 5. **Deterministic.** The same expression over the same context gives the same value in every implementation: no clock,
    locale or random source except through the context (`asof()`), which the host sets [CS].
+6. **One level, the whole text.** Every expression is read at the one language level of Rachana 1 (1.2), wherever it is
+   written: a Sutra, a template's part, checked mode (4.14), a host's measure functions (4.10 rule 9) and form rules. An
+   expression is the whole text: a token after a complete expression is `RCH-2101` `unexpected '<token>'` at that token
+   (`$.a 1`, `net(n) total`), never ignored.
 
 ### 4.2 Values
 
@@ -622,6 +626,11 @@ A host's `Masker` marks values the reader may not see. A masked value prints `â€
    held to the last digit: a case whose expected digits are not the correctly rounded result states a `tolerance` and names no
    `text` (FORMAT 5.2; section 8 item 5), so an implementation that rounds correctly conforms as well.
 8. **Dates** are ISO text in and out; a timestamp counts by its date. `asof()` is the as-of date the host sets.
+9. **Measure functions** (a host's, such as a BI model's `functions: { net: { params: [x], expr: "x - 1" } }`): before an
+   expression is read, each call of one is replaced in its text by the function's expression with the call's arguments in
+   place of the parameters, by place only, exactly as many as declared; a function may call another, never itself (a cycle is
+   refused). The expression and each function's expression are read whole at the one level (4.1 rule 6), so
+   `net(n) if a else 0` is `(n - 1) if a else 0`, never `n - 1`. A problem is `RCH-2101` [today, CS].
 
 ### 4.11 Templates
 

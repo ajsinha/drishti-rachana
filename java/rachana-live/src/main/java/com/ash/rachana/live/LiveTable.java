@@ -67,6 +67,8 @@ final class LiveTable implements LiveStream.Listener {
     private final Set<String> removed = new LinkedHashSet<>();               // paged: keys the live side deleted or that left the condition
     private final List<Map<String, Object>> log = new ArrayList<>();
     final List<Subscription> subs = new CopyOnWriteArrayList<>();
+    /** Set once by {@link #expire()}, under the lock: no subscription is taken after it. */
+    boolean gone;
     private final Deque<Object[]> early = new ArrayDeque<>();
     private boolean ready;
     private int epochs;
@@ -163,6 +165,26 @@ final class LiveTable implements LiveStream.Listener {
             rows.putAll(read);
             capped = cap[0];
         }
+    }
+
+    /** Closes it for good (the host undeclared it): every subscription first ends with a {@code gap} ({@code recoverable: false, expired: true}). */
+    void expire() {
+        synchronized (this) {
+            gone = true;
+            Map<String, Object> gap = new LinkedHashMap<>();
+            gap.put("t", "gap");
+            gap.put("topic", "rdp." + spec.name());
+            gap.put("stream", "rdp." + spec.name());
+            gap.put("epoch", epoch);
+            gap.put("seq", seq);
+            gap.put("recoverable", false);
+            gap.put("expired", true);
+            for (Subscription s : subs) {
+                s.end(gap);
+            }
+            subs.clear();
+        }
+        close();
     }
 
     void close() {

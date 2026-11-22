@@ -5,11 +5,10 @@ since: "1.2"
 profile: core
 verified: true
 description: >-
-  A Sutra declares its language level in its rachana: key (SPEC 2.1): rachana: 1 is level 1.0, rachana: 1.N is level 1.N. A host reads
-  each Sutra at the level it declares (at most its own), so a name of a later level is refused with words that name the Sutra's level;
-  a level above the host's is RCH-2008, a minor no level has is RCH-2009, any other form keeps the reference's RCH-2009.
+  Rachana 1.x has one language level, 1.2 (levels 1.0 and 1.1 retired in 1.0.0): rachana: 1 and rachana: 1.2 are 1.2, a retired level is
+  refused with the way to move the Sutra (use rachana 0.12 upgrade), and a minor no level has is RCH-2009.
 cases:
-  - id: rachana-1-is-level-1-0
+  - id: rachana-1-is-level-1-2
     kind: problem
     source: SPEC 2.1
     sutra: |
@@ -20,11 +19,9 @@ cases:
       panels:
         - { id: g, kind: grid, rows: $.trades }
     expect:
-      ok: false
-      problems:
-        - { code: RCH-2008, severity: error, message: "'grid' panels need Rachana 1.1; this Sutra is written for 1.0 (declare rachana: 1.1 or later at its top)", path: /panels/0/kind }
+      ok: true
 
-  - id: rachana-1-0-is-level-1-0
+  - id: rachana-1-0-is-retired
     kind: problem
     source: SPEC 2.1
     sutra: |
@@ -33,13 +30,13 @@ cases:
       version: 1
       match: { kind: demo }
       panels:
-        - { id: g, kind: grid, rows: $.trades }
+        - { id: m, kind: metric, label: S, value: "1" }
     expect:
       ok: false
       problems:
-        - { code: RCH-2008, severity: error, message: "'grid' panels need Rachana 1.1; this Sutra is written for 1.0 (declare rachana: 1.1 or later at its top)", path: /panels/0/kind }
+        - { code: RCH-2009, severity: error }
 
-  - id: rachana-1-1-key-of-level-1-2
+  - id: rachana-1-1-is-retired
     kind: problem
     source: SPEC 2.1
     sutra: |
@@ -47,44 +44,12 @@ cases:
       sutra: demo
       version: 1
       match: { kind: demo }
-      state:
-        pick: { type: text }
       panels:
-        - { id: g, kind: grid, rows: $.trades }
+        - { id: m, kind: metric, label: S, value: "1" }
     expect:
       ok: false
       problems:
-        - { code: RCH-2008, severity: error, message: "'state' needs Rachana 1.2; this Sutra is written for 1.1 (declare rachana: 1.2 or later at its top)", path: /state/pick }
-
-  - id: rachana-1-2-reads-level-1-2
-    kind: problem
-    source: SPEC 2.1
-    sutra: |
-      rachana: 1.2
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      state:
-        pick: { type: text }
-      panels:
-        - { id: g, kind: grid, rows: $.trades }
-    expect:
-      ok: true
-      problems: []
-
-  - id: rachana-quoted-level
-    kind: problem
-    source: SPEC 2.1
-    sutra: |
-      rachana: "1.2"
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { id: g, kind: grid, rows: $.trades }
-    expect:
-      ok: true
-      problems: []
+        - { code: RCH-2009, severity: error }
 
   - id: a-minor-no-level-has
     kind: problem
@@ -95,148 +60,8 @@ cases:
       version: 1
       match: { kind: demo }
       panels:
-        - { id: n, kind: markdown, text: hi }
+        - { id: m, kind: metric, label: S, value: "1" }
     expect:
       ok: false
       problems:
-        - { code: RCH-2009, severity: error, message: "'rachana: 1.7' is a language level this host does not read; the newest it reads is 1.2 (rachana: 1 is 1.0)", path: /rachana }
-
-  - id: a-malformed-minor
-    kind: problem
-    source: SPEC 2.1
-    sutra: |
-      rachana: 1.02
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { id: n, kind: markdown, text: hi }
-    expect:
-      ok: false
-      problems:
-        - { code: RCH-2009, severity: error, message: "'rachana: 1.02' is not a language version this server reads (it reads 1)", path: /rachana }
-
-  - id: another-major
-    kind: problem
-    source: SPEC 2.1
-    sutra: |
-      rachana: 2.0
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { id: n, kind: markdown, text: hi }
-    expect:
-      ok: false
-      problems:
-        - { code: RCH-2009, severity: error, message: "'rachana: 2.0' is not a language version this server reads (it reads 1)", path: /rachana }
-
-  - id: a-sutra-above-its-host
-    kind: problem
-    source: SPEC 2.1
-    since: "1.1"
-    until: "1.1"
-    sutra: |
-      rachana: 1.2
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { id: n, kind: markdown, text: hi }
-    expect:
-      ok: false
-      problems:
-        - { code: RCH-2008, severity: error, message: "this Sutra is written for Rachana 1.2; this host runs 1.1 (raise the host's language level)", path: /rachana }
-
-  - id: a-fragment-of-another-level-is-refused
-    kind: problem
-    source: SPEC 2.1 rule 4 (G3 gate F2, owner decision O1)
-    files:
-      total.v1.block.yaml: |
-        rachana: 1
-        block: total
-        version: 1
-        panels:
-          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
-    sutra: |
-      rachana: 1.2
-      sutra: lv
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { use: total@1 }
-    expect:
-      ok: false
-      problems:
-      - code: RCH-2008
-        severity: error
-        message: "fragment total@1 is written for Rachana 1.0 and the Sutra that uses it for 1.2: a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)"
-        range: { start: { line: 6, column: 5 } }
-
-  - id: a-fragment-without-the-key-is-level-1-0
-    kind: problem
-    source: SPEC 2.1 rule 4 (G3 gate F2, owner decision O1)
-    files:
-      total.v1.block.yaml: |
-        block: total
-        version: 1
-        panels:
-          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
-    sutra: |
-      rachana: 1.1
-      sutra: lv
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { use: total@1 }
-    expect:
-      ok: false
-      problems:
-      - code: RCH-2008
-        severity: error
-        message: "fragment total@1 is written for Rachana 1.0 and the Sutra that uses it for 1.1: a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)"
-        range: { start: { line: 6, column: 5 } }
-
-  - id: a-fragment-of-a-later-level-is-refused
-    kind: problem
-    source: SPEC 2.1 rule 4 (G3 gate F2, owner decision O1)
-    files:
-      total.v1.block.yaml: |
-        rachana: 1.2
-        block: total
-        version: 1
-        panels:
-          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
-    sutra: |
-      rachana: 1
-      sutra: lv
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { use: total@1 }
-    expect:
-      ok: false
-      problems:
-      - code: RCH-2008
-        severity: error
-        message: "fragment total@1 is written for Rachana 1.2 and the Sutra that uses it for 1.0: a Sutra uses fragments of its own level only (rachana upgrade raises the lower one, keeping its meaning)"
-        range: { start: { line: 6, column: 5 } }
-
-  - id: a-fragment-of-the-sutras-level-is-read
-    kind: problem
-    source: SPEC 2.1 rule 4 (G3 gate F2)
-    files:
-      total.v1.block.yaml: |
-        rachana: 1.1
-        block: total
-        version: 1
-        panels:
-          - { id: m, kind: metric, label: Sum, value: "0.1 + 0.2" }
-    sutra: |
-      rachana: 1.1
-      sutra: lv
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { use: total@1 }
-    expect: {"ok": true, "problems": []}
+        - { code: RCH-2009, severity: error }

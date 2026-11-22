@@ -37,7 +37,7 @@ def test_compiles_and_lints(rachana):
 
 def test_runtime_bundle_and_version():
     r = Rachana(bundle="runtime")
-    assert r.version() == "0.12.0"
+    assert r.version() == "1.0.0"
     assert r.check(GOOD)["ok"] is True
 
 

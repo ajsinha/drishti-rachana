@@ -1,5 +1,5 @@
 {
-  "$comment" : "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). Generated from the reference compiler's tables by tools/reference-bridge/LangDump.java (plan R0 H4, decision D9). Do not edit: tools/conformance/spec_files.py regenerates it and fails when the committed copy is stale. Every entry has its profile and since.",
+  "$comment" : "Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). Generated from the compiler's own tables by rachana-tools LangFiles (plan R0 H4, decision D9). Do not edit: tools/regime/levels.py writes it with each language level. Every entry has its profile and since.",
   "codes" : [ {
     "code" : "RCH-2001",
     "profile" : "core",
@@ -10,6 +10,11 @@
     "profile" : "drishti",
     "raisedBy" : [ "SutraRegistry" ],
     "since" : "1.0"
+  }, {
+    "code" : "RCH-2008",
+    "profile" : "core",
+    "raisedBy" : [ "parse.SutraBlocks", "parse.SutraBuilder", "profile.Grammar" ],
+    "since" : "1.1"
   }, {
     "code" : "RCH-2009",
     "profile" : "core",
@@ -201,10 +206,130 @@
     "raisedBy" : [ "parse.LayoutReader", "parse.PhoneReader", "parse.SutraBuilder" ],
     "since" : "1.0"
   }, {
+    "code" : "RCH-2060",
+    "profile" : "core",
+    "raisedBy" : [ "table.LiveTableSpec" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2070",
+    "profile" : "core",
+    "raisedBy" : [ "data.TableClient", "table.DataPlan" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2071",
+    "profile" : "core",
+    "raisedBy" : [ "table.DataPlan", "table.LiveTableSpec" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2072",
+    "profile" : "core",
+    "raisedBy" : [ "parse.DataReader", "table.LiveTableSpec" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2073",
+    "profile" : "core",
+    "raisedBy" : [ "parse.DataReader" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2074",
+    "profile" : "core",
+    "raisedBy" : [ "live.LiveTable" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2080",
+    "profile" : "core",
+    "raisedBy" : [ "table.LiveTableSpec" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2081",
+    "profile" : "core",
+    "raisedBy" : [ "table.LiveTableSpec" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2082",
+    "profile" : "core",
+    "raisedBy" : [ "table.LiveTableSpec" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2083",
+    "profile" : "core",
+    "raisedBy" : [ "table.LiveTableSpec" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2091",
+    "profile" : "core",
+    "raisedBy" : [ "el.check.Problem" ],
+    "since" : "1.1"
+  }, {
+    "code" : "RCH-2092",
+    "profile" : "core",
+    "raisedBy" : [ "parse.DeclarationsReader" ],
+    "since" : "1.2"
+  }, {
     "code" : "RCH-2101",
     "profile" : "core",
     "raisedBy" : [ "SutraExpressions" ],
     "since" : "1.0"
+  }, {
+    "code" : "RCH-2110",
+    "profile" : "core",
+    "raisedBy" : [ "lib.Library", "lib.LibrarySet" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2111",
+    "profile" : "core",
+    "raisedBy" : [ "lib.Library", "lib.LibraryLock" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2112",
+    "profile" : "core",
+    "raisedBy" : [ "lib.Library" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2113",
+    "profile" : "core",
+    "raisedBy" : [ "lib.Library" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2114",
+    "profile" : "core",
+    "raisedBy" : [ "parse.TypedFragment" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2115",
+    "profile" : "core",
+    "raisedBy" : [ "parse.TypedFragment" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2116",
+    "profile" : "core",
+    "raisedBy" : [ "parse.TypedFragment" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2117",
+    "profile" : "core",
+    "raisedBy" : [ "parse.NestedUses", "parse.SutraBlocks", "parse.SutraBuilder", "parse.TypedFragment" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2118",
+    "profile" : "core",
+    "raisedBy" : [ "parse.TypedFragment" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2120",
+    "profile" : "core",
+    "raisedBy" : [ "model.Sutra", "parse.SutraBlocks", "parse.TypedFragment" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-2121",
+    "profile" : "core",
+    "raisedBy" : [ "el.FragmentColumns", "parse.TypedFragment" ],
+    "since" : "1.2"
+  }, {
+    "code" : "RCH-5003",
+    "profile" : "core",
+    "raisedBy" : [ "control.Fire" ],
+    "since" : "1.2"
   }, {
     "code" : "RCH-5020",
     "profile" : "core",
@@ -305,6 +430,10 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
+    "name" : "bp1",
+    "profile" : "core",
+    "since" : "1.2"
+  }, {
     "name" : "compact",
     "profile" : "core",
     "since" : "1.0"
@@ -312,6 +441,10 @@
     "name" : "date",
     "profile" : "core",
     "since" : "1.0"
+  }, {
+    "name" : "df4",
+    "profile" : "core",
+    "since" : "1.2"
   }, {
     "name" : "dmy",
     "profile" : "core",
@@ -325,9 +458,17 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
+    "name" : "pct4",
+    "profile" : "core",
+    "since" : "1.2"
+  }, {
     "name" : "price2",
     "profile" : "core",
     "since" : "1.0"
+  }, {
+    "name" : "price4",
+    "profile" : "core",
+    "since" : "1.2"
   }, {
     "name" : "signed0",
     "profile" : "core",
@@ -341,23 +482,7 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "name" : "bp1",
-    "profile" : "drishti",
-    "since" : "1.0"
-  }, {
-    "name" : "df4",
-    "profile" : "drishti",
-    "since" : "1.0"
-  }, {
-    "name" : "pct4",
-    "profile" : "drishti",
-    "since" : "1.0"
-  }, {
     "name" : "pips1",
-    "profile" : "drishti",
-    "since" : "1.0"
-  }, {
-    "name" : "price4",
     "profile" : "drishti",
     "since" : "1.0"
   }, {
@@ -3055,6 +3180,10 @@
       "profile" : "core",
       "since" : "1.0"
     }, {
+      "name" : "data",
+      "profile" : "core",
+      "since" : "1.1"
+    }, {
       "name" : "description",
       "profile" : "core",
       "since" : "1.0"
@@ -3067,6 +3196,10 @@
       "profile" : "drishti",
       "since" : "1.0"
     }, {
+      "name" : "functions",
+      "profile" : "core",
+      "since" : "1.2"
+    }, {
       "name" : "keys",
       "profile" : "core",
       "since" : "1.0"
@@ -3074,6 +3207,14 @@
       "name" : "layout",
       "profile" : "core",
       "since" : "1.0"
+    }, {
+      "name" : "let",
+      "profile" : "core",
+      "since" : "1.2"
+    }, {
+      "name" : "libraries",
+      "profile" : "core",
+      "since" : "1.2"
     }, {
       "name" : "match",
       "profile" : "drishti",
@@ -3099,6 +3240,10 @@
       "profile" : "core",
       "since" : "1.0"
     }, {
+      "name" : "state",
+      "profile" : "core",
+      "since" : "1.2"
+    }, {
       "name" : "strip",
       "profile" : "core",
       "since" : "1.0"
@@ -3116,7 +3261,7 @@
       "since" : "1.0"
     } ]
   },
-  "language" : "1.0",
+  "language" : "1.2",
   "limits" : {
     "controls" : 12,
     "expressionDepth" : 200,
@@ -3133,11 +3278,29 @@
     "required" : [ "rows" ],
     "since" : "1.0"
   }, {
+    "name" : "bullet",
+    "optional" : [ "caption", "fmt", "label", "limit", "lower", "min", "tone", "upper", "warnAt" ],
+    "profile" : "core",
+    "required" : [ "value" ],
+    "since" : "1.2"
+  }, {
     "name" : "candlestick",
     "optional" : [ "close", "fmt", "high", "low", "open", "unit", "volume", "x" ],
     "profile" : "core",
     "required" : [ "rows" ],
     "since" : "1.0"
+  }, {
+    "name" : "chart",
+    "optional" : [ "agg", "bins", "by", "dataset", "fmt", "horizontal", "limit", "rowKey", "stack", "top", "type", "xLabel", "yLabel" ],
+    "profile" : "core",
+    "required" : [ "rows", "x", "y" ],
+    "since" : "1.1"
+  }, {
+    "name" : "form",
+    "optional" : [ "cancelLabel", "initial", "submitLabel" ],
+    "profile" : "core",
+    "required" : [ ],
+    "since" : "1.2"
   }, {
     "name" : "gauge",
     "optional" : [ "fmt", "label", "max" ],
@@ -3150,6 +3313,12 @@
     "profile" : "core",
     "required" : [ "nodes" ],
     "since" : "1.0"
+  }, {
+    "name" : "grid",
+    "optional" : [ "bars", "dataset", "empty", "group", "limit", "rowKey", "search", "sort" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.1"
   }, {
     "name" : "hbar",
     "optional" : [ "fmt", "label", "shape", "tone", "value" ],
@@ -3176,7 +3345,7 @@
     "since" : "1.0"
   }, {
     "name" : "line",
-    "optional" : [ "fmt", "footer", "labels", "mark", "rows", "source", "step", "unit", "values", "x", "y" ],
+    "optional" : [ "by", "fmt", "footer", "labels", "layers", "mark", "rows", "source", "step", "unit", "values", "x", "y" ],
     "profile" : "core",
     "required" : [ ],
     "since" : "1.0"
@@ -3186,6 +3355,12 @@
     "profile" : "drishti",
     "required" : [ ],
     "since" : "1.0"
+  }, {
+    "name" : "live",
+    "optional" : [ "bars", "dataset", "edit", "empty", "group", "rowKey", "search", "sort", "top", "window" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.2"
   }, {
     "name" : "map",
     "optional" : [ "fmt", "highlight", "link", "region", "shade", "unit" ],
@@ -3253,6 +3428,18 @@
     "required" : [ "rows" ],
     "since" : "1.0"
   }, {
+    "name" : "tree",
+    "optional" : [ "dataset", "fmt", "label", "limit", "mode", "open", "parent", "path", "rowKey" ],
+    "profile" : "core",
+    "required" : [ "node", "rows" ],
+    "since" : "1.1"
+  }, {
+    "name" : "treemap",
+    "optional" : [ "color", "fmt", "group", "label", "value" ],
+    "profile" : "core",
+    "required" : [ "rows" ],
+    "since" : "1.2"
+  }, {
     "name" : "waterfall",
     "optional" : [ "colors", "fmt", "label", "sum", "total", "unit", "value" ],
     "profile" : "core",
@@ -3265,22 +3452,32 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "pivot" ],
+    "kinds" : [ "chart", "pivot" ],
     "name" : "agg",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "histogram" ],
+    "kinds" : [ "grid", "live" ],
+    "name" : "bars",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "chart", "histogram" ],
     "name" : "bins",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "pivot" ],
+    "kinds" : [ "chart", "line", "pivot" ],
     "name" : "by",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "metric" ],
+    "kinds" : [ "form" ],
+    "name" : "cancelLabel",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "bullet", "metric" ],
     "name" : "caption",
     "profile" : "core",
     "since" : "1.0"
@@ -3292,6 +3489,11 @@
   }, {
     "kinds" : [ "candlestick" ],
     "name" : "close",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "treemap" ],
+    "name" : "color",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3307,6 +3509,11 @@
   }, {
     "kinds" : [ "ladder", "table" ],
     "name" : "crumb",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "chart", "grid", "live", "tree" ],
+    "name" : "dataset",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3345,7 +3552,12 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "ladder", "table" ],
+    "kinds" : [ "live" ],
+    "name" : "edit",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "grid", "ladder", "live", "table" ],
     "name" : "empty",
     "profile" : "core",
     "since" : "1.0"
@@ -3360,7 +3572,7 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "candlestick", "gauge", "hbar", "histogram", "line", "map", "metric", "pivot", "scatter", "surface", "waterfall" ],
+    "kinds" : [ "bullet", "candlestick", "chart", "gauge", "hbar", "histogram", "line", "map", "metric", "pivot", "scatter", "surface", "tree", "treemap", "waterfall" ],
     "name" : "fmt",
     "profile" : "core",
     "since" : "1.0"
@@ -3370,7 +3582,7 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "graph", "scatter" ],
+    "kinds" : [ "graph", "grid", "live", "scatter", "treemap" ],
     "name" : "group",
     "profile" : "core",
     "since" : "1.0"
@@ -3390,13 +3602,28 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "gauge", "graph", "hbar", "metric", "scatter", "timeline", "waterfall" ],
+    "kinds" : [ "chart" ],
+    "name" : "horizontal",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "form" ],
+    "name" : "initial",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "bullet", "gauge", "graph", "hbar", "metric", "scatter", "timeline", "tree", "treemap", "waterfall" ],
     "name" : "label",
     "profile" : "core",
     "since" : "1.0"
   }, {
     "kinds" : [ "line" ],
     "name" : "labels",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "line" ],
+    "name" : "layers",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3410,7 +3637,7 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "area", "table" ],
+    "kinds" : [ "area", "bullet", "chart", "grid", "table", "tree" ],
     "name" : "limit",
     "profile" : "core",
     "since" : "1.0"
@@ -3430,6 +3657,11 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
+    "kinds" : [ "bullet" ],
+    "name" : "lower",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
     "kinds" : [ "line" ],
     "name" : "mark",
     "profile" : "core",
@@ -3445,8 +3677,23 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
+    "kinds" : [ "bullet" ],
+    "name" : "min",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "tree" ],
+    "name" : "mode",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
     "kinds" : [ "table" ],
     "name" : "moreLabel",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "tree" ],
+    "name" : "node",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3460,8 +3707,18 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "candlestick" ],
+    "kinds" : [ "candlestick", "tree" ],
     "name" : "open",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "tree" ],
+    "name" : "parent",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "tree" ],
+    "name" : "path",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3480,12 +3737,17 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "area", "candlestick", "hbar", "histogram", "kv", "ladder", "line", "pivot", "scatter", "surface", "table", "timeline", "waterfall" ],
+    "kinds" : [ "chart", "grid", "live", "tree" ],
+    "name" : "rowKey",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "chart", "grid", "hbar", "histogram", "kv", "ladder", "line", "live", "pivot", "scatter", "surface", "table", "timeline", "tree", "treemap", "waterfall" ],
     "name" : "rows",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "ladder", "table" ],
+    "kinds" : [ "grid", "ladder", "live", "table" ],
     "name" : "search",
     "profile" : "core",
     "since" : "1.0"
@@ -3510,8 +3772,18 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "area", "candlestick", "gauge", "graph", "hbar", "histogram", "kv", "ladder", "line", "map", "markdown", "metric", "pivot", "scatter", "status", "surface", "table", "tabs", "timeline", "waterfall" ],
+    "kinds" : [ "grid", "live" ],
+    "name" : "sort",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "bullet", "candlestick", "chart", "form", "gauge", "graph", "grid", "hbar", "histogram", "kv", "ladder", "line", "live", "map", "markdown", "metric", "pivot", "scatter", "status", "surface", "table", "tabs", "timeline", "tree", "treemap", "waterfall" ],
     "name" : "source",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "chart" ],
+    "name" : "stack",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3522,6 +3794,11 @@
   }, {
     "kinds" : [ "line" ],
     "name" : "step",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "form" ],
+    "name" : "submitLabel",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3540,8 +3817,13 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "hbar", "metric", "pivot", "timeline" ],
+    "kinds" : [ "bullet", "hbar", "metric", "pivot", "timeline" ],
     "name" : "tone",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "chart", "live" ],
+    "name" : "top",
     "profile" : "core",
     "since" : "1.0"
   }, {
@@ -3560,12 +3842,22 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
+    "kinds" : [ "chart" ],
+    "name" : "type",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
     "kinds" : [ "area", "candlestick", "histogram", "line", "map", "metric", "surface", "waterfall" ],
     "name" : "unit",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "gauge", "hbar", "histogram", "metric", "pivot", "waterfall" ],
+    "kinds" : [ "bullet" ],
+    "name" : "upper",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "bullet", "gauge", "hbar", "histogram", "metric", "pivot", "treemap", "waterfall" ],
     "name" : "value",
     "profile" : "core",
     "since" : "1.0"
@@ -3585,17 +3877,27 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "area", "candlestick", "gauge", "graph", "hbar", "histogram", "kv", "ladder", "line", "links", "map", "markdown", "metric", "pivot", "provenance", "scatter", "status", "surface", "table", "tabs", "timeline", "waterfall" ],
+    "kinds" : [ "bullet" ],
+    "name" : "warnAt",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "bullet", "candlestick", "chart", "form", "gauge", "graph", "grid", "hbar", "histogram", "kv", "ladder", "line", "links", "live", "map", "markdown", "metric", "pivot", "provenance", "scatter", "status", "surface", "table", "tabs", "timeline", "tree", "treemap", "waterfall" ],
     "name" : "when",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "area", "candlestick", "hbar", "histogram", "ladder", "line", "pivot", "scatter", "surface", "table", "timeline", "waterfall" ],
+    "kinds" : [ "area", "candlestick", "chart", "grid", "hbar", "histogram", "ladder", "line", "live", "pivot", "scatter", "surface", "table", "timeline", "tree", "treemap", "waterfall" ],
     "name" : "where",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "area", "candlestick", "line", "scatter" ],
+    "kinds" : [ "live" ],
+    "name" : "window",
+    "profile" : "core",
+    "since" : "1.0"
+  }, {
+    "kinds" : [ "area", "candlestick", "chart", "line", "scatter" ],
     "name" : "x",
     "profile" : "core",
     "since" : "1.0"
@@ -3605,23 +3907,23 @@
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "scatter" ],
+    "kinds" : [ "chart", "scatter" ],
     "name" : "xLabel",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "line", "scatter", "surface" ],
+    "kinds" : [ "chart", "line", "scatter", "surface" ],
     "name" : "y",
     "profile" : "core",
     "since" : "1.0"
   }, {
-    "kinds" : [ "scatter" ],
+    "kinds" : [ "chart", "scatter" ],
     "name" : "yLabel",
     "profile" : "core",
     "since" : "1.0"
   } ],
   "rachana" : "1",
-  "reference" : "Drishti 2.9.11.i7a",
+  "reference" : "Drishti Rachana language 1.2",
   "tones" : [ {
     "name" : "sign",
     "profile" : "core",

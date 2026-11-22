@@ -42,7 +42,7 @@ class ElTest {
         assertThat(eval("fmt($.rate, 'pct4') + ' fixed'")).isEqualTo("3.8500% fixed");
         assertThat(eval("coalesce($.nope, $.cp.name)")).isEqualTo("Northbridge");
         assertThat(eval("max(3, -1, 7)")).isEqualTo(7L);
-        assertThat(eval("(1 + 2) * 3 - 10 / 4")).isEqualTo(6.5);
+        assertThat(eval("(1 + 2) * 3 - 10 / 4")).isEqualTo(new java.math.BigDecimal("6.5"));
         assertThat(eval("$.missing.deeper[3]")).isNull();
         assertThat(eval("1 / 0")).isNull();
         assertThat(EL.compile("link($.cp.id, 'counterparty', $.cp.name)").eval(EvalContext.of(DOC, F)))

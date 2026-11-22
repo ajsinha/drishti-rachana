@@ -22,7 +22,7 @@ import java.util.*;
 public final class Cases {
     private Cases() { }
 
-    static final String VERSION = "0.12.0";
+    static final String VERSION = "1.0.0";
     static Formats formats;
     static ElCompiler EL;
     static com.ash.rachana.Rachana rachana;
@@ -138,7 +138,7 @@ public final class Cases {
                 t.paths(s::add);
                 reads.addAll(s);
             } else {
-                Expr e = at(c).compiler().compile(text(c.get("expr")));
+                Expr e = at(c).compiler().compile(expanded(c, text(c.get("expr"))));
                 v = e.eval(ctx);
                 LinkedHashSet<String> s = new LinkedHashSet<>();
                 e.paths(s::add);
@@ -161,6 +161,14 @@ public final class Cases {
 
     public static void exprError(Map<String, Object> c, StringBuilder sb) {
         String src = c.containsKey("template") ? text(c.get("template")) : text(c.get("expr"));
+        try {
+            src = c.containsKey("template") ? src : expanded(c, src);
+        } catch (ElException e) {
+            int at = Math.max(0, e.position());
+            sb.append("{\"problems\":[{\"code\":").append(str(code(e))).append(",\"severity\":\"error\",\"message\":").append(str(words(e)))
+                    .append(",\"expr\":{\"source\":").append(str(src)).append(",\"start\":").append(at).append(",\"end\":").append(Math.min(src.length(), e.end() > at ? e.end() : at + 1)).append("}}]}");
+            return;
+        }
         Map<String, Object> limits = obj(obj(c.get("given")).get("limits"));
         int depth = whole(limits.get("depth"), 200), len = whole(limits.get("length"), 10_000);
         ElCompiler comp = new ElCompiler(1000, new ElLimits(depth, len), rachana.functions(), level(c));
@@ -171,6 +179,29 @@ public final class Cases {
             int at = Math.max(0, e.position());
             sb.append("{\"problems\":[{\"code\":").append(str(code(e))).append(",\"severity\":\"error\",\"message\":").append(str(words(e)))
                     .append(",\"expr\":{\"source\":").append(str(src)).append(",\"start\":").append(at).append(",\"end\":").append(Math.min(src.length(), e.end() > at ? e.end() : at + 1)).append("}}]}");
+        }
+    }
+
+    /**
+     * FORMAT 5.2, 5.3: the expression with a model's measure functions ({@code functions: { net: { params: [x], expr: "x - 1" } }})
+     * expanded into it ({@link MeasureFunctions}); the expression itself when the case declares none. A problem is {@code RCH-2101} at its
+     * place: the token in the expression's own text, or the call whose function is at fault (a body, a count of arguments, a cycle).
+     */
+    static String expanded(Map<String, Object> c, String src) {
+        Map<String, Object> fns = obj(c.get("functions"));
+        if (fns.isEmpty()) {
+            return src;
+        }
+        Map<String, MeasureFunctions.Def> defs = new LinkedHashMap<>();
+        fns.forEach((name, d) -> {
+            List<String> params = new ArrayList<>();
+            items(obj(d).get("params")).forEach(p -> params.add(text(p)));
+            defs.put(name, new MeasureFunctions.Def(params, text(obj(d).get("expr"))));
+        });
+        try {
+            return MeasureFunctions.expand(src, defs, rachana.functions());
+        } catch (IllegalArgumentException x) {
+            throw x.getCause() instanceof ElException e ? e : x;        // located: the token, or the call whose function is at fault
         }
     }
 
@@ -260,7 +291,7 @@ public final class Cases {
 
     /** The language level a case runs at: the minor it was written for ({@code since}; SUTRA_EXPANSION 6.1 rule 2: a case pins its level). */
     static String level(Map<String, Object> c) {
-        return c.get("since") == null ? "1.0" : text(c.get("since"));
+        return com.ash.rachana.profile.Grammar.LEVEL;        // Rachana 1.x reads one level; a case's since is its history only
     }
 
     private static final Map<String, com.ash.rachana.Rachana> AT = new LinkedHashMap<>();
@@ -268,7 +299,7 @@ public final class Cases {
     /** The instance at the case's language level. */
     static com.ash.rachana.Rachana at(Map<String, Object> c) {
         String l = level(c);
-        return "1.0".equals(l) ? rachana : AT.computeIfAbsent(l, rachana::language);
+        return rachana;
     }
 
     /**

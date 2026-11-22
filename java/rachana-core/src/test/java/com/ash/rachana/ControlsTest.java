@@ -52,7 +52,7 @@ class ControlsTest {
     }
 
     private static Object eval(String src, Map<String, Object> ctl) {
-        return Values.simplify(EL.compile(src).eval(EvalContext.of(DOC, F).withControls(ctl)));
+        return com.ash.rachana.el.Fx.plain(Values.simplify(EL.compile(src).eval(EvalContext.of(DOC, F).withControls(ctl))));
     }
 
     @Test

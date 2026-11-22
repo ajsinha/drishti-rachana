@@ -1,0 +1,130 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: problem/data
+since: "1.1"
+profile: [core, drishti]
+verified: true
+description: The data block's problems (SPEC 2.4, 6.2 codes RCH-2070 to 2079).
+cases:
+  - id: data-is-not-a-key-of-level-1-0
+    verified: true
+    kind: problem
+    since: "1.0"
+    source: SPEC 2.4, 7.2 rule 6 (data is a 1.1 key; a later level's name below it is RCH-2008, one rule with libraries at 1.2)
+    sutra: |
+      rachana: 1
+      sutra: data-at-1-0
+      version: 1
+      match: { kind: case }
+      data:
+        t: { rows: [] }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2008 }
+
+  - id: two-sources-in-one-entry
+    kind: problem
+    source: SPEC 2.4 (exactly one)
+    sutra: |
+      rachana: 1.1
+      sutra: data-two
+      version: 1
+      match: { kind: case }
+      data:
+        t: { table: sales, rows: [] }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2073 }
+
+  - id: no-source-in-an-entry
+    kind: problem
+    source: SPEC 2.4 (exactly one)
+    sutra: |
+      rachana: 1.1
+      sutra: data-none
+      version: 1
+      match: { kind: case }
+      data:
+        t: { key: id }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2073 }
+
+  - id: live-needs-a-key
+    kind: problem
+    source: SPEC 2.4; PROTOCOL 8.1
+    sutra: |
+      rachana: 1.1
+      sutra: data-live
+      version: 1
+      match: { kind: case }
+      data:
+        t: { table: ticks, live: true }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2072 }
+
+  - id: unknown-key-in-an-entry
+    kind: problem
+    source: SPEC 2.4
+    sutra: |
+      rachana: 1.1
+      sutra: data-unknown
+      version: 1
+      match: { kind: case }
+      data:
+        t: { table: sales, topic: prices }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2011 }
+
+  - id: a-name-that-is-not-a-field-name
+    verified: true
+    kind: problem
+    source: SPEC 2.4 (each entry is a field of $)
+    sutra: |
+      rachana: 1.1
+      sutra: data-name
+      version: 1
+      match: { kind: case }
+      data:
+        2nd-table: { rows: [] }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2073 }
+
+  - id: rows-must-be-a-list-of-mappings
+    kind: problem
+    source: SPEC 2.4
+    sutra: |
+      rachana: 1.1
+      sutra: data-rows-shape
+      version: 1
+      match: { kind: case }
+      data:
+        t: { rows: 3 }
+    expect:
+      ok: false
+      problems:
+        - { code: RCH-2012 }
+
+  - id: an-address-is-a-url-entry
+    kind: problem
+    source: SPEC 2.4 (text is shorthand for url)
+    sutra: |
+      rachana: 1.1
+      sutra: data-url
+      version: 1
+      match: { kind: case }
+      data:
+        targets: /data/targets.csv
+      panels:
+        - { id: n, kind: metric, label: N, value: "count($.targets)" }
+    expect:
+      ok: true
+      problems: []

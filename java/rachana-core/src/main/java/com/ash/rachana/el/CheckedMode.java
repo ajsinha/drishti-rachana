@@ -35,36 +35,51 @@ public final class CheckedMode {
         }
     }
 
-    /** Parses with spans (a syntax error is {@code RCH-2101}, as everywhere in Rachana). */
+    /**
+     * Parses with spans, at the one language level ({@code Grammar.LEVEL}) and through the one parse: the whole text, so a token left after
+     * a complete expression is refused at its place (a syntax error is {@code RCH-2101}, as everywhere in Rachana).
+     */
     public static Parsed parse(String text) {
         Parser.Parsed p = Parser.parseWithSpans(text, ElLimits.DEFAULTS);
         return new Parsed(text, p.expr(), p.spans());
     }
 
-    /** Parses with spans at a language level ({@code 1.0}, {@code 1.1}). */
+    /**
+     * {@link #parse(String)}, for a host that names the level: Rachana 1.x has one ({@code Grammar.LEVELS}).
+     *
+     * @throws IllegalArgumentException for a level this runtime does not implement
+     */
     public static Parsed parse(String text, String level) {
-        Parser.Parsed p = Parser.parseWithSpans(text, ElLimits.DEFAULTS, FunctionTable.core(), !"1.0".equals(level));
-        return new Parsed(text, p.expr(), p.spans());
+        known(level);
+        return parse(text);
+    }
+
+    /** {@code level}, when this runtime implements it. */
+    private static void known(String level) {
+        if (level == null || !com.ash.rachana.profile.Grammar.LEVELS.contains(level)) {
+            throw new IllegalArgumentException("language level '" + level + "' is not one of "
+                    + String.join(", ", com.ash.rachana.profile.Grammar.LEVELS));
+        }
     }
 
     /** Parses and checks; a text that does not parse is one {@code RCH-9127} problem at the place it stops. */
     public static Checker.Checked check(String text, Scope scope, Fields fields) {
-        return check(text, scope, fields, "1.0");
+        return check(text, scope, fields, com.ash.rachana.profile.Grammar.LEVEL);
     }
 
-    /** {@link #check(String, Scope, Fields)} at a language level ({@code 1.0}, {@code 1.1}). */
+    /** {@link #check(String, Scope, Fields)} for a host that names the level (the one level, {@code Grammar.LEVELS}). */
     public static Checker.Checked check(String text, Scope scope, Fields fields, String level) {
+        known(level);
         Parsed p;
         try {
-            p = parse(text, level);
+            p = parse(text);
         } catch (ElException e) {
             int at = Math.max(0, e.position());
             return new Checker.Checked(com.ash.rachana.el.check.ElType.ANY,
                     List.of(new Problem(Problem.LANGUAGE, Problem.ERROR, e.getMessage(), null, at, Math.min(text.length(), at + 1))),
                     Set.of(), Set.of(), Set.of());
         }
-        return Checker.check(com.ash.rachana.el.check.Signatures.get(), p.expr(), p.spans(), text, scope, fields, Spelling.RACHANA,
-                !"1.0".equals(level));
+        return Checker.check(com.ash.rachana.el.check.Signatures.get(), p.expr(), p.spans(), text, scope, fields, Spelling.RACHANA);
     }
 
     /**

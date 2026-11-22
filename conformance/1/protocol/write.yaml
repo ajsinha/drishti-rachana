@@ -3,7 +3,7 @@ suite: protocol/write
 since: "1.0"
 profile: core
 verified: true
-description: "Writes to a live table (PROTOCOL 16 Writes, LIVE_TABLES 1.6 and 5): applied, queued and held changes; a repeated change id answers its first answer; the version guard (409 naming the version, who and when); the declaration's rules (422 naming the column and rule); unsupported (405); forbidden for a switch that is off, no right, a column not editable or the host's refusal (403, audited); a row outside the reader's scope (404); the tray <name>.changes lists only the caller's own. The case's writer applies a change to the source and pushes it on the stream, so an edit shows when the source's change arrives (PROTOCOL 15 adapter: edit, /_test/outbox). Run with protocol_check.py --live."
+description: "Writes to a live table (PROTOCOL 16 Writes, LIVE_TABLES 1.6 and 5): applied, queued and held changes; a repeated change id answers its first answer (other content under it: 409 reused); the version guard (409 naming the version, who and when); the declaration's rules (422 naming the column and rule); unsupported (405); forbidden for a switch that is off, no right, a column not editable or the host's refusal (403, audited); a row outside the reader's scope (404); the tray <name>.changes lists only the caller's own. The case's writer applies a change to the source and pushes it on the stream, so an edit shows when the source's change arrives (PROTOCOL 15 adapter: edit, /_test/outbox). Run with protocol_check.py --live."
 cases:
   - id: an-applied-change-shows-when-the-source-sends-it
     kind: protocol
@@ -78,6 +78,27 @@ cases:
         expect: { status: 200, body: { change: c1, state: sent, version: 2 } }
       - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, qty], filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
         expect: { status: 200, body: { values: [ [a, 2, 7] ] } }
+
+  - id: a-reused-change-id-with-other-content-is-refused
+    verified: true
+    kind: protocol
+    source: "PROTOCOL 16 (a repeat is the same change only with the same content), 10.1 rdp.write.conflict reused; LIVE_TABLES 5 (audited write-reused)"
+    fixture: *outbox
+    steps:
+      - request: { method: POST, path: /_test/as, body: { reader: bob } }
+        expect: { status: 204 }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 200, body: { change: c1, state: queued } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 8 } } }
+        expect: { status: 409, body: { error: { code: rdp.write.conflict, reused: true } } }
+      - request: { method: POST, path: /tables/trades/write, body: { id: c1, key: [a], basedOn: 1, set: { qty: 7 } } }
+        expect: { status: 200, body: { change: c1, state: queued } }
+      - request: { method: POST, path: /_test/outbox, body: { flush: true } }
+        expect: { status: 200, body: { sent: 1 } }
+      - request: { method: POST, path: /tables/trades/query, body: { columns: [id, v, qty], filter: { op: "==", args: [ { col: id }, { lit: a } ] } } }
+        expect: { status: 200, body: { values: [ [a, 2, 7] ] } }
+      - request: { method: POST, path: /_test/audit }
+        expect: { status: 200, body: [ { event: write-submitted, caller: bob, change: c1, columns: [qty] }, { event: write-reused, caller: bob, change: c1, columns: [qty] }, { event: write-sent, change: c1 } ] }
 
   - id: a-change-id-is-its-makers-only
     kind: protocol

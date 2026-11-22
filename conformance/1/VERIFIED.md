@@ -889,6 +889,24 @@ digits, half to even, trailing zeros dropped), and `min(list)` / `max(list)` giv
 Each passes on the JVM, both Node bundles and the Python V8 engine (both bundles) with the same results line at 1.0, 1.1 and 1.2; every
 case that existed before answers as before (`build_js.py`: 0 errors, 0 verified failing, runtime = tools at every level).
 
+## The G4 gate pass (one language level, the whole text)
+
+**G4 gate part 2** (2026-11-22, branch `fix/f25-one-level` off `develop` at `66b3c9c7`, finding F25): every parse entry point of Rachana
+reads at the one level (1.2) through the one parse, and reads the whole text (SPEC 4.1 rule 6); a host's measure functions are
+specified (SPEC 4.10 rule 9) and a case may carry them (FORMAT 5.2, `functions`).
+
+### Flipped in the G4 gate pass
+
+| Case id | Evidence |
+|---|---|
+| `protocol/write#a-reused-change-id-with-other-content-is-refused` | read by the G4 gate (part 2, section 1) against PROTOCOL 16 (a repeat is the same change only with the same content) and 10.1 (`rdp.write.conflict`, `reused`), and run against the live runtime, which answers the expectation; `protocol_check.py --live` pass |
+
+### Cases added in the G4 gate pass
+
+| Case id | Evidence |
+|---|---|
+| `el/measure-functions` (all 15: `a-call-then-a-conditional-is-read-whole`, `a-call-then-a-conditional-takes-the-call-when-true`, `a-call-in-the-else-branch-is-expanded`, `an-argument-is-any-expression-of-the-level`, `a-call-is-an-operand-of-a-power`, `a-digit-separator-in-an-argument`, `a-function-calls-another`, `text-after-a-call-is-refused-at-its-place`, `text-after-a-functions-expression-is-refused`, `a-call-with-the-wrong-count-is-refused`, `a-call-by-name-is-refused`, `a-cycle-is-refused`, `a-token-after-an-expression-is-refused`, `a-token-after-a-conditional-is-refused`, `a-template-part-is-read-whole`) | SPEC 4.1 rule 6, 4.10 rule 9, 4.8, 4.17 read, each value recomputed by hand (the inputs are the gate's F25 probes); jvm and the Node tools bundle pass with the same bytes at 1.2; the first three, the sixth and the eighth fail before the fix (cut to the first operand, or refused) |
+
 ## Not flipped
 
 None: every case below `conformance/1/` is verified.

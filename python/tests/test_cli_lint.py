@@ -51,20 +51,3 @@ def test_each_sutra_declares_its_level_and_examples_lint_clean():
     assert main(["lint", "--level", "1.2", str(ex)]) == 2             # usage error: no --level
     assert Rachana().check(GOOD)["ok"] and Rachana().check(GOOD, level="1.2")["ok"]
 
-
-def test_upgrade_runs_the_one_java_implementation(tmp_path, monkeypatch):
-    from pathlib import Path
-    from drishti_rachana.cli import java_command
-    assert java_command("upgrade", ["x"], {}) is None
-    assert java_command("upgrade", ["x"], {"RACHANA_JAR": "r.jar"}) == ["java", "-jar", "r.jar", "upgrade", "x"]
-    monkeypatch.delenv("RACHANA_JAR", raising=False)
-    monkeypatch.delenv("RACHANA_CLASSPATH", raising=False)
-    assert main(["upgrade", "x"]) == 2                               # no JVM named
-    java = Path(__file__).resolve().parents[2] / "java"
-    if not (java / "rachana-cli" / "target" / "classes").is_dir():
-        return                                                        # the Java classes are not built here
-    monkeypatch.setenv("RACHANA_CLASSPATH", ":".join(str(java / m / "target" / "classes") for m in ("rachana-cli", "rachana-tools", "rachana-core", "rachana-api")))
-    f = tmp_path / "u.sutra.yaml"
-    f.write_text("rachana: 1\nsutra: u\nversion: 1\npanels:\n  - { id: m, kind: metric, label: S, value: \"range($.r, 'p')\" }\n")
-    assert main(["upgrade", str(f), "--write"]) == 0
-    assert f.read_text().startswith("rachana: 1.2\n") and "span(" in f.read_text()

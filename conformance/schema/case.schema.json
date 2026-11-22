@@ -51,6 +51,18 @@
       "pattern": "^[A-Z]{2,8}-[0-9]{4}$"
     },
     "expressionText": { "type": "string", "maxLength": 20000 },
+    "measureFunctions": {
+      "description": "FORMAT 5.2, 5.3: a host's measure functions (a BI model's functions:), each call expanded in the expression's text before it is read (SPEC 4.10 rule 9).",
+      "type": "object", "minProperties": 1,
+      "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+      "additionalProperties": {
+        "type": "object", "required": ["params", "expr"], "additionalProperties": false,
+        "properties": {
+          "params": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" } },
+          "expr": { "$ref": "#/$defs/expressionText" }
+        }
+      }
+    },
 
     "value": {
       "description": "A Rachana value in the JSON data model (FORMAT 4). An object of exactly one key $num, $dec, $masked or $link is a tag; any other object is a Rachana object.",
@@ -300,6 +312,7 @@
       "properties": {
         "expr": { "$ref": "#/$defs/expressionText" },
         "template": { "$ref": "#/$defs/expressionText" },
+        "functions": { "$ref": "#/$defs/measureFunctions" },
         "given": { "$ref": "#/$defs/given" },
         "expect": {
           "type": "object", "additionalProperties": false, "minProperties": 1,
@@ -328,6 +341,7 @@
       "properties": {
         "expr": { "$ref": "#/$defs/expressionText" },
         "template": { "$ref": "#/$defs/expressionText" },
+        "functions": { "$ref": "#/$defs/measureFunctions" },
         "given": { "$ref": "#/$defs/given" },
         "expect": {
           "type": "object", "additionalProperties": false, "required": ["problems"],

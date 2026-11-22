@@ -4,7 +4,6 @@
  */
 package com.ash.rachana.el;
 
-import static com.ash.rachana.el.Fy.eval;
 import static com.ash.rachana.el.Fy.evalError;
 import static com.ash.rachana.el.Fy.masked;
 import static com.ash.rachana.el.Fy.near;
@@ -22,6 +21,10 @@ import org.junit.jupiter.api.Test;
  * identities to near machine precision; and the rules (empty in empty out, masked, a domain error in words).
  */
 class DistributionsTest {
+
+    private static Object eval(String src) {
+        return Fx.plain(Fy.eval(src));
+    }
 
     @Test
     void theNormalFamilyMatchesExcelsDocumentedExamples() {

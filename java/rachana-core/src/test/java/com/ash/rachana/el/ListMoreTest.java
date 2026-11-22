@@ -4,9 +4,7 @@
  */
 package com.ash.rachana.el;
 
-import static com.ash.rachana.el.Fy.eval;
 import static com.ash.rachana.el.Fy.evalError;
-import static com.ash.rachana.el.Fy.list;
 import static com.ash.rachana.el.Fy.masked;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +17,15 @@ import org.junit.jupiter.api.Test;
  * cumtrapz, the set functions and sort by several keys (sortrows), on MATLAB's documented examples where it has one.
  */
 class ListMoreTest {
+
+    @SuppressWarnings("unchecked")
+    private static java.util.List<Object> list(String src) {
+        return (java.util.List<Object>) Fx.plain(Fy.list(src));
+    }
+
+    private static Object eval(String src) {
+        return Fx.plain(Fy.eval(src));
+    }
 
     @Test
     void fillmissingByEachMethod() {

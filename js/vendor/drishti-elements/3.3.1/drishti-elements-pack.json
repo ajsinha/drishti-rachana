@@ -1,0 +1,72 @@
+{
+  "elements": "3.3.1",
+  "libraries": {
+    "drishti-core": "3.3.1",
+    "drishti-views": "3.3.1",
+    "drishti-events": "3.3.1",
+    "drishti-inputs": "3.3.1",
+    "drishti-chart": "3.3.1",
+    "drishti-grid": "3.3.1",
+    "drishti-graph": "3.3.1",
+    "drishti-tree": "3.3.1"
+  },
+  "requested": [
+    "core",
+    "views",
+    "events",
+    "chart",
+    "grid",
+    "graph",
+    "tree"
+  ],
+  "theme": "all",
+  "engines": [
+    "vendor/echarts/echarts.min.js"
+  ],
+  "files": {
+    "data/formats.yaml": {
+      "bytes": 1759,
+      "integrity": "sha384-FVVMnL8eKQCBcdYL2nX1SNERkyiJA8HOOSWVwwD72iJll8TIhjihhxPsnqgSaSO3"
+    },
+    "data/world-regions.yaml": {
+      "bytes": 4304,
+      "integrity": "sha384-kpZwpA7EaAwT79FkrPeAXmakxie1lecbdFtAoqBOEGKmp8hIqNMiaPfQJj3mPts5"
+    },
+    "drishti-elements.css": {
+      "bytes": 178133,
+      "integrity": "sha384-tn68KQCusae6NyWRtPg8hTPBVe5Vu/E9B79+XIi+GbK0x2SYEjIwB1VIGJyP1gcl"
+    },
+    "drishti-elements.js": {
+      "bytes": 3178936,
+      "integrity": "sha384-5g5r4REfB0NoVXkJlaFUBnL88IPui3HVLLea+BcW5TjS79tUvv8C1PzEwXwM9ljP"
+    },
+    "vendor/codemirror/LICENSE": {
+      "bytes": 1113,
+      "integrity": "sha384-z3Gj3i+PbcFqfwbydY1COdh4zqvLx2i/VAkUe4dXpfq5PcTWv4vQ6P22s3RpAGes"
+    },
+    "vendor/codemirror/codemirror.css": {
+      "bytes": 8720,
+      "integrity": "sha384-bsaAhvdduZPAwUb7RRLRvDgtEtOsggrgjkr/EjPO1i/vdoi+DmdLaG79UOt6M5hD"
+    },
+    "vendor/codemirror/codemirror.js": {
+      "bytes": 402008,
+      "integrity": "sha384-ICh4tcjRYngrTf3XWqnOncKoVxLkKTgIEh8q4FWWD4EeVI8zn3yUAZF4tVO9Jwso"
+    },
+    "vendor/codemirror/mode/python/python.js": {
+      "bytes": 14984,
+      "integrity": "sha384-HcVkwdWB4VAA451RvHXtgHgKx0HvmXKY5p1sOBHIK1IpkZJ4CnOzGULahXqEzcGX"
+    },
+    "vendor/echarts-gl/LICENSE": {
+      "bytes": 1510,
+      "integrity": "sha384-9GmrtEdzoOOL/Non6CIgKTL+kEXuXEdOHRdgyLcSSNPCFAHTwR/BcREaRW/A5hjj"
+    },
+    "vendor/echarts-gl/PATCHED.md": {
+      "bytes": 686,
+      "integrity": "sha384-vXAjv5mQjeGWYpZsmWgY2/xD4XcFrHr3MZIpsuU3aIiu+MS3rgkWgHrGdxdy3Ai/"
+    },
+    "vendor/echarts-gl/echarts-gl.min.js": {
+      "bytes": 640191,
+      "integrity": "sha384-NrvcoDCI6RdueP8vvkSqLKmsyczYlzVvUD3f1IdR3n3ZuP8/oZDQZc1TkFTPaxzf"
+    }
+  }
+}

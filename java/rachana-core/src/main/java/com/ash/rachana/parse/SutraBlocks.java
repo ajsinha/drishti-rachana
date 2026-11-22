@@ -105,12 +105,12 @@ public final class SutraBlocks {
                 String masked = text.replace("%{", "pXq{");
                 PNode lang = parse(masked, file).map().get("rachana");
                 if (lang == null) {
-                    return com.ash.rachana.profile.Grammar.LEVEL_1_0;
+                    return com.ash.rachana.profile.Grammar.LEVEL;
                 }
                 String l = SutraParser.level(lang, masked);
                 return l != null ? l : String.valueOf(lang.value());
             } catch (SutraException e) {
-                return com.ash.rachana.profile.Grammar.LEVEL_1_0;
+                return com.ash.rachana.profile.Grammar.LEVEL;
             }
         }
     }

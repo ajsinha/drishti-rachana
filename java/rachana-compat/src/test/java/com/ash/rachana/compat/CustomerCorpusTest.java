@@ -86,44 +86,6 @@ class CustomerCorpusTest {
     }
 
     @Test
-    void recordedBindsReplayThroughCoresBinderByteForByte() throws Exception {
-        Map<String, String> known = knownBindDifferences();
-        for (Corpus c : Corpus.all()) {
-            Path binds = c.dir().resolve("binds");
-            if (!Files.isDirectory(binds)) continue;   // a corpus exported before its binds were recorded
-            List<String> diffs = new ArrayList<>();
-            List<String> stale = new ArrayList<>();
-            int replayed = 0;
-            for (CoreBinds.Outcome o : CoreBinds.replay(c)) {
-                replayed++;
-                String id = "binds/" + c.release() + "/" + o.file();
-                if (o.difference() == null) {
-                    if (known.containsKey(id)) stale.add(id);
-                } else if (!known.containsKey(id)) {
-                    diffs.add(o.file() + ": " + o.difference());
-                }
-            }
-            assertEquals(List.of(), diffs, c.name() + ": " + diffs.size() + " binds differ from the reference's (a bug to fix, or a known difference with its reason)");
-            assertEquals(List.of(), stale, c.name() + ": listed in known-differences.txt but identical now (remove them)");
-            Map<String, Object> v = Json.object(Json.parse(Files.readString(c.dir().resolve("VERSION.json"))));
-            assertEquals(((java.math.BigDecimal) v.get("binds")).intValue(), replayed, c.name() + ": every recorded bind replayed");
-        }
-    }
-
-    /** The accepted bind differences of tools/split/known-differences.txt: {@code binds/<release>/<file> <step>: <why>}, id to reason. */
-    static Map<String, String> knownBindDifferences() throws Exception {
-        Map<String, String> out = new LinkedHashMap<>();
-        for (String l : Files.readAllLines(Corpus.repoRoot().resolve("tools/split/known-differences.txt"))) {
-            if (l.startsWith("binds/")) {
-                int sp = l.indexOf(' ');
-                assertTrue(sp > 0 && !l.substring(sp).isBlank(), "a known difference needs its reason: " + l);
-                out.put(l.substring(0, sp), l.substring(sp + 1).strip());
-            }
-        }
-        return out;
-    }
-
-    @Test
     void theDrishtiProfileCaseFilesAreInTheCorpus() throws Exception {
         for (Corpus c : Corpus.all()) {
             for (String kind : List.of("cases", "problems")) {

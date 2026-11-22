@@ -21,7 +21,7 @@ import java.util.Map;
  * What the function-family tests share: a trade written with the demo data's names (and a few fields made for the edges),
  * masked fields beside it, the view's business date 2026-10-16, and short ways to evaluate and to expect a problem.
  */
-final class Fx {
+public final class Fx {
 
     static final ElCompiler EL = new ElCompiler();
     static final Formats F = Formats.load(null, List.of(com.ash.rachana.TestFormats.file()));
@@ -59,6 +59,17 @@ final class Fx {
 
     static boolean masked(String src) {
         return Values.masked(EL.compile(src).eval(ctx()));
+    }
+
+    /** A value as the 1.0-era assertions read it: an exact integer is a long, any other exact number stays exact; lists and maps follow. */
+    public static Object plain(Object v) {
+        if (v instanceof BigDecimal b) {
+            return b.stripTrailingZeros().scale() <= 0 && b.abs().compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) < 0 ? (Object) b.longValue() : b;
+        }
+        if (v instanceof List<?> l) {
+            return l.stream().map(Fx::plain).toList();
+        }
+        return v;
     }
 
     static BigDecimal dec(String text) {

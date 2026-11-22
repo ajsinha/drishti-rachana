@@ -101,7 +101,7 @@ public final class Formats {
 
     /** The bundled formats, then each pack's formats, then the site override file; the table never changes. */
     public static Formats load(String overrideFile, java.util.List<String> packFiles) {
-        return new Formats(new Source(overrideFile, packFiles, false), "1.0");
+        return new Formats(new Source(overrideFile, packFiles, false), com.ash.rachana.profile.Grammar.LEVEL);
     }
 
     /**
@@ -109,7 +109,7 @@ public final class Formats {
      * {@link #reload(java.util.List)}).
      */
     public static Formats live(String overrideFile, java.util.List<String> packFiles) {
-        return new Formats(new Source(overrideFile, packFiles, true), "1.0");
+        return new Formats(new Source(overrideFile, packFiles, true), com.ash.rachana.profile.Grammar.LEVEL);
     }
 
     /** True for a table its host may reload ({@link #live(String, java.util.List)}). */

@@ -28,7 +28,7 @@ cases:
     kind: sutra
     source: SPEC 2.3a, VIEWMODEL contract 1.1
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: blotter
       version: 1
       title: { pill: Desk, id: $.desk }
@@ -55,7 +55,7 @@ cases:
     kind: sutra
     source: SPEC 2.3a
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: plain
       version: 1
       panels:
@@ -67,7 +67,7 @@ cases:
     kind: sutra
     source: SPEC 2.3a
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: hierarchy
       version: 1
       panels:
@@ -79,7 +79,7 @@ cases:
     kind: sutra
     source: SPEC 2.3a
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: charts
       version: 1
       panels:
@@ -109,7 +109,7 @@ cases:
     kind: sutra
     source: SUTRA_EXPANSION 6.3 rule 2 (the minimal stamp)
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: words
       version: 1
       title: { pill: Desk, id: $.desk }
@@ -122,7 +122,7 @@ cases:
     kind: problem
     source: SPEC 2.3a
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: bad
       version: 1
       match: { kind: record }

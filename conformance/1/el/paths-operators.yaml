@@ -67,13 +67,6 @@ cases:
     expr: "max(3, -1, 7)"
     expect: {"value": 7}
 
-  - id: "1-2-3-10-4"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ElTest#pathsOperatorsAndFunctions"
-    expr: "(1 + 2) * 3 - 10 / 4"
-    expect: {"value": 6.5, "type": "number", "text": "6.5"}
-
   - id: "missing-deeper-3"
     kind: "expr"
     source: "ElTest#pathsOperatorsAndFunctions"
@@ -216,35 +209,6 @@ cases:
     expr: "$.nothing < '2027-01-01'"
     expect: {"value": false, "type": "boolean"}
 
-  - id: "7-3-5-7-5"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ElTest#integerArithmeticMatchesJava"
-    note: "Sample of the Java test's 300 seeded cases: the result is Java's int arithmetic, % truncated (SPEC 4.5)."
-    expr: "7 + 3 * 5 - (7 % 5)"
-    expect: {"value": 20, "type": "number"}
-
-  - id: "9500-4821-17-9500-17"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ElTest#integerArithmeticMatchesJava"
-    expr: "-9500 + 4821 * 17 - (-9500 % 17)"
-    expect: {"value": 72471, "type": "number"}
-
-  - id: "10000-10000-99-10000-99"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ElTest#integerArithmeticMatchesJava"
-    expr: "10000 + -10000 * 99 - (10000 % 99)"
-    expect: {"value": -980001, "type": "number"}
-
-  - id: "0-0-1-0-1"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ElTest#integerArithmeticMatchesJava"
-    expr: "0 + 0 * 1 - (0 % 1)"
-    expect: {"value": 0, "type": "number"}
-
   - id: "2147483647-2147483648"
     kind: "expr"
     source: "ElTest#comparisonsAgreeWithJava"
@@ -341,20 +305,6 @@ cases:
     expr: "1 + 1"
     expect: {"value": 2}
 
-  - id: "whole-number-prints-without-decimals"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "SPEC 4.2"
-    expr: "1 + 1"
-    expect: {"value": 2, "type": "number", "text": "2"}
-
-  - id: "1-5-1-5"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "SPEC 4.2"
-    expr: "1.5 + 1.5"
-    expect: {"value": 3, "type": "number", "text": "3"}
-
   - id: "1e20-1"
     kind: "expr"
     source: "FORMAT 9 N3"
@@ -370,50 +320,6 @@ cases:
     note: "N1 stops below 10^15; this is the first power of ten printed in exponent form."
     expr: "1e15 * 1"
     expect: {"value": 1000000000000000.0, "type": "number", "text": "1.0E15"}
-
-  - id: "999999999999999-0"
-    kind: "expr"
-    source: "FORMAT 9 N1"
-    tags: ["determinism", "changes-with-xd3"]
-    expr: "999999999999999 + 0"
-    expect: {"value": 999999999999999, "type": "number", "text": "999999999999999"}
-
-  - id: "15000000-1"
-    kind: "expr"
-    source: "FORMAT 9 N1"
-    tags: ["determinism", "changes-with-xd3"]
-    note: "N1 applies first: a whole double prints as an integer."
-    expr: "15000000 * 1"
-    expect: {"value": 15000000, "type": "number", "text": "15000000"}
-
-  - id: "0-0001-1"
-    kind: "expr"
-    source: "FORMAT 9 N3"
-    tags: ["determinism", "changes-with-xd3"]
-    expr: "0.0001 * 1"
-    expect: {"value": 0.0001, "type": "number", "text": "1.0E-4"}
-
-  - id: "12345678-5-1"
-    kind: "expr"
-    source: "FORMAT 9 N3"
-    tags: ["determinism", "changes-with-xd3"]
-    expr: "12345678.5 * 1"
-    expect: {"value": 12345678.5, "type": "number", "text": "1.23456785E7"}
-
-  - id: "0-001-1"
-    kind: "expr"
-    source: "FORMAT 9 N2"
-    tags: ["determinism", "changes-with-xd3"]
-    expr: "0.001 * 1"
-    expect: {"value": 0.001, "type": "number", "text": "0.001"}
-
-  - id: "0-0-1"
-    kind: "expr"
-    source: "FORMAT 9 N6"
-    tags: ["determinism", "changes-with-xd3"]
-    note: "Negative zero prints 0 (to be confirmed by P2)."
-    expr: "-0.0 * 1"
-    expect: {"value": 0, "type": "number", "text": "0"}
 
   - id: "true-true"
     kind: "expr"
@@ -636,45 +542,17 @@ cases:
     expr: "'  ' * 1"
     expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
 
-  - id: "42-1"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
-    note: "The Java test calls Values.number(text); the case reads the same text through *."
-    expr: "'42' * 1"
-    expect: {"value": 42, "type": "number"}
-
   - id: "1-5e-3-1"
     kind: "expr"
     source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
     expr: "' -1.5e-3 ' * 1"
     expect: {"value": -0.0015, "type": "number"}
 
-  - id: "7-1"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
-    expr: "'+7' * 1"
-    expect: {"value": 7, "type": "number"}
-
-  - id: "5-1"
-    kind: "expr"
-    tags: ["changes-with-xd3"]
-    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
-    expr: "'.5' * 1"
-    expect: {"value": 0.5, "type": "number"}
-
   - id: "1e-6-1"
     kind: "expr"
     source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
     expr: "'1E+6' * 1"
     expect: {"value": 1000000, "type": "number"}
-
-  - id: "infinity-1"
-    kind: "expr"
-    source: "ValuesNumberTest#textThatIsNotANumberIsRejectedWithoutParsingAndNumbersStillRead"
-    expr: "'Infinity' * 1"
-    expect: {"value": {"$num": "Infinity"}, "type": "number"}
 
   - id: "1-5x-1"
     kind: "expr"

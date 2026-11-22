@@ -34,7 +34,6 @@ The CLI is `js/packages/rachana-cli/bin/rachana.js` (no npm dependencies). It ne
 | `rachana build [--src <dir>] [--out site] [--libs <path>,...]` | lints, then writes a static site: one page per Sutra, the data, the runtime and the painter |
 | `rachana studio [folder] ...` | [Rachana Studio](STUDIO.md) |
 | `rachana lib <command> ...` | [library commands](LIBRARIES.md#4-rachana-lib) (needs a JVM) |
-| `rachana upgrade [paths] ...` | [move files to a later level](UPGRADE.md) (needs a JVM) |
 | `rachana serve --config <file> [--port n] [--jar file] [--check]` | [the server](SERVER.md) (needs a JVM) |
 
 A built site needs no server of its own: the page answers the Data Protocol from `data/index.json` and the table files (schema,
@@ -67,7 +66,7 @@ JSON.parse(rachana.check(JSON.stringify({ sutra: yamlText })));                 
 `rachana.runtime.js` compiles, binds and diffs; `rachana.tools.js` adds the editing tools (Studio uses it). In a page:
 
 ```html
-<script src="/vendor/drishti-elements/3.2.0/drishti-elements.js"></script>
+<script src="/vendor/drishti-elements/3.3.1/drishti-elements.js"></script>
 <script type="module" src="/rachana/src/rachana_view.js"></script>
 <rachana-view src="/sutras/sales.sutra.yaml" data="/data/v1" runtime="/rachana/dist/rachana.runtime.js" live></rachana-view>
 ```
@@ -75,7 +74,7 @@ JSON.parse(rachana.check(JSON.stringify({ sutra: yamlText })));                 
 Attributes: `src`, `data` (the Data Protocol base), `runtime`, `formats`, `today`, `allow` (other data origins), `live`, `form`
 (`json`, `arrow` or `ndjson` rows), `libraries`. Properties: `sutra` (text instead of `src`), `record`, `controls`, `host` (the page's
 handling of `notify` and `host` effects), `linkResolver`, `fetch`, `files`. Events: `rachana-view:ready`, `rachana-view:change`,
-`rachana-view:error`, `rachana-view:write`. The painter is Drishti Elements, vendored under `js/vendor/drishti-elements/3.2.0/`.
+`rachana-view:error`, `rachana-view:write`. The painter is Drishti Elements, vendored under `js/vendor/drishti-elements/3.3.1/`.
 The full list is the header of [rachana_view.js](../../js/packages/rachana/src/rachana_view.js).
 
 ## Python
@@ -95,7 +94,7 @@ python -m drishti_rachana lint examples/static-sales        # 3 file(s), 0 faili
 | `drishti_rachana.adapters.flask`, `.fastapi` | `RachanaBlueprint` / `RachanaRouter`: mount a folder of Sutras, `@table(name, key=...)`, `@live(name)`; routes `/`, `/page/<name>`, `/sutras/...`, `/static/...`, `/data/...` |
 | `drishti_rachana.server` | `DataHost`: a framework-neutral Data Protocol host (JSON, Arrow IPC, NDJSON, filtered and conflated SSE change streams, `can` enforced, masked columns) |
 | `drishti_rachana.protocol` | the protocol's messages as dataclasses |
-| `python -m drishti_rachana lint \| upgrade \| conformance run` | lint (`--format text\|json\|sarif`, `--strict`, `--libs`), [upgrade](UPGRADE.md), the conformance runner |
+| `python -m drishti_rachana lint \| conformance run` | lint (`--format text\|json\|sarif`, `--strict`, `--libs`), the conformance runner |
 
 ```python
 from drishti_rachana.engine import Rachana

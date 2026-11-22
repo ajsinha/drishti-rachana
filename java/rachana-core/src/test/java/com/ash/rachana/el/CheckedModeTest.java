@@ -71,7 +71,7 @@ class CheckedModeTest {
         "trades.MTM * 2                          | AGGREGATE | RCH-9127 | wrap it: sum(trades.MTM)",
         "sum(trades.MTM)                         | ROW       | RCH-9127 | an aggregate belongs in a measure",
         "sum(trades.MTM, trades.STATUS == 'L')   | AGGREGATE | RCH-9127 | name it: where = ...",
-        "sum(trades.MTM, where = trades.MTM)     | AGGREGATE | RCH-9127 | is a boolean",
+        "calc(sum(trades.MTM), where = trades.MTM) | AGGREGATE | RCH-9127 | is a boolean",
         "sum(trades.MTX)                         | AGGREGATE | RCH-9152 | did you mean trades.MTM?",
         "measure('MTN')                          | AGGREGATE | RCH-9152 | no measure 'MTN'",
         "trades.MTM && trades.N                  | ROW       | RCH-9127 | takes conditions",
@@ -81,7 +81,7 @@ class CheckedModeTest {
         "'RATES' != trades.DESK                  | ROW       | RCH-9161 | masked",
         "trades.DESK in ['RATES']                | ROW       | RCH-9161 | masked",
         "calc(calc(calc(calc(sum(trades.MTM), ignore = ALL), ignore = ALL), ignore = ALL), ignore = ALL) | AGGREGATE | RCH-9127 | nest at most 3 deep",
-        "sum(trades.MTM, where = ALL)            | AGGREGATE | RCH-9127 | ALL is only the value",
+        "calc(sum(trades.MTM), where = ALL) | AGGREGATE | RCH-9127 | ALL is only the value",
         "trades.MTM * param.cap                  | ROW       | RCH-9152 | no parameter 'cap'",
         "trades.STATUS                           | RULE      | RCH-9127 | a row rule is a condition",
         "trades.STATUS == user.name              | ROW       | RCH-9127 | is for row rules",
@@ -115,7 +115,7 @@ class CheckedModeTest {
 
     @Test
     void typesWhatIsRight() {
-        assertThat(check("sum(trades.MTM, where = trades.STATUS != 'MATURED')", Scope.AGGREGATE).type()).isEqualTo(ElType.DECIMAL);
+        assertThat(check("calc(sum(trades.MTM), where=trades.STATUS != 'MATURED')", Scope.AGGREGATE).type()).isEqualTo(ElType.DECIMAL);
         assertThat(check("count(trades)", Scope.AGGREGATE).type()).isEqualTo(ElType.INTEGER);
         assertThat(check("measure('m_mtm') / count(trades)", Scope.AGGREGATE).measures()).containsExactly("MTM");
         assertThat(check("trades.TRADE_DATE - trades.TRADE_DATE", Scope.ROW).type()).isEqualTo(ElType.INTEGER);
@@ -161,7 +161,10 @@ class CheckedModeTest {
                 e -> assertThat(e.code()).isEqualTo(RachanaCode.MASKED_FIELD));
         assertThatThrownBy(() -> CheckedMode.require("concat('a', 'b')", Scope.ROW, MODEL)).isInstanceOfSatisfying(RachanaException.class,
                 e -> assertThat(e.code()).isEqualTo(RachanaCode.LATER_WAVE));
-        assertThat(CheckedMode.require("trades.N + 1", Scope.ROW, MODEL)).isInstanceOf(Expr.Binary.class);
+        assertThat(CheckedMode.require("trades.N + 1", Scope.ROW, MODEL)).isInstanceOf(Expr.Op.class);    // the tree of the one level (F25)
+        // the tree it returns is the one it checked: the whole text at the one level, a conditional never cut to its first operand
+        assertThat(CheckedMode.require("trades.N if trades.N > 0 else 0", Scope.ROW, MODEL)).isInstanceOf(Expr.Ternary.class);
+        assertThatThrownBy(() -> CheckedMode.parse("trades.N trades.N")).isInstanceOf(ElException.class).hasMessageContaining("unexpected 'trades'");
     }
 
     /** Without a model (Fields.NONE) only the language and the catalogue are checked: every example of every signature reads. */

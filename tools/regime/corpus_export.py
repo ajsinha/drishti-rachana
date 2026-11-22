@@ -2,18 +2,17 @@
 # Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
 """The customer-corpus export (compatibility regime CG3, SUTRA_EXPANSION 6.6): drishti-compat-corpus-<drishti version>.
 
-Reads a Drishti checkout READ-ONLY (git plumbing at a tag: ls-tree and cat-file; nothing is checked out, written or run inside it)
-and Drishti's reference jars, and writes compat/customers/drishti/<version>/:
+Reads a Drishti checkout READ-ONLY (git plumbing at a tag or a commit: ls-tree and cat-file; nothing is checked out, written or run inside
+it) and compiles the Sutras with Core (java/rachana-conformance/target/runtime-classpath.txt, after ./mvnw package), and writes compat/customers/drishti/<version>/:
 
   sutras/ blocks/        every shipped Sutra and block, byte for byte, at its path in Drishti (synthetic demo data only)
   groups.json            which files form one pack for the block library (a Sutra sees the blocks of its own group and the UI kit)
-  compiled/<file>.json   per Sutra: problem list, canonical model text, plan (null in i7a: the reference has no plan)
+  compiled/<file>.json   per Sutra: problem list, canonical model text, plan (null), compiled by Core at language level 1.2
   problems/ cases/       the Drishti-profile conformance cases of this repository (problem cases; every other kind)
   profile/               the declarative half of the profile (spec/1/rachana.lang.json entries owned by the profile), level.txt
-  binds/                 written by corpus_binds.py (the reference binder over synthetic records, gate finding F13)
   MANIFEST.sha384        a hash per file
 
-    python3 tools/regime/corpus_export.py --drishti ~/IdeaProjects/drishti --classpath-file CP.txt [--tag v2.9.11.i_7a]
+    python3 tools/regime/corpus_export.py --drishti ~/IdeaProjects/drishti [--tag v2.9.11.i_7b] [--version 2.9.11.i7b]
 """
 import argparse, hashlib, json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
@@ -74,7 +73,7 @@ def main():
     ap.add_argument("--drishti", required=True, help="a Drishti checkout, read only")
     ap.add_argument("--tag", default="v2.9.11.i_7a")
     ap.add_argument("--version", help="corpus folder name; default: the tag as the jars name it (v2.9.11.i_7a -> 2.9.11.i7a)")
-    ap.add_argument("--classpath-file", required=True, help="Drishti's reference jars and libraries, one class path (tools/reference-bridge/README.md)")
+    ap.add_argument("--classpath-file", default=str(ROOT / "java/rachana-conformance/target/runtime-classpath.txt"), help="Core's class path (the conformance module's runtime class path)")
     ap.add_argument("--java", default=os.environ.get("RACHANA_JAVA", "java"), help="a Java 21 launcher")
     ap.add_argument("--out", help="default compat/customers/drishti/<version>")
     a = ap.parse_args()
@@ -112,10 +111,12 @@ def main():
                 (base / n[len(KIT):]).write_bytes(blobs[n])
         gl = [dict(g, sutras=sorted(g["sutras"]), blocks=sorted(g["blocks"])) for _, g in sorted(groups.items()) if g["sutras"]]
         (scratch / "groups.json").write_text(json.dumps({"groups": gl}, indent=1))
+        (scratch / "groups.tsv").write_text("".join(f"{g['dir']}\t{g['pack']}\t{f}\n" for g in gl for f in g["sutras"]))
         (out).mkdir(parents=True, exist_ok=True)
         shutil.copy(scratch / "groups.json", out / "groups.json")
         cp = Path(a.classpath_file).read_text().strip()
-        r = subprocess.run([a.java, "-cp", cp, str(ROOT / "tools/regime/CorpusCompile.java"), str(scratch), str(out)], capture_output=True, text=True)
+        cp += os.pathsep + os.pathsep.join(str(j) for j in sorted((ROOT / "java/rachana-conformance/target").glob("rachana-conformance-*.jar")))   # Cases (the Drishti profile)
+        r = subprocess.run([a.java, "-cp", cp, str(ROOT / "tools/regime/CorpusCompileCore.java"), str(scratch), str(out)], capture_output=True, text=True)
         sys.stdout.write(r.stdout)
         if r.returncode:
             sys.exit(r.stderr)
@@ -134,7 +135,7 @@ def main():
         (out / "VERSION.json").write_text(json.dumps({"corpus": f"drishti-compat-corpus-{version}", "drishtiTag": a.tag,
             "drishtiCommit": git(drishti, "rev-parse", a.tag + "^{commit}").strip(), "language": lang["language"],
             "sutras": sum(len(g["sutras"]) for g in gl), "blocks": sum(len(g["blocks"]) for g in gl) + len(kit),
-            "plan": "none in the i7a reference (plan cases arrive with Core)", "binds": "later (v0.10.0)"}, indent=1) + "\n")
+            "plan": "none", "binds": "none: Core is the one implementation (the reference's recorded binds ended with level 1.0)"}, indent=1) + "\n")
         lines = [f"{sha384(p.read_bytes())}  {p.relative_to(out).as_posix()}" for p in sorted(out.rglob("*")) if p.is_file() and p.name != "MANIFEST.sha384"]
         (out / "MANIFEST.sha384").write_text("\n".join(lines) + "\n")
         print(f"wrote {out} ({len(lines)} files)")

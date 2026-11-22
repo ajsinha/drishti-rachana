@@ -309,7 +309,7 @@ the events protocol's `err` frame with the same `code` and the words in `detail`
 |---|---|---|---|
 | `rdp.auth.required` | 401 | no or expired credentials | `denied` |
 | `rdp.forbidden` | 403 | not permitted (the table, or a masked column used in `filter`, `sort` or `group`) | `denied` |
-| `rdp.table.unknown` | 404 | no such table | `error` |
+| `rdp.table.unknown` | 404 | no such table; `expired: true` when the host took the table away (section 16) | `error` |
 | `rdp.column.unknown` | 422 | a column the table lacks; `column`, `expected` (nearest first) | `error` |
 | `rdp.query.invalid` | 422 | the query document or a parameter is malformed | `error` |
 | `rdp.query.unsupported` | 422 (`406` for a format) | an operation, parameter or format the table cannot do; `operation` names it | local fallback or `error` |
@@ -323,7 +323,7 @@ the events protocol's `err` frame with the same `code` and the words in `detail`
 | `rdp.query.narrow` | 422 | a list of a table with `narrow` that fixes none of its columns; `anyOf` names them (section 16) | the search form |
 | `rdp.write.unsupported` | 405 | a write to a table without `can: write` (section 16) | read-only |
 | `rdp.write.forbidden` | 403 | a write refused: the site switch is off, no right, a column not editable; the reason in words | read-only |
-| `rdp.write.conflict` | 409 | a write on an old version; `current: { version, by, at }` | re-read the row |
+| `rdp.write.conflict` | 409 | a write on an old version, `current: { version, by, at }`; or a change id used again for other content, `reused: true` (section 16) | re-read the row; a reused id: a new id |
 | `rdp.write.invalid` | 422 | a write breaking a field rule; `fields: [{ column, rule, message }]` | show the rules |
 
 **The `fields` of `rdp.write.invalid`**: each `{ column, rule, message }`. For a value that breaks the declaration's rules `column`
@@ -442,7 +442,8 @@ What the live adapter fixes, so that a case's answers are the same on every host
 - **The audit events** (`POST /_test/audit`, oldest first): each `{ at, caller, table, event, reason, change?, key?, columns?, from?,
   to?, current?, decidedBy? }`. `event` is `write-submitted` (with `columns`, and `from` and `to`: the values before and asked for),
   then the answer's `write-applied` or `write-held` (a `queued` answer has no second event); `write-refused` (a `403` or `404`, with `reason` in words) and
-  `write-conflicted` (a `409`, with `current`); and as a queued or held change moves: `write-released` and `write-rejected` (with
+  `write-conflicted` (a `409`, with `current`); `write-reused` (a `409` for a change id used again with other content, with
+  `columns`); and as a queued or held change moves: `write-released` and `write-rejected` (with
   `decidedBy`, the person who decided; from the outbox path its `by`), `write-sent`, `write-failed`. `caller` is who made the request;
   on the events of a change moving it is the change's maker, and `table` the table written to (the tray for a decision refused).
   The audit log itself is the host's (LIVE_TABLES 5); these names and fields are the ones the cases read. An audit event never
@@ -501,7 +502,9 @@ set: { col: value }, from?: { col: value }, reason? }`; answered `{ change, stat
 version? }`. **The same `id` again is never taken twice**: it changes nothing and answers that change as it stands now, which is
 the first answer until the change has moved, and afterwards the state it reached: `sent` (with the row's new `version`) once the
 host's outbox has sent a `queued` change to the source, `rejected` or `failed` (with `message`). A repeat is answered only to the
-change's maker; the same `id` from anyone else is `403 rdp.write.forbidden`. A write is accepted only when the table's declaration edits the
+change's maker; the same `id` from anyone else is `403 rdp.write.forbidden`. A repeat is the same change only with the same
+content (`op`, `key`, `basedOn`, `set`, `from`, `reason`; a number by its value): the same `id` with other content changes nothing
+and is `409 rdp.write.conflict` with `reused: true`, audited `write-reused` (a client must make a new `id` for a new change). A write is accepted only when the table's declaration edits the
 column, the host's switch is on, the host has a write path and the reader may edit that row and column; a row outside the
 reader's scope is `404` (`rdp.table.unknown`) as if absent: the answer never says whether the row exists. The reader's own pending
 changes (`queued`, `held`, `failed`) are the table `<name>.changes` (key `change`; columns `state`, `key`, `set`, `by`, `at`,
@@ -521,6 +524,10 @@ not listed for them `404` (`rdp.table.unknown`, whether or not it exists); a cha
 <its state>, by: <its maker>, at }`. A decision's `id` repeats as a change's does: the same answer to its maker, `403` to anyone
 else. For an approver the tray's schema carries `write: { columns: { state: { type: enum, options: [released, rejected] } }, reason:
 optional }`. Otherwise the tray is read only (`405`).
+
+**A table taken away.** A host may take a live table out (a search's result it no longer keeps): its open subscriptions end with
+one `gap` frame with `recoverable: false` and `expired: true`, and from then on a read, write or subscription of the name is `404
+rdp.table.unknown` with `expired: true` (run what made it again), never a row held before, until the name is declared again.
 
 **Readers.** Every page, total, patch and change is the reader's: rows outside their scope are never counted, shown or sent;
 masked values are `{ "$masked": true }` and never pick, order or filter a row. The rights are the host's alone.

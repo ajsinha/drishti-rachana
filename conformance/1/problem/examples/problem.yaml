@@ -31,30 +31,13 @@ cases:
       problems:
         - { code: RCH-2011, severity: error, range: { start: { line: 5, column: 9 } } }
 
-  - id: problems-in-position-order
-    kind: problem
-    source: SPEC 2.3, 6.1
-    note: "Level 1.0 is the reference (decision N5): a Sutra with an unknown panel kind reports that problem alone; the duplicate id is found only once the kind is valid. Level 1.1 reports both, first by position (problems-in-position-order-l11)."
-    sutra: |
-      rachana: 1
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { id: a, kind: pie }
-        - { id: a, kind: markdown, text: "x" }
-    expect:
-      ok: false
-      problems:
-        - { code: RCH-2021, range: { start: { line: 6 } } }
-
   - id: problems-in-position-order-l11
     kind: problem
     since: "1.1"
     source: SPEC 2.3, 6.1
     note: "SPEC 6.1 (all problems): a panel refused for its kind still holds its id, so the duplicate is found too. The reference stops at the first (level 1.0). Each problem carries its path and range (SPEC 6.1, gate 2 O4)."
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { kind: demo }
@@ -67,23 +50,6 @@ cases:
         - { code: RCH-2021, severity: error, path: /panels/0/kind, range: { start: { line: 6 } } }
         - { code: RCH-2024, severity: error, path: /panels/1/id, range: { start: { line: 7 } } }
 
-  - id: expression-problem-inside-a-panel
-    kind: problem
-    source: SPEC 6.1, 6.3
-    sutra: |
-      rachana: 1
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { id: total, kind: metric, value: "2 ** 3" }
-    expect:
-      ok: false
-      problems:
-        - code: RCH-2101
-          range: { start: { line: 6 } }
-          messageStart: "expression '2 ** 3': '**' is not Rachana"
-
   - id: profile-key-without-the-profile
     kind: problem
     since: "1.1"
@@ -91,7 +57,7 @@ cases:
     note: A Core runtime with no profile loaded (given.profiles empty) answers a profile key with RCH-2060 naming the profile (SPEC 2.2). At level 1.0 the reference always loads the Drishti profile and reads match as its own, so the answer is a level 1.1 one.
     source: SPEC 2.2 (match belongs to the drishti profile, D12)
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { mnemonic: TRD }

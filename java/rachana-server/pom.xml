@@ -5,7 +5,7 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>0.12.0</version></parent>
+  <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>1.0.0</version></parent>
   <artifactId>rachana-server</artifactId>
   <name>rachana-server</name>
   <!-- The standalone server (COMPILER_AND_RUNTIMES 10, MODES 4): a project folder of Sutras, Data Protocol tables from files, JDBC and REST
@@ -21,7 +21,7 @@
   </dependencies>
   <properties>
     <!-- The vendored Drishti Elements pack the pages load (js/vendor/drishti-elements/<this>; the CLI's site.js names the same one). -->
-    <rachana.elements.pack>3.2.0</rachana.elements.pack>
+    <rachana.elements.pack>3.3.1</rachana.elements.pack>
     <rachana.arrow.opens>--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED</rachana.arrow.opens>
   </properties>
   <build>

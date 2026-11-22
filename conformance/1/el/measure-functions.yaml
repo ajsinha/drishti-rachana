@@ -1,0 +1,112 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+# A host's measure functions and the whole text (SPEC 4.1 rule 6, 4.10 rule 9), written 2026-11-22 for the G4 gate F25: the measure and every
+# function's expression are read by the one parse at the one level, whole; the inputs are the gate's probes.
+suite: el/measure-functions
+since: "1.2"
+profile: core
+verified: true
+description: "Measure functions expanded into an expression read at the one level, and text after a complete expression refused at its place, never dropped."
+given: {"record": {"n": 5, "m": 10, "a": false, "t": true}}
+cases:
+
+  - id: "a-call-then-a-conditional-is-read-whole"
+    kind: "expr"
+    source: "SPEC 4.10 rule 9 (net(n) if a else 0 is (n - 1) if a else 0), 4.8; a is false, so 0"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(n) if a else 0"
+    expect: {"value": 0, "text": "0"}
+
+  - id: "a-call-then-a-conditional-takes-the-call-when-true"
+    kind: "expr"
+    source: "SPEC 4.10 rule 9, 4.8; t is true, so n - 1 = 4"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(n) if t else 0"
+    expect: {"value": 4, "text": "4"}
+
+  - id: "a-call-in-the-else-branch-is-expanded"
+    kind: "expr"
+    source: "SPEC 4.10 rule 9 (the gate's NOTIONAL if A else net(B), once read as NOTIONAL); a is false, so m - 1 = 9"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "n if a else net(m)"
+    expect: {"value": 9, "text": "9"}
+
+  - id: "an-argument-is-any-expression-of-the-level"
+    kind: "expr"
+    source: "SPEC 4.10 rule 9, 4.17 (??): (missing ?? 0) - 1 = -1, the argument kept whole in place of the parameter"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(missing ?? 0)"
+    expect: {"value": -1, "text": "-1"}
+
+  - id: "a-call-is-an-operand-of-a-power"
+    kind: "expr"
+    source: "SPEC 4.10 rule 9, 4.17 (**): (n - 1) ** 2 = 16, the body kept whole as the operand"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(n) ** 2"
+    expect: {"value": 16, "text": "16"}
+
+  - id: "a-digit-separator-in-an-argument"
+    kind: "expr"
+    source: "SPEC 4.10 rule 9, 4.17 (1_000 is 1000): 999"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(1_000)"
+    expect: {"value": 999, "text": "999"}
+
+  - id: "a-function-calls-another"
+    kind: "expr"
+    source: "SPEC 4.10 rule 9 (a function may call another): twice(net(n)) = (5 - 1) * 2 = 8"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}, "twice": {"params": ["y"], "expr": "y * 2"}}
+    expr: "twice(net(n))"
+    expect: {"value": 8, "text": "8"}
+
+  - id: "text-after-a-call-is-refused-at-its-place"
+    kind: "expr-error"
+    source: "SPEC 4.1 rule 6, 4.10 rule 9 (the gate's net(NOTIONAL) total rubbish )(, once read as NOTIONAL - 1): the token after the complete expression, at 7"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(n) total rubbish )("
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "expression 'net(n) total rubbish )(': unexpected 'total' at 7", "expr": {"start": 7, "end": 12}}]}
+
+  - id: "text-after-a-functions-expression-is-refused"
+    kind: "expr-error"
+    source: "SPEC 4.1 rule 6, 4.10 rule 9 (each function's expression is read whole); FORMAT 5.2: at the call, 4 to 10"
+    functions: {"net": {"params": ["x"], "expr": "x - 1 junk"}}
+    expr: "1 + net(n)"
+    expect: {"problems": [{"code": "RCH-2101", "messageStart": "measure function 'net': unexpected 'junk'", "expr": {"start": 4, "end": 10}}]}
+
+  - id: "a-call-with-the-wrong-count-is-refused"
+    kind: "expr-error"
+    source: "SPEC 4.10 rule 9 (exactly as many arguments as declared); FORMAT 5.2: at the call"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(n, m)"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 0, "end": 9}}]}
+
+  - id: "a-call-by-name-is-refused"
+    kind: "expr-error"
+    source: "SPEC 4.10 rule 9 (arguments by place only); FORMAT 5.2: at the call"
+    functions: {"net": {"params": ["x"], "expr": "x - 1"}}
+    expr: "net(x = n)"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 0, "end": 10}}]}
+
+  - id: "a-cycle-is-refused"
+    kind: "expr-error"
+    source: "SPEC 4.10 rule 9 (never itself: a cycle is refused); FORMAT 5.2: at the call, 2 to 6"
+    functions: {"f": {"params": ["x"], "expr": "g(x)"}, "g": {"params": ["x"], "expr": "f(x)"}}
+    expr: "- f(n)"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 2, "end": 6}}]}
+
+  - id: "a-token-after-an-expression-is-refused"
+    kind: "expr-error"
+    source: "SPEC 4.1 rule 6 ($.a 1): unexpected '1' at 4"
+    expr: "$.a 1"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 4, "end": 5}}]}
+
+  - id: "a-token-after-a-conditional-is-refused"
+    kind: "expr-error"
+    source: "SPEC 4.1 rule 6, 4.8: the conditional ends at 13; ')' at 14 is refused"
+    expr: "n if a else 0 )"
+    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 14, "end": 15}}]}
+
+  - id: "a-template-part-is-read-whole"
+    kind: "expr-error"
+    source: "SPEC 4.1 rule 6, 4.11 (a template's part is an expression): '1' after $.n inside ${...} is refused"
+    template: "total ${$.n 1}"
+    expect: {"problems": [{"code": "RCH-2101"}]}

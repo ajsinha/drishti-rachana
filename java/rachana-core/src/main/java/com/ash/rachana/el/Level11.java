@@ -44,9 +44,16 @@ final class Level11 {
 
     /** A refused pattern met at evaluation is the function's value error {@code RCH-2102} at level 1.1 (decision N5), not {@code RCH-4010}. */
     private static Fn regexAsValueError(String name, int min, int max) {
-        return new Fn(min, max, (a, c) -> {
+        return new Fn(min, max, regexAsValueError(name, FunctionTable.core().get(name)));
+    }
+
+    /** The regular-expression functions, whose refusals this level words as value errors over the instance's own table (its own caps). */
+    private static final java.util.Set<String> REGEX = Ordered.set("regex_extract", "regex_replace", "matches", "matches_case");
+
+    private static ElFunction regexAsValueError(String name, ElFunction base) {
+        return ((a, c) -> {
             try {
-                return FunctionTable.core().get(name).apply(a, c);
+                return base.apply(a, c);
             } catch (com.ash.rachana.RachanaException e) {
                 if (e.code() != com.ash.rachana.RachanaCode.REGEX_REFUSED) {
                     throw e;
@@ -86,7 +93,10 @@ final class Level11 {
         return core == null ? new int[] {f.min(), f.max()} : new int[] {Math.min(core[0], f.min()), Math.max(core[1], f.max())};
     }
 
-    static ElFunction function(String name) {
+    static ElFunction function(String name, FunctionTable table) {
+        if (REGEX.contains(name) && table != null && table.get(name) != null) {
+            return regexAsValueError(name, table.get(name));          // the instance's own function, so its own regular-expression caps hold
+        }
         return FUNCTIONS.get(name).fn();
     }
 

@@ -39,25 +39,20 @@ public final class Grammar {
     /** The panel kinds of the grammar that a profile brings (the rest are Core's). */
     public static final Set<PanelKind> PROFILE_KINDS = Collections.unmodifiableSet(EnumSet.of(PanelKind.LINKS, PanelKind.PROVENANCE));
 
-    /** Language level 1.0: what every grammar reads unless its host raises the level (SUTRA_EXPANSION 6.2). */
-    public static final String LEVEL_1_0 = "1.0";
+    /** The one language level of Rachana 1.x: the level of every Sutra (levels 1.0 and 1.1 are retired; {@code rachana upgrade} lives in 0.12). */
+    public static final String LEVEL = "1.2";
 
-    /**
-     * THE switch of level retirement (owner 2026-11-21): the level of a Sutra whose {@code rachana:} key names the major only
-     * ({@code rachana: 1}). Today 1.0, so every Sutra written before levels keeps its meaning; when levels 1.0 and 1.1 retire (G4), this
-     * becomes the newest level and an older declared level is refused with "run rachana upgrade" (one commit: this line, {@link #LEVELS}
-     * and the refusal in SutraBuilder).
-     */
-    public static final String MAJOR_ONLY = "1.0";
+    /** The level of a Sutra whose {@code rachana:} key names the major only ({@code rachana: 1}): the one level, 1.2. */
+    public static final String MAJOR_ONLY = LEVEL;
 
     /** The language levels this runtime implements, oldest first. */
-    public static final List<String> LEVELS = List.of("1.0", "1.1", "1.2");
+    public static final List<String> LEVELS = List.of(LEVEL);
 
     /**
      * THE default language level of the tools (G2 gate F12): what the command lines, {@code <rachana-view>}, the server and the Studio read a
      * Sutra at when nobody names a level, the newest built. It is written here only: the bundles hand it out ({@code levels()}), the server
      * reads it from here, and a guard refuses another level literal in those entry points. {@code Rachana.core()} itself still reads
-     * {@link #LEVEL_1_0} until its host raises the level, so a host that names nothing is never moved by a new minor.
+     * {@link #LEVEL} until its host raises the level, so a host that names nothing is never moved by a new minor.
      */
     public static final String DEFAULT_LEVEL = LEVELS.get(LEVELS.size() - 1);
 
@@ -65,7 +60,7 @@ public final class Grammar {
     /** The source forms a profile may bring: {@code kind} ({@code source: { kind, id | where | search, pack, params }}). */
     public static final Set<String> SOURCE_FORMS = Set.of("kind");
 
-    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.none(), LEVEL_1_0,
+    private static final Grammar CORE = new Grammar(Map.of(), EnumSet.noneOf(PanelKind.class), Set.of(), false, FragmentResolver.none(), LEVEL,
             com.ash.rachana.lib.LibrarySet.none());
 
     private final Map<String, SutraKey> keys;
@@ -130,13 +125,13 @@ public final class Grammar {
         if (keys.isEmpty() && kinds.isEmpty() && forms.isEmpty() && !save && fragments == null) {
             return CORE;
         }
-        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.none() : fragments, LEVEL_1_0,
+        return new Grammar(keys, kinds, forms, save, fragments == null ? FragmentResolver.none() : fragments, LEVEL,
                 com.ash.rachana.lib.LibrarySet.none());
     }
 
     /**
      * This grammar at another language level (SUTRA_EXPANSION 6.2): a name brought by a later level is not offered (not in the
-     * lists of a problem, not in the schema) and using it is {@code RCH-2008}. Every grammar starts at {@link #LEVEL_1_0}.
+     * lists of a problem, not in the schema) and using it is {@code RCH-2008}. Every grammar starts at {@link #LEVEL}.
      *
      * @throws IllegalArgumentException for a level this runtime does not implement ({@link #LEVELS})
      */

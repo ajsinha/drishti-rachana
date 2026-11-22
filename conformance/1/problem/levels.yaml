@@ -8,28 +8,13 @@ description: >-
   words when a Sutra uses one (RCH-2008). The reference (Drishti i7a) has no level 1.1 and answers RCH-2021 (unknown kind) here: a
   known difference (tools/split/known-differences.txt); the Sutra uses a newer name, so rule 2 of SUTRA_EXPANSION 6.1 allows it.
 cases:
-  - id: a-level-1-1-kind-at-level-1-0
-    kind: problem
-    source: SPEC 7.2
-    sutra: |
-      rachana: 1
-      sutra: demo
-      version: 1
-      match: { kind: demo }
-      panels:
-        - { id: g, kind: grid, rows: $.trades }
-    expect:
-      ok: false
-      problems:
-        - { code: RCH-2008, severity: error, message: "'grid' panels need Rachana 1.1; this host runs 1.0 (raise the host's language level)", range: { start: { line: 6, column: 20 } } }
-
   - id: bars-on-a-grid-need-level-1-2
     kind: problem
     source: SPEC 7.2
     since: "1.1"
     until: "1.1"
     sutra: |
-      rachana: 1.1
+      rachana: 1.2
       sutra: demo
       version: 1
       match: { kind: demo }

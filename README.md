@@ -3,7 +3,7 @@
 product: Drishti Rachana
 summary: A declarative UI platform - describe a screen in a short YAML Sutra, supply data over the Rachana Data Protocol, get a fast, dense, professional screen painted by Drishti Elements.
 language: "rachana: 1 (levels 1.0 to 1.2)"
-parts: [specification, conformance suite, Java compiler, JavaScript build, Python package, Data Protocol, live tables, server, CLI, Studio, libraries, upgrade tool]
+parts: [specification, conformance suite, Java compiler, JavaScript build, Python package, Data Protocol, live tables, server, CLI, Studio, libraries]
 runtimes: [JVM (Java 21), Node 20+, browsers, Python 3.10+ on V8]
 install-order: [tools, Rachana, Lake, Drishti]
 licence: proprietary (LICENSE); specification and conformance suite under LICENSE-SPEC.md (draft)
@@ -49,11 +49,10 @@ panels:
 | **Data Protocol** | tables as JSON, Arrow or NDJSON rows; paging, filters, grouping; live keyed patches over SSE or WebSocket; an in-process bridge | [guide](docs/guides/DATA_PROTOCOL.md) |
 | **Live tables** | tables kept current by key and version, per-reader views, guarded edits, four-eyes approvals, exactly-once write-back | [guide](docs/guides/LIVE_TABLES.md) |
 | **Server** | a project of Sutras over files, JDBC and REST, sign-in, access rules, edits | [guide](docs/guides/SERVER.md) |
-| **CLI** | `rachana new`, `lint`, `preview`, `build`, `studio`, `lib`, `upgrade`, `serve` | [guide](docs/guides/CLI_AND_SDKS.md) |
+| **CLI** | `rachana new`, `lint`, `preview`, `build`, `studio`, `lib`, `serve` (`upgrade` is in 0.12.0 only) | [guide](docs/guides/CLI_AND_SDKS.md) |
 | **Studio** | a visual editor: fragment palette, live preview, checked source, parameter forms, diff and save | [guide](docs/guides/STUDIO.md) |
 | **Libraries** | typed fragments to assemble screens from: `core` (33 fragments) and `finance` (50); your own with `rachana lib` | [guide](docs/guides/LIBRARIES.md), [libraries](libraries/README.md) |
 | **Python SDK** | lint on V8, a Data Protocol host, Flask and FastAPI adapters | [guide](docs/guides/CLI_AND_SDKS.md#python) |
-| **Upgrade tool** | rewrites level-1.0 Sutras and fragments for a later level with the same meaning | [guide](docs/guides/UPGRADE.md) |
 
 ## Ways to use it
 
@@ -83,7 +82,6 @@ panels:
 | [Server](docs/guides/SERVER.md) | running it, the configuration file, security, write-back |
 | [Studio](docs/guides/STUDIO.md) | the visual editor |
 | [Command line and SDKs](docs/guides/CLI_AND_SDKS.md) | the CLI, the Java launcher, JavaScript, Python, Java |
-| [Upgrading Sutras](docs/guides/UPGRADE.md) | `rachana upgrade` and its rules |
 
 The specification ([spec/1/SPEC.md](spec/1/SPEC.md)) is the reference for every key and rule. The designs behind the product, and their
 decisions, are in [docs/design](docs/design/DECISIONS.md). What changed when: [CHANGELOG.md](CHANGELOG.md).

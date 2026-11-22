@@ -12,34 +12,6 @@ verified: true
 description: "Determinism probes: number text and reading, text order and case, dates, booleans, regular expressions, limits, real-number functions."
 cases:
 
-  - id: "d-n01-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "0.1 + 0.2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0.30000000000000004, "type": "number", "text": "0.30000000000000004"}
-
-  - id: "d-n02-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "1 / 3"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0.3333333333333333, "type": "number", "text": "0.3333333333333333"}
-
-  - id: "d-n03-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "2 / 3"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0.6666666666666666, "type": "number", "text": "0.6666666666666666"}
-
-  - id: "d-n03-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "100 / 7"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 14.285714285714286, "type": "number", "text": "14.285714285714286"}
-
   - id: "d-n03-c"
     kind: "expr"
     tags: ["determinism"]
@@ -61,13 +33,6 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": 1000000000000000.5, "type": "number", "text": "1.0000000000000005E15"}
 
-  - id: "d-n04-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "999999999999999 + 0.5"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 999999999999999.5, "type": "number", "text": "9.999999999999995E14"}
-
   - id: "d-n05-a"
     kind: "expr"
     tags: ["determinism"]
@@ -88,34 +53,6 @@ cases:
     expr: "1e22"
     given: {"today": "2026-11-17"}
     expect: {"value": 1e+22, "type": "number", "text": "1.0E22"}
-
-  - id: "d-n05-d"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "123456789012345678901"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1.2345678901234568e+20, "type": "number", "text": "1.2345678901234568E20"}
-
-  - id: "d-n06-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "-0 * 1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0, "type": "number", "text": "0"}
-
-  - id: "d-n06-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "0 * -1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0, "type": "number", "text": "0"}
-
-  - id: "d-n06-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "-0.0 + 0"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0, "type": "number", "text": "0"}
 
   - id: "d-n07-a"
     kind: "expr"
@@ -172,27 +109,6 @@ cases:
     expr: "1.7976931348623157e308"
     given: {"today": "2026-11-17"}
     expect: {"value": 1.7976931348623157e+308, "type": "number", "text": "1.7976931348623157E308"}
-
-  - id: "d-n09-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "0.000001"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1e-06, "type": "number", "text": "1.0E-6"}
-
-  - id: "d-n09-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "0.0000001"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1e-07, "type": "number", "text": "1.0E-7"}
-
-  - id: "d-n09-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "1234567.125"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1234567.125, "type": "number", "text": "1234567.125"}
 
   - id: "d-n10-a"
     kind: "expr"
@@ -260,27 +176,6 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": 1, "type": "number", "text": "1"}
 
-  - id: "d-n12-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "-3 % 2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": -1, "type": "number", "text": "-1"}
-
-  - id: "d-n12-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "5.5 % 2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1.5, "type": "number", "text": "1.5"}
-
-  - id: "d-n12-d"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "-5.5 % 2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": -1.5, "type": "number", "text": "-1.5"}
-
   - id: "d-n13-a"
     kind: "expr"
     tags: ["determinism"]
@@ -322,14 +217,6 @@ cases:
     expr: "round_up(0.1 + 0.2, 1)"
     given: {"today": "2026-11-17"}
     expect: {"value": 0.3, "type": "decimal", "text": "0.3"}
-
-  - id: "d-n20-b"
-    verified: true
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "sum([0.1, 0.2, 0.3])"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0.6, "type": "number", "text": "0.6"}
 
   - id: "d-n20-c"
     verified: true
@@ -454,61 +341,12 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": 1.2909944487358056, "type": "number", "text": "1.2909944487358056"}
 
-  - id: "d-r01-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'5' * 2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 10, "type": "number", "text": "10"}
-
-  - id: "d-r01-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "' 5 ' * 2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 10, "type": "number", "text": "10"}
-
-  - id: "d-r01-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'5\t' * 2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 10, "type": "number", "text": "10"}
-
-  - id: "d-r02-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'1d' * 1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1, "type": "number", "text": "1"}
-
-  - id: "d-r02-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'1f' * 1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1, "type": "number", "text": "1"}
-
-  - id: "d-r02-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'0x1p3' * 1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 8, "type": "number", "text": "8"}
-
   - id: "d-r02-d"
     kind: "expr"
     tags: ["determinism"]
     expr: "'1_000' * 1"
     given: {"today": "2026-11-17"}
     expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
-
-  - id: "d-r03-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'Infinity' * 1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": {"$num": "Infinity"}, "type": "number", "text": "Infinity"}
 
   - id: "d-r03-b"
     kind: "expr"
@@ -530,13 +368,6 @@ cases:
     expr: "'inf' * 1"
     given: {"today": "2026-11-17"}
     expect: {"value": {"$num": "NaN"}, "type": "number", "text": "NaN"}
-
-  - id: "d-r04-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'9007199254740993' * 1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 9007199254740992.0, "type": "number", "text": "9.007199254740992E15"}
 
   - id: "d-r04-b"
     kind: "expr"
@@ -594,20 +425,6 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": true, "type": "boolean", "text": "true"}
 
-  - id: "d-r06-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "٣ + 1"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-2101"}}
-
-  - id: "d-r06-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "１ + 1"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-2101"}}
-
   - id: "d-u01-a"
     kind: "expr"
     tags: ["determinism"]
@@ -629,20 +446,6 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": true, "type": "boolean", "text": "true"}
 
-  - id: "d-u02-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'\uffff' < '😀'"
-    given: {"today": "2026-11-17"}
-    expect: {"value": false, "type": "boolean", "text": "false"}
-
-  - id: "d-u02-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "'😀' < '｡'"
-    given: {"today": "2026-11-17"}
-    expect: {"value": true, "type": "boolean", "text": "true"}
-
   - id: "d-u03-a"
     kind: "expr"
     tags: ["determinism"]
@@ -650,33 +453,12 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": 1, "type": "number", "text": "1"}
 
-  - id: "d-u03-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "left('😀a', 1)"
-    given: {"today": "2026-11-17"}
-    expect: {"value": "\ud83d", "type": "text", "text": "\ud83d"}
-
-  - id: "d-u03-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "mid('a😀b', 2, 1)"
-    given: {"today": "2026-11-17"}
-    expect: {"value": "\ud83d", "type": "text", "text": "\ud83d"}
-
   - id: "d-u03-d"
     kind: "expr"
     tags: ["determinism"]
     expr: "reverse('a😀')"
     given: {"today": "2026-11-17"}
     expect: {"value": "😀a", "type": "text", "text": "😀a"}
-
-  - id: "d-u04-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "sort(['b', 'A', 'a', 'B', '😀', '\uffff'])"
-    given: {"today": "2026-11-17"}
-    expect: {"value": ["A", "B", "a", "b", "😀", "\uffff"], "type": "list", "text": "[6]"}
 
   - id: "d-u04-b"
     kind: "expr"
@@ -1140,34 +922,6 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": "xfalse", "type": "text", "text": "xfalse"}
 
-  - id: "d-b02-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "true * 1"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1, "type": "number", "text": "1"}
-
-  - id: "d-b02-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "true - false"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1, "type": "number", "text": "1"}
-
-  - id: "d-b02-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "-true"
-    given: {"today": "2026-11-17"}
-    expect: {"value": -1, "type": "number", "text": "-1"}
-
-  - id: "d-b02-d"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "true / 2"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 0.5, "type": "number", "text": "0.5"}
-
   - id: "d-b03-a"
     kind: "expr"
     tags: ["determinism"]
@@ -1287,54 +1041,12 @@ cases:
     given: {"today": "2026-11-17"}
     expect: {"value": "b", "type": "text", "text": "b"}
 
-  - id: "d-x02-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "matches('aa', '(a)\\\\1')"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-4010"}}
-
-  - id: "d-x02-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "matches('a', '(?=a)')"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-4010"}}
-
-  - id: "d-x02-c"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "matches('aa', 'a++')"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-4010"}}
-
-  - id: "d-x02-d"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "matches('a', '(?>a)')"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-4010"}}
-
-  - id: "d-x02-e"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "matches('x', '\\\\bx')"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-4010"}}
-
   - id: "d-x03-a"
     kind: "expr"
     tags: ["determinism"]
     expr: "regex_replace('a.b', '.', '-')"
     given: {"today": "2026-11-17"}
     expect: {"value": "---", "type": "text", "text": "---"}
-
-  - id: "d-x03-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "regex_replace('x', 'x', '$1')"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-4010"}}
 
   - id: "d-x03-c"
     kind: "expr"
@@ -1370,13 +1082,6 @@ cases:
     expr: "matches('a', 'a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?')"
     given: {"today": "2026-11-17"}
     expect: {"value": true, "type": "boolean", "text": "true"}
-
-  - id: "d-x05-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "matches('a', 'a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a')"
-    given: {"today": "2026-11-17"}
-    expect: {"error": {"code": "RCH-4010"}}
 
   - id: "d-x05-c"
     kind: "expr"
@@ -1429,13 +1134,6 @@ cases:
     expr: "sumx(1)"
     expect: {"problems": [{"code": "RCH-2101"}]}
 
-  - id: "d-o05-a"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "unique([1, 1.0, '1', 2, 0.1 + 0.2, 0.3])"
-    given: {"today": "2026-11-17"}
-    expect: {"value": [1, "1", 2, 0.30000000000000004], "type": "list", "text": "[4]"}
-
   - id: "d-o05-b"
     kind: "expr"
     tags: ["determinism"]
@@ -1448,13 +1146,6 @@ cases:
     tags: ["determinism"]
     expr: "(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"
     expect: {"problems": [{"code": "RCH-2101"}]}
-
-  - id: "d-l1-b"
-    kind: "expr"
-    tags: ["determinism"]
-    expr: "(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"
-    given: {"today": "2026-11-17"}
-    expect: {"value": 1, "type": "number", "text": "1"}
 
   - id: "d-l2-a"
     kind: "expr-error"

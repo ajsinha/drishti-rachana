@@ -1058,13 +1058,6 @@ cases:
     expr: "base(5, 40)"
     expect: {"error": {"code": "RCH-2102"}}
 
-  - id: "bad-quantity-2"
-    kind: "expr-error"
-    source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"
-    note: "Message contains: \"'**' is not Rachana: write power(x, y)\"."
-    expr: "$.QUANTITY ** 2"
-    expect: {"problems": [{"code": "RCH-2101", "expr": {"start": 11}}]}
-
   - id: "bad-quantity-7"
     kind: "expr-error"
     source: "FoldedSyntaxTest#powerAndFloorReplaceTheOperators"

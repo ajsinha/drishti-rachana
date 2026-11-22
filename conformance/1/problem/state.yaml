@@ -197,26 +197,6 @@ cases:
         message: "'table' panels do not fire bar-click (bar-click: hbar)"
         range: { start: { line: 18, column: 18 } }
 
-  - id: state-below-level-1-2
-    kind: problem
-    since: "1.1"
-    source: SUTRA_EXPANSION 6.2 (a later level's key, used below it)
-    sutra: |
-      rachana: 1.1
-      sutra: state-demo
-      version: 1
-      match: { kind: demo }
-      title: { id: "'Demo'" }
-      state:
-        order: { type: text }
-      panels:
-        - { id: a, kind: metric, label: A, value: "1" }
-    expect:
-      ok: false
-      problems:
-      - code: RCH-2008
-        messageStart: "'state' needs Rachana 1.2"
-
   - id: point-click-only-on-its-marks
     kind: problem
     source: SUTRA_EXPANSION I1 (point-click, the kinds that fire it)

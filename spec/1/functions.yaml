@@ -3491,6 +3491,9 @@ drishti_profile:
   family: measure reference
   runs: E
   signature: "cell(view, field?, member?, ...)"
+  params:
+  - {name: "view", type: "text"}
+  - {name: "pairs", type: "any", variadic: true, optional: true}
   returns: "number"
   description: "A cell of a saved pivot view the person may open, as the view computes it: cell('ann/desk-pnl', 'DESK', 'DESK-COMM', 'month', '2026-09'); a field left out reads its total; 'value', '<label>' picks one of several values. Arity 1 to 33. No row in signatures.yaml yet (RCH-9129/DRS-9129 in checked mode)."
   classify: profile

@@ -69,13 +69,6 @@ cases:
     expr: "lognorm_inv(0.039084, 3.5, 1.2)"
     expect: {"value": 4.0000252, "type": "number", "tolerance": {"abs": 1.0e-06}}
 
-  - id: "standardize-42-40-1-5"
-    kind: "expr"
-    source: "DistributionsTest#theNormalFamilyMatchesExcelsDocumentedExamples"
-    note: "Level 1.0 is the reference: the result is a decimal (decision N5). Level 1.1 makes it a number: standardize-42-40-1-5-l11."
-    expr: "standardize(42, 40, 1.5)"
-    expect: {"value": 1.333333333, "type": "decimal", "tolerance": {"abs": 1.0e-09}}
-
   - id: "standardize-42-40-1-5-l11"
     kind: "expr"
     since: "1.1"

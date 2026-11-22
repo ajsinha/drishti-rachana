@@ -367,13 +367,6 @@ cases:
     expr: "regex_extract('ab', '(?<=a)b')"
     expect: {"problems": [{"code": "RCH-2101"}]}
 
-  - id: "regex-extract-ab-trade-id"
-    kind: "expr"
-    source: "TextFunctionsTest#regexExtractTakesTheMatchOrAGroup"
-    note: "Level 1.0 is the reference: a refused pattern raises RCH-4010 (decision N5). Level 1.1 raises RCH-2102: regex-extract-ab-trade-id-l11."
-    expr: "regex_extract('ab', $.TRADE_ID + '(')"
-    expect: {"error": {"code": "RCH-4010"}}
-
   - id: "regex-extract-ab-trade-id-l11"
     kind: "expr"
     since: "1.1"

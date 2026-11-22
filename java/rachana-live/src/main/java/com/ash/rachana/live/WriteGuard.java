@@ -32,7 +32,8 @@ import com.ash.rachana.model.Ordered;
  * the switch, the reader (a read refusal as for reads), the columns ({@code 403}), the row (outside the reader's scope or absent:
  * {@code 404}), the host's {@code mayEdit} ({@code 403}), the declaration's form rules run by Core's form checker ({@code 422} naming each
  * column and rule), the version guard ({@code 409} naming the current version, who and when). Every refusal is audited; a repeated change
- * id answers its first answer. The tray of a table ({@code <name>.changes}) is a live table over the sink's pending changes, filtered
+ * id answers its first answer when its content is the same ({@link Change#digest()}), and {@code 409} ({@code reused: true}, audited
+ * {@code write-reused}) when it is not. The tray of a table ({@code <name>.changes}) is a live table over the sink's pending changes, filtered
  * to the caller's own.
  */
 final class WriteGuard {
@@ -49,7 +50,7 @@ final class WriteGuard {
     private final Set<String> off = ConcurrentHashMap.newKeySet();
     private final Map<String, Form> forms = new ConcurrentHashMap<>();
     private final Map<String, TrayStream> trays = new ConcurrentHashMap<>();
-    /** Answers given, by change id (for a sink that keeps none): {@code [by, answer]}. */
+    /** Answers given, by change id (for a sink that keeps none): {@code [by, answer, digest]} (a decision's digest is null). */
     private final Map<String, Object[]> answers = java.util.Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, false) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, Object[]> e) {
@@ -65,6 +66,15 @@ final class WriteGuard {
         sink = s;
         if (s != null) {
             s.watch(this::changed);
+        }
+    }
+
+    /** A declaration replaced ({@code all} false: its checked form only) or taken out ({@code all}: also its switch and its tray's stream). */
+    void forget(String table, boolean all) {
+        forms.remove(table);
+        if (all) {
+            off.remove(table);
+            trays.remove(table + TRAY);
         }
     }
 
@@ -167,9 +177,18 @@ final class WriteGuard {
         if (madeBy == null && seen != null) {
             madeBy = (String) seen[0];
         }
-        if (madeBy != null) {                                           // a repeat: the first answer again (only to its maker)
+        Change change = new Change(id, name, op, key, m.get("basedOn"), set, (Map<String, Object>) m.get("from"),
+                (String) m.get("reason"), who, tables.clock().instant());
+        if (madeBy != null) {                                           // a repeat: the first answer again (only to its maker, same content)
             if (!madeBy.equals(who)) {
                 throw refused(caller, name, id, key, set, "the change id '" + id + "' is another's");
+            }
+            String first = s.priorDigest(id);
+            if (first == null && seen != null) {
+                first = (String) seen[2];
+            }
+            if (first != null && !first.equals(change.digest())) {
+                throw reused(caller, name, id, key, set);
             }
             ChangeSink.Outcome o = s.prior(id);
             return o != null ? answer(id, o) : (Map<String, Object>) seen[1];
@@ -209,8 +228,6 @@ final class WriteGuard {
             }
             throw conflict(caller, spec, r, id, row, "a row with the key " + key + " exists");
         }
-        Change change = new Change(id, name, op, key, m.get("basedOn"), set, (Map<String, Object>) m.get("from"),
-                (String) m.get("reason"), who, tables.clock().instant());
         if (a.mayEdit(caller, name, change.toMap(), row == null ? Map.of() : r.shown().apply(row)) instanceof Authoriser.Decision.Refuse no) {
             throw refused(caller, name, id, key, set, no.reason());
         }
@@ -226,7 +243,7 @@ final class WriteGuard {
                     "retry", true);
         }
         Map<String, Object> ans = answer(id, o);
-        answers.put(id, new Object[] {who, ans});
+        answers.put(id, new Object[] {who, ans, change.digest()});
         Map<String, Object> ev = audit(id, set, row, r);
         tables.event(caller, name, "write-submitted", null, ev);
         String follow = switch (o.state()) {
@@ -363,6 +380,20 @@ final class WriteGuard {
         return ProtocolError.of("rdp.write.forbidden", 403, why, "table", name);
     }
 
+    /**
+     * A repeated change id with other content (PROTOCOL 16): {@code 409 rdp.write.conflict} with {@code reused: true}, audited
+     * {@code write-reused} (the columns the new content sets, never their values) so the host can look into the client that sent it.
+     */
+    private ProtocolError reused(Object caller, String name, String id, List<Object> key, Map<String, Object> set) {
+        String why = "the change id '" + id + "' was used for a different change: a new change takes a new id";
+        Map<String, Object> ev = new LinkedHashMap<>();
+        ev.put("change", id);
+        ev.put("key", key);
+        ev.put("columns", new ArrayList<>(set.keySet()));
+        tables.event(caller, name, "write-reused", why, ev);
+        return ProtocolError.of("rdp.write.conflict", 409, why, "table", name, "reused", true);
+    }
+
     private ProtocolError conflict(Object caller, LiveTableSpec spec, LiveTables.Reader r, String id, Map<String, Object> row, String why) {
         Map<String, Object> cur = new LinkedHashMap<>();
         cur.put("version", row.get(spec.version()));
@@ -494,7 +525,7 @@ final class WriteGuard {
         ans.put("change", id);
         ans.put("state", ChangeSink.State.APPLIED.wire());
         ans.put("message", changeId + " " + to + (o == null || o.message() == null ? "" : ": " + o.message()));
-        answers.put(id, new Object[] {who, ans});
+        answers.put(id, new Object[] {who, ans, null});
         return ans;
     }
 

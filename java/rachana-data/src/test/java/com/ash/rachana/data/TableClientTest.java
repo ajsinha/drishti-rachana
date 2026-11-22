@@ -29,9 +29,9 @@ class TableClientTest {
                     + "{\"name\":\"revenue\",\"type\":\"decimal\"}],\"can\":[\"page\",\"filter\",\"changes\",\"replay\"]}"),
                     (List<Map<String, Object>>) Json.read("[{\"region\":\"North\",\"revenue\":\"100\"},{\"region\":\"South\",\"revenue\":\"50\"},"
                             + "{\"region\":\"East\",\"revenue\":\"7\"}]"), "e1");
-            Rachana r = Rachana.with(com.ash.rachana.RachanaOptions.DEFAULTS).language("1.1");
+            Rachana r = Rachana.with(com.ash.rachana.RachanaOptions.DEFAULTS);
             Sutra sutra = r.parser().parse("""
-                    rachana: 1.1
+                    rachana: 1.2
                     sutra: live-sales
                     version: 1
                     controls:

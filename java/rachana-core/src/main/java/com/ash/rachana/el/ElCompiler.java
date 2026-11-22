@@ -19,24 +19,28 @@ public final class ElCompiler {
     private final ElLimits limits;
     private final FunctionTable table;
     private final String level;
-    private final boolean v11;
 
     public ElCompiler(long maxEntries, ElLimits limits, FunctionTable table) {
-        this(maxEntries, limits, table, "1.0");
+        this(maxEntries, limits, table, com.ash.rachana.profile.Grammar.LEVEL);
     }
 
     /**
-     * A compiler at a language level (SUTRA_EXPANSION 6.2): {@code 1.0} reads what the reference read; {@code 1.1} adds the syntax batch
-     * (records, spread, slices, {@code range}, the pipe, {@code ??}, lambdas, comments, digit separators, {@code **}, {@code a if c else b}),
-     * exact numbers (SPEC 4.16), texts by code point (SPEC 4.13), and words its problems as {@code expression '<source>': <reason>}.
+     * A compiler at a language level (SUTRA_EXPANSION 6.2). Rachana 1.x has one level, {@code Grammar.LEVEL} (1.2): every expression is
+     * read at it, through the one parse ({@code Parser.parseWithSpans}), whole (text left after an expression is refused), and a problem
+     * is worded {@code expression '<source>': <reason>}.
+     *
+     * @throws IllegalArgumentException for a level this runtime does not implement ({@code Grammar.LEVELS})
      */
     public ElCompiler(long maxEntries, ElLimits limits, FunctionTable table, String level) {
         this.exprs = new Lru<>(maxEntries);
         this.templates = new Lru<>(maxEntries);
         this.limits = limits;
         this.table = table == null ? FunctionTable.core() : table;
-        this.level = level == null ? "1.0" : level;
-        this.v11 = !"1.0".equals(this.level);
+        this.level = level == null ? com.ash.rachana.profile.Grammar.LEVEL : level;
+        if (!com.ash.rachana.profile.Grammar.LEVELS.contains(this.level)) {
+            throw new IllegalArgumentException("language level '" + this.level + "' is not one of "
+                    + String.join(", ", com.ash.rachana.profile.Grammar.LEVELS));
+        }
     }
 
     /** The language level this compiler reads. */
@@ -61,22 +65,6 @@ public final class ElCompiler {
      *     {@linkplain ElLimits limits} (too deeply nested or too long)
      */
     public Expr compile(String source) {
-        Declarations in = Declarations.inForce();
-        String d = in.id();
-        boolean v = v11(in);
-        if (!d.isEmpty()) {                                     // a Sutra's declared names (level 1.2) or level: cached apart from every other Sutra's
-            if (!v) {
-                return exprs.get(d + "\u0000" + source, k -> Parser.parse(source, limits, table));
-            }
-            try {
-                return exprs.get(d + "\u0000" + source, k -> Parser.parseWithSpans(source, limits, table, true).expr());
-            } catch (ElException e) {
-                throw whole("expression", source, e);
-            }
-        }
-        if (!v) {
-            return exprs.get(source, s -> Parser.parse(s, limits, table));
-        }
         try {
             return bare(source);
         } catch (ElException e) {
@@ -84,21 +72,13 @@ public final class ElCompiler {
         }
     }
 
-    /** Whether expressions compile at level 1.1 or later: the level of the Sutra in force when it declares one below this compiler's. */
-    private boolean v11(Declarations in) {
-        return in.level() == null ? v11 : !"1.0".equals(in.level());
-    }
-
-    /** The expression without level 1.1's prefix on a problem (a template's part: the template words it). */
+    /** The expression without the prefix on a problem (a template's part: the template words it). */
     Expr bare(String source) {
-        Declarations in = Declarations.inForce();
-        String d = in.id();
-        boolean v = v11(in);
-        return exprs.get(d.isEmpty() ? source : d + "\u0000" + source, s -> v ? Parser.parseWithSpans(source, limits, table, true).expr()
-                : Parser.parse(source, limits, table));
+        String d = Declarations.inForce().id();                  // a Sutra's declared names (level 1.2): cached apart from every other Sutra's
+        return exprs.get(d.isEmpty() ? source : d + "\u0000" + source, s -> Parser.parseWithSpans(source, limits, table).expr());
     }
 
-    /** Level 1.1's words (SPEC 6.3): {@code expression '<source>': <reason> at <offset>}; an evaluation problem is left as it is. */
+    /** The words of a problem (SPEC 6.3): {@code expression '<source>': <reason> at <offset>}; an evaluation problem is left as it is. */
     private static ElException whole(String what, String source, ElException e) {
         if (e.position() < 0) {
             return e;
@@ -121,13 +101,8 @@ public final class ElCompiler {
 
     /** Compiles text with embedded {@code ${expr}} parts. Text without {@code ${} is returned as is. */
     public Template template(String source) {
-        Declarations in = Declarations.inForce();
-        String d = in.id();
-        boolean v = v11(in);
+        String d = Declarations.inForce().id();
         String key = d.isEmpty() ? source : d + "\u0000" + source;
-        if (!v) {
-            return templates.get(key, k -> Template.parse(source, this));
-        }
         try {
             return templates.get(key, k -> Template.parse(source, this));
         } catch (ElException e) {

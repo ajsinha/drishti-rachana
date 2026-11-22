@@ -1,0 +1,99 @@
+# Project Drishti · Any data. Any domain. One grammar.
+#
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>.
+# All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL.
+#
+# This file is the confidential and proprietary property of Ashutosh Sinha.
+# Unauthorised copying, use, modification, distribution or disclosure of this
+# file, via any medium, is strictly prohibited except with the express prior
+# written permission of the copyright holder.
+#
+# See the LICENSE file in the root of this repository for the full terms.
+
+# Hand-written (docs/guides/VAR_GUIDE.md section 15.6): a position Drishti derives from the trades (the var-positions connector); its VaR
+# figures are the engine's, added under VAR_ENGINE as the page opens (VarFigures), never stored. Data: tools/packgen/var/make_var_data.py.
+rachana: 1.2
+sutra: position
+version: 1
+description: "A position: one security held in one book (or one OTC trade), the trades that build or reduce it, and its VaR computed as the page opens."
+doc:
+  summary: "A position: its instrument, direction and quantity, its trades with their own VaR and contributions, its P&L distribution"
+  description: >-
+    A position is a holding Drishti derives from the trades when it loads a date (the market-risk pack's positions rules): a security's
+    or a listed contract's trades in one book are one position, their signed quantities netting (a buy adds, a sell takes away); an OTC
+    trade is a position of its own. The strip gives the direction, the quantity, the market value and the trade count, then the VaR
+    engine's figures computed as the page opens, as the reader may see them: the VaR and ES of the position on its own and its component
+    VaR in its book. The trades table lists every trade of it with its own quantity, and the engine's own VaR and component of each:
+    a long and a short of one security offset, so the components of a hedged position are of both signs and add up to the position's
+    VaR. The distribution is the position's P&L under each scenario day (the sum of its trades' vectors). VAR POS <id> opens the same
+    position in the VaR explorer.
+  params: {}
+  emits: []
+  expects: []
+  examples:
+    - "/v/position/POS-BOOK-RATES-1~MX-20000002"
+    - "POS POS-BOOK-RATES-1~MX-20000002"
+  since: "2.8.0"
+match: { kind: position, priority: 10 }
+title: { pill: "Market risk · Position", id: $.POSITION_ID, with: $.INSTRUMENT }
+strip:
+  - { label: Direction, bind: $.DIRECTION }
+  - { label: Quantity, bind: $.QUANTITY, fmt: compact }
+  - { label: Market value, bind: $.MARKET_VALUE, fmt: compact, tone: sign }
+  - { label: VaR 99% 1D, bind: $.VAR_ENGINE.VAR, fmt: compact, emphasis: true }
+  - { label: ES 97.5%, bind: $.VAR_ENGINE.ES, fmt: compact }
+  - { label: Component VaR in its book, bind: $.VAR_ENGINE.COMPONENT_VAR, fmt: compact }
+  - { label: Trades, bind: $.TRADE_COUNT }
+panels:
+  - id: trades
+    kind: table
+    title: "Trades that build or reduce it"
+    code: TRD
+    key: F2
+    rows: $.TRADES
+    empty: No trades
+    columns:
+      - { label: Trade, bind: "@.TRADE_ID", link: true }
+      - { label: Direction, bind: "@.DIRECTION" }
+      - { label: Quantity, bind: "@.QUANTITY", fmt: amount0 }
+      - { label: PV, bind: "@.PV", fmt: amount0 }
+      - { label: Trade currency, bind: "nonblank(@.TRADE_CURRENCY, '–')" }
+      - { label: Counterparty, bind: "@.COUNTERPARTY", link: true }
+  - id: trade-var
+    kind: table
+    title: "Its trades' VaR (component VaR adds up to the position's VaR; computed as the page opens)"
+    rows: $.VAR_ENGINE.TRADES
+    empty: "No VaR figures: the engine could not answer (the note below says why)"
+    columns:
+      - { label: Trade, bind: "@.TRADE_ID", link: true }
+      - { label: Direction, bind: "@.DIRECTION" }
+      - { label: Trade currency, bind: "nonblank(@.TRADE_CURRENCY, '–')" }
+      - { label: "VaR 99% (on its own)", bind: "@.VAR", fmt: amount0 }
+      - { label: Component VaR, bind: "@.COMPONENT_VAR", fmt: amount0, total: true }
+  - { use: pnl-distribution@1, with: { id: dist, title: "P&L over the scenario days (the sum of its trades' vectors)", rows: $.VAR_ENGINE.PNL, var: $.VAR_ENGINE.VAR, es: $.VAR_ENGINE.ES, key: F3 } }
+  - id: where
+    kind: kv
+    title: Where it is held
+    area: right
+    columns:
+      - { label: Instrument, bind: $.INSTRUMENT_ID }
+      - { label: Position rule, bind: $.POSITION_RULE }
+      - { label: Book, bind: $.TT_BOOK, link: true }
+      - { label: Desk, bind: $.DESK, link: true }
+      - { label: Legal entity, bind: $.LEGAL_ENTITY, link: true }
+      - { label: Product, bind: $.PRODUCT_TYPE }
+      - { label: Currency, bind: $.CURRENCY }
+      - { label: Counterparty, bind: $.COUNTERPARTY, link: true }
+      - { label: Notional (gross), bind: $.NOTIONAL, fmt: compact }
+      - { label: Book VaR, bind: $.VAR_ENGINE.BOOK_VAR, fmt: compact }
+      - { label: Share of the book's VaR, bind: $.VAR_ENGINE.PCT_OF_BOOK_VAR, fmt: pct0 }
+  - use: explainer-note@1
+    with:
+      title: In the VaR explorer
+      area: right
+      text: "Every scenario of this position, its history and its trades' contributions: VAR POS ${$.POSITION_ID} <GO>, or /var?scope=${$.VAR_SCOPE}. Long and short trades of one security net in the position's vector; its VaR is never the sum of its trades' VaRs. ${coalesce($.VAR_ENGINE.NOTE, '')}"
+  - { use: data-provenance@1 }
+  - { use: linked-entities@1 }
+keys: { F7: "link($.TT_BOOK, 'book')", F9: raw }

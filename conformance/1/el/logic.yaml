@@ -627,10 +627,3 @@ cases:
     note: "Message contains: 'concat takes no named arguments'."
     expr: "concat('a', sep = '-')"
     expect: {"problems": [{"code": "RCH-2101"}]}
-
-  - id: "sum-legs-notional-where-desk-x"
-    kind: "expr"
-    source: "FoldedSyntaxTest#namedArgumentsBindBySignature"
-    note: "A keyword-only parameter is refused over a list at evaluation (SPEC 4.10 rule 3). The reference runs it without the pivot engine; with the engine the refusal is the same. Message contains: 'where ='; 'belongs to a measure'."
-    expr: "sum($.LEGS[*].NOTIONAL, where = $.DESK == 'X')"
-    expect: {"error": {"code": "RCH-2102"}}

@@ -53,7 +53,7 @@ class GrammarTest {
         assertThat(s.domain()).isNull();
         assertThat(s.extensions()).isEmpty();                     // no profile key; the compile's own index is read, not listed
         assertThat(s.extension(com.ash.rachana.model.Sutra.PLACES)).isNotNull();
-        assertThat(codes(core, ENTITY)).anyMatch(m -> m.startsWith("RCH-2011 unknown key 'match'")).anyMatch(m -> m.startsWith("RCH-2021 unknown panel kind 'links'"));
+        assertThat(codes(core, ENTITY)).anyMatch(m -> m.startsWith("RCH-2021 unknown panel kind 'links'"));
         assertThat(codes(core, CORE.replace("value: \"1 + 2\" }", "value: \"1\", source: { kind: trade, id: \"1\" } }")))
                 .anyMatch(m -> m.startsWith("RCH-2010 a source names the table"));
         assertThat(codes(core, CORE.replace("value: \"1 + 2\" }", "value: \"1\", form: { fields: [ { id: a } ], save: { target: owned } } }")))

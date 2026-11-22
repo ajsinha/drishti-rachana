@@ -46,6 +46,9 @@ SYNONYMS = {
     "group": {"sector", "industry", "country", "region", "desk"},
     "var": {"valueatrisk", "var99", "var95"},
     "es": {"expectedshortfall", "cvar", "es975"},
+    "headline": {"title", "subject", "heading", "summary", "topic"},
+    "source": {"publisher", "provider", "origin", "outlet", "agency", "author"},
+    "link": {"url", "href", "uri", "permalink"},
     "previousvar": {"varprev", "prevvar", "varyesterday", "varprior"},
 }
 
@@ -237,15 +240,24 @@ class Catalogue:
                 req = [(c, _kind(d.get("type"))) for c, d in p["columns"].items() if not d["optional"]]
                 opt = [(c, _kind(d.get("type"))) for c, d in p["columns"].items() if d["optional"]]
                 used, mapping, missing, aff = set(), {}, [], 0.0
-                for local, lk in req + opt:
-                    cands = [(_affinity(local, cn), cn) for cn, ck in cols if cn not in used and _fits(lk, ck)]
-                    cands.sort(key=lambda x: (-x[0], x[1]))
-                    if cands and (cands[0][0] > 0 or (local, lk) in req):
-                        a, cn = cands[0]
+                locals_ = req + opt
+                # names first: every (fragment column, caller column) pair that shares name semantics, best affinity first (a required
+                # column wins a tie), so 'headline' takes TITLE before it could take PUBLISHER merely for being text
+                pairs = sorted(((_affinity(local, cn), (local, lk) not in req, local, cn) for local, lk in locals_
+                                for cn, ck in cols if _fits(lk, ck)), key=lambda x: (-x[0], x[1], x[2], x[3]))
+                for a, _opt, local, cn in pairs:
+                    if a > 0 and local not in mapping and cn not in used:
                         used.add(cn)
                         mapping[local] = cn
                         aff += a
-                    elif (local, lk) in req:
+                for local, lk in req:               # then the required ones left: any column of a fitting type
+                    if local in mapping:
+                        continue
+                    rest = sorted((cn for cn, ck in cols if cn not in used and _fits(lk, ck)))
+                    if rest:
+                        used.add(rest[0])
+                        mapping[local] = rest[0]
+                    else:
                         missing.append(local)
                 cov = 1.0 if not req else (len(req) - len(missing)) / len(req)
                 rank = (cov, aff)

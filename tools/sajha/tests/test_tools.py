@@ -37,6 +37,14 @@ def test_search_by_text_and_by_shape(tools):
     assert r["use"]["with"] == {"var": "$.firm.VAR_99", "previous-var": "$.firm.VAR_99_PREV"}
 
 
+def test_shape_search_prefers_name_semantics_over_type(tools):
+    news = {"news": {"columns": [{"name": "TITLE", "type": "text"}, {"name": "PUBLISHER", "type": "text"},
+                                 {"name": "URL", "type": "text"}, {"name": "PUBLISHED", "type": "datetime"}]}}
+    r = tools["search_fragments"].execute({"tables": news, "query": "news headlines newest first"})["results"][0]
+    assert r["id"] == "core/headline-list@1" and r["fit"]["coverage"] == 1.0
+    assert r["use"]["with"]["rows"]["columns"] == {"date": "PUBLISHED", "headline": "TITLE", "source": "PUBLISHER", "link": "URL"}
+
+
 def test_get_fragment_and_nearest(tools):
     g = tools["get_fragment"].execute({"id": "limit-table"})
     assert g["found"] and g["id"] == "finance/limit-table@1" and "fragment: limit-table" in g["source"] and g["example_sutra"]
@@ -52,7 +60,10 @@ def test_check_finds_the_wrong_column_then_passes(tools):
     assert p["path"] == "/panels/0/with/rows/columns/used" and p["range"]["start"]["line"] == 13 and "USED_USD" in p["expected"]
     good = tools["check_sutra"].execute({"sutra": SUTRA, "tables": LIMITS})
     assert good["ok"] and good["check_token"] and good["plan"]["fragments"] == ["finance/limit-table@1"]
-    assert good["engine"] == "unavailable" and any(p["code"] == "RGK-150" for p in good["problems"])
+    if good["engine"] == "v8":     # the V8 extra and the bundle are installed: the compiler's half ran, and found nothing
+        assert not any(p["code"] == "RGK-150" for p in good["problems"])
+    else:                          # not installed: said so, as a warning
+        assert good["engine"] == "unavailable" and any(p["code"] == "RGK-150" for p in good["problems"])
 
 
 def test_check_refuses_what_an_agent_may_not_write(tools, kit):

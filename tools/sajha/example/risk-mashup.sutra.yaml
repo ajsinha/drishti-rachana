@@ -23,8 +23,8 @@ panels:
   - use: core/ranked-bars@1
     with: {"rows": {"from": "$.var_by_desk", "columns": {"label": "DESK", "value": "VAR_99"}}, "title": "VaR by desk", "fmt": "amount0"}
   - use: finance/limit-table@1
-    with: {"rows": {"from": "$.limit_use", "columns": {"name": "LIMIT_NAME", "limit": "LIMIT_USD", "used": "USED_USD", "owner": "OWNER"}}, "title": "Limit use"}
+    with: {"rows": {"from": "$.limit_use", "columns": {"owner": "OWNER", "name": "LIMIT_NAME", "limit": "LIMIT_USD", "used": "USED_USD"}}, "title": "Limit use"}
   - use: finance/concentration-treemap@1
-    with: {"rows": {"from": "$.exposure_by_cpty", "columns": {"group": "SECTOR", "name": "COUNTERPARTY", "exposure": "EXPOSURE_USD", "pnl": "PNL_USD"}}, "title": "Exposure by counterparty"}
+    with: {"rows": {"from": "$.exposure_by_cpty", "columns": {"exposure": "EXPOSURE_USD", "group": "SECTOR", "name": "COUNTERPARTY", "pnl": "PNL_USD"}}, "title": "Exposure by counterparty"}
   - use: core/measure-table@1
     with: {"rows": {"from": "$.var_by_desk", "columns": {"name": "DESK", "first": "VAR_99", "second": "VAR_CHANGE"}}, "title": "What changed since yesterday", "name-label": "Desk", "first-label": "VaR", "second-label": "Change", "first-fmt": "amount0", "second-fmt": "signed0"}

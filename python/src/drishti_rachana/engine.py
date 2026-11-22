@@ -13,6 +13,7 @@ The bundles are built by tools/js/build_js.py into drishti_rachana/bundle/ (git-
 ``v8`` extra (``mini-racer``)."""
 from __future__ import annotations
 
+import atexit
 import hashlib
 import json
 import re
@@ -81,6 +82,11 @@ class Rachana:
         self._ctx.set_hard_memory_limit(max_memory)
         self._ctx.eval(script_of(path.read_text(encoding="utf-8")), timeout_sec=timeout)
         self._ctx.eval(f"rachana.init({json.dumps(profiles)}, {json.dumps(json.dumps(list(formats)))})", timeout_sec=timeout)
+        atexit.register(self.close)                    # a live isolate can keep the interpreter from exiting (mini-racer on 3.13): free it first
+
+    def close(self) -> None:
+        """Frees the V8 isolate (also called at interpreter exit); the instance is unusable afterwards."""
+        self._ctx = None
 
     def _call(self, fn: str, request: dict[str, Any]) -> dict[str, Any]:
         return json.loads(self._ctx.call(f"rachana.{fn}", json.dumps(request, ensure_ascii=False), timeout_sec=self._timeout))

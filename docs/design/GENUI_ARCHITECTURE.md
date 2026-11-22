@@ -371,11 +371,11 @@ Each stage is useful by itself and none requires changing Drishti or SAJHA.
 |---|---|
 | The `doc` block in the schema (`$defs/doc`) | built |
 | `doc` blocks on every fragment of `core` (33) and `finance` (57) | built |
-| The compiler's doc lint (`RCH-2093`, Java) | written and type-checked; its Maven build and test suites not yet run |
+| The compiler's doc lint (`RCH-2093`, Java) | built; Maven build and suites green |
 | The four tools, their schemas, the catalogue (text and shape search), the check with tokens and bounded attempts, the three row sources, boards and the board server, audit events and hooks | built, with a light test suite (17 tests) |
 | The doc lint inside the kit | built as a Python mirror; asking the compiler's own lint on V8 is next |
 | The compiler's pass inside `check_sutra` | built; needs the package's V8 extra and bundle installed, and says so (`RGK-150`) when they are not |
-| The board page (`spa/`) | built; not yet verified in browsers with the built bundle (paint, live update, Content-Security-Policy) |
+| The board page (`spa/`) | built; checked in Chromium (paint, live update over SSE, strict Content-Security-Policy) |
 | The Data Protocol door (allow-listed origin, the page reading the host) | built in the kit and the page; not yet exercised against a Drishti server |
 | Fetching rows as the user through SAJHA's inner calls | built against SAJHA's interfaces; outside SAJHA a registered Python function stands in, which is what the tests and the example use |
 | The risk mash-up example (five panels, four tables, synthetic data) | built |
@@ -392,7 +392,8 @@ Next, in the order the design gives them ([GENUI_KIT](GENUI_KIT.md) 7, [AI_GENUI
    kit, and per-user preference memory.
 8. Domain libraries beyond `core` and `finance`.
 
-**Known limit worth stating.** Shape search maps columns by type and name affinity. With column names that share no words with
-a fragment's (a headline column called `TITLE` beside a text column `PUBLISHER`), the proposed mapping can be wrong while
-coverage still reads 1.0; the agent corrects it from the fragment's `doc` (`data.sample-row`, `example`), and the check cannot
-catch a mapping that is type-correct. The evaluation set is where this is measured.
+**Known limit worth stating.** Shape search maps columns by name semantics first (exact, synonym, shared words: a headline column
+called `TITLE` beside a text column `PUBLISHER` maps `headline` to `TITLE`, `source` to `PUBLISHER`), and by type only for a required
+column no name fits. A column whose name shares nothing with the fragment's can still be mapped wrongly while coverage reads 1.0;
+the agent corrects it from the fragment's `doc` (`data.sample-row`, `example`), and the check cannot catch a mapping that is
+type-correct. The evaluation set is where this is measured.

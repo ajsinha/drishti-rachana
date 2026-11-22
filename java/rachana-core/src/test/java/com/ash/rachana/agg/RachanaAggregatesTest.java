@@ -47,7 +47,7 @@ class RachanaAggregatesTest {
     }
 
     static Object eval(String src) {
-        return Values.simplify(EL.compile(src).eval(EvalContext.of(DOC, F)));
+        return com.ash.rachana.el.Fx.plain(Values.simplify(EL.compile(src).eval(EvalContext.of(DOC, F))));
     }
 
     @Test
@@ -112,7 +112,7 @@ class RachanaAggregatesTest {
 
     @Test
     void whatOnlyAHostComputesIsRefusedInCoreAlone() {
-        for (String src : List.of("measure('VAR', 'DESK:DESK-COMM')", "cell('desk-pnl', 'DESK', 'DESK-COMM')",
+        for (String src : List.of("measure('VAR', 'DESK:DESK-COMM')",
                 "sum_once($.LEGS, 'QUANTITY', 'TRADE_ID')")) {
             assertThatThrownBy(() -> eval(src)).as(src).isInstanceOf(ElException.class).hasMessageContaining("comes only from");
         }

@@ -1,0 +1,50 @@
+# Project Drishti · Any data. Any domain. One grammar.
+#
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>.
+# All rights reserved.
+#
+# PROPRIETARY AND CONFIDENTIAL.
+#
+# This file is the confidential and proprietary property of Ashutosh Sinha.
+# Unauthorised copying, use, modification, distribution or disclosure of this
+# file, via any medium, is strictly prohibited except with the express prior
+# written permission of the copyright holder.
+#
+# See the LICENSE file in the root of this repository for the full terms.
+
+
+# Hand-written since 2.7.0 (Sutra Next phase 1): built from the Drishti UI kit (config/ui-kit/fragments, loaded by every server).
+# tools/packgen/world/make.py leaves it alone (hand_written); SutraNextEquivalenceTest proves it draws exactly what the generated
+# layout drew.
+rachana: 1.2
+sutra: fiscal-position
+version: 1
+description: "Government debt and net lending (IMF) with revenue, expense and military spending (World Bank), as shares of GDP."
+doc:
+  summary: "An economy's public finances: debt, net lending, revenue, expense and military spending as shares of GDP."
+  description: >-
+    One page per economy's fiscal position: central government ratios to GDP as bars, the gross debt path beside them, the
+    net lending (borrowing) path, the data source and licence, how the view was built and its links (F7 opens the economy).
+    The strip gives the economy and debt, net lending, revenue, expense and military spending, each as a share of GDP.
+  params: {}
+  emits: []
+  expects: []
+  examples:
+    - "/v/fiscal-position/FISC-USA"
+    - "FISC FISC-USA"
+  since: "2.7.0"
+match: { kind: fiscal-position, priority: 10 }
+title: { pill: Economics · Fiscal position, id: $.FISCAL_ID }
+strip:
+  - { label: Economy, bind: $.ECONOMY_NAME }
+  - { label: Debt / GDP, bind: $.DEBT, fmt: pc1 }
+  - { label: Net lending / GDP, bind: $.BALANCE, fmt: pc2, tone: sign, emphasis: true }
+  - { label: Revenue / GDP, bind: $.REVENUE, fmt: pc1 }
+  - { label: Expense / GDP, bind: $.SPENDING, fmt: pc1 }
+  - { label: Military / GDP, bind: $.MILITARY, fmt: pc2 }
+panels:
+  - { use: ranked-bars@1, with: { id: ratios, title: "Central government, % of GDP", key: F2, rows: $.RATIOS, label: ITEM, value: VALUE, fmt: pc1 } }
+  - { use: series-line@1, with: { id: debtPath, title: "General government gross debt, % of GDP", area: right, rows: $.DEBT_PATH, x: YEAR, y: DEBT, fmt: pc1 } }
+  - { use: series-line@1, with: { id: balancePath, title: "Net lending / borrowing, % of GDP", key: F3, rows: $.BALANCE_PATH, x: YEAR, y: BALANCE, fmt: pc2 } }
+  - { use: source-footer@1 }
+keys: { F7: "link($.ECONOMY, 'economy')", F8: impact, F9: raw }

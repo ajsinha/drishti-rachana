@@ -30,27 +30,6 @@ class DatasetPanelsTest {
             """;
 
     @Test
-    void aGridIsALevel11NameRefusedInWordsAtLevel10() {
-        assertThatThrownBy(() -> new SutraParser().parse(GRID, "ss.sutra.yaml", "t"))
-                .isInstanceOf(SutraException.class)
-                .satisfies(e -> assertThat(((SutraException) e).problems()).anySatisfy(p -> {
-                    assertThat(p.code()).isEqualTo("RCH-2008");
-                    assertThat(p.message()).isEqualTo("'grid' panels need Rachana 1.1; this host runs 1.0 (raise the host's language level)");
-                }));
-        assertThat(new SutraParser(Grammar.core().atLevel("1.1")).parse(GRID.replace("rachana: 1\n", "rachana: 1.1\n"), "ss.sutra.yaml", "t").panels()).hasSize(1);
-    }
-
-    @Test
-    void anUnknownKindListsOnlyTheKindsOfTheLevel() {
-        String bad = GRID.replace("kind: grid", "kind: hologram");
-        assertThatThrownBy(() -> new SutraParser().parse(bad, "ss.sutra.yaml", "t"))
-                .satisfies(e -> assertThat(((SutraException) e).problems().get(0).message()).doesNotContain("grid").endsWith("metric, map"));
-        assertThatThrownBy(() -> new SutraParser(Grammar.core().atLevel("1.1")).parse(bad.replace("rachana: 1\n", "rachana: 1.1\n"), "ss.sutra.yaml", "t"))
-                .satisfies(e -> assertThat(((SutraException) e).problems().get(0).message()).endsWith("map, grid, tree, chart"));
-        assertThatThrownBy(() -> Grammar.core().atLevel("1.9")).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void theStampIsTheSmallestMinorThatDescribesTheDocument() {
         ViewModel plain = new ViewModel(null, null, null, List.of(), List.of(), List.of(), null, null);
         assertThat(plain.contract()).isEqualTo("1.0");

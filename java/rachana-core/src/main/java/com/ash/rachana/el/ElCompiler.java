@@ -22,7 +22,7 @@ public final class ElCompiler {
     private final boolean v11;
 
     public ElCompiler(long maxEntries, ElLimits limits, FunctionTable table) {
-        this(maxEntries, limits, table, "1.0");
+        this(maxEntries, limits, table, com.ash.rachana.profile.Grammar.LEVEL);
     }
 
     /**
@@ -35,7 +35,7 @@ public final class ElCompiler {
         this.templates = new Lru<>(maxEntries);
         this.limits = limits;
         this.table = table == null ? FunctionTable.core() : table;
-        this.level = level == null ? "1.0" : level;
+        this.level = level == null ? com.ash.rachana.profile.Grammar.LEVEL : level;
         this.v11 = !"1.0".equals(this.level);
     }
 

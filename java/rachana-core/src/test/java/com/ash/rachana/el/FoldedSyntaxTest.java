@@ -26,16 +26,6 @@ import org.junit.jupiter.api.Test;
 class FoldedSyntaxTest {
 
     @Test
-    void listsAreWrittenInTheExpression() {
-        assertThat(list("[1, 'a', $.DESK]")).containsExactly(1L, "a", "DESK-COMM");
-        assertThat(list("[]")).isEmpty();
-        assertThat(list("[1, 2,]")).containsExactly(1L, 2L);                       // a trailing comma, as DEL allowed
-        assertThat(eval("size([$.LEGS, $.EVENTS])")).isEqualTo(2L);
-        assertThat(((Node) Values.simplify(EL.compile("[$.MTM, 1]").eval(ctx()))).get(0).isMasked()).isTrue();
-        compileError("[1, 2", "']'");
-    }
-
-    @Test
     void inIsStrictAndEmptyHoldsNothing() {
         assertThat(eval("$.DESK in ['DESK-COMM', 'DESK-RATES']")).isEqualTo(true);
         assertThat(eval("$.DESK not in ['DESK-COMM']")).isEqualTo(false);
@@ -66,35 +56,6 @@ class FoldedSyntaxTest {
         assertThat(Values.simplify(EL.compile("@.AMOUNT").eval(deep))).isEqualTo(5);
         assertThat(eval("^^^.X")).isNull();                                          // no such parent: nothing
         assertThat(eval("^.TRADE_ID")).isNull();                                     // the document itself has no parent
-    }
-
-    @Test
-    void namedArgumentsBindBySignature() {
-        assertThat(eval("round(2.675, n = 2)")).isEqualTo(Fx.dec("2.68"));
-        assertThat(eval("shift_date('2026-10-16', 1, unit = 'day')")).isEqualTo("2026-10-17");
-        assertThat(eval("shift_date('2026-10-16', 1)")).isEqualTo("2026-10-19");     // business days skip the weekend
-        assertThat(eval("shift_date('2026-10-16', 1, calendar = 'WEEKENDS')")).isEqualTo("2026-10-19");
-        assertThat(eval("business_days_between('2026-10-16', '2026-10-19', calendar = 'WEEKENDS')")).isEqualTo(1L);
-        compileError("round(2.5, digits = 1)", "round has no argument named digits");
-        compileError("round(2.5, n = 1, n = 2)", "n is named twice");
-        compileError("round(n = 1, 2.5)", "a value without a name follows a named one");
-        compileError("round(2.5, 1, n = 2)", "n is given twice");
-        compileError("concat('a', sep = '-')", "concat takes no named arguments");
-        assertThat(EL.compile("sum($.LEGS[*].NOTIONAL, where = $.DESK == 'X')")).isInstanceOf(Expr.Call.class);
-        evalError("sum($.LEGS[*].NOTIONAL, where = $.DESK == 'X')", "where =", "belongs to a measure");
-        Expr.Call calc = (Expr.Call) EL.compile("calc(sum(trades.MTM), ignore = [desks.NAME], where = trades.MTM > 0)");
-        assertThat(calc.named()).containsOnlyKeys("ignore", "where");
-        assertThat(calc.arg("ignore")).isInstanceOf(Expr.ListLit.class);
-    }
-
-    @Test
-    void powerAndFloorReplaceTheOperators() {
-        compileError("$.QUANTITY ** 2", "'**' is not Rachana: write power(x, y)");
-        compileError("$.QUANTITY // 7", "'//' is not Rachana: write floor(x / y)");
-        assertThat(eval("power(1.1, 2)")).isEqualTo(Fx.dec("1.21"));
-        assertThat(eval("floor(-7 / 2)")).isEqualTo(-4L);
-        assertThat(eval("power($.STRATEGY, 2)")).isNull();
-        assertThat(masked("floor($.MTM)")).isTrue();
     }
 
     @Test

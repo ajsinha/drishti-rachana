@@ -95,7 +95,7 @@ class TextFunctionsTest {
         compileError("regex_extract('a', '(a)', 3)", "the pattern '(a)' has 1 group(s); group 3 was asked for");
         compileError("regex_extract('ab', '(?<=a)b')", "is refused");
         assertThatThrownBy(() -> eval("regex_extract('ab', $.TRADE_ID + '(')")).isInstanceOfSatisfying(RachanaException.class,
-                e -> assertThat(e.code()).isEqualTo(RachanaCode.REGEX_REFUSED));
+                e -> assertThat(e.code()).isEqualTo(RachanaCode.EL_EVAL));
     }
 
     @Test

@@ -49,7 +49,7 @@ public final class CheckedMode {
 
     /** Parses and checks; a text that does not parse is one {@code RCH-9127} problem at the place it stops. */
     public static Checker.Checked check(String text, Scope scope, Fields fields) {
-        return check(text, scope, fields, "1.0");
+        return check(text, scope, fields, com.ash.rachana.profile.Grammar.LEVEL);
     }
 
     /** {@link #check(String, Scope, Fields)} at a language level ({@code 1.0}, {@code 1.1}). */

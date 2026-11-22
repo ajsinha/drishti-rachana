@@ -25,8 +25,6 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("--strict", action="store_true", help="warnings fail too")
     lint.add_argument("--profiles", default="core")
     lint.add_argument("--libs", default="", help="more fragment libraries: paths (comma-separated) of an unpacked library, an .rlib or a folder of them; also RACHANA_LIBS; the bundled libraries/ are always offered")
-    up = top.add_parser("upgrade", help="rewrite level-1.0 Sutras and fragments for a later level, keeping their meaning (needs a JVM: RACHANA_JAR or RACHANA_CLASSPATH)")
-    up.add_argument("args", nargs=argparse.REMAINDER, help="paths, --to, --write, --diff, --report, --rules (rachana upgrade --rules)")
     conf = top.add_parser("conformance", help="conformance suite").add_subparsers(dest="action", required=True)
     r = conf.add_parser("run", help="run the suite through an adapter and write results/<runtime>.jsonl")
     r.add_argument("--cases", default="conformance/1")
@@ -116,40 +114,11 @@ def lint_main(paths: Sequence[str], fmt: str = "text", strict: bool = False, pro
     return 1 if bad else 0
 
 
-def java_command(command: str, args: Sequence[str], env: Optional[dict] = None) -> Optional[list[str]]:
-    """The JVM command line of a command the Java rachana-cli runs (``upgrade``): RACHANA_JAR or RACHANA_CLASSPATH, RACHANA_JAVA."""
-    import os
-    env = os.environ if env is None else env
-    java = env.get("RACHANA_JAVA", "java")
-    if env.get("RACHANA_JAR"):
-        return [java, "-jar", env["RACHANA_JAR"], command, *args]
-    if env.get("RACHANA_CLASSPATH"):
-        return [java, "-cp", env["RACHANA_CLASSPATH"], "com.ash.rachana.cli.Main", command, *args]
-    return None
-
-
-def upgrade_main(args: Sequence[str]) -> int:
-    """``rachana upgrade``: the Java Upgrade of rachana-tools (one implementation), run as the Node command line runs it."""
-    import subprocess
-    cmd = java_command("upgrade", list(args))
-    if cmd is None:
-        print("rachana upgrade needs a JVM and the rachana-cli jar: set RACHANA_JAR (a runnable jar) or RACHANA_CLASSPATH (the module jars)",
-              file=sys.stderr)
-        return EXIT_USAGE
-    try:
-        return subprocess.run(cmd).returncode
-    except OSError as e:
-        print(f"rachana upgrade: {e}", file=sys.stderr)
-        return EXIT_USAGE
-
-
 def main(argv: Optional[Sequence[str]] = None) -> int:
     try:
         a = build_parser().parse_args(argv)
     except SystemExit as e:
         return EXIT_USAGE if e.code else 0
-    if a.group == "upgrade":
-        return upgrade_main(a.args)
     if a.group == "lint":
         try:
             return lint_main(a.paths, a.format, a.strict, a.profiles, a.libs)

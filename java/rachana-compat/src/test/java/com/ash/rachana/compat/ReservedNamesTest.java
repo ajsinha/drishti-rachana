@@ -125,13 +125,4 @@ class ReservedNamesTest {
         }
         assertTrue(promoted > 0, "promotions.yaml names no format");
     }
-
-    @Test
-    void everyLevelSwitchCarriesTheOwnersApproval() throws Exception {
-        Path f = compat().resolve("level-switches.yaml");
-        if (!Files.exists(f)) return;
-        for (String l : Files.readAllLines(f)) {
-            if (l.matches("^\\s*- \\{.*")) assertTrue(l.contains("approved:"), "a level switch needs the owner's approval: " + l);
-        }
-    }
 }

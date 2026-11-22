@@ -15,23 +15,23 @@ class PrinterTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "sum(trades.MTM, where = trades.TRADE_STATUS != 'MATURED')",
+        "calc(sum(trades.MTM), where=trades.TRADE_STATUS != 'MATURED')",
         "ratio(sum(trades.MTM), sum(trades.NOTIONAL)) * 1000000",
-        "payments.AMOUNT * (payments.CURRENCY == 'JPY' ? 1 / 148.2 : payments.CURRENCY == 'EUR' ? 1.174 : null)",
-        "$.DESK in ['DESK-COMM', 'DESK-RATES'] && !($.QUANTITY > 0)",
+        "payments.AMOUNT * (1 / 148.2 if payments.CURRENCY == 'JPY' else 1.174 if payments.CURRENCY == 'EUR' else null)",
+        "$.DESK in ['DESK-COMM', 'DESK-RATES'] and not $.QUANTITY > 0",
         "$.DESK not in []",
         "(a + b) * c - d / (e - f)",
         "a - (b - c)",
-        "a || b && c",
-        "(a || b) && c",
+        "a or b and c",
+        "(a or b) and c",
         "-$.MTM % 7",
         "$.LEGS[?^.DESK == 'X'][*].LEG_ID",
         "^^.TRADE_ID",
-        "calc(measure('MTM'), ignore = ALL, via = 'r_5')",
-        "rank(sum(trades.PNL), desc = false, by = [trades.DESK])",
-        "let(q = $.QUANTITY, q * 2)",
+        "calc(measure('MTM'), ignore=ALL, via='r_5')",
+        "rank(sum(trades.PNL), desc=false, by=[trades.DESK])",
+        "let(q=$.QUANTITY, q * 2)",
         "'it\\'s'",
-        "size($.LEGS) > 0 ? 'legs' : 'none'",
+        "'legs' if size($.LEGS) > 0 else 'none'",
     })
     void printsWhatItParses(String text) {
         Expr e = new ElCompiler().compile(text);
@@ -43,7 +43,7 @@ class PrinterTest {
         "((a + b))         | a + b",
         "a + (b * c)       | a + b * c",
         "(a == b) == c     | a == b == c",
-        "!(a)              | !a",
+        "not (a)            | not a",
         "f( 1 ,2 )         | f(1, 2)",
     })
     void dropsParenthesesTheGrammarDoesNotNeed(String in, String out) {

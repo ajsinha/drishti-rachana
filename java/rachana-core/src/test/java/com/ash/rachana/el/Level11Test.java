@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
  */
 class Level11Test {
 
-    private static final ElCompiler V11 = new ElCompiler(1000, ElLimits.DEFAULTS, FunctionTable.core(), "1.1");
+    private static final ElCompiler V11 = new ElCompiler(1000, ElLimits.DEFAULTS, FunctionTable.core(), "1.2");
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -57,8 +57,8 @@ class Level11Test {
     })
     void printsWhatItParsesAtLevel11(String text) {
         Expr e = V11.compile(text);
-        assertThat(Printer.print(e, true)).isEqualTo(text);
-        assertThat(V11.compile(Printer.print(e, true))).isEqualTo(e);
+        assertThat(Printer.print(e)).isEqualTo(text);
+        assertThat(V11.compile(Printer.print(e))).isEqualTo(e);
     }
 
     @ParameterizedTest
@@ -72,7 +72,7 @@ class Level11Test {
     })
     void sugarPrintsInTheOneSpellingAndParsesToTheSameTree(String text) {
         Expr e = V11.compile(text);
-        assertThat(V11.compile(Printer.print(e, true))).isEqualTo(e);
+        assertThat(V11.compile(Printer.print(e))).isEqualTo(e);
     }
 
     @Test
@@ -89,35 +89,21 @@ class Level11Test {
         assertThat(type("2 ** 3")).isEqualTo(ElType.INTEGER);
         assertThat(type("1 ?? 2")).isEqualTo(ElType.INTEGER);
         assertThat(type("1 < 2")).isEqualTo(ElType.BOOLEAN);
-        assertThat(CheckedMode.check("'a' ?? 1", null, Fields.NONE, "1.1").problems()).isNotEmpty();
-        assertThat(CheckedMode.check("{a: 1}", null, Fields.NONE, "1.1").problems()).isNotEmpty();
-        assertThat(CheckedMode.check("1e3", null, Fields.NONE, "1.0").type()).isEqualTo(ElType.DECIMAL);
+        assertThat(CheckedMode.check("'a' ?? 1", null, Fields.NONE, "1.2").problems()).isNotEmpty();
+        assertThat(CheckedMode.check("{a: 1}", null, Fields.NONE, "1.2").problems()).isNotEmpty();
+        assertThat(CheckedMode.check("1e3", null, Fields.NONE, "1.2").type()).isEqualTo(ElType.NUMBER);
     }
 
     private static ElType type(String text) {
-        return CheckedMode.check(text, null, Fields.NONE, "1.1").type();
-    }
-
-    @Test
-    void levelOneZeroIsUnchanged() {
-        ElCompiler v10 = new ElCompiler();
-        assertThat(Values.text(v10.compile("0.1 + 0.2").eval(EvalContext.of(com.ash.rachana.api.Node.missing(), null))))
-                .isEqualTo("0.30000000000000004");
-        assertThat(Values.text(V11.compile("0.1 + 0.2").eval(EvalContext.of(com.ash.rachana.api.Node.missing(), null)))).isEqualTo("0.3");
-        assertThatThrownBy(() -> v10.compile("{a: 1}")).hasMessageContaining("unexpected character '{' at 0");
-        assertThatThrownBy(() -> v10.compile("2 ** 3")).hasMessageContaining("'**' is not Rachana");
-        assertThat(Printer.print(v10.compile("1e-3"))).isEqualTo("0.001");
+        return CheckedMode.check(text, null, Fields.NONE, "1.2").type();
     }
 
     /** EL1-1: at 1.1 range is only the sequence and the aggregate is span; at 1.0 range is the aggregate and span is not a name. */
     @Test
     void rangeIsTheSequenceAndSpanTheAggregateAtLevel11() {
-        ElCompiler v10 = new ElCompiler();
         EvalContext none = EvalContext.of(com.ash.rachana.api.Node.missing(), null);
-        assertThat(Values.text(v10.compile("range([3, 9, 4])").eval(none))).isEqualTo("6");
         assertThat(Values.text(V11.compile("span([3, 9, 4])").eval(none))).isEqualTo("6");
         assertThat(Values.text(V11.compile("range(3)[2] + size(range(3))").eval(none))).isEqualTo("5");
-        assertThatThrownBy(() -> v10.compile("span([1])")).hasMessageContaining("unknown function 'span'");
         assertThatThrownBy(() -> V11.compile("range([3, 9, 4])")).hasMessageContaining("write span(list, field?)");
         assertThatThrownBy(() -> V11.compile("range($.t, 'PRICE')")).hasMessageContaining("write span(list, field?)");
         com.ash.rachana.api.Node rec = com.ash.rachana.api.Node.of(java.util.Map.of("l", java.util.List.of(1, 2)));
@@ -130,21 +116,21 @@ class Level11Test {
      */
     @Test
     void aSignBeforeAPowerIsAHint() {
-        var p = CheckedMode.check("-2 ** 2", null, Fields.NONE, "1.1").problems();
+        var p = CheckedMode.check("-2 ** 2", null, Fields.NONE, "1.2").problems();
         assertThat(p).hasSize(1);
         assertThat(p.get(0).code()).isEqualTo("RCH-2091");
         assertThat(p.get(0).error()).isFalse();
         assertThat(p.get(0).message()).isEqualTo("'-2 ** 2' is -(2 ** 2): a power binds tighter than the sign before it (Python's rule; "
                 + "Excel reads (-x) ^ n)");
         assertThat(p.get(0).fix()).isEqualTo("write -(2 ** 2) to keep this meaning, or (-2) ** 2 for the power of the negative");
-        assertThat(CheckedMode.check("1 + -$.x ^ 2", null, Fields.NONE, "1.1").problems())
+        assertThat(CheckedMode.check("1 + -$.x ^ 2", null, Fields.NONE, "1.2").problems())
                 .extracting(com.ash.rachana.el.check.Problem::code).containsExactly("RCH-9127");
         assertThatThrownBy(() -> V11.compile("-2 ^ 2")).hasMessageContaining("write -(2 ^ n) or (-2) ^ n");
         assertThat(V11.compile("-(2 ^ 2)").eval(EvalContext.of(com.ash.rachana.api.Node.of(java.util.Map.of()), null)).toString()).isEqualTo("-4");
-        assertThat(CheckedMode.check("(-2) ^ 2", null, Fields.NONE, "1.1").problems()).isEmpty();
-        assertThat(CheckedMode.check("-(2 ** 2)", null, Fields.NONE, "1.1").problems()).isEmpty();
-        assertThat(CheckedMode.check("(-2) ** 2", null, Fields.NONE, "1.1").problems()).isEmpty();
-        assertThat(CheckedMode.check("-2 * 2", null, Fields.NONE, "1.1").problems()).isEmpty();
+        assertThat(CheckedMode.check("(-2) ^ 2", null, Fields.NONE, "1.2").problems()).isEmpty();
+        assertThat(CheckedMode.check("-(2 ** 2)", null, Fields.NONE, "1.2").problems()).isEmpty();
+        assertThat(CheckedMode.check("(-2) ** 2", null, Fields.NONE, "1.2").problems()).isEmpty();
+        assertThat(CheckedMode.check("-2 * 2", null, Fields.NONE, "1.2").problems()).isEmpty();
     }
 
     @Test

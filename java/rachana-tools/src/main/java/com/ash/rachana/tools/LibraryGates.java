@@ -257,7 +257,6 @@ public final class LibraryGates {
 
     private static Result lg4(Path root, String library, Path dir, Map<String, Map<String, Object>> entries, Map<String, Example> examples) {
         List<String> fail = new ArrayList<>();
-        Rachana below = rachana(root, "1.1");
         for (Map.Entry<String, Map<String, Object>> en : entries.entrySet()) {
             String f = en.getKey();
             Object needs = en.getValue().get("needs");
@@ -265,12 +264,6 @@ public final class LibraryGates {
             Example ex = examples.get(f);
             if (ex != null && ex.json() == null) {
                 fail.add(f + ": does not compile at its stated level " + level);
-            }
-            if ("1.2".equals(level) && ex != null) {
-                Example lower = example(below, dir.resolve("examples/" + f + ".sutra.yaml"), library + "/" + f + "@", false);
-                if (lower.json() != null || lower.problems().stream().noneMatch(p -> p.contains("RCH-2008"))) {
-                    fail.add(f + ": at language 1.1 it is not refused with RCH-2008 (" + (lower.problems().isEmpty() ? "it compiled" : lower.problems().get(0)) + ")");
-                }
             }
         }
         long listedAt11 = entries.values().stream().filter(e -> e.get("needs") instanceof Map<?, ?> n && "1.2".compareTo(String.valueOf(n.get("language"))) < 0).count();

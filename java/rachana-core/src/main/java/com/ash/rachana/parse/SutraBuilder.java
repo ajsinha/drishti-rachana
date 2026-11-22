@@ -98,9 +98,13 @@ final class SutraBuilder {
                 problem("RCH-2008", "this Sutra is written for Rachana " + declared + "; this host runs " + grammar.level()
                         + " (raise the host's language level)", lang);
             }
+        } else if (declared != null && Integer.parseInt(declared.substring(declared.indexOf('.') + 1)) < Integer.parseInt(
+                com.ash.rachana.profile.Grammar.LEVEL.substring(2))) {         // a retired level (1.0, 1.1): Rachana 1.0 reads 1.2 only
+            problem("RCH-2009", "'rachana: " + declared + "' is a retired language level: use rachana 0.12 upgrade to move this Sutra to "
+                    + com.ash.rachana.profile.Grammar.LEVEL + " (rachana: 1 is " + com.ash.rachana.profile.Grammar.LEVEL + ")", lang);
         } else if (declared != null) {                                       // a minor this runtime does not know
             problem("RCH-2009", "'rachana: " + declared + "' is a language level this host does not read; the newest it reads is "
-                    + grammar.level() + " (rachana: 1 is 1.0)", lang);
+                    + grammar.level() + " (rachana: 1 is " + com.ash.rachana.profile.Grammar.LEVEL + ")", lang);
         } else if (!(lang.value() instanceof Long l) || l != LANGUAGE) {
             problem("RCH-2009", "'rachana: " + lang.value() + "' is not a language version this server reads (it reads " + LANGUAGE + ")", lang);
         }

@@ -6,7 +6,6 @@ package com.ash.rachana.el;
 
 import static com.ash.rachana.el.Fx.EL;
 import static com.ash.rachana.el.Fx.compileError;
-import static com.ash.rachana.el.Fx.eval;
 import static com.ash.rachana.el.Fx.list;
 import static com.ash.rachana.el.Fx.masked;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,6 +15,10 @@ import org.junit.jupiter.api.Test;
 
 /** The logic functions (FUNCTION_CATALOGUE.md section 1): only the branch taken is evaluated, and a mask is never seen through. */
 class LogicFunctionsTest {
+
+    private static Object eval(String src) {
+        return Fx.plain(Fx.eval(src));
+    }
 
     @Test
     void ifEvaluatesOnlyTheBranchTaken() {
@@ -72,7 +75,7 @@ class LogicFunctionsTest {
         assertThat(eval("let(QUANTITY = 1, QUANTITY + 1)")).isEqualTo(2L);       // a name hides a field
         assertThat(eval("let(a = 1, let(a = 5, a) + a)")).isEqualTo(6L);
         assertThat(eval("QUANTITY")).isEqualTo(242000000L);                      // and only inside its let
-        assertThat(list("map($.LEGS, let(n = @.NOTIONAL, n / 1e6))")).containsExactly(242L, 242L);
+        assertThat(list("map($.LEGS, let(n = @.NOTIONAL, n / 1e6))")).extracting(o -> ((Number) o).longValue()).containsExactly(242L, 242L);
         assertThat(eval("let(leg = first($.LEGS), leg.CURRENCY)")).isEqualTo("AUD");
         assertThat(masked("let(m = $.MTM, m * 2)")).isTrue();
         assertThat(eval("let(m = $.MTM, 3)")).isEqualTo(3L);

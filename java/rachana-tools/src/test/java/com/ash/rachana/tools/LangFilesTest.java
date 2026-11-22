@@ -35,41 +35,12 @@ class LangFilesTest {
     }
 
     @Test
-    void regeneratingLevel10ReproducesTheCommittedFiles() throws IOException {
-        Map<String, String> now = LangFiles.generate("1.0");
-        for (String f : List.of("rachana.lang.json", "sutra.schema.json")) {
-            assertEquals(read(root().resolve("compat/levels/1.0").resolve(f)), now.get(f), f + " at level 1.0 differs from compat/levels/1.0");
-        }
-    }
-
-    @Test
-    void theNewestWrittenLevelIsWhatSpecHolds() throws IOException {
-        Path levels = root().resolve("compat/levels");
-        String newest;
-        try (Stream<Path> s = Files.list(levels)) {
-            newest = s.filter(Files::isDirectory).map(p -> p.getFileName().toString()).sorted().reduce((a, b) -> b).orElseThrow();
-        }
+    void theLevelIsWhatSpecHolds() throws IOException {
+        String newest = Grammar.LEVEL;
         Map<String, String> now = LangFiles.generate(newest);
         for (String f : List.of("rachana.lang.json", "sutra.schema.json")) {
             assertEquals(read(root().resolve("spec/1").resolve(f)), now.get(f), "spec/1/" + f + " is not the generated file of level " + newest);
         }
-    }
-
-    @Test
-    void aLaterLevelOnlyAddsNames() {
-        Pattern name = Pattern.compile("\"(?:name|code)\" : \"([^\"]+)\"");
-        String before = LangFiles.generate("1.0").get("rachana.lang.json");
-        for (String level : Grammar.LEVELS.subList(1, Grammar.LEVELS.size())) {
-            String later = LangFiles.generate(level).get("rachana.lang.json");
-            assertTrue(later.contains("\"language\" : \"" + level + "\""));
-            Matcher m = name.matcher(before);
-            while (m.find()) {
-                assertTrue(later.contains(m.group()), level + " lost " + m.group(1));
-            }
-            before = later;
-        }
-        assertTrue(LangFiles.generate("1.1").get("rachana.lang.json").contains("\"RCH-2008\""), "a code of level 1.1 is listed at 1.1");
-        assertFalse(LangFiles.generate("1.0").get("rachana.lang.json").contains("\"RCH-2008\""), "and not at 1.0");
     }
 
     @Test

@@ -49,7 +49,7 @@ public final class RachanaSchema {
         s.put("required", List.copyOf(required));
         s.put("additionalProperties", false);
         Map<String, Object> p = new LinkedHashMap<>();
-        if (grammar.level() == null || "1.0".equals(grammar.level())) {
+        if (grammar.level() == null) {
             p.put("rachana", Ordered.map("const", SutraParser.LANGUAGE, "description", "The Rachana language version; always " + SutraParser.LANGUAGE));
         } else {                                                  // SPEC 2.1 rule 4: the level the Sutra is written for, at most this one
             List<Object> numbers = new ArrayList<>(List.of(SutraParser.LANGUAGE));

@@ -253,8 +253,8 @@ public final class ServerConfig {
 
         Map<String, Object> p = r.map(m.get("project"), "project");
         if (p.containsKey("level")) {
-            r.problem("project.level: a Sutra declares its own language level in its rachana: key (rachana: 1 is 1.0, rachana: 1.2 is 1.2;"
-                    + " rachana upgrade raises it); remove project.level");
+            r.problem("project.level: a Sutra declares its own language level in its rachana: key (rachana: 1 is 1.2);"
+                    + " remove project.level");
         }
         r.keys(p, "project", "dir", "level", "watch");
         Path projectDir = p.get("dir") == null ? null : r.path(p.get("dir"), "project.dir", false);

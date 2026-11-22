@@ -130,7 +130,7 @@ class G4ReadyTest {
     }
 
     static Object eval(String e, EvalContext c) {
-        return Values.simplify(EL.compile(e).eval(c));
+        return com.ash.rachana.el.Fx.plain(Values.simplify(EL.compile(e).eval(c)));
     }
 
     // ---- 1: sums over a host's nodes ----
@@ -150,11 +150,10 @@ class G4ReadyTest {
     @Test
     void anAggregateOfSomethingThatIsNotAListIsAProblemNeverASilentZero() {
         Node doc = host(collateral());
-        ElCompiler v11 = Rachana.at("1.1", null).compiler();
+        ElCompiler v11 = Rachana.at("1.2", null).compiler();
         for (String e : List.of("sum($.TEXT)", "sum($.HELD)", "sum($.REC)", "count($.REC)", "avg(true)", "median($.TEXT)")) {
             assertThatThrownBy(() -> v11.compile(e).eval(EvalContext.of(doc, Formats.defaults()))).as(e).isInstanceOf(ElException.class)
                     .satisfies(x -> assertThat(((ElException) x).code()).isEqualTo(RachanaCode.EL_EVAL)).hasMessageContaining("is not a list");
-            assertThat(Values.text(eval(e, doc))).as("level 1.0 as recorded: " + e).isIn("0", "");
         }
         assertThatThrownBy(() -> v11.compile("span($.TEXT)").eval(EvalContext.of(doc, Formats.defaults()))).hasMessageContaining("is not a list");
         assertThat(Values.text(v11.compile("sum($.POSITIONS, 'VALUE')").eval(EvalContext.of(doc, Formats.defaults())))).isEqualTo("78105");
@@ -199,7 +198,7 @@ class G4ReadyTest {
     void formatsAPackAddsAtRunTimeReachEveryReader(@TempDir Path dir) throws Exception {
         Path pack = dir.resolve("pack-formats.yaml");
         Files.writeString(pack, "formats:\n  one: { type: number, decimals: 1 }\n");
-        Rachana r = Rachana.at("1.1", RachanaOptions.DEFAULTS.withFormats(null, List.of(pack.toString())));
+        Rachana r = Rachana.at("1.2", RachanaOptions.DEFAULTS.withFormats(null, List.of(pack.toString())));
         Formats held = r.formats();
         EvalContext ctx = EvalContext.of(Node.of(Map.of("x", 2.25)), held);
         assertThat(held.isLive()).isTrue();
@@ -209,7 +208,6 @@ class G4ReadyTest {
         r.formats().reload(List.of(pack.toString(), second.toString()));
         assertThat(held.has("two")).as("the reader's own instance").isTrue();
         assertThat(ctx.formats().format("two", 2.25)).isEqualTo("2.25");
-        assertThat(r.language("1.0").formats().has("two")).as("a level view of the same table").isTrue();
         Files.writeString(pack, "formats:\n  one: { type: number, decimals: 3 }\n");
         r.formats().reload();
         assertThat(held.format("one", 2.25)).as("the same files read again").isEqualTo("2.250");
@@ -219,30 +217,6 @@ class G4ReadyTest {
     }
 
     // ---- 4: the printer at a level ----
-
-    @Test
-    void thePrinterWritesTheFormsOfTheSutrasLevel() {
-        ElCompiler v10 = Rachana.core().compiler();
-        ElCompiler v11 = Rachana.at("1.1", null).compiler();
-        Map<String, String[]> cases = new LinkedHashMap<>();
-        cases.put("!(a == b) || c && !d", new String[] {"!(a == b) || c && !d", "not a == b or c and not d"});
-        cases.put("a ? b : c ? d : e", new String[] {"a ? b : c ? d : e", "b if a else d if c else e"});
-        cases.put("(a ? b : c) ? d : e", new String[] {"(a ? b : c) ? d : e", "d if (b if a else c) else e"});
-        cases.put("!a == b", new String[] {"!a == b", "(not a) == b"});
-        cases.put("a && (b || c)", new String[] {"a && (b || c)", "a and (b or c)"});
-        cases.put("!(a && b)", new String[] {"!(a && b)", "not (a and b)"});
-        cases.forEach((text, want) -> {
-            assertThat(Printer.print(v10.compile(text))).as(text).isEqualTo(want[0]).isEqualTo(Printer.print(v10.compile(text), "1.0"));
-            String at11 = Printer.print(v11.compile(text), "1.1");
-            assertThat(at11).as(text).isEqualTo(want[1]).isEqualTo(Printer.print(v11.compile(text), "1.2"));
-            assertThat(v11.compile(at11)).as("1.1 reads back the same tree: " + at11).isEqualTo(v11.compile(text));
-            assertThat(v10.compile(want[0])).isEqualTo(v10.compile(text));
-        });
-        Expr measure = new Expr.Call("sum", null, List.of(v10.compile("PNL")), Map.of("where", v10.compile("DESK == 'RATES' && PNL > 0")));
-        assertThat(Printer.print(measure, "1.0")).isEqualTo("sum(PNL, where = DESK == 'RATES' && PNL > 0)");
-        assertThat(Printer.print(measure, "1.1")).isEqualTo("sum(PNL, where=DESK == 'RATES' and PNL > 0)");
-        assertThatThrownBy(() -> Printer.print(v10.compile("1"), "9.9")).isInstanceOf(IllegalArgumentException.class);
-    }
 
     // ---- 5: the Sutra's JSON shape ----
 
@@ -266,15 +240,6 @@ class G4ReadyTest {
     }
 
     // ---- 6: an instance pinned at a level ----
-
-    @Test
-    void anInstanceIsPinnedAtALevelInOneCall() {
-        assertThat(Rachana.at("1.0", null).language()).isEqualTo("1.0");
-        assertThat(Rachana.at("1.2", RachanaOptions.DEFAULTS).language()).isEqualTo("1.2");
-        assertThat(Rachana.at("1.1", null).compiler().level()).isEqualTo("1.1");
-        assertThat(Rachana.at("1.1", null).parser().grammar().level()).isEqualTo("1.1");
-        assertThatThrownBy(() -> Rachana.at("2.0", null)).isInstanceOf(IllegalArgumentException.class);
-    }
 
     // ---- 7: one way per job ----
 

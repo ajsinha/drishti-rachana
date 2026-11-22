@@ -1,5 +1,0 @@
-# Copyright (c) 2026 Ashutosh Sinha. Proprietary: see LICENSE.
-# Level switches (SUTRA_EXPANSION 6.2): one line each, with the owner approval:
-#   - { level: "1.1", case: "<suite#id>", approved: "owner YYYY-MM-DD", why: "..." }
-# Empty: the list is meant to stay near empty.
-switches: []

@@ -7,9 +7,7 @@ package com.ash.rachana.el;
 import static com.ash.rachana.el.Fx.EL;
 import static com.ash.rachana.el.Fx.compileError;
 import static com.ash.rachana.el.Fx.dec;
-import static com.ash.rachana.el.Fx.eval;
 import static com.ash.rachana.el.Fx.evalError;
-import static com.ash.rachana.el.Fx.list;
 import static com.ash.rachana.el.Fx.masked;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,6 +18,15 @@ import org.junit.jupiter.api.Test;
 
 /** The list functions (FUNCTION_CATALOGUE.md section 6): Excel's dynamic arrays over [*], with @ the element. */
 class ListFunctionsTest {
+
+    @SuppressWarnings("unchecked")
+    private static java.util.List<Object> list(String src) {
+        return (java.util.List<Object>) Fx.plain(Fx.list(src));
+    }
+
+    private static Object eval(String src) {
+        return Fx.plain(Fx.eval(src));
+    }
 
     @Test
     void sortOrdersByAKeyWithEmptyKeysLast() {

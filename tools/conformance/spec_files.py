@@ -2,10 +2,10 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see LICENSE.
 """The "spec not stale" guard (plan R0 H4): spec/1/rachana.lang.json and spec/1/sutra.schema.json are generated from the compiler's own
-tables by java/rachana-tools LangFiles at the newest written language level (compat/levels/<L>) and committed.
+tables by java/rachana-tools LangFiles at the language level (Grammar.LEVEL, 1.2) and committed.
 
     python3 tools/conformance/spec_files.py            check: exit 1 when stale
-    python3 tools/conformance/spec_files.py --write    regenerate both files (a release writes a level with tools/regime/levels.py write)
+    python3 tools/conformance/spec_files.py --write    regenerate both files
 
 Build first: cd java && ./mvnw clean package -DskipTests. Run on Java 21."""
 import argparse
@@ -25,7 +25,7 @@ def main(argv=None) -> int:
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--java", default=os.environ.get("RACHANA_JAVA", "java"))
     a = ap.parse_args(argv)
-    level = sorted(p.name for p in (ROOT / "compat" / "levels").iterdir() if p.is_dir())[-1]
+    level = "1.2"
     classes = [ROOT / "java" / m / "target" / "classes" for m in ("rachana-tools", "rachana-core", "rachana-api")]
     if not all(c.is_dir() for c in classes):
         sys.exit("build first: cd java && ./mvnw clean package -DskipTests")

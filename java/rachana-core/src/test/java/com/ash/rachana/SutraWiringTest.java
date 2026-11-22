@@ -148,7 +148,7 @@ class SutraWiringTest {
         assertThat(Values.simplify(EL.compile("size($src.POINTS)").eval(c))).isEqualTo(3L);
         assertThat(Values.truthy(EL.compile("@other.open == null").eval(c))).isTrue();     // not fired: nothing
         assertThat(Values.simplify(EL.compile("@.X").eval(c.withRow(new JsonCodec().read("{\"X\":7}"), 0)))).isEqualTo(7L);
-        assertThat(Values.simplify(EL.compile("$.A - 1").eval(c))).isEqualTo(0L);
+        assertThat(com.ash.rachana.el.Fx.plain(Values.simplify(EL.compile("$.A - 1").eval(c)))).isEqualTo(0L);
         assertThat(Wiring.refs("'@nope' + @trades.open.trade + x@mail.com")).containsExactly(new Wiring.Ref("trades", "open", "trade"));
     }
 

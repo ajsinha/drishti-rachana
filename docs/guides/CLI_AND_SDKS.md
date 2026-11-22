@@ -67,7 +67,7 @@ JSON.parse(rachana.check(JSON.stringify({ sutra: yamlText })));                 
 `rachana.runtime.js` compiles, binds and diffs; `rachana.tools.js` adds the editing tools (Studio uses it). In a page:
 
 ```html
-<script src="/vendor/drishti-elements/3.2.0/drishti-elements.js"></script>
+<script src="/vendor/drishti-elements/3.3.0/drishti-elements.js"></script>
 <script type="module" src="/rachana/src/rachana_view.js"></script>
 <rachana-view src="/sutras/sales.sutra.yaml" data="/data/v1" runtime="/rachana/dist/rachana.runtime.js" live></rachana-view>
 ```
@@ -75,7 +75,7 @@ JSON.parse(rachana.check(JSON.stringify({ sutra: yamlText })));                 
 Attributes: `src`, `data` (the Data Protocol base), `runtime`, `formats`, `today`, `allow` (other data origins), `live`, `form`
 (`json`, `arrow` or `ndjson` rows), `libraries`. Properties: `sutra` (text instead of `src`), `record`, `controls`, `host` (the page's
 handling of `notify` and `host` effects), `linkResolver`, `fetch`, `files`. Events: `rachana-view:ready`, `rachana-view:change`,
-`rachana-view:error`, `rachana-view:write`. The painter is Drishti Elements, vendored under `js/vendor/drishti-elements/3.2.0/`.
+`rachana-view:error`, `rachana-view:write`. The painter is Drishti Elements, vendored under `js/vendor/drishti-elements/3.3.0/`.
 The full list is the header of [rachana_view.js](../../js/packages/rachana/src/rachana_view.js).
 
 ## Python

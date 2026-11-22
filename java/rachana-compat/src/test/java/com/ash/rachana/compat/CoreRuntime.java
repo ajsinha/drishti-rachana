@@ -32,7 +32,7 @@ final class CoreRuntime implements CorpusRuntime {
     @Override public String name() { return "core"; }
 
     @Override public void compileAll(Corpus corpus, Path out) throws Exception {
-        compileAll(corpus, out, "1.0", tree -> { });
+        compileAll(corpus, out, "1.2", tree -> { });
     }
 
     /**

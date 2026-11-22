@@ -105,7 +105,7 @@ functions:
   description: True when the text contains the part, ignoring case.
   examples:
   - {expr: 'contains(trades.PRODUCT_TYPE, ''SWAP'')', says: every kind of swap}
-  - {expr: 'sum(trades.MTM, where = contains(trades.PORTFOLIO, ''COMM''))', says: MTM of the hedge books}
+  - {expr: 'calc(sum(trades.MTM), where = contains(trades.PORTFOLIO, ''COMM''))', says: MTM of the hedge books}
   edge-cases: {nulls: 'contains(null, ''x'') is null, which a filter treats as not matching.', masked: Filtering on a masked column is DRS-9161.}
 - name: has
   family: scalar
@@ -133,7 +133,7 @@ functions:
   description: True when a list attribute holds at least one of the values (any of). No value chosen holds everything.
   examples:
   - {expr: 'any_of(trades.TAGS, [''fx'', ''rates''])', says: trades tagged fx or rates}
-  - {expr: 'count(trades, where = any_of(trades.TAGS, [''hedge'']))', says: how many trades are tagged hedge}
+  - {expr: 'calc(count(trades), where = any_of(trades.TAGS, [''hedge'']))', says: how many trades are tagged hedge}
   edge-cases: {nulls: 'any_of(null, [''x'']) is false.', types: Equality as ==.}
 - name: all_of
   family: scalar
@@ -147,7 +147,7 @@ functions:
   description: True when a list attribute holds every one of the values (all of). No value chosen holds everything.
   examples:
   - {expr: 'all_of(trades.TAGS, [''fx'', ''hedge''])', says: trades tagged both fx and hedge}
-  - {expr: 'sum(trades.MTM, where = all_of(trades.TAGS, [''fx'', ''rates'']))', says: MTM of the trades tagged fx and rates}
+  - {expr: 'calc(sum(trades.MTM), where = all_of(trades.TAGS, [''fx'', ''rates'']))', says: MTM of the trades tagged fx and rates}
   edge-cases: {nulls: 'all_of(null, [''x'']) is false.', types: Equality as ==.}
 - name: starts_with
   family: scalar
@@ -161,7 +161,7 @@ functions:
   description: True when the text starts with the prefix, ignoring case.
   examples:
   - {expr: 'starts_with(trades.PORTFOLIO, ''BOOK-RATES-'')', says: the rates books}
-  - {expr: 'count(trades, where = starts_with(trades.TRADE_ID, ''BBG''))', says: how many Bloomberg-booked trades}
+  - {expr: 'calc(count(trades), where = starts_with(trades.TRADE_ID, ''BBG''))', says: how many Bloomberg-booked trades}
   edge-cases: {nulls: 'startswith(null, ''x'') is null.'}
 - name: ends_with
   family: scalar
@@ -188,7 +188,7 @@ functions:
   description: A date written in ISO form (YYYY-MM-DD). DEL has no date literal; this is it.
   examples:
   - {expr: trades.TRADE_DATE >= date('2026-10-01'), says: trades from October 2026}
-  - {expr: 'sum(trades.MTM, where = trades.MATURITY_DATE < date(''2027-01-01''))', says: MTM of what matures this year}
+  - {expr: 'calc(sum(trades.MTM), where = trades.MATURITY_DATE < date(''2027-01-01''))', says: MTM of what matures this year}
   edge-cases: {types: The text must be an ISO date; date('10/01/2026') is DRS-9127. Comparing a date with a text is allowed only for an ISO text.}
 - name: timestamp
   family: scalar
@@ -201,7 +201,7 @@ functions:
   description: A timestamp written in ISO form (YYYY-MM-DDTHH:MM[:SS]).
   examples:
   - {expr: 'trades.updated_at >= timestamp(''2026-10-09T09:00'')', says: changed since nine o'clock}
-  - {expr: 'count(trades, where = trades.updated_at < timestamp(''2026-10-09T00:00:00''))', says: rows not touched today}
+  - {expr: 'calc(count(trades), where = trades.updated_at < timestamp(''2026-10-09T00:00:00''))', says: rows not touched today}
   edge-cases: {types: The text must be an ISO timestamp; anything else is DRS-9127.}
 - name: year
   family: scalar
@@ -227,7 +227,7 @@ functions:
   description: The quarter (1 to 4) of a date or timestamp.
   examples:
   - {expr: quarter(trades.TRADE_DATE), says: 1 for January to March}
-  - {expr: 'count(trades, where = quarter(trades.TRADE_DATE) == 4)', says: trades done in the fourth quarter}
+  - {expr: 'calc(count(trades), where = quarter(trades.TRADE_DATE) == 4)', says: trades done in the fourth quarter}
   edge-cases: {nulls: quarter(null) is null.}
 - name: month
   family: scalar
@@ -253,7 +253,7 @@ functions:
   description: The ISO week number (1 to 53) of a date or timestamp.
   examples:
   - {expr: week(trades.TRADE_DATE), says: the ISO week a trade was done in}
-  - {expr: 'count(trades, where = week(trades.TRADE_DATE) == 41)', says: trades of week 41}
+  - {expr: 'calc(count(trades), where = week(trades.TRADE_DATE) == 41)', says: trades of week 41}
   edge-cases: {nulls: week(null) is null., types: 'ISO weeks: the first days of January can belong to week 52 or 53 of the year before.'}
 - name: day
   family: scalar
@@ -296,7 +296,7 @@ functions:
     negative when b is before a.'
   examples:
   - {expr: 'business_days_between(trades.TRADE_DATE, trades.MATURITY_DATE)', says: the settlement lag in business days}
-  - {expr: 'count(trades, where = business_days_between(trades.TRADE_DATE, trades.MATURITY_DATE) > 2)', says: trades settling later than T+2}
+  - {expr: 'calc(count(trades), where = business_days_between(trades.TRADE_DATE, trades.MATURITY_DATE) > 2)', says: trades settling later than T+2}
   edge-cases: {nulls: null when either date is null., types: Weekends only until model calendars arrive (B); a holiday is counted as a business day.}
 - name: fx
   family: conversion
@@ -378,7 +378,7 @@ functions:
   description: The sum of x over the rows of the group (after security and filters), only the rows where the condition holds when where= is given.
   examples:
   - {expr: sum(trades.MTM), says: MTM}
-  - {expr: 'sum(trades.MTM, where = trades.TRADE_STATUS != ''MATURED'')', says: MTM of the live trades only}
+  - {expr: 'calc(sum(trades.MTM), where = trades.TRADE_STATUS != ''MATURED'')', says: MTM of the live trades only}
   - {expr: sum(trades.NOTIONAL * trades.DV01) / sum(trades.NOTIONAL), says: a notional-weighted average rate}
   edge-cases: {nulls: null values are skipped., empty: 'null over no rows (not 0); wrap it in coalesce(..., 0) to show 0.', masked: 'null over a masked column, and
       the answer marks the column masked.', currencies: 'Summing an amount whose currency is a column, across several currencies, is the currency guard DRS-9158:
@@ -395,7 +395,7 @@ functions:
   description: The arithmetic mean of x over the rows of the group.
   examples:
   - {expr: avg(trades.NOTIONAL), says: the average trade size}
-  - {expr: 'avg(economies.GROWTH, where = economies.REGION == ''Asia'')', says: average growth of the Asian economies}
+  - {expr: 'calc(avg(economies.GROWTH), where = economies.REGION == ''Asia'')', says: average growth of the Asian economies}
   edge-cases: {nulls: null values are skipped (they are not zeros)., empty: null over no rows., masked: null over a masked column.}
 - name: min
   family: aggregate
@@ -409,7 +409,7 @@ functions:
   description: The smallest value of x in the group (numbers, dates or text).
   examples:
   - {expr: min(trades.MTM), says: the worst trade MTM}
-  - {expr: 'min(trades.MATURITY_DATE, where = trades.TRADE_STATUS != ''MATURED'')', says: the next maturity}
+  - {expr: 'calc(min(trades.MATURITY_DATE), where = trades.TRADE_STATUS != ''MATURED'')', says: the next maturity}
   edge-cases: {nulls: null values are skipped., empty: null over no rows.}
 - name: max
   family: aggregate
@@ -437,9 +437,9 @@ functions:
   description: count() counts the rows (of a pivot cell, or of the one table a measure reads); count(trades) the rows of a table alias; count(x) the rows where x is not null.
   examples:
   - {expr: count(), says: 'how many rows (a pivot formula: the cell''s rows)'}
-  - {expr: 'count(where = PNL < 0) / count()', says: 'the share of losing rows (a pivot formula)'}
+  - {expr: 'calc(count(trades), where = trades.PNL < 0) / count(trades)', says: 'the share of losing rows (a pivot formula)'}
   - {expr: count(trades), says: how many trades}
-  - {expr: 'count(trades, where = trades.MTM < 0)', says: how many trades lose money}
+  - {expr: 'calc(count(trades), where = trades.MTM < 0)', says: how many trades lose money}
   - {expr: count(trades.PORTFOLIO), says: trades with a book}
   edge-cases: {nulls: count(x) skips null; count() and count(alias) count every row., empty: 0 over no rows (never null).}
 - name: distinct
@@ -454,7 +454,7 @@ functions:
   description: How many different values of x the group has.
   examples:
   - {expr: distinct(trades.COUNTERPARTY), says: how many counterparties}
-  - {expr: 'distinct(trades.PORTFOLIO, where = trades.TRADE_STATUS != ''MATURED'')', says: books with live trades}
+  - {expr: 'calc(distinct(trades.PORTFOLIO), where = trades.TRADE_STATUS != ''MATURED'')', says: books with live trades}
   edge-cases: {nulls: null is not a value., empty: 0 over no rows., masked: null over a masked column (the values cannot be told apart).}
 - name: ratio
   family: aggregate
@@ -960,8 +960,8 @@ functions:
   scopes: [row, aggregate, context]
   description: 'The query''s as-of date: the end of its dates (time.as-of, the window''s end), else the business date it read.'
   examples:
-  - {expr: 'sum(trades.NOTIONAL, where = days_between(trades.TRADE_DATE, asof()) <= 30)', says: notional traded in the last 30 days}
-  - {expr: 'count(trades, where = trades.MATURITY_DATE <= shift_date(asof(), 30, unit = ''day''))', says: trades maturing within 30 days}
+  - {expr: 'calc(sum(trades.NOTIONAL), where = days_between(trades.TRADE_DATE, asof()) <= 30)', says: notional traded in the last 30 days}
+  - {expr: 'calc(count(trades), where = trades.MATURITY_DATE <= shift_date(asof(), 30, unit = ''day''))', says: trades maturing within 30 days}
   edge-cases: {types: Always a date., folded: 'today() is read as asof() (Q7): both are the view''s or the query''s as-of date.'}
 - name: measure
   family: measure reference

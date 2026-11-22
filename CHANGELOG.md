@@ -3,6 +3,16 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## v1.0.0 (2026-11-21)
+
+- **Level retirement: one language level, 1.2** (owner decision UP-0). `rachana: 1` and `rachana: 1.2` are 1.2; a Sutra or fragment that declares 1.0 or 1.1 is refused (`RCH-2009`) with "use rachana 0.12 upgrade". `Grammar.LEVEL` is the one level (`LEVELS` holds it alone, `MAJOR_ONLY` is it), every compiler, printer, format table and checker defaults to it, and the 1.0 and 1.1 readings are gone: the replay of level 1.0 (`compat/levels`, `moved-cases.yaml`, `level-switches.yaml`, `tools/regime/levels.py`, `LevelReplayTest`), the frozen 1.0 language files, the per-level cases and the 1.0 printer forms. `spec/1/rachana.lang.json` and `sutra.schema.json` are generated at 1.2.
+- **`rachana upgrade` is removed from 1.0.0** (the Java `Upgrade`, `UpgradeCommand`, `UpgradeRule`, the Node and Python commands, `docs/guides/UPGRADE.md`, `compat/upgrade`). It lives in Rachana 0.12.0: run `rachana upgrade` from 0.12 on a Sutra written at 1.0 or 1.1, then use 1.0.0.
+- **Corpus re-recorded at 1.2** (`compat/customers/drishti/2.9.11.i7b`, 481 Sutras, none with a problem): the Sutras are Drishti's own, upgraded to 1.2; the documents are compiled by Core (`tools/regime/CorpusCompileCore.java`, `corpus_export.py`). The reference's recorded binds ended with level 1.0 and are not recorded again (Core is the one implementation; the conformance suite holds the binder).
+- **Fixed**: from level 1.1 the regular-expression functions ran on the default table, so an instance's own caps (`RachanaOptions.withRegexLimits`) did not hold; they run on the instance's.
+- **Function catalogue examples** write a condition on an aggregate as `calc(sum(x), where = ...)`, the only form the language reads at 1.2.
+- **Elements 3.3.0** (tag v3.3.0, commit 3363c9f) vendored: `js/vendor/drishti-elements/3.3.0/` (SHA-384 manifest), the server pom, Python assets, Studio and docs name it.
+- **API removals** (logged in `java/api-removals.txt`): `tools.Upgrade*`, `Grammar.LEVEL_1_0` (now `Grammar.LEVEL`), `Printer.print(Expr, boolean)`.
+
 ## v0.12.0 (2026-11-21)
 
 - **IDE launchers follow the platform standard**: one `run-configs/` at the repository root, every launcher named `Rachana: <verb> <what>` (IntelliJ folder `Rachana`), the same names as the VS Code tasks and launches; missing launchers added; the check `python/tests/test_launchers.py` (a test) keeps names, files and workspace in step.

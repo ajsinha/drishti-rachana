@@ -24,14 +24,9 @@ public final class Printer {
 
     // precedence, loosest first (even numbers; an odd one sits between two): ternary 2, ?? 4, || 6, && 8, Python's not 9, == != 10,
     // < <= > >= in 12, + - 14, * / % 16, unary 18, ** 20, postfix 22
-    /** {@code e} as text at language level 1.0: {@code print(e, "1.0")}. */
+    /** {@code e} as text at the language level. */
     public static String print(Expr e) {
-        return print(e, "1.0");
-    }
-
-    /** {@code e} as text at level 1.1 when {@code v11}, else at 1.0: {@code print(e, v11 ? "1.1" : "1.0")}. */
-    public static String print(Expr e, boolean v11) {
-        return print(e, v11 ? "1.1" : "1.0");
+        return print(e, com.ash.rachana.profile.Grammar.LEVEL);
     }
 
     /**

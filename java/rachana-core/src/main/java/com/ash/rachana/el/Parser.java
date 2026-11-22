@@ -851,7 +851,7 @@ final class Parser {
             }
             return at(node(new Expr.Form(name, form, List.copyOf(args)), parts), s);
         }
-        ElFunction fn = v11 && Level11.has(name) ? Level11.function(name) : table.get(name);
+        ElFunction fn = v11 && Level11.has(name) ? Level11.function(name, table) : table.get(name);
         return at(node(new Expr.Call(name, fn, List.copyOf(args), named), parts), s);
     }
 

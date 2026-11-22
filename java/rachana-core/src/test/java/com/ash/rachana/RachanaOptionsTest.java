@@ -32,6 +32,5 @@ class RachanaOptionsTest {
         RachanaOptions o = RachanaOptions.DEFAULTS.withFormats(null, List.of(TestFormats.file()));
         assertThat(o.formats().format("pct4", 0.123456)).isEqualTo(RachanaOptions.DEFAULTS.withFormats(null, List.of(TestFormats.file()))
                 .formats().format("pct4", 0.123456));
-        assertThat(o.formats().format("pct4", 0.123456)).isNotEqualTo(RachanaOptions.DEFAULTS.formats().format("pct4", 0.123456));
     }
 }

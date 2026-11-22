@@ -13,7 +13,7 @@ export async function languageLevels(profiles = "core") {
   return JSON.parse((await tools(profiles)).levels());
 }
 /** The answer to --level, which no command takes: a Sutra declares its own level (SPEC 2.1). */
-export const LEVEL_FLAG = "--level is gone: a Sutra declares its language level in its rachana: key (rachana: 1 is 1.0, rachana: 1.2 is 1.2); rachana upgrade raises it";
+export const LEVEL_FLAG = "--level is gone: a Sutra declares its language level in its rachana: key (rachana: 1 is 1.2)";
 export const SUFFIX = ".sutra.yaml";
 export const LIVE_SUFFIX = ".live.yaml";
 /** The profile keys of a live table's declaration that the Drishti profile reads (LIVE_TABLES 2); none in core. */

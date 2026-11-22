@@ -1,0 +1,10 @@
+{
+ "corpus": "drishti-compat-corpus-2.9.11.i7b",
+ "drishtiTag": "g4/finish",
+ "drishtiCommit": "5faeb19112abf23486c4cbfaed31785ca53e6d32",
+ "language": "1.2",
+ "sutras": 481,
+ "blocks": 42,
+ "plan": "none",
+ "binds": "none: Core is the one implementation (the reference's recorded binds ended with level 1.0)"
+}

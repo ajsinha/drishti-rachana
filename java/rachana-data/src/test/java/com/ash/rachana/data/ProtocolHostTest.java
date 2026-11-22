@@ -86,4 +86,15 @@ class ProtocolHostTest {
             assertEquals("b", out.get(0).get("table"));
         }
     }
+
+    /** A host mounting the protocol on its own routes reads a window's keys as this host does: lists as they are, a bare value as a one-part key. */
+    @Test
+    void keysAreReadAsTheProtocolSendsThem() {
+        assertEquals(List.of(List.of("T1"), List.of("A", 2L)), ProtocolHost.keys(List.of("T1", List.of("A", 2L))));
+        assertEquals(List.of(), ProtocolHost.keys(null));
+        assertEquals(List.of(), ProtocolHost.keys("not a list"));
+        List<Object> withNull = new ArrayList<>();
+        withNull.add(null);
+        assertEquals(1, ProtocolHost.keys(withNull).size());
+    }
 }

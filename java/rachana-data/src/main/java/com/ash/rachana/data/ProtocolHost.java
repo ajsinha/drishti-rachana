@@ -336,8 +336,11 @@ public final class ProtocolHost {
         }
     }
 
-    /** A list of keys ({@code [[…], …]}; a bare value is a one-part key). */
-    static List<List<Object>> keys(Object o) {
+    /**
+     * A list of keys as the protocol sends them ({@code [[…], …]}; a bare value is a one-part key): a host that mounts the protocol on its own
+     * routes (a windowed stream's {@code POST /changes/{sub}/window}) reads them as this host does.
+     */
+    public static List<List<Object>> keys(Object o) {
         List<List<Object>> out = new ArrayList<>();
         if (o instanceof List<?> l) {
             for (Object k : l) {

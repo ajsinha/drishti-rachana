@@ -60,7 +60,8 @@
       "type": "object", "required": ["t", "stream", "from", "to", "recoverable"],
       "properties": {
         "t": { "const": "gap" }, "stream": { "type": "string" },
-        "from": { "type": "integer" }, "to": { "type": "integer" }, "recoverable": { "type": "boolean" }
+        "from": { "type": "integer" }, "to": { "type": "integer" }, "recoverable": { "type": "boolean" },
+        "expired": { "const": true, "description": "The host took the table away (PROTOCOL.md section 16): reading again answers rdp.table.unknown with expired." }
       }
     }
   }

@@ -20,6 +20,8 @@
         "message": { "type": "string" },
         "table": { "type": "string" }, "column": { "type": "string" }, "operation": { "type": "string", "description": "rdp.query.unsupported: the operation named." },
         "expected": { "type": "array", "items": { "type": "string" }, "description": "Nearest first." },
+        "expired": { "const": true, "description": "rdp.table.unknown: the host took the table away (PROTOCOL.md section 16); run what made it again." },
+        "reused": { "const": true, "description": "rdp.write.conflict: the change id was used before for other content (PROTOCOL.md section 16); a new change takes a new id." },
         "retry": { "type": "boolean" }, "retryAfterMs": { "type": "integer", "minimum": 0 },
         "anyOf": { "type": "array", "items": { "type": "string" }, "description": "rdp.query.narrow: the columns a list must filter on one of." },
         "current": { "type": "object", "properties": { "version": {}, "by": { "type": ["string", "null"] }, "at": { "type": ["string", "null"] } },

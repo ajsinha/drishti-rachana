@@ -46,6 +46,61 @@ public record Change(String id, String table, String op, List<Object> key, Objec
         return m;
     }
 
+    /**
+     * The change's content as one value (PROTOCOL 16, a repeated id): the SHA-256, in lower-case hex, of a canonical text of {@code table},
+     * {@code op}, {@code key}, {@code basedOn}, {@code set}, {@code from} and {@code reason}; not of {@code id}, {@code by} or {@code at}. The
+     * same message sent again gives the same digest, also after a journal's round trip: object keys are sorted and a number is written
+     * by its value ({@code 9}, {@code 9.0} and {@code 9L} are one). A sink keeps it with its first answer ({@link ChangeSink#priorDigest}).
+     */
+    public String digest() {
+        StringBuilder b = new StringBuilder();
+        canon(b, table);
+        canon(b, op);
+        canon(b, key);
+        canon(b, basedOn);
+        canon(b, set);
+        canon(b, from);
+        canon(b, reason);
+        try {
+            return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(b.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is part of every Java runtime", e);
+        }
+    }
+
+    private static void canon(StringBuilder b, Object v) {
+        if (v == null) {
+            b.append('n');
+        } else if (v instanceof Map<?, ?> m) {
+            java.util.TreeMap<String, Object> sorted = new java.util.TreeMap<>();
+            m.forEach((k, x) -> sorted.put(String.valueOf(k), x));
+            b.append('{').append(sorted.size()).append(':');
+            sorted.forEach((k, x) -> {
+                canon(b, k);
+                canon(b, x);
+            });
+            b.append('}');
+        } else if (v instanceof java.util.Collection<?> c) {
+            b.append('[').append(c.size()).append(':');
+            c.forEach(x -> canon(b, x));
+            b.append(']');
+        } else if (v instanceof Number n) {
+            String t;
+            try {
+                t = new java.math.BigDecimal(n.toString()).stripTrailingZeros().toPlainString();
+            } catch (NumberFormatException e) {
+                t = n.toString();                                       // NaN, infinities
+            }
+            b.append('d').append(t).append(';');
+        } else if (v instanceof Boolean x) {
+            b.append(x ? 't' : 'f');
+        } else {
+            String t = v.toString();
+            b.append('s').append(t.length()).append(':').append(t);
+        }
+    }
+
     /** A change from its {@link #toMap()} form. */
     @SuppressWarnings("unchecked")
     public static Change of(Map<String, Object> m) {

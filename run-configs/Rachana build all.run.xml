@@ -2,15 +2,19 @@
   Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
   Drishti Rachana. Proprietary: see LICENSE.
 
-  Rachana install release: installs the reactor's jars into the local Maven repository (~/.m2) for Drishti to use. Run it ONLY on a checkout of a release tag (git checkout vX.Y.Z), never on a branch: a branch gives Drishti an unreleased snapshot (decision R-1).
-  Use it when: after tagging a release, on the tag's checkout, so Drishti builds against it.
+  Rachana: build all: the reactor's build without the tests: every module compiles, the jars are packaged and the guards run.
+  Use it when: after a clone or a pull, before running the tests.
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana install release" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
+  <configuration default="false" name="Rachana: build all" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
     <MavenSettings>
       <option name="myGeneralSettings" />
-      <option name="myRunnerSettings" />
+      <option name="myRunnerSettings">
+        <MavenRunnerSettings>
+          <option name="jreName" value="#USE_PROJECT_JDK" />
+        </MavenRunnerSettings>
+      </option>
       <option name="myRunnerParameters">
         <MavenRunnerParameters>
           <option name="profiles">
@@ -19,16 +23,16 @@
           <option name="goals">
             <list>
               <option value="clean" />
-              <option value="install" />
+              <option value="verify" />
               <option value="-DskipTests" />
             </list>
           </option>
-          <option name="pomFileName" />
+          <option name="pomFileName" value="" />
           <option name="profilesMap">
             <map />
           </option>
           <option name="resolveToWorkspace" value="false" />
-          <option name="workingDirPath" value="$PROJECT_DIR$" />
+          <option name="workingDirPath" value="$PROJECT_DIR$/java" />
         </MavenRunnerParameters>
       </option>
     </MavenSettings>

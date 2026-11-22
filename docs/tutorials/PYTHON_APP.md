@@ -16,7 +16,7 @@ pip install -e 'python[v8,flask]'                # add fastapi for the FastAPI a
 ```
 
 With uv instead of pip: `cd python && uv run --extra flask python ../examples/live-orders/flask_app.py`. In PyCharm: open the folder
-`python/` and use the checked-in run configurations (`python/run-configs/`).
+`python/` and use the checked-in run configurations (`run-configs/`, the `Rachana: run live-orders` launchers).
 
 ## Step 1: the Sutra
 

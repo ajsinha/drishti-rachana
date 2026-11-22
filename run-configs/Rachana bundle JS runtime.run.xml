@@ -1,0 +1,40 @@
+<!--
+  Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+  Drishti Rachana. Proprietary: see LICENSE.
+
+  Rachana: bundle JS runtime: builds the JavaScript bundles and copies them into js/packages/rachana/dist/ (tools/js/build_js.py through js/pom.xml; JDK 21 and Node).
+  Use it when: before the Studio, the Node tests that need the bundle, and the Flask/FastAPI board.
+  Maven launcher (exec-maven-plugin): no bash, no Node or Python plugin, so it runs in IntelliJ Community on Windows. Node 20+ / Python 3 on the PATH, or add -Dnode=<path> / -Dpython=<path> to the goals.
+  Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
+-->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Rachana: bundle JS runtime" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+      <option name="myRunnerSettings">
+        <MavenRunnerSettings>
+          <option name="jreName" value="#USE_PROJECT_JDK" />
+        </MavenRunnerSettings>
+      </option>
+      <option name="myRunnerParameters">
+        <MavenRunnerParameters>
+          <option name="profiles">
+            <set />
+          </option>
+          <option name="goals">
+            <list>
+              <option value="exec:exec@runtime-bundle" />
+            </list>
+          </option>
+          <option name="pomFileName" value="pom.xml" />
+          <option name="profilesMap">
+            <map />
+          </option>
+          <option name="resolveToWorkspace" value="false" />
+          <option name="workingDirPath" value="$PROJECT_DIR$/js" />
+        </MavenRunnerParameters>
+      </option>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>

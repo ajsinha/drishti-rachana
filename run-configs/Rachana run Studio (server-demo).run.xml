@@ -2,16 +2,20 @@
   Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
   Drishti Rachana. Proprietary: see LICENSE.
 
-  Rachana Studio (server-demo): Rachana Studio on the server example (examples/server-demo: its Sutra and tables); open http://localhost:4501.
+  Rachana: run Studio (server-demo): Rachana Studio on the server example (examples/server-demo); open http://localhost:4501.
   Use it when: you edit the server example's Sutra with the live preview.
-  Maven launcher (js/pom.xml, exec-maven-plugin): no bash, no Node plugin, so it runs in IntelliJ Community on Windows. Node 20+ on the PATH, or add -Dnode=<path to node> to the goals.
+  Maven launcher (exec-maven-plugin): no bash, no Node or Python plugin, so it runs in IntelliJ Community on Windows. Node 20+ / Python 3 on the PATH, or add -Dnode=<path> / -Dpython=<path> to the goals.
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana Studio (server-demo)" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana JS">
+  <configuration default="false" name="Rachana: run Studio (server-demo)" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
     <MavenSettings>
       <option name="myGeneralSettings" />
-      <option name="myRunnerSettings" />
+      <option name="myRunnerSettings">
+        <MavenRunnerSettings>
+          <option name="jreName" value="#USE_PROJECT_JDK" />
+        </MavenRunnerSettings>
+      </option>
       <option name="myRunnerParameters">
         <MavenRunnerParameters>
           <option name="profiles">
@@ -27,7 +31,7 @@
             <map />
           </option>
           <option name="resolveToWorkspace" value="false" />
-          <option name="workingDirPath" value="$PROJECT_DIR$/../js" />
+          <option name="workingDirPath" value="$PROJECT_DIR$/js" />
         </MavenRunnerParameters>
       </option>
     </MavenSettings>

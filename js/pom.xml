@@ -5,7 +5,7 @@
 
   The IDE launchers of the JavaScript side: Node and Python programs started by Maven (exec-maven-plugin), so IntelliJ IDEA Community on
   Windows runs them with no bash, no Shell Script plugin and no Node plugin. Not part of the Java reactor and builds nothing.
-  Run one:  java/mvnw -f js/pom.xml exec:exec@<id>   (ids below; the IDE launchers are java/run-configs/Rachana JS *.run.xml)
+  Run one:  java/mvnw -f js/pom.xml exec:exec@<id>   (ids below; the IDE launchers are run-configs/Rachana: bundle JS runtime, test JS (Node), run Studio and run dev server)
   Node 20+ and Python 3 on the PATH, or name them:  -Dnode=C:\tools\node\node.exe  -Dpython=C:\Python312\python.exe
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">

@@ -1,98 +1,61 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see LICENSE.
 //
-// Drishti Rachana in VS Code: File, Open Workspace from File. The tasks and launch configurations below mirror the JetBrains run
-// configurations (java/run-configs, python/run-configs, js/run-configs). JDK 21 for the Java extension: change the path below
-// (Windows: C:\\jdk-21). Build and run in the IDE: java/README.md#build-and-run-in-the-ide.
+// Rachana in VS Code: File, Open Workspace from File. The tasks and launch configurations carry the SAME names as the JetBrains run
+// configurations in run-configs/ (the launcher standard: docs/plans/LAUNCHER_STANDARD.md in the Drishti repository). JDK 21: change the
+// Java path below (Windows: C:\\jdk-21). Build and run in the IDE: README.md#build-and-run-in-the-ide.
 {
-  "folders": [ { "name": "rachana", "path": "." } ],
-  "extensions": {
-    "recommendations": [
-      "vscjava.vscode-java-pack",
-      "ms-python.python",
-      "ms-python.vscode-pylance",
-      "ms-python.debugpy",
-      "dbaeumer.vscode-eslint",
-      "redhat.vscode-yaml"
-    ]
-  },
+  "folders": [{"name": "rachana", "path": "."}],
+  "extensions": {"recommendations": ["vscjava.vscode-java-pack", "ms-python.python", "ms-python.vscode-pylance", "ms-python.debugpy", "dbaeumer.vscode-eslint", "redhat.vscode-yaml"]},
   "settings": {
-    "java.configuration.runtimes": [
-      { "name": "JavaSE-21", "path": "/usr/lib/jvm/java-21-openjdk-amd64", "default": true }
-    ],
+    "java.configuration.runtimes": [{"name": "JavaSE-21", "path": "/usr/lib/jvm/java-21-openjdk-amd64", "default": true}],
     "java.jdt.ls.java.home": "/usr/lib/jvm/java-21-openjdk-amd64",
     "java.import.maven.enabled": true,
     "java.configuration.updateBuildConfiguration": "automatic",
     "python.defaultInterpreterPath": "python3",
-    "python.analysis.extraPaths": [ "${workspaceFolder:rachana}/python/src" ],
+    "python.analysis.extraPaths": ["${workspaceFolder:rachana}/python/src"],
     "python.testing.pytestEnabled": true,
-    "python.testing.pytestArgs": [ "python/tests" ],
+    "python.testing.pytestArgs": ["python/tests"],
     "python.testing.cwd": "${workspaceFolder:rachana}/python",
-    "terminal.integrated.env.linux": { "PYTHONPATH": "${workspaceFolder:rachana}/python/src" },
-    "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder:rachana}/python/src" },
-    "terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder:rachana}\\python\\src" },
-    "files.associations": { "*.sutra.yaml": "yaml" }
+    "terminal.integrated.env.linux": {"PYTHONPATH": "${workspaceFolder:rachana}/python/src"},
+    "terminal.integrated.env.osx": {"PYTHONPATH": "${workspaceFolder:rachana}/python/src"},
+    "terminal.integrated.env.windows": {"PYTHONPATH": "${workspaceFolder:rachana}\\python\\src"},
+    "files.associations": {"*.sutra.yaml": "yaml"}
   },
   "tasks": {
     "version": "2.0.0",
     "tasks": [
-      { "label": "Rachana build all", "type": "shell", "command": "./mvnw clean verify -DskipTests", "windows": { "command": "mvnw.cmd clean verify -DskipTests" },
-        "options": { "cwd": "${workspaceFolder:rachana}/java" }, "group": "build", "problemMatcher": [] },
-      { "label": "Rachana test", "type": "shell", "command": "./mvnw clean verify", "windows": { "command": "mvnw.cmd clean verify" },
-        "options": { "cwd": "${workspaceFolder:rachana}/java" }, "group": "test", "problemMatcher": [] },
-      { "label": "Rachana install release (ONLY on a release tag)", "type": "shell", "command": "./mvnw clean install -DskipTests", "windows": { "command": "mvnw.cmd clean install -DskipTests" },
-        "options": { "cwd": "${workspaceFolder:rachana}/java" }, "problemMatcher": [] },
-      { "label": "Rachana JS bundles (Maven)", "type": "shell", "command": "./mvnw clean package -Pjs -DskipTests -pl :rachana-js -am", "windows": { "command": "mvnw.cmd clean package -Pjs -DskipTests -pl :rachana-js -am" },
-        "options": { "cwd": "${workspaceFolder:rachana}/java" }, "problemMatcher": [] },
-      { "label": "Rachana JS runtime bundle (build_js.py)", "type": "shell", "command": "python3 tools/js/build_js.py", "windows": { "command": "python tools/js/build_js.py" },
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "problemMatcher": [] },
-      { "label": "Rachana Node tests", "type": "shell", "command": "node tools/js/node_tests.mjs \"js/packages/*/test\"",
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "group": "test", "problemMatcher": [] },
-      { "label": "Rachana Python tests", "type": "shell", "command": "python3 -m pytest -q python/tests", "windows": { "command": "python -m pytest -q python/tests" },
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "group": "test", "problemMatcher": [] },
-      { "label": "Rachana lint examples", "type": "shell", "command": "python3 -m drishti_rachana lint examples/static-sales", "windows": { "command": "python -m drishti_rachana lint examples/static-sales" },
-        "options": { "cwd": "${workspaceFolder:rachana}", "env": { "PYTHONPATH": "python/src" } }, "problemMatcher": [] },
-      { "label": "Rachana example checks", "type": "shell", "command": "python3 -I examples/check_examples.py", "windows": { "command": "python -I examples/check_examples.py" },
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "problemMatcher": [] },
-      { "label": "Rachana protocol check (Python host)", "type": "shell", "command": "python3 tools/conformance/protocol_check.py --python", "windows": { "command": "python tools/conformance/protocol_check.py --python" },
-        "options": { "cwd": "${workspaceFolder:rachana}", "env": { "PYTHONPATH": "python/src" } }, "problemMatcher": [] },
-      { "label": "Rachana Studio (port 4500)", "type": "shell", "command": "node js/packages/rachana-cli/bin/rachana.js studio examples/static-sales --port 4500",
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "isBackground": true, "problemMatcher": [] },
-      { "label": "Rachana Studio, server-demo (port 4501)", "type": "shell", "command": "node js/packages/rachana-cli/bin/rachana.js studio examples/server-demo/project/sutras --data examples/server-demo/project/data --port 4501",
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "isBackground": true, "problemMatcher": [] },
-      { "label": "Rachana server check (server-demo)", "type": "shell", "command": "java -jar java/rachana-server/target/rachana-server-0.11.0-SNAPSHOT-all.jar check --config examples/server-demo/rachana-server.yaml",
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "problemMatcher": [] },
-      { "label": "Rachana server serve (server-demo, port 8090)", "type": "shell", "command": "java -jar java/rachana-server/target/rachana-server-0.11.0-SNAPSHOT-all.jar serve --config examples/server-demo/rachana-server.yaml",
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "isBackground": true, "problemMatcher": [] },
-      { "label": "Rachana dev server (port 4400)", "type": "shell", "command": "node js/packages/rachana-cli/bin/rachana.js dev examples/static-sales --port 4400",
-        "options": { "cwd": "${workspaceFolder:rachana}" }, "isBackground": true, "problemMatcher": [] }
+      {"label": "Rachana: build all", "type": "shell", "command": "./mvnw clean verify -DskipTests", "windows": {"command": "mvnw.cmd clean verify -DskipTests"}, "options": {"cwd": "${workspaceFolder:rachana}/java"}, "group": "build", "problemMatcher": []},
+      {"label": "Rachana: test", "type": "shell", "command": "./mvnw clean verify", "windows": {"command": "mvnw.cmd clean verify"}, "options": {"cwd": "${workspaceFolder:rachana}/java"}, "group": "test", "problemMatcher": []},
+      {"label": "Rachana: install release (tag only)", "type": "shell", "command": "./mvnw clean install -DskipTests", "windows": {"command": "mvnw.cmd clean install -DskipTests"}, "options": {"cwd": "${workspaceFolder:rachana}/java"}, "problemMatcher": []},
+      {"label": "Rachana: build JS bundles", "type": "shell", "command": "./mvnw clean package -Pjs -DskipTests -pl :rachana-js -am", "windows": {"command": "mvnw.cmd clean package -Pjs -DskipTests -pl :rachana-js -am"}, "options": {"cwd": "${workspaceFolder:rachana}/java"}, "problemMatcher": []},
+      {"label": "Rachana: bundle JS runtime", "type": "shell", "command": "java/mvnw -f js/pom.xml exec:exec@runtime-bundle", "windows": {"command": "java\\mvnw.cmd -f js/pom.xml exec:exec@runtime-bundle"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "problemMatcher": []},
+      {"label": "Rachana: test JS (Node)", "type": "shell", "command": "java/mvnw -f js/pom.xml exec:exec@node-tests", "windows": {"command": "java\\mvnw.cmd -f js/pom.xml exec:exec@node-tests"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "group": "test", "problemMatcher": []},
+      {"label": "Rachana: run Studio (static-sales)", "type": "shell", "command": "java/mvnw -f js/pom.xml exec:exec@studio", "windows": {"command": "java\\mvnw.cmd -f js/pom.xml exec:exec@studio"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "problemMatcher": []},
+      {"label": "Rachana: run Studio (server-demo)", "type": "shell", "command": "java/mvnw -f js/pom.xml exec:exec@studio-server-demo", "windows": {"command": "java\\mvnw.cmd -f js/pom.xml exec:exec@studio-server-demo"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "problemMatcher": []},
+      {"label": "Rachana: run dev server (static-sales)", "type": "shell", "command": "java/mvnw -f js/pom.xml exec:exec@dev", "windows": {"command": "java\\mvnw.cmd -f js/pom.xml exec:exec@dev"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "problemMatcher": []},
+      {"label": "Rachana: test Python", "type": "shell", "command": "python3 -m pytest -q python/tests", "windows": {"command": "python -m pytest -q python/tests"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "group": "test", "problemMatcher": []},
+      {"label": "Rachana: lint examples", "type": "shell", "command": "python3 -m drishti_rachana lint examples/static-sales", "windows": {"command": "python -m drishti_rachana lint examples/static-sales"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "problemMatcher": []},
+      {"label": "Rachana: check examples", "type": "shell", "command": "python3 examples/check_examples.py", "windows": {"command": "python examples/check_examples.py"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "problemMatcher": []},
+      {"label": "Rachana: check protocol (Python host)", "type": "shell", "command": "python3 tools/conformance/protocol_check.py --python", "windows": {"command": "python tools/conformance/protocol_check.py --python"}, "options": {"cwd": "${workspaceFolder:rachana}"}, "problemMatcher": []},
+      {"label": "Rachana: run live-orders (Flask)", "type": "shell", "command": "python3 flask_app.py", "windows": {"command": "python flask_app.py"}, "options": {"cwd": "${workspaceFolder:rachana}/examples/live-orders"}, "problemMatcher": []},
+      {"label": "Rachana: run live-orders (FastAPI)", "type": "shell", "command": "python3 -m uvicorn fastapi_app:app --port 8000", "windows": {"command": "python -m uvicorn fastapi_app:app --port 8000"}, "options": {"cwd": "${workspaceFolder:rachana}/examples/live-orders"}, "problemMatcher": []}
     ]
   },
   "launch": {
     "version": "0.2.0",
     "configurations": [
-      { "name": "Rachana CLI (lib)", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.cli.Main", "projectName": "rachana-cli",
-        "args": "lib contracts", "cwd": "${workspaceFolder:rachana}" },
-      { "name": "Rachana reference server (8099)", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.data.ReferenceServer", "projectName": "rachana-data",
-        "args": "--port 8099 --base /rdp/v1 --static ${workspaceFolder:rachana}/js/packages/rachana", "cwd": "${workspaceFolder:rachana}" },
-      { "name": "Rachana server serve (server-demo)", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.server.Main", "projectName": "rachana-server",
-        "args": "serve --config ${workspaceFolder:rachana}/examples/server-demo/rachana-server.yaml", "cwd": "${workspaceFolder:rachana}" },
-      { "name": "Rachana server check (server-demo)", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.server.Main", "projectName": "rachana-server",
-        "args": "check --config ${workspaceFolder:rachana}/examples/server-demo/rachana-server.yaml", "cwd": "${workspaceFolder:rachana}" },
-      { "name": "Rachana server hash-password", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.server.Main", "projectName": "rachana-server",
-        "args": "hash-password", "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal" },
-      { "name": "Rachana Studio (server-demo)", "type": "node", "request": "launch", "program": "${workspaceFolder:rachana}/js/packages/rachana-cli/bin/rachana.js",
-        "args": [ "studio", "examples/server-demo/project/sutras", "--data", "examples/server-demo/project/data", "--port", "4501" ], "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal" },
-      { "name": "Rachana live-orders (Flask)", "type": "debugpy", "request": "launch", "program": "${workspaceFolder:rachana}/examples/live-orders/flask_app.py",
-        "cwd": "${workspaceFolder:rachana}/examples/live-orders", "env": { "PYTHONPATH": "${workspaceFolder:rachana}/python/src" }, "console": "integratedTerminal" },
-      { "name": "Rachana live-orders (FastAPI)", "type": "debugpy", "request": "launch", "module": "uvicorn", "args": [ "fastapi_app:app", "--port", "8000" ],
-        "cwd": "${workspaceFolder:rachana}/examples/live-orders", "env": { "PYTHONPATH": "${workspaceFolder:rachana}/python/src" }, "console": "integratedTerminal" },
-      { "name": "Rachana lint examples", "type": "debugpy", "request": "launch", "module": "drishti_rachana", "args": [ "lint", "examples/static-sales" ],
-        "cwd": "${workspaceFolder:rachana}", "env": { "PYTHONPATH": "${workspaceFolder:rachana}/python/src" }, "console": "integratedTerminal" },
-      { "name": "Rachana Studio", "type": "node", "request": "launch", "program": "${workspaceFolder:rachana}/js/packages/rachana-cli/bin/rachana.js",
-        "args": [ "studio", "examples/static-sales", "--port", "4500" ], "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal" },
-      { "name": "Rachana dev server", "type": "node", "request": "launch", "program": "${workspaceFolder:rachana}/js/packages/rachana-cli/bin/rachana.js",
-        "args": [ "dev", "examples/static-sales", "--port", "4400" ], "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal" }
+      {"name": "Rachana: run server (demo)", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.server.Main", "projectName": "rachana-server", "cwd": "${workspaceFolder:rachana}", "args": "serve --config ${workspaceFolder:rachana}/examples/server-demo/rachana-server.yaml"},
+      {"name": "Rachana: check server (demo)", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.server.Main", "projectName": "rachana-server", "cwd": "${workspaceFolder:rachana}", "args": "check --config ${workspaceFolder:rachana}/examples/server-demo/rachana-server.yaml"},
+      {"name": "Rachana: run server hash-password", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.server.Main", "projectName": "rachana-server", "cwd": "${workspaceFolder:rachana}", "args": "hash-password"},
+      {"name": "Rachana: run reference server", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.data.ReferenceServer", "projectName": "rachana-data", "cwd": "${workspaceFolder:rachana}", "args": "--port 8099 --base /rdp/v1 --static ${workspaceFolder:rachana}/js/packages/rachana"},
+      {"name": "Rachana: run CLI (lib)", "type": "java", "request": "launch", "mainClass": "com.ash.rachana.cli.Main", "projectName": "rachana-cli", "cwd": "${workspaceFolder:rachana}", "args": "lib contracts"},
+      {"name": "Rachana: test Python", "type": "debugpy", "request": "launch", "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal", "module": "pytest", "args": ["-q", "python/tests"], "env": {"PYTHONPATH": "${workspaceFolder:rachana}/python/src"}},
+      {"name": "Rachana: lint examples", "type": "debugpy", "request": "launch", "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal", "module": "drishti_rachana", "args": ["lint", "examples/static-sales"], "env": {"PYTHONPATH": "${workspaceFolder:rachana}/python/src"}},
+      {"name": "Rachana: check examples", "type": "debugpy", "request": "launch", "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal", "program": "${workspaceFolder:rachana}/examples/check_examples.py"},
+      {"name": "Rachana: check protocol (Python host)", "type": "debugpy", "request": "launch", "cwd": "${workspaceFolder:rachana}", "console": "integratedTerminal", "program": "${workspaceFolder:rachana}/tools/conformance/protocol_check.py", "args": ["--python"], "env": {"PYTHONPATH": "${workspaceFolder:rachana}/python/src"}},
+      {"name": "Rachana: run live-orders (Flask)", "type": "debugpy", "request": "launch", "cwd": "${workspaceFolder:rachana}/examples/live-orders", "console": "integratedTerminal", "program": "${workspaceFolder:rachana}/examples/live-orders/flask_app.py", "env": {"PYTHONPATH": "${workspaceFolder:rachana}/python/src"}},
+      {"name": "Rachana: run live-orders (FastAPI)", "type": "debugpy", "request": "launch", "cwd": "${workspaceFolder:rachana}/examples/live-orders", "console": "integratedTerminal", "module": "uvicorn", "args": ["fastapi_app:app", "--port", "8000"], "env": {"PYTHONPATH": "${workspaceFolder:rachana}/python/src"}}
     ]
   }
 }

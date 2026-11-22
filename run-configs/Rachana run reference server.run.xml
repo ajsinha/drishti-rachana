@@ -2,17 +2,17 @@
   Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
   Drishti Rachana. Proprietary: see LICENSE.
 
-  Rachana reference server: the JVM reference host of the Data Protocol (option port, option base, option static, option table FILE).
-  Use it when: you check a client against the Java reference (http://localhost:8099/rdp/v1).
+  Rachana: run reference server: the JVM reference host of the Data Protocol; http://localhost:8099/rdp/v1.
+  Use it when: you check a client against the Java reference.
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana reference server" type="Application" factoryName="Application" folderName="Rachana">
+  <configuration default="false" name="Rachana: run reference server" type="Application" factoryName="Application" folderName="Rachana">
     <option name="MAIN_CLASS_NAME" value="com.ash.rachana.data.ReferenceServer" />
     <module name="rachana-data" />
     <option name="VM_PARAMETERS" value="" />
-    <option name="PROGRAM_PARAMETERS" value="--port 8099 --base /rdp/v1 --static $PROJECT_DIR$/../js/packages/rachana" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+    <option name="PROGRAM_PARAMETERS" value="--port 8099 --base /rdp/v1 --static $PROJECT_DIR$/js/packages/rachana" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

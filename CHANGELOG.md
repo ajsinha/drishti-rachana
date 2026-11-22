@@ -5,6 +5,8 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **IDE launchers follow the platform standard**: one `run-configs/` at the repository root, every launcher named `Rachana: <verb> <what>` (IntelliJ folder `Rachana`), the same names as the VS Code tasks and launches; missing launchers added; the check `python/tests/test_launchers.py` (a test) keeps names, files and workspace in step.
+
 - **`ProtocolHost.keys` is public**: a host that mounts the Data Protocol on its own routes (Drishti's Spring mount of a windowed
   stream's `POST /changes/{sub}/window`) reads a window's keys as the host does, a bare value as a one-part key, instead of copying the
   reader (G4 pass 3, live tables LV5). Case: `ProtocolHostTest.keysAreReadAsTheProtocolSendsThem`.

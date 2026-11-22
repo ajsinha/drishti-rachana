@@ -2,27 +2,27 @@
   Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
   Drishti Rachana. Proprietary: see LICENSE.
 
-  Rachana JS runtime bundle: builds the JavaScript bundles and copies them into js/packages/rachana/dist/ (runs the Maven JS build; JDK 21 and Node).
-  Use it when: before the Studio, the Node tests that need the bundle, and the Flask/FastAPI board.
+  Rachana: check protocol (Python host): the protocol cases against the Python Data Protocol host.
+  Use it when: after you change the Python host.
   Needs a Python 3.10+ interpreter (PyCharm: Settings, Project, Python Interpreter).
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana JS runtime bundle" type="PythonConfigurationType" factoryName="Python" folderName="Rachana Python">
+  <configuration default="false" name="Rachana: check protocol (Python host)" type="PythonConfigurationType" factoryName="Python" folderName="Rachana">
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="PYTHONPATH" value="$PROJECT_DIR$/src" />
+      <env name="PYTHONPATH" value="$PROJECT_DIR$/python/src" />
     </envs>
     <option name="SDK_HOME" value="" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="false" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../tools/js/build_js.py" />
-    <option name="PARAMETERS" value="" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/conformance/protocol_check.py" />
+    <option name="PARAMETERS" value="--python" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

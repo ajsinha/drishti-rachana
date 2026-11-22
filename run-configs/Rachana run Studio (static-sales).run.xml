@@ -2,16 +2,20 @@
   Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
   Drishti Rachana. Proprietary: see LICENSE.
 
-  Rachana JS runtime bundle: tools/js/build_js.py: the TeaVM bundles into js/packages/rachana/dist/, then the conformance check (about two minutes).
-  Use it when: you changed the compiler or the runtime, or before the first server or Node run on a fresh clone.
-  Maven launcher (js/pom.xml, exec-maven-plugin) starting Python 3 (on the PATH; or add -Dpython=<path to python> to the goals); needs a JDK 21 for TeaVM (JAVA_HOME).
+  Rachana: run Studio (static-sales): Rachana Studio on the static-sales example; open http://localhost:4500.
+  Use it when: you edit Sutras with the live preview.
+  Maven launcher (exec-maven-plugin): no bash, no Node or Python plugin, so it runs in IntelliJ Community on Windows. Node 20+ / Python 3 on the PATH, or add -Dnode=<path> / -Dpython=<path> to the goals.
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana JS runtime bundle" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana JS">
+  <configuration default="false" name="Rachana: run Studio (static-sales)" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
     <MavenSettings>
       <option name="myGeneralSettings" />
-      <option name="myRunnerSettings" />
+      <option name="myRunnerSettings">
+        <MavenRunnerSettings>
+          <option name="jreName" value="#USE_PROJECT_JDK" />
+        </MavenRunnerSettings>
+      </option>
       <option name="myRunnerParameters">
         <MavenRunnerParameters>
           <option name="profiles">
@@ -19,7 +23,7 @@
           </option>
           <option name="goals">
             <list>
-              <option value="exec:exec@runtime-bundle" />
+              <option value="exec:exec@studio" />
             </list>
           </option>
           <option name="pomFileName" value="pom.xml" />
@@ -27,7 +31,7 @@
             <map />
           </option>
           <option name="resolveToWorkspace" value="false" />
-          <option name="workingDirPath" value="$PROJECT_DIR$/../js" />
+          <option name="workingDirPath" value="$PROJECT_DIR$/js" />
         </MavenRunnerParameters>
       </option>
     </MavenSettings>

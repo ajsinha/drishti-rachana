@@ -2,15 +2,19 @@
   Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
   Drishti Rachana. Proprietary: see LICENSE.
 
-  Rachana JS bundles: the JavaScript bundles (TeaVM, JDK 21) into java/rachana-js/target/js/; plain Maven, no Python. The copy to js/packages/rachana/dist/ and the Node conformance check are tools/js/build_js.py (Python) and are not part of this launcher.
-  Use it when: you changed the compiler or the runtime and want the JavaScript bundles.
+  Rachana: build JS bundles: the JavaScript bundles (TeaVM, JDK 21) into java/rachana-js/target/js/; plain Maven. The copy into js/packages/rachana/dist/ is 'bundle JS runtime'.
+  Use it when: you changed the compiler or the runtime.
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana JS bundles" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
+  <configuration default="false" name="Rachana: build JS bundles" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
     <MavenSettings>
       <option name="myGeneralSettings" />
-      <option name="myRunnerSettings" />
+      <option name="myRunnerSettings">
+        <MavenRunnerSettings>
+          <option name="jreName" value="#USE_PROJECT_JDK" />
+        </MavenRunnerSettings>
+      </option>
       <option name="myRunnerParameters">
         <MavenRunnerParameters>
           <option name="profiles">
@@ -27,12 +31,12 @@
               <option value="-am" />
             </list>
           </option>
-          <option name="pomFileName" />
+          <option name="pomFileName" value="" />
           <option name="profilesMap">
             <map />
           </option>
           <option name="resolveToWorkspace" value="false" />
-          <option name="workingDirPath" value="$PROJECT_DIR$" />
+          <option name="workingDirPath" value="$PROJECT_DIR$/java" />
         </MavenRunnerParameters>
       </option>
     </MavenSettings>

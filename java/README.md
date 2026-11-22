@@ -43,7 +43,7 @@ Never `install` a snapshot: only a release tag is installed, for Drishti (see [I
 
 ## Build and run in the IDE
 
-JetBrains (IntelliJ IDEA for Java, PyCharm for Python) and VS Code; the launchers are checked in. This is the one home of the IDE instructions of Rachana; Lake and Elements link here for the shared parts.
+JetBrains (IntelliJ IDEA for Java, PyCharm for Python) and VS Code; the launchers are checked in (folder **Rachana**, one `run-configs/`). This is the one home of the IDE instructions of Rachana; Lake and Elements link here for the shared parts.
 
 ### IntelliJ IDEA
 
@@ -58,24 +58,24 @@ Java only: no Python, no Python plugin. The same Maven runs in the IDE and in a 
 
 ### Open the project
 
-1. **File → Open**, choose `java/pom.xml`, **Open as Project**. Wait for the Maven import and the indexing; the Maven tool window lists
-   the `rachana-*` modules.
+1. **File → Open**, choose the repository root, **Open as Project**, then in the Maven tool window **+** add `java/pom.xml`. Wait for the Maven import and
+   the indexing; the Maven tool window lists the `rachana-*` modules. The launchers are in `run-configs/` at the root.
 2. **File → Project Structure → Project → SDK**: **Add SDK → JDK…**, choose the JDK 21 folder; **Language level** *SDK default*.
 3. **Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → JRE**: *Use Project JDK*. Maven in the IDE ignores your
    shell's `JAVA_HOME`. An *invalid target release* or *release version 21 not supported* error means the wrong JDK is set here.
-4. The drop-down at the top right lists the configurations of `java/run-configs/` under the folder **Rachana**: the Maven launchers,
+4. The drop-down at the top right lists the configurations of `run-configs/` under the folder **Rachana**: the Maven launchers,
    the Java programs and the JavaScript launchers below.
 
 ### The Maven launchers
 
-Open a configuration and press **Run** (Shift+F10). All of them run from `java/`.
+Open a configuration and press **Run** (Shift+F10). They run from `java/` (the working directory is set in each).
 
 | Run configuration | What it runs | Use it when |
 |---|---|---|
-| **Rachana build all** | `clean verify -DskipTests`: every module compiles, the jars are packaged, the guards run | after a clone or a pull |
-| **Rachana test** | `clean verify`: the build with the unit tests, the guards and the compatibility regime | before a commit or a push |
-| **Rachana install release** | `clean install -DskipTests`: the jars into the local Maven repository (`~/.m2`) for Drishti | **only on a checkout of a release tag**, see below |
-| **Rachana JS bundles** | `clean package -Pjs -DskipTests -pl :rachana-js -am`: the TeaVM JavaScript bundles into `java/rachana-js/target/js/` | you changed the compiler or the runtime and want the JavaScript bundles |
+| **Rachana: build all** | `clean verify -DskipTests`: every module compiles, the jars are packaged, the guards run | after a clone or a pull |
+| **Rachana: test** | `clean verify`: the build with the unit tests, the guards and the compatibility regime | before a commit or a push |
+| **Rachana: install release (tag only)** | `clean install -DskipTests`: the jars into the local Maven repository (`~/.m2`) for Drishti | **only on a checkout of a release tag**, see below |
+| **Rachana: build JS bundles** | `clean package -Pjs -DskipTests -pl :rachana-js -am`: the TeaVM JavaScript bundles into `java/rachana-js/target/js/` | you changed the compiler or the runtime and want the JavaScript bundles |
 
 The JavaScript bundles launcher is plain Maven. Copying the bundles to `js/packages/rachana/dist/` and the Node conformance check are
 `tools/js/build_js.py` (Python) and are not part of the launcher.
@@ -83,27 +83,27 @@ The JavaScript bundles launcher is plain Maven. Copying the bundles to `js/packa
 **From a terminal**, the same commands: `./mvnw clean verify -DskipTests` (Windows `mvnw.cmd …`), `./mvnw clean verify`,
 `./mvnw clean install -DskipTests`, `./mvnw clean package -Pjs -DskipTests -pl :rachana-js -am`.
 
-The Java programs (Application configurations, run **Rachana build all** first): **Rachana CLI (lib)** (`com.ash.rachana.cli.Main`, edit the
-program arguments: `lib build|sign|pack|verify|lock|contracts|check-host`), **Rachana reference server** (`ReferenceServer` on
+The Java programs (Application configurations, run **Rachana: build all** first): **Rachana: run CLI (lib)** (`com.ash.rachana.cli.Main`, edit the
+program arguments: `lib build|sign|pack|verify|lock|contracts|check-host`), **Rachana: run reference server** (`ReferenceServer` on
 `http://localhost:8099/rdp/v1`) and the standalone server `com.ash.rachana.server.Main` on the example `examples/server-demo`:
-**Rachana server serve (server-demo)** (`http://127.0.0.1:8090/`, sign in as `dev`, password `dev-only-pass`: **development only**, written in
-`examples/server-demo/users.yaml`), **Rachana server check (server-demo)** and **Rachana server hash-password** (type a password in the Run window,
+**Rachana: run server (demo)** (`http://127.0.0.1:8090/`, sign in as `dev`, password `dev-only-pass`: **development only**, written in
+`examples/server-demo/users.yaml`), **Rachana: check server (demo)** and **Rachana: run server hash-password** (type a password in the Run window,
 press Enter). The server's page assets are copied into `target/classes` by the Maven build, and the runtime bundle must exist first:
-run **Rachana JS runtime bundle**, then **Rachana build all**, then the server.
+run **Rachana: bundle JS runtime**, then **Rachana: build all**, then the server.
 
 ### The JavaScript launchers (Maven, no bash)
 
-Under the folder **Rachana JS**; each runs `exec:exec@<id>` of `js/pom.xml` (exec-maven-plugin; the pom builds nothing), so they work in IntelliJ
+Under the folder **Rachana** (the names say what they do: `Rachana: run Studio ...`, `Rachana: test JS (Node)`); each runs `exec:exec@<id>` of `js/pom.xml` (exec-maven-plugin; the pom builds nothing), so they work in IntelliJ
 Community on Windows with no bash, no Shell Script plugin and no Node plugin. Node 20+ and Python 3 on the PATH, or add `-Dnode=<path to node>` /
 `-Dpython=<path to python>` to the goals.
 
 | Run configuration | id | What it runs |
 |---|---|---|
-| **Rachana JS runtime bundle** | `runtime-bundle` | `tools/js/build_js.py`: the TeaVM bundles into `js/packages/rachana/dist/`, then the conformance check |
-| **Rachana JS Node tests** | `node-tests` | `tools/js/node_tests.mjs`: every `js/packages/*/test/*.test.mjs` through `node --test` (no shell glob) |
-| **Rachana Studio** | `studio` | Studio on `examples/static-sales`, `http://localhost:4500` |
-| **Rachana Studio (server-demo)** | `studio-server-demo` | Studio on the server example's Sutra and tables, `http://localhost:4501` |
-| **Rachana dev server (static-sales)** | `dev` | `rachana dev`, `http://localhost:4400` |
+| **Rachana: bundle JS runtime** | `runtime-bundle` | `tools/js/build_js.py`: the TeaVM bundles into `js/packages/rachana/dist/`, then the conformance check |
+| **Rachana: test JS (Node)** | `node-tests` | `tools/js/node_tests.mjs`: every `js/packages/*/test/*.test.mjs` through `node --test` (no shell glob) |
+| **Rachana: run Studio (static-sales)** | `studio` | Studio on `examples/static-sales`, `http://localhost:4500` |
+| **Rachana: run Studio (server-demo)** | `studio-server-demo` | Studio on the server example's Sutra and tables, `http://localhost:4501` |
+| **Rachana: run dev server (static-sales)** | `dev` | `rachana dev`, `http://localhost:4400` |
 
 From a terminal: `java/mvnw -f js/pom.xml exec:exec@node-tests` (Windows `java\mvnw.cmd -f js\pom.xml exec:exec@node-tests`).
 
@@ -111,11 +111,11 @@ From a terminal: `java/mvnw -f js/pom.xml exec:exec@node-tests` (Windows `java\m
 
 | Part | IntelliJ IDEA Community / Ultimate | PyCharm | VS Code |
 |---|---|---|---|
-| Java (`java/`) | `java/run-configs/` (Maven, Application) | no | tasks and launch in `drishti-rachana.code-workspace` |
-| Python SDK (`python/`) | no (no Python plugin needed) | `python/run-configs/` (pytest, lint, Flask, FastAPI, protocol check, JS runtime bundle); open the folder `python/` | the same, as tasks and `debugpy` launches |
-| JavaScript (`js/`) | `java/run-configs/` folder **Rachana JS**: Maven launchers of `js/pom.xml` (runtime bundle, Node tests, Studio, dev server); no bash | the same Maven launchers | tasks (Node tests, Studio, dev server) and `node` launches |
+| Java (`java/`) | `run-configs/` (Maven, Application) | no | tasks and launch in `drishti-rachana.code-workspace` |
+| Python SDK (`python/`) | no (no Python plugin needed) | `run-configs/` (the `Rachana: test Python`, `lint`, `check` and `run live-orders` launchers); open the repository root | the same, as tasks and `debugpy` launches |
+| JavaScript (`js/`) | `run-configs/`: the Maven launchers of `js/pom.xml` (`bundle JS runtime`, `test JS (Node)`, `run Studio`, `run dev server`); no bash | the same Maven launchers | tasks (Node tests, Studio, dev server) and `node` launches |
 
-Open `java/pom.xml` in IntelliJ and `python/` in PyCharm, never one folder in both (each rewrites the other's `.idea`).
+Open the repository root once, in IntelliJ IDEA (Java and the Maven launchers) or in PyCharm (the Python launchers), and link `java/pom.xml` in the Maven tool window; the launchers are the same files in both. Every launcher is in `run-configs/` at the repository root and is named `<Product>: <verb> <what>` (the same names as the tasks of the VS Code workspace); open the repository root as the project. The standard: `docs/plans/LAUNCHER_STANDARD.md` in the Drishti repository; the check is `python/tests/test_launchers.py`.
 
 ### VS Code
 
@@ -143,7 +143,7 @@ administrator rights:
 
 1. **File → Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → VM Options**: paste the option.
 2. **Maven → Importing → VM options for importer**: paste it too (the import downloads as well).
-3. **Apply**, then run **Rachana build all** again.
+3. **Apply**, then run **Rachana: build all** again.
 4. A terminal: `setx MAVEN_OPTS "-Djavax.net.ssl.trustStoreType=Windows-ROOT"`, then open a new terminal.
 
 Other ways, if your company prefers them: the company's Maven mirror in `%USERPROFILE%\.m2\settings.xml` (Linux `~/.m2/settings.xml`;
@@ -160,8 +160,8 @@ git checkout vX.Y.Z                              # the release tag, never a bran
 cd java && ./mvnw clean install -DskipTests      # Windows: mvnw.cmd clean install -DskipTests
 ```
 
-In IntelliJ, on that same tag's checkout: **Rachana install release**. Then build Drishti. A branch or a snapshot is never installed:
-Drishti would then build against unreleased code. Run **Rachana test** before the tag is made.
+In IntelliJ, on that same tag's checkout: **Rachana: install release (tag only)**. Then build Drishti. A branch or a snapshot is never installed:
+Drishti would then build against unreleased code. Run **Rachana: test** before the tag is made.
 
 ## Conformance over this code
 

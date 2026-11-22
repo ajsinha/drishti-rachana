@@ -108,13 +108,13 @@ git checkout <release tag>
 cd java && ./mvnw clean install -DskipTests       # Windows: mvnw.cmd clean install -DskipTests
 ```
 
-In IntelliJ IDEA the same step is the launcher **Rachana install release**, on the tag's checkout. Details:
+In IntelliJ IDEA the same step is the launcher **Rachana: install release (tag only)**, on the tag's checkout. Details:
 [java/README.md, Installing a release for Drishti](java/README.md#installing-a-release-for-drishti).
 
 ## IDE support
 
-Every part builds and runs from the IDE with checked-in launchers: **IntelliJ IDEA** for Java (open `java/pom.xml`; the launchers of
-`java/run-configs/`, JavaScript included, with no bash), **PyCharm** for Python (open `python/`; `python/run-configs/`) and **VS Code**
+Every part builds and runs from the IDE with checked-in launchers: **IntelliJ IDEA** for Java (open the repository root, link `java/pom.xml`; the launchers of
+`run-configs/`, named `Rachana: <verb> <what>`, JavaScript included, with no bash), **PyCharm** for Python (the same root and launchers) and **VS Code**
 (open `drishti-rachana.code-workspace`: tasks and launch configurations for all three). The one guide, with prerequisites, Windows
 notes and company-network certificates: [java/README.md, Build and run in the IDE](java/README.md#build-and-run-in-the-ide).
 

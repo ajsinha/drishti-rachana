@@ -45,10 +45,10 @@
     <rachana.compat.runtime>core</rachana.compat.runtime>
     <rachana.compat.binds.out></rachana.compat.binds.out>
     <!-- Every test's temporary folder (java.io.tmpdir, TMPDIR/TEMP/TMP of the programs the build starts) is this one; tools/gate/tmp_leaks.py checks it is empty at the end (G2 gate F16). -->
-    <rachana.tmp>${maven.multiModuleProjectDirectory}/target/tmp</rachana.tmp>
+    <rachana.tmp>${project.rootDirectory}/target/tmp</rachana.tmp>
     <python3>python3</python3>
-    <rachana.java.root>${maven.multiModuleProjectDirectory}</rachana.java.root>
-    <rachana.repo.root>${maven.multiModuleProjectDirectory}/..</rachana.repo.root>
+    <rachana.java.root>${project.rootDirectory}</rachana.java.root>
+    <rachana.repo.root>${project.rootDirectory}/..</rachana.repo.root>
   </properties>
 
   <dependencyManagement>

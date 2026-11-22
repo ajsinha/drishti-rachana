@@ -22,7 +22,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <rachana.repo.root>${maven.multiModuleProjectDirectory}/..</rachana.repo.root>
+            <rachana.repo.root>${project.rootDirectory}/..</rachana.repo.root>
             <rachana.reference.classpath>${rachana.reference.classpath}</rachana.reference.classpath>
             <rachana.compat.runtime>${rachana.compat.runtime}</rachana.compat.runtime>
             <rachana.compat.binds.out>${rachana.compat.binds.out}</rachana.compat.binds.out>

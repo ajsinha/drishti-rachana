@@ -5,6 +5,9 @@ Entries are written per release; the regime's unreleased work is listed after th
 
 ## Unreleased (G3, front-loaded)
 
+- **`ProtocolHost.keys` is public**: a host that mounts the Data Protocol on its own routes (Drishti's Spring mount of a windowed
+  stream's `POST /changes/{sub}/window`) reads a window's keys as the host does, a bare value as a one-part key, instead of copying the
+  reader (G4 pass 3, live tables LV5). Case: `ProtocolHostTest.keysAreReadAsTheProtocolSendsThem`.
 - **`rachana-server` reads and writes CSV with Drishti Tools (owner decision O6)**: the server's own RFC 4180 parser and writer are
   replaced by `tools-csv` 1.0.0 (`CsvReader`, `CsvWriter`; `drishti.tools.version` in `java/pom.xml`); Core and every other module
   stay free of Tools (`DependencyAllowListTest` allows `com.ash.tools:tools-csv` in `rachana-server` only). The install order is now

@@ -1,0 +1,197 @@
+{
+  "name": "check_sutra",
+  "implementation": "check_sutra.CheckSutraTool",
+  "description": "Check a composed Sutra (YAML text) before publishing: the kit's safety rules and the Rachana compiler, with the libraries it uses. Mandatory: publish_ui accepts only the exact text that passed.\nReturns {ok, problems: [{code, severity, message, range, path, expected}], summary, plan: {tables, fragments, libraries}, attempt: {n, max}, stop, check_token}.\nFix only the lines named and check again; after attempt max, stop is true: simplify or ask the user.\nInputs: sutra* (YAML text, at most 64 KB), tables (the column schemas of the tables you will publish, as in search_fragments; never rows).\nExample: {\"sutra\": \"rachana: 1.2\\nsutra: limits-board\\nversion: 1\\nlibraries: [finance@1]\\ndata:\\n  limits: { table: limits }\\npanels:\\n  - use: finance/limit-table@1\\n    with: { rows: { from: $.limits, columns: { name: LIMIT_NAME, limit: LIMIT_USD, used: USED_USD } } }\\n\", \"tables\": {\"limits\": {\"columns\": [{\"name\": \"LIMIT_NAME\", \"type\": \"text\"}, {\"name\": \"LIMIT_USD\", \"type\": \"number\"}, {\"name\": \"USED_USD\", \"type\": \"number\"}]}}}",
+  "annotations": {
+    "readOnlyHint": true,
+    "idempotentHint": false,
+    "openWorldHint": false
+  },
+  "version": "0.1.0",
+  "enabled": true,
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "sutra"
+    ],
+    "properties": {
+      "sutra": {
+        "type": "string",
+        "maxLength": 65536,
+        "description": "The Sutra as YAML text"
+      },
+      "tables": {
+        "type": "object",
+        "maxProperties": 12,
+        "description": "The tables in hand, by the name the Sutra will read them as ($.<name>): column names and types only, never rows",
+        "propertyNames": {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "columns"
+          ],
+          "properties": {
+            "columns": {
+              "type": "array",
+              "maxItems": 200,
+              "items": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "text, number, integer, decimal, date, datetime, boolean"
+                  }
+                }
+              }
+            },
+            "as": {
+              "enum": [
+                "rows",
+                "record"
+              ],
+              "description": "record: one row (its fields fill value parameters such as var, used, limit)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": [
+      "ok",
+      "problems",
+      "summary"
+    ],
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "problems": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "code",
+            "severity",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "RCH-nnnn (the compiler, SPEC 6.2) or RGK-nnn (this kit)"
+            },
+            "severity": {
+              "enum": [
+                "error",
+                "warning",
+                "info"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string",
+              "description": "JSON Pointer to the node"
+            },
+            "range": {
+              "type": "object"
+            },
+            "expected": {
+              "type": "array",
+              "items": {}
+            },
+            "fix": {
+              "type": "object"
+            },
+            "file": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "more": {
+        "type": "integer"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "engine": {
+        "enum": [
+          "v8",
+          "unavailable",
+          "not-run"
+        ]
+      },
+      "plan": {
+        "type": "object",
+        "properties": {
+          "tables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fragments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "libraries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "attempt": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer"
+          },
+          "max": {
+            "type": "integer"
+          }
+        }
+      },
+      "stop": {
+        "type": "boolean"
+      },
+      "sutra_hash": {
+        "type": "string"
+      },
+      "check_token": {
+        "type": "string",
+        "description": "Pass it to publish_ui with the same text"
+      }
+    }
+  },
+  "metadata": {
+    "author": "Ashutosh Sinha",
+    "email": "ajsinha@gmail.com",
+    "copyright": "Copyright (c) 2026 Ashutosh Sinha. Drishti Rachana; proprietary",
+    "category": "Generative UI",
+    "tags": [
+      "rachana",
+      "genui",
+      "dashboard",
+      "sutra"
+    ],
+    "pack": "rachana-genui"
+  }
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. Drishti Rachana. Proprietary: see LICENSE. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Board</title>
+  <link rel="stylesheet" href="/static/vendor/drishti-elements/3.3.1/drishti-elements.css">
+  <link rel="stylesheet" href="/spa/app.css">
+  <script src="/static/vendor/drishti-elements/3.3.1/drishti-elements.js"></script>
+  <script type="module" src="/spa/app.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <h1 id="title">Board</h1>
+    <span id="meta" class="meta"></span>
+    <span id="state" class="state" data-state="connecting">connecting</span>
+  </header>
+  <p id="problem" class="problem" hidden></p>
+  <main id="board">
+    <rachana-view id="view" runtime="/static/rachana/rachana.runtime.js"></rachana-view>
+  </main>
+</body>
+</html>

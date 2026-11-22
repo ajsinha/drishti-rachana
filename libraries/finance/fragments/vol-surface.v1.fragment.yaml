@@ -10,6 +10,17 @@ doc:
     column. Use it for any measure over two axes of a market quote; for a long list of pairs use finance/correlation-matrix.
   category: market-data
   tags: [volatility, surface, options]
+  use-when:
+    - A volatility surface (or any measure over two quote axes) is read by expiry and strike.
+  avoid-when:
+    - "One expiry's smile or one term structure: use finance/term-structure."
+  data:
+    table: rows
+    in-words: One row per expiry with one numeric column per strike (wide form).
+    sample-row: { expiry: "1Y" }
+  example: { use: finance/vol-surface@1, with: { rows: { from: "$.vols", columns: { expiry: EXP } }, strikes: [{ label: "90%", bind: "@.K90" }, { label: "100%", bind: "@.K100" }, { label: "110%", bind: "@.K110" }] } }
+  see-also: [finance/term-structure, finance/sensitivity-heatmap]
+  keywords: [volatility, surface, strike, expiry, smile]
 params:
   rows:
     type: table

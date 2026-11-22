@@ -10,6 +10,17 @@ doc:
     left blank. The thresholds and minimum transfer amounts are given per side.
   category: counterparty
   tags: [agreement, collateral, terms]
+  use-when:
+    - "The terms of a collateral agreement (CSA) are read: thresholds, MTAs, independent amount, currency, frequency."
+  avoid-when:
+    - "Collateral balances are wanted: use finance/collateral-ledger."
+  data:
+    table: terms
+    in-words: "One record of agreement terms, each field optional."
+    sample-row: { type: Coupon, threshold_us: 1000, threshold_them: 1000, mta_us: 1000, mta_them: 1000, independent_amount: 1000, currency: USD, frequency: Quarterly }
+  example: { use: finance/agreement-terms@1, with: { terms: "{type: $.ag.AG_TYPE, currency: $.ag.AG_CCY}" } }
+  see-also: [finance/collateral-ledger, finance/margin-call-ladder]
+  keywords: [csa, collateral agreement, threshold, mta, terms]
 params:
   terms:
     type: "record{type: text, threshold_us: number, threshold_them: number, mta_us: number, mta_them: number, independent_amount: number, currency: text, frequency: text}"

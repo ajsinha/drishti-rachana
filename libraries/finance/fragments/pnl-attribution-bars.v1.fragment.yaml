@@ -10,6 +10,17 @@ doc:
     only that many. A click on a bar raises an event with its label.
   category: pnl
   tags: [pnl, attribution, bars]
+  use-when:
+    - "P&L is split by a grouping (desk, book, strategy) and ranked by size."
+  avoid-when:
+    - "The P&L is explained by effect from open to close: use finance/pnl-waterfall."
+  data:
+    table: rows
+    in-words: "One row per group: label and P&L."
+    sample-row: { label: Rates, pnl: -125000 }
+  example: { use: finance/pnl-attribution-bars@1, with: { rows: { from: "$.desks", columns: { label: DESK, pnl: DESK_PNL } } } }
+  see-also: [finance/pnl-waterfall, core/ranked-bars, finance/pnl-tiles]
+  keywords: ["p&l", attribution, by desk, bars, contribution]
 params:
   rows:
     type: table

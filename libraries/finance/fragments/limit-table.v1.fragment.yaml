@@ -10,6 +10,17 @@ doc:
     limit, Warning from the warning share, Within otherwise. A click on a row names the limit.
   category: limits
   tags: [limits, utilisation, table]
+  use-when:
+    - "Many limits are monitored at once, breaches first, with headroom and share used."
+  avoid-when:
+    - "One limit deserves a panel with history: use finance/limit-gauge."
+  data:
+    table: rows
+    in-words: "One row per limit: name, limit, used and optionally owner."
+    sample-row: { name: Rates Desk, limit: 2500000, used: 1850000, owner: Market Risk }
+  example: { use: finance/limit-table@1, with: { rows: { from: "$.limits", columns: { name: LIM_NAME, limit: LIM_AMT, used: USED_AMT } } } }
+  see-also: [finance/limit-gauge, finance/risk-hierarchy-tree]
+  keywords: [limits, utilisation, breaches, headroom, monitoring]
 params:
   rows:
     type: table

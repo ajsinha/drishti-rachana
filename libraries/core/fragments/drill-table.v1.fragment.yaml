@@ -10,6 +10,18 @@ doc:
     measures. A measure column marked total is added up for each group.
   category: tables
   tags: [table, drill, group, levels]
+  use-when:
+    - "Rows are grouped by levels (region, desk, book) and the reader opens groups in place with totals."
+  avoid-when:
+    - "The hierarchy is given as parent links: use core/tree-table."
+    - "Two fields cross-tabulate one measure: use core/pivot-table."
+  data:
+    table: rows
+    in-words: Rows at any grain with level columns (outermost first) and measure columns to total.
+    sample-row: { REGION: Europe, COUNTRY: France, REVENUE: 120 }
+  example: { use: core/drill-table@1, with: { title: Sales, rows: "$.sales", levels: [REGION, COUNTRY], columns: [{ label: Region, bind: "@.REGION" }, { label: Country, bind: "@.COUNTRY" }, { label: Revenue, bind: "@.REVENUE", fmt: amount0, total: true }] } }
+  see-also: [core/tree-table, core/pivot-table, core/data-table]
+  keywords: [drill, group, hierarchy, subtotal, outline]
 params:
   rows:
     type: table

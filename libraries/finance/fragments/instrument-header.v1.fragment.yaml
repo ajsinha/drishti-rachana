@@ -11,6 +11,16 @@ doc:
     can be read from your data. Use it above finance/quote-card or finance/price-history.
   category: market-data
   tags: [instrument, header, identifiers]
+  use-when:
+    - "An instrument screen needs a header: name, identifiers, currency, last price and status."
+  avoid-when:
+    - "Ranges and day moves matter: use finance/quote-card."
+  data:
+    in-words: "No table: the name and optionally identifiers, currency, last, change and status."
+    sample-row: { name: Rates Desk }
+  example: { use: finance/instrument-header@1, with: { name: "${$.inst.NAME}" } }
+  see-also: [finance/quote-card, core/record-card]
+  keywords: [instrument, header, security, identifiers, isin]
 params:
   name:        { type: text, dynamic: true, required: true, doc: The instrument's name }
   identifiers: { type: "list<record{label: text, value: text}>", optional: true, max: 12, doc: "The identifiers: a list of { label, value }, such as an ISIN or a ticker" }

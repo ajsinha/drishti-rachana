@@ -11,6 +11,16 @@ doc:
     decides what sending means (on: { submit: [ { host: order.place, with: { order: event.order } } ] }).
   category: trading
   tags: [order, ticket, entry, trading]
+  use-when:
+    - The reader prepares an order that the host checks and sends.
+  avoid-when:
+    - "A general form: use core/entry-form."
+  data:
+    in-words: "No table: the instrument and optionally sides, types, time-in-force choices and the last price."
+    sample-row: { instrument: SOFR swap }
+  example: { use: finance/order-ticket@1, with: { instrument: "'ACME 5Y'" } }
+  see-also: [finance/fills-summary, core/entry-form]
+  keywords: [order, ticket, buy, sell, trade entry]
 params:
   instrument: { type: text, required: true, doc: The instrument ordered }
   sides:      { type: list<text>, default: [ BUY, SELL ], doc: The sides offered }

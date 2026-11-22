@@ -10,6 +10,17 @@ doc:
     node are supplied by you; nothing is netted here. Use it to find where a counterparty's exposure comes from.
   category: counterparty
   tags: [netting, hierarchy, collateral]
+  use-when:
+    - "A counterparty's exposure is traced through group, counterparty, netting set and trade."
+  avoid-when:
+    - "A risk measure down an organisation: use finance/risk-hierarchy-tree."
+  data:
+    table: rows
+    in-words: "One row per node: id, parent id, name, level, optionally gross, net and collateral."
+    sample-row: { id: T-100245, parent: DESK-RATES, name: Rates Desk, level: Netting set, gross: 12400000, net: 5100000, collateral: 3000000 }
+  example: { use: finance/netting-set-tree@1, with: { rows: { from: "$.nodes", columns: { id: NODE, parent: PARENT_NODE, name: NODE_NAME, level: NODE_LEVEL } } } }
+  see-also: [finance/netting-summary, core/tree-table]
+  keywords: [netting set, tree, exposure, counterparty, hierarchy]
 params:
   rows:
     type: table

@@ -8,6 +8,16 @@ doc:
   description: Text only, never markup. Put it next to a chart or table whose units or sign convention need a word.
   category: records
   tags: [note, explainer, text]
+  use-when:
+    - "Figures beside it need a word on units, sign convention or how to read them."
+  avoid-when:
+    - "The message is urgent and conditional: use core/alert-banner."
+  data:
+    in-words: "One line of text; no table."
+    sample-row: { text: Text }
+  example: { use: core/note@1, with: { text: Gains are positive. Figures are in thousands. } }
+  see-also: [core/alert-banner, core/source-note]
+  keywords: [note, caption, explanation, units, text]
 params:
   text: { type: text, required: true, doc: The note }
 panels:

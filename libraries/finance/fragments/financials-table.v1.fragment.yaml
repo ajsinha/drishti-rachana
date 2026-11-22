@@ -11,6 +11,17 @@ doc:
     give it as its own line item.
   category: funds
   tags: [financials, statements, periods]
+  use-when:
+    - Reported figures are read with periods across and line items down.
+  avoid-when:
+    - "One line item over time as a chart: use core/series-line."
+  data:
+    table: rows
+    in-words: "One row per line item and period: item, period text that sorts, and value (long form)."
+    sample-row: { item: Revenue, period: "2025-Q4", value: 1250000 }
+  example: { use: finance/financials-table@1, with: { rows: { from: "$.inc", columns: { item: LINE, period: FY, value: AMT } } } }
+  see-also: [core/pivot-table, core/series-line]
+  keywords: [financials, statements, periods, fundamentals, reported]
 params:
   rows:
     type: table

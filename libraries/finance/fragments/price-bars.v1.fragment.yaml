@@ -10,6 +10,17 @@ doc:
     finance/price-history.
   category: market-data
   tags: [candles, ohlc, prices]
+  use-when:
+    - "Prices are read as candles (open, high, low, close) with volume."
+  avoid-when:
+    - "A plain closing line with figures: use finance/price-history."
+  data:
+    table: rows
+    in-words: "One row per period: date, open, high, low, close and optionally volume."
+    sample-row: { date: "2026-11-20", open: 100.4, high: 102.1, low: 99.8, close: 101.25, volume: 1250000 }
+  example: { use: finance/price-bars@1, with: { rows: { from: "$.px", columns: { date: DAY, open: OPEN_PX, high: HIGH_PX, low: LOW_PX, close: CLOSE_PX } } } }
+  see-also: [finance/price-history, finance/quote-card]
+  keywords: [candles, ohlc, price, volume, chart]
 params:
   rows:
     type: table

@@ -10,6 +10,17 @@ doc:
     reference price (such as the arrival price) when you give one, shown signed. Use it on an order screen.
   category: trading
   tags: [orders, fills, executions]
+  use-when:
+    - "The executions of one order are summarised: filled against ordered, average price, slippage."
+  avoid-when:
+    - "Many orders or trades: use finance/trade-blotter."
+  data:
+    table: rows
+    in-words: "One row per execution: time, quantity, price and optionally venue; plus the quantity ordered."
+    sample-row: { time: "2026-11-20T09:30:00Z", qty: 5000, price: 101.25, venue: XNYS }
+  example: { use: finance/fills-summary@1, with: { ordered: 12000, rows: { from: "$.fills", columns: { time: EXEC_TS, qty: EXEC_QTY, price: EXEC_PX } } } }
+  see-also: [finance/order-ticket, finance/trade-blotter]
+  keywords: [fills, executions, slippage, average price, order]
 params:
   rows:
     type: table

@@ -10,6 +10,16 @@ doc:
     limit. Name the confidence of each in its label. Use it at the head of a risk screen.
   category: market-risk
   tags: [var, expected-shortfall, tiles]
+  use-when:
+    - VaR and expected shortfall head a risk screen with the change on the day and the share of a limit.
+  avoid-when:
+    - "VaR by desk or book: use finance/risk-hierarchy-tree or core/ranked-bars."
+  data:
+    in-words: "Numbers: VaR and ES, optionally the previous VaR and the limit."
+    sample-row: { var: 2400000 }
+  example: { use: finance/var-tiles@1, with: { var: "$.risk.VAR_99" } }
+  see-also: [finance/var-histogram, finance/var-contributors, finance/limit-gauge]
+  keywords: [var, es, tiles, risk, kpi]
 params:
   var:          { type: number, required: true, doc: "The value-at-risk, as a positive loss" }
   es:           { type: number, optional: true, doc: "The expected shortfall, as a positive loss" }

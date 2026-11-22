@@ -10,6 +10,17 @@ doc:
     lowest close, and the return from the first to the last. Use finance/price-bars for candles.
   category: market-data
   tags: [prices, history, return]
+  use-when:
+    - "A closing price over a period is shown with its high, low and return."
+  avoid-when:
+    - "Candles with volume: use finance/price-bars."
+  data:
+    table: rows
+    in-words: "One row per period: date and close."
+    sample-row: { date: "2026-11-20", close: 101.25 }
+  example: { use: finance/price-history@1, with: { rows: { from: "$.hist", columns: { date: DAY, close: CLOSE_PX } } } }
+  see-also: [finance/price-bars, finance/quote-card]
+  keywords: [price, history, close, return, chart]
 params:
   rows:
     type: table

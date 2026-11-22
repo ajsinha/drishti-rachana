@@ -11,6 +11,18 @@ doc:
     go under the card.
   category: records
   tags: [record, card, entity]
+  use-when:
+    - "One record heads a screen with its name, a subtitle, a status and chosen facts."
+  avoid-when:
+    - "Only plain facts are needed: use core/field-list."
+    - "The record is a counterparty: use finance/counterparty-card."
+  data:
+    table: record
+    in-words: "One record with name, subtitle and status, and the facts to show."
+    sample-row: { name: Rates Desk, subtitle: Subtitle, status: Open }
+  example: { use: core/record-card@1, with: { record: "{name: $.company.NAME, subtitle: $.company.SECTOR, status: $.company.STATE, FOUNDED: $.company.FOUNDED, STAFF: $.company.STAFF}", facts: [{ label: Founded, bind: "@.FOUNDED" }, { label: Employees, bind: "@.STAFF", fmt: amount0 }] } }
+  see-also: [core/field-list, finance/counterparty-card, finance/trade-ticket]
+  keywords: [card, record, header, summary, entity]
 params:
   record: { type: "record{name: text, subtitle: text, status: text}", required: true, doc: "The card's head: name, subtitle, status" }
   facts:  { type: columns, required: true, doc: "The facts: a list of { label, bind: \"@.field\", fmt } over the same record" }

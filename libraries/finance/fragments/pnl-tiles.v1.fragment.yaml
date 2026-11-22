@@ -10,6 +10,16 @@ doc:
     Use it at the head of a desk or book screen.
   category: pnl
   tags: [pnl, figures, desk]
+  use-when:
+    - "Day, month-to-date and year-to-date P&L head a desk or book screen."
+  avoid-when:
+    - "P&L by group: use finance/pnl-attribution-bars."
+  data:
+    in-words: "Up to three numbers: day, month to date and year to date."
+    sample-row: { day: 1000 }
+  example: { use: finance/pnl-tiles@1, with: { day: "$.pnl.DAY_PNL" } }
+  see-also: [finance/pnl-attribution-bars, finance/pnl-history, finance/var-tiles]
+  keywords: ["p&l", tiles, mtd, ytd, kpi]
 params:
   day:      { type: number, required: true, doc: The day's P&L }
   mtd:      { type: number, optional: true, doc: The month-to-date P&L }

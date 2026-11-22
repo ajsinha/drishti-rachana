@@ -10,6 +10,17 @@ doc:
     drawdown is the fall from the highest value so far. The figures are read from the rows you give. A click on a date names it.
   category: funds
   tags: [performance, benchmark, drawdown]
+  use-when:
+    - "A portfolio's performance is compared with its benchmark, rebased to 100, with drawdown."
+  avoid-when:
+    - "Daily P&L of a desk: use finance/pnl-history."
+  data:
+    table: rows
+    in-words: "One row per date: portfolio value and optionally the benchmark's."
+    sample-row: { date: "2026-11-20", value: 1250000, benchmark: 104.2 }
+  example: { use: finance/performance-chart@1, with: { rows: { from: "$.nav", columns: { date: NAV_DATE, value: NAV } } } }
+  see-also: [finance/pnl-history, finance/price-history]
+  keywords: [performance, benchmark, drawdown, return, rebased]
 params:
   rows:
     type: table

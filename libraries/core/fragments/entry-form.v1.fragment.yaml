@@ -11,6 +11,17 @@ doc:
     example { submit: [ { host: order.place, with: { order: event.values } } ] } or set a state from event.values.qty.
   category: forms
   tags: [form, entry, input, submit]
+  use-when:
+    - "The reader enters a few values that the screen hands to its host (a request, a note, a parameter set)."
+  avoid-when:
+    - "The form is long and has stages: use core/stepped-form."
+    - "The form is an order: use finance/order-ticket."
+  data:
+    in-words: "No table: the list of fields (id, label, type, required, options) and optional rules."
+    sample-row: { fields: A, rules: A }
+  example: { use: core/entry-form@1, with: { title: New contact, submit-label: Save, fields: [{ id: name, label: Name, required: true }, { id: segment, label: Segment, type: enum, options: [Retail, Wholesale] }, { id: limit, label: Credit limit, type: number }], rules: [{ rule: "limit <= 50000", message: "At most 50,000 without approval" }] } }
+  see-also: [core/stepped-form, finance/order-ticket]
+  keywords: [form, input, entry, submit, fields]
 params:
   fields:
     type: "list<record{id: text, label: text, type: text?, required: boolean?, options: list<text>?}>"

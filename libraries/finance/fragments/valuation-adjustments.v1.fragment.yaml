@@ -10,6 +10,17 @@ doc:
     the rows. A click on a row names it.
   category: counterparty
   tags: [valuation, adjustments, credit]
+  use-when:
+    - "Credit, debit and funding adjustments per counterparty or set are read with totals."
+  avoid-when:
+    - "Exposure profiles: use finance/exposure-profile."
+  data:
+    table: rows
+    in-words: "One row per counterparty or set: name, optionally credit, debit, funding and change."
+    sample-row: { name: Rates Desk, credit: -185000, debit: 42000, funding: -36000, change: -12500 }
+  example: { use: finance/valuation-adjustments@1, with: { rows: { from: "$.adj", columns: { name: CP, credit: CVA_AMT } } } }
+  see-also: [finance/exposure-profile, finance/counterparty-card]
+  keywords: [xva, cva, dva, fva, valuation adjustment]
 params:
   rows:
     type: table

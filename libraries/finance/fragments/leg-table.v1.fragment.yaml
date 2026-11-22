@@ -10,6 +10,17 @@ doc:
     and frequency are shown when you map them.
   category: trading
   tags: [legs, trade, swap]
+  use-when:
+    - "A trade's legs are compared side by side (pay or receive, notional, rate or index)."
+  avoid-when:
+    - "The trade's payments are wanted: use finance/payment-schedule."
+  data:
+    table: rows
+    in-words: "One row per leg: leg, direction, notional and currency, optionally rate, index, spread, day count, frequency."
+    sample-row: { leg: Fixed, direction: Received, notional: 50000000, currency: USD, rate: 0.0425, index: SOFR, spread: 0.0015, day_count: ACT/360, frequency: Quarterly }
+  example: { use: finance/leg-table@1, with: { rows: { from: "$.legs", columns: { leg: LEG_NO, direction: SIDE, notional: NOTL, currency: CCY } } } }
+  see-also: [finance/trade-ticket, finance/payment-schedule]
+  keywords: [legs, swap, trade, notional, rate]
 params:
   rows:
     type: table

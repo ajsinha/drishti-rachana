@@ -10,6 +10,18 @@ doc:
     are optional. A click on a row names the instrument.
   category: trading
   tags: [positions, holdings, value]
+  use-when:
+    - "Positions are listed by instrument with quantity, value, P&L and share of the total."
+  avoid-when:
+    - "Fund holdings with weights: use finance/holdings-table."
+    - "Individual trades: use finance/trade-blotter."
+  data:
+    table: rows
+    in-words: "One row per instrument: instrument, quantity and value, optionally price and P&L."
+    sample-row: { instrument: SOFR swap, quantity: 5000, value: 1250000, price: 101.25, pnl: -125000 }
+  example: { use: finance/position-table@1, with: { rows: { from: "$.pos", columns: { instrument: SYM, quantity: QTY, value: MKT_VAL } } } }
+  see-also: [finance/holdings-table, finance/trade-blotter]
+  keywords: [positions, inventory, market value, "p&l", book]
 params:
   rows:
     type: table

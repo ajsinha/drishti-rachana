@@ -10,6 +10,17 @@ doc:
     figure in the message, put a key-figure beside it.
   category: states
   tags: [alert, banner, warning]
+  use-when:
+    - "A condition needs the reader's attention now: a breach, a stale feed, a failed load."
+  avoid-when:
+    - "The message is permanent guidance: use core/note."
+    - "The point is a number: use core/key-figure."
+  data:
+    in-words: "A true-or-false condition and the words to show; no table."
+    sample-row: { show: false, text: Text }
+  example: { use: core/alert-banner@1, with: { show: "$.limit.USED > 2 * $.limit.LIMIT", text: Far over the limit } }
+  see-also: [core/note, core/key-figure, core/freshness-badge]
+  keywords: [alert, warning, banner, breach, notice]
 params:
   show:   { type: boolean, required: true, doc: Whether the banner is shown }
   text:   { type: text, required: true, doc: The words of the banner }

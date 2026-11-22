@@ -10,6 +10,17 @@ doc:
     totals. Use it for DV01, vega or any additive sensitivity.
   category: market-risk
   tags: [sensitivities, heatmap, grid]
+  use-when:
+    - "One additive sensitivity (DV01, vega) is read across two axes with totals."
+  avoid-when:
+    - "Several greeks by one bucket: use finance/greeks-ladder."
+  data:
+    table: rows
+    in-words: "One row per factor and bucket: factor, bucket and value."
+    sample-row: { factor: USD-SOFR, bucket: "5Y", value: 1250000 }
+  example: { use: finance/sensitivity-heatmap@1, with: { rows: { from: "$.dv01", columns: { factor: CCY, bucket: TENOR, value: DV01_USD } } } }
+  see-also: [finance/greeks-ladder, core/pivot-table]
+  keywords: [sensitivity, dv01, heat map, tenor, factor]
 params:
   rows:
     type: table

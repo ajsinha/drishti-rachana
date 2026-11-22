@@ -10,6 +10,17 @@ doc:
     pass a fixed tone where down is the good direction (a cost).
   category: figures
   tags: [compare, period, change]
+  use-when:
+    - "One measure now is compared with the same measure in a reference period (today against yesterday, month against last month)."
+  avoid-when:
+    - "Many fields of two records are compared: use core/compare-ab."
+    - "The whole history matters: use core/series-line."
+  data:
+    in-words: "Two numbers: the value now and the value in the reference period."
+    sample-row: { now: 1000, then: 1000 }
+  example: { use: core/period-compare@1, with: { now: "$.sales.MTD", then: "$.sales.MTD_LAST_YEAR", label: Revenue, then-label: last year } }
+  see-also: [core/key-figure, core/compare-ab]
+  keywords: [compare, change, previous, delta, what changed]
 params:
   now:        { type: number, required: true, doc: The measure now }
   then:       { type: number, required: true, doc: The same measure in the reference period }

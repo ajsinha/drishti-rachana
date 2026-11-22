@@ -10,6 +10,17 @@ doc:
     buckets, which is right for sensitivities but not for every risk measure. A click on a row names the bucket.
   category: market-risk
   tags: [greeks, sensitivities, ladder]
+  use-when:
+    - Sensitivities by tenor or strike bucket are read with totals.
+  avoid-when:
+    - "One sensitivity across two axes: use finance/sensitivity-heatmap."
+  data:
+    table: rows
+    in-words: "One row per bucket with the greeks you have: delta, gamma, vega, theta, rho."
+    sample-row: { bucket: "5Y", delta: 15200, gamma: -320, vega: 8800, theta: -450, rho: 1200 }
+  example: { use: finance/greeks-ladder@1, with: { rows: { from: "$.greeks", columns: { bucket: TENOR, delta: DELTA_USD, vega: VEGA_USD } } } }
+  see-also: [finance/sensitivity-heatmap, finance/what-if-shocks]
+  keywords: [greeks, delta, vega, sensitivities, buckets]
 params:
   rows:
     type: table

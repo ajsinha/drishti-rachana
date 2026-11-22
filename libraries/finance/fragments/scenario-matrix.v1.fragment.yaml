@@ -10,6 +10,17 @@ doc:
     the top. Use it for stress or scenario results by book, desk or factor.
   category: market-risk
   tags: [scenarios, stress, matrix]
+  use-when:
+    - "Stress or scenario P&L is read by scenario and book or factor, shaded by size."
+  avoid-when:
+    - "One P&L per scenario: use finance/stress-table."
+  data:
+    table: rows
+    in-words: "One row per scenario and group: scenario, group and P&L."
+    sample-row: { scenario: "Rates +100bp", group: Financials, pnl: -125000 }
+  example: { use: finance/scenario-matrix@1, with: { rows: { from: "$.stress", columns: { scenario: SCEN, group: DESK, pnl: RES_PNL } } } }
+  see-also: [finance/stress-table, core/pivot-table]
+  keywords: [scenarios, stress, matrix, "p&l", heat map]
 params:
   rows:
     type: table

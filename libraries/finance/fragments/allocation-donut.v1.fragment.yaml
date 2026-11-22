@@ -10,6 +10,18 @@ doc:
     to show the amounts. A click on a slice raises an event with its label.
   category: funds
   tags: [allocation, donut, weights]
+  use-when:
+    - "A portfolio's split by asset class, sector or currency is shown as weights or amounts."
+  avoid-when:
+    - "There are many slices: use core/ranked-bars."
+    - "The holdings themselves are wanted: use finance/holdings-table."
+  data:
+    table: rows
+    in-words: "One row per slice: a label and a value."
+    sample-row: { label: Rates, value: 1250000 }
+  example: { use: finance/allocation-donut@1, with: { rows: { from: "$.alloc", columns: { label: CLASS, value: MV } } } }
+  see-also: [core/donut-breakdown, finance/holdings-table]
+  keywords: [allocation, weights, portfolio, asset class, mix]
 params:
   rows:
     type: table

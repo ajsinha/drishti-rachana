@@ -10,6 +10,17 @@ doc:
     the discount factor are shown when you map them. A click on a row raises an event with its tenor.
   category: market-data
   tags: [curve, pillars, rates]
+  use-when:
+    - "A curve's pillars are read as a table (tenor, instrument, quote, zero, discount factor)."
+  avoid-when:
+    - "The shape of the curve matters: use finance/term-structure."
+  data:
+    table: rows
+    in-words: "One row per pillar: tenor and zero rate, optionally instrument, quote and discount factor."
+    sample-row: { tenor: "2Y", zero: 0.0412, instrument: SOFR swap, quote: 0.0415, df: 0.9598 }
+  example: { use: finance/curve-table@1, with: { rows: { from: "$.pts", columns: { tenor: PILLAR, zero: ZERO_RATE } } } }
+  see-also: [finance/term-structure, finance/curve-overview]
+  keywords: [curve, pillars, zero, discount factor, table]
 params:
   rows:
     type: table

@@ -10,6 +10,17 @@ doc:
     it. The add-ons are one row per asset class, with their total at the foot.
   category: counterparty
   tags: [exposure, addon, capital]
+  use-when:
+    - "A regulatory exposure (replacement cost, add-ons, multiplier, EAD) is laid out so a reader can follow it."
+  avoid-when:
+    - "The exposure is a profile over time: use finance/exposure-profile."
+  data:
+    table: rows
+    in-words: "One row per asset class with its add-on, plus the replacement cost, multiplier and exposure as numbers."
+    sample-row: { asset_class: Interest rate, addon: 3200000 }
+  example: { use: finance/addon-breakdown@1, with: { replacement-cost: 1200000, exposure: 2400000, rows: { from: "$.addons", columns: { asset_class: CLASS, addon: ADDON_AMT } } } }
+  see-also: [finance/exposure-profile, finance/netting-summary]
+  keywords: [ead, add-on, sa-ccr, exposure, regulatory]
 params:
   rows:
     type: table

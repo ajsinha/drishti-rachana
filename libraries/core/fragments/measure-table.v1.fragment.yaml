@@ -10,6 +10,18 @@ doc:
     left out when the table has no such column.
   category: tables
   tags: [table, measure, change]
+  use-when:
+    - A short list of names with one measure and an optional signed change is compared.
+  avoid-when:
+    - "More than two measures are needed: use core/data-table."
+    - "The measure is ranked visually: use core/ranked-bars."
+  data:
+    table: rows
+    in-words: One row per name with a first measure and optionally a second (a change).
+    sample-row: { name: Rates Desk, first: 1250000, second: -42000 }
+  example: { use: core/measure-table@1, with: { title: By region, rows: { from: "$.by_region", columns: { name: REGION, first: REVENUE, second: GROWTH } }, name-label: Region, first-label: Revenue, second-label: Growth, second-fmt: pct2 } }
+  see-also: [core/data-table, core/ranked-bars]
+  keywords: [table, measure, change, comparison, simple]
 params:
   rows:
     type: table

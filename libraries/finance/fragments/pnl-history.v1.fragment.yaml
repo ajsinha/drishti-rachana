@@ -10,6 +10,17 @@ doc:
     and worst day are read from the rows you give.
   category: pnl
   tags: [pnl, history, cumulative]
+  use-when:
+    - "Daily P&L is read over time as a cumulative line with best and worst days."
+  avoid-when:
+    - "A portfolio against a benchmark: use finance/performance-chart."
+  data:
+    table: rows
+    in-words: "One row per day: date and P&L."
+    sample-row: { date: "2026-11-20", pnl: -125000 }
+  example: { use: finance/pnl-history@1, with: { rows: { from: "$.daily", columns: { date: BIZ_DATE, pnl: PNL_USD } } } }
+  see-also: [finance/pnl-tiles, finance/performance-chart]
+  keywords: ["p&l", history, cumulative, daily, trend]
 params:
   rows:
     type: table

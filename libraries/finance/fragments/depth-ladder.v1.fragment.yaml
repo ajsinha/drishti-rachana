@@ -11,6 +11,17 @@ doc:
     figures above.
   category: trading
   tags: [order-book, depth, ladder]
+  use-when:
+    - An order book's depth is read as a price ladder with bid and ask sizes.
+  avoid-when:
+    - "Only the last price and ranges matter: use finance/quote-card."
+  data:
+    table: rows
+    in-words: "One row per price level: price, size bid and size asked."
+    sample-row: { price: 101.25, bid_size: 1200, ask_size: 900 }
+  example: { use: finance/depth-ladder@1, with: { rows: { from: "$.book", columns: { price: PX, bid_size: BID_QTY, ask_size: ASK_QTY } } } }
+  see-also: [finance/quote-card, finance/order-ticket]
+  keywords: [order book, depth, bid, ask, ladder]
 params:
   rows:
     type: table

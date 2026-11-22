@@ -12,6 +12,18 @@ doc:
     gives its reason); the host decides who may approve, never this screen.
   category: tables
   tags: [live, approval, four-eyes, pending, changes]
+  use-when:
+    - A live table takes edits under approval and the reader must see or decide the held changes.
+  avoid-when:
+    - "The table is read-only: use core/live-table."
+    - "The history of applied changes is wanted: use core/audit-trail."
+  data:
+    table: changes
+    in-words: "One row per pending change of a live table: change id, state, summary, author, time and message."
+    sample-row: { change: C-0042, state: held, summary: limit 100 to 150, by: m.jones, at: "2026-11-20T09:30:00Z", message: Raise for quarter end }
+  example: { use: core/held-changes@1, with: { changes: { from: "$.pending", columns: { change: CHANGE_ID, state: STATE, summary: SUMMARY, by: MADE_BY, at: MADE_AT, message: NOTE } }, order: MADE_AT } }
+  see-also: [core/live-table, core/audit-trail]
+  keywords: [approval, pending, held, four eyes, changes]
 params:
   changes:
     type: table

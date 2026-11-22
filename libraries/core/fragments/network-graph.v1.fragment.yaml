@@ -8,6 +8,18 @@ doc:
   description: One row per node and one row per edge. A group colours the nodes. At most 2,000 of each.
   category: charts
   tags: [graph, network, relationships]
+  use-when:
+    - "Who is connected to whom matters (counterparty links, ownership, dependencies)."
+  avoid-when:
+    - "The links form a strict tree: use core/tree-table."
+    - "There are more than 2,000 nodes: aggregate first."
+  data:
+    table: nodes
+    in-words: "Two tables: one row per node (id, label, group) and one row per edge (from, to, label)."
+    sample-row: { id: T-100245, label: Rates, group: Financials }
+  example: { use: core/network-graph@1, with: { title: Ownership, nodes: { from: "$.entities", columns: { id: ENTITY_ID, label: ENTITY_NAME, group: KIND } }, edges: { from: "$.holdings", columns: { from: OWNER, to: OWNED, label: SHARE } } } }
+  see-also: [core/tree-table, finance/netting-set-tree]
+  keywords: [network, graph, nodes, edges, connections]
 params:
   nodes:
     type: table

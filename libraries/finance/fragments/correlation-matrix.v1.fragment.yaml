@@ -10,6 +10,17 @@ doc:
     out. Use it for any symmetric pair measure; give both orders of each pair, or the square will be half empty.
   category: market-data
   tags: [correlation, matrix, heat]
+  use-when:
+    - Pairwise correlations (or any symmetric pair measure) between factors are shaded in a square.
+  avoid-when:
+    - "The relation of two measures across items: use core/scatter-plot."
+  data:
+    table: rows
+    in-words: "One row per ordered pair: factor a, factor b and the value (both orders given)."
+    sample-row: { a: USD-SOFR, b: EUR-ESTR, value: 1250000 }
+  example: { use: finance/correlation-matrix@1, with: { rows: { from: "$.corr", columns: { a: F1, b: F2, value: RHO } } } }
+  see-also: [core/scatter-plot, finance/sensitivity-heatmap]
+  keywords: [correlation, matrix, factors, pairs, heat map]
 params:
   rows:
     type: table

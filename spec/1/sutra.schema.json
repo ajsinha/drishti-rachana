@@ -45,7 +45,8 @@
             "kind" : {
               "const" : "kv"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -58,7 +59,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -89,7 +98,7 @@
               "type" : "array"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -121,8 +130,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ ],
@@ -134,7 +143,8 @@
             "kind" : {
               "const" : "table"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -147,7 +157,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -171,8 +189,8 @@
               } ]
             },
             "crumb" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "emits" : {
               "description" : "Events a click fires (table, ladder: row-click; hbar: bar-click)",
@@ -183,7 +201,7 @@
                     "type" : "string"
                   },
                   "on" : {
-                    "enum" : [ "bar-click", "row-click" ],
+                    "enum" : [ "bar-click", "cancel", "point-click", "row-click", "submit" ],
                     "type" : "string"
                   },
                   "payload" : {
@@ -210,8 +228,8 @@
               } ]
             },
             "highlight" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "levels" : {
               "description" : "Drill down level by level: a row opens to its rows of the next level, with a breadcrumb, the parent row, counts and totals at each level, and an address (#panel=1.6) that can be shared",
@@ -244,16 +262,21 @@
               "type" : "array"
             },
             "limit" : {
-              "description" : "Table: rows shown (a whole number from 1; the rest are counted in the more line).",
-              "minimum" : 1,
-              "type" : "integer"
+              "anyOf" : [ {
+                "minimum" : 1,
+                "type" : "integer"
+              }, {
+                "pattern" : "ctl\\.",
+                "type" : "string"
+              } ],
+              "description" : "Table: rows shown (a whole number from 1; the rest are counted in the more line). Or an expression over a top-n control (ctl.top)."
             },
             "link" : {
               "description" : "option of table panels"
             },
             "moreLabel" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "on-select" : {
               "description" : "option of table panels"
@@ -327,6 +350,11 @@
                   "description" : "Shade each cell by its value",
                   "type" : "boolean"
                 },
+                "mode" : {
+                  "description" : "How the pivot screen opens it: views (the View picker and the compact line, the default), compact or panes",
+                  "enum" : [ "views", "compact", "panes" ],
+                  "type" : "string"
+                },
                 "rows" : {
                   "description" : "Fields down the side, outermost first",
                   "maxItems" : 4,
@@ -366,11 +394,11 @@
               "type" : [ "boolean", "object" ]
             },
             "root" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "search" : {
@@ -409,12 +437,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "rows" ],
@@ -426,7 +454,8 @@
             "kind" : {
               "const" : "tabs"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -442,7 +471,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -466,7 +503,7 @@
               } ]
             },
             "each" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "layout" : {
@@ -477,7 +514,15 @@
             "panels" : {
               "description" : "tabs only: panels shown inside each tab (kv, status, table, ladder, hbar, markdown, metric), read with @ as the tab's element",
               "items" : {
-                "$ref" : "#/$defs/panel"
+                "anyOf" : [ {
+                  "allOf" : [ {
+                    "$ref" : "#/$defs/panel"
+                  }, {
+                    "required" : [ "id" ]
+                  } ]
+                }, {
+                  "$ref" : "#/$defs/use"
+                } ]
               },
               "type" : "array"
             },
@@ -506,16 +551,16 @@
               } ]
             },
             "tabTitle" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "waits" : {
               "description" : "What the panel says until an event it reads fires",
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "each" ],
@@ -527,7 +572,8 @@
             "kind" : {
               "const" : "line"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -543,7 +589,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -581,11 +635,11 @@
               "description" : "option of line panels"
             },
             "mark" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -626,12 +680,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "x" : {
               "description" : "option of line panels"
@@ -649,7 +703,8 @@
             "kind" : {
               "const" : "area"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -662,7 +717,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -686,14 +749,14 @@
               } ]
             },
             "limit" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "limitLabel" : {
               "description" : "option of area panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "series" : {
@@ -732,12 +795,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "x" : {
               "description" : "option of area panels"
@@ -752,7 +815,8 @@
             "kind" : {
               "const" : "hbar"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -765,7 +829,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -797,7 +869,7 @@
                     "type" : "string"
                   },
                   "on" : {
-                    "enum" : [ "bar-click", "row-click" ],
+                    "enum" : [ "bar-click", "cancel", "point-click", "row-click", "submit" ],
                     "type" : "string"
                   },
                   "payload" : {
@@ -822,7 +894,7 @@
               "description" : "option of hbar panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "shape" : {
@@ -867,12 +939,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "rows" ],
@@ -884,7 +956,8 @@
             "kind" : {
               "const" : "ladder"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -897,7 +970,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -921,8 +1002,8 @@
               } ]
             },
             "crumb" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "emits" : {
               "description" : "Events a click fires (table, ladder: row-click; hbar: bar-click)",
@@ -933,7 +1014,7 @@
                     "type" : "string"
                   },
                   "on" : {
-                    "enum" : [ "bar-click", "row-click" ],
+                    "enum" : [ "bar-click", "cancel", "point-click", "row-click", "submit" ],
                     "type" : "string"
                   },
                   "payload" : {
@@ -960,8 +1041,8 @@
               } ]
             },
             "highlight" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "levels" : {
               "description" : "Drill down level by level: a row opens to its rows of the next level, with a breadcrumb, the parent row, counts and totals at each level, and an address (#panel=1.6) that can be shared",
@@ -1065,6 +1146,11 @@
                   "description" : "Shade each cell by its value",
                   "type" : "boolean"
                 },
+                "mode" : {
+                  "description" : "How the pivot screen opens it: views (the View picker and the compact line, the default), compact or panes",
+                  "enum" : [ "views", "compact", "panes" ],
+                  "type" : "string"
+                },
                 "rows" : {
                   "description" : "Fields down the side, outermost first",
                   "maxItems" : 4,
@@ -1104,11 +1190,11 @@
               "type" : [ "boolean", "object" ]
             },
             "root" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "search" : {
@@ -1147,12 +1233,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "rows" ],
@@ -1164,7 +1250,8 @@
             "kind" : {
               "const" : "status"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1177,7 +1264,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1233,8 +1328,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ ],
@@ -1246,7 +1341,8 @@
             "kind" : {
               "const" : "markdown"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1259,7 +1355,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1314,8 +1418,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "text" ],
@@ -1327,7 +1431,8 @@
             "kind" : {
               "const" : "gauge"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1340,7 +1445,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1372,8 +1485,8 @@
               "description" : "option of gauge panels"
             },
             "max" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "source" : {
               "description" : "The record the panel reads: Rachana-EL expression ($ is the document, @ the row) naming a linked entity (it reads as $), or {kind, id | where | search, limit, as-of, pack, params} (it reads as $src), or {table, where, limit, as-of} (a virtual table's rows as $src)",
@@ -1400,16 +1513,16 @@
               } ]
             },
             "value" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "waits" : {
               "description" : "What the panel says until an event it reads fires",
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "value" ],
@@ -1421,7 +1534,8 @@
             "kind" : {
               "const" : "surface"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1434,7 +1548,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1463,7 +1585,7 @@
               "type" : "string"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -1503,12 +1625,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "y" : {
               "description" : "option of surface panels"
@@ -1523,7 +1645,8 @@
             "kind" : {
               "const" : "waterfall"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1536,7 +1659,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1573,7 +1704,7 @@
               "description" : "option of waterfall panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -1617,12 +1748,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "rows" ],
@@ -1634,7 +1765,8 @@
             "kind" : {
               "const" : "histogram"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1653,7 +1785,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1686,7 +1826,7 @@
               "type" : "array"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -1724,12 +1864,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "rows" ],
@@ -1741,7 +1881,8 @@
             "kind" : {
               "const" : "scatter"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1754,7 +1895,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1789,7 +1938,7 @@
               "description" : "option of scatter panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "size" : {
@@ -1824,12 +1973,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "x" : {
               "description" : "option of scatter panels"
@@ -1856,7 +2005,8 @@
             "kind" : {
               "const" : "candlestick"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1869,7 +2019,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -1910,7 +2068,7 @@
               "description" : "option of candlestick panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -1948,12 +2106,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "x" : {
               "description" : "option of candlestick panels"
@@ -1968,7 +2126,8 @@
             "kind" : {
               "const" : "graph"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -1981,7 +2140,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2005,7 +2172,7 @@
               } ]
             },
             "edges" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "group" : {
@@ -2020,7 +2187,7 @@
               "type" : "string"
             },
             "nodes" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -2052,8 +2219,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "nodes" ],
@@ -2065,7 +2232,8 @@
             "kind" : {
               "const" : "timeline"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -2078,7 +2246,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2111,7 +2287,7 @@
               "description" : "option of timeline panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -2151,12 +2327,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "rows" ],
@@ -2168,13 +2344,14 @@
             "kind" : {
               "const" : "pivot"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
             "across" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "agg" : {
               "description" : "How the pivot combines the values of a cell (default sum)",
@@ -2203,7 +2380,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2245,7 +2430,7 @@
               "type" : "boolean"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -2282,20 +2467,20 @@
               "type" : "boolean"
             },
             "value" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "waits" : {
               "description" : "What the panel says until an event it reads fires",
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "across", "by", "rows" ],
@@ -2307,7 +2492,8 @@
             "kind" : {
               "const" : "metric"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -2324,7 +2510,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2348,8 +2542,8 @@
               } ]
             },
             "delta" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "deltaFmt" : {
               "description" : "How the change is formatted (default: the format of value)",
@@ -2401,16 +2595,16 @@
               "type" : "string"
             },
             "value" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "waits" : {
               "description" : "What the panel says until an event it reads fires",
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "value" ],
@@ -2422,7 +2616,8 @@
             "kind" : {
               "const" : "map"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -2435,7 +2630,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2464,16 +2667,16 @@
               "type" : "string"
             },
             "highlight" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "link" : {
               "description" : "A click on a country opens an entity: { kind: jurisdiction, id: \"JUR-{iso3}\" }. The id template holds {iso3}, {iso2} or (for regions) {code}; a country with no such entity is not clickable and says so on hover",
               "type" : "object"
             },
             "region" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "shade" : {
               "description" : "Shade each country by a field of every entity of a kind: { kind: economy, field: $.gdpUsdBn, by: $.iso3, fmt: amount0, label: GDP (USD bn) }. by defaults to $.iso3; the field is read as the caller may see it (a masked field shades nothing)",
@@ -2512,8 +2715,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ ],
@@ -2525,7 +2728,8 @@
             "kind" : {
               "const" : "grid"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -2541,7 +2745,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2580,7 +2792,7 @@
               "description" : "option of grid panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "search" : {
@@ -2619,12 +2831,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "rows" ],
@@ -2636,7 +2848,8 @@
             "kind" : {
               "const" : "tree"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -2649,7 +2862,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2707,7 +2928,7 @@
               "description" : "option of tree panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -2739,12 +2960,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "node", "rows" ],
@@ -2756,7 +2977,8 @@
             "kind" : {
               "const" : "chart"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -2780,7 +3002,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2821,7 +3051,7 @@
               "description" : "option of chart panels"
             },
             "rows" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
+              "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
               "type" : "string"
             },
             "source" : {
@@ -2866,12 +3096,12 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "x" : {
               "description" : "option of chart panels"
@@ -2895,7 +3125,8 @@
             "kind" : {
               "const" : "live"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -2911,7 +3142,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -2993,8 +3232,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
               "description" : "option of live panels"
@@ -3012,7 +3251,8 @@
             "kind" : {
               "const" : "treemap"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -3025,7 +3265,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -3097,8 +3345,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             },
             "where" : {
               "description" : "option of treemap panels"
@@ -3113,7 +3361,8 @@
             "kind" : {
               "const" : "bullet"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -3129,7 +3378,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -3212,8 +3469,8 @@
               "description" : "option of bullet panels"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ "value" ],
@@ -3225,7 +3482,8 @@
             "kind" : {
               "const" : "form"
             }
-          }
+          },
+          "required" : [ "kind" ]
         },
         "then" : {
           "properties" : {
@@ -3241,7 +3499,15 @@
                   "properties" : {
                     "panels" : {
                       "items" : {
-                        "$ref" : "#/$defs/panel"
+                        "anyOf" : [ {
+                          "allOf" : [ {
+                            "$ref" : "#/$defs/panel"
+                          }, {
+                            "required" : [ "id" ]
+                          } ]
+                        }, {
+                          "$ref" : "#/$defs/use"
+                        } ]
                       },
                       "type" : "array"
                     },
@@ -3299,8 +3565,8 @@
               "type" : "string"
             },
             "when" : {
-              "description" : "Rachana-EL expression ($ is the document, @ the row)",
-              "type" : "string"
+              "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+              "type" : [ "string", "number", "boolean" ]
             }
           },
           "required" : [ ],
@@ -3309,8 +3575,41 @@
       } ],
       "properties" : {
         "across" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
+        },
+        "actions" : {
+          "description" : "Buttons in the panel's header: { id, label, tone, confirm, requires, do: [ effects ] }",
+          "items" : {
+            "additionalProperties" : false,
+            "properties" : {
+              "confirm" : {
+                "type" : [ "string", "boolean" ]
+              },
+              "do" : {
+                "items" : {
+                  "type" : "object"
+                },
+                "type" : "array"
+              },
+              "id" : {
+                "type" : "string"
+              },
+              "label" : {
+                "type" : "string"
+              },
+              "requires" : {
+                "type" : "string"
+              },
+              "tone" : {
+                "type" : "string"
+              }
+            },
+            "required" : [ "do", "label" ],
+            "type" : "object"
+          },
+          "maxItems" : 8,
+          "type" : "array"
         },
         "agg" : {
           "description" : "How the pivot combines the values of a cell (default sum)",
@@ -3352,7 +3651,15 @@
               "properties" : {
                 "panels" : {
                   "items" : {
-                    "$ref" : "#/$defs/panel"
+                    "anyOf" : [ {
+                      "allOf" : [ {
+                        "$ref" : "#/$defs/panel"
+                      }, {
+                        "required" : [ "id" ]
+                      } ]
+                    }, {
+                      "$ref" : "#/$defs/use"
+                    } ]
                   },
                   "type" : "array"
                 },
@@ -3401,8 +3708,8 @@
           "type" : "array"
         },
         "crumb" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "dataset" : {
           "description" : "option of grid panels"
@@ -3411,8 +3718,8 @@
           "description" : "option of timeline panels"
         },
         "delta" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "deltaFmt" : {
           "description" : "How the change is formatted (default: the format of value)",
@@ -3430,11 +3737,11 @@
           "description" : "option of timeline panels"
         },
         "each" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
           "type" : "string"
         },
         "edges" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
           "type" : "string"
         },
         "edit" : {
@@ -3449,7 +3756,7 @@
                 "type" : "string"
               },
               "on" : {
-                "enum" : [ "bar-click", "row-click" ],
+                "enum" : [ "bar-click", "cancel", "point-click", "row-click", "submit" ],
                 "type" : "string"
               },
               "payload" : {
@@ -3697,8 +4004,8 @@
           "description" : "option of candlestick panels"
         },
         "highlight" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "horizontal" : {
           "description" : "option of chart panels"
@@ -3765,8 +4072,8 @@
           "type" : "array"
         },
         "limit" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "limitLabel" : {
           "description" : "option of area panels"
@@ -3781,16 +4088,16 @@
           "description" : "option of bullet panels"
         },
         "mark" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "markers" : {
           "description" : "Vertical marker lines: { label, value: <expression>, tone }",
           "type" : "array"
         },
         "max" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "min" : {
           "description" : "option of bullet panels"
@@ -3799,15 +4106,92 @@
           "description" : "option of tree panels"
         },
         "moreLabel" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "node" : {
           "description" : "option of tree panels"
         },
         "nodes" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
           "type" : "string"
+        },
+        "on" : {
+          "additionalProperties" : false,
+          "description" : "Effects by trigger (bar-click, cancel, cell-click, change, close, open, point-click, row-click, row-dblclick, submit): { row-click: [ { set: { state: order, to: \"@.id\" } } ] }",
+          "properties" : {
+            "bar-click" : {
+              "description" : "Effects run in order when the panel fires bar-click",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "cancel" : {
+              "description" : "Effects run in order when the panel fires cancel",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "cell-click" : {
+              "description" : "Effects run in order when the panel fires cell-click",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "change" : {
+              "description" : "Effects run in order when the panel fires change",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "close" : {
+              "description" : "Effects run in order when the panel fires close",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "open" : {
+              "description" : "Effects run in order when the panel fires open",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "point-click" : {
+              "description" : "Effects run in order when the panel fires point-click",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "row-click" : {
+              "description" : "Effects run in order when the panel fires row-click",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "row-dblclick" : {
+              "description" : "Effects run in order when the panel fires row-dblclick",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "submit" : {
+              "description" : "Effects run in order when the panel fires submit",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            }
+          },
+          "type" : "object"
         },
         "on-select" : {
           "description" : "A click on a row or bar sets a control: {filter: [panel ids], by: <control id>, field: <row field>}",
@@ -3825,7 +4209,15 @@
         "panels" : {
           "description" : "tabs only: panels shown inside each tab (kv, status, table, ladder, hbar, markdown, metric), read with @ as the tab's element",
           "items" : {
-            "$ref" : "#/$defs/panel"
+            "anyOf" : [ {
+              "allOf" : [ {
+                "$ref" : "#/$defs/panel"
+              }, {
+                "required" : [ "id" ]
+              } ]
+            }, {
+              "$ref" : "#/$defs/use"
+            } ]
           },
           "type" : "array"
         },
@@ -3908,6 +4300,11 @@
               "description" : "Shade each cell by its value",
               "type" : "boolean"
             },
+            "mode" : {
+              "description" : "How the pivot screen opens it: views (the View picker and the compact line, the default), compact or panes",
+              "enum" : [ "views", "compact", "panes" ],
+              "type" : "string"
+            },
             "rows" : {
               "description" : "Fields down the side, outermost first",
               "maxItems" : 4,
@@ -3972,18 +4369,18 @@
           } ]
         },
         "region" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "root" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "rowKey" : {
           "description" : "option of grid panels"
         },
         "rows" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
+          "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
           "type" : "string"
         },
         "search" : {
@@ -4057,8 +4454,8 @@
           "description" : "option of waterfall panels"
         },
         "tabTitle" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "text" : {
           "description" : "option of markdown panels"
@@ -4114,8 +4511,8 @@
           "description" : "option of bullet panels"
         },
         "when" : {
-          "description" : "Rachana-EL expression ($ is the document, @ the row)",
-          "type" : "string"
+          "description" : "Rachana-EL expression ($ is the document, @ the row); a number or true/false is its own literal",
+          "type" : [ "string", "number", "boolean" ]
         },
         "where" : {
           "description" : "Rachana-EL expression ($ is the document, @ the row) that must be true for a row to be shown (it may read ctl.<id>)",
@@ -4140,7 +4537,7 @@
           "description" : "option of scatter panels"
         }
       },
-      "required" : [ "id", "kind" ],
+      "required" : [ "kind" ],
       "type" : "object",
       "x-rachana-use" : {
         "$ref" : "#/$defs/use"
@@ -4150,6 +4547,14 @@
       "additionalProperties" : false,
       "description" : "A use of a shared block: the block's panels, in its order, as if they were written here",
       "properties" : {
+        "area" : { },
+        "as" : {
+          "description" : "The name the Sutra reads the fragment's outputs and state by",
+          "type" : "string"
+        },
+        "children" : { },
+        "collapsible" : { },
+        "emits" : { },
         "form" : {
           "additionalProperties" : false,
           "description" : "How people edit this panel's records or start new ones: drafts, and with save: changes submitted through write-back",
@@ -4343,6 +4748,13 @@
           "required" : [ "fields" ],
           "type" : "object"
         },
+        "height" : { },
+        "on" : {
+          "description" : "Effects by the fragment's events: event: [ effects ]",
+          "type" : "object"
+        },
+        "order" : { },
+        "phone" : { },
         "refresh" : {
           "description" : "Fetch every panel the use brings again on an interval",
           "oneOf" : [ {
@@ -4368,13 +4780,22 @@
             "type" : "object"
           } ]
         },
+        "section" : { },
+        "slots" : {
+          "description" : "The panels that fill the fragment's slots: slot: [ panels ]",
+          "type" : "object"
+        },
+        "source" : { },
+        "span" : { },
         "use" : {
           "description" : "A UI kit fragment (name@version) or a pack's own block or fragment (pack/name@version, or its plain name): its panels go here",
-          "pattern" : "^([a-z][a-z0-9-]{0,63}/)?[a-z][a-z0-9-]{1,63}(@[0-9]+)?$",
+          "pattern" : "^(([a-z][a-z0-9-]{0,63})(@[0-9]+)?/)?[a-z][a-z0-9-]{1,63}(@[0-9]+)?$",
           "type" : "string"
         },
+        "waits" : { },
+        "when" : { },
         "with" : {
-          "description" : "The block's parameters (its params:), each one value; the block's defaults otherwise",
+          "description" : "The block's parameters (its params:); the block's defaults otherwise",
           "type" : "object"
         }
       },
@@ -4413,6 +4834,20 @@
           },
           "min" : {
             "description" : "Lower bound of a number-range or slider: a number or an expression over the record"
+          },
+          "on" : {
+            "additionalProperties" : false,
+            "description" : "Effects by trigger (change): { row-click: [ { set: { state: order, to: \"@.id\" } } ] }",
+            "properties" : {
+              "change" : {
+                "description" : "Effects run in order when the control fires change",
+                "items" : {
+                  "type" : "object"
+                },
+                "type" : "array"
+              }
+            },
+            "type" : "object"
           },
           "options" : {
             "description" : "A list of values or {value, label}, an expression over the record ($.legs[*].id), or {kind: <entity kind>}",
@@ -4457,12 +4892,129 @@
       "maxItems" : 12,
       "type" : "array"
     },
+    "data" : {
+      "additionalProperties" : {
+        "oneOf" : [ {
+          "type" : "string"
+        }, {
+          "additionalProperties" : false,
+          "description" : "One data entry: exactly one of table, url, rows, record",
+          "oneOf" : [ {
+            "required" : [ "table" ]
+          }, {
+            "required" : [ "url" ]
+          }, {
+            "required" : [ "rows" ]
+          }, {
+            "required" : [ "record" ]
+          } ],
+          "properties" : {
+            "as" : {
+              "enum" : [ "rows", "record" ],
+              "type" : "string"
+            },
+            "fields" : {
+              "description" : "Declared field types: name: { type, label, fmt }",
+              "type" : "object"
+            },
+            "format" : {
+              "enum" : [ "json", "csv", "ndjson", "arrow" ],
+              "type" : "string"
+            },
+            "key" : {
+              "description" : "The fields that identify a row",
+              "oneOf" : [ {
+                "type" : "string"
+              }, {
+                "items" : {
+                  "type" : "string"
+                },
+                "type" : "array"
+              } ]
+            },
+            "limit" : {
+              "minimum" : 1,
+              "type" : "integer"
+            },
+            "live" : {
+              "type" : "boolean"
+            },
+            "mode" : {
+              "enum" : [ "auto", "client", "server" ],
+              "type" : "string"
+            },
+            "path" : {
+              "description" : "Where the rows are inside a wrapped JSON answer",
+              "type" : "string"
+            },
+            "record" : {
+              "description" : "One record written in the file",
+              "type" : "object"
+            },
+            "refresh" : {
+              "description" : "Seconds between re-reads",
+              "type" : "number"
+            },
+            "rows" : {
+              "description" : "Rows written in the file",
+              "items" : {
+                "type" : "object"
+              },
+              "type" : "array"
+            },
+            "table" : {
+              "description" : "A host table (Data Protocol)",
+              "type" : "string"
+            },
+            "url" : {
+              "description" : "An address read whole",
+              "type" : "string"
+            },
+            "where" : {
+              "description" : "Rachana-EL expression ($ is the document, @ the row) over each row (@)",
+              "type" : "string"
+            }
+          },
+          "type" : "object"
+        } ]
+      },
+      "description" : "Sources read into $: name: an address, or { table | url | rows | record, key, fields, as, where, limit, refresh, live, mode, format, path }",
+      "type" : "object"
+    },
     "description" : {
       "description" : "One paragraph: what this layout shows and for which entities",
       "type" : "string"
     },
     "doc" : {
       "description" : "The docstring a component browser and an AI agent read: summary, description, params, emits, expects, examples, since (RACHANA_REFERENCE.md); lint warns when it is missing or incomplete (RCH-2055)",
+      "type" : "object"
+    },
+    "functions" : {
+      "additionalProperties" : {
+        "additionalProperties" : false,
+        "properties" : {
+          "doc" : {
+            "type" : "string"
+          },
+          "examples" : {
+            "type" : "array"
+          },
+          "is" : {
+            "description" : "Rachana-EL expression ($ is the document, @ the row) the function returns",
+            "type" : "string"
+          },
+          "params" : {
+            "description" : "The parameter names (a list, or a mapping of name to its description)"
+          },
+          "returns" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "is" ],
+        "type" : "object"
+      },
+      "description" : "Functions of this Sutra: name: { params, is, doc, returns, examples }",
+      "maxProperties" : 200,
       "type" : "object"
     },
     "keys" : {
@@ -4572,13 +5124,35 @@
       },
       "type" : "object"
     },
+    "let" : {
+      "additionalProperties" : {
+        "type" : [ "string", "number", "boolean" ]
+      },
+      "description" : "Named expressions: name: expression (text, a number or true/false), read by name in expressions",
+      "type" : "object"
+    },
+    "libraries" : {
+      "description" : "The libraries this Sutra uses, each with its major: libraries: [finance@1]",
+      "items" : {
+        "type" : "string"
+      },
+      "type" : "array"
+    },
     "notes" : {
       "description" : "Longer notes for authors and reviewers (plain text)",
       "type" : "string"
     },
     "panels" : {
       "items" : {
-        "$ref" : "#/$defs/panel"
+        "anyOf" : [ {
+          "allOf" : [ {
+            "$ref" : "#/$defs/panel"
+          }, {
+            "required" : [ "id" ]
+          } ]
+        }, {
+          "$ref" : "#/$defs/use"
+        } ]
       },
       "type" : "array"
     },
@@ -4637,6 +5211,27 @@
         "required" : [ "every" ],
         "type" : "object"
       } ]
+    },
+    "state" : {
+      "additionalProperties" : {
+        "additionalProperties" : false,
+        "properties" : {
+          "default" : {
+            "description" : "A value of the state's type"
+          },
+          "doc" : {
+            "type" : "string"
+          },
+          "type" : {
+            "enum" : [ "text", "number", "boolean", "date", "list" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "type" ],
+        "type" : "object"
+      },
+      "description" : "The screen's state: id: { type, default }, read as state.<id>, written by effects",
+      "type" : "object"
     },
     "strip" : {
       "description" : "Up to eight fields in the header strip",

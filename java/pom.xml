@@ -37,7 +37,7 @@
     <!-- The pinned Drishti Elements release whose data files (formats, world regions) Core bundles: js/vendor/drishti-elements/<this>/ -->
     <drishti.elements.version>3.2.0</drishti.elements.version>
     <!-- The Drishti Tools release rachana-server uses (owner decision O6, G3 gate: the server only; Core and the other modules stay free of it). -->
-    <drishti.tools.version>1.0.0</drishti.tools.version>
+    <drishti.tools.version>1.1.0</drishti.tools.version>
     <!-- SPLIT EXEMPTIONS (SPLIT_EXEMPTIONS.md): versions of the libraries the moved code still uses; each leaves at its step. -->
     <assertj.version>3.27.7</assertj.version>
     <!-- Explicit anchors: java/ is this pom's folder, the repository root is one above it. -->

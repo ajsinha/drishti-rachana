@@ -11,7 +11,7 @@ Entries are written per release; the regime's unreleased work is listed after th
   stream's `POST /changes/{sub}/window`) reads a window's keys as the host does, a bare value as a one-part key, instead of copying the
   reader (G4 pass 3, live tables LV5). Case: `ProtocolHostTest.keysAreReadAsTheProtocolSendsThem`.
 - **`rachana-server` reads and writes CSV with Drishti Tools (owner decision O6)**: the server's own RFC 4180 parser and writer are
-  replaced by `tools-csv` 1.0.0 (`CsvReader`, `CsvWriter`; `drishti.tools.version` in `java/pom.xml`); Core and every other module
+  replaced by `tools-csv` 1.1.0 (`CsvReader`, `CsvWriter`; `drishti.tools.version` in `java/pom.xml`); Core and every other module
   stay free of Tools (`DependencyAllowListTest` allows `com.ash.tools:tools-csv` in `rachana-server` only). The install order is now
   Drishti Tools → Rachana → Lake → Drishti. The table writer writes LF line ends and no formula guard (the file is the table's own
   source and is read back as written). A CSV that holds only its header now keeps that column order when the first row is added

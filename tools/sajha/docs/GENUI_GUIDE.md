@@ -4,6 +4,7 @@
 For two readers: the **agent builder** (the system prompt and the tool loop of a GenAI app on SAJHA) and the **app developer** (the
 Python app and the page the user opens). The contracts of the tools are in [TOOLS.md](TOOLS.md); the design is
 [docs/design/GENUI_KIT.md](../../../docs/design/GENUI_KIT.md).
+The architecture for architects and managers (why, the two paths, a worked example, what is built): [docs/design/GENUI_ARCHITECTURE.md](../../../docs/design/GENUI_ARCHITECTURE.md).
 
 ## 1. What the agent makes
 

@@ -14,11 +14,11 @@ doc:
   tags: [kpi, strip, figures, sparkline, home]
 params:
   items:
-    type: "list<record{label: text, value: number, delta: number?, caption: text?}>"
+    type: "list<record{label: text, value: number, delta: number?, caption: text?, open: text?}>"
     required: true
     min: 1
     max: 8
-    doc: "The figures in order: { label, value, delta, caption }"
+    doc: "The figures in order: { label, value, delta, caption, open }; open is the command a click on the figure raises (open0 ... open7), empty: the figure is not clickable"
   history:
     type: table
     optional: true
@@ -31,6 +31,15 @@ params:
   fmt:       { type: format, default: amount0, doc: How the figures are written }
   delta-fmt: { type: format, default: signed0, doc: How the changes are written }
   tone:      { type: enum, options: [sign, accent, ok, warn, bad, pos, neg], default: accent, doc: How the figures are toned }
+emits:
+  - { name: open0, payload: { command: text }, doc: "Figure 1 was clicked: the command that opens its mnemonic" }
+  - { name: open1, payload: { command: text }, doc: "Figure 2 was clicked: the command that opens its mnemonic" }
+  - { name: open2, payload: { command: text }, doc: "Figure 3 was clicked: the command that opens its mnemonic" }
+  - { name: open3, payload: { command: text }, doc: "Figure 4 was clicked: the command that opens its mnemonic" }
+  - { name: open4, payload: { command: text }, doc: "Figure 5 was clicked: the command that opens its mnemonic" }
+  - { name: open5, payload: { command: text }, doc: "Figure 6 was clicked: the command that opens its mnemonic" }
+  - { name: open6, payload: { command: text }, doc: "Figure 7 was clicked: the command that opens its mnemonic" }
+  - { name: open7, payload: { command: text }, doc: "Figure 8 was clicked: the command that opens its mnemonic" }
 panels:
   - id: k0
     kind: metric
@@ -42,6 +51,7 @@ panels:
     caption: "${coalesce(arg.items[0].caption, '')}"
     delta: "arg.items[0].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open0, on: point-click, payload: { command: "coalesce(arg.items[0].open, '')" } } ]
   - id: s0
     kind: line
     when: "size(arg.items) > 0 && !is_blank(arg.history)"
@@ -58,6 +68,7 @@ panels:
     caption: "${coalesce(arg.items[1].caption, '')}"
     delta: "arg.items[1].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open1, on: point-click, payload: { command: "coalesce(arg.items[1].open, '')" } } ]
   - id: s1
     kind: line
     when: "size(arg.items) > 1 && !is_blank(arg.history)"
@@ -74,6 +85,7 @@ panels:
     caption: "${coalesce(arg.items[2].caption, '')}"
     delta: "arg.items[2].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open2, on: point-click, payload: { command: "coalesce(arg.items[2].open, '')" } } ]
   - id: s2
     kind: line
     when: "size(arg.items) > 2 && !is_blank(arg.history)"
@@ -90,6 +102,7 @@ panels:
     caption: "${coalesce(arg.items[3].caption, '')}"
     delta: "arg.items[3].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open3, on: point-click, payload: { command: "coalesce(arg.items[3].open, '')" } } ]
   - id: s3
     kind: line
     when: "size(arg.items) > 3 && !is_blank(arg.history)"
@@ -106,6 +119,7 @@ panels:
     caption: "${coalesce(arg.items[4].caption, '')}"
     delta: "arg.items[4].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open4, on: point-click, payload: { command: "coalesce(arg.items[4].open, '')" } } ]
   - id: s4
     kind: line
     when: "size(arg.items) > 4 && !is_blank(arg.history)"
@@ -122,6 +136,7 @@ panels:
     caption: "${coalesce(arg.items[5].caption, '')}"
     delta: "arg.items[5].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open5, on: point-click, payload: { command: "coalesce(arg.items[5].open, '')" } } ]
   - id: s5
     kind: line
     when: "size(arg.items) > 5 && !is_blank(arg.history)"
@@ -138,6 +153,7 @@ panels:
     caption: "${coalesce(arg.items[6].caption, '')}"
     delta: "arg.items[6].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open6, on: point-click, payload: { command: "coalesce(arg.items[6].open, '')" } } ]
   - id: s6
     kind: line
     when: "size(arg.items) > 6 && !is_blank(arg.history)"
@@ -154,6 +170,7 @@ panels:
     caption: "${coalesce(arg.items[7].caption, '')}"
     delta: "arg.items[7].delta"
     deltaFmt: "%{delta-fmt}"
+    emits: [ { name: open7, on: point-click, payload: { command: "coalesce(arg.items[7].open, '')" } } ]
   - id: s7
     kind: line
     when: "size(arg.items) > 7 && !is_blank(arg.history)"

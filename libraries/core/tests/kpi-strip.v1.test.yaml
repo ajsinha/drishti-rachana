@@ -20,3 +20,10 @@ tests:
   - name: no change shows no change text
     use: { use: core/kpi-strip@1, with: { items: "[{label: 'A', value: 3}]" } }
     expect: [ { at: "panels[k0].data.delta", is: null } ]
+  - name: a figure with a command raises it on a click, one without raises an empty one
+    use: { use: core/kpi-strip@1, with: { items: "[{label: 'A', value: 3, open: 'VAR BANK'}, {label: 'B', value: 4}]" } }
+    expect:
+      - { at: "panels[k0].emits[0].name", is: open0 }
+      - { at: "panels[k0].emits[0].on", is: point-click }
+      - { at: "panels[k1].emits[0].name", is: open1 }
+      - { problems: [] }

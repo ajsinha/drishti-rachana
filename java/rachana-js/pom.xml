@@ -15,6 +15,7 @@
   <name>rachana-js</name>
 
   <properties>
+    <rachana.java.root>${project.basedir}/..</rachana.java.root>
     <teavm.version>0.16.0</teavm.version>
     <rachana.js.out>${project.build.directory}/js</rachana.js.out>
     <rachana.js.opt>ADVANCED</rachana.js.opt>

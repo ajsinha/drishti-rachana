@@ -9,6 +9,10 @@
   <artifactId>rachana-compat</artifactId>
   <name>rachana-compat</name>
   <description>The compatibility regime's gates CG1 to CG6 (SUTRA_EXPANSION 6.5): tests and their tooling only, no product code.</description>
+  <properties>
+    <rachana.java.root>${project.basedir}/..</rachana.java.root>
+  </properties>
+
   <dependencies>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-api</artifactId><version>${project.version}</version><scope>test</scope></dependency>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-core</artifactId><version>${project.version}</version><scope>test</scope></dependency>
@@ -22,7 +26,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <rachana.repo.root>${project.rootDirectory}/..</rachana.repo.root>
+            <rachana.repo.root>${rachana.repo.root}</rachana.repo.root>
             <rachana.reference.classpath>${rachana.reference.classpath}</rachana.reference.classpath>
             <rachana.compat.runtime>${rachana.compat.runtime}</rachana.compat.runtime>
             <rachana.compat.binds.out>${rachana.compat.binds.out}</rachana.compat.binds.out>

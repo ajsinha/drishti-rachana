@@ -9,6 +9,10 @@
   <artifactId>rachana-core</artifactId>
   <name>rachana-core</name>
 
+  <properties>
+    <rachana.java.root>${project.basedir}/..</rachana.java.root>
+  </properties>
+
   <dependencies>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-api</artifactId><version>${project.version}</version></dependency>
     <!-- SPLIT EXEMPTIONS (java/SPLIT_EXEMPTIONS.md): carried from the moved code until the step named there removes them. -->

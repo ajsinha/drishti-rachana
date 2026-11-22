@@ -13,6 +13,7 @@
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
   <properties>
+    <rachana.java.root>${project.basedir}/..</rachana.java.root>
     <node>node</node>
     <rachana.node.skip>false</rachana.node.skip>
     <uv>uv</uv>

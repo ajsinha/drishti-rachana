@@ -18,6 +18,7 @@
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
   <properties>
+    <rachana.java.root>${project.basedir}/..</rachana.java.root>
     <arrow.version>19.0.0</arrow.version>
     <!-- Arrow's off-heap memory reads direct buffers' addresses (Arrow Java's documented JDK 17+ requirement) -->
     <rachana.arrow.opens>--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED</rachana.arrow.opens>

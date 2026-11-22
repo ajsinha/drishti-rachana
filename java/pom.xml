@@ -45,10 +45,11 @@
     <rachana.compat.runtime>core</rachana.compat.runtime>
     <rachana.compat.binds.out></rachana.compat.binds.out>
     <!-- Every test's temporary folder (java.io.tmpdir, TMPDIR/TEMP/TMP of the programs the build starts) is this one; tools/gate/tmp_leaks.py checks it is empty at the end (G2 gate F16). -->
-    <rachana.tmp>${project.rootDirectory}/target/tmp</rachana.tmp>
+    <rachana.tmp>${rachana.java.root}/target/tmp</rachana.tmp>
     <python3>python3</python3>
-    <rachana.java.root>${project.rootDirectory}</rachana.java.root>
-    <rachana.repo.root>${project.rootDirectory}/..</rachana.repo.root>
+    <!-- the product's own root, from this module's folder (a property inherited from the parent would be read from the module's folder too, so every module names its own): ${project.basedir} here, ${project.basedir}/.. in a module -->
+    <rachana.java.root>${project.basedir}</rachana.java.root>
+    <rachana.repo.root>${rachana.java.root}/..</rachana.repo.root>
   </properties>
 
   <dependencyManagement>

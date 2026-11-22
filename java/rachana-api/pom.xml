@@ -8,6 +8,10 @@
   <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>1.0.1</version></parent>
   <artifactId>rachana-api</artifactId>
   <name>rachana-api</name>
+  <properties>
+    <rachana.java.root>${project.basedir}/..</rachana.java.root>
+  </properties>
+
   <dependencies>
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>

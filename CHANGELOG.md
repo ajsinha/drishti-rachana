@@ -3,6 +3,11 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased (genui/kit-lite)
+
+- **The doc block is part of the language** (SPEC 2.9): `$defs/doc` of `sutra.schema.json` (summary, description, category, tags, use-when, avoid-when, data {table, in-words, sample-row}, example, see-also, keywords, and the earlier docstring keys), `docLine`, `docOf`, and the typed fragment file with its parameter, column and slot; the Sutra's and a panel's `doc` refer to them (a panel takes `doc:`; a parameter's, slot's or event's doc may be a block). New lint **`RCH-2093`** (`DocBlockLint`): a missing or thin doc block, field by field, placed, with its JSON Pointer; library gate LG3 fails on it; guard `LibraryDocBlocksTest`. Every fragment of `libraries/core` and `libraries/finance` carries the new fields (MANIFEST.sha384 rewritten). Written without a Maven build; the spec files are LangFiles' output for 1.2.
+- **GenUI kit lite for SAJHA** (`tools/sajha/`): the plugin with `search_fragments`, `get_fragment`, `check_sutra`, `publish_ui`; the catalogue from doc blocks (text and data-shape search); the check (kit rules `RGK-1xx`, then the compiler on V8; check tokens); rows fetched by the kit as the user, never through the model; boards pushed over SSE to a pure-JS page with `<rachana-view>` (strict CSP, no CDN); audit hooks; the risk mash-up example; README, guide, tool contracts; pytest. Design: `docs/design/GENUI_KIT.md`.
+
 ## v1.0.0 (2026-11-21)
 
 - **Level retirement: one language level, 1.2** (owner decision UP-0). `rachana: 1` and `rachana: 1.2` are 1.2; a Sutra or fragment that declares 1.0 or 1.1 is refused (`RCH-2009`) with "use rachana 0.12 upgrade". `Grammar.LEVEL` is the one level (`LEVELS` holds it alone, `MAJOR_ONLY` is it), every compiler, printer, format table and checker defaults to it, and the 1.0 and 1.1 readings are gone: the replay of level 1.0 (`compat/levels`, `moved-cases.yaml`, `level-switches.yaml`, `tools/regime/levels.py`, `LevelReplayTest`), the frozen 1.0 language files, the per-level cases and the 1.0 printer forms. `spec/1/rachana.lang.json` and `sutra.schema.json` are generated at 1.2.

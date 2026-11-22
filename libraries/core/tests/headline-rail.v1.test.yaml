@@ -1,0 +1,10 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: newest first
+    use: { use: core/headline-rail@1, with: { rows: "[{date: '2026-01-01T00:00:00Z', headline: 'old'}, {date: '2026-01-02T00:00:00Z', headline: 'new'}]" } }
+    expect: [ { at: "panels[rail].rows[0].headline", is: new } ]
+  - name: a click raises open with the link
+    use: { use: core/headline-rail@1, with: { rows: "[{date: '2026-01-01T00:00:00Z', headline: 'x', link: 'https://example.org/x'}]" } }
+    expect: [ { emits: { name: open, on: row-click, payload: { link: "https://example.org/x" } } } ]

@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: three items give three figures and no sparkline without history
+    use: { use: core/kpi-strip@1, with: { items: "[{label: 'A', value: 1}, {label: 'B', value: 2}, {label: 'C', value: 3}]" } }
+    expect:
+      - { at: "panels[k2].kind", is: metric }
+      - { at: "panels[k3]", is: absent }
+      - { at: "panels[s0]", is: absent }
+      - { problems: [] }
+  - name: a figure beyond the eighth is refused at the use
+    use: { use: core/kpi-strip@1, with: { items: "[{label: 'A', value: 1}, {label: 'B', value: 1}, {label: 'C', value: 1}, {label: 'D', value: 1}, {label: 'E', value: 1}, {label: 'F', value: 1}, {label: 'G', value: 1}, {label: 'H', value: 1}, {label: 'I', value: 1}]" } }
+    expect: [ { problems: [ { code: RCH-2117 } ] } ]
+  - name: history gives a line per figure with rows
+    use: { use: core/kpi-strip@1, with: { items: "[{label: 'A', value: 3}]", history: "[{label: 'A', date: '2026-01-01', value: 1}, {label: 'A', date: '2026-01-02', value: 3}]" } }
+    expect:
+      - { at: "panels[s0].kind", is: line }
+      - { at: "panels[s0].rows.length", is: 2 }
+  - name: no change shows no change text
+    use: { use: core/kpi-strip@1, with: { items: "[{label: 'A', value: 3}]" } }
+    expect: [ { at: "panels[k0].data.delta", is: null } ]

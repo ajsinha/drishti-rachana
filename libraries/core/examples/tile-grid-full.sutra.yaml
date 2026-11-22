@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: tile-grid-full-example
+version: 1
+libraries: [core@1]
+title: { id: "'Tile grid (full)'" }
+data:
+panels:
+  - use: core/tile-grid@1
+    with:
+      title: Markets
+      tone: sign
+      fmt: amount2
+      delta-fmt: signed2
+      tiles: "[{label: 'EUR/USD', value: 1.0825, delta: 0.0021, caption: Spot}, {label: 'US 10Y', value: 4.12, delta: -0.03, caption: Yield}, {label: 'Gold', value: 2051.4, delta: 12.5}, {label: 'WTI', value: 78.9, delta: -1.2}]"

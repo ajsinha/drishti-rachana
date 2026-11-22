@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: high comes before low whatever the order given
+    use: { use: core/exceptions-list@1, with: { rows: "[{severity: 'low', message: 'b'}, {severity: 'high', message: 'a'}]" } }
+    expect:
+      - { at: "panels[list].rows[0].severity", is: high }
+      - { at: "panels[list].title", is: "Needs you (2)" }
+  - name: no rows says so in words
+    use: { use: core/exceptions-list@1, with: { rows: "[]" } }
+    expect: [ { at: "panels[list].state", is: empty, words: "Nothing needs you." } ]
+  - name: one row, a masked message
+    use: { use: core/exceptions-list@1, with: { rows: "[{severity: 'high', message: 'x'}]" } }
+    expect: [ { at: "panels[list].rows.length", is: 1 } ]
+  - name: a click raises open with the command
+    use: { use: core/exceptions-list@1, with: { rows: "[{severity: 'high', message: 'x', open: 'VAR DESK-C'}]" } }
+    expect: [ { emits: { name: open, on: row-click, payload: { command: "VAR DESK-C" } } } ]

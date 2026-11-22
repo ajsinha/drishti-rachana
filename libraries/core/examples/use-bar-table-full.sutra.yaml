@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: use-bar-table-full-example
+version: 1
+libraries: [core@1]
+title: { id: "'Use bar table (full)'" }
+data:
+  desks:
+    rows:
+      - { D: DESK-A, V: 6100000, L: 8000000, C: 900000 }
+      - { D: DESK-B, V: 3200000, L: 5000000, C: -100000 }
+      - { D: DESK-C, V: 4950000, L: 5000000, C: 300000 }
+      - { D: DESK-D, V: 900000, L: 2000000, C: 0 }
+panels:
+  - use: core/use-bar-table@1
+    as: desks
+    with:
+      title: Desk VaR and limits
+      name-label: Desk
+      warn-at: 0.9
+      rows: { from: $.desks, columns: { name: D, value: V, limit: L, change: C } }

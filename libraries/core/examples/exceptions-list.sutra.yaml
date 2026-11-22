@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: exceptions-list-example
+version: 1
+libraries: [core@1]
+title: { id: "'Exceptions list'" }
+data:
+panels:
+  - use: core/exceptions-list@1
+    with:
+      rows: "[{severity: 'high', message: 'DESK-C VaR at 99% of limit', key: 'DESK-C', open: 'VAR DESK-C'}]"

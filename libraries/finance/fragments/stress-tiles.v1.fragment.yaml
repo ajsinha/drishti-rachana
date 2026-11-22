@@ -1,0 +1,72 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: stress-tiles
+version: 1
+doc:
+  summary: "One tile per stress scenario: the P&L of the scenario, toned by sign, with the share of the limit it uses."
+  description: >-
+    Give the scenario results as rows; the worst (most negative) come first and at most six are shown. The caption
+    reads the share of the stress limit when a limit is given. Use finance/scenario-matrix for the full matrix.
+  category: market-risk
+  tags: [stress, scenario, tiles, home]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per scenario
+    columns:
+      scenario: { type: text,   doc: The scenario's name }
+      pnl:      { type: number, doc: The scenario's P&L }
+      limit:    { type: number, optional: true, doc: The stress limit for the scenario, a positive amount }
+  fmt: { type: format, default: signed0, doc: How the P&L is written }
+panels:
+  - id: s0
+    kind: metric
+    when: "size(arg.rows) > 0"
+    label: "sort(arg.rows, @.pnl)[0].scenario"
+    value: "sort(arg.rows, @.pnl)[0].pnl"
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${if(is_blank(sort(arg.rows, @.pnl)[0].limit), '', fmt(safe_div(-sort(arg.rows, @.pnl)[0].pnl, sort(arg.rows, @.pnl)[0].limit), 'pct0') + ' of limit')}"
+  - id: s1
+    kind: metric
+    when: "size(arg.rows) > 1"
+    label: "sort(arg.rows, @.pnl)[1].scenario"
+    value: "sort(arg.rows, @.pnl)[1].pnl"
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${if(is_blank(sort(arg.rows, @.pnl)[1].limit), '', fmt(safe_div(-sort(arg.rows, @.pnl)[1].pnl, sort(arg.rows, @.pnl)[1].limit), 'pct0') + ' of limit')}"
+  - id: s2
+    kind: metric
+    when: "size(arg.rows) > 2"
+    label: "sort(arg.rows, @.pnl)[2].scenario"
+    value: "sort(arg.rows, @.pnl)[2].pnl"
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${if(is_blank(sort(arg.rows, @.pnl)[2].limit), '', fmt(safe_div(-sort(arg.rows, @.pnl)[2].pnl, sort(arg.rows, @.pnl)[2].limit), 'pct0') + ' of limit')}"
+  - id: s3
+    kind: metric
+    when: "size(arg.rows) > 3"
+    label: "sort(arg.rows, @.pnl)[3].scenario"
+    value: "sort(arg.rows, @.pnl)[3].pnl"
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${if(is_blank(sort(arg.rows, @.pnl)[3].limit), '', fmt(safe_div(-sort(arg.rows, @.pnl)[3].pnl, sort(arg.rows, @.pnl)[3].limit), 'pct0') + ' of limit')}"
+  - id: s4
+    kind: metric
+    when: "size(arg.rows) > 4"
+    label: "sort(arg.rows, @.pnl)[4].scenario"
+    value: "sort(arg.rows, @.pnl)[4].pnl"
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${if(is_blank(sort(arg.rows, @.pnl)[4].limit), '', fmt(safe_div(-sort(arg.rows, @.pnl)[4].pnl, sort(arg.rows, @.pnl)[4].limit), 'pct0') + ' of limit')}"
+  - id: s5
+    kind: metric
+    when: "size(arg.rows) > 5"
+    label: "sort(arg.rows, @.pnl)[5].scenario"
+    value: "sort(arg.rows, @.pnl)[5].pnl"
+    fmt: "%{fmt}"
+    tone: sign
+    caption: "${if(is_blank(sort(arg.rows, @.pnl)[5].limit), '', fmt(safe_div(-sort(arg.rows, @.pnl)[5].pnl, sort(arg.rows, @.pnl)[5].limit), 'pct0') + ' of limit')}"

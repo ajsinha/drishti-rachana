@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: the worst scenario is the first tile and reads its share of the limit
+    use: { use: finance/stress-tiles@1, with: { rows: "[{scenario: 'mild', pnl: -100, limit: 1000}, {scenario: 'severe', pnl: -500, limit: 1000}]" } }
+    expect:
+      - { at: "panels[s0].data.value.label", is: severe }
+      - { at: "panels[s0].data.caption", is: "50% of limit" }
+      - { at: "panels[s2]", is: absent }
+  - name: no limit gives no caption
+    use: { use: finance/stress-tiles@1, with: { rows: "[{scenario: 'a', pnl: 5}]" } }
+    expect: [ { at: "panels[s0].data.caption", is: "" } ]

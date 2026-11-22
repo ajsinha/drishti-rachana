@@ -1,0 +1,41 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: exceptions-list
+version: 1
+doc:
+  summary: "What needs the reader now, most severe first: a severity, a sentence and the command that opens the detail."
+  description: >-
+    One row per exception: a limit near its edge, a failed load, a break, a stale feed. Rows are listed by severity
+    (high, medium, low), then by the order given. The title carries the count. A click on a row raises an event with
+    the command to open, for the screen to follow. With no rows it says so in words. Use core/held-changes for items
+    waiting for approval and core/change-feed for what moved.
+  category: states
+  tags: [exceptions, alerts, attention, home]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per exception
+    columns:
+      severity: { type: text, doc: "high, medium or low" }
+      message:  { type: text, doc: What is wrong, in one sentence }
+      key:      { type: text, optional: true, doc: What it is about, such as a desk or a counterparty }
+      open:     { type: text, optional: true, doc: The command that opens the detail }
+  title:     { type: text, default: Needs you, doc: The panel's title }
+  empty:     { type: text, default: Nothing needs you., doc: The words shown when there are no rows }
+emits:
+  - { name: open, payload: { command: text }, doc: An exception was chosen }
+panels:
+  - id: list
+    kind: table
+    title: "${arg.title} (${size(arg.rows)})"
+    rows: "map(sort(arg.rows, if(@.severity == 'high', 0, if(@.severity == 'medium', 1, 2))), {severity: @.severity, key: @.key, message: @.message, open: @.open})"
+    empty: arg.empty
+    columns:
+      - { label: Severity, bind: "@.severity", tone: status }
+      - { label: About, bind: "@.key" }
+      - { label: What, bind: "@.message" }
+      - { label: Open, bind: "@.open" }
+    emits: [ { name: open, on: row-click, payload: { command: "@.open" } } ]

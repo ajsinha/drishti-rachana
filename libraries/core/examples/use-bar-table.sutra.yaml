@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: use-bar-table-example
+version: 1
+libraries: [core@1]
+title: { id: "'Use bar table'" }
+data:
+panels:
+  - use: core/use-bar-table@1
+    with:
+      rows: "[{name: 'DESK-A', value: 6100000, limit: 8000000}]"

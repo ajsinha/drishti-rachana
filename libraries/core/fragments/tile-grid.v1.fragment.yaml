@@ -1,0 +1,113 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: tile-grid
+version: 1
+doc:
+  summary: "Up to nine small tiles, each a label, a figure, a change and a tone: stress results, market moves, counts."
+  description: >-
+    Give the tiles in the order to show them. Tiles are toned as the tone parameter says. Use core/kpi-strip when the figures have a history to draw, core/key-figure for one.
+  category: figures
+  tags: [tiles, figures, grid, home]
+params:
+  tiles:
+    type: "list<record{label: text, value: number, delta: number?, caption: text?}>"
+    required: true
+    min: 1
+    max: 9
+    doc: "The tiles in order: { label, value, delta, caption }"
+  title:     { type: text, default: Tiles, doc: The grid's title }
+  fmt:       { type: format, default: amount0, doc: How the figures are written }
+  delta-fmt: { type: format, default: signed0, doc: How the changes are written }
+  tone:      { type: enum, options: [sign, accent, ok, warn, bad, pos, neg], default: sign, doc: How a tile is toned }
+panels:
+  - id: t0
+    kind: metric
+    when: "size(arg.tiles) > 0"
+    label: "arg.tiles[0].label"
+    value: "arg.tiles[0].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[0].caption, '')}"
+    delta: "arg.tiles[0].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t1
+    kind: metric
+    when: "size(arg.tiles) > 1"
+    label: "arg.tiles[1].label"
+    value: "arg.tiles[1].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[1].caption, '')}"
+    delta: "arg.tiles[1].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t2
+    kind: metric
+    when: "size(arg.tiles) > 2"
+    label: "arg.tiles[2].label"
+    value: "arg.tiles[2].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[2].caption, '')}"
+    delta: "arg.tiles[2].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t3
+    kind: metric
+    when: "size(arg.tiles) > 3"
+    label: "arg.tiles[3].label"
+    value: "arg.tiles[3].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[3].caption, '')}"
+    delta: "arg.tiles[3].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t4
+    kind: metric
+    when: "size(arg.tiles) > 4"
+    label: "arg.tiles[4].label"
+    value: "arg.tiles[4].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[4].caption, '')}"
+    delta: "arg.tiles[4].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t5
+    kind: metric
+    when: "size(arg.tiles) > 5"
+    label: "arg.tiles[5].label"
+    value: "arg.tiles[5].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[5].caption, '')}"
+    delta: "arg.tiles[5].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t6
+    kind: metric
+    when: "size(arg.tiles) > 6"
+    label: "arg.tiles[6].label"
+    value: "arg.tiles[6].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[6].caption, '')}"
+    delta: "arg.tiles[6].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t7
+    kind: metric
+    when: "size(arg.tiles) > 7"
+    label: "arg.tiles[7].label"
+    value: "arg.tiles[7].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[7].caption, '')}"
+    delta: "arg.tiles[7].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: t8
+    kind: metric
+    when: "size(arg.tiles) > 8"
+    label: "arg.tiles[8].label"
+    value: "arg.tiles[8].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.tiles[8].caption, '')}"
+    delta: "arg.tiles[8].delta"
+    deltaFmt: "%{delta-fmt}"

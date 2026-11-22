@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: stress-tiles-full-example
+version: 1
+libraries: [finance@1]
+title: { id: "'Stress tiles (full)'" }
+data:
+  st:
+    rows:
+      - { S: Rates +100bp, P: -3100000, L: 5000000 }
+      - { S: Equity -20%, P: -6400000, L: 8000000 }
+      - { S: FX shock, P: 1200000, L: 4000000 }
+panels:
+  - use: finance/stress-tiles@1
+    as: st
+    with:
+      rows: { from: $.st, columns: { scenario: S, pnl: P, limit: L } }

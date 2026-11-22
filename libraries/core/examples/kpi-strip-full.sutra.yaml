@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: kpi-strip-full-example
+version: 1
+libraries: [core@1]
+title: { id: "'KPI strip (full)'" }
+data:
+  hist:
+    rows:
+      - { LBL: Firm VaR, D: "2026-11-18", V: 16900000 }
+      - { LBL: Firm VaR, D: "2026-11-19", V: 17300000 }
+      - { LBL: Firm VaR, D: "2026-11-20", V: 17900000 }
+      - { LBL: Firm VaR, D: "2026-11-21", V: 18400000 }
+      - { LBL: Day P&L, D: "2026-11-19", V: 150000 }
+      - { LBL: Day P&L, D: "2026-11-20", V: -90000 }
+      - { LBL: Day P&L, D: "2026-11-21", V: -420000 }
+panels:
+  - use: core/kpi-strip@1
+    with:
+      fmt: compact
+      items: "[{label: 'Firm VaR', value: 18400000, delta: 500000, caption: '99% 1d'}, {label: 'Day P&L', value: -420000, delta: -330000}, {label: 'Breaches', value: 1}]"
+      history: { from: $.hist, columns: { label: LBL, date: D, value: V } }

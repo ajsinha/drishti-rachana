@@ -1,0 +1,48 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: use-bar-table
+version: 1
+doc:
+  summary: Rows with a measure against its limit, the share used drawn as a bar in the cell, the fullest first.
+  description: >-
+    One row per name: the measure, its limit, the share used as a bar and a state (Breach over the limit, Warning from
+    the warning share, Within otherwise). Rows are listed by share used, so the ones nearest the edge come first. A
+    click on a row names the row. Use finance/limit-table when the limit has an owner and a headroom column.
+  category: tables
+  tags: [table, bars, utilisation, limits, home]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    key: optional
+    doc: One row per name
+    columns:
+      name:  { type: text,   doc: The row's name, such as a desk }
+      value: { type: number, doc: The measure }
+      limit: { type: number, optional: true, doc: The limit; none shows no bar }
+      change: { type: number, optional: true, doc: The change since a reference, toned by sign }
+  title:      { type: text, default: Use of limits, doc: The panel's title }
+  name-label: { type: text, default: Name, doc: Heading of the name column }
+  warn-at:    { type: number, default: 0.8, min: 0, max: 1, doc: The share of the limit from which the state is Warning }
+  fmt:        { type: format, default: amount0, doc: How the measure and the limit are written }
+  change-fmt: { type: format, default: signed0, doc: How the change is written }
+emits:
+  - { name: open, payload: { name: text }, doc: A row was chosen }
+panels:
+  - id: table
+    kind: grid
+    title: arg.title
+    rows: "map(sort(arg.rows, safe_div(@.value, @.limit), true), {name: @.name, value: @.value, limit: @.limit, change: @.change, share: safe_div(@.value, @.limit), state: if(is_blank(@.limit), '', if(@.value > @.limit, 'Breach', if(@.value >= arg.warn-at * @.limit, 'Warning', 'Within')))})"
+    rowKey: name
+    search: true
+    bars: [share]
+    columns:
+      - { label: arg.name-label, bind: "@.name" }
+      - { label: Value, bind: "@.value", fmt: "%{fmt}" }
+      - { label: Limit, bind: "@.limit", fmt: "%{fmt}" }
+      - { label: Used, bind: "@.share", fmt: pct0 }
+      - { label: Change, bind: "@.change", fmt: "%{change-fmt}", tone: sign }
+      - { label: State, bind: "@.state", tone: status }
+    emits: [ { name: open, on: row-click, payload: { name: "@.name" } } ]

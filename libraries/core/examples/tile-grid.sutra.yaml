@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: tile-grid-example
+version: 1
+libraries: [core@1]
+title: { id: "'Tile grid'" }
+data:
+panels:
+  - use: core/tile-grid@1
+    with:
+      tiles: "[{label: 'EUR/USD', value: 1.0825, delta: 0.0021}, {label: 'US 10Y', value: 4.12, delta: -0.03}]"
+      fmt: amount2

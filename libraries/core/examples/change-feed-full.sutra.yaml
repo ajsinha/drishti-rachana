@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: change-feed-full-example
+version: 1
+libraries: [core@1]
+title: { id: "'Change feed (full)'" }
+data:
+  chg:
+    rows:
+      - { K: DESK-A, M: VaR, B: 5200000, A: 6100000, C: 900000, W: "RF-USD-10Y 71%, rolled window 29%", O: "WHY DESK-A" }
+      - { K: T-88123, M: Trade, C: 0, W: New trade booked at 16:42, O: "TRADE T-88123", KD: new trade }
+      - { K: CP-ALPHA, M: Exposure, B: 21000000, A: 19400000, C: -1600000, W: "Netting agreement amended 100%", O: "WHY CP-ALPHA" }
+panels:
+  - use: core/change-feed@1
+    as: chg
+    with:
+      since: yesterday 17:00
+      rows: { from: $.chg, columns: { key: K, measure: M, before: B, after: A, change: C, why: W, open: O, kind: KD } }

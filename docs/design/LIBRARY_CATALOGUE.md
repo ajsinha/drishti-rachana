@@ -624,6 +624,23 @@ Rows added, removed and changed between two versions of a keyed table.
 - **Data:** two tables of the same shape; `max-rows: 20000` · **Slots:** none · **Events:** `select {key: text}`
 - **Use:** `{ use: core/version-diff@1, with: { before: $.limits_yesterday, after: $.limits_today, key: id, columns: [ { label: Limit, bind: "@.limit", fmt: amount0 } ] } }`
 
+## 3A. Home fragments (role Homes)
+
+Written for the role Homes of Drishti (hybrid: exceptions first and what changed above a KPI strip), generic in every word. Built at language level 1.2 from the panel kinds that exist (`metric`, `line`, `table`, `grid` with `bars`); nothing here needs a new kind. These entries replace the planned `core/kpi-strip` (needed `group` with `each`) and `core/spark-table` for the Home's needs: a strip is eight fixed figure slots shown by `when`.
+
+| Fragment | Parameters (main) | Events | Notes |
+|---|---|---|---|
+| `core/kpi-strip@1` | `items: list<record{label, value, delta?, caption?}>` (1 to 8), `history?: table{label, date, value}`, `fmt`, `delta-fmt`, `tone` | none | a `line` panel per figure when `history` is given; a figure with no rows gets an empty line |
+| `core/tile-grid@1` | `tiles: list<record{label, value, delta?, caption?}>` (1 to 9), `title`, `fmt`, `delta-fmt`, `tone` | none | metric tiles; no history |
+| `core/exceptions-list@1` | `rows: table{severity, message, key?, open?}`, `title`, `empty` | `open {command}` | high, medium, low; the title carries the count |
+| `core/change-feed@1` | `rows: table{key, change, measure?, before?, after?, why?, kind?, open?}`, `since?`, `title`, `fmt`, `change-fmt`, `limit`, `empty` | `open {command}` | largest absolute move first; `why` is data from the server's explain, never computed here |
+| `core/use-bar-table@1` | `rows: table{name, value, limit?, change?}`, `warn-at`, `fmt`, `change-fmt`, `name-label`, `title` | `open {name}` | `grid` with `bars: [share]`; state Breach, Warning, Within |
+| `core/calendar-list@1` | `rows: table{date, title, time?, kind?, open?}`, `limit`, `date-fmt` | `open {title, command}` | an agenda list, not a month grid (that is `core/calendar-heat`, V4) |
+| `core/headline-rail@1` | `rows: table{date, headline, source?, link?}`, `limit`, `date-fmt` | `open {link}` | the compact `core/headline-list` |
+| `finance/stress-tiles@1` | `rows: table{scenario, pnl, limit?}`, `fmt` | none | up to six, worst first, caption the share of limit |
+
+Known limits: a `metric` panel raises no click event at 1.2, so the figure tiles are not clickable; a Home pairs them with a table or the quick-command list for the next step (the language addition is a `click` on `metric`, listed for the owner).
+
 ## 4. `finance`: trading, risk, market data
 
 Generic terms only: a trade, a leg, a book, a desk, a counterparty, a netting set, a curve, a scenario. No vendor

@@ -1,0 +1,40 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: headline-rail
+version: 1
+doc:
+  summary: "A narrow list of the latest headlines for the side of a screen: time, headline and source, no search."
+  description: >-
+    The compact form of core/headline-list for a rail: newest first, a handful of rows, the date rather than
+    the date. A click raises an event with the link, for the screen to open as it sees fit. Use core/headline-list for
+    a full panel with search.
+  category: tables
+  tags: [news, headlines, rail, home]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per item
+    columns:
+      date:     { type: datetime, doc: When the item was published }
+      headline: { type: text, doc: The headline }
+      source:   { type: text, optional: true, doc: Who published it }
+      link:     { type: text, optional: true, doc: Where it can be read }
+  title:    { type: text, default: Headlines, doc: The rail's title }
+  limit:    { type: integer, default: 8, min: 1, max: 30, doc: The most items shown }
+  date-fmt: { type: format, default: date, doc: How the date is written }
+emits:
+  - { name: open, payload: { link: text }, doc: An item was chosen }
+panels:
+  - id: rail
+    kind: table
+    title: arg.title
+    rows: "sort(arg.rows, @.date, true)"
+    limit: arg.limit
+    columns:
+      - { label: Date, bind: "@.date", fmt: "%{date-fmt}" }
+      - { label: Headline, bind: "@.headline" }
+      - { label: Source, bind: "@.source" }
+    emits: [ { name: open, on: row-click, payload: { link: "@.link" } } ]

@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: headline-rail-full-example
+version: 1
+libraries: [core@1]
+title: { id: "'Headline rail (full)'" }
+data:
+  news:
+    rows:
+      - { AT: "2026-11-22T08:10:00Z", H: Rates steady ahead of the decision, S: Example Wire, U: "https://example.org/a" }
+      - { AT: "2026-11-22T07:40:00Z", H: Oil edges higher on supply worries, S: Example Wire, U: "https://example.org/b" }
+panels:
+  - use: core/headline-rail@1
+    as: news
+    with:
+      limit: 6
+      rows: { from: $.news, columns: { date: AT, headline: H, source: S, link: U } }

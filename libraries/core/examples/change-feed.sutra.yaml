@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: change-feed-example
+version: 1
+libraries: [core@1]
+title: { id: "'Change feed'" }
+data:
+panels:
+  - use: core/change-feed@1
+    with:
+      rows: "[{key: 'DESK-A', measure: 'VaR', before: 5200000, after: 6100000, change: 900000, why: 'new trades 71%, market data 29%', open: 'WHY DESK-A'}]"

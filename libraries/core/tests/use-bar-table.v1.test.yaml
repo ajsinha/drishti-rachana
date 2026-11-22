@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: the fullest row is first and the state follows the shares
+    use: { use: core/use-bar-table@1, with: { warn-at: 0.9, rows: "[{name: 'a', value: 50, limit: 100}, {name: 'b', value: 95, limit: 100}, {name: 'c', value: 120, limit: 100}]" } }
+    expect:
+      - { at: "panels[table].rows[0].name", is: c }
+      - { at: "panels[table].rows[0].state", is: Breach }
+      - { at: "panels[table].rows[1].state", is: Warning }
+      - { at: "panels[table].rows[2].state", is: Within }
+  - name: no limit gives no state and no bar
+    use: { use: core/use-bar-table@1, with: { rows: "[{name: 'a', value: 50}]" } }
+    expect: [ { at: "panels[table].rows[0].state", is: "" } ]
+  - name: the bar column is the share
+    use: { use: core/use-bar-table@1, with: { rows: "[{name: 'a', value: 50, limit: 100}]" } }
+    expect: [ { at: "panels[table].bars", is: [ share ] } ]

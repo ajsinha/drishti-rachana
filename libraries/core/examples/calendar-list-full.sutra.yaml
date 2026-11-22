@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: calendar-list-full-example
+version: 1
+libraries: [core@1]
+title: { id: "'Calendar list (full)'" }
+data:
+  cal:
+    rows:
+      - { D: "2026-11-25", T: "09:30", W: Market risk committee, K: meeting, C: "CAL MRC" }
+      - { D: "2026-11-24", T: "14:00", W: Central bank rate decision, K: release, C: "ECO CBRATE" }
+      - { D: "2026-11-24", T: "17:00", W: Day cut-off, K: cut-off }
+panels:
+  - use: core/calendar-list@1
+    as: cal
+    with:
+      limit: 5
+      rows: { from: $.cal, columns: { date: D, time: T, title: W, kind: K, open: C } }

@@ -1,0 +1,162 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: kpi-strip
+version: 1
+doc:
+  summary: A row of up to eight headline figures, each with its change against a reference and an optional sparkline.
+  description: >-
+    The figures a reader looks at first, in a row: label, value, change against a reference (day before, last close)
+    and, when a history table is given, a small line of recent values beside each figure. Give the items in the order
+    to show them; a figure beyond the eighth is left out. Use
+    core/tile-grid for tiles with no history, core/key-figure for one figure.
+  category: figures
+  tags: [kpi, strip, figures, sparkline, home]
+params:
+  items:
+    type: "list<record{label: text, value: number, delta: number?, caption: text?}>"
+    required: true
+    min: 1
+    max: 8
+    doc: "The figures in order: { label, value, delta, caption }"
+  history:
+    type: table
+    optional: true
+    live: ok
+    doc: One row per figure and day, for the sparklines
+    columns:
+      label: { type: text,   doc: The figure's label, as in items }
+      date:  { type: date,   doc: The day }
+      value: { type: number, doc: The figure on that day }
+  fmt:       { type: format, default: amount0, doc: How the figures are written }
+  delta-fmt: { type: format, default: signed0, doc: How the changes are written }
+  tone:      { type: enum, options: [sign, accent, ok, warn, bad, pos, neg], default: accent, doc: How the figures are toned }
+panels:
+  - id: k0
+    kind: metric
+    when: "size(arg.items) > 0"
+    label: "arg.items[0].label"
+    value: "arg.items[0].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[0].caption, '')}"
+    delta: "arg.items[0].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s0
+    kind: line
+    when: "size(arg.items) > 0 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[0].label]"
+    x: date
+    y: value
+  - id: k1
+    kind: metric
+    when: "size(arg.items) > 1"
+    label: "arg.items[1].label"
+    value: "arg.items[1].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[1].caption, '')}"
+    delta: "arg.items[1].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s1
+    kind: line
+    when: "size(arg.items) > 1 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[1].label]"
+    x: date
+    y: value
+  - id: k2
+    kind: metric
+    when: "size(arg.items) > 2"
+    label: "arg.items[2].label"
+    value: "arg.items[2].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[2].caption, '')}"
+    delta: "arg.items[2].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s2
+    kind: line
+    when: "size(arg.items) > 2 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[2].label]"
+    x: date
+    y: value
+  - id: k3
+    kind: metric
+    when: "size(arg.items) > 3"
+    label: "arg.items[3].label"
+    value: "arg.items[3].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[3].caption, '')}"
+    delta: "arg.items[3].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s3
+    kind: line
+    when: "size(arg.items) > 3 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[3].label]"
+    x: date
+    y: value
+  - id: k4
+    kind: metric
+    when: "size(arg.items) > 4"
+    label: "arg.items[4].label"
+    value: "arg.items[4].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[4].caption, '')}"
+    delta: "arg.items[4].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s4
+    kind: line
+    when: "size(arg.items) > 4 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[4].label]"
+    x: date
+    y: value
+  - id: k5
+    kind: metric
+    when: "size(arg.items) > 5"
+    label: "arg.items[5].label"
+    value: "arg.items[5].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[5].caption, '')}"
+    delta: "arg.items[5].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s5
+    kind: line
+    when: "size(arg.items) > 5 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[5].label]"
+    x: date
+    y: value
+  - id: k6
+    kind: metric
+    when: "size(arg.items) > 6"
+    label: "arg.items[6].label"
+    value: "arg.items[6].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[6].caption, '')}"
+    delta: "arg.items[6].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s6
+    kind: line
+    when: "size(arg.items) > 6 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[6].label]"
+    x: date
+    y: value
+  - id: k7
+    kind: metric
+    when: "size(arg.items) > 7"
+    label: "arg.items[7].label"
+    value: "arg.items[7].value"
+    fmt: "%{fmt}"
+    tone: "%{tone}"
+    caption: "${coalesce(arg.items[7].caption, '')}"
+    delta: "arg.items[7].delta"
+    deltaFmt: "%{delta-fmt}"
+  - id: s7
+    kind: line
+    when: "size(arg.items) > 7 && !is_blank(arg.history)"
+    rows: "arg.history[?@.label == arg.items[7].label]"
+    x: date
+    y: value

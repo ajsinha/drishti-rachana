@@ -1,0 +1,16 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: the largest move comes first, either sign
+    use: { use: core/change-feed@1, with: { rows: "[{key: 'a', change: 1}, {key: 'b', change: -9}]" } }
+    expect: [ { at: "panels[feed].rows[0].key", is: b } ]
+  - name: the title names the reference time and the count
+    use: { use: core/change-feed@1, with: { since: "yesterday 17:00", rows: "[{key: 'a', change: 1}]" } }
+    expect: [ { at: "panels[feed].title", is: "Since the last cut-off (yesterday 17:00): 1" } ]
+  - name: no rows says so in words
+    use: { use: core/change-feed@1, with: { rows: "[]" } }
+    expect: [ { at: "panels[feed].state", is: empty, words: "Nothing has moved since then." } ]
+  - name: a row with no why or before still draws
+    use: { use: core/change-feed@1, with: { rows: "[{key: 'T-1', change: 0, kind: 'new trade'}]" } }
+    expect: [ { problems: [] } ]

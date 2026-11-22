@@ -1,0 +1,12 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: earliest first and at most the limit
+    use: { use: core/calendar-list@1, with: { limit: 1, rows: "[{date: '2026-02-01', title: 'b'}, {date: '2026-01-01', title: 'a'}]" } }
+    expect:
+      - { at: "panels[agenda].rows.length", is: 1 }
+      - { at: "panels[agenda].rows[0].title", is: a }
+  - name: no rows is an empty table
+    use: { use: core/calendar-list@1, with: { rows: "[]" } }
+    expect: [ { at: "panels[agenda].state", is: empty } ]

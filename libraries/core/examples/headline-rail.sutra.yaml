@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: headline-rail-example
+version: 1
+libraries: [core@1]
+title: { id: "'Headline rail'" }
+data:
+panels:
+  - use: core/headline-rail@1
+    with:
+      rows: "[{date: '2026-11-22T08:10:00Z', headline: 'Rates steady ahead of the decision'}]"

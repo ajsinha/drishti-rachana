@@ -1,0 +1,54 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: change-feed
+version: 1
+doc:
+  summary: What changed since a reference time, largest move first, each with its why and the command that explains it.
+  description: >-
+    One row per change: what moved, its value then and now, the change toned by sign, a sentence that says why (the
+    drivers with their shares) and the command that opens the explanation. The title carries the reference time and
+    the count. Rows are listed by the size of the move. The explanation is data: Rachana does not compute it. A click
+    on a row raises an event with the command. Use core/period-compare for two periods side by side.
+  category: history
+  tags: [changes, explain, since, home]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per change
+    columns:
+      key:      { type: text,   doc: What moved, such as a desk, a counterparty or a risk factor }
+      measure:  { type: text,   optional: true, doc: The measure, such as VaR }
+      before:   { type: number, optional: true, doc: The value at the reference time }
+      after:    { type: number, optional: true, doc: The value now }
+      change:   { type: number, doc: The change, now minus then }
+      why:      { type: text,   optional: true, doc: "The drivers in a sentence, with their shares" }
+      kind:     { type: text,   optional: true, doc: "Value move, new trade, amended trade, load or limit state" }
+      open:     { type: text,   optional: true, doc: The command that opens the explanation }
+  title:     { type: text, default: Since the last cut-off, doc: The panel's title }
+  since:     { type: text, optional: true, doc: "The reference time, written in the title, such as yesterday 17:00" }
+  fmt:       { type: format, default: amount0, doc: How the values are written }
+  change-fmt: { type: format, default: signed0, doc: How the change is written }
+  limit:     { type: integer, default: 20, min: 1, max: 200, doc: The most changes shown }
+  empty:     { type: text, default: Nothing has moved since then., doc: The words shown when there are no rows }
+emits:
+  - { name: open, payload: { command: text }, doc: A change was chosen }
+panels:
+  - id: feed
+    kind: table
+    title: "${arg.title}${if(is_blank(arg.since), '', ' (' + arg.since + ')')}: ${size(arg.rows)}"
+    rows: "map(sort(arg.rows, abs(@.change), true), {key: @.key, measure: @.measure, kind: @.kind, before: @.before, after: @.after, change: @.change, why: @.why, open: @.open})"
+    limit: arg.limit
+    empty: arg.empty
+    search: true
+    columns:
+      - { label: What, bind: "@.key" }
+      - { label: Measure, bind: "@.measure" }
+      - { label: Kind, bind: "@.kind" }
+      - { label: Then, bind: "@.before", fmt: "%{fmt}" }
+      - { label: Now, bind: "@.after", fmt: "%{fmt}" }
+      - { label: Change, bind: "@.change", fmt: "%{change-fmt}", tone: sign }
+      - { label: Why, bind: "@.why" }
+    emits: [ { name: open, on: row-click, payload: { command: "@.open" } } ]

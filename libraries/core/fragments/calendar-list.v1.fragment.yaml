@@ -1,0 +1,42 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: calendar-list
+version: 1
+doc:
+  summary: "The next dated items in order: a date, a time, a title and a kind, such as releases, meetings and cut-offs."
+  description: >-
+    A short agenda. Rows are listed by date and time, earliest first, and at most the given number are shown. A click
+    on a row raises an event with its title and, when given, the command that opens it. This is a list, not a month
+    grid; use core/event-timeline for a history that is already past.
+  category: history
+  tags: [calendar, agenda, upcoming, home]
+params:
+  rows:
+    type: table
+    required: true
+    live: ok
+    doc: One row per item
+    columns:
+      date:  { type: date,   doc: The day }
+      time:  { type: text,   optional: true, doc: The time of day, as text }
+      title: { type: text,   doc: What it is }
+      kind:  { type: text,   optional: true, doc: "What sort of item, such as release, meeting or cut-off" }
+      open:  { type: text,   optional: true, doc: The command that opens it }
+  title:    { type: text, default: Coming up, doc: The panel's title }
+  limit:    { type: integer, default: 8, min: 1, max: 50, doc: The most items shown }
+  date-fmt: { type: format, default: date, doc: How the date is written }
+emits:
+  - { name: open, payload: { title: text, command: text }, doc: An item was chosen }
+panels:
+  - id: agenda
+    kind: table
+    title: arg.title
+    rows: "sort(arg.rows, @.date)"
+    limit: arg.limit
+    columns:
+      - { label: Date, bind: "@.date", fmt: "%{date-fmt}" }
+      - { label: Time, bind: "@.time" }
+      - { label: What, bind: "@.title" }
+      - { label: Kind, bind: "@.kind" }
+    emits: [ { name: open, on: row-click, payload: { title: "@.title", command: "@.open" } } ]

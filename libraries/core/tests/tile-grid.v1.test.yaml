@@ -1,0 +1,12 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic data. Written for rachana lib test (LIBRARIES 15.1); not run when written.
+tests:
+  - name: tiles beyond the count are absent
+    use: { use: core/tile-grid@1, with: { tiles: "[{label: 'A', value: 1}, {label: 'B', value: -2, delta: -1}]" } }
+    expect:
+      - { at: "panels[t1].data.delta.tone", is: neg }
+      - { at: "panels[t2]", is: absent }
+  - name: ten tiles are refused
+    use: { use: core/tile-grid@1, with: { tiles: "[{label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}, {label: 'a', value: 1}]" } }
+    expect: [ { problems: [ { code: RCH-2117 } ] } ]

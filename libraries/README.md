@@ -18,6 +18,10 @@ Build, test, sign and pack: `python3 tools/libraries/build.py [--update-goldens]
 the jars come from this repository's build, nothing is installed). The check alone, `tools/libraries/LibCheck.java`, also runs
 in the Maven build (`LibrariesCheckTest` in rachana-cli). `rachana studio` offers these libraries by default.
 
+## Role Home fragments (written, to be built)
+
+`core`: kpi-strip, tile-grid, exceptions-list, change-feed, use-bar-table, calendar-list, headline-rail; `finance`: stress-tiles. Their manifests, goldens and hashes are not yet regenerated: run `python3 tools/libraries/build.py --update-goldens core finance`, then fix what the gates report. Tests are in `<library>/tests/`.
+
 ## Adding your own
 
 The libraries here are one source among others, never the only one. Drop a library folder or an `.rlib` into a folder and name it:

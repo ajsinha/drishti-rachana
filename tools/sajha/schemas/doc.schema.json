@@ -335,6 +335,31 @@
         "doc"
       ],
       "type": "object"
+    },
+    "docLoose": {
+      "description": "The doc of a Sutra or a panel (SPEC 2.9): an object whose keys are the doc block's properties (see doc); nothing is required, other keys are allowed and there is no length limit. A thin doc is RCH-2093 (a lint), never a reason a Sutra is refused",
+      "properties": {
+        "description": {
+          "description": "What it shows and how",
+          "type": "string"
+        },
+        "summary": {
+          "description": "One line: what it shows",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "docLooseOf": {
+      "description": "A panel's doc: one line, or the loose doc object",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/docLine"
+        },
+        {
+          "$ref": "#/$defs/docLoose"
+        }
+      ]
     }
   }
 }

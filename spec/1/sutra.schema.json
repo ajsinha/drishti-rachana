@@ -179,6 +179,28 @@
       "pattern" : "^[^\\n]+$",
       "type" : "string"
     },
+    "docLoose" : {
+      "description" : "The doc of a Sutra or a panel (SPEC 2.9): an object whose keys are the doc block's properties (see doc); nothing is required, other keys are allowed and there is no length limit. A thin doc is RCH-2093 (a lint), never a reason a Sutra is refused",
+      "properties" : {
+        "description" : {
+          "description" : "What it shows and how",
+          "type" : "string"
+        },
+        "summary" : {
+          "description" : "One line: what it shows",
+          "type" : "string"
+        }
+      },
+      "type" : "object"
+    },
+    "docLooseOf" : {
+      "description" : "A panel's doc: one line, or the loose doc object",
+      "oneOf" : [ {
+        "$ref" : "#/$defs/docLine"
+      }, {
+        "$ref" : "#/$defs/docLoose"
+      } ]
+    },
     "docOf" : {
       "description" : "A part's doc: one line, or a whole doc block",
       "oneOf" : [ {
@@ -4035,7 +4057,7 @@
           "description" : "option of timeline panels"
         },
         "doc" : {
-          "$ref" : "#/$defs/docOf"
+          "$ref" : "#/$defs/docLooseOf"
         },
         "each" : {
           "description" : "Rachana-EL expression ($ is the document, @ the row), written as text (such as $.cashflows)",
@@ -5287,7 +5309,7 @@
       "type" : "string"
     },
     "doc" : {
-      "$ref" : "#/$defs/doc"
+      "$ref" : "#/$defs/docLoose"
     },
     "functions" : {
       "additionalProperties" : {

@@ -99,12 +99,13 @@ the exact text (HMAC of its hash); `publish_ui` refuses any other text and check
 | Prompt injection in cells | cells reach the page only, as text; the model never sees them | the data path |
 | Resource exhaustion | 64 KB Sutra, 60 panels, 12 tables, 50,000 rows a table, 3 attempts, 500 boards, 24 h expiry, V8 memory and time limits | settings; engine |
 | A board updated by someone else | a board belongs to its publisher; updates by others refused (`RGK-172`) | boards |
+| Who may open a board | a board's address is the access: the board server has no sign-in of its own, so whoever holds `/b/<id>` (128 random bits) or `/b/<id>/board.json` reads the rows fetched with the publisher's rights; keep `RACHANA_GENUI_HOST` on a loopback or private interface, or put the port behind a proxy that signs readers in; the `view` audit event has no reader identity; tokens and boards live in one process (several SAJHA workers need the same `RACHANA_GENUI_SECRET` and still do not share boards) | boards; deployment |
 | Supply chain in the page | every asset from the wheel (vendored Elements, runtime bundle with its recorded SHA-256); no CDN; `script-src 'self'` | board server; CSP |
 
 The page's policy: `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src
 'self' data:; connect-src 'self' <allowed origins>; worker-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors
-'self'; object-src 'none'`. Inline styles are allowed for the painter's chart markup (style attributes, never script); to verify in
-the browsers with the built bundle (open item).
+'self'; object-src 'none'`. Inline styles are allowed for the painter's chart markup (style attributes, never script); the page is checked in Chromium
+with the built bundle (paint, live update, CSP).
 
 ## 5. Audit
 
@@ -116,7 +117,7 @@ its rows) and board view is an event `rachana.genui.<kind>` with the caller, to 
 
 | Topology | How |
 |---|---|
-| SAJHA plugin (first) | the folder under `config/plugins/`; the board server inside SAJHA's process; behind SAJHA's proxy and sign-in |
+| SAJHA plugin (first) | the folder under `config/plugins/`; the board server inside SAJHA's process; the board server has no sign-in of its own: behind SAJHA's proxy and sign-in, or on a loopback or private interface (section 4) |
 | Plain Python app | the tool classes called directly, data functions registered (`rows.register_tool`) |
 | Drishti (later, i9) | the same check and catalogue in process (Java: `DocBlockLint`, the library reader); boards as ephemeral Sutras reading Drishti's tables as the viewer |
 | Generic MCP server (AI_GENUI 4.6) | the same contracts over stdio/HTTP; next |
@@ -124,10 +125,8 @@ its rows) and board view is an event `rachana.genui.<kind>` with the caller, to 
 
 ## 7. What is open
 
-1. Build: the Java changes (`DocBlockLint`, `DocSchema`, the panel `doc` key, the parts' doc as a block, LG3) are written and
-   type-checked with `javac`; the Maven build and suites (`LangFilesTest`, `ApiSurfaceTest`, `DocBlockLintTest`,
-   `LibraryDocBlocksTest`, the conformance cases) are next.
-2. The bundle exports `DocBlockLint` so the kit asks V8 instead of its Python mirror (`rachana_genui/doclint.py`).
-3. A browser check of `spa/` with the built bundle (Chromium, Firefox, WebKit): paint, live update, CSP.
-4. Drishti's ~548 Sutras get their doc blocks (a lane), and its guard test.
-5. Preference memory per user and an evaluation set (AI_GENUI 6) with Drishti i9.
+Built and checked: the Java changes (`DocBlockLint`, `DocSchema`, the panel `doc` key, the parts' doc as a block, LG3) with their suites, and the board page `spa/` in Chromium.
+
+1. The bundle exports `DocBlockLint` so the kit asks V8 instead of its Python mirror (`rachana_genui/doclint.py`).
+2. Drishti's ~548 Sutras get their doc blocks (a lane), and its guard test.
+3. Preference memory per user and an evaluation set (AI_GENUI 6) with Drishti i9.

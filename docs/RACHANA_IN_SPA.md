@@ -9,34 +9,38 @@ the Sutra language and the ViewModel are stable.
 
 Node 20 or later and a bundler (Vite, webpack, esbuild) or none. Two ways to get the files, both from the release you were given:
 
-- **npm package** `drishti-rachana-1.1.0.tgz`: `npm install ./drishti-rachana-1.1.0.tgz` (it is not on a public registry).
-- **Browser zip** `drishti-rachana-1.1.0-browser.zip`: unpack into a folder your server serves, for example `public/rachana/`. It holds
-  the compiler bundles (`rachana.runtime.js`, `rachana.tools.js`), the source modules (`src/`), Drishti Elements and Apache Arrow
-  (vendored) and the LICENSE.
+- **npm package** `drishti-rachana-1.1.0.tgz`: `npm install ./drishti-rachana-1.1.0.tgz` (it is not on a public registry). It holds the
+  source modules (`node_modules/drishti-rachana/src/`) and the compiler bundles under **`node_modules/drishti-rachana/dist/`**
+  (`rachana.runtime.js`, `rachana.tools.js`). It does **not** hold Drishti Elements or Apache Arrow: take `vendor/` from the browser zip.
+- **Browser zip** `drishti-rachana-1.1.0-browser.zip`: it unpacks into one folder, `drishti-rachana-1.1.0-browser/`. **Move the
+  contents of that folder** (not the folder) into a folder your server serves, for example `public/rachana/`, so that
+  `public/rachana/rachana.runtime.js`, `public/rachana/src/rachana_view.js` and `public/rachana/vendor/` exist. It holds the compiler
+  bundles (`rachana.runtime.js`, `rachana.tools.js`), the source modules (`src/`), Drishti Elements and Apache Arrow (vendored) and the LICENSE.
 
-Drishti Elements (the painter) is a classic script; load it before the module. Serve every file from your own origin.
+The facade is ES modules only (no UMD build, no type declarations yet). Drishti Elements (the painter) is a classic script; load it before the module. Serve every file from your own origin.
+The file in the examples below is `public/app.js`; the Sutra's rows come from your own Data Protocol address (`/api/rdp` below) or a record.
 
 ## Step 1: render a Sutra
 
-With the browser zip (no build step):
+With the browser zip (no build step). `public/index.html`:
 
 ```html
 <link rel="stylesheet" href="/rachana/vendor/drishti-elements/3.3.1/drishti-elements.css">
 <script src="/rachana/vendor/drishti-elements/3.3.1/drishti-elements.js"></script>
-<script type="module">
-  import '/rachana/src/rachana_view.js';                  // registers <rachana-view>
-</script>
+<script type="module" src="/rachana/src/rachana_view.js"></script>      <!-- registers <rachana-view> -->
+<script type="module" src="/app.js"></script>                           <!-- your page's code: an external file, never inline -->
 
 <rachana-view id="board" runtime="/rachana/rachana.runtime.js"></rachana-view>
 ```
 
-With the npm package, import the element from the package and keep the two vendored Elements files and `rachana.runtime.js` as static assets:
+Every script is an external file served from your own origin, so the page runs under the strict policy of step 3 (an inline script
+would be refused by it).
 
-```js
-import 'drishti-rachana/src/rachana_view.js';             // registers <rachana-view>
-```
+With the npm package, serve `node_modules/drishti-rachana/src/` and `node_modules/drishti-rachana/dist/rachana.runtime.js` as static
+assets (or import the element from your bundler: `import 'drishti-rachana/src/rachana_view.js';`) and serve the two Elements files and
+`vendor/apache-arrow/` from the browser zip's `vendor/` folder, as above.
 
-Give it the Sutra as text and the rows as a record or a Data Protocol host:
+Give it the Sutra as text and the rows as a record or a Data Protocol host. `public/app.js`:
 
 ```js
 const view = document.getElementById('board');

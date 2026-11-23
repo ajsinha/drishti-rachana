@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The doc definitions of the Sutra schema (SPEC 2.9): {@code doc} (the doc block of a Sutra, fragment, block, parameter, slot or panel),
+ * The doc definitions of the Sutra schema (SPEC 2.9): {@code doc} (the strict doc block of a fragment or block), {@code docLoose} and {@code docLooseOf} (the doc of a Sutra or a panel: the form 1.0.1 accepted),
  * {@code docLine}, {@code docOf} (a part's doc: one line or a block), and the typed fragment file with its parameter, column and slot
  * ({@code fragment}, {@code fragmentParam}, {@code fragmentColumn}, {@code fragmentSlot}). {@link RachanaSchema} puts them under
  * {@code $defs}; the GenUI kit's tool schemas embed the same definitions (tools/sajha/schemas/doc.schema.json, kept equal by its test).
@@ -93,6 +93,15 @@ public final class DocSchema {
                     "type", "array",
                     "items", Ordered.map("type", "string", "minLength", 1),
                     "description", "A composite fragment's inner fragments, pinned (RCH-2055)"))));
+        out.put("docLoose", Ordered.map(
+            "type", "object",
+            "description", "The doc of a Sutra or a panel (SPEC 2.9): an object whose keys are the doc block's properties (see doc); nothing is required, other keys are allowed and there is no length limit. A thin doc is RCH-2093 (a lint), never a reason a Sutra is refused",
+            "properties", Ordered.map(
+                "summary", Ordered.map("type", "string", "description", "One line: what it shows"),
+                "description", Ordered.map("type", "string", "description", "What it shows and how"))));
+        out.put("docLooseOf", Ordered.map(
+            "description", "A panel's doc: one line, or the loose doc object",
+            "oneOf", List.of(Ordered.map("$ref", "#/$defs/docLine"), Ordered.map("$ref", "#/$defs/docLoose"))));
         out.put("docLine", Ordered.map(
             "type", "string",
             "minLength", 1,

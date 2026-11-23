@@ -21,6 +21,8 @@ The design (control path and data path, safety, audit): [docs/design/GENUI_KIT.m
 
 ```
 tools/sajha/
+  INSTALL.md              the short install (the first file in the plugin zip)
+  package.py              builds the plugin zip, reproducibly: python3 tools/sajha/package.py
   plugin.json             SAJHA plugin manifest (name rachana-genui, the four tools)
   requirements.txt        installed by SAJHA's plugin loader (pyyaml, jsonschema)
   tools/*.py              the four tools: each file defines one BaseMCPTool subclass, as SAJHA's plugin loader expects
@@ -70,6 +72,10 @@ The kit is a SAJHA **plugin** (sajhamcpserver's `config/plugins/<name>/plugin.js
    | `RACHANA_GENUI_AUDIT_FILE` | none | audit events as JSON lines (besides the log and the hooks) |
    | `RACHANA_GENUI_SECRET` | per process | the key of check tokens; set it when SAJHA runs several workers |
    | `RACHANA_GENUI_CONFIG` | none | one JSON file with any of the above (lower-case names: `{"data_tools": ["risk_query"]}`) |
+
+   **Who can open a board.** The board server has no sign-in of its own: a board's link is the access (see INSTALL.md, "Who can open a
+   board"). Keep `RACHANA_GENUI_HOST` on a loopback or private interface or put the port behind SAJHA's proxy and sign-in; the `view`
+   audit event has no reader identity; tokens and boards are per process.
 
 4. Grant the tools in SAJHA's policy like any other (roles, rate limits); the data tools keep their own grants: `publish_ui` calls
    them **as the user** through SAJHA's inner-call path, so a user can never publish data they could not read.

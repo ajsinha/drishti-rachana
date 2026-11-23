@@ -8,7 +8,7 @@ and the Sutra language are stable.
 
 ## Prepare your environment
 
-Python 3.11 or later. The wheel is not on a public index: install the file you were given, with the `v8` extra (the compiler runs on
+Python 3.10 or later (tested on 3.11 and 3.13). The wheel is not on a public index: install the file you were given, with the `v8` extra (the compiler runs on
 V8 inside Python) and the `flask` extra:
 
 ```bash

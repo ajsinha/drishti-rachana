@@ -70,7 +70,7 @@ public final class RachanaSchema {
         p.put("version", Ordered.map("type", "integer", "minimum", 1, "description", "The newest version of a name is the one used"));
         p.put("description", text("One paragraph: what this layout shows and for which entities"));
         p.put("notes", text("Longer notes for authors and reviewers (plain text)"));
-        p.put("doc", Map.of("$ref", "#/$defs/doc"));            // SPEC 2.9: one definition for every doc (DocSchema)
+        p.put("doc", Map.of("$ref", "#/$defs/docLoose"));       // SPEC 2.9: the loose form; the strict doc is the fragment file's (DocSchema)
         p.put("title", object(Ordered.map("pill", text("The pill before the id (may hold ${…})"), "id", text(EL + " for the id shown"),
                 "with", text(EL + ": the counterparty or other entity named after the id")), List.of("id")));
         p.put("strip", Ordered.map("type", "array", "maxItems", 8, "description", "Up to eight fields in the header strip",
@@ -312,7 +312,7 @@ public final class RachanaSchema {
         common.put("kind", Ordered.map("type", "string", "enum", grammar.panelKinds().stream().map(PanelKind::id).toList()));
         common.put("title", text("The panel's heading (may hold ${…})"));
         common.put("description", text("What the panel answers, for authors and reviewers"));
-        common.put("doc", Map.of("$ref", "#/$defs/docOf"));          // a panel's doc: one line or a doc block (SPEC 2.9)
+        common.put("doc", Map.of("$ref", "#/$defs/docLooseOf"));      // a panel's doc: one line or the loose doc object (SPEC 2.9)
         common.put("key", Ordered.map("type", "string", "enum", KEYS));
         common.put("code", text("A short code at the heading's right (CRV, REFS)"));
         common.put("area", Ordered.map("type", "string", "description", "main or right (the flow), or an area named in layout.areas"));

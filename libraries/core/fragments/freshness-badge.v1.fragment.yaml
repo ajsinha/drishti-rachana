@@ -10,6 +10,17 @@ doc:
     foot of a screen over data that is loaded on a schedule.
   category: states
   tags: [freshness, as-of, staleness]
+  use-when:
+    - A screen reads data loaded on a schedule and the reader must know whether it is current.
+  avoid-when:
+    - "The data is live and streaming: the live panels show their own state."
+    - "A full provenance line is needed: use core/source-note."
+  data:
+    in-words: The as-of date of the data and how many days count as stale.
+    sample-row: { as-of: "2026-11-20" }
+  example: { use: core/freshness-badge@1, with: { as-of: "$.load.LOADED_ON", label: Loaded } }
+  see-also: [core/source-note, core/alert-banner]
+  keywords: [freshness, stale, as of, data age, loaded]
 params:
   as-of:      { type: date, required: true, doc: The day the data was loaded or published }
   stale-days: { type: integer, default: 1, min: 0, max: 3650, doc: The age in days beyond which the data is stale }

@@ -11,6 +11,18 @@ doc:
     finance/position-table for positions rather than trades.
   category: trading
   tags: [trades, blotter, list]
+  use-when:
+    - A snapshot list of trades is read with standard or chosen columns.
+  avoid-when:
+    - "The trades change while watched: use finance/live-blotter."
+    - "Positions, not trades: use finance/position-table."
+  data:
+    table: rows
+    in-words: "One row per trade: id, optionally product, counterparty, book, notional, currency, maturity and status."
+    sample-row: { id: T-100245, product: IRS, counterparty: Northwind Bank, book: RATES-LDN-01, notional: 50000000, currency: USD, maturity: "2026-11-20", status: Open }
+  example: { use: finance/trade-blotter@1, with: { rows: { from: "$.trades", columns: { id: TRADE_ID, product: PRODUCT } } } }
+  see-also: [finance/live-blotter, finance/position-table, finance/trade-ticket]
+  keywords: [blotter, trades, list, deals, book]
 params:
   rows:
     type: table

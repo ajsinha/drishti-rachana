@@ -13,6 +13,18 @@ doc:
     sends it back. Pair it with held-changes for the changes still waiting.
   category: tables
   tags: [live, blotter, edit, stream, table]
+  use-when:
+    - A large host table changes while the reader watches and is read a window at a time.
+  avoid-when:
+    - "The rows are a small fixed list: use core/data-table."
+    - "The rows are trades with ticking cells: use finance/live-blotter."
+  data:
+    table: rows
+    in-words: "A live host table with a key; you name the columns and the order."
+    sample-row: { TRADE_ID: T-100245, QTY: 5000, PRICE: 101.25, STATUS: Open, UPDATED_AT: "2026-11-20T09:30:00Z" }
+  example: { use: core/live-table@1, with: { title: Rates trades, rows: "$.trades", order: UPDATED_AT, edit: cells, columns: [{ label: Trade, bind: "@.TRADE_ID" }, { label: Quantity, bind: "@.QTY", fmt: amount0 }, { label: Price, bind: "@.PRICE", fmt: number }, { label: Status, bind: "@.STATUS", tone: status }] } }
+  see-also: [finance/live-blotter, core/data-table, core/held-changes]
+  keywords: [live, streaming, real time, window, updates]
 params:
   rows:
     type: table

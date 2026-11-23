@@ -175,10 +175,10 @@ public final class TypedFragment {
                 continue;
             }
             int max = d.get("max") != null && d.get("max").value() instanceof Long l ? l.intValue() : 8;
-            if (blank(text(d.get("doc")))) {
+            if (blank(docLine(d.get("doc")))) {
                 out.add(problem("RCH-2055", "fragment " + name + ": slot " + e.getKey() + " has a doc of one line", file, e.getValue()));
             }
-            slots.put(e.getKey(), new Slot(e.getKey(), accepts, max, text(d.get("doc"))));
+            slots.put(e.getKey(), new Slot(e.getKey(), accepts, max, docLine(d.get("doc"))));
         }
         if (slots.size() > MAX_SLOTS) {
             out.add(problem(SutraBlocks.BLOCK, "fragment " + name + " has more than " + MAX_SLOTS + " slots", file, ss));
@@ -191,7 +191,7 @@ public final class TypedFragment {
             String en = e.isMap() ? text(e.map().get("name")) : null;
             if (en == null || !NAME.matcher(en).matches() || e.map().keySet().stream().anyMatch(k -> !EVENT_KEYS.contains(k))) {
                 out.add(problem(SutraBlocks.BLOCK, "fragment " + name + ": an event is { name, payload?, doc } with a lower-case kebab name", file, e));
-            } else if (blank(text(e.map().get("doc")))) {
+            } else if (blank(docLine(e.map().get("doc")))) {
                 out.add(problem("RCH-2055", "fragment " + name + ": event " + en + " has a doc of one line", file, e));
             }
         }
@@ -278,7 +278,7 @@ public final class TypedFragment {
         if (!required && dflt == null && !optional && !type.endsWith("?")) {
             out.add(problem(SutraBlocks.BLOCK, "parameter " + name + " of fragment " + fragment + " says required: true, a default, or optional: true", file, d));
         }
-        if (blank(text(m.get("doc")))) {
+        if (blank(docLine(m.get("doc")))) {
             out.add(problem("RCH-2055", "fragment " + fragment + ": parameter " + name + " has a doc of one line", file, d));
         }
         if (m.containsKey("dynamic") && (!"text".equals(type) && !"text?".equals(type) || !(m.get("dynamic").value() instanceof Boolean))) {
@@ -301,7 +301,7 @@ public final class TypedFragment {
         if ("table".equals(kind) && !columns.isEmpty() && contract != null) {
             out.add(problem(SutraBlocks.BLOCK, "table parameter " + name + " of fragment " + fragment + " names its columns or a contract, not both", file, d));
         }
-        Param p = new Param(name, kind, type, required, dflt, text(m.get("doc")), number(m.get("min")), number(m.get("max")), List.copyOf(options),
+        Param p = new Param(name, kind, type, required, dflt, docLine(m.get("doc")), number(m.get("min")), number(m.get("max")), List.copyOf(options),
                 List.copyOf(columns), d);
         if (dflt != null) {
             String wrong = literal(p, dflt, true);
@@ -1767,6 +1767,11 @@ public final class TypedFragment {
 
     private static String text(PNode n) {
         return n == null ? null : n.text();
+    }
+
+    /** A part's doc (SPEC 2.9, {@code $defs/docOf}): one line, or a doc block whose summary is its line. */
+    static String docLine(PNode n) {
+        return n != null && n.isMap() ? text(n.map().get("summary")) : text(n);
     }
 
     private static boolean blank(String s) {

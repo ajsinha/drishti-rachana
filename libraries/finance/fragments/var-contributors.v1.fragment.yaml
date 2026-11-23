@@ -10,6 +10,17 @@ doc:
     or over the sum of the components when you give none. The figures arrive as data; nothing is allocated here.
   category: market-risk
   tags: [var, contributors, decomposition]
+  use-when:
+    - "What makes up a VaR is read: each contributor's component, stand-alone and incremental figure."
+  avoid-when:
+    - "The VaR down a hierarchy: use finance/risk-hierarchy-tree."
+  data:
+    table: rows
+    in-words: "One row per contributor: name and component, optionally stand-alone and incremental."
+    sample-row: { name: Rates Desk, component: 640000, standalone: 910000, incremental: 520000 }
+  example: { use: finance/var-contributors@1, with: { rows: { from: "$.contrib", columns: { name: BOOK, component: COMP } } } }
+  see-also: [finance/var-tiles, finance/risk-hierarchy-tree]
+  keywords: [var, contributors, component var, incremental, drivers]
 params:
   rows:
     type: table

@@ -76,6 +76,7 @@ codes:
 - {code: "RCH-2083", profile: core, since: "1.1", raisedBy: [table.LiveTableSpec]}
 - {code: "RCH-2091", profile: core, since: "1.1", raisedBy: [el.check.Problem]}
 - {code: "RCH-2092", profile: core, since: "1.2", raisedBy: [parse.DeclarationsReader]}
+- {code: "RCH-2093", profile: core, since: "1.2", raisedBy: [parse.DocBlockLint]}
 - {code: "RCH-2101", profile: core, since: "1.0", raisedBy: [SutraExpressions]}
 - {code: "RCH-2110", profile: core, since: "1.2", raisedBy: [lib.Library, lib.LibrarySet]}
 - {code: "RCH-2111", profile: core, since: "1.2", raisedBy: [lib.Library, lib.LibraryLock]}

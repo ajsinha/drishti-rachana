@@ -10,6 +10,18 @@ doc:
     small (group the tail into one row upstream). A click on a slice raises an event with its label and value.
   category: charts
   tags: [donut, share, mix]
+  use-when:
+    - A whole splits into a few parts and the shares matter (up to about eight slices).
+  avoid-when:
+    - "There are many parts: use core/ranked-bars."
+    - "Values can be negative: use core/steps-waterfall."
+  data:
+    table: rows
+    in-words: "One row per slice: a label and a positive value."
+    sample-row: { label: Rates, value: 1250000 }
+  example: { use: core/donut-breakdown@1, with: { title: Sales by channel, rows: { from: "$.mix", columns: { label: CHANNEL, value: SALES } } } }
+  see-also: [core/ranked-bars, finance/allocation-donut]
+  keywords: [donut, pie, share, breakdown, mix]
 params:
   rows:
     type: table

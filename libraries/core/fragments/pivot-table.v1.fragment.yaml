@@ -10,6 +10,18 @@ doc:
     how to add the measure up. The rows may be at any grain; the pivot adds them up.
   category: tables
   tags: [pivot, cross-tab, heat]
+  use-when:
+    - "One measure is cross-tabulated by a field down the side and a field across the top, with totals."
+  avoid-when:
+    - "The grouping is a nested hierarchy: use core/drill-table."
+    - "The cells are scenario P&L: use finance/scenario-matrix."
+  data:
+    table: rows
+    in-words: "Rows at any grain with a row field, a column field and a numeric measure."
+    sample-row: { REGION: North, QUARTER: Q1, REVENUE: 100 }
+  example: { use: core/pivot-table@1, with: { title: Revenue, rows: "$.sales", by: REGION, across: QUARTER, value: REVENUE, heat: true } }
+  see-also: [core/drill-table, finance/scenario-matrix, finance/sensitivity-heatmap]
+  keywords: [pivot, cross tab, matrix, totals, heat]
 params:
   rows:
     type: table

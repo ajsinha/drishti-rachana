@@ -53,6 +53,16 @@ LENIENT = {
 }
 
 
+# 1.1.0 gate: a Sutra's doc is the loose form (nothing required, other keys allowed, no length limit), as in 1.0.1. The compiler accepts
+# each of these (thinness is the RCH-2093 lint, never a refusal), so each must validate.
+BASE = "rachana: 1.2\nsutra: doc-case\nversion: 1\n"
+DOC_CASES = {
+    "doc-without-summary": BASE + "doc:\n  description: Shows the sales.\npanels: []\n",
+    "doc-with-an-authors-key": BASE + "doc:\n  summary: Sales.\n  purpose: x\npanels: []\n",
+    "doc-summary-over-120": BASE + "doc:\n  summary: " + "long " * 40 + "\npanels: []\n",
+}
+
+
 def uses_profile(node):
     """True when the Sutra holds a construct of the Drishti profile (the published schema is Core's)."""
     if isinstance(node, dict):
@@ -137,6 +147,12 @@ def main() -> int:
             bad += 1
             e = jsonschema.exceptions.best_match(errs)
             print(f"{name}: /{'/'.join(map(str, e.absolute_path))}: {e.message[:200]}")
+    for name, text in DOC_CASES.items():
+        n += 1
+        errs = list(v.iter_errors(load(text)))
+        if errs:
+            bad += 1
+            print(f"{name}: compiles, so must validate: {errs[0].message[:200]}")
     print(f"{n} Sutras checked against spec/1/sutra.schema.json, {bad} do not validate")
     valid = {name for name, ok in refused(v) if ok}
     names = {name for name, _ in refused(v)}

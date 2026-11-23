@@ -10,6 +10,16 @@ doc:
     the zone it is in - within, near a bound (from the warning share of it) or past one - and a word says which.
   category: limits
   tags: [limit, band, two-sided]
+  use-when:
+    - A two-sided limit (long or short position) is shown on a band with warning zones.
+  avoid-when:
+    - "The limit is one-sided: use finance/limit-gauge."
+  data:
+    in-words: "Three numbers: the figure, the lower bound and the upper bound."
+    sample-row: { value: 1250000, lower: 1000, upper: 1000 }
+  example: { use: finance/limit-band@1, with: { value: "$.desk.NET_DELTA_USD", lower: "0 - $.desk.DELTA_LIMIT_USD", upper: "$.desk.DELTA_LIMIT_USD" } }
+  see-also: [finance/limit-gauge, finance/limit-table]
+  keywords: [limit, band, two sided, net position, bounds]
 params:
   value:   { type: number, required: true, doc: The figure }
   lower:   { type: number, required: true, doc: The lower bound (usually negative) }

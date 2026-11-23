@@ -8,6 +8,17 @@ doc:
   description: Rows are shown in the order given, newest first. A click on an item raises an event with its link, for the screen to open as it sees fit.
   category: tables
   tags: [news, headlines, list]
+  use-when:
+    - "Dated items with a headline and a link are listed newest first (news, announcements, filings)."
+  avoid-when:
+    - "The items are events of one subject with statuses: use core/event-timeline."
+  data:
+    table: rows
+    in-words: "One row per item: a date, a headline, optionally a source and a link."
+    sample-row: { date: "2026-11-20", headline: Central bank holds rates, source: Wire, link: "https://example.org/item/1" }
+  example: { use: core/headline-list@1, with: { title: Announcements, rows: { from: "$.news", columns: { date: PUBLISHED, headline: TITLE, source: PUBLISHER, link: URL } } } }
+  see-also: [core/event-timeline, core/data-table]
+  keywords: [news, headlines, announcements, filings, feed]
 params:
   rows:
     type: table

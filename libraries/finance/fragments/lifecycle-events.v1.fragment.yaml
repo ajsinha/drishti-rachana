@@ -10,6 +10,17 @@ doc:
     latest events are kept when there are very many.
   category: trading
   tags: [lifecycle, events, timeline]
+  use-when:
+    - "A trade's life (booked, amended, fixed, paid, matured) is read as a timeline."
+  avoid-when:
+    - "Record edits by users: use core/audit-trail."
+  data:
+    table: rows
+    in-words: "One row per event: date and event name, optionally detail and status."
+    sample-row: { date: "2026-11-20", event: Booked, detail: Booked by the desk, status: Open }
+  example: { use: finance/lifecycle-events@1, with: { rows: { from: "$.ev", columns: { date: EV_DATE, event: EV_NAME } } } }
+  see-also: [core/event-timeline, core/audit-trail]
+  keywords: [lifecycle, trade events, timeline, amend, maturity]
 params:
   rows:
     type: table

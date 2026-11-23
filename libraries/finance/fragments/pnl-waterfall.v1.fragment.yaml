@@ -11,6 +11,17 @@ doc:
     on a P&L explain screen.
   category: pnl
   tags: [pnl, explain, waterfall]
+  use-when:
+    - "P&L is explained from the opening value through effects to the close."
+  avoid-when:
+    - "P&L by organisational group: use finance/pnl-attribution-bars."
+  data:
+    table: rows
+    in-words: "One row per effect in order: effect, amount and whether it is a total."
+    sample-row: { effect: Rates, amount: 250000, total: false }
+  example: { use: finance/pnl-waterfall@1, with: { rows: { from: "$.fx", columns: { effect: EFFECT, amount: AMT, total: IS_OPEN } } } }
+  see-also: [core/steps-waterfall, finance/pnl-attribution-bars]
+  keywords: ["p&l explain", waterfall, attribution, effects, bridge]
 params:
   rows:
     type: table

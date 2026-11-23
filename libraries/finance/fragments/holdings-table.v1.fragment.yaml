@@ -10,6 +10,18 @@ doc:
     values listed when you give none. A click on a row names the holding.
   category: funds
   tags: [holdings, portfolio, weights]
+  use-when:
+    - A portfolio's holdings (or a security's holders) are listed by value with weights and changes.
+  avoid-when:
+    - "Positions with P&L on a trading book: use finance/position-table."
+    - "Only the split matters: use finance/allocation-donut."
+  data:
+    table: rows
+    in-words: "One row per holding: name and value, optionally quantity, weight and change."
+    sample-row: { name: Rates Desk, value: 1250000, quantity: 5000, weight: 0.085, change: -12500 }
+  example: { use: finance/holdings-table@1, with: { rows: { from: "$.hold", columns: { name: ISSUER, value: MV } } } }
+  see-also: [finance/position-table, finance/allocation-donut]
+  keywords: [holdings, portfolio, weights, fund, holders]
 params:
   rows:
     type: table

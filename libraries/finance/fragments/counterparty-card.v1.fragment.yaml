@@ -10,6 +10,17 @@ doc:
     shown when both an exposure and a limit are given. Panels of your own can go under the card.
   category: counterparty
   tags: [counterparty, credit, card]
+  use-when:
+    - "A counterparty heads a screen: name, rating, country, sector, exposure against its limit."
+  avoid-when:
+    - "Many counterparties are listed: use core/data-table or finance/limit-table."
+  data:
+    table: counterparty
+    in-words: "One counterparty record; only the name is needed."
+    sample-row: { name: Rates Desk, rating: Rating, country: Country, sector: Sector, exposure: 18500000, limit: 2500000 }
+  example: { use: finance/counterparty-card@1, with: { counterparty: "{name: $.cp.CP_NAME}" } }
+  see-also: [core/record-card, finance/limit-table, finance/exposure-profile]
+  keywords: [counterparty, card, rating, exposure, credit]
 params:
   counterparty:
     type: "record{name: text, rating: text, country: text, sector: text, exposure: number, limit: number}"

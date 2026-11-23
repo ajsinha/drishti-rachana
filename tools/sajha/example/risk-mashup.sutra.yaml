@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content: composed by example/risk_mashup.py (regenerate it, do not edit).
+rachana: 1.2
+sutra: risk-mashup
+version: 1
+doc:
+  summary: Firm VaR and ES, VaR by desk, exposure by counterparty, limit use and what changed since yesterday.
+  description: >-
+    A risk mash-up composed by an agent from the core and finance libraries over four tables of the day. Figures are
+    supplied by the risk systems; nothing is computed on the board but changes and shares.
+  category: market-risk
+libraries: [core@1, finance@1]
+title: { id: "'Risk mash-up'" }
+data:
+  firm_risk: { table: firm_risk, as: record }
+  var_by_desk: { table: var_by_desk }
+  exposure_by_cpty: { table: exposure_by_cpty }
+  limit_use: { table: limit_use }
+panels:
+  - use: finance/var-tiles@1
+    with: {"es": "$.firm_risk.ES_975", "var": "$.firm_risk.VAR_99", "limit": "$.firm_risk.VAR_LIMIT", "previous-var": "$.firm_risk.VAR_99_PREV", "var-label": "VaR 99% 1d", "es-label": "ES 97.5% 1d"}
+  - use: core/ranked-bars@1
+    with: {"rows": {"from": "$.var_by_desk", "columns": {"label": "DESK", "value": "VAR_99"}}, "title": "VaR by desk", "fmt": "amount0"}
+  - use: finance/limit-table@1
+    with: {"rows": {"from": "$.limit_use", "columns": {"owner": "OWNER", "name": "LIMIT_NAME", "limit": "LIMIT_USD", "used": "USED_USD"}}, "title": "Limit use"}
+  - use: finance/concentration-treemap@1
+    with: {"rows": {"from": "$.exposure_by_cpty", "columns": {"exposure": "EXPOSURE_USD", "group": "SECTOR", "name": "COUNTERPARTY", "pnl": "PNL_USD"}}, "title": "Exposure by counterparty"}
+  - use: core/measure-table@1
+    with: {"rows": {"from": "$.var_by_desk", "columns": {"name": "DESK", "first": "VAR_99", "second": "VAR_CHANGE"}}, "title": "What changed since yesterday", "name-label": "Desk", "first-label": "VaR", "second-label": "Change", "first-fmt": "amount0", "second-fmt": "signed0"}

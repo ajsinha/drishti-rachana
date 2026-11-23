@@ -10,6 +10,18 @@ doc:
     subtotal); the others add to it. The closing figure is drawn last.
   category: charts
   tags: [waterfall, bridge, steps]
+  use-when:
+    - "A total moves from a start to an end through signed steps (a bridge, an explain)."
+  avoid-when:
+    - "The steps are P&L effects: use finance/pnl-waterfall."
+    - "The parts are all positive shares of one whole: use core/donut-breakdown."
+  data:
+    table: rows
+    in-words: "One row per step in order: a label, a signed value and whether it is a total."
+    sample-row: { label: Rates, value: 1250000, total: false }
+  example: { use: core/steps-waterfall@1, with: { title: Budget to actual, rows: { from: "$.bridge", columns: { label: STEP, value: AMOUNT, total: IS_TOTAL } }, sum-label: Actual } }
+  see-also: [finance/pnl-waterfall, core/donut-breakdown]
+  keywords: [waterfall, bridge, walk, steps, explain]
 params:
   rows:
     type: table

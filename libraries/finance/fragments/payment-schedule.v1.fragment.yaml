@@ -10,6 +10,17 @@ doc:
     status tones the row (paid is quiet, due and late are not).
   category: trading
   tags: [payments, schedule, cashflows]
+  use-when:
+    - "A trade's scheduled payments are read with periods, rates and paid or due status."
+  avoid-when:
+    - "Cash flows across trades with a running net: use finance/cashflow-ladder."
+  data:
+    table: rows
+    in-words: "One row per payment: payment date, amount and currency, optionally period start and end, rate and status."
+    sample-row: { pay_date: "2026-11-20", amount: 250000, currency: USD, start: "2026-11-20", end: "2026-11-20", rate: 0.0425, status: Open }
+  example: { use: finance/payment-schedule@1, with: { rows: { from: "$.pay", columns: { pay_date: PAYDT, amount: AMT, currency: CCY } } } }
+  see-also: [finance/cashflow-ladder, finance/leg-table]
+  keywords: [payments, schedule, coupons, due, paid]
 params:
   rows:
     type: table

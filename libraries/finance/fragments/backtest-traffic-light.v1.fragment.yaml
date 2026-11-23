@@ -11,6 +11,17 @@ doc:
     are yours to set to a policy; they are shown beside the verdict.
   category: market-risk
   tags: [backtest, exceptions, zone]
+  use-when:
+    - "A backtest verdict (exception count and green, amber or red zone) heads a model-risk screen."
+  avoid-when:
+    - "The day-by-day picture is wanted: use finance/backtest-chart."
+  data:
+    table: rows
+    in-words: "One row per day: date, P&L and that day's VaR as a positive amount."
+    sample-row: { date: "2026-11-20", pnl: -125000, var: 2400000 }
+  example: { use: finance/backtest-traffic-light@1, with: { amber-from: 2, red-from: 4, rows: { from: "$.days", columns: { date: BIZ_DATE, pnl: PNL_USD, var: VAR_USD } } } }
+  see-also: [finance/backtest-chart, finance/var-tiles]
+  keywords: [backtest, traffic light, zone, exceptions, basel]
 params:
   rows:
     type: table

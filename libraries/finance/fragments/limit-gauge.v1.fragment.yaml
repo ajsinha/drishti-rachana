@@ -10,6 +10,18 @@ doc:
     the warning share) or over it. A history of the amount used is drawn when you give it. Panels of your own can go under it.
   category: limits
   tags: [limit, utilisation, gauge]
+  use-when:
+    - "One limit deserves its own panel: amount used against the limit, with recent history."
+  avoid-when:
+    - "Many limits at once: use finance/limit-table."
+    - "The limit has two sides: use finance/limit-band."
+  data:
+    table: history
+    in-words: "Two numbers (used and limit) and optionally one row per day of history: date and amount used."
+    sample-row: { date: "2026-11-20", used: 1850000 }
+  example: { use: finance/limit-gauge@1, with: { label: VaR limit, used: "$.lim.USED_USD", limit: "$.lim.LIMIT_USD" } }
+  see-also: [finance/limit-table, finance/limit-band, core/gauge-figure]
+  keywords: [limit, utilisation, gauge, headroom, breach]
 params:
   used:    { type: number, required: true, doc: The amount used }
   limit:   { type: number, required: true, doc: The limit }

@@ -10,6 +10,17 @@ doc:
     a reference. For a row of figures use several uses; for a figure with a history use a chart beside it.
   category: figures
   tags: [figure, metric, kpi]
+  use-when:
+    - "One headline number is what the reader looks for first, optionally with a change."
+  avoid-when:
+    - "Several related figures belong together: use several uses or a tiles fragment such as finance/var-tiles."
+    - "The number is compared with a reference period: use core/period-compare."
+  data:
+    in-words: "One number, optionally a change against a reference."
+    sample-row: { value: 1250000 }
+  example: { use: core/key-figure@1, with: { value: "sum($.sales, 'REVENUE_USD')", label: Total revenue, fmt: amount0 } }
+  see-also: [core/period-compare, core/gauge-figure, finance/var-tiles]
+  keywords: [kpi, figure, metric, headline, number]
 params:
   value:     { type: number, required: true, doc: The figure }
   label:     { type: text, default: Value, doc: What the figure is }

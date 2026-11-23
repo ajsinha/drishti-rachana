@@ -10,6 +10,17 @@ doc:
     largest potential figure (or expected, when there is none). The figures arrive as data; nothing is simulated here.
   category: counterparty
   tags: [exposure, profile, limit]
+  use-when:
+    - Expected and potential future exposure through time is compared with a limit and its peak.
+  avoid-when:
+    - "Today's exposure build-up: use finance/addon-breakdown or finance/netting-summary."
+  data:
+    table: rows
+    in-words: "One row per future date: expected exposure and optionally potential future exposure."
+    sample-row: { date: "2026-11-20", expected: 4200000, potential: 9800000 }
+  example: { use: finance/exposure-profile@1, with: { rows: { from: "$.prof", columns: { date: DT, expected: EE } } } }
+  see-also: [finance/addon-breakdown, finance/netting-summary, finance/counterparty-card]
+  keywords: [pfe, epe, exposure, profile, ccr]
 params:
   rows:
     type: table

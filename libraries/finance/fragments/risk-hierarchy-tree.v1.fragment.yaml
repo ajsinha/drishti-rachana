@@ -11,6 +11,17 @@ doc:
     figure over the limit, shown where a limit is given.
   category: market-risk
   tags: [risk, hierarchy, limits]
+  use-when:
+    - "A risk measure is read down an organisation (firm, desk, book) with limits and share used."
+  avoid-when:
+    - "Exposure through netting sets: use finance/netting-set-tree."
+  data:
+    table: rows
+    in-words: "One row per node: id, parent id, name, value and optionally limit (no summing: each node's figure is supplied)."
+    sample-row: { id: T-100245, parent: DESK-RATES, name: Rates Desk, value: 1250000, limit: 2500000 }
+  example: { use: finance/risk-hierarchy-tree@1, with: { rows: { from: "$.nodes", columns: { id: NODE, parent: PARENT_NODE, name: NODE_NAME, value: MEASURE } } } }
+  see-also: [core/tree-table, finance/limit-table, finance/var-contributors]
+  keywords: [hierarchy, var by desk, limits, tree, risk]
 params:
   rows:
     type: table

@@ -11,6 +11,17 @@ doc:
     names its curve and tenor.
   category: market-data
   tags: [curves, compare, spread]
+  use-when:
+    - "Several curves are compared on one tenor axis, with spreads to a base curve."
+  avoid-when:
+    - "One curve alone: use finance/term-structure."
+  data:
+    table: rows
+    in-words: "One row per curve and tenor: curve name, tenor label, years and value (long form)."
+    sample-row: { curve: USD-SOFR, tenor: "2Y", years: 2.0, value: 1250000 }
+  example: { use: finance/curve-compare@1, with: { rows: { from: "$.curves", columns: { curve: CURVE, tenor: TENOR, years: YEARS, value: RATE } } } }
+  see-also: [finance/term-structure, finance/curve-overview]
+  keywords: [curves, spread, compare, tenor, yield]
 params:
   rows:
     type: table

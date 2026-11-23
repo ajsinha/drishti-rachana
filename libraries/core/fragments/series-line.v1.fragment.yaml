@@ -8,6 +8,18 @@ doc:
   description: Rows in x order. Mark one x value to draw a vertical marker (a date, a threshold).
   category: charts
   tags: [line, series, trend]
+  use-when:
+    - "One numeric series is read over an ordered x (time, tenor)."
+  avoid-when:
+    - "Several series add up to a whole: use core/area-stack."
+    - "The series is a curve by tenor: use finance/term-structure."
+  data:
+    table: rows
+    in-words: One row per x in order with a numeric y.
+    sample-row: { x: "2026-11-20", "y": 0.84 }
+  example: { use: core/series-line@1, with: { title: Price, rows: { from: "$.history", columns: { x: PX_DATE, "y": CLOSE } }, fmt: price2, mark: "2026-01-06" } }
+  see-also: [core/area-stack, finance/term-structure, finance/pnl-history]
+  keywords: [line, trend, time series, over time, chart]
 params:
   rows:
     type: table

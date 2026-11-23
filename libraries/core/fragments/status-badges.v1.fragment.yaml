@@ -10,6 +10,16 @@ doc:
     each by its meaning. Use it at the head of a record screen.
   category: figures
   tags: [status, badge, state]
+  use-when:
+    - "A record's states (Active, Late, Breached) are shown as a short toned row at the head of a screen."
+  avoid-when:
+    - "The states are of many rows: put a status column in core/data-table."
+  data:
+    in-words: "Fields of one record, each a label and an expression giving a state word."
+    sample-row: { fields: A }
+  example: { use: core/status-badges@1, with: { fields: [{ label: Status, bind: "$.order.STATE" }, { label: Approval, bind: "$.order.APPROVAL" }] } }
+  see-also: [core/record-card, core/field-list]
+  keywords: [status, badges, state, flags, header]
 params:
   fields: { type: columns, required: true, doc: "The states: a list of { label, bind } where bind reads the caller's own data" }
 panels:

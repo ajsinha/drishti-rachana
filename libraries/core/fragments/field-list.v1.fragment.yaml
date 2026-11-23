@@ -10,6 +10,18 @@ doc:
     (@.name) that gives its value, with an optional format.
   category: records
   tags: [record, facts, kv]
+  use-when:
+    - The facts of one record are shown as label and value pairs.
+  avoid-when:
+    - "The record needs a heading card with status: use core/record-card."
+    - "Many records are listed: use core/data-table."
+  data:
+    table: record
+    in-words: "One record and the fields to show, each an expression over the record."
+    sample-row: { NAME: Northwind Bank, RATING: A, COUNTRY: GB, LIMIT_USD: 25000000 }
+  example: { use: core/field-list@1, with: { title: Customer, record: "$.customer", fields: [{ label: Name, bind: "@.NAME" }, { label: Segment, bind: "@.SEGMENT" }, { label: Limit, bind: "@.LIMIT_USD", fmt: amount0 }] } }
+  see-also: [core/record-card, core/status-badges]
+  keywords: [record, details, facts, properties, key value]
 params:
   record: { type: "record{}", required: true, doc: The record whose facts are shown }
   fields: { type: columns, required: true, doc: "The facts: a list of { label, bind: \"@.field\", fmt }" }

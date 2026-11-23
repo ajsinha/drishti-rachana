@@ -4,7 +4,7 @@
   "author": "Ashutosh Sinha",
   "description": "Rachana GenUI kit: search_fragments, get_fragment, check_sutra and publish_ui let an agent compose a checked Sutra from the Rachana fragment libraries and publish it as a live board painted by <rachana-view>. Rows never pass through the model.",
   "min_sajha_version": "8.0.0",
-  "dependencies": ["drishti-rachana[v8]>=1.0.0", "pyyaml>=6", "jsonschema>=4"],
+  "dependencies": ["drishti-rachana[v8]>=1.1.0", "pyyaml>=6", "jsonschema>=4"],
   "tools": ["search_fragments", "get_fragment", "check_sutra", "publish_ui"],
   "config_keys": []
 }

@@ -53,6 +53,7 @@ panels:
 | **Studio** | a visual editor: fragment palette, live preview, checked source, parameter forms, diff and save | [guide](docs/guides/STUDIO.md) |
 | **Libraries** | typed fragments to assemble screens from: `core` (33 fragments) and `finance` (50); your own with `rachana lib` | [guide](docs/guides/LIBRARIES.md), [libraries](libraries/README.md) |
 | **Python SDK** | lint on V8, a Data Protocol host, Flask and FastAPI adapters | [guide](docs/guides/CLI_AND_SDKS.md#python) |
+| **Flask and SPA guides** | the short customer paths: [Rachana in your Flask app](docs/RACHANA_IN_FLASK.md) (wheel, compile a Sutra, the page, strict CSP) and [Rachana in a JavaScript SPA](docs/RACHANA_IN_SPA.md) (npm or browser zip, render, events); the JavaScript facade is experimental at 1.x | [Flask](docs/RACHANA_IN_FLASK.md), [SPA](docs/RACHANA_IN_SPA.md) |
 
 ## Ways to use it
 

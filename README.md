@@ -5,7 +5,7 @@ summary: A declarative UI platform - describe a screen in a short YAML Sutra, su
 language: "rachana: 1 (levels 1.0 to 1.2)"
 parts: [specification, conformance suite, Java compiler, JavaScript build, Python package, Data Protocol, live tables, server, CLI, Studio, libraries]
 runtimes: [JVM (Java 21), Node 20+, browsers, Python 3.10+ on V8]
-install-order: [tools, Rachana, Lake, Drishti]
+install-order: [tools, Rachana, Lake, Drishti]  # the platform build order
 licence: proprietary (LICENSE); specification and conformance suite under LICENSE-SPEC.md (draft)
 author: Ashutosh Sinha
 ---
@@ -86,35 +86,50 @@ panels:
 The specification ([spec/1/SPEC.md](spec/1/SPEC.md)) is the reference for every key and rule. The designs behind the product, and their
 decisions, are in [docs/design](docs/design/DECISIONS.md). What changed when: [CHANGELOG.md](CHANGELOG.md).
 
-## Build
+## Where it fits the Drishti platform
 
-```bash
-cd java && ./mvnw clean verify          # every module, the unit tests, the guards and the compatibility regime (JDK 21); Windows: mvnw.cmd
-cd .. && python3 tools/js/build_js.py   # the JavaScript bundles (TeaVM), checked against the conformance suite
-python3 tools/conformance/rachana_conformance.py --jvm    # the conformance suite on the JVM
-```
+Rachana is the second product of the platform build. The platform's `build_all.py` (and its IntelliJ launcher `platform-clean-install`) builds
+**Drishti Tools -> Drishti Rachana -> Drishti Lake -> Drishti** in order and installs each product's jars into the local Maven repository
+(`~/.m2/repository/com/ash/rachana/`, Windows `C:\Users\<user>\.m2\repository\com\ash\rachana\`) before the next one builds. Only `rachana-server`
+uses Drishti Tools (`tools-csv`); the other modules use nothing of it. Drishti builds against a **released tag**, never a branch.
 
-## Install for Drishti
+## Requirements
 
-The Drishti family builds in this order: **Drishti Tools → Rachana → Lake → Drishti** (`rachana-server` reads and writes CSV
-files with Tools' `tools-csv`; Core and the other modules use nothing of Tools). Each one is installed into the local Maven repository
-(`~/.m2/repository`, Windows `C:\Users\<user>\.m2\repository`) **from its release tag**, never from a branch, before the next one
-builds:
+| Need | Version | For |
+|---|---|---|
+| JDK | 21 | the Java build, the compiler, the server, the CLI (`java/mvnw` downloads Maven) |
+| Node | 20 or later | the JavaScript packages and their tests, Studio, the dev server |
+| Python | 3.13 (3.10 is the package's minimum) | the Python SDK, the JavaScript bundle build, the conformance runner and the checks |
 
-```bash
-git checkout <release tag>
-cd java && ./mvnw clean install -DskipTests       # Windows: mvnw.cmd clean install -DskipTests
-```
+Drishti never makes a virtual environment: run the Python tools with the Python you choose (Linux and macOS `python3`, Windows `py -3.13`),
+and install the packages you need into it yourself (for example `python3 -m pip install -e 'python[test,v8]'`).
 
-In IntelliJ IDEA the same step is the launcher **Rachana: install release (tag only)**, on the tag's checkout. Details:
-[java/README.md, Installing a release for Drishti](java/README.md#installing-a-release-for-drishti).
+## Build and test on its own
 
-## IDE support
+| | Linux / macOS | Windows |
+|---|---|---|
+| every module, test, guard and the compatibility regime | `cd java && ./mvnw clean verify` | `cd java` then `mvnw.cmd clean verify` |
+| compile and package only | `./mvnw clean verify -DskipTests` | `mvnw.cmd clean verify -DskipTests` |
+| the JavaScript bundles (TeaVM), checked against the conformance suite | `python3 tools/js/build_js.py` | `py -3.13 tools\js\build_js.py` |
+| the conformance suite on the JVM | `python3 tools/conformance/rachana_conformance.py --jvm` | `py -3.13 tools\conformance\rachana_conformance.py --jvm` |
+| the Node tests | `java/mvnw -f js/pom.xml exec:exec@node-tests` | `java\mvnw.cmd -f js\pom.xml exec:exec@node-tests` |
+| the Python tests | `python3 -m pytest -q python/tests` | `py -3.13 -m pytest -q python\tests` |
+| install a release (on its tag only) | `git checkout vX.Y.Z && cd java && ./mvnw clean install -DskipTests` | `mvnw.cmd clean install -DskipTests` |
 
-Every part builds and runs from the IDE with checked-in launchers: **IntelliJ IDEA** for Java (open the repository root, link `java/pom.xml`; the launchers of
-`run-configs/`, named `Rachana: <verb> <what>`, JavaScript included, with no bash), **PyCharm** for Python (the same root and launchers) and **VS Code**
-(open `drishti-rachana.code-workspace`: tasks and launch configurations for all three). The one guide, with prerequisites, Windows
-notes and company-network certificates: [java/README.md, Build and run in the IDE](java/README.md#build-and-run-in-the-ide).
+Never install from a branch. Details, with the Java programs and the server example: [java/README.md](java/README.md).
+
+## Build and run in the IDE
+
+Every launcher is checked in under `run-configs/` at the repository root (`run-configs/*.run.xml`, named `Rachana: <verb> <what>`), with no bash. Open the
+**repository root** in IntelliJ IDEA or PyCharm (in IntelliJ link `java/pom.xml` in the Maven tool window); both read the same files.
+
+| IDE | Opens | Launcher groups |
+|---|---|---|
+| **IntelliJ IDEA** (Community or Ultimate; Java and Maven only) | the repository root, `java/pom.xml` linked, JDK 21 | **IntelliJ-rachana-build** (build all, build JS bundles, bundle JS runtime), **IntelliJ-rachana-test** (test, test JS (Node)), **IntelliJ-rachana-check** (check server (demo)), **IntelliJ-rachana-run** (CLI, reference server, server (demo), hash-password, Studio, dev server), **IntelliJ-rachana-install** (install release, tag only) |
+| **PyCharm** | the repository root, a Python 3.13 interpreter you choose | **PyCharm-rachana-test** (test Python), **PyCharm-rachana-check** (lint examples, check examples, check protocol), **PyCharm-rachana-run** (live-orders in Flask and FastAPI) |
+| **VS Code** | `drishti-rachana.code-workspace` | tasks and launch configurations of the same names, for Java, Python and JavaScript |
+
+Prerequisites, the Windows `PKIX path building failed` fix and company-network certificates: [java/README.md, Build and run in the IDE](java/README.md#build-and-run-in-the-ide).
 
 ## Licence
 

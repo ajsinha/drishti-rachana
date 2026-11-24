@@ -8,7 +8,7 @@
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana: run live-orders (FastAPI)" type="PythonConfigurationType" factoryName="Python" folderName="Rachana">
+  <configuration default="false" name="Rachana: run live-orders (FastAPI)" type="PythonConfigurationType" factoryName="Python" folderName="PyCharm-rachana-run">
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />

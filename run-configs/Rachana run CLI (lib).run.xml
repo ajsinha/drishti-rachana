@@ -7,7 +7,7 @@
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana: run CLI (lib)" type="Application" factoryName="Application" folderName="Rachana">
+  <configuration default="false" name="Rachana: run CLI (lib)" type="Application" factoryName="Application" folderName="IntelliJ-rachana-run">
     <option name="MAIN_CLASS_NAME" value="com.ash.rachana.cli.Main" />
     <module name="rachana-cli" />
     <option name="VM_PARAMETERS" value="" />

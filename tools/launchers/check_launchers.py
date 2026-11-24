@@ -59,8 +59,9 @@ def check():
             errs.append(f"{f.name}: name '{n}' is not '{prod}: <verb> [<what>]' (verbs: {', '.join(VERBS)})")
         if f.name != n.replace(":", "") + ".run.xml":
             errs.append(f"{f.name}: the file is named after the launcher without the colon ('{n.replace(':', '')}.run.xml')")
-        if cfg.get("folderName") != prod:
-            errs.append(f"{f.name}: folderName is '{cfg.get('folderName')}', not '{prod}'")
+        ide = "PyCharm" if cfg.get("type") == "PythonConfigurationType" else "IntelliJ"
+        if not re.fullmatch(ide + "-" + prod.lower() + r"-(build|run|test|install|check)", cfg.get("folderName") or ""):
+            errs.append(f"{f.name}: folderName is '{cfg.get('folderName')}', not '{ide}-{prod.lower()}-<build|run|test|install|check>'")
         t = cfg.get("type")
         if t == "MavenRunConfiguration":
             wd = resolve(opt(cfg, "workingDirPath") or "$PROJECT_DIR$")

@@ -104,4 +104,5 @@ cd examples/live-orders && uvicorn fastapi_app:app
 ## Next
 
 - Check Sutras in CI: `python -m drishti_rachana lint --format sarif`.
+- Your own app, step by step, live tables and troubleshooting: [Rachana and Elements in your own Flask or FastAPI application](../guides/IN_YOUR_APP.md).
 - A standalone server with sign-in, databases and editing: [Edit a live table with approvals](LIVE_EDITS.md).

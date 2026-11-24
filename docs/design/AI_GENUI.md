@@ -1,7 +1,8 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
 # Generative UI on Rachana: design
 
-Status: **design; built in phase R2** (with Drishti i9). Nothing here is implemented.
+Status: **design**. What is built, the tool names as shipped and how to use them: the guide [GenUI with Rachana, Elements and MCP](../guides/GENUI.md).
+The generic MCP server, the prompt kit, auto-applied fixes and the evaluation harness described here are planned (phase R2, with Drishti i9).
 Tool names and schemas are the planned contract and may still change before they ship.
 
 ## 1. The idea, and the boundary

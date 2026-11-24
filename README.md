@@ -82,6 +82,8 @@ panels:
 | [Server](docs/guides/SERVER.md) | running it, the configuration file, security, write-back |
 | [Studio](docs/guides/STUDIO.md) | the visual editor |
 | [Command line and SDKs](docs/guides/CLI_AND_SDKS.md) | the CLI, the Java launcher, JavaScript, Python, Java |
+| [Rachana and Elements in your own Flask or FastAPI application](docs/guides/IN_YOUR_APP.md) | install the package from a checkout, mount the router or blueprint, live tables, run `live-orders` both ways |
+| [GenUI with Rachana, Elements and MCP](docs/guides/GENUI.md) | an agent writes a Sutra, Rachana checks it, Elements paints it: the tools, an MCP client, a worked example, guardrails, built and planned |
 
 The specification ([spec/1/SPEC.md](spec/1/SPEC.md)) is the reference for every key and rule. The designs behind the product, and their
 decisions, are in [docs/design](docs/design/DECISIONS.md). What changed when: [CHANGELOG.md](CHANGELOG.md).

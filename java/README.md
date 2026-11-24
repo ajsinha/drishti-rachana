@@ -43,7 +43,7 @@ Never `install` a snapshot: only a release tag is installed, for Drishti (see [I
 
 ## Build and run in the IDE
 
-JetBrains (IntelliJ IDEA for Java, PyCharm for Python) and VS Code; the launchers are checked in (folder **Rachana**, one `run-configs/`). This is the one home of the IDE instructions of Rachana; Lake and Elements link here for the shared parts.
+JetBrains (IntelliJ IDEA for Java, PyCharm for Python) and VS Code; the launchers are checked in (folders **IntelliJ-rachana-<purpose>** and **PyCharm-rachana-<purpose>**, purposes build, run, test, install, check; one `run-configs/`). This is the one home of the IDE instructions of Rachana; Lake and Elements link here for the shared parts.
 
 ### IntelliJ IDEA
 
@@ -63,7 +63,7 @@ Java only: no Python, no Python plugin. The same Maven runs in the IDE and in a 
 2. **File → Project Structure → Project → SDK**: **Add SDK → JDK…**, choose the JDK 21 folder; **Language level** *SDK default*.
 3. **Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → JRE**: *Use Project JDK*. Maven in the IDE ignores your
    shell's `JAVA_HOME`. An *invalid target release* or *release version 21 not supported* error means the wrong JDK is set here.
-4. The drop-down at the top right lists the configurations of `run-configs/` under the folder **Rachana**: the Maven launchers,
+4. The drop-down at the top right lists the configurations of `run-configs/` under the folders **IntelliJ-rachana-...** and **PyCharm-rachana-...**: the Maven launchers,
    the Java programs and the JavaScript launchers below.
 
 ### The Maven launchers
@@ -93,7 +93,7 @@ run **Rachana: bundle JS runtime**, then **Rachana: build all**, then the server
 
 ### The JavaScript launchers (Maven, no bash)
 
-Under the folder **Rachana** (the names say what they do: `Rachana: run Studio ...`, `Rachana: test JS (Node)`); each runs `exec:exec@<id>` of `js/pom.xml` (exec-maven-plugin; the pom builds nothing), so they work in IntelliJ
+Under the folder **IntelliJ-rachana-run** (and **-build**, **-test**) (the names say what they do: `Rachana: run Studio ...`, `Rachana: test JS (Node)`); each runs `exec:exec@<id>` of `js/pom.xml` (exec-maven-plugin; the pom builds nothing), so they work in IntelliJ
 Community on Windows with no bash, no Shell Script plugin and no Node plugin. Node 20+ and Python 3 on the PATH, or add `-Dnode=<path to node>` /
 `-Dpython=<path to python>` to the goals.
 

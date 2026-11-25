@@ -29,6 +29,50 @@ Core has twenty kinds (`kv`, `table`, `ladder`, `tabs`, `line`, `area`, `hbar`, 
 | rows to total by one field across another | `pivot` | `table` with totals, which aggregates one dimension only |
 | a note for the reader | `markdown` | a title that says too much |
 
+## Expressions, field names and plain values
+
+Which option values are expressions, which are field names and which are plain text matters: only expressions and templates are compiled when the
+Sutra is checked (SPEC 3 lists the places by key).
+
+| Kind | Expressions (Rachana-EL) | Field names (of each row) | Plain values |
+|---|---|---|---|
+| `kv` | `rows` | | |
+| `table` | `rows`, `moreLabel`, `children`, `crumb`, `root`, each level's `rows`, `crumb` and column `bind`; `limit` when it reads a control | | `limit` (integer), `totalLabel`, `search` (`false` hides the filter), `expand`, `empty`, each level's `title` |
+| `tabs` | `each`, `tabTitle` | | `layout` |
+| `line` | `rows`, `mark` | `x`, `y` | `unit`, `fmt`, `step` (true or false) |
+| `area` | `rows`, `limit` | `x`, each series' `value` | `series[].label`, `series[].tone`, `limitLabel`, `unit` |
+| `hbar` | `rows` | `label`, `value` | `fmt`, `tone`, `shape` (`bars` or `donut`) |
+| `ladder` | `rows`, `highlight`, `children`, `crumb`, `root`, each level's `rows`, `crumb` and column `bind` | | `totalLabel`, `search` (`false` hides the filter), `expand`, `empty`, each level's `title` |
+| `markdown` | | | `text` is a template |
+| `status` | each field's `bind` | | each field's `label`, `fmt`, `tone` |
+| `gauge` | `value`, `max` | | `label`, `fmt` |
+| `surface` | `rows`; `y` when it starts with `$` or `@` | `y` otherwise | `fmt`, `unit`, `view` |
+| `waterfall` | `rows` | `label`, `value`, `total` | `sum`, `fmt`, `unit`, `colors` (`gain-loss` or `theme`) |
+| `histogram` | `rows`, each marker's `value` | `value` | `bins` (1–200), `markers[].label`, `markers[].tone`, `fmt`, `unit` |
+| `scatter` | `rows` | `x`, `y`, `size`, `label`, `group` | `fmt`, `xFmt`, `xLabel`, `yLabel` |
+| `candlestick` | `rows` | `x`, `open`, `high`, `low`, `close`, `volume` | `fmt`, `unit` |
+| `graph` | `nodes`, `edges` | `label`, `group` (of each node) | `layout` (`tree` or `force`) |
+| `timeline` | `rows` | `date`, `label`, `detail`, `status` | `tone` |
+| `pivot` | `rows` | `by` (one field or a list), `across`, `value` | `agg` (`sum`, `count`, `avg`, `min`, `max`), `heat`, `totals` (`true`/`false`), `expand` (whole number or `all`), `fmt`, `tone` |
+| `metric` | `value`, `delta`, `caption` (a template) | | `label`, `fmt`, `tone`, `deltaFmt`, `deltaTone`, `unit` |
+| `map` | `highlight`, `region`, `shade.field`, `shade.by` | | `link` (`kind`, `id` template), `shade.kind`, `shade.fmt`, `shade.label`, `fmt`, `unit` |
+
+**Field names.** On `line`, `area` and `hbar` a field name is matched exactly as the document writes it: `x: month`, `label: region`,
+`value: revenue`; `Revenue` does not find `revenue`, and an `@` expression there finds nothing (no error, no points). The defaults (`tenor`,
+`value`, `label`) suit rows that `group()` makes, whose fields are `label`, `value` and `count`. For the seven kinds from `waterfall` on (and
+`timeline`), a field name may also be a dotted path (`customer.name`) or an expression over the row when it starts with `@` or `$`
+(`y: "@.revenue / 1000"`).
+
+Values outside the allowed set (`agg: median`, `layout: circle`, `colors: rainbow`, `bins: 0`, `heat: "yes"` (an unquoted `yes` is YAML for
+`true`), a marker without `value`) are `RCH-2029`. So are values of the wrong type: `rows`, `each`, `nodes`, `edges` and `source` must be
+expressions written as text (`rows: 5` is not), `markdown` `text` text, table `limit` a whole number from 1 (or an expression reading a control),
+table and ladder `search` true or false, `kv` and `status` `fields` and `area` `series` lists.
+
+Accepted but currently without effect (they parse, and do nothing yet): `fields` on `kv` (use `columns`), `link` on `table` (use `link: true` on
+a column), `footer` on `line`.
+
+When a panel's data does not fit (its `rows` is not a list), the panel is empty (or shows its `empty:` text) and the rest of the view is unaffected.
+
 ## Row groups and totals
 
 ### Row groups: pivot `by` lists and tree tables
@@ -447,7 +491,7 @@ the underlying rows (an `avg` total is the average of all its rows, not of the c
 | `rows` | yes | | Expression giving the rows. |
 | `by` | yes | | Field whose values are the row keys (first-seen order), or a **list of fields** (`by: [BOOK, FAMILY]`, at most 6) for nested groups: each group row shows the subtotal of the rows in it and a ▸/▾ toggle opens it. A field may be written as a Rachana path or expression over the row (`"@.BOOK"`, `"upper(@.DESK)"`; quote it in YAML); a plain path is headed by its field (`BOOK`). A string keeps working. A number, an empty list or a list of non-names is `RCH-2029`. |
 | `across` | yes | | Field (or a Rachana path over the row, `"@.CURRENCY"`) whose values are the column keys (first-seen order). |
-| `value` | | | Field aggregated; without it the pivot counts rows. Rows whose value is not a number are left out. Or one of the pivot engine's aggregates written in Rachana over the row: `sum(@.MTM)`, `avg(@.PRICE)`, `percentile(@.PNL, 0.99)`, `median`, `variance`, `stddev`, `count(@.X)` (the rows whose `X` is not empty); written so, it replaces `agg`. An aggregate of two inputs (`wavg`, the `_once` forms) or of text (`distinct`) is refused in words: use a table's `pivot:` for it. |
+| `value` | | | Field aggregated; without it the pivot counts rows. Rows whose value is not a number are left out. |
 | `agg` | | `sum` | `sum`, `count`, `avg`, `min` or `max` (with `value` a field). |
 | `fmt`, `tone` | | | Format (default: six significant digits) and tone of every cell (counts are shown as whole numbers). |
 | `heat` | | `false` | Shade each cell by its value, from the smallest to the largest. |

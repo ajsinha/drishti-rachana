@@ -491,6 +491,28 @@ formats:
   month: { type: date, pattern: "MMM yyyy" }                           # 2026-09-30 -> Sep 2026
 ```
 
+**Core formats at work.** Output of each Core format (and, at level 1.2, the four promoted names) for two inputs, checked against the
+implementation. Negative numbers use the true minus sign `−` (U+2212); rounding is half away from zero; a zero after rounding has no sign;
+a text that reads as a number is formatted as a number, any other text is shown as is.
+
+| Name | Definition | `1234567.891` | `-0.040829` | Other |
+|---|---|---|---|---|
+| `text` | as text | `1234567.891` | `-0.040829` | |
+| `amount0` | 0 decimals, grouped | `1,234,568` | `0` | |
+| `amount2` | 2 decimals, grouped | `1,234,567.89` | `−0.04` | `'12.5'` (text) → `12.50` |
+| `signed0` | 0 decimals, `+` on positives | `+1,234,568` | `0` | `0` → `0` |
+| `signed2` | 2 decimals, `+` on positives | `+1,234,567.89` | `−0.04` | |
+| `pct0` | × 100, 0 decimals, `%` | `123,456,789%` | `−4%` | `0.83` → `83%` |
+| `pct2` | × 100, 2 decimals, `%` | `123,456,789.10%` | `−4.08%` | |
+| `price2` | 2 decimals, grouped | `1,234,567.89` | `−0.04` | |
+| `compact` | k / m / bn, 1 decimal | `1.2m` | `0.0` | `46000000` → `46.0m`, `2500000000` → `2.5bn`, `999` → `999.0` |
+| `date` | `yyyy-MM-dd` | | | text is shown as is, time included (`2025-07-25T09:45:00Z`) |
+| `dmy` | `dd MMM yyyy` | | | `2026-09-30` → `30 Sep 2026` (the first ten characters are read as a date) |
+| `pct4` (1.2) | × 100, 4 decimals, `%` | | `−4.0829%` | `0.040829` → `4.0829%` |
+| `price4` (1.2) | 4 decimals, grouped | | `−0.0408` | `0.040829` → `0.0408` (a price per unit, not scaled) |
+| `bp1` (1.2) | 1 decimal, `+` on positives, ` bp` | | `0.0 bp` | `2.5` → `+2.5 bp` (no scaling: give it basis points) |
+| `df4` (1.2) | 4 decimals, grouped | | `−0.0408` | `0.991063` → `0.9911` |
+
 ## 3. Where expressions appear
 
 A YAML string in a Sutra is one of four things, fixed per key [CS]:

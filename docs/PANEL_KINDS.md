@@ -3,7 +3,7 @@
 
 Every box of a Rachana screen is a **panel**, and every panel is one of the kinds below. A Sutra names the kind and says where the data is. This page says, for each kind, what it is for, when to use it and when not, and what every option does; the grammar and the exact option names are the specification ([SPEC.md 2.3](../spec/1/SPEC.md#23-panels)), and a wrong option or value is a problem with a code from [SPEC.md 6](../spec/1/SPEC.md#6-problems-the-error-model) (`RCH-2021` an unknown kind, `RCH-2022` a missing option, `RCH-2023` an option the kind does not take, `RCH-2029` a bad value). How to write a whole Sutra is [WRITING_SUTRAS.md](WRITING_SUTRAS.md).
 
-Core has twenty kinds (`kv`, `table`, `ladder`, `tabs`, `line`, `area`, `hbar`, `metric`, `gauge`, `status`, `markdown`, `surface`, `waterfall`, `histogram`, `scatter`, `candlestick`, `graph`, `timeline`, `pivot`, `map`). The `links` and `provenance` kinds belong to a profile; the dataset kinds `grid`, `tree` and `chart` of language level 1.1 and the kinds `treemap`, `bullet` and `live` of level 1.2 are in [SPEC.md 2.3](../spec/1/SPEC.md#23-panels).
+Core has twenty kinds (`kv`, `table`, `ladder`, `tabs`, `line`, `area`, `hbar`, `metric`, `gauge`, `status`, `markdown`, `surface`, `waterfall`, `histogram`, `scatter`, `candlestick`, `graph`, `timeline`, `pivot`, `map`). The `links` and `provenance` kinds belong to a profile; the dataset kinds `grid`, `tree` and `chart` of language level 1.1 and the kinds `treemap`, `bullet`, `live` and `form` of level 1.2 are in [SPEC.md 2.3](../spec/1/SPEC.md#23-panels).
 
 ## Choosing a kind
 
@@ -327,7 +327,7 @@ One number against a maximum, as a filled bar with its percentage.
 
 - **Use it when:** Use of a limit or a target.
 - **Not when:** A figure with no maximum: `metric`.
-- **Key options:** `value` (required, an expression), `max` (an expression, default 1), `fmt` (applied to value divided by max, default `pct0`), `label`. Every option: the table under [`gauge`](#gauge) below.
+- **Key options:** `value` (required, an expression), `max` (an expression, default 1), `fmt` (applied to value divided by max, default `pct0`), `label`. Every option: the table below.
 
 One value against a maximum, as a filled bar and a text.
 

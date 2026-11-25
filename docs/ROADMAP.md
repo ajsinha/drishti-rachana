@@ -3,7 +3,9 @@
 
 What is planned and not built. Everything here is a proposal: a name or syntax marked "proposed syntax" is settled only when it enters
 [SPEC.md](../spec/1/SPEC.md) with a `since` level and conformance cases. Growth inside major 1 is additive: a Sutra valid today
-means the same in every later minor, and the names held for later minors are listed in `spec/1/reserved.yaml`. What exists today is in
+means the same in every later minor, and the names held for later minors are listed in `spec/1/reserved.yaml`.
+A proposal that would change the meaning of anything that works today is not built as an addition: it needs a new language
+level and the owner's decision first. Text is measured by code point in every runtime (SPEC, decided). What exists today is in
 [DESIGN.md](DESIGN.md); the decisions behind it in [DECISIONS.md](DECISIONS.md).
 
 ## 1. Language growth: Rachana-EL (expressions)
@@ -46,9 +48,10 @@ $.trades
 $.pnl |> window('desk', 'date', { cum: running(sum(@.pnl)), rk: rank(@.pnl, desc = true) })   (proposed syntax)
 ```
 
-**Statistics, risk and finance.** Performance and descriptive statistics (`volatility`, `drawdown`, `sharpe`), risk helpers over a
-vector of scenario P&L (`var_hist`, `es_hist`, `var_parametric`), fixed income (Excel's bond family under Rachana names), option
-formulas (`bs_price`, `bs_delta`, `black76_price`; off by default), each as a library whose bytes are pinned by `CoreMath`.
+**Statistics.** Descriptive statistics over lists and columns (`percentile`, `stdev`, `zscore`, `histogram` bins), pinned by
+`CoreMath` so the three runtimes agree. **Not in the language: risk measures and pricing** (VaR and ES, bond prices and yields, option
+formulas). A screen shows risk figures the server computed, with their explanation; it never computes them. Display helpers for those
+figures stay in scope (formats such as `bp1`, sparklines of a P&L vector the server sent).
 
 **Text, formats, locale, geography.** More text functions (`regex_extract_all`, `regex_split`, named groups into a record), Unicode
 functions on a pinned Unicode pack, plural and locale-aware formats from pinned locale packs, formats with arguments

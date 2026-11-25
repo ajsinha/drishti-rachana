@@ -1,13 +1,11 @@
-<!-- Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force). -->
+<!-- Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). -->
 # The Rachana Data Protocol, version 1
 
-**Status: draft 1 (2026-11-17), front-load item F8.** Normative once the owner approves it. The decisions behind it are kept in
-[../../../docs/design/DATA_PROTOCOL.md](../../../docs/design/DATA_PROTOCOL.md); this text is the specification. The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. **Section 8.2 follows the events wire protocol v1
-(`EVENTING_DESIGN.md` section 8 of Drishti Elements, branch `design/eventing`); it is re-checked when that protocol ships.**
+The decisions behind it are in [Rachana Data Protocol v1: decisions](#rachana-data-protocol-v1-decisions) at the end of this text. The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. Section 8.2 follows the events wire protocol v1.
 
-The machine-readable forms are JSON Schemas (draft 2020-12) in this folder: [schema.json](schema.json) (table schema, base
-document, catalogue), [page.json](page.json) (a page of rows), [filter.json](filter.json) (filter tree and query document),
-[patch.json](patch.json) (keyed patch and stream frames), [error.json](error.json), [bridge.json](bridge.json). Where text and
+The machine-readable forms are JSON Schemas (draft 2020-12) in this folder: [schema.json](data-protocol/schema.json) (table schema, base
+document, catalogue), [page.json](data-protocol/page.json) (a page of rows), [filter.json](data-protocol/filter.json) (filter tree and query document),
+[patch.json](data-protocol/patch.json) (keyed patch and stream frames), [error.json](data-protocol/error.json), [bridge.json](data-protocol/bridge.json). Where text and
 schema disagree, that is a defect in one of them. Executable examples: `conformance/1/protocol/` (section 15).
 
 ## 1. Scope
@@ -20,7 +18,7 @@ language, not an authentication scheme and not a transport for ViewModels. Three
 ## 2. Tables and schema
 
 A **table** has a name, a schema, an optional key and capabilities. The **name** is letters, digits, `_` and `-`, with `.` as a
-separator, at most 128 characters. The schema document ([schema.json](schema.json)):
+separator, at most 128 characters. The schema document ([schema.json](data-protocol/schema.json)):
 
 | Field | Required | Meaning |
 |---|---|---|
@@ -103,7 +101,7 @@ nothing. A request it only half understood is never answered with other rows tha
 
 ### 5.1 JSON
 
-The answer ([page.json](page.json)) has `table` and exactly one row form:
+The answer ([page.json](data-protocol/page.json)) has `table` and exactly one row form:
 
 - **columnar-by-row** (the default): `columns` (names, in answer order) and `values` (one array per row, in `columns` order);
 - **objects**: `rows`, an array of objects (for hand-written hosts), selected with `shape=objects`.
@@ -115,7 +113,7 @@ A reader MUST accept both. Other fields: `version` (the change-stream position t
 ### 5.2 Arrow IPC
 
 `Accept: application/vnd.apache.arrow.stream` returns an Arrow IPC **stream**: the schema message, then record batches of at most
-65,536 rows. Protocol facts travel as schema metadata ([page.json](page.json) `arrowSchemaMetadata`): `rachana.table`,
+65,536 rows. Protocol facts travel as schema metadata ([page.json](data-protocol/page.json) `arrowSchemaMetadata`): `rachana.table`,
 `rachana.key` (JSON text of the key list), `rachana.epoch`, `rachana.seq`, `rachana.total`, `rachana.next`. Per-field metadata:
 `rachana.type` (when the Arrow type is not enough), `rachana.fmt`, `rachana.label`, `rachana.unit`. Compression is none or
 LZ4 frame (`can` has `arrow.lz4`); a reader MUST NOT require zstd. Paging uses the same `cursor`; `rachana.next` carries the next
@@ -135,7 +133,7 @@ runtime never holds the table. A runtime MUST say so ("this needs a server table
 
 ## 6. Query
 
-`POST {base}/tables/{name}/query` takes a **query document** ([filter.json](filter.json) `$defs/query`), all fields optional:
+`POST {base}/tables/{name}/query` takes a **query document** ([filter.json](data-protocol/filter.json) `$defs/query`), all fields optional:
 `columns`, `filter`, `sort`, `limit`, `cursor`, `offset`, `group`, `asOf`, `params`. The answer has the form of section 5 (by
 `Accept`). A host MUST answer `rdp.query.invalid` for a document that does not validate and `rdp.column.unknown` for a column the
 table lacks (also inside `filter`, `sort` and `group`).
@@ -167,7 +165,7 @@ and `distinct` are `0`; every other `agg` is `null`. The answer's columns are th
 ## 7. The filter syntax tree
 
 A row condition is compiled by the runtime; controls are replaced by their values; the result travels as a **syntax tree in JSON**
-([filter.json](filter.json)). A host MUST NOT accept expression text and MUST NOT interpret any string as an expression.
+([filter.json](data-protocol/filter.json)). A host MUST NOT accept expression text and MUST NOT interpret any string as an expression.
 
 | Node | Form |
 |---|---|
@@ -200,7 +198,7 @@ Each operation is the Rachana-EL operator or Core function of the same name, at 
 EL's spelling: `neg` is unary `-`, `not-in` is `not in`, and `is-null(x)` is `x == null`. An operation with more than two
 arguments is the left fold of its binary form, as Rachana-EL reads a chain: `{ "op": "+", "args": [a, b, c] }` is
 `(a + b) + c` (this matters for `+`, which joins text when a side is not a number).
-Semantics are those of Rachana-EL ([SPEC](../SPEC.md) section 4 and the entries of `functions.yaml`), with a missing or null
+Semantics are those of Rachana-EL ([SPEC](SPEC.md) section 4 and the entries of `functions.yaml`), with a missing or null
 value as `empty`: null in, null out for operators and scalar functions, with SPEC's exceptions (`'x' + empty` → `'x'`
 (4.5); `contains`, `starts_with`, `ends_with`, `has`, `any_of`, `all_of` answer `false` or `true`, never empty, and
 `coalesce` skips empty (5.1)); `empty == empty` is true and `empty != 'X'` is true
@@ -219,7 +217,7 @@ Filtering, sorting or grouping on a masked column is `rdp.forbidden` (section 11
 ### 8.1 Patches
 
 A live table is a **stream of keyed row patches**. The stream has an `epoch` (a new one whenever numbering starts again) and a
-`seq` that rises by exactly one per message within an epoch. A patch ([patch.json](patch.json)):
+`seq` that rises by exactly one per message within an epoch. A patch ([patch.json](data-protocol/patch.json)):
 
 ```json
 { "table": "sales",
@@ -239,7 +237,7 @@ removed and added in one patch is present afterwards. A table without a key cann
 
 Changes travel as messages of the events wire protocol v1: `hello`/`welcome`, `sub`/`subd`, `msg`, `gap`, `err`, heartbeats, resume
 with `after`, over a WebSocket (sub-protocol `events.v1`) or Server-Sent Events, **exactly as that protocol specifies**. This
-protocol fixes only these conventions ([patch.json](patch.json) `$defs`):
+protocol fixes only these conventions ([patch.json](data-protocol/patch.json) `$defs`):
 
 | Convention | Value |
 |---|---|
@@ -301,7 +299,7 @@ table's name grants nothing. A host that must not leak a table's existence answe
 
 ### 10.1 Shape and codes
 
-An HTTP error has the status below and the body `{ "error": { code, message, … } }` ([error.json](error.json)); a stream error is
+An HTTP error has the status below and the body `{ "error": { code, message, … } }` ([error.json](data-protocol/error.json)); a stream error is
 the events protocol's `err` frame with the same `code` and the words in `detail`. `retry` says whether trying again can help;
 `retryAfterMs` when to. Messages MUST NOT contain row values.
 
@@ -353,7 +351,7 @@ reveal order or content. A reader shows a masked value as a mask and never infer
 ## 12. The in-process bridge
 
 For a view in a desktop host (Electron, JCEF, JavaFX WebView, WebView2, CefSharp) the same messages travel over the web view's
-message channel. Every message is a JSON object `{ "rdp": 1, "t": …}` ([bridge.json](bridge.json)):
+message channel. Every message is a JSON object `{ "rdp": 1, "t": …}` ([bridge.json](data-protocol/bridge.json)):
 
 | Direction | `t` | Fields | Meaning |
 |---|---|---|---|
@@ -453,11 +451,11 @@ The adapter's paths exist only under test and are not part of the protocol.
 
 ## 16. Live tables (additions under `can`)
 
-A **live table** ([LIVE_TABLES](../../../docs/design/LIVE_TABLES.md)) is a table the host keeps current from a durable snapshot and
+A **live table** ([LIVE_TABLES](../../docs/DESIGN.md#live-tables-design)) is a table the host keeps current from a durable snapshot and
 a live stream, merged by key and record version. Everything here is an addition to v1 under new `can` values (section 14);
 a reader that does not know them reads the table as any other.
 
-**Schema fields** (section 2; [schema.json](schema.json)): `rowVersion`, `changedBy`, `changedAt` (column names); `live: { state:
+**Schema fields** (section 2; [schema.json](data-protocol/schema.json)): `rowVersion`, `changedBy`, `changedAt` (column names); `live: { state:
 up | paused, reason? }` (a paused stream serves its snapshot and is never an error); `capped` (a table read whole stopped at its
 row cap); `narrow: { anyOf }`; a column's `heavy` (never in a list page or a patch: read by fetching one row by key); `view: {
 sort, groupBy, subtotals, widths }` (the table's own presentation); and, for a reader who may edit, `write: { columns: { <name>:
@@ -479,7 +477,7 @@ version is read again when the host's index of it is older than its time-to-live
 host's index of the source cannot give treats that column as null for the source's rows: they sort by `nulls` (6.1: last by
 default) and then by key, after the live rows that carry a value; it is never an error and never a partial page.
 
-**Windowed subscription** (`can: changes.window`; [patch.json](patch.json) `$defs/window`): a reader that shows a page of the table
+**Windowed subscription** (`can: changes.window`; [patch.json](data-protocol/patch.json) `$defs/window`): a reader that shows a page of the table
 subscribes with `meta.window: { keys: [[…]], top?: bool }` (the bridge `sub` carries `window`), the keys its page shows. It is sent
 patches for those keys only, plus its new `total` when rows outside its page changed (a patch with no rows and a `total`). With
 `top: true` (its page starts at the first row of the table's own order) and an order that is newest first (descending by
@@ -531,3 +529,64 @@ rdp.table.unknown` with `expired: true` (run what made it again), never a row he
 
 **Readers.** Every page, total, patch and change is the reader's: rows outside their scope are never counted, shown or sent;
 masked values are `{ "$masked": true }` and never pick, order or filter a row. The rights are the host's alone.
+
+## Rachana Data Protocol v1: decisions
+
+The normative text is [spec/1/data-protocol/PROTOCOL.md](PROTOCOL.md) (tables and schema, types, the HTTP
+resources, rows in JSON, Arrow and NDJSON, query, the filter tree, live changes, errors, masking, the bridge, limits, versioning,
+conformance). This note keeps only the decisions behind it and repeats none of the rules. Related: [LIVE_TABLES](../../docs/DESIGN.md#live-tables-design),
+[DECISIONS](../../docs/DECISIONS.md).
+
+### Small on purpose
+
+A host with a list of dictionaries and one HTTP route can implement the minimum in an afternoon; a host with a hundred million rows
+implements push-down and never ships them. The protocol is not a query language, not an authentication scheme and not a transport for
+ViewModels. Three transports carry the same messages: HTTP, a stream for changes, and an in-process bridge for desktop hosts.
+
+### The filter is a syntax tree, never text
+
+A Sutra's row condition is compiled by the runtime; controls are replaced by their values; the result travels as the expression's
+syntax tree in JSON. No server receives expression text to interpret, so there is nothing to inject into and a host reads the tree
+with its own tools (a SQL layer, an index).
+
+### Which form carries rows
+
+Whole-table JSON for small tables, Arrow for large ones, `query` with push-down beyond that, so the runtime never holds a table it
+cannot. The thresholds are defaults of the client (`rachana.data.inline-rows`, `rachana.data.client-rows`), not of the protocol. A
+panel that would need more rows locally than the threshold says "this needs a server table: n rows"; it is never silently truncated.
+
+### Authentication and authorisation are the host's job
+
+The protocol defines no sign-in, token format or role model. The table client uses the host page's own `fetch`, so cookies and
+`Authorization` headers are the host's; a stream's token comes from a host callback inside the `hello` / `auth` frames, never in an
+address. Authorisation is per call: lists, rows and masks are decided for that caller, a filtered subscription is evaluated for that
+caller. Masking is expressed in the data, so a runtime can show it and refuse to filter or group on it, but can never reveal it. A
+Sutra cannot introduce an origin: `url:` sources are checked against the host's allow-list (default: same origin). Knowing a table's
+name grants nothing.
+
+### The live part follows the events wire protocol
+
+Live changes are keyed patches over the events wire protocol, so one client serves tables and events.
+
+### A change id names one content
+
+A write's `id` is the client's and makes a retry safe: the same `id` is never taken twice. It is answered from the first answer only
+when the content is the same: the host's `ChangeSink` keeps a digest of the content (`Change.digest()`: SHA-256 of the canonical
+`table`, `op`, `key`, `basedOn`, `set`, `from`, `reason`; not the `id`, maker or time) with its first answer and gives it back through
+`ChangeSink.priorDigest(id)`; the engine compares it with the repeat's. Other content under a used `id` is a client fault, never a
+retry: `409 rdp.write.conflict` with `reused: true`, audited `write-reused` so the host can look into it, and the sink never sees it.
+A sink that keeps no digest (the default `null`) leaves the engine only its own memory of the ids it answered since it started. A
+digest, not the change, keeps the SPI small and lets a host keep one column next to its answers.
+
+### A table taken away answers expired
+
+A host that makes tables of its own (a search's result) takes them out with `LiveTables.undeclare(name)`, so nothing of them stays.
+A reader learns it the protocol's way: its stream ends with a `gap` that cannot be recovered (`expired: true`), and reading again is
+`404 rdp.table.unknown` with `expired: true`, never a row held before. The engine remembers the last ten thousand names taken away to
+say "expired" rather than "unknown"; beyond that a name is simply unknown, which is still never a stale result.
+
+### Deliberately not in v1
+
+Writes (a form submits through the host's own endpoints and signals `submit`); joins across tables (a host exposes a joined table
+under a name); server-side expression text; binary WebSocket frames for Arrow patches (JSON patches only; reserved); schema
+evolution during a stream (a schema change is a new `epoch`).

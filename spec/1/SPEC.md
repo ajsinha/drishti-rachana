@@ -1,25 +1,20 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../LICENSE-SPEC.md (draft, not yet in force). -->
 # The Rachana specification, `rachana: 1`
 
-**Status: draft 1 (2026-11-17), with the decisions for 1.0 taken on 2026-11-19 (EL_EXPANSION XD2 to XD4: the reservations
-of 4.15, the numbers of 4.16, text by code point in 4.13).** Normative once the owner approves it and the first conformance
-suite is cut. Until then it describes the language as the reference implementation (Drishti's `compute/drishti-rachana`)
-behaves today, plus the settled additions; the decisions behind them are kept in ([../../docs/design/SPEC.md](../../docs/design/SPEC.md),
-[CORE_AND_PROFILES](../../docs/design/CORE_AND_PROFILES.md), [DECISIONS](../../docs/design/DECISIONS.md)).
+**Normative.** This is the specification of `rachana: 1`, the language of Sutra files, at levels 1.0 to 1.2: the document model, Rachana-EL, the Core function catalogue, the error model, versions and what conformance pins. The conformance suite (`conformance/1/`) is its executable form; where a case and this text disagree, the case wins until the defect is fixed in one of them.
 
-Companion files in this folder:
+Companion files in this folder (the end of this text, "Files of this folder", says which is generated and which is written):
 
-| File | Normative for | State |
-|---|---|---|
-| this text | meaning: document model, evaluation, functions, errors, versions | draft 1 |
-| [rachana-el.ebnf](rachana-el.ebnf) | expression syntax (60 rules, ISO 14977) | draft 1 |
-| [TRANSLATION.md](TRANSLATION.md) | Sutra + data → ViewModel | draft 1 |
-| [functions.yaml](functions.yaml) | every Core function: signature, types, nulls, errors, examples | draft, completed in R0 step H5 |
-| [formats.yaml](formats.yaml) | the Core format names and how each prints (2.6) | draft |
-| [reserved.yaml](reserved.yaml) | the tokens and names held back for later minors, and the profile names to be promoted (4.15) | draft |
-| `rachana.lang.json`, `sutra.schema.json` | every key, kind, option; document structure | generated, R0 step 0c |
-| [viewmodel.schema.json](viewmodel.schema.json) | the ViewModel | draft by reading; generated in R0 step H4 (decision D6) |
-| [data-protocol/PROTOCOL.md](data-protocol/PROTOCOL.md) and its JSON Schemas | the Data Protocol v1: tables, rows, query and filter tree, live patches, errors, bridge | draft 1 |
+| File | Normative for |
+|---|---|
+| this text | meaning: document model, evaluation, functions, errors, versions; then the translation rules (Sutra + data to ViewModel) and the ViewModel contract |
+| [rachana-el.ebnf](rachana-el.ebnf) | expression syntax (ISO 14977) |
+| [functions.yaml](functions.yaml) | every Core function: signature, types, nulls, errors, examples |
+| [formats.yaml](formats.yaml) | the Core format names and how each prints (2.6) |
+| [reserved.yaml](reserved.yaml) | the tokens and names held back for later minors, and the profile names to be promoted (4.15) |
+| `rachana.lang.json`, `sutra.schema.json` | every key, kind, option; document structure (generated) |
+| [viewmodel.schema.json](viewmodel.schema.json) | the ViewModel |
+| [PROTOCOL.md](PROTOCOL.md) and the JSON Schemas in [data-protocol/](data-protocol/) | the Data Protocol v1: tables, rows, query and filter tree, live patches, errors, bridge |
 
 ## 0. Conventions
 
@@ -62,10 +57,7 @@ problem codes). A profile MUST NOT change the meaning of anything in Core and MU
    file, command-line flag or element attribute sets it. A fragment's `rachana:` key is its level in exactly the same way (`1` or
    `1.0` is 1.0, `1.N` is 1.N); a fragment without the key is level 1.0. **A Sutra uses fragments of its own level only**: a use of a
    fragment or block (directly or inside another fragment) whose level is not the Sutra's is `RCH-2008` naming both levels ("fragment
-   total@1 is written for Rachana 1.0 and the Sutra that uses it for 1.2: a Sutra uses fragments of its own level only (rachana upgrade
-   raises the lower one, keeping its meaning)"), so one screen never mixes two meanings of the same text. `rachana upgrade` rewrites a
-   Sutra or a fragment to a later level, keeping its meaning, and writes the new level into its key; a file already at that level is
-   left untouched (cases `problem/level-declaration`, `sutra/level-declaration`).
+   total@1 is written for Rachana 1.0 and the Sutra that uses it for 1.2: a Sutra uses fragments of its own level only (write the fragment at the Sutra's level)"), so one screen never mixes two meanings of the same text. A file is read at the level it declares and nothing rewrites it to a later level (cases `problem/level-declaration`, `sutra/level-declaration`).
 5. An unknown key is an error with its position (`RCH-2011`; `RCH-2023` for a panel option), never ignored. A key that
    belongs to a profile the implementation does not have is `RCH-2060` with words that name the profile, not "unknown".
 
@@ -90,7 +82,7 @@ panels:
 | `profiles` | | list of text | `[core]` | profiles the file needs; the checker verifies the claim (`RCH-2061`, `RCH-2062`) | planned |
 | `description`, `notes` | | text | | prose for people; never used to build the view (`RCH-2012` if not text) | today |
 | `doc` | | mapping | | docstring: `summary`, `params`, `emits`, `examples`, `since` (`RCH-2055`) | today |
-| `title` | | mapping `{pill?, id, with?}`; text (1.1) | the name | heading (TRANSLATION 2.2) | text form planned (D11) |
+| `title` | | mapping `{pill?, id, with?}`; text (1.1) | the name | heading (Translation 2.2) | text form planned (D11) |
 | `strip` | | list (≤ 8) of `{label?, bind, fmt?, tone?, emphasis?}` | `[]` | headline figures | today |
 | `controls` | | list (≤ 12) | `[]` | what the reader sets; read as `ctl.<id>` | today |
 | `data` | | mapping name → source | `{}` | the screen's tables and records, each a field of `$` (2.4) | since 1.1 (D10); below it the key is `RCH-2008` (7.2 rule 6) |
@@ -101,7 +93,7 @@ panels:
 | `state` | | mapping id → `{type, default?, doc?}` (≤ 40, fragments' private state included) | `{}` | named values with no widget (2.8): read as `state.<id>`, written only by an effect (`on:`) | since 1.2 |
 | `layout` | | mapping | panels flow | 12-column grid: `areas`, `columns`, `split`, `tabs`, `sections`, `sticky`, `arrange`, `phone`, `tablet` | today |
 | `phone` | | mapping | | phone order, default tier, summary | today |
-| `keys` | | mapping `F1`..`F12` → action | `{}` | function keys (TRANSLATION 2.5) | today |
+| `keys` | | mapping `F1`..`F12` → action | `{}` | function keys (Translation 2.5) | today |
 | `refresh` | | seconds, or `{every, user-can-pause}` | none | re-read interval for top-level panels without their own | today |
 
 `match` and `domain` exist today but belong to the `drishti` profile (decision D12). A Core implementation answers
@@ -143,7 +135,7 @@ accepted ones in `expected`; a missing required option is `RCH-2022`.
 `links` and `provenance` are `drishti` profile kinds.
 
 **Since 1.1: the dataset kinds.** Three kinds of language 1.1 put their rows into the view's `datasets` (ViewModel
-contract 1.1, [VIEWMODEL.md](VIEWMODEL.md)) as raw values, which the painter formats; the panel's data names the dataset.
+contract 1.1, [the ViewModel contract](#the-viewmodel-contract-1x)) as raw values, which the painter formats; the panel's data names the dataset.
 
 | Kind | Requires | Accepts |
 |---|---|---|
@@ -188,7 +180,7 @@ contract 1.1, [VIEWMODEL.md](VIEWMODEL.md)) as raw values, which the painter for
   reader (none: the panel stays read only), each change is sent as a protocol `write`; a change shows when the host's table sends it.
 - At language level 1.0 these kinds are not offered (the `expected` list of `RCH-2021` is the twenty-two of 1.0) and
   using one is `RCH-2008` (section 7.2). Which options hold an expression, a template, a field name or a
-plain word is fixed per kind in `rachana.lang.json` [CS]; TRANSLATION.md section 3 states each one's effect.
+plain word is fixed per kind in `rachana.lang.json` [CS]; the translation rules, section 3 states each one's effect.
 
 ### 2.4 Data: the `data:` entries [since 1.1, D10]
 
@@ -230,7 +222,7 @@ that one record.
 
 **A table the host does not have.** `RCH-2070` is reported wherever the host's tables are known: by the plan (FORMAT 5.10) and
 by a host's check of the Sutra. When a view is built all the same, the entry has **failed** (PROTOCOL 10.1,
-`rdp.table.unknown`): every panel that reads it is in the state `error` with the words of `RCH-2070` (TRANSLATION 4 and 10), and
+`rdp.table.unknown`): every panel that reads it is in the state `error` with the words of `RCH-2070` (Translation 4 and 10), and
 the other panels bind. A missing table is never read as a table with no rows: `count($.t)` over it is an error, not `0`.
 A panel's own `source: { table: <name>, where?, limit? }` [today] gives that panel its rows as `$src`; `<name>` is a
 `data:` entry or a host table. `source: { kind: … }` is a profile form. There is deliberately no source type for a
@@ -238,7 +230,7 @@ function, REST paging or a topic: a host exposes those as named tables.
 
 **Live tables.** A host table may be a *live table*: declared in its own file `<name>.live.yaml` (`rachana: 1`,
 `live-table: <name>`, its snapshot source, live stream, key, version and change columns, columns, order, `narrow`,
-`retention` and, for a blotter, an `edit:` form; [LIVE_TABLES](../../docs/design/LIVE_TABLES.md) section 2). A Sutra reads it as
+`retention` and, for a blotter, an `edit:` form; [LIVE_TABLES](../../docs/DESIGN.md#live-tables-design) section 2). A Sutra reads it as
 any table (`table: <name>`); it needs no new syntax. A declaration is checked with every problem reported at once
 (`RCH-2080`..`2083` below, and the structure codes of 6.2); its Data Protocol additions are PROTOCOL section 16.
 
@@ -261,7 +253,7 @@ any table (`table: <name>`); it needs no new syntax. A declaration is checked wi
   `form.save` (targets, connectors, approvals) and `editable-by` are the `drishti` profile's (`RCH-2058` for Core shape).
 - **Fragments** [today]: a `panels` entry `{use: name@version, with?}` is replaced by the fragment's panels before
   checking; where fragments come from is the host's `FragmentResolver` (`RCH-2048` when not found).
-- **Typed fragments** [since 1.2, C1; design [LIBRARIES](../../docs/design/LIBRARIES.md) 4]: a fragment whose every
+- **Typed fragments** [since 1.2, C1; design [LIBRARIES](../../docs/DESIGN.md#sutra-libraries-the-fragment-library-framework) 4]: a fragment whose every
   `params:` entry is a mapping with a `type`. The file keeps the header `fragment:`; a file is wholly in the text form
   (`%{param}` substituted as text, unchanged) or wholly typed (a mixture is `RCH-2048`). Parameters are of three classes:
   **value** (`text`, `number`, `integer`, `decimal`, `boolean`, `date`, `datetime`, `duration`, `money`, `list<T>`,
@@ -379,7 +371,7 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    its 1.0 meaning (a field).
 3. **The bind.** A bind request carries the values the host kept for the reader as `state.<id>=<text>` (`StateValues`,
    beside `ControlValues`; a list's items joined by commas). A value of an id the Sutra does not hold, or one that does not
-   fit its type, is ignored and the default stands. The ViewModel lists every value (contract 1.2, VIEWMODEL.md): `state[]
+   fit its type, is ignored and the default stands. The ViewModel lists every value (contract 1.2): `state[]
    {id, value, url, reads}`, `reads` naming the parts whose expressions read it, directly or through a `let`.
 4. **`on:`** (I1) on a panel maps a trigger to a list of effects, run in order. Built at this level: the triggers
    `row-click` (table, ladder; on a tree, `children:`, and a drill table, `levels:`, every node at every level, `@`
@@ -426,7 +418,7 @@ A YAML string in a Sutra is one of four things, fixed per key [CS]:
 |---|---|---|
 | expression | strip `bind`, column `bind`, `rows`, `each`, `when`, `where`, `highlight`, `value`, `delta`, `max`, `limit` (when text), `title.id`, `title.with`, `children`, `tabTitle`, `moreLabel`, `mark`, `source` (text form), area `limit`, a control's `from`, `min`, `max`, `step`, a `keys` entry beginning `link(` | Rachana-EL (section 4) |
 | template | a panel's `title`, `title.pill`, `markdown.text`, metric `caption` | text with `${…}` parts (4.11) |
-| field name | `label`, `value`, `x`, `y`, `date` … of chart kinds | a field of each row; see TRANSLATION 3.0 for the field-or-expression rule |
+| field name | `label`, `value`, `x`, `y`, `date` … of chart kinds | a field of each row; see Translation 3.0 for the field-or-expression rule |
 | word | `kind`, `fmt`, `tone`, `area`, `layout`, `shape`, `colors`, `view` | a closed set or a name |
 
 Every expression and template of a Sutra MUST be compiled when the Sutra loads; a compile error is `RCH-2101` with the
@@ -640,7 +632,7 @@ A template is text with `${expression}` parts (EBNF part C). Each part is evalua
 `${`; an error inside a part is reported at the offset inside that part [today; CS pins positions].
 
 A host MAY render a template **leniently**, writing a placeholder for a part that fails at evaluation and counting it;
-TRANSLATION.md says where.
+the translation rules say where.
 
 ```text
 "Leg ${#index + 1} · ${@.type}"        → "Leg 2 · FLOAT"
@@ -849,9 +841,8 @@ token where it is known (a reserved token, a number, a reserved name).
 
 ## 5. Function catalogue (Core)
 
-Core has **207 functions** (196 scalar, list and form functions plus the 11 list aggregates whose kernel moves into
-Core, decision D3) and 6 deprecated spellings. Each entry's full signature, parameter types, defaults, null and error
-behaviour and examples go into `functions.yaml` (R0 step 0d); each example there is a conformance case. Arity is
+Core has **208 functions** and 7 deprecated spellings. Each entry's full signature, parameter types, defaults, null and error
+behaviour and examples are in `functions.yaml`; each example there is a conformance case. Arity is
 written `min–max`; `?` marks an optional argument; `…` a repeatable one.
 
 ### 5.1 Rules every function keeps
@@ -1019,7 +1010,7 @@ empty element gives empty.
 `percent_rank`, `moving_avg`, `moving_sum`, `moving_min`, `moving_max`. A Core implementation that meets one answers
 `RCH-2060` naming the profile.
 
-**To be classified in R0 step 0d** (today supplied by Drishti's pivot engine as list functions; Core or profile is
+**Not yet classified** (supplied today by a host's pivot engine as list functions; Core or profile is
 not yet settled, so a Core implementation MAY lack them): `sum_once`, `count_once`, `avg_once`, `sumproduct`, `sumsq`,
 `product`, `devsq`, `avedev`, `geomean`, `harmean`, `mode`, `mode_multi`, `range` (spelled `span` from level 1.1, EL1-1), `iqr`, `cv`, `stderr`, `nmiss`,
 `kurtosis`, `skewness`, `skewness_pop`, `covar`, `covar_pop`, `corr`, `rsq`, `slope`, `intercept`, `steyx`,
@@ -1127,7 +1118,7 @@ reasons the parser gives (exact words pinned by [CS]):
 
 ### 6.4 Run-time states are not problems
 
-A panel whose data is absent, denied, pending or failed is a **state** in the ViewModel (TRANSLATION.md 4), with
+A panel whose data is absent, denied, pending or failed is a **state** in the ViewModel (translation rules 4), with
 words; the rest of the screen is built. An `RCH-2102` during binding is that panel's `error`. Only a Sutra that does
 not compile produces problems.
 
@@ -1185,10 +1176,10 @@ Core's conformance suite MUST pass with every profile loaded.
 ## 8. Conformance
 
 An implementation conforms to `rachana: 1.x` when it passes every case of `conformance/1/` with `since` ≤ x, as
-[conformance/RUNNER.md](../../conformance/RUNNER.md) section 7 states. The case kinds are those of
-[conformance/FORMAT.md](../../conformance/FORMAT.md) section 5: `expr`, `expr-error`, `check`, `grammar`, `format`,
-`sutra` (Sutra + data → ViewModel, see TRANSLATION.md), `problem`, `patch`, `plan`, `edit` and, for Data Protocol
-hosts, `protocol`. The suite will pin, in particular:
+[CONFORMANCE.md](../../conformance/CONFORMANCE.md#the-runner-contract) section 7 states. The case kinds are those of
+[CONFORMANCE.md](../../conformance/CONFORMANCE.md#conformance-case-format-rachana-1) section 5: `expr`, `expr-error`, `check`, `grammar`, `format`,
+`sutra` (Sutra + data → ViewModel, see the translation rules), `problem`, `patch`, `plan`, `edit` and, for Data Protocol
+hosts, `protocol`. The suite pins, in particular:
 
 1. the text form of non-whole numbers, NaN and the infinities (4.2), and every result of 4.16;
 2. text ordering and lengths by code point, outside the Basic Multilingual Plane too (4.13);
@@ -1201,12 +1192,11 @@ hosts, `protocol`. The suite will pin, in particular:
 9. every example in `functions.yaml` and in this text.
 
 The grammar is proven against the parser by a grammar-driven recogniser that reads every expression of every shipped
-Sutra (R0 step 0e, the test part).
+Sutra.
 
-## 9. Known differences to resolve before 1.0
+## 9. Known differences
 
-Found while deriving this text from the reference; each is either a defect in the reference or a rule to change here,
-to be settled with the conformance suite.
+Behaviours the text and the reference settle at a stated level; the conformance cases pin each (the table of cases is in the conformance document).
 
 1. **Default calendar.** The reference defaults date functions to `USNY`; Core says weekends only without a host
    calendar (5.5).
@@ -1227,14 +1217,658 @@ to be settled with the conformance suite.
    JSON Pointer `path` and no `expr` offsets, and it reports one problem where a later one depends on the first (a panel
    with an unknown kind hides its duplicate id). Level 1.0 is the reference; the paths and the complete list are level 1.1.
    A Core runtime with no profile does not require `match` (D12); the reference always loads the Drishti profile.
-10. The Drishti reference guide's grammar and error table predate list literals, `in`/`not in`, `^`, `@panel`, `$src`
-   and named arguments, and still say "there are no list literals"; this specification supersedes them.
-11. **`and` is the canonical form from level 1.2** (G4 binder pass P10, lead decision 2026-11-21). Every level reads
+10. **`and` is the canonical form from level 1.2**. Every level reads
    `and`, `or`, `not` beside `&&`, `||`, `!` (PY1); the printer writes `&&` at level 1.0 and `and` from 1.1 (4.17). A host
    that upgrades to 1.2 keeps a formula written with `and` exactly as written (`sum(PNL, where=DESK == 'RATES' and PNL > 0)`
    is already a 1.2 formula, so there is nothing to migrate); only a 1.0 text is rewritten, and it becomes `and`, not `&&`.
-12. **`geomean` and `skewness_pop` in the last digit.** Core's aggregate kernel (`com.ash.rachana.agg`, CoreMath) is
-   authoritative (SPLIT_PLAN 8.3h): `geomean`'s state and `skewness_pop`'s figure may differ in the last place from
+11. **`geomean` and `skewness_pop` in the last digit.** Core's aggregate kernel (`com.ash.rachana.agg`, CoreMath) is
+   authoritative : `geomean`'s state and `skewness_pop`'s figure may differ in the last place from
    Drishti's retired kernel, which summed in another order; every other aggregate's state and figure is the same bytes.
    They are real-number aggregates (5.8): a host compares a state recorded by the old kernel with a relative tolerance of one
    unit in the last place, never byte for byte, and records new states with Core's kernel.
+
+## Translation: Sutra + data → ViewModel, `rachana: 1`
+
+Normative together with the first part of this text. **The conformance suite is the executable form of these rules.** Its `sutra` cases (a Sutra, its data, control values,
+as-of date → the expected ViewModel) live in `conformance/1/`. Where this prose and a case differ, **the case wins**
+and the difference is a defect to fix in one of them.
+
+### 0. The ViewModel schema
+
+The ViewModel is specified by `spec/1/viewmodel.schema.json` (JSON Schema draft 2020-12; see the ViewModel contract, below) and by the shapes the rules produce, listed in this part (sections 2 to 4); field names and types here are those of contract `1.0`, and later minors add to them (contracts 1.1 and 1.2).
+The ViewModel versions independently of the language (`contract: "1.0"`; a renderer refuses a major it does not know,
+Drishti Render's `DRS-9105`, and ignores what a newer minor adds).
+
+Principles every rule obeys:
+
+1. **Data, no logic.** The output holds no expression, no format name to apply, nothing to evaluate. A painter walks it.
+2. **Formatted text plus a tone.** Every value a person reads is already text (`text`) with an optional tone word;
+   numbers travel beside their text only where a chart must draw them (`value`, `x`, `from`, …).
+3. **Masks applied before.** A masked value arrives as `•••`; nothing in the output lets a client recover it.
+4. **Failures stay local.** A panel that cannot bind carries `error` and no `data`; a strip value that fails is blank.
+5. **Absent means default.** Fields are left out when null (and, where marked, when empty or `false`); a reader MUST
+   treat a missing field as its default. Conformance compares after dropping `timings`, `provenance.fetchedAt` and
+   `provenance.updatedAt`.
+
+### 1. The translation in order
+
+```mermaid
+flowchart LR
+  A[compiled Sutra] --> B[expand fragments]
+  B --> C[resolve controls]
+  D[data: entries + host record] --> E[mask: host Masker]
+  C --> F[bind each panel shown]
+  E --> F
+  F --> G[strip, title, keys]
+  G --> H[layout, phone, selects]
+  H --> I[provenance: mask count]
+```
+
+Inputs: the compiled Sutra; the record `$` (the host's record, with each `data:` entry added as a field, SPEC 2.4);
+the request's control values (`ctl.<id>=…`); the as-of date (`asof()`); the events fired so far (`@panel`); the host
+hooks (`Masker`, `LinkResolver`, `Calendars`, `Clock`, `TableProvider`, formats).
+
+| Step | Rule |
+|---|---|
+| T1 fragments | every `{use: name@version}` is replaced by the fragment's panels before anything else; the output never shows that a panel came from a fragment, except `phone.panels.<id>.from: fragment` |
+| T2 controls | each control's value is resolved (section 5) and bound as `ctl.<id>` for every later step |
+| T3 masking | the host's `Masker` replaces values the reader may not see with the mask before any expression reads them (section 9) |
+| T4 panels | top-level panels in Sutra order; a panel whose `when` is falsy, masked or fails is **left out of `panels`** (a `when` that reads an event is kept: it waits). Each shown panel is bound independently (section 3); the order of `panels` is the Sutra order |
+| T5 strip, title, keys | section 2 |
+| T6 layout, phone | copied and resolved (section 2.6) |
+| T7 provenance | `masked` counts the cells shown as `•••` across title, strip and every panel; `maskedPanels` the ids holding one |
+
+Evaluation errors never stop the translation: a strip or title part that fails is blank (or the identifier), a panel
+that fails carries `error`.
+
+#### 1.1 Common rules used below
+
+**R-CELL (a value becomes a Cell).** Given a value `v`, a label, a format `fmt`, a tone `tone`, `emphasis` and a path:
+- `v` a link → `{label, text: link label or id, link: LinkView}` (no tone);
+- otherwise `text` = `v` formatted by `fmt` (R-FMT), `tone` = R-TONE(`tone`, `v`), `emphasis` if set, `path` if known.
+
+```text
+bind: "$.mtm", fmt: signed0, tone: sign, emphasis: true, with $.mtm = 1209000
+→ {"label": "MTM", "text": "+1,209,000", "tone": "pos", "emphasis": true, "path": "$.mtm"}
+```
+
+**R-FMT.** No format: the value's text form (SPEC 4.2; empty → `""`). A known format: that format's rendering (the
+[formats.yaml](formats.yaml)), a masked value → `•••`, a link → its label, empty → `""` [CS]. An unknown name: the text form.
+
+**R-TONE.** SPEC 2.6. No tone word → no tone. A masked value never gets `pos`/`neg`.
+
+**R-LINK.** A `link(id, kind?, label?)` value becomes `LinkView {kind, id, mnemonic?}` through the host's
+`LinkResolver`; without a kind the resolver may recognise the id; when it cannot, the cell has no `link`. A link the
+reader may not follow is removed by the host before the view is sent.
+
+**R-PATH.** A cell's `path` is the first document path its expression reads (`$.legs[0].rate`), when the expression is
+rooted at `$`; table rows carry `<rows path>[<index in the data>]`. Paths are diagnostic and address live patches.
+
+**R-ROWS.** A list option (`rows`, `each`, `nodes`) is an expression that MUST give a list; anything else is treated
+as no rows. Then the panel's `where` (an expression over each row `@`) keeps the rows for which it is truthy; a row
+whose condition is masked or fails is dropped. `#index` inside a row is its index **in the data**, not among the kept.
+
+**R-FIELD (chart field options).** Options naming a field of each row (`label`, `value`, `x`, `y`, `open`, `date`, …)
+are read as: an **expression over the row** when the text starts with `@` or `$` or contains `(` or a space; else a
+**dotted path** when it contains `.`; else the **field**, falling back to the same name in upper case when the row has
+no such field (`close` reads `CLOSE`). [today; the heuristic is pinned by CS and is a candidate for an explicit form in
+a later minor.]
+
+### 2. Top level
+
+#### 2.1 The envelope
+
+```json
+{"contract": "1.0", "title": {"pill": null, "id": "Regional sales", "with": null}, "strip": [], "panels": [ … ],
+ "keys": [], "provenance": { … }, "timings": { … }}
+```
+
+| Field | Rule |
+|---|---|
+| `contract` | always `"1.0"` for this specification |
+| `ref`, `mnemonic` | the host's entity address and command code when the screen is opened on a host record (profile); a Core screen without one: see the ViewModel contract |
+| `title` | 2.2 |
+| `strip` | 2.3, always present |
+| `panels` | T4 and section 3, always present |
+| `keys` | 2.5, always present (may be empty) |
+| `controls`, `selects` | section 5; left out when empty |
+| `layout` | 2.6; left out when the Sutra has none |
+| `phone` | 2.6; left out when the Sutra says nothing |
+| `provenance` | T7; the rest of its fields (`layout`, `fingerprint`, `source`, `generation`, `businessDate`, `live`, `stale`, …) are the host's |
+| `timings` | the host's diagnostics; excluded from conformance |
+
+#### 2.2 `title` → `TitleView {pill, id, with}`
+
+| Sutra | ViewModel |
+|---|---|
+| `title.id` (expression) | `id` = its text form; when it fails or is blank, the host's id for the screen |
+| `title.pill` (template) | `pill` rendered; `null` when absent or failing |
+| `title.with` (expression) | `with` = R-CELL of the value with no label, format or tone (a link keeps its link); `null` when absent, empty or failing |
+| `title: "text"` [planned, 1.1] | `id` = the text, `pill` and `with` null |
+| no `title` | `id` = the host's id or the Sutra name |
+
+```yaml
+title: { pill: "Trade · ${$.product}", id: "$.trade_id", with: "link($.cpty, 'counterparty', $.cpty_name)" }
+```
+```json
+{"pill": "Trade · Swap", "id": "MX-1", "with": {"text": "Northbridge", "link": {"kind": "counterparty", "id": "CP-N"}}}
+```
+
+#### 2.3 `strip` → `Cell[]`
+
+One cell per item, in order: R-CELL(`label`, value of `bind`, `fmt`, `tone`, `emphasis`, path of `bind`). A `bind`
+that fails gives the value empty (its text `""`). No item is ever left out (live patches address strip cells by index).
+
+```yaml
+strip: [ { label: Notional, bind: "$.notional", fmt: amount0 }, { label: MTM, bind: "$.mtm", fmt: signed0, tone: sign, emphasis: true } ]
+```
+```json
+[{"label": "Notional", "text": "25,000,000", "path": "$.notional"},
+ {"label": "MTM", "text": "+1,209,000", "tone": "pos", "emphasis": true, "path": "$.mtm"}]
+```
+
+#### 2.4 `description`, `notes`, `doc`
+
+Never in the ViewModel.
+
+#### 2.5 `keys` → `KeyView[]`
+
+1. Every bound panel with `key: Fn` gives `{key, label, action: "panel", panel: id}`; `label` is the panel's title cut at
+   the first ` · ` or ` (`.
+2. Each `keys:` entry: `raw` → `{action: "raw", label: "Raw JSON"}` and `impact` → `{action: "impact"}` are profile
+   actions; a value starting `link(` is evaluated: a link → `{action: "link", link, label: the kind in words}`, anything
+   else → no key; any other text is a panel id → `{action: "panel", panel: text, label: text}`.
+3. Sorted by key number (`F2` before `F10`).
+
+#### 2.6 `layout`, `phone`, `refresh`
+
+- `layout:` is copied as an object (`areas`, `columns`, `split`, `tabs`, `sections`, `sticky`, `arrange`, `phone`,
+  `tablet`) with `place: {panelId: {area, order?, section?, collapsible?}}` for each top-level panel. A panel's `area:
+  main | right` maps to the first or last named area. Without `layout:` the field is left out and each panel's `area`
+  (`main` by default) says its column.
+- `phone:` becomes `phone: {panels: {id: {tier, from, rows, columns, sort, series, figures, tab}}, order, default,
+  summary}`; `summary` is a template rendered against `$`.
+- A panel's `refresh` (or the top-level one for a top-level panel without its own) becomes
+  `refresh: {every, userCanPause}`.
+
+### 3. Panels
+
+#### 3.0 The panel envelope → `PanelView`
+
+| Field | From | Sent |
+|---|---|---|
+| `id`, `kind` | the panel | always |
+| `title` | the `title` template rendered against the panel's context; when rendering fails, the template as written | when set |
+| `code`, `key` | as written | when set |
+| `area` | `main` or `right` | always |
+| `span`, `height` | as written | when set |
+| `inferred`, `explanation` | `false` and absent for a Core Sutra (inference is not Core) | `inferred` always |
+| `data` | the kind's record (3.1 to 3.20) | unless `error` or `denied` |
+| `empty` | section 4 | always |
+| `error`, `denied` | section 4 | when set |
+| `wire`, `refresh`, `form`, `provenance`, `compute` | sections 6, 2.6, 7; `provenance` and `compute` are host states | when set |
+
+The **panel's context**: `$` the record; with a `source: { table }` [today], `$src` is that table's rows and list
+options read them; inside `tabs`, `@` is the tab's element.
+
+#### 3.1 `kv` → `Fields {fields: Cell[]}`
+
+Without `rows`: one R-CELL per `columns` entry (`label`, `bind`, `fmt`, `tone`, `link`), path from `bind`. With `rows`
+(an expression giving one record): the columns are evaluated with `@` that record, no paths. With `rows` and no
+`columns`: one cell per plain field of the record (no lists, no objects, names starting `_` skipped), labelled by the
+field name in words. A column with `link: true`, or whose `bind` is a path ending in an id-like name (`_ID`, `_REF`,
+`Id`, `Ref`, `_id`) [today; profile-flavoured, see section 11], links its value through R-LINK.
+
+```yaml
+- { id: terms, kind: kv, columns: [ { label: Coupon, bind: "$.coupon", fmt: pct2 } ] }
+```
+```json
+{"fields": [{"label": "Coupon", "text": "4.25%", "path": "$.coupon"}]}
+```
+
+#### 3.2 `table` and 3.3 `ladder` → `Table`
+
+| Output | Rule |
+|---|---|
+| `columns` | the columns' labels |
+| `numeric` | per column: `true` when it has a `fmt` other than `date` and `text` |
+| `rows` | R-ROWS, then for each kept row up to `limit`: `{cells, highlight, path}`; each cell R-CELL with `@` the row; `highlight` = truthiness of `highlight` for the row; `pick` = the row's `on-select.field` (else the control id) as text, omitted when empty or masked; `ev` = the row's index in the data when the panel emits on `row-click` |
+| `total` | when any column has `total: true`: one cell per column, the sum over **all kept rows** (not only those shown) of the column's numbers (non-numbers count 0; a masked value makes that column's total `•••`), formatted and toned as the column; other columns `{}`; the label `totalLabel` (default `Total`) is put in the first blank cell before the first total column |
+| `more` | when kept rows exceed `limit`: `moreLabel` evaluated, else `"<n> more"` |
+| `search` | `false` only when `search` is `false` or `no` |
+| `limit` | a number, or an expression (`ctl.top`); below 1, empty or failing → no limit |
+| `expand`, `levels`, `root`, `crumb` | trees (`children`: rows nest, `expand` levels open, depth ≤ 12, ≤ 10,000 rows) and drill tables (`levels`) [CS] |
+| `emptyLabel` | the `empty` option |
+| `pivot` | the profile's pivot screen; absent in Core |
+
+```yaml
+- { id: legs, kind: table, rows: "$.legs", limit: 1,
+    columns: [ { label: Leg, bind: "@.id" }, { label: Notional, bind: "@.notional", fmt: amount0, total: true } ] }
+```
+```json
+{"columns": ["Leg", "Notional"], "numeric": [false, true],
+ "rows": [{"cells": [{"label": "Leg", "text": "1"}, {"label": "Notional", "text": "242,000,000"}], "highlight": false, "path": "$.legs[0]"}],
+ "total": {"cells": [{"text": "Total"}, {"text": "484,000,000"}], "highlight": false},
+ "more": "1 more", "search": true}
+```
+
+A ladder is the same translation without `limit`, `moreLabel` and `link`; `highlight` marks the current row.
+
+#### 3.4 `tabs` → `Tabs {layout, tabs: [{title, fields, panels?}]}`
+
+For each element of `each` (index `i`): `@` = the element; `title` = `tabTitle` evaluated (default `'#' + (#index +
+1)`); `fields` = the `body` columns as R-CELL; `panels` = each panel of `panels:` whose `when` holds, bound as in 3.0
+with `@` the element (not part of `layout.place`). `layout` = the option, default `tabs` (or `columns`).
+
+#### 3.5 `line` → `Chart`
+
+`rows` (default the field `points`) by R-ROWS; `x` = the text of field `x` (default `tenor`) of each row; one series
+`{label: the panel's title as written, values: field y (default value) of each row as numbers (null where not a
+number), tone: "link"}`; `mark` = the `mark` expression's text when non-empty, and when it is one of the `x` labels,
+`markText` = `"<mark> point <value in fmt><unit>"`; `unit`; `step: true` when `step` is `true`. A `source` naming a
+linked entity (profile) adds `source: LinkView` and reads the rows from it.
+
+#### 3.6 `area` → `Chart`
+
+`x` as for `line`; one series per `series` entry `{label, value (field), tone}` with that field's numbers; `limit` =
+the `limit` expression as a number when finite, with `limitLabel`; `unit`.
+
+#### 3.7 `hbar` → `Bars {bars, shape?, total?}`
+
+For each kept row whose `value` field (default `value`) is a finite number: `{label: field label (default label),
+value, text: value in fmt, tone: R-TONE(tone, value) or, without tone, neg below 0 else pos, ev?}`. Rows without a
+number are not bars. `shape: donut` adds `shape` and `total` = the sum in `fmt`.
+
+```yaml
+- { id: by-region, kind: hbar, rows: "group($.sales, 'region', 'revenue')", fmt: amount0 }
+```
+```json
+{"bars": [{"label": "North", "value": 1200.0, "text": "1,200", "tone": "pos"}, {"label": "South", "value": -80.0, "text": "−80", "tone": "neg"}]}
+```
+
+#### 3.8 `metric` → `Metric {value, delta, unit, caption}`
+
+`value` = R-CELL(`label`, value of `value` (a failure reads as empty), `fmt`, `tone`, emphasis `true`, path); `delta`
+= R-CELL(no label, value of `delta`, `deltaFmt` or `fmt`, `deltaTone` or `sign`) when `delta` is set and its value is
+not empty (masked counts as a value); `unit` as written; `caption` = the template rendered (as written on failure).
+
+#### 3.9 `gauge` → `Gauge {value, max, text, label}`
+
+`max` = the `max` expression as a finite number, else `1`. When `value` is a finite number: `text` = `value / max`
+(max 0 read as 1) in `fmt` (default `pct0`). Otherwise `value` = null and `text` = `•••` if masked, else `—`. `label`
+as written.
+
+#### 3.10 `status` → `Fields`
+
+One R-CELL per `fields` entry `{label, bind, fmt?, tone?}`, path from `bind`; usually `tone: status`.
+
+#### 3.11 `markdown` → `Text {text}`
+
+The `text` template rendered. Treated as plain text by painters (never as HTML).
+
+#### 3.12 `surface` → `Surface {x, y, z, min, max, fmt, unit, view}`
+
+`x` = the columns' labels; for each kept row: `y` label = the row's `y` (expression when it starts `@` or `$`, else the
+field) as text; `z` row = each column's `bind` as a number, null where not finite; `min`/`max` over finite values
+(null when none); `view` default `heatmap`.
+
+#### 3.13 `waterfall` → `Waterfall {steps, unit}`
+
+Rows (at most 5,000) in order; a row whose `value` (default `value`) is not finite is skipped. A row whose `total`
+field (default `total`) is truthy is a total step `{from 0, to v, tone muted, total true}` and resets the running total
+to `v`; any other is `{from run, to run + v, tone: rise/fall}` with rise/fall `ok`/`bad` (`colors: gain-loss`, the
+default) or `pos`/`neg` (`colors: theme`). `sum: <label>` appends a total step with the running total (`•••` if any
+value was masked). `text` = the value in `fmt`.
+
+#### 3.14 `histogram` → `Histogram {bins, markers, count, dropped, fmt, unit}`
+
+Values: each row itself, or its `value` field; at most 100,000; non-finite values counted in `dropped`. `k` = `bins`
+when given, else `round(sqrt(count))` held to 5..40; one bin when all values are equal. Equal-width bins from the
+smallest to the largest value, `[from, to)` except the last (closed); `label` = `"<from> to <to>"` in `fmt`.
+`markers`: each `{label, value (expression), tone}` with a finite value, `text` in `fmt`, tone default `accent`.
+
+#### 3.15 `scatter` → `Scatter {points, groups, xLabel, yLabel, sized, more}`
+
+For each kept row with finite `x` and `y`: a point `{x, y, size? (absolute value), xText (in xFmt or fmt), yText (in
+fmt), label?, group?, link?}`; at most 5,000 points, the rest counted in `more`. `groups` = distinct non-empty groups
+in first-seen order. `xLabel`/`yLabel` default to the `x`/`y` options as written; `sized` = `size` given.
+
+#### 3.16 `candlestick` → `Candles`
+
+The last 5,000 rows; a row needs four finite prices (`open`, `high`, `low`, `close`, default those names). `high` and
+`low` are widened to include open and close. Each candle carries its prices and their texts in `fmt`, and volume (with
+`volumeText` in `amount0`) when the `volume` field is finite. `last` = the last close in `fmt`; `change` = sign + the
+absolute change against the previous close (or the bar's own open) in `fmt` and, when that is not 0, `(±pct2)`; the
+sign is `+` or the minus sign `−` (U+2212); `tone` = `sign` of the change.
+
+#### 3.17 `graph` → `Graph {nodes, edges, layout, more}`
+
+Nodes from `nodes` (R-ROWS): `id` = field `id` (or `ID`), required and unique; `label` (default field `label`, the id
+when empty); `group` (default field `type`); `link` via R-LINK using field `kind`; `focus` when the id equals the
+host's record id (profile; always `false` in a Core screen without one). At most 300 nodes (`more` counts the rest).
+Edges from `edges`: `{from, to, label?}` (fields lower or upper case), kept only when both ends are nodes; at most 600.
+`layout` default `tree`.
+
+#### 3.18 `timeline` → `Timeline {events, more}`
+
+For each kept row: `date` (default field `date`), `label` (default `event`), `detail` (default `description`), `status`
+(default `status`) as text, `tone` = R-TONE(`tone` (default `status`), status); a row with neither date nor label is
+skipped. Sorted by `date` as text (stable); at most 500, keeping the **latest**, with `more` the number dropped.
+
+#### 3.19 `pivot` → `Pivot`
+
+Rows (at most 100,000) grouped by `by` (one field or a list, outermost first) and `across`; the cell value is: `count`
+of rows when `value` is absent; an aggregate call over `@` when `value` is one (`sum(@.mtm)`, `percentile(@.pnl,
+0.99)`); else the `value` field aggregated with `agg` (default `sum`). `fmt` (ignored for `count`), `tone`, `heat`,
+`totals` (default on: column totals then the grand total). Row keys first-seen order, at most 200 (`more`); column
+keys first-seen order, at most 40 (values under further keys count in totals only). Nested `by` adds `levels`,
+`expand`, `across`, and per row `path` and `group` [CS for the full shape; aggregation by the list-aggregate kernel].
+
+#### 3.20 `map` → `GeoMap {mode, highlight, region, link, shade, unit}`
+
+`mode` `world` or `region`; `highlight` and `region` evaluated as text; `link` (`{kind, template, codes, note}`) and
+`shade` (`{label, unit, items: [{code, value, text}], note}`) need entity lookups and are filled by the host (profile
+behaviour; a Core host without them leaves them out). Shapes are the painter's vendored files.
+
+#### 3.21 Profile kinds
+
+`links` (`Links`) and `provenance` (`Fields`) are produced by the `drishti` profile's binders; a Core host that has the
+declaration but not the binder marks them `unsupported here` (CORE_AND_PROFILES 3.1).
+
+### 4. Panel states
+
+Exactly one of these explains a panel without drawable data, decided in this order:
+
+| State | Set when | Output |
+|---|---|---|
+| waits | a `when` or list reads an event not yet fired | `wire.waits` = the `waits` text; data per kind may be empty |
+| denied | the panel's `source` names data the host refuses for this reader | `denied: "<words>"`, no `data`, `empty: true` |
+| error | binding raised (an `RCH-2102`, data that does not fit the kind, a missing required list) | `error: "<code and words>"`, no `data`, `empty: true` |
+| computing, failed (host) | the host's `compute` state | `compute: {state, …}` |
+| empty | the bound data has nothing to draw | `empty: true`, `data` present |
+
+`empty` per kind: `kv`/`status` every cell blank; `table`/`ladder` no rows; `tabs` no tab, or every tab blank with every
+inner panel empty; `line`/`area` no `x` or no finite value in any series; `hbar` no bar; `markdown` blank text;
+`metric` blank value; `gauge` value not finite; `surface` no finite value; `waterfall`, `scatter`, `candlestick`,
+`graph`, `timeline`, `pivot` nothing listed; `histogram` count 0; `map` empty only in `region` mode without a region.
+A painter shows the table's `emptyLabel`, else "No data available".
+
+### 5. Controls → `controls`, `selects`
+
+Each control gives `ControlView {id, kind, label (default the id), placement (default strip), panel?, parent?,
+options: [{value, label}], value, values?, required, remember, min?, max?, step?, range, reads, truncated}`:
+
+1. **Options**: the written `options` as `{value, label}`; else `from` evaluated against `$` (with `ctl.<parent>` known
+   for a cascading control): the scalar values of the list (or the value), in first-seen order, empty and masked
+   values left out, records offering their `id` (or `ID`); a `from` that fails gives no options. A date-range control's
+   options are its presets resolved on the calendar. Options are cut at the maximum (`truncated: true`). A masked value
+   is never an option.
+2. **Value** (single-valued kinds): the request's value when it is an option; `""` when the request cleared it and the
+   control may be empty; else `default` when it is an option; else, when the control must have a value (`required`,
+   `default: first`, `toggle`, `segmented`, `top-n`), the first option; else `""`.
+3. **Values** (`multi-select`): the request's comma-separated values that are options; else `default: all` → every
+   option, `default: first` → the first, a written default → those of its values that are options.
+4. `reads` = the ids of the panels (and `strip`, `title`) whose expressions read `ctl.<id>`: only they change when it
+   does.
+
+Each panel's `on-select: {by, field?, filter?}` adds `SelectView {panel, by, filter}`, and its rows carry `pick`
+(3.2).
+
+### 6. Events and children → `wire`
+
+`wire: {emits: [{name, on}], waits?, children: [{place, show}], source?, parent?}` for a panel with events, children
+or its own source. A child panel is bound with `@parent` the parent's events; a group with `show: always` is bound at
+once, any other only after the parent fired; a child's `when` decides as in T4. A row-click or bar-click payload
+refers to the row by its data index (`ev`). The full event round trip (what a host sends back and which panels it
+rebuilds) is pinned by [CS].
+
+### 7. Forms → `form`
+
+A panel's `form:` becomes `form: {fields: [{id, label, bind, type, required, readonly, options?, value, …}], rules,
+hints, steps, …}`, with each field's current value evaluated against the panel's row or record, choices of lookups
+resolved, and for a table each row's values. Fields the reader may not edit come `readonly` or `locked` with a
+`reason`; masked fields come `masked`. The keys `save`, `target`, `approval`, `editableBy`, `roles` are the profile's
+(`form.save`, decision D2) and are absent in Core. Core raises a `submit` action with the field values; the host
+saves. The exact field list is pinned by [CS].
+
+### 8. Formats, tones, determinism
+
+- Every `fmt` resolves through the shared format table at translation time; the output carries text, never a format
+  to apply, except `fmt` echoed on `histogram`, `surface` and `candlestick` for axis labels a painter draws.
+- Order is deterministic: panels in Sutra order (fragments expanded in place), cells in column order, keys by number,
+  options and groups in first-seen order, timeline by date, pivot keys first-seen.
+- Numbers that a chart draws are doubles; NaN and the infinities are written `null`.
+
+### 9. Masking
+
+The host's `Masker` decides which values are masked, with the reader's context; Core only carries the mask
+(SPEC 4.9). In the output: any cell whose value is masked has `text: "•••"` and no tone from `sign`; totals, sums,
+gauges and waterfall sums computed from a masked value are `•••`; a chart point or bar whose number is masked is left
+out (it has no finite value); a control never offers a masked value; `provenance.masked` and `maskedPanels` count
+them (T7).
+
+### 10. `data:` entries [planned]
+
+Before T4, each `data:` entry is read through its source (SPEC 2.4) and set as the field of `$` of the same name: a
+table as a list of row objects (columns in schema order), a record as an object. `where` and `limit` of the entry apply
+first; `as: record` takes the first row left, or a record with no fields when there is none (SPEC 2.4). A table the host
+marks server-side is never summed locally: panels over it bind from the host's push-down
+answer (Data Protocol). A failed or denied entry makes the panels that read it `error` or `denied` (section 4); the
+others bind. A `table` entry whose table the host does not have is a failed entry (`RCH-2070`), never a table with no rows. Live changes to a keyed table produce ViewModel patches for the panels and cells whose paths read the
+changed columns and whose ViewModel differs afterwards: a panel that reads the change and shows the same as before is not
+patched (FORMAT 5.9, "The frames of a step").
+
+### 11. Differences found in the reference
+
+To settle with the conformance suite (each is a defect in the reference or a rule to change here):
+
+1. `line`'s series label is the panel's title **as written**, not rendered (a `${…}` would show raw).
+2. R-FIELD's heuristic (an option is an expression if it contains a space or `(`) means a field name with a space is
+   read as an expression.
+3. The id-like column rule in 3.1 (`_ID`, `Ref` … link automatically) is a data-platform convention; Core should keep
+   linking only with `link: true` or a `link(...)` value, the convention moving to the `drishti` profile.
+4. The ViewModel contract (reference) says a missing value's text is "missing or `—`"; the reference formats empty as `""` (only `gauge`
+   writes `—`).
+5. `graph.focus` and `line.source` need a host record; for a Core screen they are always `false` / absent.
+6. `ref`, `mnemonic` and most of `provenance` describe a platform entity; their Core values for a screen over `data:`
+   are described by the ViewModel contract.
+
+## The ViewModel, contract 1.x
+
+The machine form is [viewmodel.schema.json](viewmodel.schema.json) (JSON Schema draft 2020-12, 77 definitions; contract 1.2), checked against the reference's own `ViewModelSchema.build()` by `tools/conformance/compare_viewmodel_schema.py`. Where this text and the schema disagree, the schema is the one to correct against the records.
+
+### What the contract is
+
+The ViewModel is the JSON a runtime produces from a Sutra and its data (see [the translation rules](#translation-sutra--data--viewmodel-rachana-1)): everything a
+client draws, nothing it must compute. Every value is already formatted text plus a tone, so all clients show numbers
+identically. It is one document per screen, and a stream of `Frame`s of patches that keep it current.
+
+Decision N3: there is **one** ViewModel contract, and its home is this folder. Version 1 keeps the reference
+implementation's field names exactly (including `fmt`, `ev`, `emptyLabel`, `title.pill`, `ref`, `mnemonic`, `provenance`);
+a painter draws them as they are. The contract version is carried in the document: `"contract": "1.0"` (major.minor). The
+minor moves for additions (a field, a kind, a tone); the major for a break. A client refuses a major it does not know and
+ignores what a newer minor adds.
+
+#### Shape
+
+- Root: `ViewModel`. Required: `ref`, `title`, `strip`, `panels`, `keys`, `provenance`, `timings`, `contract`. Optional:
+  `mnemonic`, `controls`, `selects`, `layout`, `phone`.
+- `panels[]` are `PanelView`s (`id`, `kind` required). `kind` is one of the 22 kinds; the kind decides which record `data`
+  carries (`allOf` of `if/then` pairs): `kv`, `status`, `provenance` → `Fields`; `table`, `ladder` → `Table`; `line`, `area` →
+  `Chart`; `hbar` → `Bars`; and one record each for `tabs`, `links`, `markdown`, `gauge`, `surface`, `waterfall`,
+  `histogram`, `scatter`, `candlestick`, `graph`, `timeline`, `pivot`, `metric`, `map`. `data` is null when the panel failed
+  (`error`) or is denied (`denied`).
+- Live: `Frame` (`seq`, `generation`, `patches`, `latencyMs`, `p99Ms`); a `Patch` has `op` (`strip`, `panel`, `provenance`,
+  `deleted`, `restored`) and the field that op names (`index` + `cell`, `panel`, `provenance`, `at`).
+  A frame carries a patch only for what differs from the view before it; when nothing differs there is no frame. `seq` counts a
+  view's frames from `1`, by one per frame. `generation` (the source's generation), `latencyMs` and `p99Ms` (the host's measured
+  delay from the change to the frame, the last one and the 99th percentile) are **the host's facts**: a runtime with no host
+  writes `0` for all three (FORMAT 5.9), and a painter never reads them to decide what to draw.
+- Tones: `pos`, `neg`, `link`, `accent`, `ok`, `warn`, `bad`, `muted`, `inactive` (`Tone`). `Series.tone` is the author's
+  own word and stays free text.
+
+#### Optional, null and closed
+
+Each definition names its Java record (`x-java`) and its Jackson inclusion (`x-include`):
+
+- `ALWAYS` records write every component: all are required, and a reference-typed one may be `null`.
+- `NON_NULL`, `NON_DEFAULT` and `NON_EMPTY` records (and components annotated so) leave a component out when it is null,
+  default (a `false` flag, a `0`) or empty; such a component is optional and **never null**.
+- Numbers may be `null`: the server writes NaN and the infinities as null.
+- Definitions are closed (`additionalProperties: false`), as the reference's schema is. This is a statement about what a
+  producer may write. **A consumer must ignore unknown fields**: a validator for a live runtime of a newer minor should use
+  that runtime's own schema, not an older copy.
+
+### Contract 1.1
+
+Appended to 1.0 (SUTRA_EXPANSION 6.3): every addition is optional, comes after the fields of its record, and is **left out
+when unused**, so a document that uses none of it is byte for byte a 1.0 document. `contract` is the **smallest minor that
+describes the document**: `"1.1"` only when it has `datasets`, a panel of kind `grid`, `tree` or `chart` (nested in tabs
+too) or a map with `points`; otherwise `"1.0"`. The released 1.0 schema is kept in
+[released/viewmodel-1.0.schema.json](released/viewmodel-1.0.schema.json) and `ContractAppendOnlyTest` (CG4) proves this
+schema contains it. New definitions carry `x-since: "1.1"`.
+
+| Addition | Where | What |
+|---|---|---|
+| `datasets` | ViewModel, after `phone` | `{name: Dataset}`: rows that `grid`, `tree` and `chart` panels read; two panels may read one dataset and a `rows` patch reaches both |
+| `Dataset` | new | `key` (fields), `fields` (`DataField`: `name`, `type` `string`/`number`/`boolean`/`date`/`datetime`, `label`, `fmt`), and exactly one source: `values` (rows as lists in the order of `fields`, what Rachana writes), `rows` (objects), `name` (rows the page hands the painter), `arrow` (`{url}` or `{base64}`), `pages` (`{url, size, mode offset/cursor, total, sort, filter}`, `sort`/`filter` `server` to push them to the server), `server` (`{url}`, a server-side row model); `more`: rows the producer left out |
+| raw values | Dataset only | Unlike every other part of the document a dataset's values are **raw** (numbers, text, booleans, null) and formatted by the painter with the field's `fmt`; a value the reader may not see is `{"$masked": true}` (Data Protocol 3.2) |
+| kind `grid` | PanelView | data `Grid`: `dataset`, `columns` (`GridColumn`: `field`, `label`, `fmt`, `tone` (`sign` or a tone word), `width`, `pinned` left/right, `agg`, `hidden`), `group`, `sort` (`SortKey`: `field`, `desc`), `pivot` (`GridPivot`: `rows`, `columns`, `values` of `Measure`), `search`, `emptyLabel` |
+| kind `tree` | PanelView | data `Tree`: `dataset`, `node`, `parent` or `path`, `label`, `measures` (`Measure`), `mode` grid/org/sunburst/icicle, `open` |
+| kind `chart` | PanelView | data `DataChart`: `dataset`, `type` bar/line/area/scatter/pie/donut/heatmap/histogram, `x`, `y` (`Measure`: `field`, `agg`, `label`, `fmt`), `by`, `stack` sum/percent, `horizontal`, `xLabel`, `yLabel`, `bins`, `limit` |
+| `Measure.agg`, `GridColumn.agg` | | `sum`, `count`, `min`, `max`, `avg`, `first`, `last`, `distinct`: the painter combines the rows (per `x` and `by` for a chart) |
+| `GeoMap.points` | map data, after `unit` | `GeoPoint`: `label`, `lat`, `lon` (always written), `value` (sizes the bubble), `text`, `tone`, `link`: places drawn as bubbles over the map |
+| op `rows` | Patch | `dataset`, then `reset` (every row), `remove` (keys; a compound key joined by U+001F), `update` (merged by key; an unknown key added), `add` (appended; an existing key updated), applied in that order |
+
+Rachana writes `datasets` only when a Sutra of language level 1.1 has a `grid`, `tree` or `chart` panel (SPEC 2.3); it
+never writes `rows`, `name`, `arrow`, `pages`, `server` or map `points` itself: those are for hosts and other producers.
+Drishti's screens, at level 1.0, stay byte-identical.
+
+### Contract 1.2
+
+Appended to 1.1 by the same rules (optional, after the fields of its record, left out when unused; new definitions carry
+`x-since: "1.2"`). `contract` is `"1.2"` only when the document has `state`, a mark's `ev` (a pivot cell's and a surface point's too), a `live`, `treemap` or `bullet` panel, a column `bar` or a series' `mark`, `axis` or `ev` of the table below; otherwise as for 1.1. A painter that knows only
+1.0 or 1.1 ignores what 1.2 adds (decision S1-OPEN b): the screen still draws, and a click simply writes no state.
+
+| Addition | Where | What |
+|---|---|---|
+| `state` | ViewModel, after `datasets` | the screen's state values (SUTRA_EXPANSION S1), in declared order, a fragment use's private state as `<as>.<name>` |
+| `StateView` | new | `id`; `value` (text, a number, `true`/`false`, an ISO date text, a list of text, or `null`: always written); `url` (the host keeps it in the address; `false` until the view-state document, S4); `reads` (the panels, `strip` or `title` whose expressions read it, directly or through a `let`: only those are rebuilt when it changes) |
+| `ev` | `Point`, `Step`, `Event`, `Candle` (after their fields); `Chart.ev` (a list beside `x`); `Metric`, `Gauge`, `Fields` | on a panel that emits on `point-click` (I1): a mark's row in the panel's data (before `where`), sent back by a click as a row's `ev` is; `"0"` on a figure or a record, the panel one mark (its payload reads the panel's context, no row); absent otherwise |
+| `Series.mark`, `axis`, `ev` | line and area series, after `tone` | a line panel's `layers` or `by` (level 1.2): `mark` `bar`, `area` or `point` (absent: a line), `axis` `right` (absent: the left), `ev` beside `x` each point's row in the data (null where the series has no point) on a split line that emits on point-click |
+| `Cell.ev`, `set`, `on` | a pivot's cells, after `path` | on a pivot that emits on `point-click`: a cell with a figure is a mark, `ev` its place among the cells row by row (`row * columns + column`; an empty cell keeps its place and carries nothing), `set` and `on` as a point's, `@` the cell `{row, path?, column, value}` |
+| `Surface.ev`, `set`, `on` | after `view`, lists of lists beside `z` | on a surface that emits on `point-click`: each point's place row by row (`row * x + column`, `null` where there is no number), what a click writes, its whole effect list; `@` the point `{x, y, z}` |
+| kinds `treemap`, `bullet` | PanelView | data `Treemap` (`cells`: `TreemapCell` `label`, `group`, `value`, `text`, `tone`, `ev`, `set`; `total`) and `Bullet` (`value`, `text`, `label`, `min`, `max`, `bands`: `Band` `from`, `to`, `tone`; `lower`, `lowerText`, `upper`, `upperText`, `tone`, `caption`) |
+| kind `live` | PanelView | data `Grid` (as `grid`) over a dataset whose source is `live`; drawn by reading and following the table, never from `values` |
+| `Dataset.live` | Dataset, after `server` | `LiveRef`: `table`, `window` (rows read and followed at a time), `top` (new rows of a newest-first order inserted on top), `filter` (a filter tree, PROTOCOL 7): the painter asks the page's data client for the first window in the panel's `sort`, subscribes with its keys and applies the patches; a gap reads the page again; `edit` (after `filter`): `cells` or `beside` when the panel offers the table's guarded edit path (PROTOCOL 16 Writes): the painter offers, for the reader, the columns the table's schema lists under `write` (with their rules) and sends each change as a protocol `write` with a client-made change id; absent: read only |
+| `GridColumn.bar` | grid and live columns, after `hidden` | `true`: each number drawn with a bar in its cell against the column's largest; the text still says the value |
+| `Row.set`, `Bar.set` | table and ladder rows (a tree's and a drill table's children too, each evaluated for its own node), hbar bars, after `ev` | what a click writes into the state (I1 `set: { state, to }`): state id to the value, already evaluated for that row or bar and in the state's type; absent when the panel's `on:` writes no state |
+| `set` (point-click) | `Point`, `Step`, `Event`, `Candle`, `Metric`, `Gauge`, `Fields` after `ev`; `Chart.set` (a list beside `x`, `null` for a point whose effects failed) | what a `point-click` on the mark writes into the state (I1 `on: { point-click: [ { set: { state, to } } ] }`), evaluated as `Row.set` is: `@` the mark's row, `#index` its place before `where`; a figure or a record in the panel's context; absent when the panel's `on: point-click` writes no state |
+| `on`, `EffectView` | after `set` on every mark that has one; `Chart.on` beside `x` | a mark's whole effect list when it holds more than plain state writes (I1: a `when`, `toggle`, `clear`, `notify`, `host`): trigger to `[EffectView]`, each evaluated for the mark (`{do: set, state, value}`, `{do: toggle, state}`, `{do: clear, state}`, `{do: notify, text, tone?}`, `{do: host, action, with?}`), an effect whose `when` is false left out; the mark then has no `set`. The painter runs `set`, `toggle` and `clear` on the state (a cleared state is no longer sent back: its default stands) and hands `notify` and `host` to the host, which decides; Rachana never runs a host action |
+| `form` panels, `FormPanel` | `PanelView.kind` gains `form`; its `data` | a standalone form (SPEC 2.8 item 5): `values` (field id to starting value, `null` when none: always written), `submitLabel?`, `cancelLabel?`, `on` (`submit`, `cancel` to `[EffectView]`). The fields, rules and hints are the panel's `form`, as for a table's form. The painter checks the values as it does a table's form, hands them to the host (`ScreenWire.submit` checks them again, then runs the effects) and applies the state writes that come back |
+| `EffectView.event`, `EffectView.withEvent` | after `with` | an effect of `submit` or `cancel` that reads the sent values: `event` the field (dotted inside a value; empty for every value) whose value a `set` writes, `withEvent` a `host`'s arguments filled from fields; both filled in when the form is sent |
+| `PanelView.actions`, `ActionView` | after `compute` | the buttons of the panel's header (SPEC 2.8 item 6): `{id, label, tone?, confirm?, requires?, effects: [EffectView]}`, the label and question rendered, the effects evaluated over the panel's context. The painter asks first when `confirm` is set, asks the host about `requires`, then runs the effects as a mark's |
+| `ControlView.on` | after `truncated` | a control's effect lists (SPEC 2.8 item 7): `change` to `[EffectView]`, evaluated over the screen; an effect that reads the event (`event: ""`, `withEvent`) takes the new value. The painter sends the new value as `ctl.<id>` as always, runs the effects as a mark's and sends the state they write with the same bind (`ScreenWire.change` runs them for a host) |
+
+The painter keeps the values, applies a clicked mark's `set` (a row, a bar, a point, a step, an event, a candle, a figure or a record) (then rebuilds the parts its states' `reads` name), and
+sends every value back with the next bind as a request parameter `state.<id>=<text>` (a list's items joined by commas;
+`StateValues`), exactly as it sends `ctl.<id>`. A value that does not fit its state's type is ignored there (the default
+stands). `set: <control>` in `on:` is written as today's `selects` entry and row `pick` (one mechanism).
+
+### Differences found (for N3)
+
+Between the Java records (the contract-1.0 truth, now this schema) and the Views design (VIEWS_DESIGN, the `design/views`
+branch of Elements) field names and shapes:
+
+| Java record / schema (contract 1.x) | Views design | Resolution under N3 |
+|---|---|---|
+| `contract: "1.0"` | `spec: "1.0"` | contract 1.x keeps `contract`; the painter reads it |
+| `fmt` (Surface, Histogram, Candles) | `format` | stays `fmt` in 1; rename is contract 2 |
+| `ev` (Row, Bar) | `key` | stays `ev` in 1 |
+| `Table.emptyLabel` | `emptyText` | stays `emptyLabel` in 1 |
+| `title {pill, id, with}` | `title {tag, text, subtitle, link}` | stays; the painter draws `pill`, `id`, `with` |
+| `ref {kind, id}`, `mnemonic`, `provenance.sutra`, `fingerprint`, `generation`, `timings` (top level) | all under `meta` | Core emits host facts under `meta.<profile>`; Drishti's contract writer maps them to these top-level fields (C17); contract 2 (parked) retires the writer |
+| `provenance` (`fetchedAt`, `updatedAt`, `staleAfter`, `stale`, `partial`, `missing`, `masked`, `maskedPanels`) | `status {updatedAt, source, stale, partial, notes}` | stays `provenance` in 1 |
+| panel `empty`, `error`, `denied`, `wire.waits`, `compute.state` | one `state.is` | stays separate fields in 1 |
+| `Link {kind, id, mnemonic}` | `{ref: {kind, id, mnemonic}}` | stays |
+| `keys[].action` words `panel`, `link`, `raw`, `impact`, `denied` | actions the adapter handles | the record's own javadoc lists four; `denied` is in the generator's enum and is kept |
+| frames: ops `strip`, `panel`, `provenance`, `deleted`, `restored` | `cell` by index, `panel`, `status`, `frozen`, `thawed` | stays; the stream's vocabulary is separate from the document's |
+| streamed `skeleton`, `panel-add`, `panel-replace`, `patch`, `done`, `error` | `view` with pending panels, `panel-add`, `panel`, `done`, `state` | not part of this schema (transport, not document) |
+| Cell `emphasis` written only when `true` | Cell, unchanged | same |
+| `Frame` has no `contract` stamp | `spec` on frames | not stamped in 1 |
+| no `a11y`, `formats`, `live`, `layout.narrow` | present in the design | not in contract 1; additions would come as 1.x minors or contract 2. `datasets` and the kinds `grid`, `tree`, `chart` came in 1.1 (above), with fields `values` (columnar), `fmt` and `key` as lists, and the design's derived reads (`where`, `groupBy`) left to the producer |
+
+Other things the transcription found:
+
+- `ControlView.kind` and `.placement` are free strings in the schema (the reference does not enumerate them); the
+  documented words are in each field's description.
+- `PanelView.kind` lists 22 kinds, the same set the reference's `DATA_BY_KIND` maps, so the schema and the grammar agree.
+- `Chart.step` and `PivotRow.group` are boxed booleans in Java (optional, never null); `ViewModel.layout`, `phone`,
+  `PanelView.form`, `PanelCompute.progress`/`stamp` and `Table.pivot` are open objects whose inner shape is described in prose
+  in the reference's description, not as records.
+- The schema's `$id` is this specification's address, `https://ajsinha.github.io/drishti-rachana/spec/1/viewmodel.schema.json`
+
+## The Rachana specification: decisions
+
+The decisions behind the specification and why; they repeat none of the rules, which are in this text (the document model, Rachana-EL, the function catalogue, the problem model, versions and compatibility, conformance), the ViewModel contract and [the Data Protocol](PROTOCOL.md). This note keeps only the decisions behind
+them and why; it repeats none of the rules. Related: [DECISIONS](../../docs/DECISIONS.md), [CORE_AND_PROFILES](../../docs/DESIGN.md#sutra-core-and-profiles-design),
+[COMPILER_AND_RUNTIMES](../../docs/DESIGN.md#compiler-and-runtimes-design).
+
+### The specification is open, the runtime is not
+
+Anyone may read the specification and write Sutras (LICENSE-SPEC.md). The runtime that implements it is proprietary.
+
+### One source of truth
+
+The parser's own tables (`PanelKind`, `ControlKind`, `Functions`, `Wiring`, `Form`, `PivotSpec`) are the truth.
+`rachana.lang.json` and `sutra.schema.json` are generated from them at build time and committed; a gate test fails when a committed
+file is stale. So an editor never offers what the parser refuses, and nothing is written by hand twice. Where the text and the
+conformance suite disagree, it is a defect in one of them and a release blocker: the suite is the executable meaning.
+
+### Publication
+
+Each release publishes `spec/<major>/` unchanged at a stable address (the schema's `$id` is that address), the pattern Drishti
+Elements uses for its docs site. A tagged release is immutable; `spec/1/` on `main` is the newest minor of major 1.
+
+### Compatibility
+
+- A minor adds only: nothing is removed and nothing changes meaning, so a Sutra valid in 1.x is valid, with the same ViewModel, in every
+  later 1.y, and the conformance suite of 1.x passes unchanged (a release gate).
+- Deprecation is a warning with a machine-applicable fix, never an error; an old spelling keeps compiling and is never offered.
+  A check that would refuse existing files ships as a warning for at least two minors.
+- A major is cut only for a change that cannot be an addition. A runtime reads N and N-1; every breaking change comes with its
+  migration rule; a breaking change without one is not accepted. The ViewModel and the Data Protocol version
+  independently, so a language major forces no painter or server upgrade.
+- A profile may add; it may not change the meaning of anything in Core or make a valid Core Sutra invalid. Core's conformance suite
+  runs with every profile loaded.
+
+### Problems
+
+Core keeps the numbers the product had, with the prefix changed from `DRS-` to `RCH-`, so existing knowledge and tests carry over;
+the product maps one to the other in its profile adapter. A code never changes meaning (wording may improve; tools match on codes).
+Messages carry names, never values from a user's tables, so a problem is safe to send to a model. A panel without data is a state
+of that panel, not a problem: only a Sutra that does not compile produces problems.
+
+## Files of this folder, precedence, licence and publication
+
+This folder is the open specification of `rachana: 1`, the language of Sutra files. It says what a Sutra means; it does not describe any one runtime. `rachana.lang.json` and `sutra.schema.json` are generated from Rachana's own tables by `rachana-tools` `LangFiles` (`tools/conformance/spec_files.py` and a test fail when they are stale; never edited by hand); `viewmodel.schema.json` is checked against the reference's generated schema by `tools/conformance/compare_viewmodel_schema.py`; the other files are written.
+
+### Precedence
+
+The conformance suite (`conformance/1/`) is the executable form of this specification. Where a case and this
+text disagree, the case wins until the defect is fixed in one of them. Within this folder, generated files win over
+prose for the names they list (keys, options, functions), and the first part of this text wins over the translation rules for the meaning of an
+expression.
+
+### Licence
+
+Everything in `spec/` is covered by [LICENSE-SPEC.md](../../LICENSE-SPEC.md): free to read, implement and test
+against; the names "Rachana" and "Drishti Rachana" only for implementations that pass the conformance suite of the
+version they claim. **That licence is still a draft and not yet in force.** The runtime in this
+repository stays under [LICENSE](../../LICENSE).
+
+### Publication
+
+Each release publishes `spec/1/` unchanged at a stable address (planned:
+`https://ajsinha.github.io/drishti-rachana/spec/1/`). `spec/1/` on `main` is always the newest minor of major 1; a
+future major gets its own folder and this one stays published.

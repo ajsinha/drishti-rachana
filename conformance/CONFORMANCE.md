@@ -1,13 +1,69 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../LICENSE-SPEC.md (draft, not yet in force). -->
-# Conformance case format, `rachana: 1`
+# Rachana conformance suite
 
-**Status: draft 1 (2026-11-17), front-load item F1.** Reviewed once, then frozen: after the freeze a change to this
-format is an addition only (a new kind, a new optional field), never a change of meaning. The machine-readable form is
-[schema/case.schema.json](schema/case.schema.json) (JSON Schema draft 2020-12); where this text and the schema
-disagree, that is a defect in one of them. How a runtime runs the cases is [RUNNER.md](RUNNER.md).
-`PROTOCOL n` below is a section of the Data Protocol, [../spec/1/data-protocol/PROTOCOL.md](../spec/1/data-protocol/PROTOCOL.md).
+The conformance suite is the **executable form of the specification** ([../spec/1/SPEC.md](../spec/1/SPEC.md)): a set of cases, each
+an input and the exact output a conforming runtime gives. Where the specification's prose and a case disagree, that is
+a defect in one of them and a release blocker; until it is fixed, the case wins (SPEC section 0).
+
+"Is Rachana" means: passes `conformance/<major>/` for the profile and minor claimed ([RUNNER.md](CONFORMANCE.md#the-runner-contract) section 7).
 
 ## Contents
+
+| File | What it is |
+|---|---|
+| [FORMAT.md](CONFORMANCE.md#conformance-case-format-rachana-1) | the case format: files, the eleven kinds and their fields, values, how expected problems are matched (code, path, range), comparison, canonical JSON, number text pinned to the Java reference |
+| [schema/case.schema.json](schema/case.schema.json) | the JSON Schema (draft 2020-12) every case file validates against |
+| [RUNNER.md](CONFORMANCE.md#the-runner-contract) | the contract every runtime's runner implements: options, the results file, statuses, exit codes, cases on stdin for third-party runtimes, record mode, the gate |
+| `1/` | the cases of language major 1, one folder per area |
+| `1/<area>/examples/` | hand-written examples of the format, one file per kind; ordinary cases |
+
+## The kinds
+
+| Kind | Pins | Area |
+|---|---|---|
+| `expr` | an expression's value, type, text form and the paths it read | `el/` |
+| `expr-error` | an expression that does not compile: code, message, offsets | `el/` |
+| `check` | checked mode: the type, or the refusal | `el/` |
+| `grammar` | the grammar accepts or refuses a text | `grammar/` |
+| `format` | a format and a tone applied to a value | `format/` |
+| `sutra` | Sutra + data → the ViewModel | `sutra/` |
+| `problem` | a Sutra's complete, ordered problem list | `problem/` |
+| `patch` | table patches → ViewModel patch frames | `patch/` |
+| `plan` | what is asked of each table: columns, filter tree, push-down | `plan/` |
+| `edit` | an editing operation → the new text, comments kept | `edit/` |
+| `protocol` | a Data Protocol host's answers | `protocol/` |
+
+## Running
+
+```text
+rachana conformance run                              # this runtime, conformance/1, results/<runtime>.jsonl
+rachana conformance run --cmd "./my-port --stdio"    # a third-party runtime, cases on stdin
+rachana conformance protocol --base http://host/data/v1
+```
+
+The JVM runner runs on every build of this repository (and in a host from a pinned cases jar); the
+other runtimes run the same cases. The gate: the reference passes and every runtime's results file is
+byte-identical to the reference's (RUNNER section 7).
+
+## Writing a case
+
+Read [FORMAT.md](CONFORMANCE.md#conformance-case-format-rachana-1) section 10. In short: self-contained, one point per case, expect only what is certain,
+`verified: false` with a `source` until the reference has confirmed it, validate against the schema before committing.
+
+## Licence
+
+Everything in `conformance/` is covered by [LICENSE-SPEC.md](../LICENSE-SPEC.md) (draft, not yet in force): free to
+read, implement and test against.
+
+## Conformance case format, `rachana: 1`
+
+After the freeze a change to this
+format is an addition only (a new kind, a new optional field), never a change of meaning. The machine-readable form is
+[schema/case.schema.json](schema/case.schema.json) (JSON Schema draft 2020-12); where this text and the schema
+disagree, that is a defect in one of them. How a runtime runs the cases is [RUNNER.md](CONFORMANCE.md#the-runner-contract).
+`PROTOCOL n` below is a section of the Data Protocol, [../spec/1/data-protocol/PROTOCOL.md](../spec/1/PROTOCOL.md).
+
+### Contents
 
 1. [Files and folders](#1-files-and-folders)
 2. [The case file](#2-the-case-file)
@@ -20,7 +76,7 @@ disagree, that is a defect in one of them. How a runtime runs the cases is [RUNN
 9. [Number text, pinned to the Java reference](#9-number-text-pinned-to-the-java-reference)
 10. [Rules for case authors](#10-rules-for-case-authors)
 
-## 1. Files and folders
+### 1. Files and folders
 
 ```text
 conformance/
@@ -50,7 +106,7 @@ conformance/
   and start with the specification-licence comment.
 - A future major gets `conformance/2/`; `conformance/1/` stays and keeps passing on every runtime that reads major 1.
 
-## 2. The case file
+### 2. The case file
 
 A case file is **one YAML 1.2 document**, read with the YAML 1.2 *core* schema and the strict rules of SPEC 2.1:
 no repeated key, no second document, no tags. Anchors and aliases are allowed (to share a table between cases).
@@ -82,7 +138,7 @@ cases:
 | `given` | no | inputs shared by every case of the file; a case's own `given` overrides it key by key (one level deep: a case that gives `record` replaces the file's `record` whole) |
 | `cases` | yes | the cases, in a fixed order; at least one |
 
-## 3. Fields every case has
+### 3. Fields every case has
 
 | Field | Required | Meaning |
 |---|---|---|
@@ -104,7 +160,7 @@ Core rule is about profiles (`RCH-2060`: a profile key in a runtime without the 
 **Versions.** An implementation of `rachana: 1.x` runs every case with `since` ≤ `x` and reports the others
 `unsupported`. Cases never change when a minor ships (SPEC 7.2): a later minor adds cases.
 
-## 4. Values in cases
+### 4. Values in cases
 
 Cases hold values in three places: inputs (`given.record`, `given.tables`, `value` of a `format` case), expected
 values (`expect.value`) and documents (`expect.viewModel`). All three are the JSON data model: null, boolean, number,
@@ -130,7 +186,7 @@ exactly is refused by the runner (write it as a string or `$dec`).
 **Dates** are ISO text, as in Rachana (SPEC 4.2): quote them in YAML out of habit, though the core schema keeps them
 text anyway.
 
-## 5. The kinds
+### 5. The kinds
 
 Fourteen kinds. Every kind is a pure function from the case's inputs to one **actual** document; a runner writes that
 document in full on the case's results line (RUNNER section 4) and compares the parts `expect` names (section 7).
@@ -152,7 +208,7 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 | `lib` | `lib/` | `library`, `files` | `{ok, problems, version, sha384, fragments}` | `ok`, `problems`, `sha384` |
 | `live` | `live/` | `declaration`, `file`, `profileKeys` | `{ok, problems, schema}` | `ok`, `problems`, `schema` |
 
-### 5.1 `given`: the context
+#### 5.1 `given`: the context
 
 | Field | Read as | Used by |
 |---|---|---|
@@ -172,7 +228,7 @@ document in full on the case's results line (RUNNER section 4) and compares the 
 
 A masked input is a `{ $masked: true }` in `record`, `row`, `tables` or `src`, standing for the host's `Masker`.
 
-### 5.2 `expr`
+#### 5.2 `expr`
 
 Exactly one of `expr` (an expression) or `template` (a template, SPEC 4.11). The expression is compiled, then
 evaluated once with `given`.
@@ -196,13 +252,13 @@ name, a cycle), the call written in the expression.
   names no `text` (the digits are what the tolerance loosens); a case whose expected digits are not the correctly rounded result
   of the function MUST carry one (SPEC 4.10 rule 7).
 
-### 5.3 `expr-error`
+#### 5.3 `expr-error`
 
 The expression (or template) alone does not compile (with `functions`, as 5.2: expanded first). `expect.problems` lists the problems in order (section 6). For an
 expression compiled alone there is no file: `path` and `range` are absent, and the position is `expr.start` /
 `expr.end`, 0-based offsets into the expression text (SPEC 6.1).
 
-### 5.4 `check`
+#### 5.4 `check`
 
 Checked mode (SPEC 4.14). `scope` is `data` (a data scope: `ctl`, `@panel`, `$src`, `#index` refused) or `screen`.
 `types` gives the known types: `{ record: { qty: integer, price: decimal }, row: { … } }`, each a map from field name
@@ -212,21 +268,21 @@ refusals (`RCH-9127`, `RCH-9129`, `RCH-9152`, `RCH-9161`). A case expects one or
 conditions are two problems), each `{code, severity, message, fix?, expr: {source, start, end}}`; a warning (`RCH-2091`)
 keeps the type.
 
-### 5.5 `grammar`
+#### 5.5 `grammar`
 
 `text` is read by the grammar rule `rule` of [rachana-el.ebnf](../spec/1/rachana-el.ebnf): `expression` (default) or
-`template`. `expect.accepted` is `true` or `false`. These cases hold the recogniser of the grammar proof (plan H6) and
+`template`. `expect.accepted` is `true` or `false`. These cases hold the recogniser of the grammar proof and
 the parser to the same answer: a text accepted by one and refused by the other is a defect. A runtime answers with its own
 compiler at the case's level, so a case's text calls only functions the level has; a text the next level reads differently
 is two cases, the earlier with `until`.
 
-### 5.6 `format`
+#### 5.6 `format`
 
 `value` (section 4) formatted by the format `format` (a name of the shared format table, SPEC 2.6; optional: without
 one, the value's text form) and given the tone word `tone` (optional). `expect.text` and `expect.tone` (`pos`, `neg`, `ok`, `warn`, `bad`, `link`, `accent`, or null).
 These are R-FMT and R-TONE of TRANSLATION 1.1 on their own.
 
-### 5.7 `sutra`
+#### 5.7 `sutra`
 
 `sutra` is the Sutra text (a YAML block scalar), `file` its file name (default `case.sutra.yaml`), `files` other
 files by name for `use:` fragments: a `<name>.v<N>.fragment.yaml` (or `.block.yaml`) file is a fragment the host's
@@ -239,7 +295,7 @@ schema is `spec/1/viewmodel.schema.json`; its key order is the order of output (
 runner's own small pivot engine (a host hook in Core): `sum`, `count`, `avg`, `min` or `max` of each cell, subtotal and total
 over its own rows; another aggregate is the host's and not run by a case.
 
-### 5.8 `problem`
+#### 5.8 `problem`
 
 The Sutra is compiled. `expect.ok` is `true` exactly when no problem has severity `error`. `expect.problems` is the
 **complete, ordered** list (section 6); `[]` when there are none: the errors, then the advisories (severity `warning`,
@@ -251,7 +307,7 @@ compares it whole. For every `problem` case whose actual problems carry
 a `fix`, the runner also applies every fix, compiles again and fails the case if the number of problems grew
 (SPEC 6.1); a case need not ask for this.
 
-### 5.9 `patch`
+#### 5.9 `patch`
 
 The view is built as for `sutra`; then each entry of `steps` is applied in order. A step is `{ table, patch }` where
 `patch` is a Data Protocol patch (`{ remove, update, add, reset }`, PROTOCOL 8.1) to the named table of
@@ -270,14 +326,13 @@ there is no host); `latencyMs` and `p99Ms` are `0` (no time is measured). A step
 strip figures or panels, a panel's id, the title, the controls, the state, the datasets' names) has no frames to give: the whole
 ViewModel is sent again, and a case checks it with `at`.
 
-### 5.10 `plan`
+#### 5.10 `plan`
 
 What a runtime would ask of each table (SPEC 2.4, PROTOCOL 6 and 7): the tables read, the columns, the filter as a
 syntax tree with controls replaced by their values, sorting, grouping, and what stays local. `given.schemas` replaces
 rows. Cases check the plan document with `at`.
 
-**The plan document** is defined here: `{ tables, problems }`. `rachana explain --format json` (plan B1), when built, prints this
-document; it does not define it.
+**The plan document** is defined here: `{ tables, problems }`. A host that prints a plan prints this document.
 
 `tables` has one entry per `table` entry of `data:`, in the order written (`url`, `rows` and `record` entries are not planned):
 
@@ -310,16 +365,16 @@ read against the table's columns (SPEC 4.14): `RCH-9127`, `RCH-9129`, `RCH-9161`
 condition), `where` (the condition as written) and `fix` when there is one. A condition with a problem is planned as rule 1 or 2
 says all the same: the problems, not the plan, say that the screen is not to be shown. Without known schemas there are no problems.
 
-### 5.11 `edit`
+#### 5.11 `edit`
 
 `operation` is `{ op, … }`, an editing operation of the tools layer applied to `sutra`. `expect.text` is the whole new
 text: comments, blank lines and layout outside the edit kept byte for byte. `expect.problems` is for an operation
 refused (e.g. it would make the Sutra invalid). The operation names and arguments are those of the reference's
 editing operations, the name in kebab case: `add-panel`, `move`, `set-option`, `bind`, `remove`, `set-title`, `set-strip`,
-`set-controls`, `set-keys`, `set-block`, `text`, and the Drishti profile's `set-match` (harvested in plan H2: `edit/ops.yaml`).
-One case applies one operation. The hand-written examples (`set`, `insert`) predate the harvest and stay unverified.
+`set-controls`, `set-keys`, `set-block`, `text`, and a host profile's `set-match` (`edit/ops.yaml`).
+One case applies one operation.
 
-### 5.12 `protocol`
+#### 5.12 `protocol`
 
 Run against a Data Protocol host, not a compiler. `fixture` is the reference table the host must serve for the case
 (`{ name, schema, rows }`, PROTOCOL 2 and 5); a host under test loads it through its test adapter. `steps` is a
@@ -332,25 +387,25 @@ list of `{ request, expect, capture }`:
 
 A `protocol` case has no top-level `expect`: each step carries its own.
 
-A fixture may instead be a **live table** ([LIVE_TABLES](../docs/design/LIVE_TABLES.md) 9): `{ name, declaration, rows, tier?,
+A fixture may instead be a **live table** ([LIVE_TABLES](../docs/DESIGN.md#live-tables-design) 9): `{ name, declaration, rows, tier?,
 sourceColumns?, options?, readers?, authoriser?, stream?, edit? }`, the declaration's text served from a source holding `rows`, loaded
 through `POST /_test/live` (PROTOCOL 15). `edit: { sink?: outbox | applied | refuse | none, hold?, switch?: on | off, writerFails? }`
 sets up the edit path (PROTOCOL 16 Writes); a reader's view may add `editable: [columns]`, `mayEdit` (the host's refusal), `approve: true` (the approve right over the tray) and `mayDecide` (the host's refusal of a decision; the adapter always refuses one on the caller's own change). Such a case runs only against a host with live tables; another host reports it
 `unsupported`.
 
-### 5.13 `lib`
+#### 5.13 `lib`
 
 `files` is one library folder (paths inside it, `/` separated, text content), `library` its name. The library is read
-and checked as a host loads it with no signature requirement ([LIBRARIES](../docs/design/LIBRARIES.md) 3, 11, 12): the
+and checked as a host loads it with no signature requirement ([LIBRARIES](../docs/DESIGN.md#sutra-libraries-the-fragment-library-framework) 3, 11, 12): the
 file-type rule, the manifest, `MANIFEST.sha384` against every file, `exports` against the fragment files, the uses
 inside it and the scope of its typed fragments. `ok` is `true` when it loads; `problems` as in `problem` cases;
 `version` (the manifest's), `sha384` (SHA-384 of the canonical `.rlib` archive of the files, 96 hex digits: the
 library's identity in a lock) and `fragments` (its fragment names, sorted) are `null` when it is refused. Signatures are
 not part of this kind (a runtime need not carry Ed25519); they are tested by the JVM tools.
 
-### 5.14 `live`
+#### 5.14 `live`
 
-`declaration` is a live table's declaration (`<name>.live.yaml`, [LIVE_TABLES](../docs/design/LIVE_TABLES.md) section 2), read
+`declaration` is a live table's declaration (`<name>.live.yaml`, [LIVE_TABLES](../docs/DESIGN.md#live-tables-design) section 2), read
 and checked as a host loads it, every problem reported at once, in the order of their positions. `profileKeys` lists the
 profile keys the host reads (`kind`, `query`, `links`, `edit.roles`, `edit.save`, `edit.fields.editable-by`; absent: none, so
 each is a problem). Formats are checked against the runtime's format names. `ok` is `true` when it loads; `problems` as in
@@ -358,7 +413,7 @@ each is a problem). Formats are checked against the runtime's format names. `ok`
 `changedAt`, `narrow`, `view`, column `heavy`), `null` when it is refused. What the engine adds at run time (`live`, `capped`,
 a reader's masks and `write`) is not part of this kind; the `protocol/` suites test it.
 
-### 5.15 `fire`
+#### 5.15 `fire`
 
 Level 1.2 (SPEC 2.8). The view is built as for `sutra`; then each entry of `steps` fires a trigger as a painter fires it:
 `{ panel, trigger, mark?, values? }`. `mark` (default 0) counts the marks the trigger lands on in the order the
@@ -375,7 +430,7 @@ per step: `state` (every state value of the screen after the step, id to value),
 screen does not have is `RCH-5001`, and nothing runs) and the `viewModel` after the step. `expect.steps[i]` names any
 of `state`, `effects` (compared exactly), `problems` (section 6) and `at` (parts of that step's ViewModel).
 
-## 6. Matching expected problems
+### 6. Matching expected problems
 
 A problem is SPEC 6.1's shape. An expected problem names some of its fields; **only the fields it names are compared**,
 except that `code` is always named. Fields are matched as follows.
@@ -399,7 +454,7 @@ actual list has exactly as many problems as the expected one, and the n-th actua
 Order is SPEC 6.1's (by position; the suite pins ties). An evaluation error of an `expr` case (`expect.error`) is
 matched by the same rules with `code` and `message` / `messageStart` only.
 
-## 7. Comparing expected and actual
+### 7. Comparing expected and actual
 
 A case **passes** when every field `expect` names matches the actual document; fields `expect` does not name are not
 compared (they still appear on the results line). `expect` MUST name at least one field (a `protocol` case's
@@ -416,7 +471,7 @@ steps each carry theirs).
 There is no "ignore order", "any value" or regular-expression matching: the result of a conforming runtime is
 determined, so the case says what it is or leaves the field out.
 
-## 8. Canonical JSON
+### 8. Canonical JSON
 
 The results line and every exact comparison use one serialisation, so that "the same" means "the same bytes".
 
@@ -438,7 +493,7 @@ The results line and every exact comparison use one serialisation, so that "the 
 Comparison of two numbers is comparison of their text. A runner that parses JSON or YAML MUST keep enough to reprint a
 number by section 9 (the double it denotes, or the decimal digits of a `$dec`).
 
-## 9. Number text, pinned to the Java reference
+### 9. Number text, pinned to the Java reference
 
 Every runtime prints a number exactly as the Java reference prints it. Stated without Java so a port can implement it:
 
@@ -456,14 +511,12 @@ the reference runs on Java 21). "Shortest" means fewest significant digits; amon
 closest to the exact value of `x`; if two are equally close, the one whose last digit is even. N1 applies first: a whole
 double such as `1.5e7 = 15000000` prints `15000000`, not `1.5E7`.
 
-**To be confirmed by the determinism probes (plan P2) before the freeze:** N4's removal of trailing zeros, N6, and that
-N1's bound is exactly `10¹⁵` (SPEC 4.2 "below 10¹⁵"). Cases pinning them carry `tags: [determinism]` and stay
-`verified: false` until P2 has run them on the reference.
+N4's removal of trailing zeros, N6 and N1's bound of exactly `10¹⁵` (SPEC 4.2 "below 10¹⁵") are pinned by cases that carry `tags: [determinism]`.
 
 These rules give the text form of SPEC 4.2 and the numbers of canonical JSON; a format (`amount0`, `pct2`, …, [formats.yaml](../spec/1/formats.yaml)) has
 its own rules and is not this.
 
-## 10. Rules for case authors
+### 10. Rules for case authors
 
 1. **Self-contained.** A case holds everything it reads; file-level `given` and YAML anchors in the same file are the
    only sharing. No case reads the clock, the locale, the time zone, the network or a file outside the case.
@@ -471,10 +524,188 @@ its own rules and is not this.
 3. **Expect only what is certain.** Name the fields the case is about; the results line keeps the rest.
 4. **Written by reading → `verified: false`**, with `source` naming the test method or the SPEC section. Only the
    reference runner's record mode plus a person's review makes it `true` (RUNNER 6).
-5. **Never pin a defect silently.** Where the reference differs from SPEC, the case pins the decision taken
-   (plan N5) and says so in `note`.
+5. **Never pin a defect silently.** Where the reference differs from SPEC, the case pins the decision taken and says so in `note`.
 6. **Quote expressions in YAML double quotes** with Rachana's single quotes inside: `expr: "sum($.sales, 'revenue')"`;
    write a Sutra as a `|` block scalar. Use `\u` escapes inside double quotes for characters a reviewer could not see
    (U+00A0, U+200B, astral characters).
 7. **Validate** every file against [schema/case.schema.json](schema/case.schema.json) before committing; the runners
    refuse a file that does not validate.
+
+## The runner contract
+
+Frozen with [FORMAT](#conformance-case-format-rachana-1). Every runtime's runner
+implements this contract: the JVM reference, Node, the browsers, Python over WebAssembly, and any third-party port.
+What a case *is* and how it is compared is FORMAT.md; this is how a runner is called and what it writes.
+
+### 1. Runners
+
+| Runtime name | Runner | Reads cases | Notes |
+|---|---|---|---|
+| `jvm` | `rachana-conformance` (JUnit dynamic tests; one test per case) | from the folder, or the pinned cases jar | **the reference**; the only one with record mode (section 6) |
+| `node` | `js/packages/rachana/test/conformance.mjs` | from the folder | |
+| `chromium`, `firefox`, `webkit` | the same module under Playwright | handed in by the Node side | one runtime name per browser |
+| `python-wasm` | `python/tests/test_conformance.py` under `wasmtime` | from the folder | from R2 |
+| any other name | a third party's program, driven by `rachana conformance run --cmd` (section 5) | on stdin | the driver writes the results file |
+
+A runtime name is `[a-z][a-z0-9-]{0,31}`. A runner that runs inside a test framework still writes the results file of
+section 4; the framework's own report is extra.
+
+### 2. Inputs
+
+Every runner accepts these options (the names are those of `rachana conformance run`; a test-framework runner takes
+the same values as system properties or environment variables `RACHANA_CONFORMANCE_<NAME>`, upper case, `-` as `_`).
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--cases <dir>` | `conformance/1` | the suite folder; every `*.yaml` below it is a case file |
+| `--runtime <name>` | the runner's own | written into the summary |
+| `--out <file>` | `results/<runtime>.jsonl` | the results file (section 4); its folder is created |
+| `--summary <file>` | `results/<runtime>.summary.json` | the summary (section 4.3) |
+| `--profiles <a,b>` | `core` | the profiles loaded; `core` is always loaded. Core cases run in every configuration |
+| `--language <major.minor>` | the runtime's own | cases with a later `since` are `unsupported` |
+| `--only <glob,…>` | all | case ids to run (`el/**`, `el/examples/arithmetic#*`); the others are not written |
+| `--kinds <kind,…>` | all the runtime implements | kinds to run |
+| `--timeout <ms>` | `10000` | per case; a case that takes longer is `error` |
+| `--record` | off | JVM reference only (section 6) |
+
+Before the first case a runner **validates every case file** against
+[schema/case.schema.json](schema/case.schema.json), checks that `suite` equals the file's suite name and that case
+ids are unique in the file. A file that fails is a usage failure (exit 2): nothing is run. Then it merges file-level
+`since`, `profile`, `verified` and `given` into each case (FORMAT 2, 3).
+
+**Order.** Case files are taken in the byte order of their UTF-8 suite names; cases in file order. A runner may run
+cases concurrently but writes them in this order.
+
+**Isolation.** Each case gets a fresh compile and a fresh view; nothing one case does is visible to another. A runner
+never reads the clock, locale, time zone or environment on a case's behalf: everything comes from `given`
+(`today` is required wherever it matters). The process's own locale and zone are irrelevant to results; a runner's CI
+runs it once under a non-English locale and a non-UTC zone to prove that.
+
+### 3. Statuses
+
+| Status | When |
+|---|---|
+| `pass` | every field `expect` names matches (FORMAT 7) |
+| `fail` | a field does not match |
+| `error` | the runtime threw, crashed or timed out on the case (never a language problem: those are actual results) |
+| `unsupported` | the kind is not implemented by this runtime, a profile the case needs is not loaded, or `since` is later than `--language` |
+
+A runner never skips a case silently: a case it does not run is `unsupported` and still has its line. There is no
+per-runtime list of known failures; a case that fails on one runtime is a defect to fix.
+
+### 4. Outputs
+
+#### 4.1 The results file: `results/<runtime>.jsonl`
+
+One line per case, in the order of section 2, each the canonical JSON (FORMAT 8) of:
+
+```json
+{"case":"el/examples/arithmetic#add-two-numbers","kind":"expr","status":"pass","actual":{"value":3,"type":"number","text":"3","reads":[]}}
+```
+
+| Field | Value |
+|---|---|
+| `case` | the case id, `<suite>#<id>` |
+| `kind` | the case's kind |
+| `status` | section 3 |
+| `actual` | the actual document of the kind, **every field the kind defines** (FORMAT 5), whatever `expect` names; `null` for `error` and `unsupported` |
+
+Nothing else: no times, no runtime name, no message, no path on disk. That is what makes two runtimes' files
+comparable byte for byte. The file ends with an LF after the last line; an empty selection writes an empty file.
+
+#### 4.2 Diagnostics
+
+Failures are explained on standard error and in the summary, never in the results file: for `fail`, the case id, the
+first field that differs, a short expected/actual excerpt; for `error`, the exception's message (the runtime's own
+words; not compared).
+
+#### 4.3 The summary: `results/<runtime>.summary.json`
+
+```json
+{"runtime":"node","runtimeVersion":"0.9.0","language":"1.0","profiles":["core"],
+ "cases":1834,"pass":1830,"fail":1,"error":0,"unsupported":3,"unverifiedFailing":1,
+ "failures":[{"case":"el/dates#eomonth-leap","status":"fail","verified":false,"detail":"value: expected \"2028-02-29\", actual \"2028-02-28\""}],
+ "millis":4210}
+```
+
+`unverifiedFailing` counts `fail` and `error` cases with `verified: false`. The summary is for people and CI logs; it
+is never compared between runtimes.
+
+#### 4.4 Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | every case run is `pass` or `unsupported` |
+| `1` | at least one case with `verified: true` is `fail` or `error` |
+| `2` | usage failure: bad option, a case file that does not parse or validate, a duplicate case id, the results file cannot be written. No results file is left behind |
+| `3` | only cases with `verified: false` are `fail` or `error` |
+
+CI treats `3` as red: every case of the frozen suite is `verified: true`, so code `3` cannot occur.
+
+### 5. Third-party runtimes: cases on stdin
+
+`rachana conformance run --cmd "<program and arguments>"` (any launcher) runs a program that is not
+written against this repository's code. The **driver** reads and validates the case files, starts the program once,
+and talks JSON lines over its standard input and output; the program never reads case files and never compares.
+
+1. Driver → program, first line: `{"rachana-conformance":1,"language":"1.0","profiles":["core"]}`.
+2. Program → driver, first line: `{"runtime":"<name>","runtimeVersion":"<text>","language":"1.x","profiles":[…],"kinds":[…]}`:
+   what it implements. Kinds and profiles it does not list are `unsupported` without being sent.
+3. Driver → program, one line per case: the case with file-level fields merged in and **without `expect`**, plus
+   `"case":"<suite>#<id>"`: `{"case":"el/examples/arithmetic#add-two-numbers","kind":"expr","since":"1.0","profile":"core","expr":"1 + 2","given":{"today":"2026-01-15"}}`.
+4. Program → driver, one line per case, in the same order: `{"case":"…","actual":{…}}`, or
+   `{"case":"…","error":"<words>"}` when it failed on the case. Numbers in `actual` are written by FORMAT 9; the
+   driver keeps their text and does not reparse them.
+5. The driver closes the program's standard input after the last case; the program exits `0`.
+
+The driver compares, writes `results/<runtime>.jsonl` and the summary exactly as section 4, and exits by 4.4. A line
+that is not JSON, a case id out of order, a missing answer within `--timeout`, or the program exiting early makes
+that case (and every unanswered case) `error`. The program's standard error is copied to the driver's.
+
+### 6. Record mode (the JVM reference only)
+
+`--record` makes the reference runner help turn hand-written cases into verified ones:
+
+1. Cases with `verified: true` are run and compared as always; record mode never changes them. A failing verified
+   case is a failure (exit 1), not something to record.
+2. For each case with `verified: false`, the runner writes the actual result into the case's `expect`, **keeping the
+   fields the case named and only those**, except that a case whose `expect` is empty gets every field of its kind. Each
+   case file is rewritten with the reference's comment-keeping YAML writer: comments, order and layout kept; only
+   `expect` values change.
+3. `verified` stays `false`. A person reviews the diff (`git diff conformance/`) against SPEC and the source test, and
+   flips `verified: true` in the same commit. A change of meaning found on review is a defect in the case or in the
+   reference, settled by the level rule (known differences, below), never by recording over it.
+
+### 7. The gate
+
+A change to this repository, or to a runtime, is green only when:
+
+1. the `jvm` runner exits `0`;
+2. every other runtime's results file is **byte-identical** to `jvm`'s for the cases both ran, after removing lines
+   with status `unsupported` from either side (a runtime may lack a kind; it may not differ on one);
+3. the coverage rule of COMPILER_AND_RUNTIMES 6.2 holds: every key, option, panel kind, function, format, tone and
+   problem code of `spec/1/rachana.lang.json` appears in at least one case.
+
+`tolerance` (FORMAT 5.2) loosens only the comparison with `expect`, for ports; this project's runtimes are built from one
+source and still pass rule 2 byte for byte. "Is Rachana" (SPEC 8) means: exit `0` on `conformance/<major>/` for the
+profile and minor claimed, with no case `unsupported` other than `protocol` (a compiler is not a host) and kinds the
+claimed scope excludes (a linter need not bind: it claims `expr-error`, `check`, `grammar`, `problem`).
+
+### 8. Protocol runs
+
+`rachana conformance protocol --base <url>` runs the `protocol` cases against a Data Protocol host instead of a
+compiler. Before each case the host loads the case's `fixture` through its test adapter (a host-specific hook; the
+standalone server, the Python and Java SDK adapters each have one). Results go to `results/protocol-<host>.jsonl` with
+the same line shape; `actual` is `{"steps":[{"status":…,"body":…}…]}` with bodies as received, canonicalised.
+
+## Known differences between the reference and the specification
+
+At language level 1.0 the reference wins byte for byte and the case is verified; the specified behaviour is the 1.1 variant of the case (`since: "1.1"`, id suffix `-l11`).
+
+| Cases | SPEC | Reference (level 1.0) | Settled |
+|---|---|---|---|
+| 43 `bad-*`, `expr-error` and limit cases | 6.3: `expression '<source>': <reason>` | the words alone, with ` at <offset>` | the cases pin the reference and are verified; the prefix is level 1.1 (`el/messages-level-1-1`, 43 cases) |
+| `el/text#regex-extract-ab-trade-id` | `RCH-2102` | `RCH-4010` | `RCH-4010` verified; `-l11` expects `RCH-2102` |
+| `el/distributions#standardize-42-40-1-5` | a number | a decimal | decimal verified; `-l11` expects a number |
+
+Three families are defined at level 1.1 (SPEC 4.15, 4.16, 4.17, 4.13): `el/reserved` and `grammar/reserved` (the reserved tokens and names refused with their messages), `el/numbers-exact` (exact integer and decimal literals, decimal128, `/` half-even to 34 digits) and `el/text-code-points` (lengths, positions and order by code point). Their cases carry `since: "1.1"`; a case runs at its own level, so the 22 cases tagged `changes-with-xd3` in `el/examples/arithmetic` and `el/paths-operators` keep the level-1.0 doubles (`0.1 + 0.2` is `0.30000000000000004`, `type: number`). The `problem` cases at level 1.0 follow the reference: no `path` or `expr` offsets inside a Sutra, and one problem where a later one depends on the first; the complete list is level 1.1. `check` cases run on Core's checker over record types. Function examples are generated from `spec/1/functions.yaml` (one case per example; examples that need a fixture are described in words) and every Core function has at least one case (`tools/conformance/coverage.py`); `xnpv`, `cumprinc` and `ln` carry a tolerance of 1e-9 (SPEC 4.10 rule 7).

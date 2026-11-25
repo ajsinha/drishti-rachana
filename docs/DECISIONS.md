@@ -1,13 +1,7 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
-# Decisions for the owner
+# Decisions
 
-Status: **accepted 2026-11-17 (owner): all recommendations, D1 to D32.** Each decision keeps its recommendation text and
-has a Status column. D16 is accepted only as a last resort (see its row). The five measurement points below are still
-open: they are proofs, not decisions.
-
-**Open, planning (2026-11-19): L-1 to L-20, the Sutra libraries** ([below](#sutra-libraries-l-1-to-l-20-open)). They follow the
-owner's direction of 2026-11-19 (prebuilt Sutra libraries of fragments: `core`, `finance`, `genomics` and others)
-and are not yet accepted.
+Each decision keeps its recommendation text and has a Status column. D16 is accepted only as a last resort (see its row). The design these decisions shaped is [DESIGN.md](DESIGN.md); what is still planned is [ROADMAP.md](ROADMAP.md).
 
 ## Already fixed (not asked again)
 
@@ -15,16 +9,15 @@ Name `drishti-rachana`; standalone repository; licence as Drishti Elements; Dris
 vendors pinned releases; usable from Java, JavaScript and Python; one compiler source (Java reference, JavaScript
 build, WebAssembly build for Python), other languages proven by the conformance suite; open specification,
 proprietary runtime; nothing Drishti-specific here (Drishti keeps a profile); generative UI built on Rachana, with a
-tool pack for sajhamcpserver and a generic MCP server; UI speed budgets; the split is the first step of Drishti i8;
-R0 during i7b; desktop hosts: Electron first, then Swing through JCEF, then .NET through WebView2.
+tool pack for sajhamcpserver and a generic MCP server; UI speed budgets; desktop hosts: Electron first, then Swing through JCEF, then .NET through WebView2.
 
 ## The Core and profile line
 
 | # | Question | Recommendation | Why | If not | Status |
 |---|---|---|---|---|---|
-| **D1** | Where exactly is the line between Sutra Core and the Drishti profile? | As the table in [CORE_AND_PROFILES](CORE_AND_PROFILES.md) section 1: Core is everything about a screen and rows (20 panel kinds, controls, events, forms without save, fragments, the expression language, list aggregates, binding). The profile is `match`/`domain`, kinds `links` and `provenance`, sources by entity kind, write-back, model functions, registry over packs, governance, context help, masking policy. | Most of what an author types is Core; what is left is "where the data comes from and who may see it", which is a host's business. | A thinner Core (expressions and parsing only) would leave the standalone product without a binder: not a product. | Accepted 2026-11-17 (owner) |
+| **D1** | Where exactly is the line between Sutra Core and the Drishti profile? | As the table in [CORE_AND_PROFILES](DESIGN.md#sutra-core-and-profiles-design) section 1: Core is everything about a screen and rows (20 panel kinds, controls, events, forms without save, fragments, the expression language, list aggregates, binding). The profile is `match`/`domain`, kinds `links` and `provenance`, sources by entity kind, write-back, model functions, registry over packs, governance, context help, masking policy. | Most of what an author types is Core; what is left is "where the data comes from and who may see it", which is a host's business. | A thinner Core (expressions and parsing only) would leave the standalone product without a binder: not a product. | Accepted 2026-11-17 (owner) |
 | **D2** | Do forms belong in Core? | **Yes for entry** (fields, rules, hints, steps, drafts); **no for saving** (`form.save` is the profile's). Core raises a `submit` action; the host saves. | A dashboard product needs parameter entry; write-back needs connectors and approvals. | Keeping all of forms in the profile is simpler at the split and can be relaxed later; choose this if the split must be smaller. | Accepted 2026-11-17 (owner) |
-| **D3** | Is the list-aggregate kernel moved from Drishti's pivot engine into Core, with the engine then using Core's? | **Yes** ([CORE_AND_PROFILES](CORE_AND_PROFILES.md) 2.4). | Core cannot work without `sum`; a second implementation would break the one-way-per-job rule. | Core without aggregates until later (the Overview example would not run), or two implementations. | Accepted 2026-11-17 (owner) |
+| **D3** | Is the list-aggregate kernel moved from Drishti's pivot engine into Core, with the engine then using Core's? | **Yes** ([CORE_AND_PROFILES](DESIGN.md#sutra-core-and-profiles-design) 2.4). | Core cannot work without `sum`; a second implementation would break the one-way-per-job rule. | Core without aggregates until later (the Overview example would not run), or two implementations. | Accepted 2026-11-17 (owner) |
 | **D4** | Does the binder (Sutra + data → ViewModel) move into Core? | **Yes, in two steps after Drishti is already on a pin** (split steps 13, 14). | It is what makes Rachana a product; doing it after the pin keeps the i8 split safe. | Rachana ships only a compiler in R1 and binds in JavaScript by hand: dual machinery. | Accepted 2026-11-17 (owner) |
 | **D5** | Catalogue-driven inference (screens with no Sutra)? | **Stays in Drishti** for the split. A small shape-only inference for Core ("three lines give a screen") is a later Core feature, designed separately. | Inference today reads Drishti's catalogue and semantic hints. | Moving it now enlarges the riskiest part of i8. | Accepted 2026-11-17 (owner) |
 
@@ -72,8 +65,8 @@ R0 during i7b; desktop hosts: Electron first, then Swing through JCEF, then .NET
 
 ## Sutra libraries (L-1 to L-20, open)
 
-Status: **planning; open for the owner (2026-11-19).** Designs: [LIBRARIES](LIBRARIES.md) (the framework) and
-[LIBRARY_CATALOGUE](LIBRARY_CATALOGUE.md) (seven libraries, 209 fragments). The plans in those documents assume
+Status: **planning; open for the owner (2026-11-19).** Designs: [LIBRARIES](DESIGN.md#sutra-libraries-the-fragment-library-framework) (the framework) and
+the library catalogue (seven libraries, 209 fragments, the backlog; `core` and `finance` are built, see [libraries](../README.md#rachana-fragment-libraries)). The plans in those documents assume
 the recommendations.
 
 | # | Question | Recommendation | Why | If not | Status |
@@ -98,27 +91,6 @@ the recommendations.
 | **L-18** | Models compose from fragments first? | **Yes.** Fragment cards and `with` schemas generated per host; two MCP tools (`list_fragments`, `get_fragment`); the system text says "fragments first"; targets as D30 plus at least 70% of panels from fragments and at most half the output tokens of the panel-only baseline. | Fewer tokens, fewer mistakes, and answers that look like the product. | Models write panels: libraries help only people. | Open |
 | **L-19** | Order and size? | **Pull C1 and X42 forward to be the first items after the split, then LB0 the framework (54 days), LB1 `core` baseline (31 fragments), LB2 the other libraries' baseline (105) with the AI kit and Studio's palette, LB3 and LB4 as the expansion items they need land.** 254 builder-days in all, beside C1, X42 and T1. | Every fragment depends on those two items and nothing in them depends on the rest of R2; 136 fragments need only the baseline. | Libraries wait for all of R2: the first fragment ships after the last expansion item. | Open |
 | **L-20** | Is the catalogue of 209 the target? | **Yes as the backlog; each library is released as 1.0 when its baseline wave is done** (`core` 1.0 with 31, `finance` 1.0 with 47), and grows by minors. A fragment that is not used by a gallery screen, a Drishti screen or a customer within two releases of its library is a candidate for removal at the next major. | A dated first release per library; a rule that keeps the libraries from growing without use. | All 209 before any release: the first library ships with the last. | Open |
-
-## Open points that need a measurement, not a decision
-
-Still open after the owner's acceptance of 2026-11-17 (proofs to run, not decisions):
-
-1. TeaVM's coverage of the JDK classes Core uses, especially `java.time` and regular expressions (proof T1).
-2. Bundle sizes and evaluation speed of the JavaScript build (T2 to T4).
-3. WebAssembly GC support in `wasmtime` for the chosen backend (proof W4).
-4. How deep the binder's entanglement with links and masks really is (split step 13 starts with a one-day spike).
-5. Whether the events design (branch `design/eventing`) ships unchanged; section 6 of the Data Protocol follows it.
-
-### Owner's decisions on the libraries (2026-11-19)
-
-| # | Decision |
-|---|---|
-| L-11 | **Every library is proprietary** (core, finance, genomics, economy, geo, ops, ai): one proprietary library licence, no permissive libraries. |
-| L-12 | **Accepted**: libraries are not published in this public repository; together with L-11 this places **all seven libraries in a private companion repository** until licensing and publishing (R3) are decided. |
-| L-15 | **Accepted**: the new genomics kinds (tracks, sequence, molecular 3D structure), mock-ups first for the 3D viewer and its vendored third-party library. |
-| L-19 | **Accepted as recommended**: C1 (typed fragments) and X42 (libraries) are pulled forward to directly after the split. |
-| L-20 | **Accepted**: the 209 fragments are the backlog; each library releases its 1.0 when its baseline wave is done. |
-| others | L-1 to L-10, L-13, L-14, L-16 to L-18: as recommended unless the owner objects. |
 
 ## N5: the known differences between the reference and the specification
 
@@ -210,7 +182,7 @@ The syntax batch, exact numbers and code points are built at level 1.1 (SPEC 4.1
 
 | # | Decision |
 |---|---|
-| W-1 | The Python path for compile, lint and bind is **the JavaScript bundle run on V8** (`mini-racer`, option C of `docs/plans/WASM_RESULTS.md`): no second build target, the bundle and facade are reused. A WebAssembly route (TeaVM with `wasmtime-py`) and a native-image library stay the alternatives; the proof script is re-run on each TeaVM and `wasmtime` release. Supersedes D17's route |
+| W-1 | The Python path for compile, lint and bind is **the JavaScript bundle run on V8** (`mini-racer`, option C of the WebAssembly proof (DESIGN.md, Proofs)): no second build target, the bundle and facade are reused. A WebAssembly route (TeaVM with `wasmtime-py`) and a native-image library stay the alternatives; the proof script is re-run on each TeaVM and `wasmtime` release. Supersedes D17's route |
 | P1-1 | Bundle size is measured, not promised: the budget is restated from the measured figure at each release (see D15-5 for the figure and the open point) |
 | P1-2 | If evaluation speed misses the threshold by a wide margin, the owner chooses between a hand-written JavaScript evaluator for Core and moving the threshold (see D15-6) |
 | P1-3 | Reproducible builds: two clean builds of the same source give the same bundle SHA-256; every release records both hashes (D15-7) |
@@ -285,11 +257,11 @@ Alternatives stay recorded in the table above; the owner may override any of the
 
 The owner approved live tables ("design and do it", 2026-11-21): Drishti's live result set engine becomes a Rachana feature.
 The placement verdict, the design and the decisions **LT-1 to LT-19** with their recommendations are in
-[LIVE_TABLES.md](LIVE_TABLES.md) (sections 0 and 13); the lead decides them under the owner's delegation.
+[LIVE_TABLES.md](DESIGN.md#live-tables-design) (sections 0 and 13); the lead decides them under the owner's delegation.
 
 ### Live tables (lead, under the owner's delegation, 2026-11-21)
 
-The placement verdict of LIVE_TABLES.md section 0 is accepted: **(a) Rachana, as the JVM module `rachana-live`**, never in Core or the JavaScript bundles; rights only through the host's `Authoriser` (no authoriser: writes refused); not a G4 dependency. **LT-1 to LT-19 are accepted as recommended**, including LT-8 (Drishti's write-back service stays in Drishti and is bound as the `ChangeSink`). LT-16 (the snapshot adapter lives in the host) is consistent with Drishti Lake's design (drishti `wip/i7b-products` docs/plans/DRISHTI_LAKE_DESIGN.md, host-supplied rows). Build: L1–L6 (read side) in G2, L7–L10 in G3; Drishti switches over in i8.
+The placement of the live-table engine is decided: **(a) Rachana, as the JVM module `rachana-live`**, never in Core or the JavaScript bundles; rights only through the host's `Authoriser` (no authoriser: writes refused); not a G4 dependency. **LT-1 to LT-19 are accepted as recommended**, including LT-8 (Drishti's write-back service stays in Drishti and is bound as the `ChangeSink`). LT-16 (the snapshot adapter lives in the host) is consistent with Drishti Lake's design (drishti `wip/i7b-products` docs/plans/DRISHTI_LAKE_DESIGN.md, host-supplied rows). Build: L1–L6 (read side) in G2, L7–L10 in G3; Drishti switches over in i8.
 
 ### L-12 amended (owner, 2026-11-21)
 
@@ -331,17 +303,8 @@ document after that, with `url: true`. Estimate: S1 5 bd + I1's state effect 3 b
 
 **S1-OPEN decided (lead, under the owner's delegation, 2026-11-21):** the recommendation is accepted: S1 is built together with I1 in one lane, in the order (1)–(5) above; (a) `StateValues` beside `ControlValues`; (b) ViewModel 1.2 `state[] {id, value, url, reads}`, an older painter ignores it safely; (c) private ids `<as>.<name>`, a stateful fragment requires `as:`; (d) `url: true` and `remember: user` wait for S4's view-state document.
 
-### Libraries split across i7b and i8 (owner, 2026-11-21)
-
-i7b ships **`core` and `finance`** (the two Drishti uses first). `genomics`, `economy`, `geo`, `ops` and `ai` are built in Drishti i8 alongside its screens-from-fragments work (H2), where real screens show what each fragment needs. The library machinery, gates and gallery are complete in i7b.
-
-### Level declaration and `rachana upgrade` (owner and lead, 2026-11-21)
+### Level declaration (UP-0)
 
 | # | Decision | Why |
 |---|---|---|
-| UP-0 | (owner) The `rachana:` key declares the level: `MAJOR.MINOR`, the minor optional; `rachana: 1` is 1.0 until levels 1.0 and 1.1 retire (G4), then the newest; one switch, `Grammar.MAJOR_ONLY`. No project file, flag or attribute sets a level | One way per job; every Sutra means the same on every host |
-| UP-1 | Exact arithmetic is **flagged, not rewritten**: `/` and `%` of operands that may be exact, and `+ - *` with a fractional literal. The language can keep a double (`* 1e0` on an operand), but writing it into every Sutra would freeze binary artefacts that 1.1 was made to remove; the flag names the fix where a host's figures must not move | The corpus proof shows no recorded view changes (formats round) |
-| UP-2 | Number-like text of Java's grammar, `standardize`, texts beyond U+FFFF and run-time patterns are flags; a bare `lambda` blocks the file (no rewrite keeps a bare name's row-or-record reading) | Never guess |
-| UP-3 | One implementation in Java (`rachana-tools`); the Node and Python commands start the JVM, as `rachana lib` does | The tool reads YAML positions and the compiler's own tables |
-| UP-4 | (amended 2026-11-21, Gate 2 review 10.5) A fragment's `rachana:` key is its level, exactly as a Sutra's (SPEC 2.1 rule 4); a fragment without the key is 1.0. `rachana upgrade` reads and writes the key for both; a file at the target level is left untouched; no `--from` | A level from the command line made the tool refuse its own output and rewrite valid 1.2 text |
-
+| UP-0 | The `rachana:` key declares the level: `MAJOR.MINOR`, the minor optional; `rachana: 1` is 1.0 until levels 1.0 and 1.1 retire, then the newest; one switch, `Grammar.MAJOR_ONLY`. No project file, flag or attribute sets a level. A fragment's `rachana:` key is its level, exactly as a Sutra's (SPEC 2.1 rule 4); a fragment without the key is 1.0. Nothing rewrites a file to a later level: levels are read as written, and a host chooses the newest level it reads. | One way per job; every Sutra means the same on every host |

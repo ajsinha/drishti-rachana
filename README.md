@@ -95,7 +95,8 @@ Then [the tutorial](docs/TUTORIAL.md) writes a real dashboard, a library, a live
 | Document | For |
 |---|---|
 | [TUTORIAL.md](docs/TUTORIAL.md) | four hands-on parts: a dashboard from a CSV file, a typed library, a live table with approvals, a live board in Flask |
-| [WRITING_SUTRAS.md](docs/WRITING_SUTRAS.md) | the language, libraries and `rachana lib`, Studio |
+| [WRITING_SUTRAS.md](docs/WRITING_SUTRAS.md) | the language (layout, controls, forms, recipes, expressions step by step, an annotated example, common mistakes), libraries and `rachana lib`, Studio |
+| [PANEL_KINDS.md](docs/PANEL_KINDS.md) | every panel kind: when to use it, when not, what each option does; row groups and totals |
 | [IN_YOUR_APP.md](docs/IN_YOUR_APP.md) | Flask and FastAPI integration, the server, live tables and editing, the Data Protocol in use, the CLI and SDKs |
 | [examples/README.md](examples/README.md) | the three runnable examples |
 | [SPEC.md](spec/1/SPEC.md) | the normative specification, the translation rules, the ViewModel contract |

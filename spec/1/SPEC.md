@@ -134,6 +134,22 @@ accepted ones in `expected`; a missing required option is `RCH-2022`.
 
 `links` and `provenance` are `drishti` profile kinds.
 
+**What the common panel keys mean.** `id`: unique in the Sutra (`RCH-2024`), used by function keys, patches, controls (`panel:`) and `on-select`;
+`kind` one of the kinds below (`RCH-2021`); `title` a template (shown as written when it cannot be rendered); `key` a function key `F1`..`F12`,
+unique (`RCH-2025`), scrolling to the panel; `code` a short tag at the right of the panel header; `area` `main` (default) or `right`, or on a
+screen with `layout.areas` one of its areas (`RCH-2059` for a name the picture does not have, `RCH-2027` for a name without `layout.areas`);
+`order` 0 to 999, the place within its area or flow (not inside a tab); `section` the id of a `layout.sections` entry; `collapsible` lets the
+reader fold the panel; `span` 1 to 12 and `height` 1 to 24 grid rows (`RCH-2030`; not on a `tabs` body or a panel inside a tab); `when` an
+expression: the panel is left out, with no empty box, where it is false (a panel inside a tab reads `@` as the tab's element);
+`where` (every kind with `rows` except `kv`) a condition on each row, `@` the row; `on-select` (`table`, `ladder`, `hbar`) sets a control from a click;
+`body` and `panels` for `tabs` only (`RCH-2023` elsewhere); `description` plain text, never evaluated. Every other key is a kind option
+(`RCH-2023`), and a missing required option is `RCH-2022`.
+
+**Columns** (`kv`, `table`, `ladder`, `tabs` in the body, `surface`): a mapping `{label, bind, fmt, tone, total, link, emphasis}`. `bind` (required) is an
+expression, `@` the row and `#index` its position; `label` the header (a column with none is labelled from its expression); `fmt` a format name
+(in a table a column whose format is not `date` or `text` is right-aligned); `tone`; `total: true` adds the column into the total row of a
+`table` or `ladder`; `link: true` makes the value a link where the host knows the kind. Any other key is `RCH-2011`.
+
 **Since 1.1: the dataset kinds.** Three kinds of language 1.1 put their rows into the view's `datasets` (ViewModel
 contract 1.1, [the ViewModel contract](#the-viewmodel-contract-1x)) as raw values, which the painter formats; the panel's data names the dataset.
 
@@ -409,6 +425,71 @@ number's sign, none for 0, empty or non-numbers), `status` (→ `bad` for text c
    whole (a text, a multi-select's list, a range's `from..to`; `event.<name>` and `set: <control>` are `RCH-2012`). A
    control fires `change` only (any other trigger `RCH-2023`). Carried as `ControlView.on` (contract 1.2); a host runs
    them with `ScreenWire.change`. Below level 1.2 `on` in a control is `RCH-2011`.
+
+### 2.9 Function keys, control kinds and format files [reference tables]
+
+These tables restate, for authors, rules the implementation applies; where one differs from a section above, the section above rules.
+
+**Function keys.** A function key comes from a panel's `key:` (`F1`..`F12`: the panel is scrolled to; the key's label is the panel's title cut
+at the first ` · ` or ` (`) or from the top-level `keys:` mapping, whose value is `link(...)` (opens the entity; no key when the id is
+empty or its kind cannot be told), the id of a panel to scroll to (any other text; not checked when the Sutra loads, so a wrong id gives a
+key that does nothing), or a profile action (`raw`, `impact`). A key is unique across panels and `keys` (`RCH-2025`, also for a name that is
+not `F1`..`F12`), and the key bar shows them in key-number order.
+
+**Control keys** (2.5; `RCH-2034`, a bad key, kind or placement; `2035` a duplicate id; `2036` a reference to a control the Sutra does not
+declare; `2037` a `cascading` parent declared after its child; `2038` an `on-select` naming no control or panel; `2039` a default that does
+not fit the kind).
+
+| Key | Required | Meaning |
+|---|---|---|
+| `id` | yes | the name read as `ctl.<id>`: a letter, then letters, digits and underscores, at most 32; unique; `ctl` is reserved |
+| `kind` | yes | one of the kinds below |
+| `label` | | the text beside the control (the id when absent) |
+| `options` | for `dropdown`, `multi-select`, `cascading`, `toggle`, `segmented`, `top-n` | a list of values or `{value, label}` items, or an expression over the data (a list of records offers their `id`); kinds that take none refuse it |
+| `default` | | a value, `first`, `all` (`multi-select`), or a relative date token; it must fit the kind (`RCH-2039`) |
+| `remember` | | `user` or `none` (default) |
+| `required` | | `true`: the reader cannot clear it |
+| `placement` | | `strip` (default), `header` (needs `panel`) or `side` |
+| `parent` | for `cascading` | the control whose value the options depend on, declared before this one |
+| `min`, `max`, `step`, `range` | `min` and `max` for `slider` and `number-range` | bounds (a number or an expression), the step (above zero, default 1) and `range: true` for a slider with two handles whose value is `from..to` |
+
+At most 12 controls; any other key is `RCH-2011`.
+
+| Kind | `ctl.<id>` holds |
+|---|---|
+| `dropdown`, `toggle`, `segmented` | the chosen value as text (a dropdown's *(all)* is empty text) |
+| `multi-select` | a list of the chosen values; an empty list is everything to `oneOf` |
+| `cascading` | as a dropdown; its `options` may read `ctl.<parent>` |
+| `date` | an ISO date as text, or empty |
+| `date-range` | `from..to` as text (either end may be empty) |
+| `number-range` | `min..max` as text |
+| `slider` | one handle: a number (empty when the scale has no bounds); two handles: `from..to` as text |
+| `top-n` | a whole number |
+| `search` | the text |
+
+Relative-date defaults: `today`, `yesterday`, `previous-business-day`, `this-week`, `this-month`, `last-month`, `next-month`,
+`this-quarter`, `this-year`, `ytd`, `mtd`, `next-90d`, `last-30d` and, on the host's business calendar, `next-5bd`, `last-3bd`; a
+`date-range` holds the range they resolve to.
+
+**Format files.** A host or a profile adds formats in a mapping `formats:` of name → definition; a profile MUST NOT redefine a Core name
+(2.6). The keys of a definition are those of [formats.yaml](formats.yaml):
+
+| Key | Default | Meaning |
+|---|---|---|
+| `type` | `number` | `number`, `compact`, `date` or `text` (anything else is treated as `number`) |
+| `decimals` | `0` | fraction digits (`number`, `compact`) |
+| `grouping` | `true` | thousands separators |
+| `sign` | `auto` | `auto` (minus only) or `always` (also `+` on positives; never on zero) |
+| `scale` | `1` | multiplier applied first (`100` for a percentage of a fraction) |
+| `suffix` | none | appended text (`"%"`, `" bp"`) |
+| `pattern` | none | `date` only: a date pattern; `yyyy-MM-dd` or none shows the text unchanged |
+
+```yaml
+formats:
+  pct4:  { type: number, decimals: 4, scale: 100, suffix: "%" }
+  usdm:  { type: number, decimals: 1, scale: 0.000001, suffix: " m" }   # 242000000 -> 242.0 m
+  month: { type: date, pattern: "MMM yyyy" }                           # 2026-09-30 -> Sep 2026
+```
 
 ## 3. Where expressions appear
 
@@ -1017,6 +1098,26 @@ not yet settled, so a Core implementation MAY lack them): `sum_once`, `count_onc
 `trimmean`, `percentile_exc`, `rank_avg`, `percent_rank_of`, `kth_largest`, `kth_smallest`, `string_agg`, `cumsum`,
 `cumprod`, `cummax`, `cummin`, `movsum`, `movmean`, `movstd`, `movmedian`, `maxk`, `mink`, `bounds`, `zscore`,
 `rescale`, `isoutlier`, `polyfit`.
+
+### 5.12 Equivalents in Excel, SAS and MATLAB [informative]
+
+An analyst coming from Excel, SAS or MATLAB finds these families in Core, each function under one name (the arguments, rules and
+examples are 5.2 to 5.9 and [functions.yaml](functions.yaml); the host's list functions, such as running and moving statistics, are
+[not in Core](#511-not-in-core)).
+
+| Family | Functions | Example |
+|---|---|---|
+| Math | `round`, `round_sig`, `log(x, base?)`, `fact`, `combin`, `permut`, `gcd`, `lcm`, `even`, `odd`, `pi`, `sin` ... `atan2`, `sinh`, `cosh`, `tanh`, `radians`, `degrees`, `base`, `decimal` | `round(242000000 / 1e6, 1)` is `242` |
+| Information and choice | `is_number`, `is_text`, `is_date`, `is_boolean`, `is_blank`, `is_error`, `type_of`, `choose` | `choose(2, 'a', 'b', 'c')` is `b` |
+| Text | `len`, `proper`, `rept`, `exact`, `char`, `code`, `find`, `search` (positions, 0 when not there), `text_before`, `text_after`, `regex_replace`, `reverse`, `clean`, `value` (text to a number), `text` (a number or date with an Excel format code) | `text(242000000, '#,##0')` is `242,000,000` |
+| Dates | `date(text)`, `date(y, m, d)`, `year`, `quarter`, `month`, `week` (ISO), `day`, `hour`, `minute`, `second`, `weekday(d, type?)`, `days360`, `datedif(a, b, unit)`, `shift_date(d, n, unit?, calendar?)` | `shift_date('2025-07-25', 2)` is `2025-07-29` |
+| Lists (MATLAB's) | `fillmissing`, `interp1`, `polyval`, `trapz`, `cumtrapz`, `union`, `intersect`, `difference`, `is_member` | `trapz([1, 2, 3])` is `4` |
+| Distributions | `norm_dist`, `norm_inv`, `norm_s_dist`, `norm_s_inv`, `lognorm_dist`, `lognorm_inv`, `t_dist`, `t_inv`, `chisq_dist`, `chisq_inv`, `f_dist`, `f_inv`, `binom_dist`, `binom_inv`, `poisson_dist`, `expon_dist`, `gamma_dist`, `gamma_inv`, `gamma`, `gamma_ln`, `beta_dist`, `beta_inv`, `weibull_dist`, `hypgeom_dist`, `negbinom_dist`, `erf`, `erfc`, `standardize`, `confidence_norm`, `confidence_t`, `fisher`, `fisher_inv` | `norm_s_inv(0.99)` is `2.3263478740408408` |
+| Finance on given flows | `npv`, `xnpv`, `irr`, `xirr`, `mirr`, `pv`, `fv`, `pmt`, `ipmt`, `ppmt`, `nper`, `rate`, `cumipmt`, `cumprinc`, `effect`, `nominal`, `fvschedule`, `rri`, `pduration`, `accrued`, `dollarde`, `dollarfr`, `macaulay_duration`, `modified_duration`, `convexity` | `accrued(0.04, '2026-01-01', '2026-07-01')` is `0.02` |
+
+`irr`, `xirr` and `rate` find their root by Newton's method from the guess, then by a scan for a change of sign, to 1e-12; when no rate
+makes the value 0 they say so (`RCH-2102`), never a figure that is not a root. A list of flows with an empty element gives an empty figure (a
+missing flow is never skipped).
 
 ## 6. Problems (the error model)
 

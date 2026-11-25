@@ -12,7 +12,7 @@ import com.ash.rachana.model.Ordered;
 
 /**
  * The JSON Schema (draft 2020-12) of the ViewModel, its panels' {@code data} and the live stream's frames
- * ({@code GET /api/v1/viewmodel/schema}, docs/architecture/VIEWMODEL.md section 9).
+ * ({@code GET /api/v1/viewmodel/schema}, spec/1/SPEC.md (the ViewModel contract) section 9).
  *
  * <p>Generated from the records themselves at build time ({@code ViewCodeGenerator}, checked fresh by a test), so a field added to {@link ViewModel}, {@link PanelData}, {@link Frame} or
  * {@link Patch} is in the schema at once. Each record's {@link Include} rule decides what is required and what may be null:

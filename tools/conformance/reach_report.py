@@ -2,7 +2,7 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see LICENSE.
 """Plan H3 (the Rachana-side report): which product classes does Drishti's compute/drishti-rachana main source import? Read only.
-    python3 tools/conformance/reach_report.py /path/to/drishti > docs/reports/R0_REACH_REPORT.md
+    python3 tools/conformance/reach_report.py /path/to/drishti > reach-report.md
 The list is the work queue of A1 to A9: it may only shrink."""
 import collections
 import re

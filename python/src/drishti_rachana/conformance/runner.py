@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""A runner implementing conformance/RUNNER.md: load, run through an adapter, compare, write, exit code."""
+"""A runner implementing conformance/CONFORMANCE.md: load, run through an adapter, compare, write, exit code."""
 from __future__ import annotations
 
 import fnmatch

@@ -37,7 +37,7 @@
     <profile><id>stock</id><activation><property><name>!proof.classlib</name></property></activation>
       <dependencies><dependency><groupId>org.teavm</groupId><artifactId>teavm-classlib</artifactId><version>${teavm.version}</version><scope>provided</scope></dependency></dependencies>
     </profile>
-    <!-- W1: TeaVM's class library with the one TThrowable change of WASM_RESULTS.md, for the Python host only -->
+    <!-- W1: TeaVM's class library with the one TThrowable change of DESIGN.md (Proofs), for the Python host only -->
     <profile><id>patched</id><activation><property><name>proof.classlib</name></property></activation>
       <dependencies><dependency><groupId>org.teavm</groupId><artifactId>teavm-classlib</artifactId><version>${teavm.version}</version><scope>system</scope>
         <systemPath>${proof.classlib}</systemPath></dependency>

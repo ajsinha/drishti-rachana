@@ -11,7 +11,7 @@ Steps, for each library under libraries/ (all of them when none is named):
   2. build    rachana lib build: regenerates `exports` in the manifest and MANIFEST.sha384
   3. test     tools/libraries/LibCheck.java: every example compiles at language level 1.2 with no problem and no advisory, and its
               ViewModel equals the golden snapshot (--update-goldens rewrites the goldens, then builds again)
-  3b gate     rachana lib gate: the quality gates LG1-LG5 and LG8 (LIBRARIES.md 15.2); a failing gate stops the build
+  3b gate     rachana lib gate: the quality gates LG1-LG5 and LG8 (DESIGN.md (libraries) 15.2); a failing gate stops the build
   4. sign     rachana lib sign, with the development key (results/libraries/keys/dev.key, created on first use, never committed);
               --release signs with the owner's release key instead: RACHANA_RELEASE_PUBLIC and RACHANA_RELEASE_SEED
   5. pack     rachana lib pack: dist/<name>-<version>.rlib, deterministic, signature required

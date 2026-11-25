@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The JVM runtime program of the conformance suite (conformance/RUNNER.md section 5): cases as JSON lines on standard input, the
+ * The JVM runtime program of the conformance suite (conformance/CONFORMANCE.md section 5): cases as JSON lines on standard input, the
  * actual document of each on standard output, answered by {@link Cases}. Arguments: {@code [--profiles a,b] <formats file>...}: the
  * Core format table first, then a profile's names when given. Run by {@code tools/conformance/rachana_conformance.py --jvm}.
  */

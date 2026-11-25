@@ -18,7 +18,7 @@ import java.util.LinkedHashSet;
 
 /**
  * One Rachana: settings and profiles in, a compiler, a function table and a format table out (split step A6;
- * docs/design/CORE_AND_PROFILES.md section 3). Everything a profile registers lives in the instance: two instances in one JVM never see
+ * docs/DESIGN.md section 3). Everything a profile registers lives in the instance: two instances in one JVM never see
  * each other's functions, calendars, patterns or compiled expressions. An instance never changes; a host whose functions come and go
  * (a module started or stopped) builds a new instance and swaps it in, and the old cache goes with the old instance.
  *
@@ -171,7 +171,7 @@ public final class Rachana {
     }
 
     /**
-     * The same instance reading libraries from this set (LIBRARIES.md 10): {@code libraries: [name@N]} and {@code use: name/fragment@N}
+     * The same instance reading libraries from this set (DESIGN.md (libraries) 10): {@code libraries: [name@N]} and {@code use: name/fragment@N}
      * from language level 1.2. The set holds the resolver, the lock and the trust; it caches each library by content hash.
      */
     public Rachana libraries(com.ash.rachana.lib.LibrarySet set) {

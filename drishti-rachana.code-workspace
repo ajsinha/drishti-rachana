@@ -2,8 +2,8 @@
 // Drishti Rachana. Proprietary: see LICENSE.
 //
 // Rachana in VS Code: File, Open Workspace from File. The tasks and launch configurations carry the SAME names as the JetBrains run
-// configurations in run-configs/ (the launcher standard: docs/plans/LAUNCHER_STANDARD.md in the Drishti repository). JDK 21: change the
-// Java path below (Windows: C:\\jdk-21). Build and run in the IDE: README.md#build-and-run-in-the-ide.
+// configurations in run-configs/. JDK 21: change the
+// Java path below (Windows: C:\\jdk-21). Build and run in the IDE: docs/DEVELOPING.md#build-and-run-in-the-ide.
 {
   "folders": [{"name": "rachana", "path": "."}],
   "extensions": {"recommendations": ["vscjava.vscode-java-pack", "ms-python.python", "ms-python.vscode-pylance", "ms-python.debugpy", "dbaeumer.vscode-eslint", "redhat.vscode-yaml"]},

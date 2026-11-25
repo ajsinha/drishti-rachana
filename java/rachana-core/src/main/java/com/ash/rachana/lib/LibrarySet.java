@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The libraries a host offers its Sutras (LIBRARIES.md 9, 10, 12): a {@link LibraryResolver}, the project's lock (optional: a host
+ * The libraries a host offers its Sutras (DESIGN.md (libraries) 9, 10, 12): a {@link LibraryResolver}, the project's lock (optional: a host
  * without one, such as the playground, takes what its resolver has) and the host's trust. A parsed library is cached by its content
  * hash for the life of the set, so expanding a use never re-reads a file. {@link #fragments} is the adapter that serves a Sutra's
  * library fragments through the 1.0 {@link FragmentResolver} hook, which keeps its signature: a host that implements only
@@ -35,7 +35,7 @@ public final class LibrarySet {
     private static final Pattern DECLARED = Pattern.compile("([a-z][a-z0-9-]{0,31})@([0-9]+)");
     private static final Pattern LONG = Pattern.compile("([a-z][a-z0-9-]{0,31})@([0-9]+)/([a-z][a-z0-9-]{1,63})@([0-9]+)");
     private static final Pattern SHORT = Pattern.compile("([a-z][a-z0-9-]{0,31})/([a-z][a-z0-9-]{1,63})(@([0-9]+))?");
-    /** How deep {@code depends} may chain (LIBRARIES.md 3.3). */
+    /** How deep {@code depends} may chain (DESIGN.md (libraries) 3.3). */
     public static final int MAX_DEPTH = 4;
 
     private final LibraryResolver resolver;

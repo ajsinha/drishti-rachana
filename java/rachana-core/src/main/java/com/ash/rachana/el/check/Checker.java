@@ -18,7 +18,7 @@ import java.util.Set;
 import com.ash.rachana.model.Ordered;
 
 /**
- * Rachana's checked mode (docs/architecture/ARCHITECTURE.md §28 2.1 and 2.2; the type checker ported from DEL's {@code DelChecker}, which now calls
+ * Rachana's checked mode (spec/1/SPEC.md §28 2.1 and 2.2; the type checker ported from DEL's {@code DelChecker}, which now calls
  * this one): checks a parsed expression against the scope it is written in ({@link Scope}), the {@link Signatures} and (when known)
  * the fields, measures and parameters the caller may use. Types (no implicit casts, booleans only for conditions), aggregates where
  * they belong ({@code RCH-9127} "an aggregate belongs in a measure", "wrap it: sum(...)"), names that exist ({@code RCH-9152}), masked

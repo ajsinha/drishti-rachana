@@ -18,11 +18,11 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 /**
- * Where a library is found (LIBRARIES.md 10, EL_EXPANSION X42): a host hook, consulted only for what the host configured. No shipped
+ * Where a library is found (DESIGN.md (libraries) 10, EL_EXPANSION X42): a host hook, consulted only for what the host configured. No shipped
  * resolver opens a network connection; fetching is a separate, explicit step ({@code rachana lib add}, {@code restore}). Shipped:
  * {@link #of} (memory: tests, the playground, a host's own store), {@link #folder} ({@code rachana_libs/<name>/}), {@link #archives}
  * (a folder of {@code .rlib} files) and {@link #first} (several, in order). The classpath and package resolvers come with the carriers
- * (LIBRARIES.md 11.2).
+ * (DESIGN.md (libraries) 11.2).
  */
 public interface LibraryResolver {
 
@@ -164,7 +164,7 @@ public interface LibraryResolver {
     String CLASSPATH_ROOT = "META-INF/rachana/libs/";
 
     /**
-     * Libraries in jars (LIBRARIES.md 10, 11.2: the Maven carrier): {@code META-INF/rachana/libs/<name>/} holds the library's folder; its
+     * Libraries in jars (DESIGN.md (libraries) 10, 11.2: the Maven carrier): {@code META-INF/rachana/libs/<name>/} holds the library's folder; its
      * {@code MANIFEST.sha384} names every file, so nothing is listed from the jar itself; {@code META-INF/rachana/libraries} lists the
      * names a jar carries (for {@link #list()}). No I/O beyond the class loader.
      */
@@ -224,7 +224,7 @@ public interface LibraryResolver {
     }
 
     /**
-     * Libraries installed as packages (LIBRARIES.md 10, 11.2: the npm and PyPI carriers). Each root is a {@code node_modules} folder or a
+     * Libraries installed as packages (DESIGN.md (libraries) 10, 11.2: the npm and PyPI carriers). Each root is a {@code node_modules} folder or a
      * Python {@code site-packages} folder. An npm package declares {@code "rachana": { "library": "<name>", "folder": "<path>" }} in its
      * {@code package.json} (the folder relative to the package, default {@code lib}); a Python distribution declares the entry point group
      * {@code rachana.libraries} in its {@code *.dist-info/entry_points.txt}, {@code <name> = <package.module>}, the module's folder being

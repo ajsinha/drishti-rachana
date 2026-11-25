@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti platform. Proprietary: see the LICENSE file at the root of this repository.
-"""The launcher check (the platform's launcher standard, docs/plans/LAUNCHER_STANDARD.md in the Drishti repository).
+"""The launcher check (the platform's launcher standard, docs/DEVELOPING.md in the Drishti repository).
 
     python3 tools/launchers/check_launchers.py        (exit 1 with every problem listed)
 

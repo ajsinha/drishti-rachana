@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /**
  * The files of one library version as a resolver found them (a folder, an archive, a map), before they are checked: path (with
  * {@code /}) to bytes. Its identity is the SHA-384 of its deterministic archive ({@link Rlib#write}), the same whether it was read
- * from a folder or from the {@code .rlib} that was packed from that folder (LIBRARIES.md 12).
+ * from a folder or from the {@code .rlib} that was packed from that folder (DESIGN.md (libraries) 12).
  *
  * @param name the library's name
  * @param files its files, sorted by path

@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 /**
- * The conformance cases answered over Rachana's own compiler (conformance/RUNNER.md section 5), one JSON line in, one out, with no I/O:
+ * The conformance cases answered over Rachana's own compiler (conformance/CONFORMANCE.md section 5), one JSON line in, one out, with no I/O:
  * the JVM runtime program ({@link JvmRuntime}) and the JavaScript build (java/rachana-js, the same code compiled by TeaVM) both answer
  * through it, so the runtimes cannot drift apart in the harness. It is the reference bridge (tools/reference-bridge/RefBridge.java)
  * moved onto this repository's code with its logic unchanged (split step A10); numbers are printed through Core's canonical
@@ -323,7 +323,7 @@ public final class Cases {
                 String rest = path.substring("rachana_libs/".length());
                 int slash = rest.indexOf('/');
                 libs.computeIfAbsent(rest.substring(0, slash), k -> new TreeMap<>()).put(rest.substring(slash + 1), body);
-            } else if (path.startsWith("contracts/") && path.endsWith(".json")) {      // the host's contracts (LIBRARIES.md 5.2)
+            } else if (path.startsWith("contracts/") && path.endsWith(".json")) {      // the host's contracts (DESIGN.md (libraries) 5.2)
                 contracts.put(path.substring("contracts/".length(), path.length() - ".json".length()), body);
             } else if (path.equals(com.ash.rachana.lib.LibraryLock.FILE)) {
                 lock = com.ash.rachana.lib.LibraryLock.read(body);
@@ -343,7 +343,7 @@ public final class Cases {
 
     /**
      * FORMAT 5.13 {@code lib}: the library whose files {@code files} gives (paths inside the library folder), named {@code library},
-     * read and checked (LIBRARIES.md 3, 12): {@code {ok, problems, version, sha384, fragments}}, the last three null when it is refused.
+     * read and checked (DESIGN.md (libraries) 3, 12): {@code {ok, problems, version, sha384, fragments}}, the last three null when it is refused.
      */
     public static void lib(Map<String, Object> c, StringBuilder sb) {
         Map<String, String> files = new TreeMap<>();

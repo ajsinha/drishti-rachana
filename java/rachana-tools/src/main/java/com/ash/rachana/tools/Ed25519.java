@@ -16,7 +16,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.HexFormat;
 
 /**
- * Ed25519 signatures of libraries (LIBRARIES.md 12) on the JVM's own implementation: keys are plain 32-byte values written
+ * Ed25519 signatures of libraries (DESIGN.md (libraries) 12) on the JVM's own implementation: keys are plain 32-byte values written
  * {@code ed25519:<hex>} (public) and 64 hex digits (the private seed); no certificate authority. The verifier is the one a JVM host
  * hands to {@code Library.Trust}. Stateless; thread-safe.
  */

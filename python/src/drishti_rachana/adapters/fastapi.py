@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""FastAPI adapter (docs/guides/CLI_AND_SDKS.md, Python): a router that serves Sutras and the Data Protocol v1 resources.
+"""FastAPI adapter (docs/IN_YOUR_APP.md, Python): a router that serves Sutras and the Data Protocol v1 resources.
 
     from drishti_rachana.adapters.fastapi import RachanaRouter
     rachana = RachanaRouter(sutras="sutras/")

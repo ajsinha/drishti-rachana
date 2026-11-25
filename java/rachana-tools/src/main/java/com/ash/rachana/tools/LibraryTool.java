@@ -23,7 +23,7 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 /**
- * The library commands' work on the JVM (LIBRARIES.md 22): {@code build} (regenerate {@code exports} and {@code MANIFEST.sha384}),
+ * The library commands' work on the JVM (DESIGN.md (libraries) 22): {@code build} (regenerate {@code exports} and {@code MANIFEST.sha384}),
  * {@code sign} (a detached Ed25519 signature line in {@code SIGNATURE}), {@code pack} (the deterministic {@code .rlib}), {@code verify}
  * (every rule of {@link Library#load}), {@code lock} (the {@code rachana.lock} entry of a packed library), {@code contracts} (the tables a
  * host serves to use the library, 5.2) and {@code check-host} (each contract against a host's table schemas, column by column; the
@@ -123,7 +123,7 @@ public final class LibraryTool {
     /** A column a contract asks for: its name, Data Protocol type, whether a table may leave it out, and what it means. */
     public record ContractColumn(String name, String type, boolean optional, String doc) { }
 
-    /** A published contract of a library (LIBRARIES.md 5.2) and the fragments ({@code name@N}) whose table parameters name it. */
+    /** A published contract of a library (DESIGN.md (libraries) 5.2) and the fragments ({@code name@N}) whose table parameters name it. */
     public record Contract(String name, String title, String grain, List<String> key, List<ContractColumn> columns, List<String> usedBy) { }
 
     /**

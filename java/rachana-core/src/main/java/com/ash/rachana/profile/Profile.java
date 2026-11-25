@@ -19,7 +19,7 @@ import com.ash.rachana.model.Ordered;
 
 /**
  * A named set of additions a host hands to {@link com.ash.rachana.Rachana#with}: a value built in code; nothing is discovered by
- * scanning and nothing is global (docs/design/CORE_AND_PROFILES.md section 3). A profile adds; it never changes what Core means: a
+ * scanning and nothing is global (docs/DESIGN.md section 3). A profile adds; it never changes what Core means: a
  * function whose name Core holds is refused when the instance is built.
  *
  * <p>Split step A6 gives a profile its function providers, its format files and a business-day calendar resolver; the model split (A7)

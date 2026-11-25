@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Ashutosh Sinha. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""The cuts of the M0 proof copy (P1 step 2 of docs/plans/JS_PROOF.md, and the four T1 gaps), applied to a fresh copy of the
+"""The cuts of the M0 proof copy (the Proofs paragraph of docs/DESIGN.md, and the four T1 gaps), applied to a fresh copy of the
 compiler sources. Each cut is one exact text replacement or one replacement file; nothing else in the copy changes. The list is
-the table "Cuts" of docs/plans/P1_RESULTS.md.
+the table "Cuts" of this file.
 
 Usage (by proof.py): cuts.py <copy root: the folder holding com/ash/drishti/...> <tools/proofs/java/cut>
 """

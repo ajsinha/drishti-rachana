@@ -3,7 +3,7 @@
 //
 // The reference program of the conformance suite's `sutra` cases (split step A14): the reference's view pipeline steps over the
 // host's engine (binder, controls, wiring, ViewModel records), written by a plain ObjectMapper. Separate from RefBridge.java because it
-// needs the engine's class path, whose function providers change other kinds' answers (tools/reference-bridge/README.md).
+// needs the engine's class path, whose function providers change other kinds' answers (docs/DEVELOPING.md (Tools)).
 //
 // Run:  python3 tools/conformance/rachana_conformance.py --kinds sutra \
 //         --cmd "java -cp <engine class path> tools/reference-bridge/RefBridgeSutra.java spec/1/formats.yaml <drishti formats.yaml>"

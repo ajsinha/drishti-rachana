@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """M0 proofs P1 (JavaScript through TeaVM), P2 (determinism probes) and W (WebAssembly GC under wasmtime from Python): one
-reproducible script. Results: docs/plans/P1_RESULTS.md, P2_RESULTS.md, WASM_RESULTS.md.
+reproducible script. Results: the Proofs paragraph of docs/DESIGN.md.
 
 Prepare your environment (once):
   JDK 21 at $JAVA_HOME (the builds and the reference); Maven 3.9; Node 22; Python 3.12+ with a virtual environment holding
@@ -182,7 +182,7 @@ def step_wasm(a):
     sources = m2 / f"teavm-classlib-{TEAVM}-sources.jar"
     if not sources.exists():
         sh(["mvn", "-q", "-B", "dependency:get", f"-Dartifact=org.teavm:teavm-classlib:{TEAVM}:jar:sources"])
-    # the one TThrowable change (WASM_RESULTS.md, W1): fillInStackTrace no longer hands the Java object to the JavaScript host
+    # the one TThrowable change (DESIGN.md (Proofs), W1): fillInStackTrace no longer hands the Java object to the JavaScript host
     pdir = OUT / "classlib-patch"
     shutil.rmtree(pdir, ignore_errors=True)
     (pdir / "src").mkdir(parents=True)

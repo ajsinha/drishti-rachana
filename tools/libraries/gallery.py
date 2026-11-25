@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
-"""The library gallery, built with Rachana itself (LIBRARIES.md 8): for each library a static site whose every page is a Sutra.
+"""The library gallery, built with Rachana itself (DESIGN.md (libraries) 8): for each library a static site whose every page is a Sutra.
 
     python3 tools/libraries/gallery.py [--out DIR] [LIBRARY ...]      (build.py --gallery calls this)
 

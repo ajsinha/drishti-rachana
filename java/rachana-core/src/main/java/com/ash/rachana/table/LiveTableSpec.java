@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 import com.ash.rachana.model.Ordered;
 
 /**
- * A live table's declaration (docs/design/LIVE_TABLES.md section 2): one {@code <name>.live.yaml}, a Sutra-family document
+ * A live table's declaration (docs/DESIGN.md section 2): one {@code <name>.live.yaml}, a Sutra-family document
  * ({@code rachana: 1}, {@code live-table: <name>}) that names its snapshot source and live stream, its key, version and change columns,
  * its columns (the Data Protocol's fields plus {@code width}, {@code fmt} and {@code heavy}), its own order, grouping and subtotals,
  * {@code narrow}, {@code retention}, the tray and, for a blotter, {@code edit:} (a Core form). Checked at load with every problem reported

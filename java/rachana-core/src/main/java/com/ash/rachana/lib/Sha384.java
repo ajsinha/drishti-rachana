@@ -6,7 +6,7 @@ package com.ash.rachana.lib;
 
 /**
  * SHA-384 (FIPS 180-4) in plain Java, so that every runtime (the JVM and the JavaScript build, which has no {@code MessageDigest})
- * computes a library's identity with the same code (LIBRARIES.md 12). Stateless; thread-safe.
+ * computes a library's identity with the same code (DESIGN.md (libraries) 12). Stateless; thread-safe.
  */
 public final class Sha384 {
 

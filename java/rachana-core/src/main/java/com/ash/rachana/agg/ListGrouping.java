@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * The grouping behind Rachana's {@code group(list, key, [aggregate])} (docs/architecture/ARCHITECTURE.md part 3): the elements grouped by their keys (the
+ * The grouping behind Rachana's {@code group(list, key, [aggregate])} (spec/1/SPEC.md part 3): the elements grouped by their keys (the
  * first {@code maxGroups} keys met), each group's inputs aggregated by the engine's function of that name ({@link ListAggregates}), the
  * groups in key order. Rachana reads the keys and the inputs; this class never parses an expression.
  */

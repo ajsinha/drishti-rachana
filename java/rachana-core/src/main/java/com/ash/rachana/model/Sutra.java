@@ -20,7 +20,7 @@ import java.util.Map;
  * @param description the author's one-paragraph plain text (never evaluated), or null
  * @param controls the controls the reader sets
  * @param layout the screen's grid, areas, split, tabs and sections (RACHANA_REFERENCE.md 13), or null: the panels flow
- * @param phone the screen's {@code phone:} block (docs/guides/BUILD_GUIDE.md section 5.2: the phone order, the default tier, the summary line), or
+ * @param phone the screen's {@code phone:} block (docs/WRITING_SUTRAS.md section 5.2: the phone order, the default tier, the summary line), or
  *     null
  * @param domain the folder it belongs to ({@code domain}, a key of the entity additions, {@link com.ash.rachana.profile.Entities}), or null
  *     when no profile reads it
@@ -80,7 +80,7 @@ public record Sutra(
         return out;
     }
 
-    /** A Sutra without a phone block (docs/guides/BUILD_GUIDE.md section 5.2). */
+    /** A Sutra without a phone block (docs/WRITING_SUTRAS.md section 5.2). */
     public Sutra(String name, int version, String domain, Match match, Title title, List<StripItem> strip, List<Panel> panels,
             Map<String, String> keys, SourceLocation location, String description, List<Control> controls, ScreenLayout layout) {
         this(name, version, domain, match, title, strip, panels, keys, location, description, controls, layout, null);

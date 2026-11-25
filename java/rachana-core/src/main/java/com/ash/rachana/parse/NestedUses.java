@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A fragment's uses of other fragments (LIBRARIES.md 4.4, 7.2; level 1.2): a use named {@code as: x} inside a fragment used as {@code a}
+ * A fragment's uses of other fragments (DESIGN.md (libraries) 4.4, 7.2; level 1.2): a use named {@code as: x} inside a fragment used as {@code a}
  * is the instance {@code a-x}. Its ids become {@code a-x-<id>}, its private state {@code a-x.<name>}, its events {@code @a-x.<event>}, so
  * two uses of the outer fragment (or two inner uses of one fragment) never collide. The outer fragment reads the inner use as written
  * ({@code state.x.<output>}, {@code @x.<event>}); only the inner use's outputs may be read ({@code RCH-2117}). Stateless.

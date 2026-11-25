@@ -9,7 +9,7 @@ import com.ash.rachana.model.Ordered;
 
 /**
  * How the checker words a problem's fix: in Rachana's own spelling, or in DEL's while DEL is still read (its checker calls this one
- * until the migration of docs/architecture/ARCHITECTURE.md §28 part B deletes it). The rules are the same; only the words a person is told to write
+ * until the migration of spec/1/SPEC.md §28 part B deletes it). The rules are the same; only the words a person is told to write
  * differ.
  */
 public enum Spelling {

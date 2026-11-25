@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""Canonical JSON (conformance/FORMAT.md 8) and number text (FORMAT 9, pinned to Java's Double.toString)."""
+"""Canonical JSON (conformance/CONFORMANCE.md 8) and number text (FORMAT 9, pinned to Java's Double.toString)."""
 from __future__ import annotations
 
 import math

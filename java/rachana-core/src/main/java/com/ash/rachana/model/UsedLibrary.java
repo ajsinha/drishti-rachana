@@ -5,7 +5,7 @@
 package com.ash.rachana.model;
 
 /**
- * A library a compiled Sutra was built from (LIBRARIES.md 9.3, 12): its name, exact version and the SHA-384 of its canonical archive, so
+ * A library a compiled Sutra was built from (DESIGN.md (libraries) 9.3, 12): its name, exact version and the SHA-384 of its canonical archive, so
  * a compile result says exactly which library bytes it stands on (a dependency of a declared library is listed too).
  *
  * @param name the library's name ({@code finance})

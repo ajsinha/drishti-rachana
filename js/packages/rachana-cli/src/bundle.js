@@ -8,9 +8,13 @@ import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-/** The dist folder of the compiler bundles: RACHANA_DIST, or ../rachana/dist (built by tools/js/build_js.py). */
+/** The dist folder of the compiler bundles: RACHANA_DIST, or ../rachana/dist (built by tools/js/build_js.py), or, when that is
+ *  not built, the committed copies in python/src/drishti_rachana/bundle (a zip of the platform runs without a build). */
 export function distDir() {
-  return process.env.RACHANA_DIST ?? join(HERE, "..", "..", "rachana", "dist");
+  if (process.env.RACHANA_DIST) return process.env.RACHANA_DIST;
+  const dist = join(HERE, "..", "..", "rachana", "dist");
+  const committed = join(HERE, "..", "..", "..", "..", "python", "src", "drishti_rachana", "bundle");
+  return !existsSync(join(dist, "rachana.tools.js")) && existsSync(join(committed, "rachana.tools.js")) ? committed : dist;
 }
 
 let cached;

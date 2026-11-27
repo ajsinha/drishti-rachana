@@ -3,6 +3,10 @@
 
 Entries are written per release; the regime's unreleased work is listed after the releases it follows.
 
+## Unreleased
+
+- **Fixed: the examples did not run from a zip of the platform.** `pip install -e python` failed (`python/README.md` was missing), and the browser runtime bundle (`rachana.runtime.js`) and the compiler bundle (`rachana.tools.js`) were git-ignored build output, so the live-orders page was blank (404) and the `rachana` command stopped with "missing". Both bundles and `SHA256SUMS` are now committed in `python/src/drishti_rachana/bundle/` (the `rachana` command falls back to them when `dist/` is not built); a page whose bundle is missing says so. A README in each example (`live-orders`, `static-sales`, `server-demo`), `examples/live-orders/requirements.txt`, `flask_app.py [port]`, and `python/tests/test_examples.py` (both apps in process: page, bundle, data answer 200; both bundles match their recorded hash).
+
 ## v1.0.1 (2026-11-22)
 
 Patch: the published Sutra schema only (no language change, no case changed, no API change). A Sutra the 1.2 compiler accepts did not validate against `spec/1/sutra.schema.json`.

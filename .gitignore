@@ -1,8 +1,10 @@
 results/
 dist/
 python/src/drishti_rachana/bundle/*.js
+!python/src/drishti_rachana/bundle/rachana.runtime.js
+!python/src/drishti_rachana/bundle/rachana.tools.js
 java/rachana-js/target/
 __pycache__/
 *.pyc
-python/src/drishti_rachana/bundle/SHA256SUMS
+!python/src/drishti_rachana/bundle/SHA256SUMS
 libraries/*/SIGNATURE

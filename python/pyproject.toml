@@ -21,11 +21,11 @@ fastapi = ["fastapi>=0.110"]
 arrow = ["pyarrow>=15"]
 polars = ["polars>=1"]
 v8 = ["mini-racer>=0.14.1"]           # drishti_rachana.engine: the JavaScript bundle on V8 (W-1)
-test = ["httpx>=0.27", "pytest>=8", "pyyaml>=6", "jsonschema>=4", "pyarrow>=15"]
+test = ["flask>=3", "fastapi>=0.110", "httpx>=0.27", "pytest>=8", "pyyaml>=6", "jsonschema>=4", "pyarrow>=15"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/drishti_rachana"]
-artifacts = ["src/drishti_rachana/bundle/*.js"]   # built by tools/js/build_js.py, git-ignored
+artifacts = ["src/drishti_rachana/bundle/*.js"]   # built by tools/js/build_js.py; both bundles and SHA256SUMS are committed (the examples need them from a zip)
 
 # The assets <rachana-view> loads, served by the adapters under their mount (drishti_rachana.assets): copied into the wheel as package data.
 [tool.hatch.build.targets.wheel.force-include]

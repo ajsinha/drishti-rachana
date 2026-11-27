@@ -71,7 +71,7 @@ Rachana is installed from this checkout, or from a wheel or jar file you built f
 | Python | 3.13 (3.10 is the package's minimum) | the Python SDK, the JavaScript bundle build, the conformance runner and the checks |
 
 ```bash
-python3 tools/js/build_js.py                       # the compiler bundles (JDK 21), into js/packages/rachana/dist
+python3 tools/js/build_js.py                       # optional: rebuild the compiler bundles (JDK 21); committed copies are in python/src/drishti_rachana/bundle
 cd java && ./mvnw clean verify -DskipTests && cd ..   # the jars (server, library tool)
 python3 -m pip install -e 'python[v8,flask]'       # the Python package, editable, from this checkout, into the Python you chose
 ```

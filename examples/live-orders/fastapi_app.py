@@ -3,8 +3,8 @@
 # Synthetic demo content: fictional customers, items and orders.
 """The live orders board under FastAPI (drishti_rachana.adapters.fastapi).
 
-    pip install drishti-rachana[fastapi] uvicorn
-    uvicorn fastapi_app:app                          # then open http://127.0.0.1:8000/dash/
+    pip install -r requirements.txt        (from the repository root: examples/live-orders/requirements.txt; README.md has the steps)
+    python -m uvicorn fastapi_app:app                         # then open http://127.0.0.1:8000/dash/
 
 Same board, same Sutra, same data and the same changes as flask_app.py. The decorator is ``live``. A change of (key, None) removes the row.
 """

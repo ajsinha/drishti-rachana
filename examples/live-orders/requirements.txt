@@ -1,0 +1,10 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
+# The live-orders example. Install yourself, from the repository root, into the Python you choose:
+#   py -3.13 -m pip install -r examples/live-orders/requirements.txt      (Windows)
+#   python3.13 -m pip install -r examples/live-orders/requirements.txt    (Linux, macOS)
+# Rachana never installs anything for you.
+-e python
+flask>=3
+fastapi>=0.110
+uvicorn>=0.30

@@ -44,12 +44,12 @@ java -jar java\rachana-server\target\rachana-server-1.0.1-all.jar serve --config
 ```
 
 `check` prints the resolved settings and any problem, and starts nothing. `serve` prints `rachana-server listening on
-http://127.0.0.1:8090/`. Open <http://127.0.0.1:8090/>, sign in as `dev` with `dev-only-pass`. Add `--port 8091` to `serve` when 8090
+http://127.0.0.1:8090/`. Open <http://127.0.0.1:8090/>, sign in as `dev` with `dev-only-pass`, then click **overview**. Add `--port 8091` to `serve` when 8090
 is taken (`--port 0` takes any free port).
 
 ## What you should see
 
-The sign-in page, then the `overview` page: tiles, bars and a table over the sales file, and a region lookup. Edit a number in
+The sign-in page, a list of one page (`overview`), then that page: tiles, bars and a table over the sales file, and a region lookup. Edit a number in
 `project\data\sales.csv` and save: within about 5 seconds the page shows the new figure without a reload. Without a browser:
 `curl -i http://127.0.0.1:8090/` answers `303` to the sign-in page.
 

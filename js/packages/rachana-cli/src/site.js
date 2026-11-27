@@ -55,7 +55,8 @@ export function viewPage(name, src, data, base = "", libraries = "") {
 <title>${esc(name)}</title>
 <link rel=stylesheet href="${u(`${ELEMENTS_URL}/drishti-elements.css`)}">
 <script src="${u(`${ELEMENTS_URL}/drishti-elements.js`)}"></script>
-<script type=module>import "${esc(base || "./")}rachana/src/static_files_host.js"; import "${esc(base || "./")}rachana/src/rachana_view.js";</script>
+${data.startsWith("/") ? `<script type=module>import { installStaticHost } from "${esc(base)}rachana/src/static_files_host.js"; installStaticHost({ base: "${esc(data)}" }); await import("${esc(base)}rachana/src/rachana_view.js");</script>`   // an absolute data folder: the module's default (data/ beside the page) would miss it under /page/<name>
+  : `<script type=module>import "${esc(base || "./")}rachana/src/static_files_host.js"; import "${esc(base || "./")}rachana/src/rachana_view.js";</script>`}
 <rachana-view src="${esc(src)}" data="${esc(data)}" runtime="${u("rachana/rachana.runtime.js")}"${libraries ? ` libraries="${esc(libraries)}"` : ""}></rachana-view>
 `;
 }

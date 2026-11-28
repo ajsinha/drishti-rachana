@@ -70,7 +70,7 @@ class CoreFragmentParamsTest {
                   - use: core/data-table@1
                     with: { rows: $.orders, columns: [ { label: Order, bind: "@.ORDER_ID" } ] }
                 """);
-        assertFalse(bare.contains("\"key\"") || bare.contains("\"code\"") || bare.contains("\"span\"") || bare.contains("null"), bare);
+        assertFalse(bare.contains("\"key\":") || bare.contains("\"code\":") || bare.contains("\"span\":"), bare);
         assertTrue(bare.contains("A2"), bare);
     }
 

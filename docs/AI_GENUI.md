@@ -129,9 +129,8 @@ Rules that make the loop converge:
 
 ## 4. The tools
 
-One contract, two hosts: the **Rachana tool pack for sajhamcpserver** (the owner's governed tool catalog; Python,
-built on the Python SDK) and the **generic Rachana MCP server** (for any MCP client). Same names, same schemas, same
-compiler. Schemas below are JSON Schema for `inputSchema` and the shape of the structured result.
+One contract, one host: the **Rachana tool pack for sajhamcpserver** (the owner's governed tool catalog; Python,
+built on the Python SDK); there is no standalone MCP server (owner, 2026-11-28). Schemas below are JSON Schema for `inputSchema` and the shape of the structured result.
 
 ### 4.1 `data_to_table`
 
@@ -214,7 +213,7 @@ Result: section 3.1.
 Every result also has `summary` (title, panels, row counts, the strip's first figures) so the model can describe
 what it made. An invalid Sutra is refused with the result of `validate_sutra`; render never guesses.
 
-### 4.5 Other tools and resources (generic server)
+### 4.5 Other tools and resources (to add to the plugin)
 
 | Kind | Name | Purpose |
 |---|---|---|
@@ -223,20 +222,13 @@ what it made. An invalid Sutra is refused with the result of `validate_sutra`; r
 | resource | `rachana://spec/1/grammar-card`, `…/functions`, `…/schema`, `…/kinds/{kind}`, `…/examples/{intent}` | the prompt kit, for clients that read resources |
 | prompt | `dashboard` | the `system.md` block as an MCP prompt, with the user's question as its argument |
 
-### 4.6 The two hosts
+### 4.6 The host
 
-| | sajhamcpserver tool pack | generic Rachana MCP server |
-|---|---|---|
-| Package | `drishti_rachana.mcp.sajha` (Python): tool classes on SAJHA's tool base | `drishti-rachana-mcp` (npm, `npx`) and `rachana mcp` |
-| Compiler | Python SDK (WASM) | JavaScript build |
-| Transport | SAJHA's `/mcp` endpoint | stdio and streamable HTTP |
-| Identity, roles, policy, audit | SAJHA's, applied to these tools like any other | none on stdio (the user's own machine); host-supplied token on HTTP |
-| Table store | per user, in SAJHA's storage, with expiry | per session in memory, or a folder |
-| `result_ref` | resolves an earlier SAJHA tool result **as that caller**, so data never passes through the model | not available (rows or CSV only) |
-| Render | a page served by SAJHA under its sign-in | a local page (`http://127.0.0.1:<port>/d/<id>`) or a self-contained HTML file |
-
-Both are thin: argument checking, the table store, and calls to `compile`, `bind` and the prompt kit. A shared
-contract test (the same request and response vectors) runs against both.
+One host: the **sajhamcpserver plugin** (`tools/sajha/`, Python, on SAJHA's tool base and the Python SDK's V8 compiler). Identity, roles,
+policy and audit are SAJHA's, applied to these tools like any other; the table store is per user in SAJHA's storage with expiry; a
+`result_ref` resolves an earlier SAJHA tool result **as that caller**, so data never passes through the model; the page is served by
+SAJHA under its sign-in. There is no standalone Rachana MCP server (owner, 2026-11-28). The plugin is thin: argument checking, the table
+store, and calls to `compile`, `bind` and the prompt kit.
 
 ## 5. Safety
 
@@ -313,7 +305,7 @@ offline in CI (no model call) to protect the tools and the loop.
 | Host | Uses |
 |---|---|
 | The owner's chatbot on sajhamcpserver | the tool pack; data tools first, then the four tools; dashboards as links or cards under SAJHA's sign-in |
-| Any MCP assistant | the generic server; data from the assistant's other tools, passed as rows or CSV |
+| Any MCP assistant | through SAJHA, which serves the plugin to any MCP client; data from SAJHA's other tools by `result_ref`, or rows |
 | Drishti (i9) | the same loop in process (Java API): the Drishti profile's card and examples; tables are Drishti's, resolved as the viewer; the result opens as an ephemeral Sutra that can be saved through Drishti's normal review |
 | Another application | the SDK's `validate` and `bind` plus the kit files; its own model and its own tools |
 
@@ -324,6 +316,5 @@ offline in CI (no model call) to protect the tools and the loop.
 | G1 prompt kit generator and gate | R0 (definition, catalogue) |
 | G2 certain fixes in the compiler (`fix` on the top twenty codes) | R1 Core |
 | G3 evaluation harness and first task set | G1, G2, JavaScript or JVM build |
-| G4 generic MCP server | JavaScript build, Data Protocol in memory |
 | G5 sajhamcpserver tool pack | Python SDK with WASM (R2) |
 | G6 Drishti in-process GenUI | Drishti i9 |

@@ -1,0 +1,50 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+rachana: 1.2
+fragment: tabbed-views
+version: 1
+doc:
+  summary: One tab for each element of a list, each tab holding the panels you give, read against that element.
+  description: >-
+    Use it when a record has a list of parts of the same shape (the legs of a trade, the views of a fund) and each part is shown
+    the same way. Give the list, a function that names each tab from its element, and the panels each tab holds: inside them
+    the element is written as @, as in any tab. Side by side instead of one at a time with layout columns.
+  category: records
+  tags: [tabs, each, legs, views]
+  use-when:
+    - "A list of parts of one shape is shown one tab each, with the same panels in every tab."
+    - "Two or three parts are compared side by side (layout columns)."
+  avoid-when:
+    - "The tabs are different screens, not one shape repeated: write the panels and a control that picks between them."
+    - "The parts are rows to compare in one grid: use core/data-table."
+  data:
+    table: parts
+    in-words: "A list with one record per tab; the tab's title is made from the record by the function you give."
+    sample-row: { LEG: 1, LABEL: Fixed }
+  example: { use: core/tabbed-views@1, with: { each: "$.legs", tab-title: "lambda leg: 'Leg ' + leg.LEG + ' - ' + leg.LABEL" }, slots: { body: [ { id: terms, kind: kv, columns: [ { label: Label, bind: "@.LABEL" } ] } ] } }
+  see-also: [core/record-card, core/data-table, core/field-list]
+  keywords: [tabs, legs, views, each, parts]
+params:
+  each:      { type: "list<record{}>", required: true, doc: "The list: one tab for each record" }
+  tab-title: { type: "fn(record{}) -> text", required: true, doc: "Names a tab from its record: lambda leg: 'Leg ' + leg.LEG" }
+  title:     { type: text, default: Views, doc: The panel's title }
+  layout:    { type: enum, options: [tabs, columns], default: tabs, doc: "tabs shows one at a time, columns puts them side by side" }
+  key:       { type: key, optional: true, doc: "A function key (F1 to F12) that scrolls to the panel; none when not given" }
+  code:      { type: text, optional: true, doc: "A short tag shown at the right of the panel's header, such as a mnemonic" }
+  when:      { type: boolean, optional: true, doc: "A condition: the panel is left out, with no empty box, where it is false" }
+  span:      { type: integer, min: 1, max: 12, optional: true, doc: "The width in grid columns (1 to 12) on a wide screen" }
+slots:
+  body: { accepts: panels, max: 6, doc: "The panels every tab holds; inside them @ is the tab's record" }
+panels:
+  - id: views
+    kind: tabs
+    title: arg.title
+    each: arg.each
+    tabTitle: "arg.tab-title(@)"
+    layout: "%{layout}"
+    key: "%{key}"
+    code: arg.code
+    when: arg.when
+    span: arg.span
+    panels:
+      - { slot: body }

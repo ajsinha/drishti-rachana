@@ -898,7 +898,8 @@ public final class TypedFragment {
                     : com.ash.rachana.el.FragmentColumns.rowsOf(rowsOf.text(), cols);
             String table = over == null ? null : over.row(rowsOf.text().trim());
             p = columns(p, table, SutraExpressions.expressionOptions(text(p.map().get("kind"))), true, false, cols, out);
-            PNode filled = fill(p, exprs, literals, tokens, templates, sutraFile, out);
+            PNode filled = fill(dropUnbound(p, unbound), exprs, literals, tokens, templates, sutraFile, out);
+            filled = nestedSlots(filled, slotted);
             panels.add(filled);
             own.add(true);
         }
@@ -1433,6 +1434,81 @@ public final class TypedFragment {
             }
         }
         return List.of();
+    }
+
+    /**
+     * Panel keys that stand for something only when written: a function key, a code, an empty text, a condition, a width, a row filter
+     * ({@code key}, {@code code}, {@code empty}, {@code when}, {@code where}, {@code span}, {@code height}, {@code pivot}, {@code waits}). A fragment
+     * that writes one as a whole {@code arg.x} or {@code %{x}} of an optional parameter the use leaves out has the key left out of the panel,
+     * not set to null.
+     */
+    static final Set<String> DROPPED_WHEN_UNBOUND = Ordered.set("key", "code", "empty", "when", "where", "span", "height", "pivot", "waits");
+
+    private PNode dropUnbound(PNode n, Set<String> unbound) {
+        if (unbound.isEmpty()) {
+            return n;
+        }
+        if (n.isMap()) {
+            Map<String, PNode> m = new LinkedHashMap<>();
+            n.map().forEach((k, v) -> {
+                if (DROPPED_WHEN_UNBOUND.contains(k) && v.value() instanceof String s && unboundWhole(s, unbound)) {
+                    return;
+                }
+                m.put(k, dropUnbound(v, unbound));
+            });
+            return new PNode(m, n.line(), n.column());
+        }
+        if (n.isList()) {
+            List<PNode> l = new ArrayList<>();
+            n.list().forEach(v -> l.add(dropUnbound(v, unbound)));
+            return new PNode(l, n.line(), n.column());
+        }
+        return n;
+    }
+
+    /** Whether {@code s} is, whole, {@code arg.x} or {@code %{x}} (masked) of a parameter the use left unbound. */
+    private static boolean unboundWhole(String s, Set<String> unbound) {
+        Matcher m = MASKED.matcher(s);
+        if (m.matches()) {
+            return unbound.contains(m.group(1));
+        }
+        if (s.startsWith("arg.") && unbound.contains(s.substring(4))) {
+            return true;
+        }
+        Matcher call = CALL.matcher(s);                                // arg.f(@): a call of a function parameter left out
+        return call.matches() && unbound.contains(call.group(1));
+    }
+
+    private static final Pattern CALL = Pattern.compile("arg\\.([a-z][a-z0-9-]*)\\([^()]*\\)");
+
+    /**
+     * A slot placed inside a panel's own {@code panels:} list ({@code { slot: body }} in a tabs panel): the use's panels take its place there,
+     * in the user's context (a panel inside a tab reads {@code @} as the tab's element), untouched.
+     */
+    private PNode nestedSlots(PNode n, Map<String, PNode> slotted) {
+        if (!n.isMap() || n.map().get("panels") == null || !n.map().get("panels").isList()) {
+            return n;
+        }
+        List<PNode> inner = new ArrayList<>();
+        boolean changed = false;
+        for (PNode q : n.map().get("panels").list()) {
+            if (q.isMap() && q.map().size() == 1 && q.map().containsKey("slot")) {
+                changed = true;
+                PNode filled = slotted.get(q.map().get("slot").text());
+                if (filled != null) {
+                    inner.addAll(filled.list());
+                }
+            } else {
+                inner.add(q);
+            }
+        }
+        if (!changed) {
+            return n;
+        }
+        Map<String, PNode> m = new LinkedHashMap<>(n.map());
+        PNode old = n.map().get("panels");
+        m.put("panels", new PNode(inner, old.line(), old.column()));
+        return new PNode(m, n.line(), n.column());
     }
 
     private PNode fill(PNode n, Map<String, String> exprs, Map<String, PNode> literals, Map<String, PNode> tokens, Map<String, String> templates,

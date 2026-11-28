@@ -1,6 +1,6 @@
 {
   "name": "drishti-rachana",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "The browser and Node runtime: the compiler built from the Java reference (TeaVM, no hand-written logic), the facade, <rachana-view>, the Data Protocol client and the desktop bridge",
   "license": "SEE LICENSE IN ../../../LICENSE",

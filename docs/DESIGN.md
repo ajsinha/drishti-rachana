@@ -200,7 +200,7 @@ drishti-rachana/
     rachana-conformance-cases/ the cases and the specification as a jar
     rachana-compat/            the compatibility regime
     rachana-guards/            the guards
-  js/packages/                 rachana (bundles, facade, <rachana-view>), rachana-cli, rachana-studio; rachana-electron and rachana-mcp are placeholders
+  js/packages/                 rachana (bundles, facade, <rachana-view>), rachana-cli, rachana-studio; rachana-electron is a placeholder
   js/vendor/drishti-elements/  the pinned painter, copied unchanged
   python/                      drishti_rachana: the engine on V8, the Data Protocol host, the Flask and FastAPI adapters
   libraries/                   core and finance

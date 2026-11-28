@@ -1,6 +1,6 @@
 {
   "name": "drishti-rachana-studio",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Rachana Studio: a three-pane editor (fragment palette, live preview, Sutra source and properties), served by rachana studio",
   "license": "SEE LICENSE IN ../../../LICENSE",

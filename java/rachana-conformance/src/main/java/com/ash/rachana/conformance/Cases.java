@@ -22,7 +22,7 @@ import java.util.*;
 public final class Cases {
     private Cases() { }
 
-    static final String VERSION = "1.1.0";
+    static final String VERSION = "1.1.1";
     static Formats formats;
     static ElCompiler EL;
     static com.ash.rachana.Rachana rachana;

@@ -370,7 +370,7 @@ Each stage is useful by itself and none requires changing Drishti or SAJHA.
 | Part | State on the branch |
 |---|---|
 | The `doc` block in the schema (`$defs/doc`) | built |
-| `doc` blocks on every fragment of `core` (33) and `finance` (57) | built |
+| `doc` blocks on every fragment of `core` (34) and `finance` (57) | built |
 | The compiler's doc lint (`RCH-2093`, Java) | built; Maven build and suites green |
 | The four tools, their schemas, the catalogue (text and shape search), the check with tokens and bounded attempts, the three row sources, boards and the board server, audit events and hooks | built, with a light test suite (17 tests) |
 | The doc lint inside the kit | built as a Python mirror; asking the compiler's own lint on V8 is next |

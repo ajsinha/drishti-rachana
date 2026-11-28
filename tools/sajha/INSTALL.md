@@ -1,12 +1,12 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha. Proprietary. All rights reserved. -->
-# Rachana GenUI kit for SAJHA: install (1.1.0)
+# Rachana GenUI kit for SAJHA: install (1.1.1)
 
 This folder is a SAJHA plugin. Put it where SAJHA reads plugins: `<sajha>/config/plugins/rachana_genui/` (the folder holding this file,
 `plugin.json`, `tools/`, `schemas/` and `rachana_genui/`). Nothing in SAJHA changes. The plugin is **unsigned**: SAJHA loads it with a
 notice while `plugins.allow_unsigned` is true (its default); sign it for production, or set that switch to false once it is signed.
 
 1. Install the drishti-rachana wheel with the V8 extra into SAJHA's Python (3.10 or later; tested on 3.11 and 3.13; the wheel is not on a
-   public index): `pip install 'drishti_rachana-1.1.0-py3-none-any.whl[v8]'`
+   public index): `pip install 'drishti_rachana-1.1.1-py3-none-any.whl[v8]'`
 2. Set three environment variables in SAJHA's process environment:
 
    | Variable | Value | Meaning |

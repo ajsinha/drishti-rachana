@@ -4,15 +4,16 @@ rachana: 1.2
 fragment: record-card
 version: 1
 doc:
-  summary: A record as a card, with its name, a line under it, chosen facts and a status.
+  summary: A record as a card, with its name, a line under it, chosen facts and a status; the head is optional.
   description: >-
-    The record carries name, an optional subtitle and an optional status (build it with a record literal from your own
-    fields). The facts are the fields you list, each a label and an expression over the record. Panels of your own can
-    go under the card.
+    The record carries an optional name, subtitle and status (build it with a record literal from your own fields, or hand
+    over the whole record). The facts are the fields you list, each a label and an expression over the record. Without a
+    name, give the card a title and it is a plain record view. Panels of your own can go under the card.
   category: records
   tags: [record, card, entity]
   use-when:
     - "One record heads a screen with its name, a subtitle, a status and chosen facts."
+    - "A plain record view: chosen facts of one record under a title of your own, with no name, subtitle or status."
   avoid-when:
     - "Only plain facts are needed: use core/field-list."
     - "The record is a counterparty: use finance/counterparty-card."
@@ -24,19 +25,28 @@ doc:
   see-also: [core/field-list, finance/counterparty-card, finance/trade-ticket]
   keywords: [card, record, header, summary, entity]
 params:
-  record: { type: "record{name: text, subtitle: text, status: text}", required: true, doc: "The card's head: name, subtitle, status" }
+  record: { type: "record{name: text?, subtitle: text?, status: text?}", required: true, doc: "The record: the head (name, subtitle, status, each optional) and the fields the facts read" }
   facts:  { type: columns, required: true, doc: "The facts: a list of { label, bind: \"@.field\", fmt } over the same record" }
+  title:  { type: text, optional: true, doc: "The card's title when the record has no name (a plain record view); the name when not given" }
+  key:    { type: key, optional: true, doc: "A function key (F1 to F12) that scrolls to the card; none when not given" }
+  code:   { type: text, optional: true, doc: "A short tag shown at the right of the card's header, such as a mnemonic" }
+  when:   { type: boolean, optional: true, doc: "A condition: the card (and its status) is left out where it is false" }
+  span:   { type: integer, min: 1, max: 12, optional: true, doc: "The width in grid columns (1 to 12) on a wide screen" }
 slots:
   footer: { accepts: panels, max: 2, doc: Panels under the card }
 panels:
   - id: card
     kind: kv
-    title: "${arg.record.name}"
+    title: "${coalesce(arg.title, arg.record.name, '')}"
     description: "${coalesce(arg.record.subtitle, '')}"
     rows: arg.record
     columns: "%{facts}"
+    key: "%{key}"
+    code: arg.code
+    when: arg.when
+    span: arg.span
   - id: state
     kind: status
-    when: "!is_blank(arg.record.status)"
+    when: "coalesce(arg.when, true) && !is_blank(arg.record.status)"
     fields: [ { label: Status, bind: "arg.record.status" } ]
   - { slot: footer }

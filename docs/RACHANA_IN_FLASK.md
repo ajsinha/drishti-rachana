@@ -13,8 +13,8 @@ V8 inside Python) and the `flask` extra:
 
 ```bash
 python3 -m venv venv && . venv/bin/activate          # Windows: venv\Scripts\activate
-pip install 'drishti_rachana-1.1.0-py3-none-any.whl[v8,flask]'
-python -c "import drishti_rachana; print(drishti_rachana.__version__)"      # 1.1.0
+pip install 'drishti_rachana-1.1.1-py3-none-any.whl[v8,flask]'
+python -c "import drishti_rachana; print(drishti_rachana.__version__)"      # 1.1.1
 ```
 
 ## Step 1: write and compile a Sutra

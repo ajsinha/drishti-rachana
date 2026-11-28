@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
+# Drishti Rachana Libraries. Proprietary: see the LICENSE file at the root of this repository.
+# Synthetic demo content.
+rachana: 1.2
+sutra: tabbed-views-example
+version: 1
+libraries: [core@1]
+title: { id: "'Tabbed views'" }
+data:
+  legs: { rows: [ { LEG: 1, LABEL: Fixed, RATE: 0.0325 }, { LEG: 2, LABEL: Floating, RATE: 0.0301 } ] }
+panels:
+  - use: core/tabbed-views@1
+    with:
+      each: $.legs
+      tab-title: "lambda leg: 'Leg ' + leg.LEG + ' - ' + leg.LABEL"
+      title: Legs
+      layout: columns
+      key: F3
+      code: LEGS
+    slots:
+      body:
+        - id: leg-terms
+          kind: kv
+          title: Terms
+          columns:
+            - { label: Type, bind: "@.LABEL" }
+            - { label: Rate, bind: "@.RATE", fmt: pct4 }

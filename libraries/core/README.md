@@ -1,9 +1,9 @@
 <!-- Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved. -->
 ---
 library: core
-version: 1.0.0
+version: 1.1.0
 summary: Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
-fragments: 33
+fragments: 34
 language: "1.2"
 licence: proprietary (see LICENSE)
 ---
@@ -12,7 +12,7 @@ licence: proprietary (see LICENSE)
 
 Generic screens for any domain - figures, records, tables, basic charts, forms, states and history - as typed fragments.
 
-33 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
+34 fragments, written as typed fragments (fragments are functions): local parameter and column names, the caller maps its own data and column names at the use, hermetic, events returned. Each has an example Sutra under `examples/` and a ViewModel snapshot under `goldens/`.
 
 ## Figures
 
@@ -97,12 +97,17 @@ Example: `examples/note.sutra.yaml`.
 
 ### `core/record-card@1`
 
-A record as a card, with its name, a line under it, chosen facts and a status.
+A record as a card, with its name, a line under it, chosen facts and a status; the head is optional.
 
 | Parameter | Kind | Notes |
 |---|---|---|
-| `record` | record{name: text, subtitle: text, status: text} | required. The card's head: name, subtitle, status |
+| `record` | record{name: text?, subtitle: text?, status: text?} | required. The record: the head (name, subtitle, status, each optional) and the fields the facts read |
 | `facts` | columns | required. The facts: a list of { label, bind: "@.field", fmt } over the same record |
+| `title` | text | optional. The card's title when the record has no name (a plain record view); the name when not given |
+| `key` | key | optional. A function key (F1 to F12) that scrolls to the card; none when not given |
+| `code` | text | optional. A short tag shown at the right of the card's header, such as a mnemonic |
+| `when` | boolean | optional. A condition: the card (and its status) is left out where it is false |
+| `span` | integer | optional. The width in grid columns (1 to 12) on a wide screen |
 
 Slots: `footer`
 
@@ -121,6 +126,25 @@ The foot of a screen over published data: publisher, dataset, retrieval date, li
 
 Example: `examples/source-note.sutra.yaml`.
 
+### `core/tabbed-views@1`
+
+One tab for each element of a list, each tab holding the panels you give, read against that element.
+
+| Parameter | Kind | Notes |
+|---|---|---|
+| `each` | list<record{}> | required. The list: one tab for each record |
+| `tab-title` | fn(record{}) -> text | required. Names a tab from its record: lambda leg: 'Leg ' + leg.LEG |
+| `title` | text | default 'Views'. The panel's title |
+| `layout` | enum | default 'tabs'. tabs shows one at a time, columns puts them side by side |
+| `key` | key | optional. A function key (F1 to F12) that scrolls to the panel; none when not given |
+| `code` | text | optional. A short tag shown at the right of the panel's header, such as a mnemonic |
+| `when` | boolean | optional. A condition: the panel is left out, with no empty box, where it is false |
+| `span` | integer | optional. The width in grid columns (1 to 12) on a wide screen |
+
+Slots: `body`
+
+Example: `examples/tabbed-views.sutra.yaml`.
+
 ## Tables
 
 ### `core/data-table@1`
@@ -135,6 +159,12 @@ A sortable, searchable table of rows with the columns you give, totals and a row
 | `search` | boolean | default True. Whether the reader can search the rows |
 | `limit` | integer | default 200. The most rows drawn |
 | `total-label` | text | default 'Total'. The label of the totals row |
+| `key` | key | optional. A function key (F1 to F12) that scrolls to the table; none when not given |
+| `code` | text | optional. A short tag shown at the right of the panel's header, such as a mnemonic |
+| `empty` | text | optional. The words shown when there are no rows; the panel's own default when not given |
+| `when` | boolean | optional. A condition: the table is left out, with no empty box, where it is false |
+| `span` | integer | optional. The width in grid columns (1 to 12) on a wide screen |
+| `where` | fn(record{}) -> boolean | optional. A condition each row must meet to be shown: lambda r: r.AMT_USD > 0 |
 
 Example: `examples/data-table.sutra.yaml`.
 

@@ -60,8 +60,8 @@ tool pack for sajhamcpserver and a generic MCP server; UI speed budgets; desktop
 | **D28** | Where does Electron sit in the roadmap? | **First item of R2** (R2a), right after R1's JavaScript build, Views and Data Protocol exist; Swing/JCEF R2b; .NET/WebView2 R2c. | It needs all three R1 deliverables; putting it inside R1 would lengthen the first step of i8. | Accepted 2026-11-17 (owner) |
 | **D29** | In AI mode, may a model-written Sutra use `url:` sources? | **No**: handles only (`data_to_table`). | Data access stays with the host's tools and permissions. | Accepted 2026-11-17 (owner) |
 | **D30** | GenUI quality gate. | Ship the prompt kit only when first-try validity ≥ 85% and validity within three attempts ≥ 99% on the held-out tasks, for at least one current model; publish the figures with dates. | "It works" must be a number. Targets to confirm after the first run. | Accepted 2026-11-17 (owner) |
-| **D31** | Generic MCP server runtime. | **Node** (`npx drishti-rachana-mcp`), on the JavaScript build; the sajhamcpserver pack is Python on the WASM build. | The generic server must start with one command on any machine. | Accepted 2026-11-17 (owner) |
-| **D32** | Until the WASM build exists (R2), how does the sajhamcpserver tool pack validate? | It **waits for R2**; meanwhile the generic Node server can be proxied by SAJHA like any other MCP server. | Avoids a temporary JVM dependency in SAJHA. | Accepted 2026-11-17 (owner) |
+| **D31** | Generic MCP server runtime. | **Withdrawn 2026-11-28 (owner):** there is no generic Rachana MCP server; the kit's MCP tools ship only as a sajhamcpserver plugin (`tools/sajha/`). | One governed host (identity, roles, audit) instead of a second server to keep safe. | Superseded 2026-11-28 (owner) |
+| **D32** | Until the WASM build exists (R2), how does the sajhamcpserver tool pack validate? | It **waits for R2**; the plugin of `tools/sajha/` runs on the Python SDK (V8) in the meantime. | Avoids a temporary JVM dependency in SAJHA. | Accepted 2026-11-17 (owner) |
 
 ## Sutra libraries (L-1 to L-20, open)
 

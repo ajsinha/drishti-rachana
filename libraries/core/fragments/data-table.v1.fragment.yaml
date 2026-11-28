@@ -35,6 +35,12 @@ params:
   search:      { type: boolean, default: true, doc: Whether the reader can search the rows }
   limit:       { type: integer, default: 200, min: 1, max: 5000, doc: The most rows drawn }
   total-label: { type: text, default: Total, doc: The label of the totals row }
+  key:         { type: key, optional: true, doc: "A function key (F1 to F12) that scrolls to the table; none when not given" }
+  code:        { type: text, optional: true, doc: "A short tag shown at the right of the panel's header, such as a mnemonic" }
+  empty:       { type: text, optional: true, doc: "The words shown when there are no rows; the panel's own default when not given" }
+  when:        { type: boolean, optional: true, doc: "A condition: the table is left out, with no empty box, where it is false" }
+  span:        { type: integer, min: 1, max: 12, optional: true, doc: "The width in grid columns (1 to 12) on a wide screen" }
+  where:       { type: "fn(record{}) -> boolean", optional: true, doc: "A condition each row must meet to be shown: lambda r: r.AMT_USD > 0" }
 panels:
   - id: table
     kind: table
@@ -44,3 +50,9 @@ panels:
     search: arg.search
     limit: arg.limit
     totalLabel: arg.total-label
+    key: "%{key}"
+    code: arg.code
+    empty: arg.empty
+    when: arg.when
+    span: arg.span
+    where: "arg.where(@)"

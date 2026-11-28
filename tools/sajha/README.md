@@ -43,7 +43,7 @@ The kit is a SAJHA **plugin** (sajhamcpserver's `config/plugins/<name>/plugin.js
 1. Install the drishti-rachana wheel, with the V8 extra, into SAJHA's Python environment (it is not on a public index):
 
    ```bash
-   pip install 'drishti_rachana-1.1.0-py3-none-any.whl[v8]'       # the compiler on V8, the libraries reader, the <rachana-view> assets
+   pip install 'drishti_rachana-1.1.1-py3-none-any.whl[v8]'       # the compiler on V8, the libraries reader, the <rachana-view> assets
    ```
 
    The wheel must carry its bundles (`python3 tools/js/build_js.py` before `python -m build python/`): the check and the page need them.

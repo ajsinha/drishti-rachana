@@ -48,7 +48,7 @@ panels:
 | **Compiler** | one reference implementation in Java; built for JavaScript (TeaVM); Python runs that bundle on V8; byte-identical answers everywhere | [DESIGN.md](docs/DESIGN.md), [DEVELOPING.md](docs/DEVELOPING.md) |
 | **`<rachana-view>`** | compiles and binds a Sutra in the page and paints it with Drishti Elements | `js/packages/rachana` |
 | **Live tables, server, CLI, Studio, SDKs** | tables kept current by key and version with guarded edits and approvals; a server over files, JDBC and REST; `rachana new`, `lint`, `preview`, `build`, `studio`, `lib`, `serve`; a visual editor | [IN_YOUR_APP.md](docs/IN_YOUR_APP.md), [WRITING_SUTRAS.md](docs/WRITING_SUTRAS.md) |
-| **Libraries** | typed fragments to assemble screens from: `core` (33 fragments) and `finance` (57); your own with `rachana lib` | [libraries/core](libraries/core/README.md), [libraries/finance](libraries/finance/README.md) |
+| **Libraries** | typed fragments to assemble screens from: `core` (34 fragments) and `finance` (57); your own with `rachana lib` | [libraries/core](libraries/core/README.md), [libraries/finance](libraries/finance/README.md) |
 | **Flask and SPA guides** | the short customer paths: [Rachana in your Flask app](docs/RACHANA_IN_FLASK.md) (wheel, compile a Sutra, the page, strict CSP) and [Rachana in a JavaScript SPA](docs/RACHANA_IN_SPA.md) (npm or browser zip, render, events); the JavaScript facade is experimental at 1.x | [Flask](docs/RACHANA_IN_FLASK.md), [SPA](docs/RACHANA_IN_SPA.md) |
 
 ## Ways to use it
@@ -130,7 +130,7 @@ Typed fragments, grouped by domain, built and released with Rachana. Each librar
 
 | Library | Status | What it holds |
 |---|---|---|
-| [core](libraries/core/README.md) | built, 1.0.0 (33 fragments) | generic screens for any domain: figures, records, tables, basic charts, forms, states, history |
+| [core](libraries/core/README.md) | built, 1.1.0 (34 fragments) | generic screens for any domain: figures, records, tables, basic charts, forms, states, history |
 | [finance](libraries/finance/README.md) | built, 1.0.0 (57 fragments, two examples each) | trading, P&L, market risk, limits, counterparty and collateral, market data, funds; generic terms, every figure arrives as data |
 | genomics | planned | |
 | economy | planned | |
@@ -166,7 +166,6 @@ The npm workspace of Drishti Rachana's JavaScript packages (Node 20+). How to us
 | `packages/rachana-cli` | `drishti-rachana-cli` | the `rachana` command: new, lint, preview, build, studio, lib, serve |
 | `packages/rachana-studio` | `drishti-rachana-studio` | Rachana Studio ([guide](docs/WRITING_SUTRAS.md#rachana-studio)) |
 | `packages/rachana-electron` | `drishti-rachana-electron` | placeholder for the Electron host SDK; no code yet |
-| `packages/rachana-mcp` | `drishti-rachana-mcp` | placeholder for the Rachana MCP server; no code yet |
 | `vendor/drishti-elements/<version>/` | (the pinned painter, copied unchanged) | Drishti Elements, with its SHA-384 manifest |
 
 **One compiler.** The JavaScript compiler is generated from the Java reference (`java/rachana-js`, TeaVM) into `packages/rachana/dist`;

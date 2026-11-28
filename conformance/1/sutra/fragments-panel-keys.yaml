@@ -1,0 +1,124 @@
+# Copyright (c) 2026 Ashutosh Sinha. Specification licence: ../../../LICENSE-SPEC.md (draft, not yet in force).
+suite: sutra/fragments-panel-keys
+since: "1.2"
+profile: core
+verified: true
+description: "A fragment hands the panel keys key, code, empty, when, span and where through optional parameters (a key left out of the use is left out of the panel, never written as null), a function parameter is a row condition, and a slot may sit inside a tabs panel; level 1.2."
+cases:
+
+  - id: optional-panel-keys-are-set-when-given
+    kind: sutra
+    source: "LIBRARIES 4.2 (optional parameters); core/data-table 1.1"
+    files: &rows
+      rows-table.v1.fragment.yaml: |
+        rachana: 1.2
+        fragment: rows-table
+        version: 1
+        doc:
+          summary: Rows with a few panel keys the caller may set.
+        params:
+          rows:  { type: table, required: true, doc: The rows, columns: { id: { type: text, doc: An id } } }
+          key:   { type: key, optional: true, doc: A function key }
+          code:  { type: text, optional: true, doc: A tag }
+          span:  { type: integer, min: 1, max: 12, optional: true, doc: The width }
+          where: { type: "fn(record{}) -> boolean", optional: true, doc: A row condition }
+        panels:
+          - id: list
+            kind: table
+            rows: arg.rows
+            columns: [ { label: Id, bind: "@.id" }, { label: Amount, bind: "@.amt", fmt: amount0 } ]
+            key: "%{key}"
+            code: arg.code
+            span: arg.span
+            where: "arg.where(@)"
+    sutra: |
+      rachana: 1.2
+      sutra: panel-keys-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        t: { rows: [ { id: A, amt: 120 }, { id: B, amt: 0 }, { id: C, amt: 80 } ] }
+      panels:
+        - use: rows-table@1
+          with:
+            rows: $.t
+            key: F2
+            code: ORD
+            span: 6
+            where: "lambda r: r.amt > 0"
+    expect:
+      at:
+        /panels/0/id: list
+        /panels/0/key: F2
+        /panels/0/code: ORD
+        /panels/0/span: 6
+        /panels/0/data/rows/0/cells/0/text: A
+        /panels/0/data/rows/1/cells/0/text: C
+
+  - id: optional-panel-keys-left-out-compile-clean
+    kind: sutra
+    source: "LIBRARIES 4.2 (optional parameters); core/data-table 1.1"
+    files: *rows
+    sutra: |
+      rachana: 1.2
+      sutra: panel-keys-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        t: { rows: [ { id: A, amt: 120 }, { id: B, amt: 0 } ] }
+      panels:
+        - use: rows-table@1
+          with: { rows: $.t }
+    expect:
+      at:
+        /panels/0/id: list
+        /panels/0/data/rows/0/cells/0/text: A
+        /panels/0/data/rows/1/cells/0/text: B
+
+  - id: a-slot-inside-a-tabs-panel
+    kind: sutra
+    source: "LIBRARIES 4.4 (slots); core/tabbed-views 1"
+    files:
+      tabbed.v1.fragment.yaml: |
+        rachana: 1.2
+        fragment: tabbed
+        version: 1
+        doc:
+          summary: One tab for each part, holding the panels the caller gives.
+        params:
+          each:      { type: "list<record{}>", required: true, doc: The parts }
+          tab-title: { type: "fn(record{}) -> text", required: true, doc: Names a tab from its part }
+        slots:
+          body: { accepts: panels, max: 3, doc: The panels each tab holds }
+        panels:
+          - id: parts
+            kind: tabs
+            title: Parts
+            each: arg.each
+            tabTitle: "arg.tab-title(@)"
+            panels:
+              - { slot: body }
+    sutra: |
+      rachana: 1.2
+      sutra: tabbed-demo
+      version: 1
+      title: { id: "'Demo'" }
+      data:
+        legs: { rows: [ { LEG: 1, LABEL: Fixed }, { LEG: 2, LABEL: Floating } ] }
+      panels:
+        - use: tabbed@1
+          with:
+            each: $.legs
+            tab-title: "lambda p: 'Leg ' + p.LEG + ' - ' + p.LABEL"
+          slots:
+            body:
+              - id: terms
+                kind: kv
+                columns: [ { label: Type, bind: "@.LABEL" } ]
+    expect:
+      at:
+        /panels/0/id: parts
+        /panels/0/data/tabs/0/title: Leg 1 - Fixed
+        /panels/0/data/tabs/1/title: Leg 2 - Floating
+        /panels/0/data/tabs/1/panels/0/id: terms
+        /panels/0/data/tabs/1/panels/0/data/fields/0/text: Floating

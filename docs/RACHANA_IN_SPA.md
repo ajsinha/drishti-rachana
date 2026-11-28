@@ -9,10 +9,10 @@ the Sutra language and the ViewModel are stable.
 
 Node 20 or later and a bundler (Vite, webpack, esbuild) or none. Two ways to get the files, both from the release you were given:
 
-- **npm package** `drishti-rachana-1.1.0.tgz`: `npm install ./drishti-rachana-1.1.0.tgz` (it is not on a public registry). It holds the
+- **npm package** `drishti-rachana-1.1.1.tgz`: `npm install ./drishti-rachana-1.1.1.tgz` (it is not on a public registry). It holds the
   source modules (`node_modules/drishti-rachana/src/`) and the compiler bundles under **`node_modules/drishti-rachana/dist/`**
   (`rachana.runtime.js`, `rachana.tools.js`). It does **not** hold Drishti Elements or Apache Arrow: take `vendor/` from the browser zip.
-- **Browser zip** `drishti-rachana-1.1.0-browser.zip`: it unpacks into one folder, `drishti-rachana-1.1.0-browser/`. **Move the
+- **Browser zip** `drishti-rachana-1.1.1-browser.zip`: it unpacks into one folder, `drishti-rachana-1.1.1-browser/`. **Move the
   contents of that folder** (not the folder) into a folder your server serves, for example `public/rachana/`, so that
   `public/rachana/rachana.runtime.js`, `public/rachana/src/rachana_view.js` and `public/rachana/vendor/` exist. It holds the compiler
   bundles (`rachana.runtime.js`, `rachana.tools.js`), the source modules (`src/`), Drishti Elements and Apache Arrow (vendored) and the LICENSE.

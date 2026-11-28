@@ -22,7 +22,7 @@ import com.ash.rachana.model.Ordered;
  */
 final class Facade {
 
-    static final String VERSION = "1.1.0";
+    static final String VERSION = "1.1.1";
 
     private Facade() {
     }

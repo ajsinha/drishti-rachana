@@ -84,7 +84,7 @@ final class SutraBuilder {
         });
         List<com.ash.rachana.model.UsedLibrary> used = new ArrayList<>();
         Map<String, com.ash.rachana.el.Declarations.Function> libraryFunctions = new LinkedHashMap<>();
-        fragments = SutraBlocks.atLeast(grammar.level(), TypedFragment.SINCE)     // level 1.2: libraries: and library uses (LIBRARIES.md 7)
+        fragments = SutraBlocks.atLeast(grammar.level(), TypedFragment.SINCE)     // level 1.2: libraries: and library uses (DESIGN.md (libraries) 7)
                 ? grammar.libraries().fragments(grammar.fragments(), root, file, problems,
                         l -> {
                             used.add(new com.ash.rachana.model.UsedLibrary(l.name(), l.version(), l.sha384()));
@@ -180,7 +180,7 @@ final class SutraBuilder {
         LayoutReader layoutReader = new LayoutReader(file, problems);          // layout: the grid, areas, split, tabs, sections (RACHANA_REFERENCE.md 13)
         com.ash.rachana.model.ScreenLayout layout = layoutReader.read(m.get("layout"));
         layoutReader.check(layout, panels, m.getOrDefault("layout", root));
-        PhoneReader phoneReader = new PhoneReader(file, problems);            // phone: order, default tier, summary (docs/guides/BUILD_GUIDE.md 5.2)
+        PhoneReader phoneReader = new PhoneReader(file, problems);            // phone: order, default tier, summary (docs/WRITING_SUTRAS.md 5.2)
         ScreenPhone phone = phoneReader.screen(m.get(ScreenPhone.KEY));
         phoneReader.check(phone, panels, m.getOrDefault(ScreenPhone.KEY, root));
         ControlsReader controlsReader = new ControlsReader(file, problems, SutraBlocks.atLeast(grammar.level(), "1.2"));
@@ -293,7 +293,7 @@ final class SutraBuilder {
     private static final Pattern PRIVATE_READ = Pattern.compile("(?<![A-Za-z0-9_.$@])state\\.([a-z][a-z0-9-]*)\\.([A-Za-z][A-Za-z0-9_]*)");
 
     /**
-     * What the Sutra's own text (never a fragment's: those are not in it) does with a fragment use's private state (S1, LIBRARIES.md 7.2):
+     * What the Sutra's own text (never a fragment's: those are not in it) does with a fragment use's private state (S1, DESIGN.md (libraries) 7.2):
      * it may read an output, {@code state.<as>.<output>}; reading any other private state, or writing one (an output too), is
      * {@code RCH-2117}.
      */
@@ -471,7 +471,7 @@ final class SutraBuilder {
             }
         }
         placement(m, nested, gridArea, options);
-        PNode phone = m.get(ScreenPhone.KEY);                                // docs/guides/BUILD_GUIDE.md 5.1: the panel's phone tier
+        PNode phone = m.get(ScreenPhone.KEY);                                // docs/WRITING_SUTRAS.md 5.1: the panel's phone tier
         if (phone != null && phone.value() != null) {
             if (nested) {
                 problem(LayoutReader.CODE, "'phone' sets a whole panel's tier: put it on the tabs panel", phone);

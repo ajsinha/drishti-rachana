@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A top-level key a profile adds to the Sutra grammar (docs/design/CORE_AND_PROFILES.md section 3.2): its name, how it is read, the
+ * A top-level key a profile adds to the Sutra grammar (docs/DESIGN.md section 3.2): its name, how it is read, the
  * panels it brings and its JSON Schema fragment. What it reads is kept in {@link com.ash.rachana.model.Sutra#extensions()} under its
  * name. A profile cannot add a key Core reads.
  */

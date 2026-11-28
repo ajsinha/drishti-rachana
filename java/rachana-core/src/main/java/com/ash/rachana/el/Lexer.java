@@ -117,7 +117,7 @@ final class Lexer {
                 Type t = switch (c) {
                     case '$' -> Type.DOLLAR;
                     case '@' -> Type.AT;
-                    case '^' -> Type.CARET;                          // ^: the element's parent (^^ its parent), docs/architecture/ARCHITECTURE.md §28 Q8
+                    case '^' -> Type.CARET;                          // ^: the element's parent (^^ its parent), spec/1/SPEC.md §28 Q8
                     case '(' -> Type.LPAREN;
                     case ')' -> Type.RPAREN;
                     case '[' -> Type.LBRACKET;

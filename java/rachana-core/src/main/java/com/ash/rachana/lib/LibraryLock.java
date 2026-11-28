@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * A project's {@code rachana.lock} (LIBRARIES.md 9.3): the exact version and SHA-384 of every library its Sutras may use. A Sutra's
+ * A project's {@code rachana.lock} (DESIGN.md (libraries) 9.3): the exact version and SHA-384 of every library its Sutras may use. A Sutra's
  * {@code libraries: [finance@1]} is a constraint; the lock is the choice. Written by {@code rachana lib add | update}, committed,
  * read by every compile. One version of a library per project; there is no "latest".
  *

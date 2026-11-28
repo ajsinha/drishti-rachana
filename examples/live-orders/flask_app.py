@@ -3,12 +3,13 @@
 # Synthetic demo content: fictional customers, items and orders.
 """The live orders board under Flask (drishti_rachana.adapters.flask).
 
-    pip install drishti-rachana[flask]
-    python flask_app.py                    # then open http://127.0.0.1:5000/dash/
+    pip install -r requirements.txt        (from the repository root: examples/live-orders/requirements.txt; README.md has the steps)
+    python flask_app.py [port]                     # then open http://127.0.0.1:5000/dash/
 
 The page is the real <rachana-view>: the adapter serves it and its assets under /dash/static.
 A change of (key, None) removes the row.
 """
+import sys
 import time
 from pathlib import Path
 
@@ -43,4 +44,4 @@ def orders_changes():
 app.register_blueprint(rachana, url_prefix="/dash")
 
 if __name__ == "__main__":
-    app.run(threaded=True)
+    app.run(port=int(sys.argv[1]) if len(sys.argv) > 1 else 5000, threaded=True)     # python flask_app.py [port]

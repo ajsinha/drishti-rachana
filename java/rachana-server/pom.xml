@@ -44,7 +44,7 @@
               <outputDirectory>${project.build.outputDirectory}/rachana-server/assets</outputDirectory>
               <resources>
                 <resource><directory>${rachana.repo.root}/js/packages/rachana/src</directory><targetPath>rachana/src</targetPath><includes><include>*.js</include></includes></resource>
-                <resource><directory>${rachana.repo.root}/js/packages/rachana/dist</directory><targetPath>rachana</targetPath><includes><include>rachana.runtime.js</include></includes></resource>
+                <resource><directory>${rachana.repo.root}/python/src/drishti_rachana/bundle</directory><targetPath>rachana</targetPath><includes><include>rachana.runtime.js</include></includes></resource>
                 <resource><directory>${rachana.repo.root}/js/vendor/drishti-elements/${rachana.elements.pack}</directory><targetPath>vendor/drishti-elements/${rachana.elements.pack}</targetPath></resource>
               </resources>
             </configuration>

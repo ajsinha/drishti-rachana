@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The patches that turn one ViewModel into the next of the same screen (VIEWMODEL.md, live frames): a {@code strip} patch per changed
+ * The patches that turn one ViewModel into the next of the same screen (SPEC.md (ViewModel contract), live frames): a {@code strip} patch per changed
  * figure, a {@code panel} patch per changed panel, a {@code rows} patch (a reset) per changed dataset. Parts are compared by their
  * canonical JSON ({@link ViewJson}), so "changed" means a reader would see a difference. A part that did not change sends nothing; a
  * change of the screen's shape (a different number of figures or panels, another title) is not a patch: {@link #frame} answers null and

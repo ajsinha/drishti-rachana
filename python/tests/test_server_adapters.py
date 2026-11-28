@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""The minimal Data Protocol host and the Flask and FastAPI adapters over it (spec/1/data-protocol/PROTOCOL.md)."""
+"""The minimal Data Protocol host and the Flask and FastAPI adapters over it (spec/1/PROTOCOL.md)."""
 import json
 import threading
 

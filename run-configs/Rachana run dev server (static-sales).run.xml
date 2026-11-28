@@ -8,7 +8,7 @@
   Shared, so it is in git: copy the configuration (Ctrl+D) to change it; a pull overwrites this file.
 -->
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Rachana: run dev server (static-sales)" type="MavenRunConfiguration" factoryName="Maven" folderName="Rachana">
+  <configuration default="false" name="Rachana: run dev server (static-sales)" type="MavenRunConfiguration" factoryName="Maven" folderName="IntelliJ-rachana-run">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings">

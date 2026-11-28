@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see LICENSE.
-"""The conformance driver (conformance/RUNNER.md): reads and validates the case files, starts a runtime program that speaks the
+"""The conformance driver (conformance/CONFORMANCE.md): reads and validates the case files, starts a runtime program that speaks the
 stdin protocol of RUNNER section 5, compares what it answers with `expect` (FORMAT 6 and 7), writes results/<runtime>.jsonl and
 the summary, and exits by RUNNER 4.4. `--record` fills `expect` of unverified cases from the reference (RUNNER 6).
 

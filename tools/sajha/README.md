@@ -15,7 +15,7 @@ Server-Sent Events and repaints in place on every new version. Strict Content-Se
 wheel, no CDN.
 
 How an agent uses them: [docs/GENUI_GUIDE.md](docs/GENUI_GUIDE.md). Each tool's contract: [docs/TOOLS.md](docs/TOOLS.md).
-The design (control path and data path, safety, audit): [docs/design/GENUI_KIT.md](../../docs/design/GENUI_KIT.md).
+The design (control path and data path, safety, audit): [docs/GENUI_KIT.md](../../docs/GENUI_KIT.md).
 
 ## Folder
 

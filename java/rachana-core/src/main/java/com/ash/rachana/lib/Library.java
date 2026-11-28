@@ -27,7 +27,7 @@ import com.ash.rachana.model.Ordered;
 import java.util.LinkedHashSet;
 
 /**
- * One library version, read and checked (LIBRARIES.md 3, 12): its manifest, its fragments and its identity. {@link #load} refuses a
+ * One library version, read and checked (DESIGN.md (libraries) 3, 12): its manifest, its fragments and its identity. {@link #load} refuses a
  * library that breaks a rule: only data files ({@code .yaml}, {@code .json}, {@code .jsonl}, {@code .md}, {@code LICENSE},
  * {@code MANIFEST.sha384}, {@code SIGNATURE}); a complete manifest; a {@code MANIFEST.sha384} that names every file with its hash; an
  * {@code exports} list that matches the fragments; uses inside the library pinned to its own fragments or a declared dependency; no
@@ -43,7 +43,7 @@ public final class Library {
     public static final String INVALID = "RCH-2112";
     /** Integrity: hash mismatch, bad or missing signature, publisher not trusted. */
     public static final String INTEGRITY = "RCH-2113";
-    /** The most fragments a library holds (LIBRARIES.md 18). */
+    /** The most fragments a library holds (DESIGN.md (libraries) 18). */
     public static final int MAX_FRAGMENTS = 500;
     /** The file holding a SHA-384 per file. */
     public static final String HASHES = "MANIFEST.sha384";
@@ -91,7 +91,7 @@ public final class Library {
         this.contracts = contracts;
     }
 
-    /** The trust a host places in libraries (LIBRARIES.md 12): its verifier, the publishers it trusts, whether a signature is required. */
+    /** The trust a host places in libraries (DESIGN.md (libraries) 12): its verifier, the publishers it trusts, whether a signature is required. */
     public record Trust(SignatureVerifier verifier, Set<String> publishers, boolean requireSigned) {
 
         /** No verifier, no requirement: a developer's setting. */
@@ -234,7 +234,7 @@ public final class Library {
             }
         }
         Map<String, String> contracts = new TreeMap<>();
-        for (Map.Entry<String, byte[]> f : b.files().entrySet()) {          // published table shapes (LIBRARIES.md 5.2)
+        for (Map.Entry<String, byte[]> f : b.files().entrySet()) {          // published table shapes (DESIGN.md (libraries) 5.2)
             if (f.getKey().startsWith("contracts/")) {
                 contract(name, f.getKey(), new String(f.getValue(), StandardCharsets.UTF_8), contracts, out);
             }

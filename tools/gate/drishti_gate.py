@@ -13,7 +13,7 @@ What it does, in order (the plan the tool prints and the report records):
      to tag without a report for the candidate commit that says passed.
 
 Default mode is DRY-RUN and READ-ONLY on Drishti (git ls-tree/rev-parse only): it prints the plan, reports which named tests exist at
-the ref and which do not yet (they arrive with the migration, docs/plans/DRISHTI_MIGRATION_TODO.md), and writes no report that could
+the ref and which do not yet (they arrive with the migration, docs/DEVELOPING.md), and writes no report that could
 satisfy the release tool (a dry run's report says "dry-run" and is refused by release.py). `--run` executes steps 4 and 5; it is for
 the builder cutting a release, on the owner's machine, never beside a drill. Nothing here ever writes to Drishti's checkout.
 

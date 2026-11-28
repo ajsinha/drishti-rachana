@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import com.ash.rachana.model.Ordered;
 
 /**
- * Where {@code use: name@version} finds its fragment (docs/design/CORE_AND_PROFILES.md section 3.4): a host hook, given per instance
+ * Where {@code use: name@version} finds its fragment (docs/DESIGN.md section 3.4): a host hook, given per instance
  * through a profile ({@code Profile.Builder.fragments}): a {@link BlockLibrary} read from folders, an in-memory set ({@link #of}) or the
  * host's own. Core alone has none ({@link #none()}): every use is refused as unknown. Where the files are found (a UI kit, pack folders and their precedence) is
  * the host's.
@@ -26,7 +26,7 @@ public interface FragmentResolver {
     Collection<String> names();
 
     /**
-     * The text of the published contract (LIBRARIES.md 5.2, Data Protocol schema form) named {@code name} that {@code fragment}'s table
+     * The text of the published contract (DESIGN.md (libraries) 5.2, Data Protocol schema form) named {@code name} that {@code fragment}'s table
      * parameter refers to ({@code contract: scenario-pnl}): its library's {@code contracts/<name>.json}. None by default.
      */
     default Optional<String> contract(SutraBlocks.Block fragment, String name) {

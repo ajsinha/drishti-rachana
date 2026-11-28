@@ -19,8 +19,8 @@ import java.util.regex.Pattern;
 import com.ash.rachana.model.Ordered;
 
 /**
- * The typed form of a fragment (SUTRA_EXPANSION C1, LIBRARIES.md 4; language level 1.2): a fragment whose every {@code params:} entry is
- * a mapping with a {@code type}. A parameter is of one of three classes (LIBRARIES.md 4.2):
+ * The typed form of a fragment (SUTRA_EXPANSION C1, DESIGN.md (libraries) 4; language level 1.2): a fragment whose every {@code params:} entry is
+ * a mapping with a {@code type}. A parameter is of one of three classes (DESIGN.md (libraries) 4.2):
  *
  * <ul>
  *   <li><b>value</b> ({@code text}, {@code number}, {@code integer}, {@code decimal}, {@code boolean}, {@code date}, {@code datetime},
@@ -57,11 +57,11 @@ public final class TypedFragment {
     /** The language level that brings the typed form. */
     public static final String SINCE = "1.2";
 
-    /** The value types (LIBRARIES.md 4.2; X8's type language without {@code fn}, which waits for lambdas, X13). */
+    /** The value types (DESIGN.md (libraries) 4.2; X8's type language without {@code fn}, which waits for lambdas, X13). */
     public static final Set<String> VALUE_TYPES = Ordered.set("text", "number", "integer", "decimal", "boolean", "date", "datetime", "duration", "money");
     /** The name types: checked tokens. */
     public static final Set<String> NAME_TYPES = Ordered.set("id", "format", "tone", "icon", "variant", "area", "palette", "key", "enum", "columns");
-    /** The name types that name the user's state or selection (LIBRARIES.md 6.3), written beside {@link #NAME_TYPES}. */
+    /** The name types that name the user's state or selection (DESIGN.md (libraries) 6.3), written beside {@link #NAME_TYPES}. */
     static final Set<String> HANDED_TYPES = Ordered.set("state", "selection");
     /** The tone words a {@code tone} parameter may take (SPEC 2.6). */
     public static final Set<String> TONES = Ordered.set("pos", "neg", "ok", "warn", "bad", "link", "accent");
@@ -70,7 +70,7 @@ public final class TypedFragment {
     /** The keys a typed fragment file may have at this level. */
     public static final Set<String> KEYS = Ordered.set("rachana", "fragment", "version", "description", "doc", "params", "slots", "emits", "panels",
             "budget", "examples", "state", "outputs");
-    /** The most parameters and slots a fragment declares (LIBRARIES.md 18). */
+    /** The most parameters and slots a fragment declares (DESIGN.md (libraries) 18). */
     public static final int MAX_PARAMS = 40;
     public static final int MAX_SLOTS = 8;
 
@@ -207,11 +207,11 @@ public final class TypedFragment {
         return t;
     }
 
-    /** The keys a parameter declaration takes (LIBRARIES.md 4.2 and 5.1); any other is refused, never read as part of the interface. */
+    /** The keys a parameter declaration takes (DESIGN.md (libraries) 4.2 and 5.1); any other is refused, never read as part of the interface. */
     static final Set<String> PARAM_KEYS = Ordered.set("type", "doc", "default", "required", "optional", "columns", "contract", "min", "max",
             "options", "pattern", "max-rows", "live", "key", "window", "dynamic", "of");
 
-    /** The keys a column of a table parameter takes (LIBRARIES.md 5.1). */
+    /** The keys a column of a table parameter takes (DESIGN.md (libraries) 5.1). */
     static final Set<String> COLUMN_KEYS = Ordered.set("type", "doc", "optional");
 
     /**
@@ -418,7 +418,7 @@ public final class TypedFragment {
     }
 
     /**
-     * Its {@code state:} (private to each use, S1; LIBRARIES.md 4.4) and {@code outputs:} ({@code {name: type}}, 7.2): each output one of
+     * Its {@code state:} (private to each use, S1; DESIGN.md (libraries) 4.4) and {@code outputs:} ({@code {name: type}}, 7.2): each output one of
      * its private state, of the same type. Checked with the Sutra's rules for state (the codes of SPEC 2.8).
      */
     private void readState() {
@@ -471,7 +471,7 @@ public final class TypedFragment {
 
     /**
      * One of its own panels with its private state scoped to the use: {@code state.<name>} read as {@code state.<as>.<name>}, and each
-     * {@code set: { state: <name> }} of its {@code on:} writing {@code <as>.<name>}. A fragment writes only its own state (LIBRARIES.md 6.2):
+     * {@code set: { state: <name> }} of its {@code on:} writing {@code <as>.<name>}. A fragment writes only its own state (DESIGN.md (libraries) 6.2):
      * a set of any other is {@code RCH-2117}.
      */
     private PNode ownState(PNode n, String as, String sutraFile, List<SutraProblem> out) {
@@ -529,13 +529,13 @@ public final class TypedFragment {
         return new PNode(sb.toString(), n.line(), n.column());
     }
 
-    /** Whether {@code target} is {@code %{p}} of a state parameter {@code p} (LIBRARIES.md 6.3): the one screen state the use hands over. */
+    /** Whether {@code target} is {@code %{p}} of a state parameter {@code p} (DESIGN.md (libraries) 6.3): the one screen state the use hands over. */
     private boolean handed(String target) {
         Matcher m = target == null ? null : MASKED.matcher(target);
         return m != null && m.matches() && params.get(m.group(1)) != null && "state".equals(params.get(m.group(1)).type());
     }
 
-    /** The state parameters (LIBRARIES.md 6.3), name to the type of the state each names ({@code of}; null for any). */
+    /** The state parameters (DESIGN.md (libraries) 6.3), name to the type of the state each names ({@code of}; null for any). */
     Map<String, String> stateParams() {
         Map<String, String> out = new LinkedHashMap<>();
         params.values().stream().filter(p -> "state".equals(p.type())).forEach(p -> out.put(p.name(), text(p.at().map().get("of"))));
@@ -642,7 +642,7 @@ public final class TypedFragment {
     }
 
     /**
-     * Where it reads outside what a use hands it (LIBRARIES.md 4.4, L-6): {@code $}, {@code ctl.}, {@code state.}, {@code sel.}, a
+     * Where it reads outside what a use hands it (DESIGN.md (libraries) 4.4, L-6): {@code $}, {@code ctl.}, {@code state.}, {@code sel.}, a
      * {@code source:}, {@code data:} or {@code url:}. A fragment of a public library must have none ({@code RCH-2117}).
      */
     public List<SutraProblem> outsideScope() {
@@ -684,7 +684,7 @@ public final class TypedFragment {
     /**
      * What a caller knows about its own tables (decision L-21, "fragments are functions"): the columns, each with its type, of the table an
      * expression gives ({@code $.positions}: the {@code data:} entry's declared {@code fields} or its written rows), or null when they are
-     * not known at compile time; and the published contracts (LIBRARIES.md 5.2) a fragment's table parameter may name.
+     * not known at compile time; and the published contracts (DESIGN.md (libraries) 5.2) a fragment's table parameter may name.
      */
     public interface Caller {
 
@@ -716,7 +716,7 @@ public final class TypedFragment {
     }
 
     /**
-     * A use of a fragment that holds private state (S1, LIBRARIES.md 4.4, 7.2): the fragment, its private state names and the ones it
+     * A use of a fragment that holds private state (S1, DESIGN.md (libraries) 4.4, 7.2): the fragment, its private state names and the ones it
      * publishes as {@code outputs:} (the screen reads them as {@code state.<as>.<name>}, never writes them).
      */
     public record Stateful(String fragment, Set<String> names, Set<String> outputs) { }
@@ -1332,7 +1332,7 @@ public final class TypedFragment {
 
     /**
      * An event wired at the use to an effect of the list ({@code set: { state: <id>, to: <expression> }}, {@code toggle}, {@code clear},
-     * {@code notify}, {@code host}: the Sutra decides what the fragment's event does, LIBRARIES.md 6.1, 6.2): its expressions read the event's
+     * {@code notify}, {@code host}: the Sutra decides what the fragment's event does, DESIGN.md (libraries) 6.1, 6.2): its expressions read the event's
      * payload as {@code event.<name>}, put in as the payload's own expression over the clicked row; the effect joins the {@code on:} of the
      * panel that raises the event, under the trigger it emits on. The state is the screen's (a fragment's private state is never written
      * from outside, {@code RCH-2117}, checked with the Sutra).

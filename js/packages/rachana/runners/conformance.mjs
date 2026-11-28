@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 // Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 //
-// The conformance runtime program of the JavaScript build in Node (conformance/RUNNER.md section 5): case lines on standard
+// The conformance runtime program of the JavaScript build in Node (conformance/CONFORMANCE.md section 5): case lines on standard
 // input, results lines on standard output, every answer from the bundle's own harness (the JVM's code, compiled by TeaVM).
 // Usage: node conformance.mjs [--bundle <rachana.tools.js>] [--runtime node] [--profiles core,drishti] <formats file>...
 // Run by tools/conformance/rachana_conformance.py --node.

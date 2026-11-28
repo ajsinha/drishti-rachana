@@ -42,7 +42,7 @@ class LibrariesCheckTest {
         assertEquals(0, p.waitFor(), out);
     }
 
-    /** The quality gates LG1 to LG5 and LG8 (LIBRARIES.md 15.2) hold for every bundled library, by the one implementation `rachana lib gate` runs. */
+    /** The quality gates LG1 to LG5 and LG8 (DESIGN.md (libraries) 15.2) hold for every bundled library, by the one implementation `rachana lib gate` runs. */
     @Test
     void everyBundledLibraryPassesTheQualityGates() throws Exception {
         Path libs = Paths.get(System.getProperty("rachana.repo.root")).toAbsolutePath().normalize().resolve("libraries");

@@ -1,12 +1,12 @@
 # Copyright (c) 2026 Ashutosh Sinha. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
-"""P2's determinism probes: the stress list of docs/plans/JS_PROOF.md section 3 as conformance cases.
+"""P2's determinism probes: the stress list of docs/DESIGN.md (Proofs) section 3 as conformance cases.
 
   probes.py draft <out.yaml>                       inputs only (no expect), for the prep step and the runners
   probes.py final <out.yaml> <jvm results.jsonl>   the case file with expect filled from the JVM reference's actual results
 
 Every probe id keeps its stress-list id (d-n01-a is the first input of D-N01). Probes that need a host setting, a Sutra the P1
-cut cannot bind, or a JVM started with another locale are listed in NOT_RUN with the reason (written into P2_RESULTS.md).
+cut cannot bind, or a JVM started with another locale are listed in NOT_RUN with the reason (written into DESIGN.md (Proofs)).
 """
 import json
 import sys

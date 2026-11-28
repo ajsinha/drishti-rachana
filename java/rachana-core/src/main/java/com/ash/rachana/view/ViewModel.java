@@ -23,10 +23,10 @@ import java.util.Map;
  * @param selects the panels whose rows or bars set a control when clicked
  * @param layout the Sutra's {@code layout:} (RACHANA_REFERENCE.md 13: areas, columns, split, tabs, sections, sticky, arrange, phone) with each
  *     top-level panel's place ({@code place: {id: {area, order, section, collapsible}}}), or null: the panels flow
- * @param phone what the Sutra says about the phone (docs/guides/BUILD_GUIDE.md section 5): {@code panels: {id: {tier, from, rows, columns, sort,
+ * @param phone what the Sutra says about the phone (docs/WRITING_SUTRAS.md section 5): {@code panels: {id: {tier, from, rows, columns, sort,
  *     series, figures, tab}}}, {@code order}, {@code default} and the {@code summary} line read against the document; null when it says
  *     nothing (the console then uses each panel kind's default tier)
- * @param contract the ViewModel contract this view speaks, {@code major.minor} ({@link #CONTRACT}; VIEWMODEL.md section 8): a client
+ * @param contract the ViewModel contract this view speaks, {@code major.minor} ({@link #CONTRACT}; SPEC.md (ViewModel contract) section 8): a client
  *     refuses a major it does not know (the renderer's unknown-contract error) and ignores what a newer minor adds. It is the smallest
  *     minor that describes this document (SUTRA_EXPANSION 6.3 rule 2): {@code 1.1} only when the view has datasets or a panel of a
  *     contract-1.1 kind ({@link #KINDS_1_1}) or a map with points, else {@code 1.0}; a stamp given lower than that is raised
@@ -55,7 +55,7 @@ public record ViewModel(
         @Include(Include.Rule.NON_EMPTY) Map<String, Dataset> datasets,
         @Include(Include.Rule.NON_EMPTY) List<StateView> state) {
 
-    /** The contract a ViewModel that uses nothing newer speaks (VIEWMODEL.md section 8): the minor moves for additions, the major for a break. */
+    /** The contract a ViewModel that uses nothing newer speaks (SPEC.md (ViewModel contract) section 8): the minor moves for additions, the major for a break. */
     public static final String CONTRACT = "1.0";
 
     /** The newest contract minor this library writes. */
@@ -222,7 +222,7 @@ public record ViewModel(
         return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, state);
     }
 
-    /** The same view with what its Sutra says about the phone (docs/guides/BUILD_GUIDE.md section 5), or none (null). */
+    /** The same view with what its Sutra says about the phone (docs/WRITING_SUTRAS.md section 5), or none (null). */
     public ViewModel withPhone(Map<String, Object> phone) {
         return new ViewModel(ref, mnemonic, title, strip, panels, keys, provenance, timings, controls, selects, layout, contract, phone, datasets, state);
     }

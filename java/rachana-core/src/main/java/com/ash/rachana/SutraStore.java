@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
- * Sutras held in memory by {@code name@version} (split step A7; docs/design/CORE_AND_PROFILES.md section 2.2): every version of a
+ * Sutras held in memory by {@code name@version} (split step A7; docs/DESIGN.md section 2.2): every version of a
  * name kept, the newest the one used, listeners told of every change. Where Sutras come from (folders, packs and their precedence,
  * hot reload, the last good version) is the host's: it puts and removes here. Thread-safe.
  */

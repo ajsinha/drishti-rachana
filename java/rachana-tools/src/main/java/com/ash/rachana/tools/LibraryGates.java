@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * The library quality gates (LIBRARIES.md 15.2) that run on a checkout: LG1 library valid, LG2 frozen fragments, LG3 definition of done,
+ * The library quality gates (DESIGN.md (libraries) 15.2) that run on a checkout: LG1 library valid, LG2 frozen fragments, LG3 definition of done,
  * LG4 level replay, LG5 interface append-only and LG8 budgets (LG6, LG7 and LG9 need the other runtimes, a browser and the AI kit; they
  * run in release). One implementation: {@code rachana lib gate} and the repository's library check both call {@link #run}.
  *

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti platform. Proprietary: see the LICENSE file at the root of this repository.
-"""The launcher check (the platform's launcher standard, docs/plans/LAUNCHER_STANDARD.md in the Drishti repository).
+"""The launcher check (the platform's launcher standard, docs/DEVELOPING.md in the Drishti repository).
 
     python3 tools/launchers/check_launchers.py        (exit 1 with every problem listed)
 
@@ -59,8 +59,9 @@ def check():
             errs.append(f"{f.name}: name '{n}' is not '{prod}: <verb> [<what>]' (verbs: {', '.join(VERBS)})")
         if f.name != n.replace(":", "") + ".run.xml":
             errs.append(f"{f.name}: the file is named after the launcher without the colon ('{n.replace(':', '')}.run.xml')")
-        if cfg.get("folderName") != prod:
-            errs.append(f"{f.name}: folderName is '{cfg.get('folderName')}', not '{prod}'")
+        ide = "PyCharm" if cfg.get("type") == "PythonConfigurationType" else "IntelliJ"
+        if not re.fullmatch(ide + "-" + prod.lower() + r"-(build|run|test|install|check)", cfg.get("folderName") or ""):
+            errs.append(f"{f.name}: folderName is '{cfg.get('folderName')}', not '{ide}-{prod.lower()}-<build|run|test|install|check>'")
         t = cfg.get("type")
         if t == "MavenRunConfiguration":
             wd = resolve(opt(cfg, "workingDirPath") or "$PROJECT_DIR$")

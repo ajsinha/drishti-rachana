@@ -128,7 +128,7 @@ class ListFunctionsTest {
     }
 
     /**
-     * Rachana implements no aggregate (docs/architecture/ARCHITECTURE.md part 2): without the pivot engine on the class path (this module's tests), an
+     * Rachana implements no aggregate (spec/1/SPEC.md part 2): without the pivot engine on the class path (this module's tests), an
      * aggregate compiles, so a Sutra loads, and is refused with the reason when evaluated; drishti-bicompute's RachanaAggregatesTest
      * tests the results.
      */

@@ -7,7 +7,7 @@ package com.ash.rachana.model;
 /**
  * One named state value of a screen (SUTRA_EXPANSION S1, level 1.2): a value with no widget, read in expressions as
  * {@code state.<id>} and written only by an effect ({@code set: { state: <id>, to: <expression> }}, I1). A fragment's private state
- * (LIBRARIES.md 4.4, 7.2) is listed with the screen's under the id {@code <as>.<name>} of the use that brought it.
+ * (DESIGN.md (libraries) 4.4, 7.2) is listed with the screen's under the id {@code <as>.<name>} of the use that brought it.
  *
  * @param id the state's id ({@code order}; {@code md.query} for a fragment's private state)
  * @param type one of {@link #TYPES}

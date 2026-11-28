@@ -30,7 +30,7 @@ public final class Grammar {
     /**
      * The top-level keys a later language level brings, with that level: below it they are not offered and using one is
      * {@code RCH-2008}. {@code data} (SPEC 2.4, decision D10, level 1.1); {@code libraries} (the libraries a Sutra uses, each with its
-     * major, {@code libraries: [finance@1]}, LIBRARIES.md 7.1, level 1.2); {@code let}, {@code functions} (X41, S2) and {@code state}
+     * major, {@code libraries: [finance@1]}, DESIGN.md (libraries) 7.1, level 1.2); {@code let}, {@code functions} (X41, S2) and {@code state}
      * (S1), level 1.2.
      */
     public static final Map<String, String> LEVEL_KEYS = Ordered.map(com.ash.rachana.model.DataEntry.KEY, "1.1", "libraries", "1.2",
@@ -179,7 +179,7 @@ public final class Grammar {
     }
 
     /**
-     * This grammar with the libraries a host offers (LIBRARIES.md 10): where {@code libraries: [name@N]} and {@code use: name/fragment@N}
+     * This grammar with the libraries a host offers (DESIGN.md (libraries) 10): where {@code libraries: [name@N]} and {@code use: name/fragment@N}
      * find their library, the lock that pins it and the signatures it trusts. Read from level 1.2.
      */
     public Grammar withLibraries(com.ash.rachana.lib.LibrarySet set) {

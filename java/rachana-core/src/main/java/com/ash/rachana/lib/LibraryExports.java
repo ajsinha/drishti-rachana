@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The {@code exports.fragments} of a library manifest (LIBRARIES.md 3.2): for each fragment, generated from its files and never typed by
+ * The {@code exports.fragments} of a library manifest (DESIGN.md (libraries) 3.2): for each fragment, generated from its files and never typed by
  * hand, the name, the majors and the whole public interface of the newest major: its {@code doc}, {@code params} (with the columns a table
  * parameter asks for, listed again as {@code contract}), {@code slots}, {@code events}, {@code budget} and the language level it needs.
  * The gallery, the palette, the AI kit and the quality gates read this instead of opening a fragment. Each entry is one line of flow YAML

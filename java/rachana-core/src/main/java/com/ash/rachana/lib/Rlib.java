@@ -11,7 +11,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * The {@code .rlib} archive (LIBRARIES.md 11.1): a ZIP of a library folder written <b>deterministically</b>, so that the same files
+ * The {@code .rlib} archive (DESIGN.md (libraries) 11.1): a ZIP of a library folder written <b>deterministically</b>, so that the same files
  * give the same bytes, and so the same SHA-384, on every machine and in every runtime. Entries are sorted by path, stored without
  * compression (no deflater whose output could differ between implementations), with the fixed time 1980-01-01 00:00, the UTF-8 flag,
  * no extra fields and no comment. Any ZIP tool reads it. The reader takes only this shape (stored entries, no ZIP64): a library is
@@ -19,7 +19,7 @@ import java.util.TreeMap;
  */
 public final class Rlib {
 
-    /** The largest library, unpacked (LIBRARIES.md 18). */
+    /** The largest library, unpacked (DESIGN.md (libraries) 18). */
     public static final int MAX_BYTES = 5 * 1024 * 1024;
     private static final int[] CRC = new int[256];
 

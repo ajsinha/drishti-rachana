@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The functions one function table holds from {@link FunctionProvider}s (docs/architecture/ARCHITECTURE.md parts 1 and 2): the
+ * The functions one function table holds from {@link FunctionProvider}s (spec/1/SPEC.md parts 1 and 2): the
  * providers a {@link com.ash.rachana.profile.Profile} hands over, per {@link com.ash.rachana.Rachana} instance; nothing is discovered by
  * scanning the class path. Core's own aggregates come first ({@code com.ash.rachana.agg.CoreAggregates}, split step A9); the names
  * below that only a host computes ({@code measure}, {@code cell}, the {@code _once} family) compile whether or not a provider gives
@@ -23,7 +23,7 @@ final class Aggregates {
             "variance", "stddev", "variance_pop", "stddev_pop", "sum_once", "count_once", "avg_once", "measure", "cell");
 
     /**
-     * The functions of a model's measures the engine computes over an answer, never over a list (docs/architecture/ARCHITECTURE.md §28 2.5, runs E):
+     * The functions of a model's measures the engine computes over an answer, never over a list (spec/1/SPEC.md §28 2.5, runs E):
      * the filter context ({@code calc}, {@code share_of}, {@code parent_of}, {@code as_of}, {@code avg_by}, {@code avg_over}), time
      * intelligence, windows, balances, conversion and lookup. Rachana parses and checks them; the engine's compiler lowers them.
      */

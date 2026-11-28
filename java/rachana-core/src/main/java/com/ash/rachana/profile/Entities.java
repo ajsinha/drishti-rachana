@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import com.ash.rachana.model.Ordered;
 
 /**
- * The additions of a host that serves <em>entities of kinds</em> (split step A7; docs/design/CORE_AND_PROFILES.md section 1): the
+ * The additions of a host that serves <em>entities of kinds</em> (split step A7; docs/DESIGN.md section 1): the
  * top-level keys {@code domain} (the folder a Sutra belongs to) and {@code match} (which entities it applies to, with the sections
  * modules contribute to a kind), the panel kinds {@code links} and {@code provenance}, the {@code kind} source form and
  * {@code form.save}. A profile takes them with {@link #addTo}; Core alone has none of them.

@@ -10,7 +10,7 @@ import threading
 from pathlib import Path
 from typing import Any, Callable, Iterator, Optional, Union
 
-from ..assets import ELEMENTS_VERSION
+from ..assets import ELEMENTS_VERSION, RUNTIME_MISSING, runtime_present
 from ..server import DataHost
 
 SUFFIX = ".sutra.yaml"
@@ -56,6 +56,8 @@ def view_page(name: str, base: str) -> str:
     """The page of one Sutra: Drishti Elements, then ``<rachana-view>`` over the Sutra file and the Data Protocol under ``base``, with
     its assets served by the adapter at ``base + STATIC`` (drishti_rachana.assets)."""
     n, b = html.escape(name), html.escape(base)
+    if not runtime_present():
+        return f"<!doctype html><meta charset=utf-8><title>{n}</title><h1>Rachana runtime bundle missing</h1><p>{html.escape(RUNTIME_MISSING)}</p>"
     el = f"{b}{STATIC}/vendor/drishti-elements/{ELEMENTS_VERSION}"
     return ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
             f"<title>{n}</title><link rel=stylesheet href='{el}/drishti-elements.css'><script src='{el}/drishti-elements.js'></script>"

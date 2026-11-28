@@ -8,7 +8,7 @@ import com.ash.rachana.internal.CoreText;
 import java.util.Locale;
 
 /**
- * Where an expression is written decides what it may name (docs/architecture/ARCHITECTURE.md §28 2.2; moved from DEL, ARCHITECTURE.md §28 section 3.3.1).
+ * Where an expression is written decides what it may name (spec/1/SPEC.md §28 2.2; moved from DEL, SPEC.md §28 section 3.3.1).
  *
  * <ul>
  *   <li>{@link #ROW}: a table's column {@code expr}, its {@code filter}, {@code keep:}; a dataset's derive and calculated columns, MQ and

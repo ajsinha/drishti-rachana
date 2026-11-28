@@ -8,7 +8,7 @@
   <parent><groupId>com.ash.rachana</groupId><artifactId>rachana-parent</artifactId><version>1.1.0</version></parent>
   <artifactId>rachana-live</artifactId>
   <name>rachana-live</name>
-  <!-- Live tables (docs/design/LIVE_TABLES.md): the JVM engine behind the Data Protocol's live tables. Depends on rachana-data only:
+  <!-- Live tables (docs/DESIGN.md): the JVM engine behind the Data Protocol's live tables. Depends on rachana-data only:
        no Kafka, no lake, no database driver, no web framework. Never in Core and never compiled to JavaScript (LiveModuleGuardTest). -->
   <dependencies>
     <dependency><groupId>com.ash.rachana</groupId><artifactId>rachana-data</artifactId><version>${project.version}</version></dependency>

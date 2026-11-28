@@ -2,12 +2,12 @@
 // Drishti Rachana. Proprietary: see LICENSE.
 //
 // The bootstrap reference program of the conformance suite (plan R0, H1): a "third-party runtime" in the sense of
-// conformance/RUNNER.md section 5, written against Drishti's compute/drishti-rachana jars (the reference implementation
+// conformance/CONFORMANCE.md section 5, written against Drishti's compute/drishti-rachana jars (the reference implementation
 // until the code moves here at A10). It reads cases as JSON lines on stdin and answers with the actual document of each
 // on stdout. It never reads case files and never compares. Retired when rachana-core runs the suite itself.
 //
 // Run:  java -cp <drishti jars and dependencies> tools/reference-bridge/RefBridge.java <spec formats.yaml>
-// (tools/conformance/rachana_conformance.py does it: see tools/reference-bridge/README.md)
+// (tools/conformance/rachana_conformance.py does it: see docs/DEVELOPING.md (Tools))
 import com.ash.drishti.api.DataNode;
 import com.ash.drishti.common.JsonCodec;
 import com.ash.drishti.rachana.el.*;

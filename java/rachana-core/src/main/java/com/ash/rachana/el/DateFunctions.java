@@ -40,7 +40,7 @@ final class DateFunctions {
 
     static void register(Functions.Table t) {
         Calendars cals = t.calendars();
-        // asof(): the view's or the query's as-of date; today() is read as asof() (docs/architecture/ARCHITECTURE.md §28 Q7)
+        // asof(): the view's or the query's as-of date; today() is read as asof() (spec/1/SPEC.md §28 Q7)
         t.fn("asof", 0, 0, (a, c) -> c.asOf() == null ? null : c.asOf().toString());
         t.old("today", "asof", 0, 0);
         DatePartFunctions.register(t);

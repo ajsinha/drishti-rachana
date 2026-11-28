@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Ashutosh Sinha <ajsinha@gmail.com>. All rights reserved.
 # Drishti Rachana. Proprietary: see the LICENSE file at the root of this repository.
 """``python -m drishti_rachana`` command line: ``lint`` (compile and lint Sutras on V8; needs the ``v8`` extra) and ``conformance run``
-(conformance/RUNNER.md 2). The program named ``rachana`` is the Node CLI (``js/packages/rachana-cli``); Python installs no script of that name."""
+(conformance/CONFORMANCE.md 2). The program named ``rachana`` is the Node CLI (``js/packages/rachana-cli``); Python installs no script of that name."""
 from __future__ import annotations
 
 import argparse

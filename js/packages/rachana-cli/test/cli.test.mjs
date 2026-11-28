@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { main } from "../src/index.js";
 import { handler } from "../src/serve.js";
-import { ELEMENTS_VERSION } from "../src/site.js";
+import { ELEMENTS_VERSION, viewPage } from "../src/site.js";
 import { libraryFiles, languageLevels } from "../src/lint.js";
 import { libCommand } from "../src/lib.js";
 import { serverCommand } from "../src/server.js";
@@ -202,4 +202,9 @@ test("studio: usage errors, and a start that prints its address and the librarie
   assert.equal(await main(["studio", d, "--test-once"], x), 0);
   assert.match(o.out[0], /^studio http:\/\/127\.0\.0\.1:\d+\/ .*demo 0\.1\.0/);
   rmSync(d, { recursive: true });
+});
+
+test("the dev server's page installs the static-files host on its absolute data folder (a page at /page/<name> would miss data/ beside it)", () => {
+  assert.match(viewPage("overview", "/sutras/overview.sutra.yaml", "/data", "/"), /installStaticHost\(\{ base: "\/data" \}\)/);
+  assert.doesNotMatch(viewPage("overview", "sutras/overview.sutra.yaml", "data", ""), /installStaticHost/);
 });

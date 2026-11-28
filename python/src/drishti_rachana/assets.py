@@ -44,6 +44,15 @@ def _runtime() -> list[Path]:
     return [PACKAGE / "bundle" / "rachana.runtime.js", CHECKOUT / "js" / "packages" / "rachana" / "dist" / "rachana.runtime.js"]
 
 
+def runtime_present() -> bool:
+    """True when the runtime bundle ``<rachana-view>`` loads can be served (it is committed, with rachana.tools.js, under ``python/src/drishti_rachana/bundle``)."""
+    return any(f.is_file() for f in _runtime())
+
+
+RUNTIME_MISSING = ("rachana.runtime.js is missing: the browser would show an empty board. It is shipped in python/src/drishti_rachana/bundle/ "
+                   "(restore it with git checkout, or unzip the platform again); to rebuild it: python3 tools/js/build_js.py (needs JDK 21).")
+
+
 def find(rel: str) -> Optional[tuple[bytes, str]]:
     """The bytes and media type of the asset at ``rel`` (below ``static/``), or None. A stylesheet of the Elements pack that the
     pack carries inside ``drishti-elements.css`` (its loader asks for each by address) is an empty sheet, so no request fails."""
